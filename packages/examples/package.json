@@ -1,0 +1,14 @@
+{
+  "name": "@pull-docs/examples",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "next": "^12.1.0",
+    "next-mdx-remote": "^4.0.0",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0"
+  }
+}

@@ -1,0 +1,58 @@
+import type { LoadedPlugin } from '@pull-docs/types/dist/Plugin';
+
+import PluginError from '../PluginError';
+
+export default async function pluginRunner(
+    { loadedPlugins, lifecycleName }: { loadedPlugins: LoadedPlugin[]; lifecycleName: string },
+    input,
+    ...args
+  ) {
+    let transformedInput = input;
+  
+    for (const plugin of loadedPlugins) {
+      try {
+        if (typeof input === 'undefined') {
+          throw new Error('Input was undefined.');
+        }
+  
+        if (typeof plugin[lifecycleName] !== 'function') {
+          continue;
+        }
+  
+        // console.debug(
+        //   `[PullDocs] Applying plugin method \`${lifecycleName}\`${lifecycleName.startsWith('$') ? ' (in a child worker)' : ''} for '${plugin.modulePath}'.`
+        // );
+  
+        const result = await plugin[lifecycleName](
+          isPluginReadOnly(lifecycleName) ? input : transformedInput,
+          ...args,
+          plugin.options
+        );
+  
+        if (result && isPluginReadOnly(lifecycleName)) {
+          console.warn(
+            `[PullDocs] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
+          );
+        }
+  
+        transformedInput = result;
+      } catch (e) {
+        // This check will stop nested errors from ending up with multiple 'Plugin X threw an exception' headers from
+        // being prefixed to the messages
+        if (e instanceof PluginError) {
+          throw e;
+        }
+        throw new PluginError(
+          `Plugin '${plugin.modulePath}' threw an exception running \`${
+            lifecycleName
+          }\`. See below:
+  ${e.stack}`
+        );
+      }
+    }
+    return transformedInput;
+  }
+  
+  function isPluginReadOnly(lifecycleName) {
+    return /\$?before/.test(lifecycleName);
+  }

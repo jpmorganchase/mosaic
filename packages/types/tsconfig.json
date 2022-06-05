@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "allowJs": false,
+    "target": "es2015",
+    "declaration": true,
+    "esModuleInterop": true,
+    "emitDeclarationOnly": true,
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "rootDir": "./src"
+  },
+  "include": ["src/*"],
+  "exclude": [
+    "node_modules",
+    "src/**/__tests__/**/*",
+    "src/__tests__/**/*",
+    "**/dist/**/*"
+  ]
+}

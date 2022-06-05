@@ -1,0 +1,51 @@
+{
+  "name": "pull-docs",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "bin": {
+    "pull-docs": "yarn workspace @pull-docs/cli"
+  },
+  "scripts": {
+    "test": "jest --runInBand",
+    "build": "yarn workspace @pull-docs/types build && yarn workspace @pull-docs/source-local-folder build && yarn workspace @pull-docs/source-bitbucket build && concurrently 'yarn workspace @pull-docs/cli build' 'yarn workspace @pull-docs/parsers build' 'yarn workspace @pull-docs/plugins build' && yarn workspace @pull-docs/core build",
+    "clean": "yarn workspace @pull-docs/types clean & yarn workspace @pull-docs/source-local-folder clean & yarn workspace @pull-docs/source-bitbucket clean & yarn workspace @pull-docs/cli clean & yarn workspace @pull-docs/parsers clean & yarn workspace @pull-docs/plugins clean & yarn workspace @pull-docs/core clean",
+    "example": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/examples dev' './node_modules/.bin/pull-docs serve -c ./pd.config.js' -p 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
+  },
+  "devDependencies": {
+    "concurrently": "*",
+    "@babel/core": "^7.11.4",
+    "@babel/plugin-proposal-class-properties": "^7.2.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/plugin-proposal-private-methods": "^7.13.0",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/preset-env": "7.13.8",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/jest": "^26.0.3",
+    "@types/lodash": "^4.14.182",
+    "@types/node": "^17.0.24",
+    "eslint": "^7.23.0",
+    "eslint-config-next": "^11.0.0",
+    "eslint-config-prettier": "^6.14.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "jest": "^25.2.4",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.2"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  }
+}
