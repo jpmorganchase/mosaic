@@ -1,19 +1,17 @@
 import matter from 'gray-matter';
-import fs from 'fs';
 import type { TDataOut } from 'memfs/lib/encoding';
-import omit from 'lodash/omit';
 import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const Serialisers: Serialiser = {
-  async serialise(route, page) {
-    return Buffer.from(matter.stringify(page.content || '', omit(page, 'content')));
+  async serialise(route, { content = '', ...meta }) {
+    return Buffer.from(matter.stringify(content, meta));
   },
 
   async deserialise(route, rawData: TDataOut) {
     const { data, content } = matter(rawData) as any;
     return {
-      content,
-      ...data
+      ...data,
+      content
     };
   }
 };

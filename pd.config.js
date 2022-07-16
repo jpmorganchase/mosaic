@@ -16,13 +16,15 @@ module.exports = {
             options: {
             }
         },
-        // {
-        //     modulePath: require.resolve('@pull-docs/plugins/dist/LazyContentPlugin'),
-        //     priority: -2,
-        //     options: {
-        //         cacheDir: '.pull-docs-cache'
-        //     }
-        // },
+        {
+            modulePath: require.resolve('@pull-docs/plugins/dist/LazyPagePlugin'),
+            // This plugin must be the very last to run, so it can strip off metadata and content after the other
+            // plugins are done with them
+            priority: -2,
+            options: {
+                cacheDir: '.pull-docs-last-page-plugin-cache'
+            }
+        },
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/NextPrevPagePlugin'),
             options: {
@@ -67,7 +69,7 @@ module.exports = {
                 cache: false,
                 // TODO: Enter credentials (this can be done at `pullDocs.addSource`, or in the config file here)
                 credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
-                namespaceDir: 'bitbucket',
+                namespaceDir: 'developer',
                 subfolder: 'docs',
                 repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git',
                 branch: 'develop',

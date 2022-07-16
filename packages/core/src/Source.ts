@@ -28,11 +28,11 @@ export default class Source {
   #worker: WorkerSubscription;
   #globalFileSystem: IVolumeImmutable;
   #pluginApi: Plugin;
-  #serialiser: Serialiser;
   #mergedOptions: Record<string, unknown>;
   #config: MutableData<{}>;
   #pageExtensions;
-
+  
+  serialiser: Serialiser;
   id: Symbol;
   filesystem: MutableVolume;
 
@@ -93,7 +93,7 @@ export default class Source {
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdate(updatedSourceFilesystem, {
       globalFilesystem: this.#globalFileSystem,
       pageExtensions: this.#pageExtensions,
-      serialiser: this.#serialiser,
+      serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
     if (shouldInvokeAfterUpdate === true) {
@@ -113,7 +113,7 @@ export default class Source {
     await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFileSystem,
       pageExtensions: this.#pageExtensions,
-      serialiser: this.#serialiser,
+      serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
   }
@@ -139,7 +139,7 @@ export default class Source {
   }
 
   async start() {
-    this.#serialiser = await bindSerialiser(this.#serialisers);
+    this.serialiser = await bindSerialiser(this.#serialisers);
     this.#pluginApi = await bindPluginMethods(this.#plugins);
     this.#worker = this.#createWorker();
     this.#worker.on(EVENT.UPDATE, async ({ data: { pages, symlinks, data } }) => {

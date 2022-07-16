@@ -5,7 +5,8 @@ import type { IVolumeImmutable } from '@pull-docs/types/dist/Volume';
 
 import Source from './Source';
 import path from 'path';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, merge } from 'lodash';
+import fs from 'fs';
 
 export default class SourceManager {
   #sources: Map<Symbol, Source> = new Map();
@@ -14,14 +15,14 @@ export default class SourceManager {
   #handlers: Set<(filesystem: IVolumeImmutable, source: Source) => {}> = new Set();
   #globalFileSystem: IVolumeImmutable;
   #pageExtensions: string[];
-  //#pageTest: RegExp;
+  #pageTest: RegExp;
 
   constructor(plugins = [], serialisers = [], pageExtensions, globalFileSystem) {
     this.#plugins = plugins;
     this.#pageExtensions = pageExtensions;
     this.#serialisers = serialisers;
     this.#globalFileSystem = globalFileSystem;
-    //this.#pageTest = new RegExp(pageExtensions.map(escapeRegExp).join('|'));
+    this.#pageTest = new RegExp(pageExtensions.map(escapeRegExp).join('|'));
   }
 
   onSourceUpdate(callback) {
@@ -99,20 +100,29 @@ export default class SourceManager {
             }
 
             // Only add this hook right before we freeze - so content only lazy loads after this point
-            // source.filesystem.addReadFileHook(async (pagePath, fileData) => {
-            //   // If this is a 'page' - read the original file from disk and try to inject the content, in case it was lazy loaded
-            //   if (this.#pageTest.test(pagePath)) {
-            //     const currentPage = await source.#serialiser.deserialise(pagePath, fileData);
-            //     if (currentPage.path) {
-            //       const { content } = await source.#serialiser.deserialise(
-            //         await source.filesystem.readFile(currentPage.path),
-            //         pagePath
-            //       );
-            //       return await source.#serialiser.serialise(pagePath, merge({}, currentPage, { content }));
-            //     }
-            //   }
-            //   return fileData;
-            // });
+            source.filesystem.addReadFileHook(async (pagePath, fileData) => {
+              // If this is a 'page' - read the original file from disk and try to inject anything that's missing.
+              // This feature ties directly in with the `LazyPagePlugin` - but we couldn't externalise it as the `addReadFileHook`
+              // method isn't available to plugins (and we don't want it to be, to avoid last-minute page changes happening)
+              if (this.#pageTest.test(pagePath)) {
+                const currentPage = await source.serialiser.deserialise(pagePath, fileData);
+                if (currentPage.path) {
+                  const page = await source.serialiser.deserialise(
+                    pagePath,
+                    await fs.promises.readFile(currentPage.path)
+                  );
+                  return await source.serialiser.serialise(
+                    pagePath,
+                    merge(
+                      page,
+                      currentPage,
+                      { content: page.content }
+                    )
+                  );
+                }
+              }
+              return fileData;
+            });
             source.filesystem.freeze();
             source.filesystem.clearCache();
 

@@ -55,6 +55,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * Calls after the filesystem and symlinks have been reconstructed due to a change to the current source. This happens in the main thread.
    * This method also calls whenever another source has changed - if the `shouldUpdate` lifecycle returned `true`.
    * Pages will NOT be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
+   * This method is safe to use with lazy loading, as the filesystem should return the full page when read.
    * NOTE: Plugin methods that trigger inside the parent process should be async and highly optimised to avoid holding up the main thread.
    * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem

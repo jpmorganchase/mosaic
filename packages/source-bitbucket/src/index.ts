@@ -21,9 +21,10 @@ const BitbucketSource: Source<{
   create(options, { serialiser }) {
     const repo = new Repo(options);
 
+    const rootDir = path.join(repo.dir, options.subfolder);
     const watchFolder$: Observable<Page[]> = localFolderSource.create(
       {
-        rootDir: path.resolve(repo.dir, options.subfolder),
+        rootDir,
         extensions: options.extensions
       },
       { serialiser }
@@ -39,7 +40,7 @@ const BitbucketSource: Source<{
       mergeMap(async (pages: Page[]) => {
         const out = [];
         for (const page of pages) {
-          const pathFromCloneDir = path.relative(repo.dir, page.path);
+          const pathFromCloneDir = path.relative(rootDir, page.path);
           const route = options.namespaceDir
             ? `/${path.join(options.namespaceDir, pathFromCloneDir)}`
             : `/${pathFromCloneDir}`;
@@ -47,7 +48,9 @@ const BitbucketSource: Source<{
             _merge({}, page, {
               // This will be replaced with a string if the AliasPlugin is being used
               friendlyRoute: { $ref: '#/route' },
-              lastModified: new Date(await repo.getLatestCommitDate(pathFromCloneDir)).getTime(),
+              lastModified: new Date(
+                await repo.getLatestCommitDate(path.relative(repo.dir, page.path))
+              ).getTime(),
               route
             })
           );

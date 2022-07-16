@@ -15,6 +15,7 @@ type Page<AdditionalProps = {}> = {
   friendlyRoute: string;
   route: string;
   lastModified?: Date;
+  // Added by the LazyPagePlugin
   path?: string;
   content?: string;
 } & Record<string, unknown> &
