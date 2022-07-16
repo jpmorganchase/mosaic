@@ -10,10 +10,7 @@ module.exports = async (config, port) => {
     console.log(`Example app listening on port ${port}`);
   });
   const pullDocs = new PullDocs(config);
-  const local = await pullDocs.addSource('local', {
-  });
-  const bitbucket = await pullDocs.addSource('bitbucket', {
-  });
+  pullDocs.start();
 
   pullDocs.onSourceUpdate(async (value, source) => {
     // console.log(

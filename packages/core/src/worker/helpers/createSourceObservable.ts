@@ -8,10 +8,10 @@ import { escapeRegExp } from 'lodash';
 
 export default async function createSourceObservable(
   { modulePath, options, pageExtensions }: WorkerData,
-  parser
+  serialiser
 ): Promise<Observable<Page[]>> {
   const api = await getSourceDefinitionExports(modulePath);
-  const source$ = api.create(options, { parser });
+  const source$ = api.create(options, { serialiser });
 
   if (!isObservable(source$)) {
     throw new Error(`Source at '${modulePath}' did not return an Observable.`);
@@ -25,9 +25,7 @@ export default async function createSourceObservable(
       return pages.reduce((pages, page) => {
         if (!page.route && pageTest.test(page.route)) {
           console.warn(
-            `File '${
-              page.route
-            }' has a page file extension, but is missing the \`route\` property. It will be removed from the output.`
+            `File '${page.route}' has a page file extension, but is missing the \`route\` property. It will be removed from the output.`
           );
           return pages;
         }
@@ -39,7 +37,11 @@ export default async function createSourceObservable(
 }
 
 async function getSourceDefinitionExports(modulePath): Promise<Source> {
-  const { default: api }: { default: Source } = await import(modulePath);
+  const { default: defaultProp }: { default: Source | { __esModule: boolean; default: Source } } =
+    await import(modulePath);
+
+  const api =
+    'default' in defaultProp && defaultProp.__esModule ? defaultProp.default : defaultProp as Source;
 
   if (!api) {
     throw new Error(`Could not resolve source '${modulePath}'.`);

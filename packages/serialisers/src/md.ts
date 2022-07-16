@@ -1,9 +1,10 @@
 import matter from 'gray-matter';
-import fs from 'fs';
 
-import type Parser from '@pull-docs/types/dist/Parser';
+import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
-const Parsers: Parser = {
+// Markdown is not really a suitable format, as it doesn't allow for storing metadata - so this serialiser is more of an
+// example than anything - it should ideally not be used
+const Serialisers: Serialiser = {
   async serialise(route, page) {
     return Buffer.from(matter.stringify(page.content, {}).replace(/^---[\s\S]+---/, ''));
   },
@@ -17,11 +18,7 @@ const Parsers: Parser = {
       route,
       friendlyRoute: route
     };
-  },
-
-  async deserialiseFromDisk(route, pagePath) {
-    return Parsers.deserialise(route, await fs.promises.readFile(pagePath));
   }
 };
 
-export default Parsers;
+export default Serialisers;

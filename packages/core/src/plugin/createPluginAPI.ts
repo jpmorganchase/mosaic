@@ -1,23 +1,20 @@
 import type { LoadedPlugin } from '@pull-docs/types/dist/Plugin';
-import type { LoadedParser } from '@pull-docs/types/dist/Parser';
+import type { LoadedSerialiser } from '@pull-docs/types/dist/Serialiser';
 import type Plugin from '@pull-docs/types/dist/Plugin';
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
-import type Parser from '@pull-docs/types/dist/Parser';
+import type Serialiser from '@pull-docs/types/dist/Serialiser';
 import type Page from '@pull-docs/types/dist/Page';
 
 import loadDefinitionModules from './loadDefinitionModules';
-import parserRunner from './parserRunner';
+import serialiserRunner from './serialiserRunner';
 import pluginRunner from './pluginRunner';
 
-function createProxyBaseParserAPI(): Parser {
+function createProxyBaseSerialiserAPI(): Serialiser {
   return {
     serialise() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     },
     deserialise() {
-      throw new Error('This is just for the interface on the Proxy and should never be invoked.');
-    },
-    deserialiseFromDisk() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     }
   };
@@ -43,22 +40,22 @@ function createProxyBaseAPI<ConfigData>(): Plugin<ConfigData> {
 export default async function createPluginAPI<PluginInput, ConfigData = {}>(
   plugins: PluginModuleDefinition[]
 ): Promise<Plugin<ConfigData>> {
-  const loadedPlugins: LoadedPlugin[] | LoadedParser[] = await loadDefinitionModules(plugins);
+  const loadedPlugins: LoadedPlugin[] | LoadedSerialiser[] = await loadDefinitionModules(plugins);
   const baseObj = createProxyBaseAPI<ConfigData>();
-  const baseParserObj = createProxyBaseParserAPI();
+  const baseSerialiserObj = createProxyBaseSerialiserAPI();
 
   return new Proxy(baseObj, {
     // async apply(_obj, _this, args: [string, {}]) {
-    //   // Only parsers have a signature that is a function with no API methods on it
-    //   return await parserRunner({ loadedPlugins: loadedPlugins as LoadedParser[] }, ...args);
+    //   // Only serialisers have a signature that is a function with no API methods on it
+    //   return await serialiserRunner({ loadedPlugins: loadedPlugins as LoadedSerialiser[] }, ...args);
     // },
     get(obj, propOrLifecycleName) {
-      if (baseParserObj.hasOwnProperty(propOrLifecycleName)) {
+      if (baseSerialiserObj.hasOwnProperty(propOrLifecycleName)) {
         return async (pagePath, ...args: [string | Page, {}]) =>
-          await parserRunner(
+          await serialiserRunner(
             {
-              parserMethod: String(propOrLifecycleName),
-              loadedPlugins: loadedPlugins as LoadedParser[]
+              serialiserMethod: String(propOrLifecycleName),
+              loadedPlugins: loadedPlugins as LoadedSerialiser[]
             },
             pagePath,
             ...args

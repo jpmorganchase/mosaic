@@ -16,7 +16,7 @@ export default class FileSystem implements BaseFileSystem {
   #rawReadonlyFs;
   #globIgnores;
   #symlinks: { [key: string]: { target: string; type: string }[] } = {};
-  #sealed = false;
+  #frozen = false;
   #cachedPages = new Map();
 
   constructor(filesystemAdapter: Volume, pageExtensions: string[]) {
@@ -46,8 +46,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   $$addReadFileHook(hook) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     this.#hooks.push(hook);
   }
@@ -60,8 +60,8 @@ export default class FileSystem implements BaseFileSystem {
     return this.#adapter.promises.stat(file, options);
   }
 
-  get $$sealed() {
-    return this.#sealed;
+  get $$frozen() {
+    return this.#frozen;
   }
 
   realpath(target, options?: string | IRealpathOptions) {
@@ -70,8 +70,8 @@ export default class FileSystem implements BaseFileSystem {
 
   async $$symlinksFromJSON(symlinks) {
     this.#symlinks = symlinks;
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     for (const alias in symlinks) {
       for (const { target, type = 'file' } of symlinks[alias]) {
@@ -87,8 +87,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   async unlink(target) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     await this.#adapter.promises.unlink(target);
     // If path refers to a symbolic link, then the link is removed without affecting the file or directory to which that link refers.
@@ -96,8 +96,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   symlink(target, alias, type) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     this.#symlinks[alias] = this.#symlinks[alias] || [];
     this.#symlinks[alias].push({ target, type });
@@ -106,8 +106,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   async writeFile(file, data) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     await this.#adapter.promises.writeFile(file, data);
 
@@ -117,8 +117,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   async mkdir(dir, options) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     return this.#adapter.promises.mkdir(dir, options);
   }
@@ -203,7 +203,7 @@ export default class FileSystem implements BaseFileSystem {
 
     const result = await loadPagePromise;
 
-    if (this.#sealed) {
+    if (this.#frozen) {
       this.#cachedPages.set(file, result);
     } else {
       // Clear the `currentlyResolving` entry
@@ -222,18 +222,18 @@ export default class FileSystem implements BaseFileSystem {
     return this.#cachedPages.has(file);
   }
 
-  $$seal() {
-    if (this.#sealed) {
-      throw new Error('This file system has already been sealed.');
+  $$freeze() {
+    if (this.#frozen) {
+      throw new Error('This file system has already been frozen.');
     }
-    this.#sealed = true;
+    this.#frozen = true;
   }
 
-  $$unseal() {
-    if (!this.#sealed) {
-      throw new Error('This file system is not sealed.');
+  $$unfreeze() {
+    if (!this.#frozen) {
+      throw new Error('This file system is not frozen.');
     }
-    this.#sealed = false;
+    this.#frozen = false;
   }
 
   $$clearCache() {
@@ -242,7 +242,7 @@ export default class FileSystem implements BaseFileSystem {
 
   async $$reset() {
     this.#rawReadonlyFs = null;
-    this.#sealed = false;
+    this.#frozen = false;
     this.#symlinks = {};
     this.#hooks = [];
     this.#adapter.reset();
@@ -250,8 +250,8 @@ export default class FileSystem implements BaseFileSystem {
   }
 
   fromJSON(json: DirectoryJSON) {
-    if (this.#sealed) {
-      throw new Error('This file system has been sealed. Mutations are not allowed.');
+    if (this.#frozen) {
+      throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     this.#adapter.fromJSON(json);
   }

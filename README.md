@@ -13,3 +13,7 @@
 ### Serve
 
 `yarn pull-docs serve --port 8080 --config ./pd.config.js`
+
+## Example
+
+`yarn example`

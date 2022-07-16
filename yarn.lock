@@ -1160,6 +1160,16 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@jpmuitk/style@29.4.0":
+  version "29.4.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@jpmuitk/style/-/@jpmuitk/style-29.4.0.tgz#66bf6379de3a15a0f4dfa0c039e8253b4d6c65fc"
+  integrity sha1-Zr9jed46FaD036DAOeglO01sZfw=
+  dependencies:
+    d3-interpolate "^1.4.0"
+    deepmerge "^2.0.1"
+    object-assign "^4.1.1"
+    warning "^3.0.0"
+
 "@jridgewell/gen-mapping@^0.1.0":
   version "0.1.1"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@jridgewell/gen-mapping/-/gen-mapping-0.1.1.tgz#e5d2e450306a9491e3bd77e323e38d7aff315996"
@@ -2527,6 +2537,18 @@ csstype@^3.0.2:
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/csstype/-/csstype-3.1.0.tgz#4ddcac3718d787cf9df0d1b7d15033925c8f29f2"
   integrity sha1-TdysNxjXh8+d8NG30VAzklyPKfI=
 
+d3-color@1:
+  version "1.4.1"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/d3-color/-/d3-color-1.4.1.tgz#c52002bf8846ada4424d55d97982fef26eb3bc8a"
+  integrity sha1-xSACv4hGraRCTVXZeYL+8m6zvIo=
+
+d3-interpolate@^1.4.0:
+  version "1.4.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/d3-interpolate/-/d3-interpolate-1.4.0.tgz#526e79e2d80daa383f9e0c1c1c7dcc0f0583e987"
+  integrity sha1-Um554tgNqjg/ngwcHH3MDwWD6Yc=
+  dependencies:
+    d3-color "1"
+
 damerau-levenshtein@^1.0.7:
   version "1.0.8"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/damerau-levenshtein/-/damerau-levenshtein-1.0.8.tgz#b43d286ccbd36bc5b2f7ed41caf2d0aba1f8a6e7"
@@ -2595,6 +2617,11 @@ deep-is@^0.1.3, deep-is@~0.1.3:
   version "0.1.4"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/deep-is/-/deep-is-0.1.4.tgz#a6f2dce612fadd2ef1f519b73551f17e85199831"
   integrity sha1-pvLc5hL63S7x9Rm3NVHxfoUZmDE=
+
+deepmerge@^2.0.1:
+  version "2.2.1"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/deepmerge/-/deepmerge-2.2.1.tgz#5d3ff22a01c00f645405a2fbc17d0778a1801170"
+  integrity sha1-XT/yKgHAD2RUBaL7wX0HeKGAEXA=
 
 deepmerge@^4.2.2:
   version "4.2.2"
@@ -4801,7 +4828,7 @@ longest-streak@^3.0.0:
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/longest-streak/-/longest-streak-3.0.1.tgz#c97315b7afa0e7d9525db9a5a2953651432bdc5d"
   integrity sha1-yXMVt6+g59lSXbmlopU2UUMr3F0=
 
-loose-envify@^1.1.0, loose-envify@^1.4.0:
+loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   version "1.4.0"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
   integrity sha1-ce5R+nvkyuwaY4OffmgtgTLTDK8=
@@ -7286,6 +7313,13 @@ walker@^1.0.7, walker@~1.0.5:
   integrity sha1-vUmNtHev5XPcBBhfAR06uKjXZT8=
   dependencies:
     makeerror "1.0.12"
+
+warning@^3.0.0:
+  version "3.0.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/warning/-/warning-3.0.0.tgz#32e5377cb572de4ab04753bdf8821c01ed605b7c"
+  integrity sha1-MuU3fLVy3kqwR1O9+IIcAe1gW3w=
+  dependencies:
+    loose-envify "^1.0.0"
 
 webidl-conversions@^4.0.2:
   version "4.0.2"

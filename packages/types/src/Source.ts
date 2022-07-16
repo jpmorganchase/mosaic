@@ -1,8 +1,8 @@
 import type { Observable } from 'rxjs';
 
-import type Parser from './Parser';
+import type Serialiser from './Serialiser';
 import type Page from './Page';
 
-type Source = { create(options: {}, { parser }: { parser: Parser }): Observable<Page[]> };
+type Source<Options = {}> = { create(options: Options, { serialiser }: { serialiser: Serialiser }): Observable<Page[]> };
 
 export default Source;

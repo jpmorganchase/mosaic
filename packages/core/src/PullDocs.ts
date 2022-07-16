@@ -1,10 +1,9 @@
-import keyBy from 'lodash/keyBy';
 import type { IUnionFs } from 'unionfs';
 import { Union } from 'unionfs';
 import type { IFS } from 'unionfs/lib/fs';
 
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
-import type ParserModuleDefinition from '@pull-docs/types/dist/ParserModuleDefinition';
+import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
 import type SourceModuleDefinition from '@pull-docs/types/dist/SourceModuleDefinition';
 
 import SourceManager from './SourceManager';
@@ -17,7 +16,7 @@ import MutableVolume from './filesystems/MutableVolume';
 import FileSystem from './filesystems/FileSystem';
 
 export default class PullDocs {
-  #sourceDefinitions: { [key: SourceModuleDefinition['name']]: SourceModuleDefinition };
+  #sourceDefinitions: SourceModuleDefinition[];
   #sourceManager: SourceManager;
   #ufs = new Union() as IUnionFs & { fss: MutableVolume[] };
   #vfs: ImmutableVolume;
@@ -26,18 +25,18 @@ export default class PullDocs {
    *
    * @param config.sources Sources
    * @param config.plugins Plugins
-   * @param config.parsers Parser
+   * @param config.serialisers Serialiser
    * @param config.pageExtensions Exts of files to treat as pages. Pages must be JSON files that meet the `Page` file
-   *                              format. Pages are run through parsers when read and can be referenced via `$ref`s
+   *                              format. Pages are run through serialisers when read and can be referenced via `$ref`s
    */
   constructor(config: {
     plugins?: PluginModuleDefinition[];
-    parsers?: ParserModuleDefinition[];
+    serialisers?: SerialiserModuleDefinition[];
     sources: SourceModuleDefinition[];
     pageExtensions: string[];
   }) {
-    const { sources = [], plugins = [], parsers = [], pageExtensions = ['.mdx', '.md'] } = config;
-    this.#sourceDefinitions = keyBy(sources, 'name');
+    const { sources = [], plugins = [], serialisers = [], pageExtensions = ['.mdx', '.md'] } = config;
+    this.#sourceDefinitions = sources;
     this.#vfs = new ImmutableVolume(FileSystem.fromUnion(this.#ufs, pageExtensions));
     this.#sourceManager = new SourceManager(
       plugins
@@ -53,9 +52,9 @@ export default class PullDocs {
             options: {}
           }
         ),
-        // Auto add JSON parser
-      parsers.concat({
-        modulePath: require.resolve('@pull-docs/parsers/dist/json'),
+        // Auto add JSON serialiser
+      serialisers.concat({
+        modulePath: require.resolve('@pull-docs/serialisers/dist/json'),
         filter: /\.json$/,
         options: {}
       }),
@@ -72,14 +71,16 @@ export default class PullDocs {
     return this.#sourceManager.onSourceUpdate(callback);
   }
 
-  async addSource(name: string, options: {}) {
-    const sourceDefinition = this.#sourceDefinitions[name];
+  async start() {
+    return this.#sourceDefinitions.map(source => this.#addSource(source));
+  }
 
-    if (!sourceDefinition) {
-      throw new Error(`Source definition '${name}' could not be found.`);
-    }
+  async stop() {
+    return this.#sourceManager.destroyAll();
+  }
 
-    const source = await this.#sourceManager.addSource(sourceDefinition, options);
+  async #addSource(sourceDefinition) {
+    const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {
       console.error(new Error(`Source '${source.id.description}' threw an exception. See below:`));
       console.error(error);

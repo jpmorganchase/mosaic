@@ -1,4 +1,4 @@
-import type ParserModuleDefinition from './ParserModuleDefinition';
+import type SerialiserModuleDefinition from './SerialiserModuleDefinition';
 import type PluginModuleDefinition from './PluginModuleDefinition';
 import type SourceModuleDefinition from './SourceModuleDefinition';
 
@@ -9,7 +9,7 @@ type WorkerData<Options = {}> = {
   name: string;
   pageExtensions: string[];
   plugins: PluginModuleDefinition[];
-  parsers: ParserModuleDefinition[];
+  serialisers: SerialiserModuleDefinition[];
   modulePath: string;
 };
 

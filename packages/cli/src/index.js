@@ -6,9 +6,9 @@ const build = require("./build");
 const path = require('path');
 
 program
-  .requiredOption('-c, --config <string>', 'Config path')
-  .option('-o, --out <string>', 'Output directory')
-  .option('-p, --port <number>', 'Port to serve on');
+    .requiredOption('-c, --config <string>', 'Config path')
+    .option('-o, --out <string>', 'Output directory', '.pull-docs-build')
+    .option('-p, --port <number>', 'Port to serve on', 8080);
 
 program.parse();
 
@@ -21,10 +21,7 @@ if (!config) {
 }
 
 if (program.args[0] === 'build') {
-    if (!options.out) {
-        throw new Error('Out directory -o is required');
-    }
     build(config, path.resolve(process.cwd(), options.out));
 } else if (program.args[0] === 'serve') {
-    serve(config, options.port || 3000);
+    serve(config, options.port);
 }

@@ -32,14 +32,14 @@ const RefPlugin: PluginType<{
     );
   },
   // Apply and resolve $refs in place of anywhere we saw $tag
-  async afterUpdate(mutableFilesystem, { globalFilesystem, parser, pageExtensions, config }) {
+  async afterUpdate(mutableFilesystem, { globalFilesystem, serialiser, pageExtensions, config }) {
     if (!config.data?.tagRefs) {
       return;
     }
     const tagRefs = config.data?.tagRefs;
     const refParser = new $RefParser();
     for (const route in tagRefs) {
-      const page: Page = await parser.deserialise(
+      const page: Page = await serialiser.deserialise(
         route,
         await globalFilesystem.promises.readFile(route)
       );
@@ -49,14 +49,14 @@ const RefPlugin: PluginType<{
             String(page.route),
             await normaliseRefs(page.route, tagRefs[page.route], globalFilesystem, pageExtensions),
             {
-              resolve: createRefResolver(parser, globalFilesystem),
+              resolve: createRefResolver(serialiser, globalFilesystem),
               dereference: { circular: false }
             }
           );
 
           await mutableFilesystem.promises.writeFile(
             route,
-            await parser.serialise(route, { ...page, ...resolved } as any)
+            await serialiser.serialise(route, { ...page, ...resolved } as any)
           );
         } catch (e) {
           throw e;
@@ -105,13 +105,13 @@ const RefPlugin: PluginType<{
 
 export default RefPlugin;
 
-function createRefResolver(parser, globalFilesystem) {
+function createRefResolver(serialiser, globalFilesystem) {
   return {
     file: {
       canRead: true,
       order: 1,
       async read(file, callback) {
-        const refedPage = await parser.deserialise(
+        const refedPage = await serialiser.deserialise(
           file.url,
           await globalFilesystem.promises.readFile(file.url)
         );

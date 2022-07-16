@@ -2,9 +2,9 @@ const path = require("path");
 
 module.exports = {
     pageExtensions: ['.mdx', '.md'],
-    parsers: [
-        { modulePath: require.resolve('@pull-docs/parsers/dist/mdx'), filter: /\.mdx$/, options: {} },
-        { modulePath: require.resolve('@pull-docs/parsers/dist/md'), filter: /\.md$/, options: {} },
+    serialisers: [
+        { modulePath: require.resolve('@pull-docs/serialisers/dist/mdx'), filter: /\.mdx$/, options: {} },
+        { modulePath: require.resolve('@pull-docs/serialisers/dist/md'), filter: /\.md$/, options: {} },
     ],
     plugins: [
         {
@@ -43,22 +43,20 @@ module.exports = {
     sources: [
         {
             modulePath: require.resolve('@pull-docs/source-local-folder'),
-            name: 'local',
             options: {
                 rootDir: path.join(__dirname, '../developer-docs', 'docs'),
                 cache: false,
-                extensions: ['.mdx', '.md'],
-                rootDir: path.resolve(__dirname, '../developer-docs', 'docs')
+                extensions: ['.mdx', '.md', '.json']
             }
         },
         {
             modulePath: require.resolve('@pull-docs/source-bitbucket'),
-            name: 'bitbucket',
             options: {
                 cache: false,
                 // TODO: Enter credentials (this can be done at `pullDocs.addSource`, or in the config file here)
-                credentials: 'r698001:XXX',
+                credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
                 namespaceDir: 'bitbucket',
+                subfolder: 'docs',
                 repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git',
                 branch: 'develop',
                 extensions: ['.mdx', '.md'],

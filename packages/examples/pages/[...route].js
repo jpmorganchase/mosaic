@@ -1,18 +1,32 @@
 import { serialize } from 'next-mdx-remote/serialize'
 import { MDXRemote } from 'next-mdx-remote'
+
+import { Accordion } from '../../../../digital-platform-docs/packages/components-next/Accordion';
 import { Callout } from '../../../../digital-platform-docs/packages/components-next/Callout';
 import { Hero } from '../../../../digital-platform-docs/packages/components-next/Hero';
 import { TileLink } from '../../../../digital-platform-docs/packages/components-next/TileLink';
 import { PageFilterView } from '../../../../digital-platform-docs/packages/components-next/PageFilterView';
 import { Tiles } from '../../../../digital-platform-docs/packages/components-next/Tiles';
 
-export default function Home({ source }) {
-  console.log(source)
-  return (
-    <div className="wrapper">
-      <MDXRemote {...source} components={{ Callout, TileLink, Tiles, Hero, PageFilterView }} scope={{ meta: source.frontmatter }} />
-    </div>
-  )
+const components = { Accordion, Callout, TileLink, Tiles, Hero, PageFilterView };
+
+export default function Index({ type, ...props }) {
+  if (type === 'mdx') {
+    return (
+      <div className="wrapper">
+        <MDXRemote {...props.source} components={components} scope={{ meta: props.source.frontmatter }} />
+      </div>
+    );
+  }
+  // If file is JSON, we expect it to have a `content` attr
+  if (type === 'json') {
+    return (
+      <div className="wrapper">
+        {props.content}
+      </div>
+    );
+  }
+  return (<div className="wrapper">Unsupported file type</div>);
 }
 
 export async function getServerSideProps({ resolvedUrl }) {
@@ -21,10 +35,13 @@ export async function getServerSideProps({ resolvedUrl }) {
     if (!source.ok) {
       throw '';
     }
-    const mdxSource = await serialize(await source.text(), {
-      parseFrontmatter: true
-    })
-    return { props: { source: mdxSource } }
+    if (resolvedUrl.endsWith('.mdx')) {
+      const mdxSource = await serialize(await source.text(), {
+        parseFrontmatter: true
+      })
+      return { props: { type: 'mdx', source: mdxSource } }
+    }
+    return { props: { type: 'json', ...(await source.json()) } }
   } catch {
     return {
       notFound: true,

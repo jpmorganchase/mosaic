@@ -1,5 +1,5 @@
 import type FileAccess from '@pull-docs/types/dist/FileAccess';
-import type Parser from '@pull-docs/types/dist/Parser';
+import type Serialiser from '@pull-docs/types/dist/Serialiser';
 import type { IVolumePartiallyMutable } from '@pull-docs/types/dist/Volume';
 
 import ImmutableFileSystem from './ImmutableVolume';
@@ -36,8 +36,8 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
     return this.#vfs.toJSON();
   }
 
-  get sealed() {
-    return this.#vfs.$$sealed;
+  get frozen() {
+    return this.#vfs.$$frozen;
   }
 
   asReadOnly() {

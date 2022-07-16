@@ -1,15 +1,15 @@
 import type { TDataOut } from 'memfs/lib/encoding';
 
 import type Page from '@pull-docs/types/dist/Page';
-import type Parser from '@pull-docs/types/dist/Parser';
+import type Serialiser from '@pull-docs/types/dist/Serialiser';
 import type Plugin from '@pull-docs/types/dist/Plugin';
 import type { IVolumeMutable } from '@pull-docs/types/dist/Volume';
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
 
 import loadPlugins from './createPluginAPI';
 
-export async function bindParser(parsers): Promise<Parser> {
-  const pluginApi = (await loadPlugins<Page>(parsers)) as Parser;
+export async function bindSerialiser(serialisers): Promise<Serialiser> {
+  const pluginApi = (await loadPlugins<Page>(serialisers)) as Serialiser;
 
   return {
     async serialise(route, page) {
@@ -17,9 +17,6 @@ export async function bindParser(parsers): Promise<Parser> {
     },
     async deserialise(route, data) {
       return await pluginApi.deserialise(route, data);
-    },
-    async deserialiseFromDisk(route, pagePath) {
-      return await pluginApi.deserialiseFromDisk(route, pagePath);
     }
   };
 }

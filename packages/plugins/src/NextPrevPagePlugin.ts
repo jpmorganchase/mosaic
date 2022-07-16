@@ -13,7 +13,7 @@ const NextPrevPlugin: PluginType<
   },
   { filename: string }
 > = {
-  async $beforeSend(mutableFilesystem, { config, parser }, options) {
+  async $beforeSend(mutableFilesystem, { config, serialiser }, options) {
     for (const dirName in config.data.nextPrev) {
       const pages = config.data.nextPrev[dirName].slice(1).sort();
       pages.unshift(config.data.nextPrev[dirName][0]);

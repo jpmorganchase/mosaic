@@ -13,8 +13,13 @@ import type { TStatNumber } from 'memfs/lib/Stats';
 import type { IStatOptions } from 'memfs/lib/volume';
 import type { PathLike, symlink } from 'fs';
 import type { Options, Pattern, Entry } from 'fast-glob';
+
 import type Page from './Page';
 
+/**
+ * Volumes are lightweight decorators which wrap `FileAccess` and limit access to the underlying API for different use-cases
+ * Examples include disallowing mutation or allowing underlying functions like resetting
+ */
 interface IVolume {
   reset?(): void;
   toJSON(): DirectoryJSON;
@@ -44,37 +49,33 @@ export interface IVolumeMutable extends IVolume {
    */
   addReadFileHook(hook: (result: Page, filepath: PathLike) => Promise<Page>): void;
   /**
-   * Restricted filesystems can be written to, but cannot be sealed, updated or reset
+   * Restricted filesystems can be written to, but cannot be frozen, updated or reset
    */
   asRestricted(): IVolumePartiallyMutable;
   /**
-   * ReadOnly filesystems cannot be mutated in any way, including sealing, updating or reseting
+   * ReadOnly filesystems cannot be mutated in any way, including freezing, updating or reseting
    */
   asReadOnly(): IVolumeImmutable;
-  /**
-   * Removes a previous seal.
-   * Sealing a filesystem indicates that the mutation period has ended and the file system can no longer be modified.
-   * When a filesystem is unsealed, it is considered to be in flux, so may change as more plugins are called.
-   * When a filesystem is sealed, it is considered to be 'complete' and ready to begin serving finalised versions of files.
-   */
-  unseal(): void;
   /**
    * Clears the filesystem's internal page cache - used when the cache may be outdated due to a source emiting new data or a dependency changing.
    */
   clearCache(): void;
   /**
-   * Sealing a filesystem indicates that the mutation period has ended and the file system can no longer be modified.
-   * When a filesystem is unsealed, it is considered to be in flux, so may change as more plugins are called.
-   * When a filesystem is sealed, it is considered to be 'complete' and ready to begin serving finalised versions of files.
+   * Re-enables mutations on the underlying `FileAccess`.
    */
-  seal(): void;
+  unfreeze(): void;
   /**
-   * Is this filesystem sealed?
-   * When a filesystem is unsealed, it is considered to be in flux, so may change as more plugins are called.
-   * When a filesystem is sealed, it is considered to be 'complete' and ready to begin serving finalised versions of files.
+   * Freezes an object, preventing all mutations on the underlying `FileAccess` object
+   * Freezing a filesystem indicates that the mutation period has ended and the file system can no longer be modified.
+   * When a filesystem is unfrozen, it is considered to be in flux, so may change as more plugins are called.
+   * When a filesystem is frozen, it is considered to be stable and ready to begin serving finalised versions of files.
+   */
+  freeze(): void;
+  /**
+   * Is this filesystem frozen/mutable?
    * @returns {boolean}
    */
-  get sealed(): boolean;
+  get frozen(): boolean;
   /**
    * Appends content to the filesystem
    * @param json A JSON blob in the form of {[route]: "{route: '', content: ''}"}

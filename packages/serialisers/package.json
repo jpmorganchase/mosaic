@@ -1,5 +1,5 @@
 {
-    "name": "@pull-docs/parsers",
+    "name": "@pull-docs/serialisers",
     "version": "1.0.0",
     "description": "",
     "main": "./dist/index.js",

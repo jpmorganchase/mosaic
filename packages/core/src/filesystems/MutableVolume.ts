@@ -16,16 +16,16 @@ export default class MutableVolume extends FileSystemRestricted implements IVolu
     return new FileSystemRestricted(this.#vfs);
   }
 
-  seal() {
-    this.#vfs.$$seal();
+  freeze() {
+    this.#vfs.$$freeze();
   }
 
   clearCache() {
     this.#vfs.$$clearCache();
   }
 
-  unseal() {
-    this.#vfs.$$unseal();
+  unfreeze() {
+    this.#vfs.$$unfreeze();
   }
 
   addReadFileHook(hook) {

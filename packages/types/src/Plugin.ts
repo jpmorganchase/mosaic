@@ -3,17 +3,22 @@ import type MutableData from './MutableData';
 import type PluginModuleDefinition from './PluginModuleDefinition';
 import type { ImmutableData } from './MutableData';
 import type { IVolumeImmutable, IVolumePartiallyMutable } from './Volume';
-import type Parser from './Parser';
+import type Serialiser from './Serialiser';
 
 export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
 
+/**
+ * Plugins are lifecycle-based hooks that are called on every source at different stages.
+ * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,
+ * it will trigger `pluginRunner` which executes it on every source automatically.
+ */
 type Plugin<ConfigData = {}, PluginOptions = {}> = {
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * The first lifecycle hook to trigger after receiving pages from a source. The pages can safely be mutated and will be reflected in the final
    * filesystem that gets generated.
    * @param pages Array of pages from the source
-   * @param param.parser A matching `Parser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<Page[]>} Must re-return an array of `Page` objects, modified or not
@@ -21,7 +26,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
   $afterSource?(
     pages: Page[],
     {}: {
-      parser: Parser;
+      serialiser: Serialiser;
       config: MutableData<ConfigData>;
       pageExtensions: string[];
     },
@@ -31,7 +36,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * Plugin lifecycle method that triggers inside child processes.
    * Calls after a filesystem has been built up from the source pages.
    * @param mutableFilesystem Mutable virtual filesystem instance with all of this source's pages inside (and symlinks applied)
-   * @param param.parser A matching `Parser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
@@ -39,7 +44,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
   $beforeSend?(
     mutableFilesystem: IVolumePartiallyMutable,
     {}: {
-      parser: Parser;
+      serialiser: Serialiser;
       pageExtensions: string[];
       config: MutableData<ConfigData>;
     },
@@ -52,7 +57,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * Pages will NOT be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
    * NOTE: Plugin methods that trigger inside the parent process should be async and highly optimised to avoid holding up the main thread.
    * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
-   * @param param.parser A matching `Parser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
@@ -61,7 +66,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
   afterUpdate?(
     mutableFilesystem: IVolumePartiallyMutable,
     {}: {
-      parser: Parser;
+      serialiser: Serialiser;
       config: ImmutableData<ConfigData>;
       globalFilesystem: IVolumeImmutable;
       pageExtensions: string[];
@@ -74,7 +79,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * Returning `undefined`, false or no value, will result in no `afterUpdate` call
    * @param updatedSourceFilesystem Immutable filesystem for the source that changed
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
-   * @param param.parser A matching `Parser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<object | string | undefined>} A boolean indicating whether `afterUpdate` should be called again for this source / plugin
@@ -82,7 +87,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
   shouldUpdate?(
     updatedSourceFilesystem: IVolumeImmutable,
     {}: {
-      parser: Parser;
+      serialiser: Serialiser;
       config: ImmutableData<ConfigData>;
       globalFilesystem: IVolumeImmutable;
       pageExtensions: string[];

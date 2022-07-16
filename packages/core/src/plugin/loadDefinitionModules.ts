@@ -1,40 +1,40 @@
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
-import type ParserModuleDefinition from '@pull-docs/types/dist/ParserModuleDefinition';
+import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
 import type Plugin from '@pull-docs/types/dist/Plugin';
-import type { LoadedParser } from '@pull-docs/types/dist/Parser';
+import type { LoadedSerialiser, Serialiser } from '@pull-docs/types/dist/Serialiser';
 import type { LoadedPlugin } from '@pull-docs/types/dist/Plugin';
 
-const loadedPlugins: { [key: string]: LoadedPlugin | LoadedParser } = {};
+const loadedPluginsAndSerialisers: { [key: string]: LoadedPlugin | LoadedSerialiser } = {};
 
 export default async function loadDefinitionModules(
-  plugins: (PluginModuleDefinition | ParserModuleDefinition)[]
-): Promise<LoadedPlugin[] | LoadedParser[]> {
+  plugins: (PluginModuleDefinition | SerialiserModuleDefinition)[]
+): Promise<LoadedPlugin[] | LoadedSerialiser[]> {
   const results = [];
 
   try {
     for (const plugin of plugins) {
       const { modulePath }: { modulePath: string } = plugin;
-      if (!loadedPlugins[modulePath]) {
+      if (!loadedPluginsAndSerialisers[modulePath]) {
         const {
           default: definitionExports
         }: {
-          default: Partial<Plugin> | { __esModule: boolean; default: Partial<Plugin> };
+          default: Partial<Plugin | Serialiser> | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
         } = await import(modulePath);
-        const pluginApi: Partial<Plugin> =
+        const pluginApi: Partial<Plugin | Serialiser> =
           '__esModule' in definitionExports && 'default' in definitionExports
             ? definitionExports.default
             : definitionExports;
         if (!pluginApi) {
-          throw new Error(`Plugin '${modulePath}' did not have a default export.`);
+          throw new Error(`Plugin or serialiser '${modulePath}' did not have a default export.`);
         }
 
-        loadedPlugins[modulePath] = createInvoker(plugin, pluginApi);
+        loadedPluginsAndSerialisers[modulePath] = createInvoker(plugin, pluginApi);
       }
-      results.push(loadedPlugins[modulePath]);
+      results.push(loadedPluginsAndSerialisers[modulePath]);
     }
     return results;
   } catch (e) {
-    throw new Error(`Could not load plugin modules due to error.
+    throw new Error(`Could not load plugin/serialiser modules due to error.
 ${e}`);
   }
 }

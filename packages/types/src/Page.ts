@@ -1,3 +1,6 @@
+/**
+ * `Page` is a type, which at a minimum has a `route`, but can also contain metadata and `content`
+ */
 type Page<AdditionalProps = {}> = {
   title: string;
   /**

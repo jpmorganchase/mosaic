@@ -1,11 +1,9 @@
 import reduce from 'lodash/reduce';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
-import merge from 'lodash/merge';
 
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
 import normaliseRefs from './utils/normaliseRefs';
-import { escapeRegExp } from 'lodash';
 
 /**
  * Plugin that scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
@@ -14,7 +12,7 @@ import { escapeRegExp } from 'lodash';
 const RefPlugin: PluginType<{
   refs: { [key: string]: { $$path: string[]; $$value: string }[] };
 }> = {
-  async $beforeSend(mutableFilesystem, { config, parser, pageExtensions }, options) {
+  async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions }, options) {
     // Prevent any more refs being set after this lifecycle has been called - as they won't take effect
     config.setRef = () => {
       throw new Error(
@@ -26,7 +24,7 @@ const RefPlugin: PluginType<{
     if (config.data.refs) {
       // First pass of refs, normalises any $ref entries to expand wildcards
       for (const route in config.data.refs) {
-        const page: Page = await parser.deserialise(
+        const page: Page = await serialiser.deserialise(
           route,
           await mutableFilesystem.promises.readFile(route)
         );
@@ -42,7 +40,7 @@ const RefPlugin: PluginType<{
         };
       }
 
-      const resolve = createRefResolver(normalisedRefs, parser, mutableFilesystem);
+      const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
       const refParser = new $RefParser();
 
       // Second pass of refs, resolves the refs
@@ -53,13 +51,17 @@ const RefPlugin: PluginType<{
             resolve,
             dereference: { circular: false }
           });
-          await mutableFilesystem.promises.writeFile(
-            route,
-            await parser.serialise(route, { ...page, ...resolved })
-          );
+          normalisedRefs[route] = { ...page, ...resolved };
         } catch (e) {
           throw e;
         }
+      }
+      // Third pass, write out the files
+      for (const route in normalisedRefs) {
+        await mutableFilesystem.promises.writeFile(
+          route,
+          await serialiser.serialise(route, normalisedRefs[route])
+        );
       }
     }
   },
@@ -79,7 +81,7 @@ const RefPlugin: PluginType<{
 
 export default RefPlugin;
 
-function createRefResolver(normalisedRefs, parser, mutableFilesystem) {
+function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
   return {
     file: {
       canRead: true,
@@ -87,7 +89,10 @@ function createRefResolver(normalisedRefs, parser, mutableFilesystem) {
       async read(file, callback) {
         const refedPage =
           normalisedRefs[file.url] ||
-          (await parser.deserialise(file.url, await mutableFilesystem.promises.readFile(file.url)));
+          (await serialiser.deserialise(
+            file.url,
+            await mutableFilesystem.promises.readFile(file.url)
+          ));
         try {
           return callback(null, refedPage);
         } catch (e) {

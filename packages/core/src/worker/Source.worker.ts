@@ -10,11 +10,11 @@ import type Page from '@pull-docs/types/dist/Page';
 import { escapeRegExp, mapValues } from 'lodash';
 
 import createSourceObservable from './helpers/createSourceObservable';
-import { bindParser, bindPluginMethods } from '../plugin';
+import { bindSerialiser, bindPluginMethods } from '../plugin';
 import createConfig from '../helpers/createConfig';
 import FileSystem from '../filesystems/FileSystem';
 import MutableVolume from '../filesystems/MutableVolume';
-import type Parser from '@pull-docs/types/dist/Parser';
+import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const workerData: WorkerData<{ cache: boolean }> = unTypedWorkerData;
 
@@ -25,13 +25,13 @@ const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'
 
 (async () => {
   let config;
-  const parser = await bindParser(workerData.parsers);
+  const serialiser = await bindSerialiser(workerData.serialisers);
   const pluginApi = await bindPluginMethods(workerData.plugins);
   const cachePath = path.join(process.cwd(), '.tmp', '.cache', `${workerData.name}.json`);
 
   let cachedFs;
 
-  (await createSourceObservable(workerData, parser))
+  (await createSourceObservable(workerData, serialiser))
     .pipe(
       tap(() => {
         config = createConfig();
@@ -39,13 +39,13 @@ const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'
       switchMap((pages: Page[]) =>
         pluginApi.$afterSource(pages, {
           config,
-          parser,
+          serialiser,
           pageExtensions: workerData.pageExtensions
         })),
       switchMap(pages =>
         pages.reduce(async (mergedPagesPromise, page) => {
           const mergedPages = await mergedPagesPromise;
-          mergedPages[page.route] = String(await parser.serialise(page.route, page));
+          mergedPages[page.route] = String(await serialiser.serialise(page.route, page));
           return mergedPages;
         }, Promise.resolve({}))
       ),
@@ -59,10 +59,10 @@ const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'
         await pluginApi.$beforeSend(filesystem.asRestricted(), {
           config,
           pageExtensions: workerData.pageExtensions,
-          parser
+          serialiser
         });
-        // In the main thread we would seal the filesystem here, but since we throw it away after sending it to the parent process,
-        // we don't bother sealing
+        // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
+        // we don't bother freezing
         return { pages: filesystem.toJSON(), symlinks: filesystem.symlinksToJSON() };
       })
     )
@@ -118,13 +118,13 @@ process.once('uncaughtException', e => {
   throw e;
 });
 
-// async function getPagesWithoutContent(pages: DirectoryJSON, parser: Parser): Promise<DirectoryJSON> {
+// async function getPagesWithoutContent(pages: DirectoryJSON, serialiser: Serialiser): Promise<DirectoryJSON> {
 //   const pagesWithoutContent = {};
 //   for (const route in pages) {
 //     const serialisedPage = pages[route];
-//     const page = await parser.deserialise(route, serialisedPage);
+//     const page = await serialiser.deserialise(route, serialisedPage);
 //     page.content = '';
-//     pagesWithoutContent[route] = String(await parser.serialise(route, page));
+//     pagesWithoutContent[route] = String(await serialiser.serialise(route, page));
 //   }
 //   return pagesWithoutContent;
 // }

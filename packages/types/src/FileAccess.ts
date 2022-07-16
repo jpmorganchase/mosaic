@@ -15,6 +15,9 @@ import type { PathLike, symlink } from 'fs';
 import type Page from './Page';
 import type { Options, Pattern, Entry } from 'fast-glob';
 
+/**
+ * This is the core underlying filesystem, which directly interfaces with a memfs Volume to mutate the filesystem
+ */
 export default interface FileAccess {
   glob(pattern: Pattern, options?: Options): Promise<string[] | Entry[]>;
   mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
@@ -29,9 +32,9 @@ export default interface FileAccess {
   fromJSON(json: DirectoryJSON): void;
   exists(file: PathLike): Promise<boolean>;
   $$reset(): void;
-  $$seal(): void;
-  get $$sealed(): boolean;
-  $$unseal(): void;
+  $$freeze(): void;
+  get $$frozen(): boolean;
+  $$unfreeze(): void;
   $$clearCache(): void;
   $$symlinksFromJSON(page: { [key: string]: { target: string; type: string }[] }): Promise<void>;
   symlinksToJSON(): { [key: string]: { target: string; type: string }[] };

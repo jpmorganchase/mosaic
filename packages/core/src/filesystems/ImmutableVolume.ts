@@ -29,8 +29,8 @@ export default class ImmutableVolume implements IVolumeImmutable {
     }
   };
 
-  get sealed() {
-    return this.#vfs.$$sealed;
+  get frozen() {
+    return this.#vfs.$$frozen;
   }
 
   symlinksToJSON(): { [key: string]: { target: string; type: string }[] } {
