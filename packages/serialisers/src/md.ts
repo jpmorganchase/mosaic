@@ -6,7 +6,7 @@ import type Serialiser from '@pull-docs/types/dist/Serialiser';
 // example than anything - it should ideally not be used
 const Serialisers: Serialiser = {
   async serialise(route, page) {
-    return Buffer.from(matter.stringify(page.content, {}).replace(/^---[\s\S]+---/, ''));
+    return Buffer.from(matter.stringify(page.content || '', {}).replace(/^---[\s\S]+---/, ''));
   },
 
   async deserialise(route, data) {

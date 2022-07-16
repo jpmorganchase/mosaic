@@ -12,6 +12,18 @@ module.exports = {
             options: {}
         },
         {
+            modulePath: require.resolve('@pull-docs/plugins/dist/SiteMapPlugin'),
+            options: {
+            }
+        },
+        // {
+        //     modulePath: require.resolve('@pull-docs/plugins/dist/LazyContentPlugin'),
+        //     priority: -2,
+        //     options: {
+        //         cacheDir: '.pull-docs-cache'
+        //     }
+        // },
+        {
             modulePath: require.resolve('@pull-docs/plugins/dist/NextPrevPagePlugin'),
             options: {
                 filename: 'next-prev-links.json'

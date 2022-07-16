@@ -35,24 +35,31 @@ export default class PullDocs {
     sources: SourceModuleDefinition[];
     pageExtensions: string[];
   }) {
-    const { sources = [], plugins = [], serialisers = [], pageExtensions = ['.mdx', '.md'] } = config;
+    const {
+      sources = [],
+      plugins = [],
+      serialisers = [],
+      pageExtensions = ['.mdx', '.md']
+    } = config;
     this.#sourceDefinitions = sources;
     this.#vfs = new ImmutableVolume(FileSystem.fromUnion(this.#ufs, pageExtensions));
     this.#sourceManager = new SourceManager(
+      // Refs and aliases should be applied after all other plugins, so we add them manually with a negative priority
       plugins
-        .sort(({ priority: priorityA = 0 }, { priority: priorityB = 0 }) => priorityB - priorityA)
-        // Refs and aliases must be applied after all other plugins, so we add them manually at the end
         .concat(
           {
             modulePath: require.resolve('@pull-docs/plugins/dist/AliasPlugin'),
-            options: {}
+            options: {},
+            priority: -1
           },
           {
             modulePath: require.resolve('@pull-docs/plugins/dist/RefPlugin'),
-            options: {}
+            options: {},
+            priority: -1
           }
-        ),
-        // Auto add JSON serialiser
+        )
+        .sort(({ priority: priorityA = 0 }, { priority: priorityB = 0 }) => priorityB - priorityA),
+      // Auto add JSON serialiser
       serialisers.concat({
         modulePath: require.resolve('@pull-docs/serialisers/dist/json'),
         filter: /\.json$/,

@@ -6,7 +6,7 @@ import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const Serialisers: Serialiser = {
   async serialise(route, page) {
-    return Buffer.from(matter.stringify(page.content, omit(page, 'content')));
+    return Buffer.from(matter.stringify(page.content || '', omit(page, 'content')));
   },
 
   async deserialise(route, rawData: TDataOut) {
