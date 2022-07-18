@@ -1,6 +1,7 @@
 import path from 'path';
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
+import { escapeRegExp } from 'lodash';
 
 /**
  * Sorts the pages in a folder alphabetically and then exports a JSON file (name: `options.filename`) with the
@@ -22,52 +23,57 @@ const NextPrevPlugin: PluginType<
           config.setRef(
             path.join(dirName, pages[i]),
             ['navigation', 'prev', 'title', '$ref'],
-            `${path.join(dirName, pages[i - 1])}#/title`,
+            `${path.join(dirName, pages[i - 1])}#/title`
           );
           config.setRef(
             path.join(dirName, pages[i]),
             ['navigation', 'prev', 'route', '$ref'],
-            `${path.join(dirName, pages[i - 1])}#/friendlyRoute`,
+            `${path.join(dirName, pages[i - 1])}#/friendlyRoute`
           );
         }
         if (i < pages.length - 1) {
           config.setRef(
             path.join(dirName, pages[i]),
-            ['navigation', 'prev', 'title', '$ref'],
-            `${path.join(dirName, pages[i + 1])}#/title`,
+            ['navigation', 'next', 'title', '$ref'],
+            `${path.join(dirName, pages[i + 1])}#/title`
           );
           config.setRef(
             path.join(dirName, pages[i]),
-            ['navigation', 'prev', 'route', '$ref'],
-            `${path.join(dirName, pages[i + 1])}#/friendlyRoute`,
+            ['navigation', 'next', 'route', '$ref'],
+            `${path.join(dirName, pages[i + 1])}#/friendlyRoute`
           );
         }
       }
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        config.setRef(
-          path.join(dirName, options.filename),
-          ['pages', i.toString(), 'title', '$ref'],
-          `${path.join(dirName, page)}#/title`,
-        );
-        config.setRef(
-          path.join(dirName, options.filename),
-          ['pages', i.toString(), 'route', '$ref'],
-          `${path.join(dirName, page)}#/friendlyRoute`,
-        );
-      }
+      // for (let i = 0; i < pages.length; i++) {
+      //   const page = pages[i];
+      //   config.setRef(
+      //     path.join(dirName, options.filename),
+      //     ['pages', i.toString(), 'title', '$ref'],
+      //     `${path.join(dirName, page)}#/title`,
+      //   );
+      //   config.setRef(
+      //     path.join(dirName, options.filename),
+      //     ['pages', i.toString(), 'route', '$ref'],
+      //     `${path.join(dirName, page)}#/friendlyRoute`,
+      //   );
+      // }
 
-      await mutableFilesystem.promises.writeFile(
-        path.join(dirName, options.filename),
-        '[]',
-      );
+      // await mutableFilesystem.promises.writeFile(
+      //   path.join(dirName, options.filename),
+      //   '[]',
+      // );
     }
   },
-  async $afterSource(pages: Page[], { config }) {
+  async $afterSource(pages: Page[], { config, pageExtensions }) {
+    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+
     const nextPrev = {};
     for (const page of pages.sort(
       ({ route: routeA }, { route: routeB }) => routeA.length - routeB.length
     )) {
+      if (!pageTest.test(page.route)) {
+        continue;
+      }
       const dirName = path.dirname(page.route);
       nextPrev[dirName] = nextPrev[dirName] || [];
       if (/\/index(\.\w{1,4})?$/.test(page.route)) {

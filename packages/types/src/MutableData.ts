@@ -15,7 +15,15 @@ type MutableData<T = {}> = ImmutableData<T> & {
    * @param route The file/route the alias will point to
    * @param aliases Array of aliases to use when pointing to this page
    */
-  setAliases(targetPath: string, aliases: string[]);
+   setAliases(targetPath: string, aliases: string[]);
+  /**
+   * Helper function for declaring new tags (which are basically aliases to /.tags) that will be applied by the AliasPlugin.
+   * Values can be retrieved from `data.aliases`
+   * This will be reset everytime the relevant source receives new pages
+   * @param route The file/route the alias will point to
+   * @param tags Array of tag names to use when pointing to this page
+   */
+  setTags(targetPath: string, tags: string[]);
   /**
    * Helper function for declaring new refs that will be applied by the RefPlugin
    * This will be reset everytime the relevant source receives new pages

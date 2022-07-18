@@ -1,6 +1,7 @@
 import type MutableData from '@pull-docs/types/dist/MutableData';
 import { ImmutableData } from '@pull-docs/types/dist/MutableData';
 import { merge } from 'lodash';
+import path from 'path';
 
 export default function createConfig<T = {}>(initialData: Partial<T> = {}): MutableData<T> {
   let data = { refs: {}, aliases: {}, ...initialData };
@@ -15,6 +16,10 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
     asReadOnly() {
       return configReadOnly;
     },
+    setTags(route: string, tags: string[]) {
+      data.aliases[route] = new Set<string>(data.aliases[route] || []);
+      tags.forEach(tag => data.aliases[route].add(path.join('/.tags', tag, route)));
+    },
     setRef(targetPath, targetPropPath, refValue) {
       data.refs[targetPath] = data.refs[targetPath] || [];
       data.refs[targetPath].push({
@@ -23,9 +28,7 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
       });
     },
     setAliases(route: string, aliases: string[]) {
-      data.aliases[route] = new Set<string>(
-        data.aliases[route] || []
-      );
+      data.aliases[route] = new Set<string>(data.aliases[route] || []);
       aliases.forEach(alias => data.aliases[route].add(alias));
     },
     setData(value) {

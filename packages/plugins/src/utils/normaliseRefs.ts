@@ -55,6 +55,7 @@ export default async function normaliseRefs(filepath, refs, filesystem, pageExte
         await filesystem.promises.glob(
           !/\/[^/]+\.\w{2,4}$/.test(url) ? createFileGlob(url, pageExtensions) : url,
           {
+            dot: false,
             ignore: [filepath],
             cwd: path.dirname(filepath),
             absolute: true

@@ -4,12 +4,13 @@ import $RefParser from '@apidevtools/json-schema-ref-parser';
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
 import normaliseRefs from './utils/normaliseRefs';
+import { escapeRegExp } from 'lodash';
 
 /**
  * Plugin that scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
  * Other plugins can use `setRef` to apply new refs, as long as they call it before this plugin has reaches `$beforeSend`
  */
-const RefPlugin: PluginType<{
+const $RefPlugin: PluginType<{
   refs: { [key: string]: { $$path: string[]; $$value: string }[] };
 }> = {
   async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions }, options) {
@@ -65,8 +66,13 @@ const RefPlugin: PluginType<{
       }
     }
   },
-  async $afterSource(pages: Page[], { config }) {
+  async $afterSource(pages: Page[], { config, pageExtensions }) {
+    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+
     for (const page of pages) {
+      if (!pageTest.test(page.route)) {
+        continue;
+      }
       const refs = findKeys(page, '$ref');
 
       if (refs.length) {
@@ -79,7 +85,7 @@ const RefPlugin: PluginType<{
   }
 };
 
-export default RefPlugin;
+export default $RefPlugin;
 
 function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
   return {
@@ -87,13 +93,13 @@ function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
       canRead: true,
       order: 1,
       async read(file, callback) {
+        try {
         const refedPage =
           normalisedRefs[file.url] ||
           (await serialiser.deserialise(
             file.url,
             await mutableFilesystem.promises.readFile(file.url)
           ));
-        try {
           return callback(null, refedPage);
         } catch (e) {
           return callback(e, null);

@@ -14,15 +14,12 @@ import { bindSerialiser, bindPluginMethods } from '../plugin';
 import createConfig from '../helpers/createConfig';
 import FileSystem from '../filesystems/FileSystem';
 import MutableVolume from '../filesystems/MutableVolume';
-import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const workerData: WorkerData<{ cache: boolean }> = unTypedWorkerData;
 
 if (isMainThread) {
   throw new Error('This module can only be called from a child process.');
 }
-const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'));
-
 (async () => {
   let config;
   const serialiser = await bindSerialiser(workerData.serialisers);
@@ -41,7 +38,8 @@ const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'
           config,
           serialiser,
           pageExtensions: workerData.pageExtensions
-        })),
+        })
+      ),
       switchMap(pages =>
         pages.reduce(async (mergedPagesPromise, page) => {
           const mergedPages = await mergedPagesPromise;
@@ -51,7 +49,7 @@ const pageTest = new RegExp(workerData.pageExtensions.map(escapeRegExp).join('|'
       ),
       map(mergedPages => {
         const filesystem = new MutableVolume(
-          new FileSystem(Volume.fromJSON(mergedPages), workerData.pageExtensions)
+          new FileSystem(Volume.fromJSON(mergedPages))
         );
         return filesystem;
       }),

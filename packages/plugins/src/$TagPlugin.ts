@@ -8,6 +8,7 @@ import Meta from '@pull-docs/types/dist/Meta';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import normaliseRefs from './utils/normaliseRefs';
+import { escapeRegExp } from 'lodash';
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
@@ -16,7 +17,7 @@ import normaliseRefs from './utils/normaliseRefs';
  * Other plugins can use `setData()` and modify the `tags` property, to apply new global refs, as long as
  * they do so before this plugin has reaches `$beforeSend`
  */
-const RefPlugin: PluginType<{
+const $TagPlugin: PluginType<{
   tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
   subscribedTags: string[];
 }> = {
@@ -65,7 +66,7 @@ const RefPlugin: PluginType<{
     }
   },
   // Every source with tags will create symlinks with the tagged pages, inside /.tags
-  async $afterSource(pages: Page<{ tags?: string[] }>[]/*, nonPages: {}[]*/, { config }) {
+  async $afterSource(pages: Page<{ tags?: string[] }>[], { config, pageExtensions }) {
     const tagRefs = {};
     const tags = [];
     const createRefs = tagDescriptor => {
@@ -76,14 +77,20 @@ const RefPlugin: PluginType<{
       }
       return { ...tagDescriptor, $$value: `${path.join('/.tags', tag, '**')}#${fragment}` };
     };
+    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+
     for (const page of pages) {
+      if (!pageTest.test(page.route)) {
+        continue;
+      }
       const meta = page as Meta<{ tags?: string[] }>;
       // Symlink every `tag` item to '/.tags' folder
       if (meta.tags?.length) {
-        config.setAliases(
+        config.setTags(
           page.route,
-          meta.tags.map(tag => path.join('/.tags', tag, page.route))
+          meta.tags
         );
+        delete meta.tags;
       }
 
       // Find any references to $tag
@@ -103,7 +110,7 @@ const RefPlugin: PluginType<{
   }
 };
 
-export default RefPlugin;
+export default $TagPlugin;
 
 function createRefResolver(serialiser, globalFilesystem) {
   return {

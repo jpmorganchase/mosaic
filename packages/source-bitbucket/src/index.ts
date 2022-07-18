@@ -8,6 +8,7 @@ import localFolderSource from '@pull-docs/source-local-folder';
 
 import Repo from './Repo';
 import fromCommitChange from './fromCommitChange';
+import { omit } from 'lodash';
 
 const BitbucketSource: Source<{
   repo: string;
@@ -18,16 +19,16 @@ const BitbucketSource: Source<{
   extensions: string[];
   namespaceDir: string;
 }> = {
-  create(options, { serialiser }) {
+  create(options, { serialiser, pageExtensions }): Observable<Page[]> {
     const repo = new Repo(options);
 
     const rootDir = path.join(repo.dir, options.subfolder);
-    const watchFolder$: Observable<Page[]> = localFolderSource.create(
+    const watchFolder$: Observable<Page<{ $hddFullPath: string }>[]> = localFolderSource.create(
       {
         rootDir,
         extensions: options.extensions
       },
-      { serialiser }
+      { serialiser, pageExtensions }
     );
     const commits$ = fromCommitChange(repo);
 
@@ -37,19 +38,17 @@ const BitbucketSource: Source<{
     ).pipe(
       delay(1000),
       switchMap(() => watchFolder$),
-      mergeMap(async (pages: Page[]) => {
+      mergeMap(async pages => {
         const out = [];
         for (const page of pages) {
-          const pathFromCloneDir = path.relative(rootDir, page.path);
+          const pathFromCloneDir = path.relative(rootDir, page.$hddFullPath);
           const route = options.namespaceDir
             ? `/${path.join(options.namespaceDir, pathFromCloneDir)}`
             : `/${pathFromCloneDir}`;
           out.push(
-            _merge({}, page, {
-              // This will be replaced with a string if the AliasPlugin is being used
-              friendlyRoute: { $ref: '#/route' },
+            _merge({}, omit(page, '$hddFullPath'), {
               lastModified: new Date(
-                await repo.getLatestCommitDate(path.relative(repo.dir, page.path))
+                await repo.getLatestCommitDate(path.relative(repo.dir, page.$hddFullPath))
               ).getTime(),
               route
             })

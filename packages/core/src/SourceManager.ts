@@ -22,7 +22,7 @@ export default class SourceManager {
     this.#pageExtensions = pageExtensions;
     this.#serialisers = serialisers;
     this.#globalFileSystem = globalFileSystem;
-    this.#pageTest = new RegExp(pageExtensions.map(escapeRegExp).join('|'));
+    this.#pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
   }
 
   onSourceUpdate(callback) {

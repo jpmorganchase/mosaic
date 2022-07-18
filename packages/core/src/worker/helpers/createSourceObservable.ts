@@ -11,26 +11,44 @@ export default async function createSourceObservable(
   serialiser
 ): Promise<Observable<Page[]>> {
   const api = await getSourceDefinitionExports(modulePath);
-  const source$ = api.create(options, { serialiser });
+  const source$ = api.create(options, { serialiser, pageExtensions });
 
   if (!isObservable(source$)) {
     throw new Error(`Source at '${modulePath}' did not return an Observable.`);
   }
-
   const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
 
   // TODO: Move this formatter
   return source$.pipe(
     map((pages: Page[]) => {
       return pages.reduce((pages, page) => {
-        if (!page.route && pageTest.test(page.route)) {
+        if (!pageTest.test(page.route)) {
           console.warn(
-            `File '${page.route}' has a page file extension, but is missing the \`route\` property. It will be removed from the output.`
+            `File '${
+              page.route
+            }' does not have a matching page file extension, it will be removed from the output.
+            
+NOTE: Only ${pageExtensions.join(
+              ', '
+            )} extensions are supported (as per the defined PullDocs config). To add non-page files to the filesystem, do this in \`$beforeSend\`, not \`$afterSource\`.`
+          );
+          return pages;
+        }
+        if (!page.route) {
+          console.warn(
+            `Page '${page.route}' is missing the \`route\` property. It will be removed from the output.`
           );
           return pages;
         }
 
-        return pages.concat({ ...page, route: page.route.toLowerCase() });
+        return pages.concat({
+          ...page,
+          title: page.title || page.route,
+          route: page.route.toLowerCase(),
+          friendlyRoute: page.friendlyRoute
+            ? page.friendlyRoute.toLowerCase()
+            : page.route.toLowerCase()
+        });
       }, []);
     })
   );
@@ -41,7 +59,9 @@ async function getSourceDefinitionExports(modulePath): Promise<Source> {
     await import(modulePath);
 
   const api =
-    'default' in defaultProp && defaultProp.__esModule ? defaultProp.default : defaultProp as Source;
+    'default' in defaultProp && defaultProp.__esModule
+      ? defaultProp.default
+      : (defaultProp as Source);
 
   if (!api) {
     throw new Error(`Could not resolve source '${modulePath}'.`);

@@ -57,6 +57,8 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * Pages will NOT be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
    * This method is safe to use with lazy loading, as the filesystem should return the full page when read.
    * NOTE: Plugin methods that trigger inside the parent process should be async and highly optimised to avoid holding up the main thread.
+   * You should also be mindful of race conditions when reading / writing to the global filesystem from this method - as other plugins may
+   * also have a read copy of the same file and it could end up out of sync.
    * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
@@ -83,7 +85,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
-   * @returns {Promise<object | string | undefined>} A boolean indicating whether `afterUpdate` should be called again for this source / plugin
+   * @returns {Promise<boolean>} A boolean indicating whether `afterUpdate` should be called again for this source / plugin
    */
   shouldUpdate?(
     updatedSourceFilesystem: IVolumeImmutable,

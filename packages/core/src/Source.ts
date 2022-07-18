@@ -30,7 +30,7 @@ export default class Source {
   #pluginApi: Plugin;
   #mergedOptions: Record<string, unknown>;
   #config: MutableData<{}>;
-  #pageExtensions;
+  #pageExtensions: string[];
   
   serialiser: Serialiser;
   id: Symbol;
@@ -50,7 +50,7 @@ export default class Source {
         util.inspect(this.#mergedOptions, { sorted: true })
       ).substring(0, 8)}`
     );
-    this.filesystem = new MutableVolume(new FileSystem(new Volume(), pageExtensions));
+    this.filesystem = new MutableVolume(new FileSystem(new Volume()));
     this.#pageExtensions = pageExtensions;
   }
 

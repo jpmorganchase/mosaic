@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { default: PullDocs } = require('@pull-docs/core');
+const path = require('path');
 
 const app = express();
 
@@ -24,6 +25,12 @@ module.exports = async (config, port) => {
   app.get('/**', async (req, res) => {
     try {
       if (await pullDocs.filesystem.promises.exists(req.path)) {
+        const pagePath = await pullDocs.filesystem.promises.realpath(req.path);
+        if (path.extname(pagePath) === '.mdx') {
+          res.contentType('text/mdx');
+        } else if (path.extname(pagePath) === '.json') {
+          res.contentType('application/json');
+        }
         const result = String(await pullDocs.filesystem.promises.readFile(req.path));
         res.send(result);
       } else {

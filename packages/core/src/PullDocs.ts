@@ -42,18 +42,28 @@ export default class PullDocs {
       pageExtensions = ['.mdx', '.md']
     } = config;
     this.#sourceDefinitions = sources;
-    this.#vfs = new ImmutableVolume(FileSystem.fromUnion(this.#ufs, pageExtensions));
+    this.#vfs = new ImmutableVolume(FileSystem.fromUnion(this.#ufs));
     this.#sourceManager = new SourceManager(
       // Refs and aliases should be applied after all other plugins, so we add them manually with a negative priority
       plugins
         .concat(
           {
-            modulePath: require.resolve('@pull-docs/plugins/dist/AliasPlugin'),
+            modulePath: require.resolve('@pull-docs/plugins/dist/$TagPlugin'),
+            options: {}
+          },
+          {
+            modulePath: require.resolve('@pull-docs/plugins/dist/$CodeModPlugin'),
+            options: {},
+            // Make sure this happens as the very first plugin, so it can fix any page issues
+            priority: Number.POSITIVE_INFINITY
+          },
+          {
+            modulePath: require.resolve('@pull-docs/plugins/dist/$AliasPlugin'),
             options: {},
             priority: -1
           },
           {
-            modulePath: require.resolve('@pull-docs/plugins/dist/RefPlugin'),
+            modulePath: require.resolve('@pull-docs/plugins/dist/$RefPlugin'),
             options: {},
             priority: -1
           }

@@ -14,12 +14,11 @@ export default class FileSystem implements BaseFileSystem {
   #adapter: Volume;
   #hooks: ((filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>)[] = [];
   #rawReadonlyFs;
-  #globIgnores;
   #symlinks: { [key: string]: { target: string; type: string }[] } = {};
   #frozen = false;
   #cachedPages = new Map();
 
-  constructor(filesystemAdapter: Volume, pageExtensions: string[]) {
+  constructor(filesystemAdapter: Volume) {
     this.#adapter = filesystemAdapter;
   }
 
@@ -35,13 +34,16 @@ export default class FileSystem implements BaseFileSystem {
     const paths = Array.from(
       new Set(
         await Promise.all(
-          (await glob(pattern, { ...options, fs: this.#rawReadonlyFs, ignore: this.#globIgnores }))
-            .map(filepath => this.#resolvePath(filepath))
-            
+          (
+            await glob(pattern, {
+              ...options,
+              fs: this.#rawReadonlyFs
+            })
+          ).map(filepath => this.#resolvePath(filepath))
         )
       )
     );
-    
+
     return paths;
   }
 
@@ -138,8 +140,8 @@ export default class FileSystem implements BaseFileSystem {
     return this.#adapter.toJSON();
   }
 
-  static fromUnion(ufs: IUnionFs, pageExtensions: string[]) {
-    return new UnionFileSystem(ufs, pageExtensions);
+  static fromUnion(ufs: IUnionFs) {
+    return new UnionFileSystem(ufs);
   }
 
   symlinksToJSON() {
@@ -167,7 +169,8 @@ export default class FileSystem implements BaseFileSystem {
       } catch {}
     }
     if (!stat.isFile()) {
-      throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
+      return file;
+      //throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
     }
     return realPath;
   }
@@ -187,7 +190,7 @@ export default class FileSystem implements BaseFileSystem {
     // Bit of parallel programming needed here, to avoid 2+ requests triggering a file load at the same time and making a race condition
     const loadPagePromise = new Promise(async resolve => {
       const rawFile = await this.#adapter.promises.readFile(file);
-      
+
       // if (!this.#pageTest.test(file)) {
       //   return resolve(rawFile);
       // }
@@ -260,8 +263,8 @@ export default class FileSystem implements BaseFileSystem {
 class UnionFileSystem extends FileSystem {
   #ufs: IUnionFs & { fss: IVolumeMutable[] };
 
-  constructor(ufs, pageExtensions) {
-    super(ufs, pageExtensions);
+  constructor(ufs) {
+    super(ufs);
     this.#ufs = ufs;
   }
   // We have to override this here, so we can hand-hold the glob and make sure it fires on all filesystems

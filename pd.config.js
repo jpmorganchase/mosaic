@@ -1,16 +1,12 @@
 const path = require("path");
 
 module.exports = {
-    pageExtensions: ['.mdx', '.md'],
+    pageExtensions: ['.mdx', '.json'],
     serialisers: [
         { modulePath: require.resolve('@pull-docs/serialisers/dist/mdx'), filter: /\.mdx$/, options: {} },
         { modulePath: require.resolve('@pull-docs/serialisers/dist/md'), filter: /\.md$/, options: {} },
     ],
     plugins: [
-        {
-            modulePath: require.resolve('@pull-docs/plugins/dist/TagPlugin'),
-            options: {}
-        },
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/SiteMapPlugin'),
             options: {
@@ -21,6 +17,8 @@ module.exports = {
             // This plugin must be the very last to run, so it can strip off metadata and content after the other
             // plugins are done with them
             priority: -2,
+            // Exclude this plugin in builds
+            runTimeOnly: true,
             options: {
                 cacheDir: '.pull-docs-last-page-plugin-cache'
             }
@@ -28,20 +26,15 @@ module.exports = {
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/NextPrevPagePlugin'),
             options: {
-                filename: 'next-prev-links.json'
+                // Start filename with a . so it does not get picked up by $refs
+                filename: '.next-prev-links.json'
             },
             priority: 2
         },
-        {
-            modulePath: require.resolve('@pull-docs/plugins/dist/CodeModPlugin'),
-            options: {},
-            // Make sure this happens as the very first plugin, so it can fix any page issues
-            priority: 100
-        },
+        // TODO: Remove this plugin once the docs add file extensions in refs
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/PagesWithoutFileExtPlugin'),
             options: {
-                stripExt: '.mdx'
             },
             // Make sure this happens early on, as it creates aliases for pages, which other plugins may reference
             priority: 99
@@ -49,7 +42,8 @@ module.exports = {
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/SharedConfigPlugin'),
             options: {
-                filename: 'shared-config.json'
+                // Start filename with a . so it does not get picked up by $refs
+                filename: '.shared-config.json'
             },
             priority: 3
         }
@@ -60,7 +54,7 @@ module.exports = {
             options: {
                 rootDir: path.join(__dirname, '../developer-docs', 'docs'),
                 cache: false,
-                extensions: ['.mdx', '.md', '.json']
+                extensions: ['.mdx', '.json']
             }
         },
         {
@@ -73,7 +67,7 @@ module.exports = {
                 subfolder: 'docs',
                 repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git',
                 branch: 'develop',
-                extensions: ['.mdx', '.md'],
+                extensions: ['.mdx', '.json'],
                 remote: 'origin'
             }
         }

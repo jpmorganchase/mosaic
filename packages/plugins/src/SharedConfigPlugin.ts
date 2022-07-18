@@ -1,6 +1,7 @@
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
 import path from 'path';
+import { escapeRegExp } from 'lodash';
 
 /**
  * Plugin that crawls the page hierarchy to find the closest `sharedConfig` from any parent index's page metadata.
@@ -45,14 +46,19 @@ const SharedConfigPlugin: PluginType<
       }
     }
   },
-  async $afterSource(pages: Page[], { config }) {
+  async $afterSource(pages: Page[], { config, pageExtensions }) {
     const sharedConfig = {
       indexesWithConfig: [],
       withoutConfig: []
     };
+    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+
     for (const page of pages.sort(
       ({ route: routeA }, { route: routeB }) => routeA.length - routeB.length
     )) {
+      if (!pageTest.test(page.route)) {
+        continue;
+      }
       if (page.sharedConfig) {
         if (/\/index(\.[a-z]{1,4})?$/.test(page.route)) {
           sharedConfig.indexesWithConfig.push(page.route);

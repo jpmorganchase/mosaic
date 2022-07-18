@@ -1,13 +1,19 @@
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
+import { escapeRegExp } from 'lodash';
 
-const CodeModPlugin: PluginType<{
+const $CodeModPlugin: PluginType<{
   nextPrev: { [key: string]: string[] };
   refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
 }> = {
-  async $afterSource(pages: Page[], { config }) {
+  async $afterSource(pages: Page[], { pageExtensions }) {
+    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+
     for (const page of pages) {
-      if (page.frameOverrides) {
+      if (!pageTest.test(page.route)) {
+        continue;
+      }
+            if (page.frameOverrides) {
         page.sharedConfig = { $ref: '#/frameOverrides' };
       }
     }
@@ -15,4 +21,4 @@ const CodeModPlugin: PluginType<{
   }
 };
 
-export default CodeModPlugin;
+export default $CodeModPlugin;

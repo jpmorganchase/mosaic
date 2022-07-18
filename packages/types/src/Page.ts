@@ -2,7 +2,8 @@
  * `Page` is a type, which at a minimum has a `route`, but can also contain metadata and `content`
  */
 type Page<AdditionalProps = {}> = {
-  title: string;
+  route: string;
+  title?: string;
   /**
    * Friendly routes are the shortest possible paths that will point to a page.
    * They are useful for creating more user-friendly links on pages, rather than using a full filesystem path.
@@ -12,9 +13,9 @@ type Page<AdditionalProps = {}> = {
    * automatically added if a route points to a directory -- the `friendlyRoute` could then be modified by that
    * plugin to remove `/index`
    */
-  friendlyRoute: string;
-  route: string;
+  friendlyRoute?: string;
   lastModified?: Date;
+  type?: string;
   // Added by the LazyPagePlugin
   path?: string;
   content?: string;

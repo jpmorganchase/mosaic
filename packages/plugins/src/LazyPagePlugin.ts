@@ -3,7 +3,6 @@ import fs from 'fs';
 import fsExtra from 'fs-extra';
 import path from 'path';
 
-// TODO: Not yet complete! Do not use.
 const LazyPagePlugin: PluginType<
   { aliases: { [key: string]: Set<string> } },
   { cacheDir: string }
@@ -12,6 +11,7 @@ const LazyPagePlugin: PluginType<
     let originalDiskSize = 0;
     let newDiskSize = 0;
     const allPages = await mutableFilesystem.promises.glob(createFileGlob('/**', pageExtensions), {
+      dot: false,
       onlyFiles: true
     });
     const baseDir = path.join(process.cwd(), options.cacheDir || '.pull-docs-lazy-page-plugin-cache');
