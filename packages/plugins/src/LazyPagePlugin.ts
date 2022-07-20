@@ -7,11 +7,12 @@ const LazyPagePlugin: PluginType<
   { aliases: { [key: string]: Set<string> } },
   { cacheDir: string }
 > = {
-  async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions }, options) {
+  async $beforeSend(mutableFilesystem, { config, serialiser, ignorePages, pageExtensions }, options) {
     let originalDiskSize = 0;
     let newDiskSize = 0;
-    const allPages = await mutableFilesystem.promises.glob(createFileGlob('/**', pageExtensions), {
-      dot: false,
+    const allPages = await mutableFilesystem.promises.glob(createFileGlob('**', pageExtensions), {
+      ignore: ignorePages.map(ignore => `**/${ignore}`),
+      cwd: '/',
       onlyFiles: true
     });
     const baseDir = path.join(process.cwd(), options.cacheDir || '.pull-docs-lazy-page-plugin-cache');
@@ -27,12 +28,12 @@ const LazyPagePlugin: PluginType<
         path.join(baseDir, String(filePath)),
         await serialiser.serialise(String(filePath), page)
       );
-      const { route, friendlyRoute, title } = page;
+      const { fullPath, route, title } = page;
       const redactedPage = await serialiser.serialise(String(filePath), {
+        fullPath,
         route,
-        friendlyRoute,
         title,
-        path: path.join(baseDir, String(filePath))
+        hddPath: path.join(baseDir, String(filePath))
       });
       await mutableFilesystem.promises.writeFile(String(filePath), redactedPage);
       newDiskSize += redactedPage.length;

@@ -3,11 +3,11 @@ import fs from 'fs';
 import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const Serialisers: Serialiser = {
-  async serialise(route, page) {
+  async serialise(fullPath, page) {
     return Buffer.from(JSON.stringify(page));
   },
 
-  async deserialise(route, data) {
+  async deserialise(fullPath, data) {
     return JSON.parse(String(data));
   }
 };

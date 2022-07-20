@@ -12,11 +12,11 @@ export async function bindSerialiser(serialisers): Promise<Serialiser> {
   const pluginApi = (await loadPlugins<Page>(serialisers)) as Serialiser;
 
   return {
-    async serialise(route, page) {
-      return await pluginApi.serialise(route, page);
+    async serialise(fullPath, page) {
+      return await pluginApi.serialise(fullPath, page);
     },
-    async deserialise(route, data) {
-      return await pluginApi.deserialise(route, data);
+    async deserialise(fullPath, data) {
+      return await pluginApi.deserialise(fullPath, data);
     }
   };
 }

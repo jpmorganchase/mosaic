@@ -7,13 +7,13 @@ import FileSystemRestricted from './RestrictedVolume';
 export default class MutableVolume extends FileSystemRestricted implements IVolumeMutable {
   #vfs: FileAccess;
 
-  constructor(vfs) {
-    super(vfs);
+  constructor(vfs, namespace) {
+    super(vfs, namespace);
     this.#vfs = vfs;
   }
 
   asRestricted() {
-    return new FileSystemRestricted(this.#vfs);
+    return new FileSystemRestricted(this.#vfs, super.namespace);
   }
 
   freeze() {

@@ -18,8 +18,8 @@ import type { Options, Pattern, Entry } from 'fast-glob';
 /**
  * This is the core underlying filesystem, which directly interfaces with a memfs Volume to mutate the filesystem
  */
-export default interface FileAccess {
-  glob(pattern: Pattern, options?: Options): Promise<string[] | Entry[]>;
+export default interface IFileAccess {
+  glob(pattern: Pattern, options?: Omit<Options, 'absolute' | 'fs'>): Promise<string[] | Entry[]>;
   mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
   readdir(dir: PathLike, options?: string | IReaddirOptions): Promise<TDataOut[] | Dirent[]>;
   readFile(file: PathLike): Promise<TDataOut>;

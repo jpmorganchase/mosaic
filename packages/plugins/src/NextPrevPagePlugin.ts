@@ -1,90 +1,80 @@
-import path from 'path';
 import type PluginType from '@pull-docs/types/dist/Plugin';
-import type Page from '@pull-docs/types/dist/Page';
 import { escapeRegExp } from 'lodash';
 
 /**
- * Sorts the pages in a folder alphabetically and then exports a JSON file (name: `options.filename`) with the
- * sidebar objects for each of those pages.
+ * Sorts the pages in a folder alphabetically and then embeds a `navigation` property to the metadata with ordered
+ * next/prev pages
  */
 const NextPrevPlugin: PluginType<
   {
     nextPrev: { [key: string]: string[] };
     refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
   },
-  { filename: string }
+  { indexFirst?: boolean; sortBy?: 'a-z' }
 > = {
-  async $beforeSend(mutableFilesystem, { config, serialiser }, options) {
-    for (const dirName in config.data.nextPrev) {
-      const pages = config.data.nextPrev[dirName].slice(1).sort();
-      pages.unshift(config.data.nextPrev[dirName][0]);
+  async $beforeSend(
+    mutableFilesystem,
+    { config, pageExtensions, ignorePages },
+    { indexFirst, sortBy }
+  ) {
+    const pageDirs = (await mutableFilesystem.promises.glob('**', {
+      onlyDirectories: true,
+      ignore: ignorePages.map(ignore => `**/${ignore}`),
+      cwd: '/'
+    })) as string[];
+    for (const dirName of pageDirs) {
+      const pages = (
+        await mutableFilesystem.promises.glob(createFileGlob('*', pageExtensions), { onlyFiles: true, cwd: dirName, ignore: ignorePages })
+      ).sort(createSortFn(pageExtensions, { indexFirst, sortBy })) as string[];
       for (let i = 0; i < pages.length; i++) {
         if (i > 0) {
           config.setRef(
-            path.join(dirName, pages[i]),
+            pages[i],
             ['navigation', 'prev', 'title', '$ref'],
-            `${path.join(dirName, pages[i - 1])}#/title`
+            `${pages[i - 1]}#/title`
           );
           config.setRef(
-            path.join(dirName, pages[i]),
-            ['navigation', 'prev', 'route', '$ref'],
-            `${path.join(dirName, pages[i - 1])}#/friendlyRoute`
+            pages[i],
+            ['navigation', 'prev', 'fullPath', '$ref'],
+            `${pages[i - 1]}#/route`
           );
         }
         if (i < pages.length - 1) {
           config.setRef(
-            path.join(dirName, pages[i]),
+            pages[i],
             ['navigation', 'next', 'title', '$ref'],
-            `${path.join(dirName, pages[i + 1])}#/title`
+            `${pages[i + 1]}#/title`
           );
           config.setRef(
-            path.join(dirName, pages[i]),
-            ['navigation', 'next', 'route', '$ref'],
-            `${path.join(dirName, pages[i + 1])}#/friendlyRoute`
+            pages[i],
+            ['navigation', 'next', 'fullPath', '$ref'],
+            `${pages[i + 1]}#/route`
           );
         }
       }
-      // for (let i = 0; i < pages.length; i++) {
-      //   const page = pages[i];
-      //   config.setRef(
-      //     path.join(dirName, options.filename),
-      //     ['pages', i.toString(), 'title', '$ref'],
-      //     `${path.join(dirName, page)}#/title`,
-      //   );
-      //   config.setRef(
-      //     path.join(dirName, options.filename),
-      //     ['pages', i.toString(), 'route', '$ref'],
-      //     `${path.join(dirName, page)}#/friendlyRoute`,
-      //   );
-      // }
-
-      // await mutableFilesystem.promises.writeFile(
-      //   path.join(dirName, options.filename),
-      //   '[]',
-      // );
     }
-  },
-  async $afterSource(pages: Page[], { config, pageExtensions }) {
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-
-    const nextPrev = {};
-    for (const page of pages.sort(
-      ({ route: routeA }, { route: routeB }) => routeA.length - routeB.length
-    )) {
-      if (!pageTest.test(page.route)) {
-        continue;
-      }
-      const dirName = path.dirname(page.route);
-      nextPrev[dirName] = nextPrev[dirName] || [];
-      if (/\/index(\.\w{1,4})?$/.test(page.route)) {
-        nextPrev[dirName].unshift(path.basename(page.route));
-      } else {
-        nextPrev[dirName].push(path.basename(page.route));
-      }
-    }
-    config.setData({ nextPrev });
-    return pages;
   }
 };
 
 export default NextPrevPlugin;
+
+function createFileGlob(url, pageExtensions) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}
+
+function createSortFn(pageExtensions, { sortBy: _sortBy, indexFirst }) {
+  const indexRegExp =
+    indexFirst && new RegExp(`index${pageExtensions.map(escapeRegExp).join('|')}$`);
+
+  // TODO: Switch out the algorithm here, based on `sortBy`
+  return function sortFn(fullPathA, fullPathB) {
+    // Always pin /index to the front
+    if (indexFirst && indexRegExp.test(fullPathA)) {
+      return -1;
+    }
+    return fullPathA.localeCompare(fullPathB);
+  };
+}

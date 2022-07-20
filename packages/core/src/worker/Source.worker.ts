@@ -3,16 +3,15 @@ import { parentPort, isMainThread, workerData as unTypedWorkerData } from 'worke
 import path from 'path';
 import fs from 'fs';
 import { map, tap, switchMap } from 'rxjs';
-import { DirectoryJSON, Volume } from 'memfs';
+import { Volume } from 'memfs';
 
 import type WorkerData from '@pull-docs/types/dist/WorkerData';
 import type Page from '@pull-docs/types/dist/Page';
-import { escapeRegExp, mapValues } from 'lodash';
 
 import createSourceObservable from './helpers/createSourceObservable';
 import { bindSerialiser, bindPluginMethods } from '../plugin';
 import createConfig from '../helpers/createConfig';
-import FileSystem from '../filesystems/FileSystem';
+import FileAccess from '../filesystems/FileAccess';
 import MutableVolume from '../filesystems/MutableVolume';
 
 const workerData: WorkerData<{ cache: boolean }> = unTypedWorkerData;
@@ -37,25 +36,28 @@ if (isMainThread) {
         pluginApi.$afterSource(pages, {
           config,
           serialiser,
+          ignorePages: workerData.ignorePages,
           pageExtensions: workerData.pageExtensions
         })
       ),
       switchMap(pages =>
         pages.reduce(async (mergedPagesPromise, page) => {
           const mergedPages = await mergedPagesPromise;
-          mergedPages[page.route] = String(await serialiser.serialise(page.route, page));
+          mergedPages[page.fullPath] = String(await serialiser.serialise(page.fullPath, page));
           return mergedPages;
         }, Promise.resolve({}))
       ),
       map(mergedPages => {
         const filesystem = new MutableVolume(
-          new FileSystem(Volume.fromJSON(mergedPages))
+          new FileAccess(Volume.fromJSON(mergedPages)),
+          workerData.namespace
         );
         return filesystem;
       }),
       switchMap(async (filesystem: MutableVolume) => {
         await pluginApi.$beforeSend(filesystem.asRestricted(), {
           config,
+          ignorePages: workerData.ignorePages,
           pageExtensions: workerData.pageExtensions,
           serialiser
         });
@@ -118,11 +120,11 @@ process.once('uncaughtException', e => {
 
 // async function getPagesWithoutContent(pages: DirectoryJSON, serialiser: Serialiser): Promise<DirectoryJSON> {
 //   const pagesWithoutContent = {};
-//   for (const route in pages) {
-//     const serialisedPage = pages[route];
-//     const page = await serialiser.deserialise(route, serialisedPage);
+//   for (const fullPath in pages) {
+//     const serialisedPage = pages[fullPath];
+//     const page = await serialiser.deserialise(fullPath, serialisedPage);
 //     page.content = '';
-//     pagesWithoutContent[route] = String(await serialiser.serialise(route, page));
+//     pagesWithoutContent[fullPath] = String(await serialiser.serialise(fullPath, page));
 //   }
 //   return pagesWithoutContent;
 // }

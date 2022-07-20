@@ -1,75 +1,48 @@
 import type PluginType from '@pull-docs/types/dist/Plugin';
-import type Page from '@pull-docs/types/dist/Page';
 import path from 'path';
-import { escapeRegExp } from 'lodash';
 
 /**
  * Plugin that crawls the page hierarchy to find the closest `sharedConfig` from any parent index's page metadata.
  * It then exports a JSON file (name: `options.filename`) into each directory with the merged config for that level
  */
-const SharedConfigPlugin: PluginType<
-  {
-    sharedConfig: { withoutConfig: string[]; indexesWithConfig: string[] };
-    refs: { [key: string]: { $$path: string[]; $$value: string }[] };
-  },
-  { filename: string }
-> = {
-  async $beforeSend(mutableFilesystem, { config }, options) {
-    const sortedIndexesWithConfig = config.data.sharedConfig.indexesWithConfig.sort(
-      (routeA, routeB) => routeB.length - routeA.length
+const SharedConfigPlugin: PluginType<{}, { filename: string }> = {
+  async $beforeSend(
+    mutableFilesystem,
+    { config, serialiser, ignorePages, pageExtensions },
+    options
+  ) {
+    const pagePaths = await mutableFilesystem.promises.glob(
+      createFileGlob('**/index', pageExtensions),
+      {
+        ignore: [options.filename, ...ignorePages.map(ignore => `**/${ignore}`)],
+        cwd: '/'
+      }
     );
-    for (const configlessRoute of config.data.sharedConfig.withoutConfig) {
-      let found = false;
 
-      for (const configParentIndex of sortedIndexesWithConfig) {
-        const configParentIndexDir = configParentIndex.replace(/\/index(\.[a-z]{1,4})?$/, '');
-        if (configlessRoute.startsWith(configParentIndexDir)) {
-          try {
-            await mutableFilesystem.promises.writeFile(
-              path.join(path.dirname(configlessRoute), options.filename),
-              '{}'
-            );
-          } catch {}
-          config.setRef(
-            //configlessRoute,
-            path.join(path.dirname(configlessRoute), options.filename),
-            ['config', '$ref'],
-            `${configParentIndexDir}/index#/sharedConfig`,
-            
-          );
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        console.warn(`Could not find \`sharedConfig\` for '${configlessRoute}' to inherit from.`);
-      }
-    }
-  },
-  async $afterSource(pages: Page[], { config, pageExtensions }) {
-    const sharedConfig = {
-      indexesWithConfig: [],
-      withoutConfig: []
-    };
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+    for (const pagePath of pagePaths) {
+      const sharedConfigFile = path.join(path.dirname(String(pagePath)), options.filename);
 
-    for (const page of pages.sort(
-      ({ route: routeA }, { route: routeB }) => routeA.length - routeB.length
-    )) {
-      if (!pageTest.test(page.route)) {
-        continue;
-      }
+      const page = await serialiser.deserialise(
+        String(pagePath),
+        await mutableFilesystem.promises.readFile(String(pagePath))
+      );
       if (page.sharedConfig) {
-        if (/\/index(\.[a-z]{1,4})?$/.test(page.route)) {
-          sharedConfig.indexesWithConfig.push(page.route);
-        }
+        config.setRef(sharedConfigFile, ['config', '$ref'], `${String(pagePath)}#/sharedConfig`);
+        await mutableFilesystem.promises.writeFile(sharedConfigFile, '{}');
       } else {
-        sharedConfig.withoutConfig.push(page.route);
+        const baseDir = path.resolve(path.dirname(String(pagePath)), '../');
+
+        config.setAliases(path.join(baseDir, options.filename), [sharedConfigFile]);
       }
     }
-    config.setData({ sharedConfig });
-    return pages;
   }
 };
 
 export default SharedConfigPlugin;
+
+function createFileGlob(url, pageExtensions) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}

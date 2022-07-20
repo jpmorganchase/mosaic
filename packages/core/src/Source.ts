@@ -7,7 +7,7 @@ import path from 'path';
 
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
 import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
-import type { IVolumeImmutable } from '@pull-docs/types/dist/Volume';
+import type { IUnionVolume, IVolumeImmutable, IVolumeMutable } from '@pull-docs/types/dist/Volume';
 import type Serialiser from '@pull-docs/types/dist/Serialiser';
 import type MutableData from '@pull-docs/types/dist/MutableData';
 import type Plugin from '@pull-docs/types/dist/Plugin';
@@ -18,7 +18,7 @@ import WorkerSubscription from './WorkerSubscription';
 import { EVENT } from './WorkerSubscription';
 import createConfig from './helpers/createConfig';
 import MutableVolume from './filesystems/MutableVolume';
-import FileSystem from './filesystems/FileSystem';
+import FileAccess from './filesystems/FileAccess';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -26,31 +26,36 @@ export default class Source {
   #plugins: PluginModuleDefinition[] = [];
   #serialisers: SerialiserModuleDefinition[] = [];
   #worker: WorkerSubscription;
-  #globalFileSystem: IVolumeImmutable;
+  #globalFileSystem: IUnionVolume;
   #pluginApi: Plugin;
   #mergedOptions: Record<string, unknown>;
   #config: MutableData<{}>;
   #pageExtensions: string[];
+  #ignorePages: string[];
   
   serialiser: Serialiser;
+  namespace: string;
   id: Symbol;
   filesystem: MutableVolume;
 
   constructor(
-    { modulePath }: SourceModuleDefinition,
+    { modulePath, namespace }: SourceModuleDefinition,
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
-    globalFileSystem: IVolumeImmutable
+    ignorePages: string[],
+    globalFileSystem: IUnionVolume
   ) {
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
     this.#globalFileSystem = globalFileSystem;
+    this.#ignorePages = ignorePages;
+    this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(modulePath)}#${md5(
         util.inspect(this.#mergedOptions, { sorted: true })
       ).substring(0, 8)}`
     );
-    this.filesystem = new MutableVolume(new FileSystem(new Volume()));
+    this.filesystem = new MutableVolume(new FileAccess(new Volume()), this.namespace);
     this.#pageExtensions = pageExtensions;
   }
 
@@ -89,16 +94,17 @@ export default class Source {
    * Called when another source (not this one) has changed.
    * This source can then ask its plugins if they also want to update in response to the other change.
    */
-  async requestUpdate(updatedSourceFilesystem: IVolumeImmutable) {
+  async requestUpdate(updatedSourceFilesystem: IVolumeImmutable, globalVolume: IVolumeMutable) {
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdate(updatedSourceFilesystem, {
       globalFilesystem: this.#globalFileSystem,
       pageExtensions: this.#pageExtensions,
+      ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.unfreeze();
-      await this.invokeAfterUpdate();
+      await this.invokeAfterUpdate(globalVolume);
       this.filesystem.clearCache();
       this.filesystem.freeze();
     }
@@ -109,10 +115,12 @@ export default class Source {
     this.#serialisers.push(...serialisers);
   }
 
-  async invokeAfterUpdate() {
+  async invokeAfterUpdate(globalVolume) {
     await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFileSystem,
+      globalVolume,
       pageExtensions: this.#pageExtensions,
+      ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
@@ -123,7 +131,9 @@ export default class Source {
       modulePath: this.#modulePath,
       name: this.id.description,
       options: this.#mergedOptions,
+      namespace: this.namespace,
       pageExtensions: this.#pageExtensions,
+      ignorePages: this.#ignorePages,
       plugins: this.#plugins,
       serialisers: this.#serialisers
     });

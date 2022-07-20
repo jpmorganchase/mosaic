@@ -8,7 +8,6 @@ import localFolderSource from '@pull-docs/source-local-folder';
 
 import Repo from './Repo';
 import fromCommitChange from './fromCommitChange';
-import { omit } from 'lodash';
 
 const BitbucketSource: Source<{
   repo: string;
@@ -17,15 +16,16 @@ const BitbucketSource: Source<{
   remote: string;
   subfolder: string;
   extensions: string[];
-  namespaceDir: string;
+  prefixDir?: string;
 }> = {
   create(options, { serialiser, pageExtensions }): Observable<Page[]> {
     const repo = new Repo(options);
 
     const rootDir = path.join(repo.dir, options.subfolder);
-    const watchFolder$: Observable<Page<{ $hddFullPath: string }>[]> = localFolderSource.create(
+    const watchFolder$: Observable<Page<{}>[]> = localFolderSource.create(
       {
         rootDir,
+        prefixDir: options.prefixDir,
         extensions: options.extensions
       },
       { serialiser, pageExtensions }
@@ -41,16 +41,11 @@ const BitbucketSource: Source<{
       mergeMap(async pages => {
         const out = [];
         for (const page of pages) {
-          const pathFromCloneDir = path.relative(rootDir, page.$hddFullPath);
-          const route = options.namespaceDir
-            ? `/${path.join(options.namespaceDir, pathFromCloneDir)}`
-            : `/${pathFromCloneDir}`;
           out.push(
-            _merge({}, omit(page, '$hddFullPath'), {
+            _merge({}, page, {
               lastModified: new Date(
-                await repo.getLatestCommitDate(path.relative(repo.dir, page.$hddFullPath))
-              ).getTime(),
-              route
+                await repo.getLatestCommitDate(path.relative(repo.dir, page.hddPath))
+              ).getTime()
             })
           );
         }

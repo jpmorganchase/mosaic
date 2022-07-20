@@ -15,12 +15,11 @@
       "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
     },
     "dependencies": {
-      "xml2js": "*",
       "rxjs": "^7.5.5",
       "@apidevtools/json-schema-ref-parser": "^9.0.9",
       "@pull-docs/types": "^1.0.0",
-        "lodash": "^4.17.21",
-        "memfs": "^3.3.0"
+      "lodash": "^4.17.21",
+      "memfs": "^3.3.0"
     },
     "author": "",
     "license": "ISC"

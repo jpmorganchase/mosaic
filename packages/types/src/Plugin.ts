@@ -2,7 +2,7 @@ import type Page from './Page';
 import type MutableData from './MutableData';
 import type PluginModuleDefinition from './PluginModuleDefinition';
 import type { ImmutableData } from './MutableData';
-import type { IVolumeImmutable, IVolumePartiallyMutable } from './Volume';
+import type { IUnionVolume, IVolumeImmutable, IVolumeMutable, IVolumePartiallyMutable } from './Volume';
 import type Serialiser from './Serialiser';
 
 export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
@@ -29,6 +29,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
       serialiser: Serialiser;
       config: MutableData<ConfigData>;
       pageExtensions: string[];
+      ignorePages: string[];
     },
     options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
   ): Promise<Page[]>;
@@ -46,6 +47,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
     {}: {
       serialiser: Serialiser;
       pageExtensions: string[];
+      ignorePages: string[];
       config: MutableData<ConfigData>;
     },
     options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
@@ -71,8 +73,11 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
     {}: {
       serialiser: Serialiser;
       config: ImmutableData<ConfigData>;
-      globalFilesystem: IVolumeImmutable;
+      globalFilesystem: IUnionVolume;
+      // TODO: Merge this with `globalFilesystem` to avoid confusion
+      globalVolume: IVolumeMutable;
       pageExtensions: string[];
+      ignorePages: string[];
     },
     options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
   ): Promise<void>;
@@ -92,8 +97,9 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
     {}: {
       serialiser: Serialiser;
       config: ImmutableData<ConfigData>;
-      globalFilesystem: IVolumeImmutable;
+      globalFilesystem: IUnionVolume;
       pageExtensions: string[];
+      ignorePages: string[];
     },
     options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
   ): Promise<boolean>;

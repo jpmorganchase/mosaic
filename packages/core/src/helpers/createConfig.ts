@@ -16,9 +16,9 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
     asReadOnly() {
       return configReadOnly;
     },
-    setTags(route: string, tags: string[]) {
-      data.aliases[route] = new Set<string>(data.aliases[route] || []);
-      tags.forEach(tag => data.aliases[route].add(path.join('/.tags', tag, route)));
+    setTags(fullPath: string, tags: string[]) {
+      data.aliases[fullPath] = new Set<string>(data.aliases[fullPath] || []);
+      tags.forEach(tag => data.aliases[fullPath].add(path.join('/.tags', tag, fullPath)));
     },
     setRef(targetPath, targetPropPath, refValue) {
       data.refs[targetPath] = data.refs[targetPath] || [];
@@ -27,9 +27,9 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
         $$value: refValue
       });
     },
-    setAliases(route: string, aliases: string[]) {
-      data.aliases[route] = new Set<string>(data.aliases[route] || []);
-      aliases.forEach(alias => data.aliases[route].add(alias));
+    setAliases(fullPath: string, aliases: string[]) {
+      data.aliases[fullPath] = new Set<string>(data.aliases[fullPath] || []);
+      aliases.forEach(alias => data.aliases[fullPath].add(alias));
     },
     setData(value) {
       merge(data, value);

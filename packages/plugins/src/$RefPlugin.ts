@@ -5,6 +5,7 @@ import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
 import normaliseRefs from './utils/normaliseRefs';
 import { escapeRegExp } from 'lodash';
+import path from 'path';
 
 /**
  * Plugin that scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
@@ -13,30 +14,31 @@ import { escapeRegExp } from 'lodash';
 const $RefPlugin: PluginType<{
   refs: { [key: string]: { $$path: string[]; $$value: string }[] };
 }> = {
-  async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions }, options) {
+  async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions, ignorePages }, options) {
     // Prevent any more refs being set after this lifecycle has been called - as they won't take effect
     config.setRef = () => {
       throw new Error(
-        'Cannot set refs after `RefPlugin` has reaches `$beforeSend` lifecycle phase.'
+        'Cannot set refs after `RefPlugin` has reached `$beforeSend` lifecycle phase.'
       );
     };
     const normalisedRefs = {};
 
     if (config.data.refs) {
       // First pass of refs, normalises any $ref entries to expand wildcards
-      for (const route in config.data.refs) {
+      for (const fullPath in config.data.refs) {
         const page: Page = await serialiser.deserialise(
-          route,
-          await mutableFilesystem.promises.readFile(route)
+          fullPath,
+          await mutableFilesystem.promises.readFile(fullPath)
         );
 
-        normalisedRefs[route] = {
+        normalisedRefs[fullPath] = {
           ...page,
           ...(await normaliseRefs(
-            String(route),
-            config.data.refs[route],
+            String(fullPath),
+            config.data.refs[fullPath],
             mutableFilesystem,
-            pageExtensions
+            pageExtensions,
+            ignorePages
           ))
         };
       }
@@ -45,39 +47,39 @@ const $RefPlugin: PluginType<{
       const refParser = new $RefParser();
 
       // Second pass of refs, resolves the refs
-      for (const route in normalisedRefs) {
-        const page = normalisedRefs[route];
+      for (const fullPath in normalisedRefs) {
+        const page = normalisedRefs[fullPath];
         try {
-          const resolved: $RefParser.JSONSchema = await refParser.dereference(String(route), page, {
+          const resolved: $RefParser.JSONSchema = await refParser.dereference(String(fullPath), page, {
             resolve,
             dereference: { circular: false }
           });
-          normalisedRefs[route] = { ...page, ...resolved };
+          normalisedRefs[fullPath] = { ...page, ...resolved };
         } catch (e) {
           throw e;
         }
       }
       // Third pass, write out the files
-      for (const route in normalisedRefs) {
+      for (const fullPath in normalisedRefs) {
         await mutableFilesystem.promises.writeFile(
-          route,
-          await serialiser.serialise(route, normalisedRefs[route])
+          fullPath,
+          await serialiser.serialise(fullPath, normalisedRefs[fullPath])
         );
       }
     }
   },
-  async $afterSource(pages: Page[], { config, pageExtensions }) {
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  async $afterSource(pages: Page[], { config, ignorePages, pageExtensions }) {
+    const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      if (!pageTest.test(page.route)) {
+      if (!isNonHiddenPage(page.fullPath)) {
         continue;
       }
       const refs = findKeys(page, '$ref');
 
       if (refs.length) {
         for (const ref of refs) {
-          config.setRef(page.route, ...ref);
+          config.setRef(page.fullPath, ...ref);
         }
       }
     }
@@ -94,12 +96,12 @@ function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
       order: 1,
       async read(file, callback) {
         try {
-        const refedPage =
+          const refedPage =
           normalisedRefs[file.url] ||
           (await serialiser.deserialise(
             file.url,
             await mutableFilesystem.promises.readFile(file.url)
-          ));
+            ));
           return callback(null, refedPage);
         } catch (e) {
           return callback(e, null);
@@ -125,3 +127,11 @@ const findKeys = (obj, targetProp, pathParts: string[] = []): [string[], string]
     []
   );
 };
+
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file => {
+    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+  };
+}

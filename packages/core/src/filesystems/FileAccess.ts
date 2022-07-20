@@ -3,14 +3,11 @@ import glob from 'fast-glob';
 import { PathLike } from 'fs';
 import { createFsFromVolume } from 'memfs';
 import type { DirectoryJSON, IRealpathOptions, Volume } from 'memfs/lib/volume';
-import type { IUnionFs } from 'unionfs';
-import merge from 'lodash/merge';
 import type { TDataOut } from 'memfs/lib/encoding';
 
-import type { IVolumeMutable } from '@pull-docs/types/dist/Volume';
-import type BaseFileSystem from '@pull-docs/types/dist/FileAccess';
+import type IFileAccess from '@pull-docs/types/dist/IFileAccess';
 
-export default class FileSystem implements BaseFileSystem {
+export default class FileAccess implements IFileAccess {
   #adapter: Volume;
   #hooks: ((filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>)[] = [];
   #rawReadonlyFs;
@@ -37,6 +34,7 @@ export default class FileSystem implements BaseFileSystem {
           (
             await glob(pattern, {
               ...options,
+              absolute: true,
               fs: this.#rawReadonlyFs
             })
           ).map(filepath => this.#resolvePath(filepath))
@@ -140,10 +138,6 @@ export default class FileSystem implements BaseFileSystem {
     return this.#adapter.toJSON();
   }
 
-  static fromUnion(ufs: IUnionFs) {
-    return new UnionFileSystem(ufs);
-  }
-
   symlinksToJSON() {
     return this.#symlinks;
   }
@@ -182,7 +176,7 @@ export default class FileSystem implements BaseFileSystem {
       return null;
     }
 
-    if (await this.#isPageCached(file)) {
+    if (await this.#isNonHiddenPageCached(file)) {
       const cachedItem = this.#cachedPages.get(file);
       return cachedItem;
     }
@@ -191,7 +185,7 @@ export default class FileSystem implements BaseFileSystem {
     const loadPagePromise = new Promise(async resolve => {
       const rawFile = await this.#adapter.promises.readFile(file);
 
-      // if (!this.#pageTest.test(file)) {
+      // if (!this.#pageTest(file)) {
       //   return resolve(rawFile);
       // }
       let fileData = rawFile;
@@ -219,7 +213,7 @@ export default class FileSystem implements BaseFileSystem {
     //return this.#adapter.promises.writeFile(file, JSON.stringify(currentPage));
   }
 
-  async #isPageCached(fileArg) {
+  async #isNonHiddenPageCached(fileArg) {
     const file = await this.#adapter.promises.realpath(fileArg);
 
     return this.#cachedPages.has(file);
@@ -257,36 +251,5 @@ export default class FileSystem implements BaseFileSystem {
       throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
     this.#adapter.fromJSON(json);
-  }
-}
-
-class UnionFileSystem extends FileSystem {
-  #ufs: IUnionFs & { fss: IVolumeMutable[] };
-
-  constructor(ufs) {
-    super(ufs);
-    this.#ufs = ufs;
-  }
-  // We have to override this here, so we can hand-hold the glob and make sure it fires on all filesystems
-  async glob(pattern, options) {
-    return this.#ufs.fss.reduce(
-      async (globResults, childFs) => [
-        ...(await globResults),
-        ...(await childFs.promises.glob(pattern, options))
-      ],
-      Promise.resolve([])
-    );
-  }
-  symlinksToJSON() {
-    return this.#ufs.fss.reduce(
-      (merged, filesystem) => merge(merged, filesystem.symlinksToJSON()),
-      {}
-    );
-  }
-  toJSON() {
-    return this.#ufs.fss.reduce(
-      (merged, filesystem) => ({ ...merged, ...filesystem.toJSON() }),
-      {}
-    );
   }
 }

@@ -11,7 +11,7 @@ module.exports = async (config, port) => {
     console.log(`Example app listening on port ${port}`);
   });
   const pullDocs = new PullDocs(config);
-  pullDocs.start();
+  await pullDocs.start();
 
   pullDocs.onSourceUpdate(async (value, source) => {
     // console.log(
@@ -22,6 +22,11 @@ module.exports = async (config, port) => {
 
   app.use(cors());
 
+  app.get('/sitemap.xml', async (req, res) => {
+    res.contentType('application/xml');
+    const result = String(await pullDocs.filesystem.promises.readFile(req.path));
+    res.send(result);
+  });
   app.get('/**', async (req, res) => {
     try {
       if (await pullDocs.filesystem.promises.exists(req.path)) {

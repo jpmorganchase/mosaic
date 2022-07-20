@@ -33,22 +33,22 @@ const $TagPlugin: PluginType<{
     );
   },
   // Apply and resolve $refs in place of anywhere we saw $tag
-  async afterUpdate(mutableFilesystem, { globalFilesystem, serialiser, pageExtensions, config }) {
+  async afterUpdate(mutableFilesystem, { ignorePages, globalFilesystem, serialiser, pageExtensions, config }) {
     if (!config.data?.tagRefs) {
       return;
     }
     const tagRefs = config.data?.tagRefs;
     const refParser = new $RefParser();
-    for (const route in tagRefs) {
+    for (const fullPath in tagRefs) {
       const page: Page = await serialiser.deserialise(
-        route,
-        await globalFilesystem.promises.readFile(route)
+        fullPath,
+        await globalFilesystem.promises.readFile(fullPath)
       );
-      if (tagRefs && tagRefs[page.route]) {
+      if (tagRefs && tagRefs[page.fullPath]) {
         try {
           const resolved: $RefParser.JSONSchema = await refParser.dereference(
-            String(page.route),
-            await normaliseRefs(page.route, tagRefs[page.route], globalFilesystem, pageExtensions),
+            String(page.fullPath),
+            await normaliseRefs(page.fullPath, tagRefs[page.fullPath], globalFilesystem, pageExtensions, ignorePages),
             {
               resolve: createRefResolver(serialiser, globalFilesystem),
               dereference: { circular: false }
@@ -56,8 +56,8 @@ const $TagPlugin: PluginType<{
           );
 
           await mutableFilesystem.promises.writeFile(
-            route,
-            await serialiser.serialise(route, { ...page, ...resolved } as any)
+            fullPath,
+            await serialiser.serialise(fullPath, { ...page, ...resolved } as any)
           );
         } catch (e) {
           throw e;
@@ -66,7 +66,7 @@ const $TagPlugin: PluginType<{
     }
   },
   // Every source with tags will create symlinks with the tagged pages, inside /.tags
-  async $afterSource(pages: Page<{ tags?: string[] }>[], { config, pageExtensions }) {
+  async $afterSource(pages: Page<{ tags?: string[] }>[], { config, ignorePages, pageExtensions }) {
     const tagRefs = {};
     const tags = [];
     const createRefs = tagDescriptor => {
@@ -77,17 +77,17 @@ const $TagPlugin: PluginType<{
       }
       return { ...tagDescriptor, $$value: `${path.join('/.tags', tag, '**')}#${fragment}` };
     };
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+    const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      if (!pageTest.test(page.route)) {
+      if (!isNonHiddenPage(page.fullPath)) {
         continue;
       }
       const meta = page as Meta<{ tags?: string[] }>;
       // Symlink every `tag` item to '/.tags' folder
       if (meta.tags?.length) {
         config.setTags(
-          page.route,
+          page.fullPath,
           meta.tags
         );
         delete meta.tags;
@@ -102,7 +102,7 @@ const $TagPlugin: PluginType<{
         })
       );
       if (foundTags.length) {
-        tagRefs[page.route] = foundTags.map(createRefs);
+        tagRefs[page.fullPath] = foundTags.map(createRefs);
       }
     }
     config.setData({ tagRefs, subscribedTags: Array.from(new Set(tags)) });
@@ -148,3 +148,11 @@ const findKeys = (obj, targetProp, pathParts: string[] = []) => {
     []
   );
 };
+
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file => {
+    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+  };
+}

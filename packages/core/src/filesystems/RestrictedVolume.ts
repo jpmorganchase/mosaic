@@ -1,15 +1,14 @@
-import type FileAccess from '@pull-docs/types/dist/FileAccess';
-import type Serialiser from '@pull-docs/types/dist/Serialiser';
+import type IFileAccess from '@pull-docs/types/dist/IFileAccess';
 import type { IVolumePartiallyMutable } from '@pull-docs/types/dist/Volume';
 
 import ImmutableFileSystem from './ImmutableVolume';
 import { create } from 'lodash';
 
 class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMutable {
-  #vfs: FileAccess;
+  #vfs: IFileAccess;
 
-  constructor(vfs) {
-    super(vfs);
+  constructor(vfs, namespace) {
+    super(vfs, namespace);
     this.#vfs = vfs;
   }
 
@@ -41,7 +40,7 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
   }
 
   asReadOnly() {
-    return new ImmutableFileSystem(this.#vfs);
+    return new ImmutableFileSystem(this.#vfs, super.namespace);
   }
 }
 

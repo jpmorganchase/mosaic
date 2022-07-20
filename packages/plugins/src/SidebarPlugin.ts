@@ -1,6 +1,5 @@
 import path from 'path';
 import type PluginType from '@pull-docs/types/dist/Plugin';
-import type Page from '@pull-docs/types/dist/Page';
 
 /**
  * Sorts the pages in a folder alphabetically and then exports a JSON file (name: `options.filename`) with the
@@ -13,13 +12,14 @@ const SidebarPlugin: PluginType<
   },
   { filename: string }
 > = {
-  async $beforeSend(mutableFilesystem, { config, serialiser }, options) {
-    for (const dirName of await mutableFilesystem.promises.glob('/**', { onlyDirectories: true })) {
+  async $beforeSend(mutableFilesystem, { config, ignorePages }, options) {
+    for (const dirName of await mutableFilesystem.promises.glob('**', { onlyDirectories: true, cwd: '/',
+    ignore: ignorePages.map(ignore => `**/${ignore}`) })) {
       config.setRef(path.join(String(dirName), options.filename), ['pages', '$ref'], `${dirName}/*#/title`);
       config.setRef(
         path.join(String(dirName), options.filename),
         ['pages', '$ref'],
-        `${dirName}/*#/friendlyRoute`
+        `${dirName}/*#/route`
       );
 
       await mutableFilesystem.promises.mkdir(String(dirName), { recursive: true });

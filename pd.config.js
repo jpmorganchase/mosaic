@@ -2,6 +2,9 @@ const path = require("path");
 
 module.exports = {
     pageExtensions: ['.mdx', '.json'],
+    ignorePages: ['shared-config.json', 'sitemap.xml'],
+    // TODO
+    // lazyLoadPages: true,
     serialisers: [
         { modulePath: require.resolve('@pull-docs/serialisers/dist/mdx'), filter: /\.mdx$/, options: {} },
         { modulePath: require.resolve('@pull-docs/serialisers/dist/md'), filter: /\.md$/, options: {} },
@@ -20,14 +23,16 @@ module.exports = {
             // Exclude this plugin in builds
             runTimeOnly: true,
             options: {
-                cacheDir: '.pull-docs-last-page-plugin-cache'
+                cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
             }
         },
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/NextPrevPagePlugin'),
             options: {
-                // Start filename with a . so it does not get picked up by $refs
-                filename: '.next-prev-links.json'
+                // Make sure the index is always the first item in the next/prev queue
+                indexFirst: true,
+                // Sort alphabetically
+                sortBy: 'a-z'
             },
             priority: 2
         },
@@ -35,15 +40,13 @@ module.exports = {
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/PagesWithoutFileExtPlugin'),
             options: {
-            },
-            // Make sure this happens early on, as it creates aliases for pages, which other plugins may reference
-            priority: 99
+            }
         },
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/SharedConfigPlugin'),
             options: {
                 // Start filename with a . so it does not get picked up by $refs
-                filename: '.shared-config.json'
+                filename: 'shared-config.json'
             },
             priority: 3
         }
@@ -51,23 +54,25 @@ module.exports = {
     sources: [
         {
             modulePath: require.resolve('@pull-docs/source-local-folder'),
+            namespace: 'local',
             options: {
                 rootDir: path.join(__dirname, '../developer-docs', 'docs'),
                 cache: false,
-                extensions: ['.mdx', '.json']
+                extensions: ['.mdx']
             }
         },
         {
             modulePath: require.resolve('@pull-docs/source-bitbucket'),
+            namespace: 'developer',
             options: {
                 cache: false,
                 // TODO: Enter credentials (this can be done at `pullDocs.addSource`, or in the config file here)
                 credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
-                namespaceDir: 'developer',
+                prefixDir: 'developer',
                 subfolder: 'docs',
                 repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git',
                 branch: 'develop',
-                extensions: ['.mdx', '.json'],
+                extensions: ['.mdx'],
                 remote: 'origin'
             }
         }

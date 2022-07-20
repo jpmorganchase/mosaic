@@ -21,6 +21,7 @@ import type Page from './Page';
  * Examples include disallowing mutation or allowing underlying functions like resetting
  */
 interface IVolume {
+  namespace: string;
   reset?(): void;
   toJSON(): DirectoryJSON;
   symlinksToJSON(): { [key: string]: { target: string; type: string }[] };
@@ -39,6 +40,15 @@ interface IVolume {
   };
 }
 export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJSON'> {}
+
+export interface IUnionVolume extends Omit<IVolumeImmutable, 'promises'> {
+  promises: Pick<IVolumeImmutable, 'promises'> & {
+  readFile(file: PathLike): Promise<TDataOut>;
+  readFile(file: PathLike, options?: { includeConflicts?: false }): Promise<TDataOut>;
+  readFile(file: PathLike, options: { includeConflicts: true }): Promise<TDataOut[]>;
+  };
+  scope(namespaces: string[]): IUnionVolume;
+}
 
 export interface IVolumeMutable extends IVolume {
   /**
@@ -78,7 +88,7 @@ export interface IVolumeMutable extends IVolume {
   get frozen(): boolean;
   /**
    * Appends content to the filesystem
-   * @param json A JSON blob in the form of {[route]: "{route: '', content: ''}"}
+   * @param json A JSON blob in the form of {[fullPath]: "{fullPath: '', content: ''}"}
    */
   fromJSON(json: DirectoryJSON): void;
   symlinksFromJSON(json: { [key: string]: { target: string; type: string }[] }): Promise<void>;

@@ -1,11 +1,13 @@
 import type { IVolumeImmutable } from '@pull-docs/types/dist/Volume';
-import type FileAccess from '@pull-docs/types/dist/FileAccess';
+import type IFileAccess from '@pull-docs/types/dist/IFileAccess';
 
 export default class ImmutableVolume implements IVolumeImmutable {
-  #vfs: FileAccess;
+  #vfs: IFileAccess;
+  namespace: string;
   
-  constructor(vfs) {
+  constructor(vfs, namespace) {
     this.#vfs = vfs;
+    this.namespace = namespace;
   }
 
   promises: IVolumeImmutable['promises'] = {

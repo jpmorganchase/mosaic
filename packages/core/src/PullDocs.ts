@@ -9,40 +9,45 @@ import type SourceModuleDefinition from '@pull-docs/types/dist/SourceModuleDefin
 import SourceManager from './SourceManager';
 
 // TODO:
-// Circular dependency checks for afterReadFile
 // Remove $ref /index resolution
-import ImmutableVolume from './filesystems/ImmutableVolume';
 import MutableVolume from './filesystems/MutableVolume';
-import FileSystem from './filesystems/FileSystem';
+import UnionFileAccess from './filesystems/UnionFileAccess';
+import UnionVolume from './filesystems/UnionVolume';
+import { Volume } from 'memfs';
+import FileAccess from './filesystems/FileAccess';
 
 export default class PullDocs {
   #sourceDefinitions: SourceModuleDefinition[];
   #sourceManager: SourceManager;
   #ufs = new Union() as IUnionFs & { fss: MutableVolume[] };
-  #vfs: ImmutableVolume;
+  #vfs: UnionVolume;
 
   /**
    *
-   * @param config.sources Sources
-   * @param config.plugins Plugins
-   * @param config.serialisers Serialiser
-   * @param config.pageExtensions Exts of files to treat as pages. Pages must be JSON files that meet the `Page` file
-   *                              format. Pages are run through serialisers when read and can be referenced via `$ref`s
+   * @param config.sources Sources are observables that emit pages
+   * @param config.plugins Plugins are modules with lifecycles methods for manipulating files and/or the virtual filesystem
+   * @param config.serialisers  Serialisers are a form of plugin that tell PullDocs how to turn a file from/to a storable form for the filesystem - or back into a `Page` object
+   * @param config.ignorePages Page names to exclude from lazy loading / `$ref`s / `$tag`s / serialisers and also any plugins that expect pages as input. Example input would be "ignore-me.xml"
+   * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
    */
   constructor(config: {
+    ignorePages?: string[];
     plugins?: PluginModuleDefinition[];
     serialisers?: SerialiserModuleDefinition[];
     sources: SourceModuleDefinition[];
     pageExtensions: string[];
   }) {
+    const globalVolume = new MutableVolume(new FileAccess(new Volume()), '*');
+    this.#ufs.use(globalVolume as unknown as any);
     const {
+      ignorePages = [],
       sources = [],
       plugins = [],
       serialisers = [],
-      pageExtensions = ['.mdx', '.md']
+      pageExtensions = ['.mdx']
     } = config;
     this.#sourceDefinitions = sources;
-    this.#vfs = new ImmutableVolume(FileSystem.fromUnion(this.#ufs));
+    this.#vfs = new UnionVolume(new UnionFileAccess(this.#ufs), '*');
     this.#sourceManager = new SourceManager(
       // Refs and aliases should be applied after all other plugins, so we add them manually with a negative priority
       plugins
@@ -76,7 +81,9 @@ export default class PullDocs {
         options: {}
       }),
       pageExtensions,
-      this.#vfs
+      ignorePages,
+      this.#vfs,
+      globalVolume
     );
   }
 
@@ -89,7 +96,7 @@ export default class PullDocs {
   }
 
   async start() {
-    return this.#sourceDefinitions.map(source => this.#addSource(source));
+    return Promise.all(this.#sourceDefinitions.map(source => this.#addSource(source)));
   }
 
   async stop() {

@@ -9,16 +9,16 @@ import { escapeRegExp } from 'lodash';
  * Other plugins can use `setAliases` to apply new aliases, as long as they call it before this plugin has reaches `$beforeSend`
  */
 const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
-  async $afterSource(pages: Page<{ aliases?: string[] }>[], { config, pageExtensions }, options) {
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  async $afterSource(pages: Page<{ aliases?: string[] }>[], { config, ignorePages, pageExtensions }, options) {
+    const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     // Group together all aliases defined in the frontmatter and store them in the alias config object
     for (const page of pages) {
-      if (!pageTest.test(page.route)) {
+      if (!isNonHiddenPage(page.fullPath)) {
         continue;
       }
       if (page.aliases) {
-        config.setAliases(page.route, page.aliases);
+        config.setAliases(page.fullPath, page.aliases);
       }
       delete page.aliases;
     }
@@ -32,9 +32,9 @@ const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
     };    if (!config.data.aliases) {
       return;
     }
-    for (const route in config.data.aliases) {
-      for (const alias of config.data.aliases[route]) {
-        const aliasPath = path.resolve(path.dirname(route), alias).toLowerCase();
+    for (const fullPath in config.data.aliases) {
+      for (const alias of config.data.aliases[fullPath]) {
+        const aliasPath = path.resolve(path.dirname(fullPath), alias).toLowerCase();
         const aliasDir = path.dirname(aliasPath);
         if (!(await mutableFilesystem.promises.exists(aliasDir))) {
           await mutableFilesystem.promises.mkdir(aliasDir, {
@@ -42,7 +42,7 @@ const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
           });
         }
         if (!(await mutableFilesystem.promises.exists(aliasPath))) {
-          await mutableFilesystem.promises.symlink(route, aliasPath);
+          await mutableFilesystem.promises.symlink(fullPath, aliasPath);
         } else {
           console.warn(`Alias '${aliasPath}' already exists. Is there a duplicate alias, or a page with the same name but different file extensions?`);
         }
@@ -52,3 +52,11 @@ const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
 };
 
 export default $AliasPlugin;
+
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file => {
+    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+  };
+}

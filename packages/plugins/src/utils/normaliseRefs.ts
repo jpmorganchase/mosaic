@@ -10,7 +10,7 @@ function createFileGlob(url, pageExtensions) {
   return `${url}{${pageExtensions.join(',')}}`;
 }
 
-export default async function normaliseRefs(filepath, refs, filesystem, pageExtensions) {
+export default async function normaliseRefs(filepath, refs, filesystem, pageExtensions, ignorePages) {
   const configWithoutGlobs = {};
 
   for (let i = 0; i < refs.length; i++) {
@@ -55,8 +55,7 @@ export default async function normaliseRefs(filepath, refs, filesystem, pageExte
         await filesystem.promises.glob(
           !/\/[^/]+\.\w{2,4}$/.test(url) ? createFileGlob(url, pageExtensions) : url,
           {
-            dot: false,
-            ignore: [filepath],
+            ignore: [filepath, ...ignorePages.map(ignore => `**/${ignore}`)],
             cwd: path.dirname(filepath),
             absolute: true
           }
