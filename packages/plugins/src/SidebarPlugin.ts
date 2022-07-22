@@ -12,23 +12,52 @@ const SidebarPlugin: PluginType<
   },
   { filename: string }
 > = {
-  async $beforeSend(mutableFilesystem, { config, ignorePages }, options) {
-    for (const dirName of await mutableFilesystem.promises.glob('**', { onlyDirectories: true, cwd: '/',
-    ignore: ignorePages.map(ignore => `**/${ignore}`) })) {
-      config.setRef(path.join(String(dirName), options.filename), ['pages', '$ref'], `${dirName}/*#/title`);
-      config.setRef(
-        path.join(String(dirName), options.filename),
-        ['pages', '$ref'],
-        `${dirName}/*#/route`
+  async $beforeSend(mutableFilesystem, { config, ignorePages, pageExtensions }, options) {
+    const dirs = await mutableFilesystem.promises.glob('**', {
+      onlyDirectories: true,
+      cwd: '/'
+    });
+    for (const dirName of dirs) {
+      const pages = await mutableFilesystem.promises.glob(
+        createFileGlob(['*', '*/index'], pageExtensions),
+        {
+          onlyFiles: true,
+          cwd: String(dirName),
+          ignore: ignorePages.map(ignore => `**/${ignore}`)
+        }
       );
 
-      await mutableFilesystem.promises.mkdir(String(dirName), { recursive: true });
-      await mutableFilesystem.promises.writeFile(
-        path.join(String(dirName), options.filename),
-        '[]'
-      );
+      if (pages.length) {
+        for (let i = 0; i < pages.length; i++) {
+          config.setRef(
+            path.join(String(dirName), options.filename),
+            ['pages', `${i}`, 'title', '$ref'],
+            `${pages[i]}#/title`
+          );
+          config.setRef(
+            path.join(String(dirName), options.filename),
+            ['pages', `${i}`, 'route', '$ref'],
+            `${pages[i]}#/route`
+          );
+        }
+
+        await mutableFilesystem.promises.writeFile(
+          path.join(String(dirName), options.filename),
+          '[]'
+        );
+      }
     }
   }
 };
 
 export default SidebarPlugin;
+
+function createFileGlob(patterns, pageExtensions) {
+  if (Array.isArray(patterns)) {
+    return patterns.map(pattern => createFileGlob(pattern, pageExtensions));
+  }
+  if (pageExtensions.length === 1) {
+    return `${patterns}${pageExtensions[0]}`;
+  }
+  return `${patterns}{${pageExtensions.join(',')}}`;
+}

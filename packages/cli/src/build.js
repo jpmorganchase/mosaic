@@ -29,6 +29,7 @@ module.exports = async (config, targetDir, scope) => {
           });
           let rawFile = rawFiles[0];
           if (rawFiles.length > 1) {
+            // TODO: We could join colliding JSON files together. e.g. sidebar.json files
             // if (path.basename(String(filePath)).startsWith('.') && path.extname(String(filePath)) === '.json') {
             //   console.warn(`'${filePath}' returned multiple files at the same location. Since the files were JSON dot files, they were merged using a basic Lodash \`merge\`.`);
             //   rawFile = Buffer.from(JSON.stringify(merge(...rawFiles.map(fileData => JSON.parse(String(fileData))))));

@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
     pageExtensions: ['.mdx', '.json'],
-    ignorePages: ['shared-config.json', 'sitemap.xml'],
+    ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
     // TODO
     // lazyLoadPages: true,
     serialisers: [
@@ -43,9 +43,14 @@ module.exports = {
             }
         },
         {
+            modulePath: require.resolve('@pull-docs/plugins/dist/SidebarPlugin'),
+            options: {
+                filename: 'sidebar.json'
+            }
+        },
+        {
             modulePath: require.resolve('@pull-docs/plugins/dist/SharedConfigPlugin'),
             options: {
-                // Start filename with a . so it does not get picked up by $refs
                 filename: 'shared-config.json'
             },
             priority: 3
