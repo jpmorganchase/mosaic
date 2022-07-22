@@ -17,15 +17,15 @@
     "test": "jest --runInBand",
     "build": "yarn workspace @pull-docs/types build && yarn workspace @pull-docs/source-local-folder build && yarn workspace @pull-docs/source-bitbucket build && concurrently 'yarn workspace @pull-docs/cli build' 'yarn workspace @pull-docs/serialisers build' 'yarn workspace @pull-docs/plugins build' && yarn workspace @pull-docs/core build",
     "clean": "yarn workspace @pull-docs/types clean & yarn workspace @pull-docs/source-local-folder clean & yarn workspace @pull-docs/source-bitbucket clean & yarn workspace @pull-docs/cli clean & yarn workspace @pull-docs/serialisers clean & yarn workspace @pull-docs/plugins clean & yarn workspace @pull-docs/core clean",
-    "example": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/examples dev' './node_modules/.bin/pull-docs serve -c ./pd.config.js' -p 8080",
-    "example:debug": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/examples dev' 'node --inspect-brk --inspect ./node_modules/.bin/pull-docs serve -c ./pd.config.js' -p 8080"
+    "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/example-nextjs-ssr dev' './node_modules/.bin/pull-docs serve -c ./pd.config.js' -p 8080",
+    "example-gatsby": "yarn workspace @pull-docs/example-gatsby-static dev"
   },
   "repository": {
     "type": "git",
     "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
   },
   "devDependencies": {
-    "concurrently": "*",
+    "concurrently": "^7.1.0",
     "@babel/core": "^7.11.4",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.2.0",

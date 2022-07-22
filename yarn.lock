@@ -1215,6 +1215,14 @@
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@jsdevtools/ono/-/ono-7.1.3.tgz#9df03bbd7c696a5c58885c34aa06da41c8543796"
   integrity sha1-nfA7vXxpalxYiFw0qgbaQchUN5Y=
 
+"@mdx-js/loader@^2.0.0":
+  version "2.0.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@mdx-js/loader/-/loader-2.0.0.tgz#4ff3278d341e7a15ecf87c4623a8ecd533cb3dbc"
+  integrity sha1-T/MnjTQeehXs+HxGI6js1TPLPbw=
+  dependencies:
+    "@mdx-js/mdx" "^2.0.0"
+    source-map "^0.7.0"
+
 "@mdx-js/mdx@^2.0.0":
   version "2.0.0"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@mdx-js/mdx/-/mdx-2.0.0.tgz#7f270df1e77c46f8338fc32089016b3ea383d023"
@@ -1257,6 +1265,11 @@
   integrity sha1-8mz5C8ts0uRkXiuiU7vJqqpDoXA=
   dependencies:
     glob "7.1.7"
+
+"@next/mdx@^12.0.7":
+  version "12.0.7"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/@next/mdx/-/mdx-12.0.7.tgz#5095198e85a0fe6d3687db9813aa373f185dece8"
+  integrity sha1-UJUZjoWg/m02h9uYE6o3Pxhd7Og=
 
 "@next/swc-android-arm-eabi@12.2.2":
   version "12.2.2"
@@ -3317,6 +3330,13 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
+fault@^2.0.0:
+  version "2.0.1"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/fault/-/fault-2.0.1.tgz#d47ca9f37ca26e4bd38374a7c500b5a384755b6c"
+  integrity sha1-1Hyp83yibkvTg3SnxQC1o4R1W2w=
+  dependencies:
+    format "^0.2.0"
+
 fb-watchman@^2.0.0:
   version "2.0.1"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/fb-watchman/-/fb-watchman-2.0.1.tgz#fc84fb39d2709cf3ff6d743706157bb5708a8a85"
@@ -3408,6 +3428,11 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
+format@^0.2.0:
+  version "0.2.2"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/format/-/format-0.2.2.tgz#d6170107e9efdc4ed30c9dc39016df942b5cb58b"
+  integrity sha1-1hcBB+nv3E7TDJ3DkBbflCtctYs=
+
 forwarded@0.2.0:
   version "0.2.0"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/forwarded/-/forwarded-0.2.0.tgz#2269936428aad4c15c7ebe9779a84bf0b2a81811"
@@ -3493,6 +3518,11 @@ get-intrinsic@^1.0.2, get-intrinsic@^1.1.0, get-intrinsic@^1.1.1:
     function-bind "^1.1.1"
     has "^1.0.3"
     has-symbols "^1.0.1"
+
+get-own-enumerable-property-symbols@^3.0.0:
+  version "3.0.2"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/get-own-enumerable-property-symbols/-/get-own-enumerable-property-symbols-3.0.2.tgz#b5fde77f22cbe35f390b4e089922c50bce6ef664"
+  integrity sha1-tf3nfyLL4185C04ImSLFC85u9mQ=
 
 get-package-type@^0.1.0:
   version "0.1.0"
@@ -4028,6 +4058,11 @@ is-number@^7.0.0:
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
   integrity sha1-dTU0W4lnNNX4DE0GxQlVUnoU8Ss=
 
+is-obj@^1.0.1:
+  version "1.0.1"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/is-obj/-/is-obj-1.0.1.tgz#3e4729ac1f5fde025cd7d83a896dab9f4f67db0f"
+  integrity sha1-PkcprB9f3gJc19g6iW2rn09n2w8=
+
 is-plain-obj@^4.0.0:
   version "4.1.0"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/is-plain-obj/-/is-plain-obj-4.1.0.tgz#d65025edec3657ce032fd7db63c97883eaed71f0"
@@ -4054,6 +4089,11 @@ is-regex@^1.1.4:
   dependencies:
     call-bind "^1.0.2"
     has-tostringtag "^1.0.0"
+
+is-regexp@^1.0.0:
+  version "1.0.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/is-regexp/-/is-regexp-1.0.0.tgz#fd2d883545c46bac5a633e7b9a09e87fa2cb5069"
+  integrity sha1-/S2INUXEa6xaYz57mgnof6LLUGk=
 
 is-shared-array-buffer@^1.0.2:
   version "1.0.2"
@@ -4914,6 +4954,13 @@ mdast-util-from-markdown@^1.0.0:
     unist-util-stringify-position "^3.0.0"
     uvu "^0.5.0"
 
+mdast-util-frontmatter@^1.0.0:
+  version "1.0.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/mdast-util-frontmatter/-/mdast-util-frontmatter-1.0.0.tgz#ef12469379782e4a0fd995fed60cc3b871e6c819"
+  integrity sha1-7xJGk3l4LkoP2ZX+1gzDuHHmyBk=
+  dependencies:
+    micromark-extension-frontmatter "^1.0.0"
+
 mdast-util-mdx-expression@^1.0.0:
   version "1.2.1"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/mdast-util-mdx-expression/-/mdast-util-mdx-expression-1.2.1.tgz#3195450498c438fbdb82838c23d9b3f8b23174da"
@@ -5053,6 +5100,15 @@ micromark-core-commonmark@^1.0.0, micromark-core-commonmark@^1.0.1:
     micromark-util-symbol "^1.0.0"
     micromark-util-types "^1.0.1"
     uvu "^0.5.0"
+
+micromark-extension-frontmatter@^1.0.0:
+  version "1.0.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/micromark-extension-frontmatter/-/micromark-extension-frontmatter-1.0.0.tgz#612498e6dad87c132c95e25f0918e7cc0cd535f6"
+  integrity sha1-YSSY5trYfBMsleJfCRjnzAzVNfY=
+  dependencies:
+    fault "^2.0.0"
+    micromark-util-character "^1.0.0"
+    micromark-util-symbol "^1.0.0"
 
 micromark-extension-mdx-expression@^1.0.0:
   version "1.0.3"
@@ -6105,6 +6161,16 @@ regjsparser@^0.8.2:
   dependencies:
     jsesc "~0.5.0"
 
+remark-frontmatter@^4.0.1:
+  version "4.0.1"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/remark-frontmatter/-/remark-frontmatter-4.0.1.tgz#84560f7ccef114ef076d3d3735be6d69f8922309"
+  integrity sha1-hFYPfM7xFO8HbT03Nb5tafiSIwk=
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    mdast-util-frontmatter "^1.0.0"
+    micromark-extension-frontmatter "^1.0.0"
+    unified "^10.0.0"
+
 remark-mdx@^2.0.0:
   version "2.1.2"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/remark-mdx/-/remark-mdx-2.1.2.tgz#eea2784fa5697e14f6e0686700077986b88b8078"
@@ -6335,11 +6401,6 @@ sane@^4.0.3:
     minimist "^1.1.1"
     walker "~1.0.5"
 
-sax@>=0.6.0:
-  version "1.2.4"
-  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/sax/-/sax-1.2.4.tgz#2816234e2378bddc4e5354fab5caa895df7100d9"
-  integrity sha1-KBYjTiN4vdxOU1T6tcqold9xANk=
-
 saxes@^3.1.9:
   version "3.1.11"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/saxes/-/saxes-3.1.11.tgz#d59d1fd332ec92ad98a2e0b2ee644702384b1c5b"
@@ -6565,6 +6626,11 @@ source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.1:
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha1-dHIq8y6WFOnCh6jQu95IteLxomM=
 
+source-map@^0.7.0:
+  version "0.7.4"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/source-map/-/source-map-0.7.4.tgz#a9bbe705c9d8846f4e08ff6765acf0f1b0898656"
+  integrity sha1-qbvnBcnYhG9OCP9nZazw8bCJhlY=
+
 source-map@^0.7.3:
   version "0.7.3"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
@@ -6714,6 +6780,15 @@ stringify-entities@^4.0.0:
   dependencies:
     character-entities-html4 "^2.0.0"
     character-entities-legacy "^3.0.0"
+
+stringify-object@^3.3.0:
+  version "3.3.0"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/stringify-object/-/stringify-object-3.3.0.tgz#703065aefca19300d3ce88af4f5b3956d7556629"
+  integrity sha1-cDBlrvyhkwDTzoivT1s5VtdVZik=
+  dependencies:
+    get-own-enumerable-property-symbols "^3.0.0"
+    is-obj "^1.0.1"
+    is-regexp "^1.0.0"
 
 strip-ansi@^5.2.0:
   version "5.2.0"
@@ -7429,19 +7504,6 @@ xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
   integrity sha1-auc+Bt5NjG5H+fsYH3jWSK1FfGo=
-
-xml2js@*:
-  version "0.4.23"
-  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/xml2js/-/xml2js-0.4.23.tgz#a0c69516752421eb2ac758ee4d4ccf58843eac66"
-  integrity sha1-oMaVFnUkIesqx1juTUzPWIQ+rGY=
-  dependencies:
-    sax ">=0.6.0"
-    xmlbuilder "~11.0.0"
-
-xmlbuilder@~11.0.0:
-  version "11.0.1"
-  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/xmlbuilder/-/xmlbuilder-11.0.1.tgz#be9bae1c8a046e76b31127726347d0ad7002beb3"
-  integrity sha1-vpuuHIoEbnazESdyY0fQrXACvrM=
 
 xmlchars@^2.1.1:
   version "2.2.0"

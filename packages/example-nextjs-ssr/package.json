@@ -1,5 +1,5 @@
 {
-  "name": "@pull-docs/examples",
+  "name": "@pull-docs/example-nextjs-ssr",
   "version": "0.1.0",
   "private": true,
   "scripts": {
