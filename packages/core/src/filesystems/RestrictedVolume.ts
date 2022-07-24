@@ -4,6 +4,9 @@ import type { IVolumePartiallyMutable } from '@pull-docs/types/dist/Volume';
 import ImmutableFileSystem from './ImmutableVolume';
 import { create } from 'lodash';
 
+/**
+ * Restricted filesystems can be written to, but cannot be frozen, updated or reset
+ */
 class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMutable {
   #vfs: IFileAccess;
 
@@ -26,6 +29,13 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
       return this.#vfs.mkdir(dir, options);
     }
   });
+
+  /**
+   * Do not use this method on restricted volumes, as it may disrupt the read/cache flow of files.
+   */
+  __internal_do_not_use_addReadFileHook(readFileHook) {
+    return this.#vfs.$$addReadFileHook(readFileHook);
+  }
 
   symlinksToJSON(): { [key: string]: { target: string; type: string }[] } {
     return this.#vfs.symlinksToJSON();

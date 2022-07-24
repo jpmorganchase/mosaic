@@ -33,8 +33,7 @@ const LocalFolderSource: Source<{
                 await serialiser.deserialise(fullPath, await fs.promises.readFile(fullPath)),
                 {
                   lastModified: new Date(await getLastModifiedDate(fullPath)).getTime(),
-                  fullPath: `/${path.join(options.prefixDir || '/', filepath)}`.replace(/^\/{2}/, '/'),
-                  hddPath: fullPath
+                  fullPath: `/${path.join(options.prefixDir || '/', filepath)}`.replace(/^\/{2}/, '/')
                 }
               );
             })

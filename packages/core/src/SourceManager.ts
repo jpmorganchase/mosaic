@@ -111,30 +111,6 @@ export default class SourceManager {
               return;
             }
 
-            // Only add this hook right before we freeze - so content only lazy loads after this point
-            source.filesystem.addReadFileHook(async (pagePath, fileData) => {
-              // Skip files starting with a .
-              // if (path.basename(pagePath).startsWith('.')) {
-              //   return fileData;
-              // }
-              // If this is a 'page' - read the original file from disk and try to inject anything that's missing.
-              // This feature ties directly in with the `LazyPagePlugin` - but we couldn't externalise it as the `addReadFileHook`
-              // method isn't available to plugins (and we don't want it to be, to avoid last-minute page changes happening)
-              if (this.#isNonHiddenPage(pagePath)) {
-                const currentPage = await source.serialiser.deserialise(pagePath, fileData);
-                if (currentPage.hddPath) {
-                  const page = await source.serialiser.deserialise(
-                    pagePath,
-                    await fs.promises.readFile(currentPage.hddPath)
-                  );
-                  return await source.serialiser.serialise(
-                    pagePath,
-                    merge(page, currentPage, { content: page.content })
-                  );
-                }
-              }
-              return fileData;
-            });
             source.filesystem.freeze();
             source.filesystem.clearCache();
 

@@ -16,7 +16,8 @@ type Page<AdditionalProps = {}> = {
   route?: string;
   lastModified?: Date;
   type?: string;
-  hddPath?: string;
+  // Added by LazyPagePlugin
+  $hddPath?: string;
   content?: string;
 } & Record<string, unknown> &
   AdditionalProps;

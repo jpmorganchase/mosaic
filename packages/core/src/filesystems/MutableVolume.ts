@@ -28,7 +28,7 @@ export default class MutableVolume extends FileSystemRestricted implements IVolu
     this.#vfs.$$unfreeze();
   }
 
-  addReadFileHook(hook) {
+  __internal_do_not_use_addReadFileHook(hook) {
     this.#vfs.$$addReadFileHook(hook);
   }
 

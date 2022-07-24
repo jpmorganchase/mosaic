@@ -14,8 +14,9 @@ const $CodeModPlugin: PluginType<{
       if (!isNonHiddenPage(page.fullPath)) {
         continue;
       }
-            if (page.frameOverrides) {
-        page.sharedConfig = { $ref: '#/frameOverrides' };
+      if (page.frameOverrides) {
+        page.sharedConfig = page.frameOverrides;
+        page.frameOverrides = { $ref: '#/sharedConfig' };
       }
     }
     return pages;

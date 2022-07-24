@@ -41,10 +41,11 @@ const BitbucketSource: Source<{
       mergeMap(async pages => {
         const out = [];
         for (const page of pages) {
+          const baseDir = path.join(rootDir, page.fullPath.replace(options.prefixDir, ''));
           out.push(
             _merge({}, page, {
               lastModified: new Date(
-                await repo.getLatestCommitDate(path.relative(repo.dir, page.hddPath))
+                await repo.getLatestCommitDate(path.relative(repo.dir, baseDir))
               ).getTime()
             })
           );

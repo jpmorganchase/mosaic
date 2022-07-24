@@ -22,23 +22,30 @@ module.exports = async (config, port) => {
 
   app.use(cors());
 
-  app.get('/sitemap.xml', async (req, res) => {
-    res.contentType('application/xml');
-    const result = String(await pullDocs.filesystem.promises.readFile(req.path));
-    res.send(result);
-  });
   app.get('/**', async (req, res) => {
     try {
       if (await pullDocs.filesystem.promises.exists(req.path)) {
-        const pagePath = await pullDocs.filesystem.promises.realpath(req.path);
-        if (path.extname(pagePath) === '.mdx') {
-          res.contentType('text/mdx');
-        } else if (path.extname(pagePath) === '.json') {
-          res.contentType('application/json');
+        if ((await pullDocs.filesystem.promises.stat(req.path)).isDirectory()) {
+          if (await pullDocs.filesystem.promises.exists(path.join(req.path, 'index'))) {
+            // Don't do an actual redirect - just send the URL as the response
+            res.status(302).json({ redirect: path.join(req.path, 'index') });
+          } else {
+            res.status(404).end();
+          }
+        } else {
+          const pagePath = await pullDocs.filesystem.promises.realpath(req.path);
+          if (path.extname(pagePath) === '.mdx') {
+            res.contentType('text/mdx');
+          } else if (path.extname(pagePath) === '.json') {
+            res.contentType('application/json');
+          } else if (path.extname(pagePath) === '.xml') {
+            res.contentType('application/xml');
+          } 
+          const result = await pullDocs.filesystem.promises.readFile(req.path);
+          res.send(result);
         }
-        const result = String(await pullDocs.filesystem.promises.readFile(req.path));
-        res.send(result);
-      } else {
+      }
+      else {
         res.status(404).end();
       }
     } catch (e) {

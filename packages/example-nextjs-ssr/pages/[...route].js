@@ -34,14 +34,23 @@ export async function getServerSideProps({ resolvedUrl }) {
   try {
     const req = await fetch(`http://localhost:8080${resolvedUrl}`);
     if (req.ok) {
-
       if (req.headers.get('content-type').includes('/mdx')) {
-        const mdxSource = await serialize(await req.text(), {
+        const text = await req.text();
+        const mdxSource = await serialize(text, {
           parseFrontmatter: true
         })
         return { props: { type: 'mdx', source: mdxSource } }
       } else if (req.headers.get('content-type').includes('/json')) {
-        return { props: { type: 'json', ...(await jsonReq.json()) } }
+        const json = await req.json();
+        return { props: { type: 'json', ...json } }
+      }
+      // If redirect url was returned
+    } else if (req.status === 302) {
+      return {
+        redirect: {
+          destination: (await req.json()).redirect,
+          permanent: true
+        }
       }
     }
   } catch { }

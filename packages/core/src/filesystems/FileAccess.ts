@@ -154,14 +154,15 @@ export default class FileAccess implements IFileAccess {
 
     const stat = await this.#adapter.promises.stat(realPath, { throwIfNoEntry: true });
     // Enable this for /index directories ... but should a filesystem really rewrite URLs like that?
-    if (stat.isDirectory()) {
-      // && !file.match(/[\\/]index(\.\w{1,4})?$/)) {
-      try {
-        const resolved = await this.#resolvePath(path.join(String(realPath), 'index'));
+    // The downside is that relative links can break when /index is missing from the end of a URL
+    // e.g. if /home/dir is actually /home/dir/index any relative links will be from ./home not ./home/dir
+    // if (stat.isDirectory()) {
+    //   try {
+    //     const resolved = await this.#resolvePath(path.join(String(realPath), 'index'));
 
-        return resolved;
-      } catch {}
-    }
+    //     return resolved;
+    //   } catch {}
+    // }
     if (!stat.isFile()) {
       return file;
       //throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);

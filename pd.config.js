@@ -62,7 +62,7 @@ module.exports = {
             namespace: 'local',
             options: {
                 rootDir: path.join(__dirname, '../developer-docs', 'docs'),
-                cache: false,
+                cache: true,
                 extensions: ['.mdx']
             }
         },
@@ -70,7 +70,7 @@ module.exports = {
             modulePath: require.resolve('@pull-docs/source-bitbucket'),
             namespace: 'developer',
             options: {
-                cache: false,
+                cache: true,
                 // TODO: Enter credentials (this can be done at `pullDocs.addSource`, or in the config file here)
                 credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
                 prefixDir: 'developer',
