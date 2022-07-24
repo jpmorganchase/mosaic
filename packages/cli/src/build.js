@@ -6,6 +6,8 @@ const fs = require('fs');
 module.exports = async (config, targetDir, scope) => {
   // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
   config.plugins = config.plugins.filter(({ runTimeOnly }) => !runTimeOnly);
+  // Turn off `cache` for each source
+  config.sources = config.sources.map(source => ({ ...source, options: { ...source.options, cache: false } }));
   const pullDocs = new PullDocs(config);
   await fsExtra.emptyDir(targetDir);
   await pullDocs.start();

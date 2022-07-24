@@ -7,7 +7,7 @@ const path = require('path');
 
 program
     .requiredOption('-c, --config <string>', 'Config path')
-    .option('-o, --out <string>', 'Output directory', '.pull-docs-build')
+    .option('-o, --out <string>', 'Output directory', '.tmp/.pull-docs-build')
     .option('-s, --scope <strings>', 'Command separated namespaces')
     .option('-p, --port <number>', 'Port to serve on', 8080);
 
