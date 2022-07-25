@@ -95,6 +95,7 @@ export default class Source {
    * This source can then ask its plugins if they also want to update in response to the other change.
    */
   async requestUpdate(updatedSourceFilesystem: IVolumeImmutable, globalVolume: IVolumeMutable) {
+    const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdate(updatedSourceFilesystem, {
       globalFilesystem: this.#globalFileSystem,
       pageExtensions: this.#pageExtensions,
@@ -102,6 +103,10 @@ export default class Source {
       serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
+    const timeTaken = new Date().getTime() - initTime;
+    if (timeTaken > 1000) {
+      console.warn(`Lifecycle phase 'shouldUpdate' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+    }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.unfreeze();
       await this.invokeAfterUpdate(globalVolume);
@@ -116,6 +121,7 @@ export default class Source {
   }
 
   async invokeAfterUpdate(globalVolume) {
+    const initTime = new Date().getTime();
     await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFileSystem,
       globalVolume,
@@ -124,6 +130,10 @@ export default class Source {
       serialiser: this.serialiser,
       config: this.#config.asReadOnly()
     });
+    const timeTaken = new Date().getTime() - initTime;
+    if (timeTaken > 1000) {
+      console.warn(`Lifecycle phase 'afterUpdate' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+    }
   }
 
   #createWorker() {
