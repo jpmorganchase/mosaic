@@ -10,12 +10,14 @@ export enum EVENT {
   UPDATE = 'UPDATE'
 }
 
+const textDecoder = new TextDecoder('utf8');
+
 export default class WorkerSubscription {
   #worker$: Subscription;
   #emitter = new EventEmitter();
 
   constructor(workerData) {
-    this.#worker$ = ObservableWorker.from<{ type: 'message' | 'signal'; data: {} }>(
+    this.#worker$ = ObservableWorker.from<{ type: 'message' | 'init'; data: Uint8Array }>(
       workerData
     ).subscribe({ next: this.#onNext, error: this.#onError, complete: this.#onComplete });
   }
@@ -48,13 +50,14 @@ export default class WorkerSubscription {
     return () => this.#emitter.off(type, handler);
   }
 
-  #onNext = ({ type, data }) => {
+  #onNext = ({ type, data }: { data: Uint8Array, type: 'init' | 'message' }) => {
     if (type === 'message') {
-      this.#emitter.emit(EVENT.UPDATE, { data });
+      this.#emitter.emit(EVENT.UPDATE, { data: JSON.parse(textDecoder.decode(data)) });
     } else if (type === 'init') {
       this.#emitter.emit(EVENT.START);
       if (data) {
-        this.#emitter.emit(EVENT.UPDATE, { data });
+        // We receive a file buffer for 'init', not an object
+        this.#emitter.emit(EVENT.UPDATE, { data: JSON.parse(textDecoder.decode(data)) });
       }
     } else {
       this.#onError(
