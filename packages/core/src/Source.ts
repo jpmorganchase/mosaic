@@ -104,8 +104,8 @@ export default class Source {
       config: this.#config.asReadOnly()
     });
     const timeTaken = new Date().getTime() - initTime;
-    if (timeTaken > 1000) {
-      console.warn(`Lifecycle phase 'shouldUpdate' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+    if (timeTaken > 400) {
+      console.warn(`Lifecycle phase 'shouldUpdate' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
     }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.unfreeze();
@@ -131,8 +131,8 @@ export default class Source {
       config: this.#config.asReadOnly()
     });
     const timeTaken = new Date().getTime() - initTime;
-    if (timeTaken > 1000) {
-      console.warn(`Lifecycle phase 'afterUpdate' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+    if (timeTaken > 800) {
+      console.warn(`Lifecycle phase 'afterUpdate' for source '${this.id.description}' took ${timeTaken / 1000}s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
     }
   }
 
