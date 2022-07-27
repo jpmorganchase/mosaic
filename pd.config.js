@@ -68,6 +68,21 @@ module.exports = {
         },
         {
             modulePath: require.resolve('@pull-docs/source-bitbucket'),
+            namespace: 'cibdat',
+            options: {
+                cache: true,
+                // TODO: Enter credentials (this can be done at `pullDocs.addSource`, or in the config file here)
+                credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
+                prefixDir: 'cibdat',
+                subfolder: 'docs',
+                repo: 'bitbucketdc.jpmchase.net/scm/devconsole/cibdat-docs.git',
+                branch: 'develop',
+                extensions: ['.mdx'],
+                remote: 'origin'
+            }
+        },
+        {
+            modulePath: require.resolve('@pull-docs/source-bitbucket'),
             namespace: 'developer',
             options: {
                 cache: true,
