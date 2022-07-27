@@ -51,7 +51,7 @@ export default class Source {
     this.#ignorePages = ignorePages;
     this.namespace = namespace;
     this.id = Symbol(
-      `${path.basename(modulePath)}#${md5(
+      `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
         util.inspect(this.#mergedOptions, { sorted: true })
       ).substring(0, 8)}`
     );

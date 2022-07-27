@@ -292,7 +292,8 @@ export default class Repo {
     );
 
     if (!result) {
-      throw new Error(`No date found for '${page}'`);
+      return new Date().getTime();
+      //throw new Error(`No date found for '${page}'`);
     }
     return Date.parse(result.trimEnd().replace(/"/g, '')) || new Date().getTime();
   };
