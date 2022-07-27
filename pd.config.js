@@ -69,7 +69,7 @@ module.exports = {
             modulePath: require.resolve('@pull-docs/source-bitbucket'),
             namespace: 'cibdat',
             options: {
-                cache: true,
+                cache: false,
                 // TODO: Enter credentials
                 credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
                 prefixDir: 'cibdat',

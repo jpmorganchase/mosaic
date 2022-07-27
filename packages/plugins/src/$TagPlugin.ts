@@ -8,7 +8,7 @@ import Meta from '@pull-docs/types/dist/Meta';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import normaliseRefs from './utils/normaliseRefs';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp, set, unset } from 'lodash';
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
@@ -51,7 +51,7 @@ const $TagPlugin: PluginType<{
             String(page.fullPath),
             normalisedRefs,
             {
-              resolve: createRefResolver(serialiser, globalFilesystem),
+              resolve: createRefResolver(serialiser, globalFilesystem, pageExtensions, ignorePages),
               dereference: { circular: false }
             }
           );
@@ -114,7 +114,7 @@ const $TagPlugin: PluginType<{
 
 export default $TagPlugin;
 
-function createRefResolver(serialiser, globalFilesystem) {
+function createRefResolver(serialiser, globalFilesystem, pageExtensions, ignorePages) {
   return {
     file: {
       canRead: true,
@@ -124,6 +124,14 @@ function createRefResolver(serialiser, globalFilesystem) {
           file.url,
           await globalFilesystem.promises.readFile(file.url)
         );
+
+        // TODO: This section isn't great, as it means we're searching for keys and resolving nested $refs in the main thread
+        const foundTags = findKeys(refedPage, '$tag');
+
+        for (const tagRef of foundTags) {
+          set(refedPage, tagRef.$$path.slice(0, -1), 
+          await normaliseRefs(refedPage.fullPath, tagRef, globalFilesystem, pageExtensions, ignorePages));
+        }
         try {
           return callback(null, refedPage as any);
         } catch (e) {
