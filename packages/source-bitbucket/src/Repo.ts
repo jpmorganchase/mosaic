@@ -65,6 +65,7 @@ function batchPromiseCallback<T>(
 function spawn(exe, args, cwd): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const child = cp.spawn(exe, args, { cwd });
+
     const buffer: string[] = [];
 
     function handleExit(code) {
@@ -286,7 +287,7 @@ export default class Repo {
     }
     const result = await spawn(
       'git',
-      ['log', '-1', '--format="%ci"', '--date=iso', `${page}`],
+      ['log', '-1', '--format="%ci"', '--date=iso', '--', `${page}`],
       this.#dir
     );
 

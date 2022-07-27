@@ -37,7 +37,7 @@ const $TagPlugin: PluginType<{
     if (!config.data?.tagRefs) {
       return;
     }
-    const tagRefs = config.data?.tagRefs;
+    const tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[]}  = config.data?.tagRefs;
     const refParser = new $RefParser();
     for (const fullPath in tagRefs) {
       const page: Page = await serialiser.deserialise(
@@ -45,10 +45,11 @@ const $TagPlugin: PluginType<{
         await globalFilesystem.promises.readFile(fullPath)
       );
       if (tagRefs && tagRefs[page.fullPath]) {
+        const normalisedRefs = await normaliseRefs(page.fullPath, tagRefs[page.fullPath], globalFilesystem, pageExtensions, ignorePages);
         try {
           const resolved: $RefParser.JSONSchema = await refParser.dereference(
             String(page.fullPath),
-            await normaliseRefs(page.fullPath, tagRefs[page.fullPath], globalFilesystem, pageExtensions, ignorePages),
+            normalisedRefs,
             {
               resolve: createRefResolver(serialiser, globalFilesystem),
               dereference: { circular: false }
@@ -60,6 +61,7 @@ const $TagPlugin: PluginType<{
             await serialiser.serialise(fullPath, { ...page, ...resolved } as any)
           );
         } catch (e) {
+          console.warn(`Error resolving tag(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${e.source}'`);
           throw e;
         }
       }

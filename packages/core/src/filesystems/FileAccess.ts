@@ -46,9 +46,9 @@ export default class FileAccess implements IFileAccess {
   }
 
   $$addReadFileHook(hook) {
-    if (this.#frozen) {
-      throw new Error('This file system has been frozen. Mutations are not allowed.');
-    }
+    // if (this.#frozen) {
+    //   throw new Error('This file system has been frozen. Mutations are not allowed.');
+    // }
     this.#hooks.push(hook);
   }
 

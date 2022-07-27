@@ -56,6 +56,7 @@ const $RefPlugin: PluginType<{
           });
           normalisedRefs[fullPath] = { ...page, ...resolved };
         } catch (e) {
+          console.warn(`Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${e.source}'`);
           throw e;
         }
       }
