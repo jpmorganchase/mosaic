@@ -21,6 +21,7 @@ if (isMainThread) {
 }
 (async () => {
   let config;
+  let filesystem;
   const serialiser = await bindSerialiser(workerData.serialisers);
   const pluginApi = await bindPluginMethods(workerData.plugins);
   const cachePath = path.join(process.cwd(), '.tmp', '.cache', `${workerData.name}.json`);
@@ -50,7 +51,7 @@ if (isMainThread) {
         }, Promise.resolve({}))
       ),
       switchMap(async (mergedPages: DirectoryJSON) => {
-        const filesystem = new MutableVolume(
+        filesystem = new MutableVolume(
           new FileAccess(Volume.fromJSON(mergedPages)),
           workerData.namespace
         );
@@ -63,11 +64,13 @@ if (isMainThread) {
         // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
         // we don't bother freezing
         // Turn data into buffer
-        const data = Buffer.from(JSON.stringify({ pages: filesystem.toJSON(), data: config.data, symlinks: filesystem.symlinksToJSON() }));
+        return Buffer.from(JSON.stringify({ pages: filesystem.toJSON(), data: config.data, symlinks: filesystem.symlinksToJSON() }));
+      }),
+      tap(() => {
         // Reset filesystem and config memory
-        filesystem.reset();
         config = null;
-        return data;
+        filesystem.reset();
+        filesystem = null;
       })
     )
     .subscribe(async (pagesAndSymlinks: Buffer) => {
@@ -82,7 +85,7 @@ if (isMainThread) {
       parentPort.postMessage({
         type: 'message',
         data: pagesAndSymlinks
-      }, [pagesAndSymlinks.buffer]);
+      }, /* transferList */ [pagesAndSymlinks.buffer]);
     });
 
   if (workerData.options.cache !== false) {
@@ -93,9 +96,9 @@ if (isMainThread) {
         parentPort.postMessage({
           type: 'init',
           data
-        }, /* use `transferList to re-use buffer */ [data.buffer]);
+        }, /* transferList */ [data.buffer]);
       }
-      // Important: Return if all went well to avoid sending another init signal
+      // Important: Return to avoid sending another init signal on L107
       return;
     } catch (e) {
       // Does not exist
