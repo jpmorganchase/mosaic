@@ -45,10 +45,6 @@ export default async function createPluginAPI<PluginInput, ConfigData = {}>(
   const baseSerialiserObj = createProxyBaseSerialiserAPI();
 
   return new Proxy(baseObj, {
-    // async apply(_obj, _this, args: [string, {}]) {
-    //   // Only serialisers have a signature that is a function with no API methods on it
-    //   return await serialiserRunner({ loadedPlugins: loadedPlugins as LoadedSerialiser[] }, ...args);
-    // },
     get(obj, propOrLifecycleName) {
       if (baseSerialiserObj.hasOwnProperty(propOrLifecycleName)) {
         return async (pagePath, ...args: [string | Page, {}]) =>

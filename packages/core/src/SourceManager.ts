@@ -1,11 +1,9 @@
 import path from 'path';
-import fs from 'fs';
 
 import type SourceModuleDefinition from '@pull-docs/types/dist/SourceModuleDefinition';
 import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
 import type { IUnionVolume, IVolumeImmutable, IVolumeMutable } from '@pull-docs/types/dist/Volume';
-import merge from 'lodash/merge';
 import { escapeRegExp } from 'lodash';
 
 import Source from './Source';
@@ -18,7 +16,6 @@ export default class SourceManager {
   #globalFileSystem: IUnionVolume;
   #globalVolume: IVolumeMutable;
   #pageExtensions: string[];
-  #isNonHiddenPage: (file: string) => boolean;
   #ignorePages: string[];
 
   constructor(
@@ -35,7 +32,6 @@ export default class SourceManager {
     this.#serialisers = serialisers;
     this.#globalFileSystem = globalFileSystem;
     this.#globalVolume = globalVolume;
-    this.#isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
   }
 
   onSourceUpdate(callback) {
@@ -189,12 +185,4 @@ function logUpdateStatus(sourceId, initOrStartTime) {
   } else {
     console.debug(`[PullDocs] Source '${sourceId.description}' received updated docs`);
   }
-}
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file => {
-    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-  };
 }

@@ -34,17 +34,17 @@ const $TagPlugin: PluginType<{
   },
   // Apply and resolve $refs in place of anywhere we saw $tag
   async afterUpdate(mutableFilesystem, { ignorePages, globalFilesystem, serialiser, pageExtensions, config }) {
-    if (!config.data?.tagRefs) {
+    const tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[]}  = config.data?.tagRefs;
+    if (!tagRefs) {
       return;
     }
-    const tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[]}  = config.data?.tagRefs;
     const refParser = new $RefParser();
     for (const fullPath in tagRefs) {
       const page: Page = await serialiser.deserialise(
         fullPath,
         await globalFilesystem.promises.readFile(fullPath)
       );
-      if (tagRefs && tagRefs[page.fullPath]) {
+      if (tagRefs[page.fullPath]) {
         const normalisedRefs = await normaliseRefs(page.fullPath, tagRefs[page.fullPath], globalFilesystem, pageExtensions, ignorePages);
         try {
           const resolved: $RefParser.JSONSchema = await refParser.dereference(
