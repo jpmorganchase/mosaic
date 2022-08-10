@@ -55,11 +55,9 @@ const LazyPagePlugin: PluginType<
         path.join(baseDir, String(filePath)),
         await serialiser.serialise(String(filePath), page)
       );
-      const { fullPath, route, title } = page;
+      const { content, ...pageRest } = page;
       const redactedPage = await serialiser.serialise(String(filePath), {
-        fullPath,
-        route,
-        title,
+        ...pageRest,
         $hddPath: path.join(baseDir, String(filePath))
       });
       await mutableFilesystem.promises.writeFile(String(filePath), redactedPage);

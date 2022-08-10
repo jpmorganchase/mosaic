@@ -20,7 +20,7 @@ export type Serialiser = {
   /**
    * Method to load a raw page from disk (e.g. an MDX file) and return into a `Page` object
    * @param fullPath Route on virtual disk (should be full fullPath, not an alias)
-   * @param pagePath Location on physical disk where content can be lazy loaded from
+   * @param page Page in `Page` form
    * @returns Page content
    */
   serialise: (fullPath: string, page: Page) => Promise<TDataOut>;

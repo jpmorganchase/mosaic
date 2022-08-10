@@ -1,14 +1,16 @@
 import path from 'path';
 
+import omit from 'lodash/omit';
 import reduce from 'lodash/reduce';
+import set from 'lodash/set';
+import escapeRegExp from 'lodash/escapeRegExp';
 
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
-import Meta from '@pull-docs/types/dist/Meta';
+import type Meta from '@pull-docs/types/dist/Meta';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import normaliseRefs from './utils/normaliseRefs';
-import { escapeRegExp, set, unset } from 'lodash';
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
@@ -133,7 +135,7 @@ function createRefResolver(serialiser, globalFilesystem, pageExtensions, ignoreP
           await normaliseRefs(refedPage.fullPath, tagRef, globalFilesystem, pageExtensions, ignorePages));
         }
         try {
-          return callback(null, refedPage as any);
+          return callback(null, omit(refedPage, 'content'));
         } catch (e) {
           return callback(e, null);
         }

@@ -1,11 +1,15 @@
+import path from 'path';
+
 import reduce from 'lodash/reduce';
+import omit from 'lodash/omit';
+
+import escapeRegExp from 'lodash/escapeRegExp';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
+
 import normaliseRefs from './utils/normaliseRefs';
-import { escapeRegExp } from 'lodash';
-import path from 'path';
 
 /**
  * Plugin that scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
@@ -103,7 +107,7 @@ function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
             file.url,
             await mutableFilesystem.promises.readFile(file.url)
             ));
-          return callback(null, refedPage);
+          return callback(null, omit(refedPage, 'content'));
         } catch (e) {
           return callback(e, null);
         }

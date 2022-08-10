@@ -13,18 +13,17 @@ module.exports = {
             options: {
             }
         },
-        // TODO: Disable until this works with tags
-        // {
-        //     modulePath: require.resolve('@pull-docs/plugins/dist/LazyPagePlugin'),
-        //     // This plugin must be the very last to run, so it can strip off metadata and content after the other
-        //     // plugins are done with them
-        //     priority: -2,
-        //     // Exclude this plugin in builds
-        //     runTimeOnly: true,
-        //     options: {
-        //         cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
-        //     }
-        // },
+        {
+            modulePath: require.resolve('@pull-docs/plugins/dist/LazyPagePlugin'),
+            // This plugin must be the very last to run, so it can strip off metadata and content after the other
+            // plugins are done with them
+            priority: -2,
+            // Exclude this plugin in builds
+            runTimeOnly: true,
+            options: {
+                cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
+            }
+        },
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/NextPrevPagePlugin'),
             options: {
