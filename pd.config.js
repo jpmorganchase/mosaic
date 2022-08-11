@@ -71,25 +71,11 @@ module.exports = {
                 cache: false,
                 // TODO: Enter credentials
                 credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
-                prefixDir: 'cibdat',
+                // Add to use a folder prefix
+                // prefixDir: 'cibdat',
                 subfolder: 'docs',
                 repo: 'bitbucketdc.jpmchase.net/scm/devconsole/cibdat-docs.git',
                 branch: 'master',
-                extensions: ['.mdx'],
-                remote: 'origin'
-            }
-        },
-        {
-            modulePath: require.resolve('@pull-docs/source-bitbucket'),
-            namespace: 'developer',
-            options: {
-                cache: true,
-                // TODO: Enter credentials
-                credentials: 'r698001:Njc4ODkxNDc0NTgyOj2E8RRlgGRtkmhhQrVaAjo/lB4d',
-                prefixDir: 'developer',
-                subfolder: 'docs',
-                repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git',
-                branch: 'develop',
                 extensions: ['.mdx'],
                 remote: 'origin'
             }
