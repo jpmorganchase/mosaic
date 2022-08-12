@@ -1,12 +1,11 @@
-import path from 'path';
-
 import type SourceModuleDefinition from '@pull-docs/types/dist/SourceModuleDefinition';
 import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
 import type { IUnionVolume, IVolumeImmutable, IVolumeMutable } from '@pull-docs/types/dist/Volume';
-import { escapeRegExp } from 'lodash';
 
 import Source from './Source';
+import createConfig from './helpers/createConfig';
+import { merge } from 'lodash';
 
 export default class SourceManager {
   #sources: Map<Symbol, Source> = new Map();
@@ -17,6 +16,7 @@ export default class SourceManager {
   #globalVolume: IVolumeMutable;
   #pageExtensions: string[];
   #ignorePages: string[];
+  #globalConfig = createConfig();
 
   constructor(
     plugins = [],
@@ -77,7 +77,7 @@ export default class SourceManager {
 
       await source.start();
 
-      source.onUpdate(async ({ pages, symlinks }) => {
+      source.onUpdate(async ({ pages, symlinks, data }) => {
         if (!sourceActive) {
           reject(
             new Error(
@@ -90,6 +90,7 @@ export default class SourceManager {
 
           //
           try {
+            this.#globalConfig.setData(merge(this.#globalConfig.data, data));
             source.filesystem.reset();
             source.filesystem.fromJSON(pages);
             // We need to re-apply symlinks in the main thread
@@ -100,7 +101,7 @@ export default class SourceManager {
               return;
             }
 
-            await source.invokeAfterUpdate(this.#globalVolume);
+            await source.invokeAfterUpdate(this.#globalVolume, this.#globalConfig);
 
             // After each async operation, we should check if anything has caused the Source to close
             if (!sourceActive) {
@@ -167,7 +168,7 @@ export default class SourceManager {
     return Promise.all(
       Array.from(this.#sources.values()).map(existingSource => {
         if (existingSource !== source && existingSource.filesystem.frozen) {
-          return existingSource.requestUpdate(immutableSourceFilesystem, this.#globalVolume);
+          return existingSource.requestUpdate(immutableSourceFilesystem, this.#globalVolume, this.#globalConfig);
         }
       })
     );

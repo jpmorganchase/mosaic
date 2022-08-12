@@ -19,6 +19,7 @@ import { EVENT } from './WorkerSubscription';
 import createConfig from './helpers/createConfig';
 import MutableVolume from './filesystems/MutableVolume';
 import FileAccess from './filesystems/FileAccess';
+import { ImmutableData } from '@pull-docs/types/dist/MutableData';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -94,7 +95,7 @@ export default class Source {
    * Called when another source (not this one) has changed.
    * This source can then ask its plugins if they also want to update in response to the other change.
    */
-  async requestUpdate(updatedSourceFilesystem: IVolumeImmutable, globalVolume: IVolumeMutable) {
+  async requestUpdate(updatedSourceFilesystem: IVolumeImmutable, globalVolume: IVolumeMutable, globalConfig: ImmutableData) {
     const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdate(updatedSourceFilesystem, {
       globalFilesystem: this.#globalFileSystem,
@@ -109,7 +110,7 @@ export default class Source {
     }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.unfreeze();
-      await this.invokeAfterUpdate(globalVolume);
+      await this.invokeAfterUpdate(globalVolume, globalConfig);
       this.filesystem.clearCache();
       this.filesystem.freeze();
     }
@@ -120,11 +121,12 @@ export default class Source {
     this.#serialisers.push(...serialisers);
   }
 
-  async invokeAfterUpdate(globalVolume) {
+  async invokeAfterUpdate(globalVolume, globalConfig) {
     const initTime = new Date().getTime();
     await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFileSystem,
       globalVolume,
+      globalConfig,
       pageExtensions: this.#pageExtensions,
       ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
@@ -164,7 +166,7 @@ export default class Source {
     this.#worker = this.#createWorker();
     this.#worker.on(EVENT.UPDATE, async ({ data: { pages, symlinks, data } }) => {
       this.#config = createConfig(data);
-      this.#emitter.emit(EVENT.UPDATE, { pages, symlinks });
+      this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
     });
   }
 }

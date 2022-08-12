@@ -12,7 +12,7 @@ export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
  * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,
  * it will trigger `pluginRunner` which executes it on every source automatically.
  */
-type Plugin<ConfigData = {}, PluginOptions = {}> = {
+type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * The first lifecycle hook to trigger after receiving pages from a source. The pages can safely be mutated and will be reflected in the final
@@ -63,7 +63,9 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
    * also have a read copy of the same file and it could end up out of sync.
    * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
-   * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
+   * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source.
+   * @param param.globalConfig Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps
+   * @param param.globalVolume An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
@@ -76,6 +78,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}> = {
       globalFilesystem: IUnionVolume;
       // TODO: Merge this with `globalFilesystem` to avoid confusion
       globalVolume: IVolumeMutable;
+      globalConfig: ImmutableData<GlobalConfigData>;
       pageExtensions: string[];
       ignorePages: string[];
     },
