@@ -61,6 +61,7 @@ module.exports = {
             options: {
                 rootDir: path.join(__dirname, '../developer-docs', 'docs'),
                 cache: true,
+                prefixDir: 'developer',
                 extensions: ['.mdx']
             }
         },

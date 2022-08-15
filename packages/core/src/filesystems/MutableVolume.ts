@@ -1,11 +1,12 @@
 import type { DirectoryJSON } from 'memfs/lib/volume';
-import type { IVolumeMutable } from '@pull-docs/types/dist/Volume';
 
-import type FileAccess from '@pull-docs/types/dist/FileAccess';
+import type { IVolumeMutable } from '@pull-docs/types/dist/Volume';
+import type IFileAccess from '@pull-docs/types/dist/IFileAccess';
+
 import FileSystemRestricted from './RestrictedVolume';
 
 export default class MutableVolume extends FileSystemRestricted implements IVolumeMutable {
-  #vfs: FileAccess;
+  #vfs: IFileAccess;
 
   constructor(vfs, namespace) {
     super(vfs, namespace);
