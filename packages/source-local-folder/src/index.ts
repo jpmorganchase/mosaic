@@ -2,7 +2,7 @@ import { concatMap, delay, merge, Observable, of, switchMap } from 'rxjs';
 import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
-import _merge from 'lodash/merge';
+import lodashMerge from 'lodash/merge';
 
 import type Source from '@pull-docs/types/dist/Source';
 import type Page from '@pull-docs/types/dist/Page';
@@ -28,12 +28,14 @@ const LocalFolderSource: Source<{
           await Promise.all(
             filepaths.map(async (filepath: string) => {
               const fullPath = path.join(options.rootDir, filepath);
-              return _merge(
+              return lodashMerge(
                 {},
                 await serialiser.deserialise(fullPath, await fs.promises.readFile(fullPath)),
                 {
                   lastModified: new Date(await getLastModifiedDate(fullPath)).getTime(),
-                  fullPath: `/${path.join(options.prefixDir || '/', filepath)}`.replace(/^\/{2}/, '/')
+                  fullPath: `/${
+                    options.prefixDir ? path.join(options.prefixDir, filepath) : filepath
+                  }`.replace(/^\/{2,}/, '/')
                 }
               );
             })

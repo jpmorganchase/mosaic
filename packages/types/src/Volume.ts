@@ -51,10 +51,26 @@ export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJS
 
 export interface IUnionVolume extends Omit<IVolumeImmutable, 'promises'> {
   promises: Pick<IVolumeImmutable, 'promises'> & {
+  /**
+   * Reads a file
+   * @param file Path
+   * @returns Promise<TDataOut>
+   */
   readFile(file: PathLike): Promise<TDataOut>;
   readFile(file: PathLike, options?: { includeConflicts?: false }): Promise<TDataOut>;
+  /**
+   * Reads 1 or more files (if multiple files exist at the same location within the union filesystem)
+   * @param file Path
+   * @param options.includeConflicts If multiple files exist at the same location in the filesystem, return them all as an array
+   * @returns Promise<TDataOut[]>
+   */
   readFile(file: PathLike, options: { includeConflicts: true }): Promise<TDataOut[]>;
   };
+  /**
+   * Scopes a filesystem to specific namespaces
+   * @param {string[]} namespaces Array of namespaces to limit this filesystem to
+   * @returns A new immutable union filesystem
+   */
   scope(namespaces: string[]): IUnionVolume;
 }
 

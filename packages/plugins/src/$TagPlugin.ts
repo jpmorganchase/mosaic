@@ -1,16 +1,11 @@
 import path from 'path';
 
-import omit from 'lodash/omit';
 import reduce from 'lodash/reduce';
-import set from 'lodash/set';
 import escapeRegExp from 'lodash/escapeRegExp';
 
 import type PluginType from '@pull-docs/types/dist/Plugin';
 import type Page from '@pull-docs/types/dist/Page';
 import type Meta from '@pull-docs/types/dist/Meta';
-import $RefParser from '@apidevtools/json-schema-ref-parser';
-
-import normaliseRefs from './utils/normaliseRefs';
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
@@ -21,12 +16,16 @@ import normaliseRefs from './utils/normaliseRefs';
  */
 const $TagPlugin: PluginType<{
   tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
+  globalRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
   subscribedTags: string[];
 }> = {
   // Check if the updated source has any /.tag aliases that we care about - if it does, we should re-run `afterUpdate` to
   // make sure we pull in the latest pages
-  async shouldUpdate(updatedSourceFilesystem, { config }) {
-    if (!config.data?.subscribedTags || !(await updatedSourceFilesystem.promises.exists('/.tags'))) {
+  async shouldClearCache(updatedSourceFilesystem, { config }) {
+    if (
+      !config.data?.subscribedTags ||
+      !(await updatedSourceFilesystem.promises.exists('/.tags'))
+    ) {
       return false;
     }
     // Does the updated source have tags we are interested in?
@@ -34,53 +33,8 @@ const $TagPlugin: PluginType<{
       config.data.subscribedTags.includes(tag)
     );
   },
-  // Apply and resolve $refs in place of anywhere we saw $tag
-  async afterUpdate(mutableFilesystem, { ignorePages, globalFilesystem, serialiser, pageExtensions, config }) {
-    const tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[]}  = config.data?.tagRefs;
-    if (!tagRefs) {
-      return;
-    }
-    const refParser = new $RefParser();
-    for (const fullPath in tagRefs) {
-      const page: Page = await serialiser.deserialise(
-        fullPath,
-        await globalFilesystem.promises.readFile(fullPath)
-      );
-      if (tagRefs[page.fullPath]) {
-        const normalisedRefs = await normaliseRefs(page.fullPath, tagRefs[page.fullPath], globalFilesystem, pageExtensions, ignorePages);
-        try {
-          const resolved: $RefParser.JSONSchema = await refParser.dereference(
-            String(page.fullPath),
-            normalisedRefs,
-            {
-              resolve: createRefResolver(serialiser, globalFilesystem, pageExtensions, ignorePages),
-              dereference: { circular: false }
-            }
-          );
-
-          await mutableFilesystem.promises.writeFile(
-            fullPath,
-            await serialiser.serialise(fullPath, { ...page, ...resolved } as any)
-          );
-        } catch (e) {
-          console.warn(`Error resolving tag(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${e.source}'`);
-          throw e;
-        }
-      }
-    }
-  },
   // Every source with tags will create symlinks with the tagged pages, inside /.tags
   async $afterSource(pages: Page<{ tags?: string[] }>[], { config, ignorePages, pageExtensions }) {
-    const tagRefs = {};
-    const tags = [];
-    const createRefs = tagDescriptor => {
-      const [tag, fragment = ''] = tagDescriptor.$$value.split('#');
-
-      if (!tag) {
-        return tagDescriptor;
-      }
-      return { ...tagDescriptor, $$value: `${path.join('/.tags', tag, '**')}#${fragment}` };
-    };
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
@@ -90,59 +44,34 @@ const $TagPlugin: PluginType<{
       const meta = page as Meta<{ tags?: string[] }>;
       // Symlink every `tag` item to '/.tags' folder
       if (meta.tags?.length) {
-        config.setTags(
-          page.fullPath,
-          meta.tags
-        );
+        config.setTags(page.fullPath, meta.tags);
         delete meta.tags;
       }
 
       // Find any references to $tag
       const foundTags = findKeys(page, '$tag');
-      tags.push(
-        ...foundTags.map(tagRef => {
-          const [tag] = tagRef.$$value.split('#');
-          return tag;
-        })
-      );
       if (foundTags.length) {
-        tagRefs[page.fullPath] = foundTags.map(createRefs);
+        const tags = new Set<string>();
+
+        foundTags.forEach(ref => {
+          const [tag, fragment = ''] = ref.$$value.split('#');
+
+          tags.add(tag);
+
+          config.setGlobalRef(
+            page.fullPath,
+            ref.$$path,
+            `${path.join('/.tags', tag, '**')}#${fragment}`
+          );
+        });
+        config.setData({ subscribedTags: Array.from(tags) });
       }
     }
-    config.setData({ tagRefs, subscribedTags: Array.from(new Set(tags)) });
     return pages;
   }
 };
 
 export default $TagPlugin;
-
-function createRefResolver(serialiser, globalFilesystem, pageExtensions, ignorePages) {
-  return {
-    file: {
-      canRead: true,
-      order: 1,
-      async read(file, callback) {
-        const refedPage = await serialiser.deserialise(
-          file.url,
-          await globalFilesystem.promises.readFile(file.url)
-        );
-
-        // TODO: This section isn't great, as it means we're searching for keys and resolving nested $refs in the main thread
-        const foundTags = findKeys(refedPage, '$tag');
-
-        for (const tagRef of foundTags) {
-          set(refedPage, tagRef.$$path.slice(0, -1), 
-          await normaliseRefs(refedPage.fullPath, tagRef, globalFilesystem, pageExtensions, ignorePages));
-        }
-        try {
-          return callback(null, omit(refedPage, 'content'));
-        } catch (e) {
-          return callback(e, null);
-        }
-      }
-    }
-  };
-}
 
 const findKeys = (obj, targetProp, pathParts: string[] = []) => {
   return reduce<string, { $$path: string[]; $$value: string }[]>(

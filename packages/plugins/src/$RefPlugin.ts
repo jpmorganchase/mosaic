@@ -17,8 +17,58 @@ import normaliseRefs from './utils/normaliseRefs';
  */
 const $RefPlugin: PluginType<{
   refs: { [key: string]: { $$path: string[]; $$value: string }[] };
+  globalRefs: { [key: string]: { $$path: string[]; $$value: string }[] };
+  subscribedTags: string[];
 }> = {
-  async $beforeSend(mutableFilesystem, { config, serialiser, pageExtensions, ignorePages }, options) {
+  async afterUpdate(
+    mutableFilesystem,
+    { ignorePages, globalFilesystem, serialiser, pageExtensions, globalConfig }
+  ) {
+    mutableFilesystem.__internal_do_not_use_addReadFileHook(async (pagePath: string, fileData) => {
+      if (globalConfig.data.globalRefs[pagePath]) {
+        const normalisedRef = {
+          ...(await serialiser.deserialise(pagePath, fileData)),
+          ...(await normaliseRefs(
+            String(pagePath),
+            globalConfig.data.globalRefs[pagePath],
+            globalFilesystem,
+            pageExtensions,
+            ignorePages
+          ))
+        } as any;
+        const resolve = createRefResolver({
+          [pagePath]: normalisedRef
+        }, serialiser, globalFilesystem);
+        const refParser = new $RefParser();
+
+        try {
+          const resolved: $RefParser.JSONSchema = await refParser.dereference(
+            String(pagePath),
+            normalisedRef,
+            {
+              resolve,
+              dereference: { circular: false }
+            }
+          );
+          return serialiser.serialise(pagePath, { ...normalisedRef, ...resolved });
+        } catch (e) {
+          console.warn(
+            `Error resolving ref(s) for page '${pagePath}'. ${e.message.replace(/\.$/, '')} in '${
+              e.source
+            }'`
+          );
+          throw e;
+        }
+      }
+
+      return fileData;
+    });
+  },
+  async $beforeSend(
+    mutableFilesystem,
+    { config, serialiser, pageExtensions, ignorePages },
+    options
+  ) {
     // Prevent any more refs being set after this lifecycle has been called - as they won't take effect
     config.setRef = () => {
       throw new Error(
@@ -54,13 +104,21 @@ const $RefPlugin: PluginType<{
       for (const fullPath in normalisedRefs) {
         const page = normalisedRefs[fullPath];
         try {
-          const resolved: $RefParser.JSONSchema = await refParser.dereference(String(fullPath), page, {
-            resolve,
-            dereference: { circular: false }
-          });
+          const resolved: $RefParser.JSONSchema = await refParser.dereference(
+            String(fullPath),
+            page,
+            {
+              resolve,
+              dereference: { circular: false }
+            }
+          );
           normalisedRefs[fullPath] = { ...page, ...resolved };
         } catch (e) {
-          console.warn(`Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${e.source}'`);
+          console.warn(
+            `Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${
+              e.source
+            }'`
+          );
           throw e;
         }
       }
@@ -102,10 +160,10 @@ function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
       async read(file, callback) {
         try {
           const refedPage =
-          normalisedRefs[file.url] ||
-          (await serialiser.deserialise(
-            file.url,
-            await mutableFilesystem.promises.readFile(file.url)
+            normalisedRefs[file.url] ||
+            (await serialiser.deserialise(
+              file.url,
+              await mutableFilesystem.promises.readFile(file.url)
             ));
           return callback(null, omit(refedPage, 'content'));
         } catch (e) {

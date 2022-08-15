@@ -25,7 +25,7 @@ function createProxyBaseAPI<ConfigData>(): Plugin<ConfigData> {
     $afterSource() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     },
-    shouldUpdate() {
+    shouldClearCache() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     },
     afterUpdate() {

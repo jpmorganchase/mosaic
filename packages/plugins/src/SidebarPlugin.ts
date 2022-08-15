@@ -18,6 +18,7 @@ const SidebarPlugin: PluginType<
       cwd: '/'
     });
     for (const dirName of dirs) {
+      const sidebarFilePath = path.join(String(dirName), options.filename);
       const pages = await mutableFilesystem.promises.glob(
         createFileGlob(['*', '*/index'], pageExtensions),
         {
@@ -30,19 +31,19 @@ const SidebarPlugin: PluginType<
       if (pages.length) {
         for (let i = 0; i < pages.length; i++) {
           config.setRef(
-            path.join(String(dirName), options.filename),
+            sidebarFilePath,
             ['pages', `${i}`, 'title', '$ref'],
             `${pages[i]}#/title`
           );
           config.setRef(
-            path.join(String(dirName), options.filename),
+            sidebarFilePath,
             ['pages', `${i}`, 'route', '$ref'],
             `${pages[i]}#/route`
           );
         }
 
         await mutableFilesystem.promises.writeFile(
-          path.join(String(dirName), options.filename),
+          sidebarFilePath,
           '[]'
         );
       }

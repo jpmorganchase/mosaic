@@ -125,7 +125,7 @@ export default class FileAccess implements IFileAccess {
 
   async exists(file) {
     try {
-      return !!(await this.#adapter.promises.stat(file));
+      return !!(await this.#adapter.promises.realpath(file));
     } catch (e) {
       if (e.code !== 'ENOENT') {
         throw e;

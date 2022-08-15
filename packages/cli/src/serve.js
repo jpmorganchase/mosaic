@@ -5,35 +5,30 @@ const path = require('path');
 
 const app = express();
 
-module.exports = async (config, port) => {
+module.exports = async (config, port, scope) => {
 
   app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`[PullDocs] Listening on port ${port}${Array.isArray(scope) ? ` (scoped to ${scope.join(', ')})` : ''}`);
   });
   const pullDocs = new PullDocs(config);
   await pullDocs.start();
 
-  pullDocs.onSourceUpdate(async (value, source) => {
-    // console.log(
-    //   'CHANGE',
-    //   (await source.filesystem.readFile('/case-studies/index.mdx')).toString()
-    // );
-  });
+  const fs = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
 
   app.use(cors());
 
   app.get('/**', async (req, res) => {
     try {
-      if (await pullDocs.filesystem.promises.exists(req.path)) {
-        if ((await pullDocs.filesystem.promises.stat(req.path)).isDirectory()) {
-          if (await pullDocs.filesystem.promises.exists(path.join(req.path, 'index'))) {
+      if (await fs.promises.exists(req.path)) {
+        if ((await fs.promises.stat(req.path)).isDirectory()) {
+          if (await fs.promises.exists(path.join(req.path, 'index'))) {
             // Don't do an actual redirect - just send the URL as the response
             res.status(302).json({ redirect: path.join(req.path, 'index') });
           } else {
             res.status(404).end();
           }
         } else {
-          const pagePath = await pullDocs.filesystem.promises.realpath(req.path);
+          const pagePath = await fs.promises.realpath(req.path);
           if (path.extname(pagePath) === '.mdx') {
             res.contentType('text/mdx');
           } else if (path.extname(pagePath) === '.json') {
@@ -41,7 +36,7 @@ module.exports = async (config, port) => {
           } else if (path.extname(pagePath) === '.xml') {
             res.contentType('application/xml');
           } 
-          const result = await pullDocs.filesystem.promises.readFile(req.path);
+          const result = await fs.promises.readFile(req.path);
           res.send(result);
         }
       }

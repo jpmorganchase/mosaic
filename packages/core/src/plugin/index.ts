@@ -28,8 +28,8 @@ export async function bindPluginMethods(plugins: PluginModuleDefinition[]): Prom
     async $afterSource(pages, args) {
       return await pluginApi.$afterSource(pages, args);
     },
-    async shouldUpdate(lastAfterUpdateReturn, args) {
-      return await pluginApi.shouldUpdate(lastAfterUpdateReturn, args);
+    async shouldClearCache(lastAfterUpdateReturn, args) {
+      return await pluginApi.shouldClearCache(lastAfterUpdateReturn, args);
     },
     async afterUpdate(mutableFilesystem, args) {
       return await pluginApi.afterUpdate(mutableFilesystem, args);

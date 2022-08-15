@@ -12,7 +12,7 @@ export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
  * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,
  * it will trigger `pluginRunner` which executes it on every source automatically.
  */
-type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
+type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = ConfigData> = {
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * The first lifecycle hook to trigger after receiving pages from a source. The pages can safely be mutated and will be reflected in the final
@@ -55,7 +55,6 @@ type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
   /**
    * Plugin lifecycle method that triggers inside the main process.
    * Calls after the filesystem and symlinks have been reconstructed due to a change to the current source. This happens in the main thread.
-   * This method also calls whenever another source has changed - if the `shouldUpdate` lifecycle returned `true`.
    * Pages will NOT be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
    * This method is safe to use with lazy loading, as the filesystem should return the full page when read.
    * NOTE: Plugin methods that trigger inside the parent process should be async and highly optimised to avoid holding up the main thread.
@@ -64,8 +63,8 @@ type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
    * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source.
-   * @param param.globalConfig Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps
-   * @param param.globalVolume An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.
+   * @param param.globalConfig An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.
+   * @param param.sharedFilesystem Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
@@ -76,8 +75,7 @@ type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
       serialiser: Serialiser;
       config: ImmutableData<ConfigData>;
       globalFilesystem: IUnionVolume;
-      // TODO: Merge this with `globalFilesystem` to avoid confusion
-      globalVolume: IVolumeMutable;
+      sharedFilesystem: IVolumeMutable;
       globalConfig: ImmutableData<GlobalConfigData>;
       pageExtensions: string[];
       ignorePages: string[];
@@ -86,16 +84,17 @@ type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = {}> = {
   ): Promise<void>;
   /**
    * Plugin lifecycle method that triggers inside the main process everytime ANY source emits new pages.
-   * This method should return a boolean that will indicate if this source should re-run the `afterUpdate` lifecycle.
-   * Returning `undefined`, false or no value, will result in no `afterUpdate` call
+   * This method should return a boolean that will indicate if this source should clear page caches.
+   * This method calls whenever another source (not this one) has changed.
+   * Returning `undefined`, false or no value, will result in the cache to be retained
    * @param updatedSourceFilesystem Immutable filesystem for the source that changed
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
    * @param options The options passed in when declaring the plugin
-   * @returns {Promise<boolean>} A boolean indicating whether `afterUpdate` should be called again for this source / plugin
+   * @returns {Promise<boolean>} A boolean indicating whether to clear the cache for this source
    */
-  shouldUpdate?(
+  shouldClearCache?(
     updatedSourceFilesystem: IVolumeImmutable,
     {}: {
       serialiser: Serialiser;

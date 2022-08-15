@@ -44,6 +44,12 @@ export default class UnionFileAccess extends FileAccess {
     matchingNamespaceFSs.forEach(fss => scopedUnion.use(fss as unknown as IFS));
     return new UnionFileAccess(scopedUnion);
   }
+  /**
+   * Reads 1 or more files (if multiple files exist at the same location within the union filesystem)
+   * @param file Path
+   * @param options.includeConflicts If multiple files exist at the same location in the filesystem, return them all as an array
+   * @returns Promise<TDataOut[]>
+   */
   readFile(file, options?: { includeConflicts?: boolean }) {
     if (!options?.includeConflicts) {
       return super.readFile(file);

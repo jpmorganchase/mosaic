@@ -15,6 +15,8 @@ export default function Index({ type, ...props }) {
   if (type === 'mdx') {
     return (
       <div className="wrapper">
+        <div>Rating: {props.source.frontmatter.rating}</div>
+
         <MDXRemote {...props.source} components={components} scope={{ meta: props.source.frontmatter }} />
       </div>
     );

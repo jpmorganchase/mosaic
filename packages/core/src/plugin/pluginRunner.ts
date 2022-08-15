@@ -29,7 +29,7 @@ export default async function pluginRunner(
         plugin.options
       );
 
-      if (result && lifecycleName !== '$afterSource' && lifecycleName !== 'shouldUpdate') {
+      if (result && lifecycleName !== '$afterSource' && lifecycleName !== 'shouldClearCache') {
         console.warn(
           `[PullDocs] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
         );

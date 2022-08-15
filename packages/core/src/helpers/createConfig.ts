@@ -4,7 +4,7 @@ import { merge } from 'lodash';
 import path from 'path';
 
 export default function createConfig<T = {}>(initialData: Partial<T> = {}): MutableData<T> {
-  let data = { refs: {}, aliases: {}, ...initialData };
+  let data: { refs?: {}; globalRefs?: {}; aliases?: {} } = { refs: {}, globalRefs: {}, aliases: {}, ...initialData };
 
   const configReadOnly = {
     get data() {
@@ -20,6 +20,13 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
       data.aliases[fullPath] = new Set<string>(data.aliases[fullPath] || []);
       tags.forEach(tag => data.aliases[fullPath].add(path.join('/.tags', tag, fullPath)));
     },
+    setGlobalRef(targetPath, targetPropPath, refValue) {
+      data.globalRefs[targetPath] = data.globalRefs[targetPath] || [];
+      data.globalRefs[targetPath].push({
+        $$path: targetPropPath,
+        $$value: refValue
+      });
+    },
     setRef(targetPath, targetPropPath, refValue) {
       data.refs[targetPath] = data.refs[targetPath] || [];
       data.refs[targetPath].push({
@@ -31,8 +38,12 @@ export default function createConfig<T = {}>(initialData: Partial<T> = {}): Muta
       data.aliases[fullPath] = new Set<string>(data.aliases[fullPath] || []);
       aliases.forEach(alias => data.aliases[fullPath].add(alias));
     },
-    setData(value) {
-      merge(data, value);
+    setData(value, overwrite = false) {
+      if (overwrite) {
+        data = value;
+      } else {
+        merge(data, value);
+      }
     },
     get data() {
       return configReadOnly.data;

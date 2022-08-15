@@ -24,5 +24,5 @@ if (!config) {
 if (program.args[0] === 'build') {
     build(config, path.resolve(process.cwd(), options.out), options.scope && options.scope.split(','));
 } else if (program.args[0] === 'serve') {
-    serve(config, options.port);
+    serve(config, options.port, options.scope && options.scope.split(','));
 }

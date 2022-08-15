@@ -1,13 +1,12 @@
 import EventEmitter from 'events';
 import { Volume } from 'memfs';
-import { escapeRegExp, merge } from 'lodash';
 import util from 'util';
 import md5 from 'md5';
 import path from 'path';
 
 import type PluginModuleDefinition from '@pull-docs/types/dist/PluginModuleDefinition';
 import type SerialiserModuleDefinition from '@pull-docs/types/dist/SerialiserModuleDefinition';
-import type { IUnionVolume, IVolumeImmutable, IVolumeMutable } from '@pull-docs/types/dist/Volume';
+import type { IUnionVolume, IVolumeImmutable } from '@pull-docs/types/dist/Volume';
 import type Serialiser from '@pull-docs/types/dist/Serialiser';
 import type MutableData from '@pull-docs/types/dist/MutableData';
 import type Plugin from '@pull-docs/types/dist/Plugin';
@@ -19,7 +18,6 @@ import { EVENT } from './WorkerSubscription';
 import createConfig from './helpers/createConfig';
 import MutableVolume from './filesystems/MutableVolume';
 import FileAccess from './filesystems/FileAccess';
-import { ImmutableData } from '@pull-docs/types/dist/MutableData';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -27,13 +25,13 @@ export default class Source {
   #plugins: PluginModuleDefinition[] = [];
   #serialisers: SerialiserModuleDefinition[] = [];
   #worker: WorkerSubscription;
-  #globalFileSystem: IUnionVolume;
+  #globalFilesystem: IUnionVolume;
   #pluginApi: Plugin;
   #mergedOptions: Record<string, unknown>;
-  #config: MutableData<{}>;
   #pageExtensions: string[];
   #ignorePages: string[];
   
+  config: MutableData<{}>;
   serialiser: Serialiser;
   namespace: string;
   id: Symbol;
@@ -44,11 +42,11 @@ export default class Source {
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
-    globalFileSystem: IUnionVolume
+    globalFilesystem: IUnionVolume
   ) {
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
-    this.#globalFileSystem = globalFileSystem;
+    this.#globalFilesystem = globalFilesystem;
     this.#ignorePages = ignorePages;
     this.namespace = namespace;
     this.id = Symbol(
@@ -93,26 +91,23 @@ export default class Source {
 
   /**
    * Called when another source (not this one) has changed.
-   * This source can then ask its plugins if they also want to update in response to the other change.
+   * This source can then ask its plugins if they also want to clear their cache in response to the other source's change.
    */
-  async requestUpdate(updatedSourceFilesystem: IVolumeImmutable, globalVolume: IVolumeMutable, globalConfig: ImmutableData) {
+  async requestCacheClear(updatedSourceFilesystem: IVolumeImmutable) {
     const initTime = new Date().getTime();
-    const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdate(updatedSourceFilesystem, {
-      globalFilesystem: this.#globalFileSystem,
+    const shouldInvokeAfterUpdate = await this.#pluginApi.shouldClearCache(updatedSourceFilesystem, {
+      globalFilesystem: this.#globalFilesystem,
       pageExtensions: this.#pageExtensions,
       ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
-      config: this.#config.asReadOnly()
+      config: this.config.asReadOnly()
     });
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 400) {
-      console.warn(`Lifecycle phase 'shouldUpdate' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+      console.warn(`Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
     }
     if (shouldInvokeAfterUpdate === true) {
-      this.filesystem.unfreeze();
-      await this.invokeAfterUpdate(globalVolume, globalConfig);
       this.filesystem.clearCache();
-      this.filesystem.freeze();
     }
   }
 
@@ -121,16 +116,16 @@ export default class Source {
     this.#serialisers.push(...serialisers);
   }
 
-  async invokeAfterUpdate(globalVolume, globalConfig) {
+  async invokeAfterUpdate(sharedFilesystem, globalConfig) {
     const initTime = new Date().getTime();
     await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
-      globalFilesystem: this.#globalFileSystem,
-      globalVolume,
+      globalFilesystem: this.#globalFilesystem,
+      sharedFilesystem,
       globalConfig,
       pageExtensions: this.#pageExtensions,
       ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
-      config: this.#config.asReadOnly()
+      config: this.config.asReadOnly()
     });
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {
@@ -165,7 +160,7 @@ export default class Source {
     this.#pluginApi = await bindPluginMethods(this.#plugins);
     this.#worker = this.#createWorker();
     this.#worker.on(EVENT.UPDATE, async ({ data: { pages, symlinks, data } }) => {
-      this.#config = createConfig(data);
+      this.config = createConfig(data);
       this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
     });
   }

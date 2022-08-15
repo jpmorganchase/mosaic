@@ -1,4 +1,5 @@
 import type PluginType from '@pull-docs/types/dist/Plugin';
+import flatten from 'lodash/flatten';
 import path from 'path';
 
 /**
@@ -12,9 +13,9 @@ const SharedConfigPlugin: PluginType<{}, { filename: string }> = {
     options
   ) {
     const pagePaths = await mutableFilesystem.promises.glob(
-      createFileGlob('**/index', pageExtensions),
+      createFileGlob('**/index,/index', pageExtensions),
       {
-        ignore: [options.filename, ...ignorePages.map(ignore => `**/${ignore}`)],
+        ignore: [options.filename, ...flatten(ignorePages.map(ignore => [ignore, `**/${ignore}`]))],
         cwd: '/'
       }
     );

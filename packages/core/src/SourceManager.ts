@@ -12,8 +12,8 @@ export default class SourceManager {
   #plugins: PluginModuleDefinition[];
   #serialisers: SerialiserModuleDefinition[];
   #handlers: Set<(filesystem: IVolumeImmutable, source: Source) => {}> = new Set();
-  #globalFileSystem: IUnionVolume;
-  #globalVolume: IVolumeMutable;
+  #globalFilesystem: IUnionVolume;
+  #sharedFilesystem: IVolumeMutable;
   #pageExtensions: string[];
   #ignorePages: string[];
   #globalConfig = createConfig();
@@ -23,15 +23,15 @@ export default class SourceManager {
     serialisers = [],
     pageExtensions,
     ignorePages,
-    globalFileSystem,
-    globalVolume
+    globalFilesystem,
+    sharedFilesystem
   ) {
     this.#plugins = plugins;
     this.#pageExtensions = pageExtensions;
     this.#ignorePages = ignorePages;
     this.#serialisers = serialisers;
-    this.#globalFileSystem = globalFileSystem;
-    this.#globalVolume = globalVolume;
+    this.#globalFilesystem = globalFilesystem;
+    this.#sharedFilesystem = sharedFilesystem;
   }
 
   onSourceUpdate(callback) {
@@ -65,7 +65,7 @@ export default class SourceManager {
         },
         this.#pageExtensions,
         this.#ignorePages,
-        this.#globalFileSystem
+        this.#globalFilesystem
       );
       const immutableSourceFilesystem = source.filesystem.asReadOnly();
 
@@ -90,7 +90,13 @@ export default class SourceManager {
 
           //
           try {
-            this.#globalConfig.setData(merge(this.#globalConfig.data, data));
+            this.#globalConfig.setData(
+              Array.from(this.#sources.values()).reduce(
+                (mergedConfig, { config }) => merge(mergedConfig, config?.data || {}),
+                {}
+              ),
+              true
+            );
             source.filesystem.reset();
             source.filesystem.fromJSON(pages);
             // We need to re-apply symlinks in the main thread
@@ -101,7 +107,7 @@ export default class SourceManager {
               return;
             }
 
-            await source.invokeAfterUpdate(this.#globalVolume, this.#globalConfig);
+            await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
 
             // After each async operation, we should check if anything has caused the Source to close
             if (!sourceActive) {
@@ -134,9 +140,7 @@ export default class SourceManager {
       source.onExit(() => {
         if (!sourceActive) {
           reject(
-            new Error(
-              `Source '${source.id.description}' silently exited before initialising.`
-            )
+            new Error(`Source '${source.id.description}' silently exited before initialising.`)
           );
         }
         console.debug(`[PullDocs] Source '${source.id.description}' closed`);
@@ -168,7 +172,7 @@ export default class SourceManager {
     return Promise.all(
       Array.from(this.#sources.values()).map(existingSource => {
         if (existingSource !== source && existingSource.filesystem.frozen) {
-          return existingSource.requestUpdate(immutableSourceFilesystem, this.#globalVolume, this.#globalConfig);
+          return existingSource.requestCacheClear(immutableSourceFilesystem);
         }
       })
     );
@@ -182,7 +186,6 @@ function logUpdateStatus(sourceId, initOrStartTime) {
         (new Date().getTime() - initOrStartTime) / 1000
       }s after starting.`
     );
-    console.info(`[PullDocs] Source ${String(sourceId)}`);
   } else {
     console.debug(`[PullDocs] Source '${sourceId.description}' received updated docs`);
   }

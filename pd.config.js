@@ -34,7 +34,6 @@ module.exports = {
             },
             priority: 2
         },
-        // TODO: Remove this plugin once the docs add file extensions in refs
         {
             modulePath: require.resolve('@pull-docs/plugins/dist/PagesWithoutFileExtPlugin'),
             options: {

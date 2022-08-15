@@ -37,8 +37,8 @@ export default class PullDocs {
     sources: SourceModuleDefinition[];
     pageExtensions: string[];
   }) {
-    const globalVolume = new MutableVolume(new FileAccess(new Volume()), '*');
-    this.#ufs.use(globalVolume as unknown as any);
+    const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
+    this.#ufs.use(sharedFilesystem as unknown as any);
     const {
       ignorePages = [],
       sources = [],
@@ -83,7 +83,7 @@ export default class PullDocs {
       pageExtensions,
       ignorePages,
       this.#vfs,
-      globalVolume
+      sharedFilesystem
     );
   }
 
