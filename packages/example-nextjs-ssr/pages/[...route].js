@@ -1,5 +1,5 @@
-import { serialize } from 'next-mdx-remote/serialize'
-import { MDXRemote } from 'next-mdx-remote'
+import { serialize } from 'next-mdx-remote/serialize';
+import { MDXRemote } from 'next-mdx-remote';
 
 import { Accordion } from '../../../../digital-platform-docs/packages/components-next/Accordion';
 import { Callout } from '../../../../digital-platform-docs/packages/components-next/Callout';
@@ -8,28 +8,31 @@ import { Hero } from '../../../../digital-platform-docs/packages/components-next
 import { TileLink } from '../../../../digital-platform-docs/packages/components-next/TileLink';
 import { PageFilterView } from '../../../../digital-platform-docs/packages/components-next/PageFilterView';
 import { Tiles } from '../../../../digital-platform-docs/packages/components-next/Tiles';
+import { Breadcrumbs } from '../../../../digital-platform-docs/packages/site-components/Breadcrumbs';
 
-const components = { Accordion, Callout, TileLink, Tiles, Hero, Link, PageFilterView };
+const components = { Accordion, Callout, TileLink, Tiles, Hero, Link, PageFilterView, Breadcrumbs };
 
 export default function Index({ type, ...props }) {
   if (type === 'mdx') {
     return (
       <div className="wrapper">
         <div>Rating: {props.source.frontmatter.rating}</div>
-
-        <MDXRemote {...props.source} components={components} scope={{ meta: props.source.frontmatter }} />
+        <div style={{ margin: 20 }}>
+          <Breadcrumbs breadcrumbs={props?.source?.frontmatter?.breadcrumbs || []} />
+        </div>
+        <MDXRemote
+          {...props.source}
+          components={components}
+          scope={{ meta: props.source.frontmatter }}
+        />
       </div>
     );
   }
   // If file is JSON, we expect it to have a `content` attr
   if (type === 'json') {
-    return (
-      <div className="wrapper">
-        {props.content}
-      </div>
-    );
+    return <div className="wrapper">{props.content}</div>;
   }
-  return (<div className="wrapper">Unsupported file type</div>);
+  return <div className="wrapper">Unsupported file type</div>;
 }
 
 export async function getServerSideProps({ resolvedUrl }) {
@@ -40,11 +43,11 @@ export async function getServerSideProps({ resolvedUrl }) {
         const text = await req.text();
         const mdxSource = await serialize(text, {
           parseFrontmatter: true
-        })
-        return { props: { type: 'mdx', source: mdxSource } }
+        });
+        return { props: { type: 'mdx', source: mdxSource } };
       } else if (req.headers.get('content-type').includes('/json')) {
         const json = await req.json();
-        return { props: { type: 'json', ...json } }
+        return { props: { type: 'json', ...json } };
       }
       // If redirect url was returned
     } else if (req.status === 302) {
@@ -53,9 +56,9 @@ export async function getServerSideProps({ resolvedUrl }) {
           destination: (await req.json()).redirect,
           permanent: true
         }
-      }
+      };
     }
-  } catch { }
+  } catch {}
   return {
     notFound: true,
     props: {}
