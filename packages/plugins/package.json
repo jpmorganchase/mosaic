@@ -19,7 +19,8 @@
       "@apidevtools/json-schema-ref-parser": "^9.0.9",
       "@pull-docs/types": "^1.0.0",
       "lodash": "^4.17.21",
-      "memfs": "^3.3.0"
+      "memfs": "^3.3.0",
+      "reading-time": "^1.5.0"
     },
     "author": "",
     "license": "ISC"
