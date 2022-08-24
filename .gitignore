@@ -2,7 +2,34 @@ node_modules
 
 **/.tmp/
 **/dist/
-yarn-error.log
+
+# Dependencies
+**/node_modules
+
+# Production
+**/dist
+**/.tmp
+tsconfig.tsbuildinfo
+
+# Test Results
 coverage
-**/.DS_Store
-.tmp
+sonar-reports
+test-report.xml
+junit.xml
+test-results.json
+
+# Misc
+.DS_Store
+.idea
+.vscode
+.db
+*.iml
+thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+
+
