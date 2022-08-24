@@ -47,6 +47,10 @@ module.exports = {
             }
         },
         {
+          modulePath: require.resolve('@pull-docs/plugins/dist/ReadingTimePlugin'),
+          options: {}
+        },
+        {
             modulePath: require.resolve('@pull-docs/plugins/dist/SharedConfigPlugin'),
             options: {
                 filename: 'shared-config.json'
