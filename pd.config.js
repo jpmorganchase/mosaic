@@ -46,7 +46,7 @@ module.exports = {
             }
         },
         {
-          modulePath: require.resolve('@pull-docs/plugins/dist/ReadingTimePlugin'),
+          modulePath: require.resolve('@pull-docs/plugins/dist/ReadingTimePlugin.mjs'),
           options: {}
         },
         {
