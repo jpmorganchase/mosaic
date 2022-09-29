@@ -1,6 +1,7 @@
 {
     "name": "@pull-docs/types",
     "version": "1.0.0",
+    "types": "./dist/**",
     "description": "",
     "engines": {
       "node": ">= 12.0.0"

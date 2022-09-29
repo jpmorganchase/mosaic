@@ -1,13 +1,11 @@
-import fs from 'fs';
-
 import type Serialiser from '@pull-docs/types/dist/Serialiser';
 
 const Serialisers: Serialiser = {
-  async serialise(fullPath, page) {
+  async serialise(_fullPath, page) {
     return Buffer.from(JSON.stringify(page));
   },
 
-  async deserialise(fullPath, data) {
+  async deserialise(_fullPath, data) {
     return JSON.parse(String(data));
   }
 };

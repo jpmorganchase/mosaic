@@ -9,24 +9,49 @@ import localFolderSource from '@pull-docs/source-local-folder';
 import Repo from './Repo';
 import fromCommitChange from './fromCommitChange';
 
-const BitbucketSource: Source<{
+export interface BitbucketSourceOptions {
+  /**
+   * The Bitbucket Repository URL
+   */
   repo: string;
+  /**
+   * Credentials used to read/write from the Repository
+   */
   credentials: string;
+  /**
+   * The Git branch name to checkout
+   */
   branch: string;
+  /**
+   * The name of the git remot to use
+   */
   remote: string;
+  /**
+   * The folder within the repository that contains the docs
+   */
   subfolder: string;
+  /**
+   * Collection of file extensions to look for
+   */
   extensions: string[];
+  /**
+   * Add to use a folder prefix
+   */
   prefixDir?: string;
-}> = {
+}
+
+const BitbucketSource: Source<BitbucketSourceOptions> = {
   create(options, { serialiser, pageExtensions }): Observable<Page[]> {
-    const repo = new Repo(options);
+    const { credentials, remote, branch, repo: repoUrl, prefixDir, extensions } = options;
+    const repo = new Repo(credentials, remote, branch, repoUrl);
 
     const rootDir = path.join(repo.dir, options.subfolder);
+
     const watchFolder$: Observable<Page<{}>[]> = localFolderSource.create(
       {
         rootDir,
-        prefixDir: options.prefixDir,
-        extensions: options.extensions
+        prefixDir,
+        extensions
       },
       { serialiser, pageExtensions }
     );
@@ -41,7 +66,7 @@ const BitbucketSource: Source<{
       mergeMap(async pages => {
         const out = [];
         for (const page of pages) {
-          const baseDir = path.join(rootDir, page.fullPath.replace(options.prefixDir, ''));
+          const baseDir = path.join(rootDir, page.fullPath.replace(prefixDir || '', ''));
           out.push(
             _merge({}, page, {
               lastModified: new Date(

@@ -31,5 +31,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Turbo Repo
+.turbo
 
 
