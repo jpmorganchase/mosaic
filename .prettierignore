@@ -1,0 +1,9 @@
+package.json
+package-lock.json
+static/scripts
+CHANGELOG.md
+/coverage
+
+**/build
+**/dist
+**/.docusaurus

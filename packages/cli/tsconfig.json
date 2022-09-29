@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "allowJs": true,
+    "target": "es2015",
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
+    "sourceMap": true,
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*", "../common/src/types", "../../pd.config.js"],
+  "exclude": [
+    "node_modules",
+    "src/**/__tests__/**/*",
+    "src/__tests__/**/*",
+    "**/dist/**/*"
+  ]
+}

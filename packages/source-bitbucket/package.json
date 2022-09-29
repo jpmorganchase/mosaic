@@ -1,0 +1,26 @@
+{
+    "name": "@pull-docs/source-bitbucket",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./dist/index.js",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "repository": {
+      "type": "git",
+      "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
+    },
+    "dependencies": {
+      "@pull-docs/source-local-folder": "^1.0.0",
+      "rxjs": "^7.5.5",
+      "deepmerge": "^4.2.2",
+      "fs-extra": "^9.1.0"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  

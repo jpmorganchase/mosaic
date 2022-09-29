@@ -1,0 +1,22 @@
+{
+    "name": "@pull-docs/types",
+    "version": "1.0.0",
+    "description": "",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "repository": {
+      "type": "git",
+      "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "devDependencies": {
+      "rxjs": "^7.5.5"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  
