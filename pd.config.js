@@ -23,6 +23,13 @@ module.exports = {
       }
     },
     {
+      modulePath: require.resolve('@pull-docs/plugins/dist/TableOfContentsPlugin.mjs'),
+      options: {
+        minRank: 2,
+        maxRank: 4
+      }
+    },
+    {
       modulePath: require.resolve('@pull-docs/plugins/dist/LazyPagePlugin'),
       // This plugin must be the very last to run, so it can strip off metadata and content after the other
       // plugins are done with them
