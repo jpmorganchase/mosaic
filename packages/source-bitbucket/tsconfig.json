@@ -1,20 +1,9 @@
 {
+  "extends": "../../tsconfig",
   "compilerOptions": {
-    "module": "commonjs",
-    "allowJs": true,
-    "target": "es2015",
-    "esModuleInterop": true,
-    "moduleResolution": "NodeNext",
-    "outDir": "dist",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "src/**/__tests__/**/*",
-    "src/__tests__/**/*",
-    "**/dist/**/*"
-  ]
+  "include": ["src"],
+  "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]
 }

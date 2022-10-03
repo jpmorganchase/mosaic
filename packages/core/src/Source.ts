@@ -30,7 +30,7 @@ export default class Source {
   #mergedOptions: Record<string, unknown>;
   #pageExtensions: string[];
   #ignorePages: string[];
-  
+
   config: MutableData<{}>;
   serialiser: Serialiser;
   namespace: string;
@@ -95,16 +95,21 @@ export default class Source {
    */
   async requestCacheClear(updatedSourceFilesystem: IVolumeImmutable) {
     const initTime = new Date().getTime();
-    const shouldInvokeAfterUpdate = await this.#pluginApi.shouldClearCache(updatedSourceFilesystem, {
-      globalFilesystem: this.#globalFilesystem,
-      pageExtensions: this.#pageExtensions,
-      ignorePages: this.#ignorePages,
-      serialiser: this.serialiser,
-      config: this.config.asReadOnly()
-    });
+    const shouldInvokeAfterUpdate = await this.#pluginApi.shouldClearCache(
+      updatedSourceFilesystem,
+      {
+        globalFilesystem: this.#globalFilesystem,
+        pageExtensions: this.#pageExtensions,
+        ignorePages: this.#ignorePages,
+        serialiser: this.serialiser,
+        config: this.config.asReadOnly()
+      }
+    );
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 400) {
-      console.warn(`Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+      console.warn(
+        `Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
+      );
     }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.clearCache();
@@ -129,7 +134,11 @@ export default class Source {
     });
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {
-      console.warn(`Lifecycle phase 'afterUpdate' for source '${this.id.description}' took ${timeTaken / 1000}s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`);
+      console.warn(
+        `Lifecycle phase 'afterUpdate' for source '${this.id.description}' took ${
+          timeTaken / 1000
+        }s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
+      );
     }
   }
 

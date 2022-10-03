@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
-    "composite": true,
     "module": "commonjs",
-    "target": "es5",
-    "lib": ["es6", "dom"],
+    "target": "ES2019",
+    "lib": ["es2019"],
     "esModuleInterop": true,
     "sourceMap": true,
-    "jsx": "react",
     "allowJs": false,
     "strict": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "NodeNext",
     "strictNullChecks": true,
-
     "declaration": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -20,8 +16,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@pull-docs/*": ["packages/*/dist"]
     }
   },
-  "include": ["types"],
   "exclude": ["node_modules", "dangerfile.ts", "./packages/**/__tests__", "**/dist/**/*"]
 }

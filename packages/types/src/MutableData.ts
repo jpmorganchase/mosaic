@@ -7,7 +7,7 @@ type MutableData<T = {}> = ImmutableData<T> & {
    * This will be reset everytime the relevant source receives new pages
    * @param data Data to MERGE into the existing blob
    */
-  setData(data: Partial<T>, overwrite?: boolean);
+  setData(data: Partial<T>, overwrite?: boolean): void;
   /**
    * Helper function for declaring new aliases that will be applied by the AliasPlugin.
    * Values can be retrieved from `data.aliases`
@@ -15,7 +15,7 @@ type MutableData<T = {}> = ImmutableData<T> & {
    * @param fullPath The file/fullPath the alias will point to
    * @param aliases Array of aliases to use when pointing to this page
    */
-   setAliases(targetPath: string, aliases: string[]);
+  setAliases(targetPath: string, aliases: string[]): void;
   /**
    * Helper function for declaring new tags (which are basically aliases to /.tags) that will be applied by the AliasPlugin.
    * Values can be retrieved from `data.aliases`
@@ -23,7 +23,7 @@ type MutableData<T = {}> = ImmutableData<T> & {
    * @param fullPath The file/fullPath the alias will point to
    * @param tags Array of tag names to use when pointing to this page
    */
-  setTags(targetPath: string, tags: string[]);
+  setTags(targetPath: string, tags: string[]): void;
   /**
    * Helper function for declaring new refs that will be applied by the RefPlugin
    * This will be reset everytime the relevant source receives new pages
@@ -32,14 +32,14 @@ type MutableData<T = {}> = ImmutableData<T> & {
    * @param targetPropPath The path to the property where the ref will be applied
    * @param refValue The value of the ref (can be a wildcard)
    */
-  setRef(targetFilepath: string, targetPropPath: string | string[], refValue: string);
+  setRef(targetFilepath: string, targetPropPath: string | string[], refValue: string): void;
   /**
    * Same as `setRef`, but do not pre-resolve this ref - wait until the file is read and use the global filesystem for it
    * @param targetPath The file/fullPath to write the ref to
    * @param targetPropPath The path to the property where the ref will be applied
    * @param refValue The value of the ref (can be a wildcard)
    */
-  setGlobalRef(targetFilepath: string, targetPropPath: string | string[], refValue: string);
+  setGlobalRef(targetFilepath: string, targetPropPath: string | string[], refValue: string): void;
   /**
    * This object, but without the mutation methods like `setAliases`, `setData` etc
    */

@@ -14,8 +14,6 @@ import type { IStatOptions } from 'memfs/lib/volume';
 import type { PathLike, symlink } from 'fs';
 import type { Options, Pattern, Entry } from 'fast-glob';
 
-import type Page from './Page';
-
 /**
  * Volumes are lightweight decorators which wrap `FileAccess` and limit access to the underlying API for different use-cases
  * Examples include disallowing mutation or allowing underlying functions like resetting
@@ -32,7 +30,7 @@ interface IVolume {
     mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
     readdir(dir: PathLike, options?: string | IReaddirOptions): Promise<TDataOut[] | Dirent[]>;
     readFile(file: PathLike): Promise<TDataOut>;
-    realpath(target, options?: string | IRealpathOptions): Promise<TDataOut>;
+    realpath(target: string, options?: string | IRealpathOptions): Promise<TDataOut>;
     stat(file: PathLike, options?: IStatOptions): Promise<Stats<TStatNumber>>;
     symlink(target: PathLike, alias: PathLike, type?: symlink.Type): Promise<void>;
     unlink(target: PathLike): Promise<void>;
@@ -46,25 +44,27 @@ export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJS
    * @param hook Any function that invokes an `afterRead` plugin
    * @returns Promise<Page>
    */
-  __internal_do_not_use_addReadFileHook(hook: (filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>): void;
+  __internal_do_not_use_addReadFileHook(
+    hook: (filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>
+  ): void;
 }
 
 export interface IUnionVolume extends Omit<IVolumeImmutable, 'promises'> {
   promises: Pick<IVolumeImmutable, 'promises'> & {
-  /**
-   * Reads a file
-   * @param file Path
-   * @returns Promise<TDataOut>
-   */
-  readFile(file: PathLike): Promise<TDataOut>;
-  readFile(file: PathLike, options?: { includeConflicts?: false }): Promise<TDataOut>;
-  /**
-   * Reads 1 or more files (if multiple files exist at the same location within the union filesystem)
-   * @param file Path
-   * @param options.includeConflicts If multiple files exist at the same location in the filesystem, return them all as an array
-   * @returns Promise<TDataOut[]>
-   */
-  readFile(file: PathLike, options: { includeConflicts: true }): Promise<TDataOut[]>;
+    /**
+     * Reads a file
+     * @param file Path
+     * @returns Promise<TDataOut>
+     */
+    readFile(file: PathLike): Promise<TDataOut>;
+    readFile(file: PathLike, options?: { includeConflicts?: false }): Promise<TDataOut>;
+    /**
+     * Reads 1 or more files (if multiple files exist at the same location within the union filesystem)
+     * @param file Path
+     * @param options.includeConflicts If multiple files exist at the same location in the filesystem, return them all as an array
+     * @returns Promise<TDataOut[]>
+     */
+    readFile(file: PathLike, options: { includeConflicts: true }): Promise<TDataOut[]>;
   };
   /**
    * Scopes a filesystem to specific namespaces
@@ -81,7 +81,9 @@ export interface IVolumeMutable extends IVolume {
    * @param hook Any function that invokes an `afterRead` plugin
    * @returns Promise<Page>
    */
-  __internal_do_not_use_addReadFileHook(hook: (filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>): void;
+  __internal_do_not_use_addReadFileHook(
+    hook: (filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>
+  ): void;
   /**
    * Restricted filesystems can be written to, but cannot be frozen, updated or reset
    */
@@ -123,7 +125,10 @@ export interface IVolumeMutable extends IVolume {
   reset(): void;
 }
 export interface IVolumeImmutable
-  extends Omit<IVolumePartiallyMutable, 'fromJSON' | 'reset' | 'promises' | '__internal_do_not_use_addReadFileHook'> {
+  extends Omit<
+    IVolumePartiallyMutable,
+    'fromJSON' | 'reset' | 'promises' | '__internal_do_not_use_addReadFileHook'
+  > {
   promises: Omit<
     IVolume['promises'],
     'writeFile' | 'symlink' | 'mkdir' | 'unlink' | 'rmdir' | 'rm' | 'rename'

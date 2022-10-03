@@ -16,9 +16,13 @@
     },
     "dependencies": {
       "@pull-docs/source-local-folder": "^1.0.0",
+      "@pull-docs/types": "^1.0.0",
       "rxjs": "^7.5.5",
       "deepmerge": "^4.2.2",
       "fs-extra": "^9.1.0"
+    },
+    "devDependencies": {
+      "@types/fs-extra":"^9.0.13"
     },
     "author": "",
     "license": "ISC"

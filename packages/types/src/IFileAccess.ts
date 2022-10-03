@@ -23,7 +23,7 @@ export default interface IFileAccess {
   mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
   readdir(dir: PathLike, options?: string | IReaddirOptions): Promise<TDataOut[] | Dirent[]>;
   readFile(file: PathLike): Promise<TDataOut>;
-  realpath(target, options?: string | IRealpathOptions): Promise<TDataOut>;
+  realpath(target: string, options?: string | IRealpathOptions): Promise<TDataOut>;
   stat(file: PathLike, options?: IStatOptions): Promise<Stats<TStatNumber>>;
   unlink(target: PathLike): Promise<void>;
   symlink(target: PathLike, alias: PathLike, type?: symlink.Type): Promise<void>;

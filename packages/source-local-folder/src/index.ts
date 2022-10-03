@@ -9,11 +9,13 @@ import type Page from '@pull-docs/types/dist/Page';
 
 import fromFsWatch from './fromFsWatch';
 
-const LocalFolderSource: Source<{
+export interface LocalFolderSourceOptions {
   extensions: string[];
   prefixDir?: string;
   rootDir: string;
-}> = {
+}
+
+const LocalFolderSource: Source<LocalFolderSourceOptions> = {
   create(options, { serialiser }): Observable<Page<{}>[]> {
     return merge(of(null), fromFsWatch(options.rootDir, { recursive: true })).pipe(
       delay(1000),
@@ -45,13 +47,13 @@ const LocalFolderSource: Source<{
   }
 };
 
-async function getLastModifiedDate(fullPath) {
+async function getLastModifiedDate(fullPath: string) {
   const resolvedRoute = await fs.promises.realpath(fullPath);
   const stats = await fs.promises.stat(resolvedRoute);
   return stats?.mtimeMs ? stats.mtimeMs : 0;
 }
 
-function createFileGlob(url, pageExtensions) {
+function createFileGlob(url: string, pageExtensions: string[]) {
   if (pageExtensions.length === 1) {
     return `${url}${pageExtensions[0]}`;
   }
