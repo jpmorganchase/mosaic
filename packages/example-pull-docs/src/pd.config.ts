@@ -1,6 +1,7 @@
-const path = require('path');
+import path from 'path';
+import type { PullDocsConfig } from '@pull-docs/types/dist/PullDocsConfig';
 
-module.exports = {
+const config: PullDocsConfig = {
   pageExtensions: ['.mdx', '.json'],
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [
@@ -70,7 +71,7 @@ module.exports = {
       modulePath: require.resolve('@pull-docs/source-local-folder'),
       namespace: 'local',
       options: {
-        rootDir: path.join(__dirname, '../developer-docs', 'docs'),
+        rootDir: path.join(__dirname, '../../../../developer-docs', 'docs'),
         cache: true,
         prefixDir: 'developer',
         extensions: ['.mdx']
@@ -94,3 +95,5 @@ module.exports = {
     }
   ]
 };
+
+module.exports = config;

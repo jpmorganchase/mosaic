@@ -10,11 +10,6 @@
     "skipLibCheck": true,
     "rootDir": "./src"
   },
-  "include": ["src/**/*", "../common/src/types", "../../pd.config.js"],
-  "exclude": [
-    "node_modules",
-    "src/**/__tests__/**/*",
-    "src/__tests__/**/*",
-    "**/dist/**/*"
-  ]
+  "include": ["src/**/*", "../common/src/types"],
+  "exclude": ["node_modules", "src/**/__tests__/**/*", "src/__tests__/**/*", "**/dist/**/*"]
 }

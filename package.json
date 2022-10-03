@@ -17,8 +17,8 @@
     "test": "jest --runInBand",
     "build": "turbo run build",
     "clean": "yarn workspace @pull-docs/types clean & yarn workspace @pull-docs/source-local-folder clean & yarn workspace @pull-docs/source-bitbucket clean & yarn workspace @pull-docs/cli clean & yarn workspace @pull-docs/serialisers clean & yarn workspace @pull-docs/plugins clean & yarn workspace @pull-docs/core clean",
-    "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/example-nextjs-ssr dev' './node_modules/.bin/pull-docs serve -c ./pd.config.js' -p 8080",
-    "start": "./node_modules/.bin/pull-docs serve -c ./pd.config.js -p 8080"
+    "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @pull-docs/example-nextjs-ssr dev' './node_modules/.bin/pull-docs serve -c ./packages/example-pull-docs/dist/pd.config.js' -p 8080",
+    "start": "./node_modules/.bin/pull-docs serve -c ./packages/example-pull-docs/dist/pd.config.js -p 8080"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,7 @@
     "eslint-plugin-import": "^2.22.1",
     "jest": "^25.2.4",
     "ts-node": "^9.0.0",
-    "typescript": "^4.0.2"
+    "typescript": "^4.8.3"
   },
   "author": "",
   "license": "ISC",
