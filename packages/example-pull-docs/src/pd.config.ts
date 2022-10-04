@@ -92,6 +92,15 @@ const config: PullDocsConfig = {
         extensions: ['.mdx'],
         remote: 'origin'
       }
+    },
+    {
+      modulePath: require.resolve('@pull-docs/source-convey'),
+      namespace: 'developer/release-notes',
+      options: {
+        checkIntervalMins: 5,
+        endpoint:
+          'https://convey.gaiacloud.jpmchase.net/api/v1/public/notifications/published?product=Digital%20Platform%20Developer'
+      }
     }
   ]
 };

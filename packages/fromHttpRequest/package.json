@@ -1,0 +1,30 @@
+{
+    "name": "@pull-docs/from-http-request",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "repository": {
+      "type": "git",
+      "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
+    },
+    "dependencies": {
+      "event-target-polyfill":"^0.0.3",
+      "rxjs": "^7.5.5",
+      "node-fetch": "^2.6.1",
+      "yet-another-abortcontroller-polyfill":"0.0.4"
+    },
+    "devDependencies": {
+      "@types/node-fetch": "^2.5.8"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  

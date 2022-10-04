@@ -1,0 +1,30 @@
+{
+    "name": "@pull-docs/source-convey",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./dist/index.js",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "repository": {
+      "type": "git",
+      "url": "ssh://git@bitbucketdc-ssh.jpmchase.net:7999/devconsole/pull-docs.git"
+    },
+    "dependencies": {
+      "@pull-docs/from-http-request": "^1.0.0",
+      "rxjs": "^7.5.5",
+      "sanitize-html": "^2.3.2",
+      "turndown": "^7.1.1"
+    },
+    "devDependencies": {
+      "@types/sanitize-html":"^2.6.2", 
+      "@types/turndown":"^5.0.1"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  
