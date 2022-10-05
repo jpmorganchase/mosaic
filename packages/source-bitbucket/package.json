@@ -1,0 +1,30 @@
+{
+    "name": "@jpmorganchase/mosaic-source-bitbucket",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./dist/index.js",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:jpmorganchase/mosaic.git"
+    },
+    "dependencies": {
+      "@jpmorganchase/mosaic-source-local-folder": "^1.0.0",
+      "@jpmorganchase/mosaic-types": "^1.0.0",
+      "rxjs": "^7.5.5",
+      "deepmerge": "^4.2.2",
+      "fs-extra": "^9.1.0"
+    },
+    "devDependencies": {
+      "@types/fs-extra":"^9.0.13"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  
