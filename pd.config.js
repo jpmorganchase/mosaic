@@ -26,7 +26,7 @@ module.exports = {
       modulePath: require.resolve('@pull-docs/plugins/dist/TableOfContentsPlugin.mjs'),
       options: {
         minRank: 2,
-        maxRank: 4
+        maxRank: 2
       }
     },
     {
