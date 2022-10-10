@@ -18,7 +18,7 @@
       "url": "git@github.com:jpmorganchase/mosaic.git"
     },
     "dependencies": {
-      "@jpmorganchase/mosaic-types":"^1.0.0",
+      "@jpmorganchase/mosaic-types":"^0.1.0",
       "rxjs": "^7.5.5"
     },
     "author": "",

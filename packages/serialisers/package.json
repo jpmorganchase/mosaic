@@ -20,7 +20,7 @@
       "rxjs": "^7.5.5"
     },
     "dependencies": {
-      "@jpmorganchase/mosaic-types": "^1.0.0",
+      "@jpmorganchase/mosaic-types": "^0.1.0",
         "gray-matter": "^4.0.3"
       },
     "author": "",

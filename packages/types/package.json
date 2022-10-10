@@ -1,7 +1,6 @@
 {
     "name": "@jpmorganchase/mosaic-types",
     "version": "0.1.0",
-    "private": true,
     "types": "./dist/**",
     "description": "",
     "license": "Apache-2.0",
