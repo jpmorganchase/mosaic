@@ -17,8 +17,8 @@
       "url": "git@github.com:jpmorganchase/mosaic.git"
     },
     "dependencies": {
-      "@jpmorganchase/mosaic-source-local-folder": "^1.0.0",
-      "@jpmorganchase/mosaic-types": "^1.0.0",
+      "@jpmorganchase/mosaic-source-local-folder": "^0.1.0",
+      "@jpmorganchase/mosaic-types": "^0.1.0",
       "rxjs": "^7.5.5",
       "deepmerge": "^4.2.2",
       "fs-extra": "^9.1.0"
