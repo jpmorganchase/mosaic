@@ -1,6 +1,6 @@
-# Pull Docs v2
+# Mosaic
 
-## Build Pull-Docs
+## Build mosaic
 
 `yarn build`
 
@@ -8,11 +8,11 @@
 
 ### Build Static Site
 
-`yarn pull-docs build --out ./build --config ./pd.config.js`
+`yarn mosaic build --out ./build --config ./pd.config.js`
 
 ### Serve
 
-`yarn pull-docs serve --port 8080 --config ./pd.config.js`
+`yarn mosaic serve --port 8080 --config ./pd.config.js`
 
 ## Example
 

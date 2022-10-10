@@ -1,0 +1,23 @@
+{
+    "name": "@jpmorganchase/mosaic-example-mosaic",
+    "version": "1.0.0",
+    "description": "An example pull docs configuration file.",
+    "main": "./dist/index.js",
+    "engines": {
+      "node": ">= 12.0.0"
+    },
+    "scripts": {
+      "build": "tsc",
+      "clean": "rm -fr dist"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git@github.com:jpmorganchase/mosaic.git"
+    },
+    "dependencies": {
+      "@jpmorganchase/mosaic-types": "^1.0.0"
+    },
+    "author": "",
+    "license": "ISC"
+  }
+  

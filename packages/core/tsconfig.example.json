@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig",
+  "include": ["src/example/*"],
+  "outDir": "dist/example",
+  "exclude": ["node_modules", "src/**/__tests__/**/*", "src/__tests__/**/*", "**/dist/**/*"]
+}
