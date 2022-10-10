@@ -2,12 +2,13 @@
   "name": "@jpmorganchase/mosaic-example-nextjs-ssr",
   "version": "0.1.0",
   "private": true,
+  "description": "",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "next dev"
   },
   "devDependencies": {
     "next": "^12.1.0",
-    "@jpmuitk/style": "29.4.0",
     "next-mdx-remote": "^4.0.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
