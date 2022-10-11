@@ -1,14 +1,13 @@
 import debounce from 'lodash/debounce';
 
-import Source from '../Source';
 import SourceManager from '../SourceManager';
+import Source from '../Source';
 
-jest.mock('lodash/debounce');
 jest.mock('../Source');
-
-jest.mock('../worker/helpers/plugins', () => async (plugins, _fs) => {
-  return async (_, input) => input;
-});
+jest.mock('lodash/debounce');
+// jest.mock('../worker/helpers/plugins', () => async (plugins, _fs) => {
+//   return async (_, input) => input;
+// });
 
 function scheduleOnUpdateCallback(message) {
   setTimeout(() => {
@@ -65,7 +64,7 @@ describe('GIVEN SourceManager', () => {
       jest.spyOn(Source.prototype, 'onError').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'onUpdate').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'onStart').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'stop').mockClear();
+      jest.spyOn(Source.prototype, 'stop').mockReturnValue(jest.fn());
 
       sourceManager = new SourceManager([]);
     });
@@ -88,48 +87,33 @@ describe('GIVEN SourceManager', () => {
       sourceManager.destroyAll();
       expect(Source.prototype.stop).toHaveBeenCalledTimes(3);
     });
-
-    test('THEN the cleanup callback should call `stop` on the Source ', async () => {
-      let removeSourceCallback;
-      scheduleOnStartCallback();
-      await sourceManager.addSource({ modulePath: '1', name: '2' }, {}).then(removeSource => {
-        removeSourceCallback = removeSource;
-      });
-      expect(Source.prototype.onStart).toHaveBeenCalled();
-      const onStartCallback = getOnStartCallback();
-      expect(onStartCallback).toBeDefined();
-      onStartCallback();
-      await new Promise(resolve => setTimeout(resolve));
-      expect(removeSourceCallback).toBeDefined();
-      removeSourceCallback();
-      expect(Source.prototype.stop).toHaveBeenCalled();
-    });
   });
 
   describe('WHEN adding a source with plugins', () => {
     let sourceManager: SourceManager;
     beforeEach(async () => {
-      sourceManager = new SourceManager(
-        [{ options: { plugins: true } }]
-      );
+      Source.prototype.constructorSpy.mockReset();
+      Source.prototype.use.mockReset();
+      sourceManager = new SourceManager([{ options: { plugins: true } }]);
       scheduleOnStartCallback();
       await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
     });
     test('THEN the plugins should be used', () => {
-      expect(Source.prototype.use).toHaveBeenCalledWith(
-        [{ options: { plugins: true } }]
-      );
+      expect(Source.prototype.use.mock.calls[0][0]).toEqual([{ options: { plugins: true } }]);
     });
     test('THEN the sources should be created for the new sources', async () => {
       scheduleOnStartCallback();
       await sourceManager.addSource(
-        { name: 'source', modulePath: 'source-module', options: { a: true } },
+        { name: 'source2', modulePath: 'source-module2', options: { a: true } },
         {}
       );
-
-      expect(Source).toHaveBeenCalledWith({
+      expect(Source.prototype.constructorSpy.mock.calls[0][0]).toEqual({
         name: 'source',
-        modulePath: 'source-module',
+        modulePath: 'source-module'
+      });
+      expect(Source.prototype.constructorSpy.mock.calls[1][0]).toEqual({
+        name: 'source2',
+        modulePath: 'source-module2',
         options: { a: true }
       });
     });
@@ -138,12 +122,9 @@ describe('GIVEN SourceManager', () => {
   describe('WHEN adding a source', () => {
     let sourceManager: SourceManager;
 
-    afterEach(() => {
-
-    });
+    afterEach(() => {});
     beforeEach(() => {
-      (Source.prototype as jest.MockedFunction<any>).id = 'symbol';
-      (Source.prototype as jest.MockedFunction<any>).filesystem = 'fs';
+      Source.prototype.constructorSpy.mockReset();
       sourceManager = new SourceManager([]);
       jest.spyOn(Source.prototype, 'onExit').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'onError').mockReturnValue(jest.fn());
@@ -197,19 +178,19 @@ describe('GIVEN SourceManager', () => {
         await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
 
         await new Promise(resolve => setTimeout(resolve));
-        expect(onSourceUpdateSpy).toHaveBeenCalledWith(
-          'fs',
-          expect.any(Source)
-        );
+        expect(onSourceUpdateSpy.mock.calls[0][1].filesystem).toBeDefined();
       });
     });
 
     test('THEN the source should be available via `getSource`', async () => {
       scheduleOnStartCallback();
-      await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
+      const source1 = await sourceManager.addSource(
+        { name: 'source', modulePath: 'source-module' },
+        {}
+      );
       scheduleOnStartCallback();
       await sourceManager.addSource({ name: 'source2', modulePath: 'source2-module' }, {});
-      expect(sourceManager.getSource('symbol' as unknown as Symbol)).toEqual(expect.any(Source));
+      expect(sourceManager.getSource(source1.id)).toBeDefined();
     });
 
     test('THEN the sources should be created for the new sources', async () => {
@@ -224,12 +205,12 @@ describe('GIVEN SourceManager', () => {
         {}
       );
 
-      expect(Source).toHaveBeenCalledWith({
+      expect(Source.prototype.constructorSpy.mock.calls[0][0]).toEqual({
         name: 'source',
         modulePath: 'source-module',
         options: { a: true }
       });
-      expect(Source).toHaveBeenCalledWith({
+      expect(Source.prototype.constructorSpy.mock.calls[1][0]).toEqual({
         name: 'source2',
         modulePath: 'source2-module',
         options: { b: true }

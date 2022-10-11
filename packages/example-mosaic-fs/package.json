@@ -1,7 +1,9 @@
 {
     "name": "@jpmorganchase/mosaic-example-mosaic",
-    "version": "1.0.0",
-    "description": "An example pull docs configuration file.",
+    "version": "0.1.0-beta.0",
+    "private": true,
+    "description": "",
+    "license": "Apache-2.0",
     "main": "./dist/index.js",
     "engines": {
       "node": ">= 12.0.0"
@@ -15,7 +17,7 @@
       "url": "git@github.com:jpmorganchase/mosaic.git"
     },
     "dependencies": {
-      "@jpmorganchase/mosaic-types": "^1.0.0"
+      "@jpmorganchase/mosaic-types": "^0.1.0-beta.0"
     },
     "author": "",
     "license": "ISC"

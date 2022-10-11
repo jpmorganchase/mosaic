@@ -1,16 +1,13 @@
 import PullDocs from '../PullDocs';
 import SourceManager from '../SourceManager';
-import type SourceDefinition from '@jpmorganchase/mosaic-types/dist/SourceDefinition';
+import UnionVolume from '../filesystems/UnionVolume';
+import MutableVolume from '../filesystems/MutableVolume';
 
 jest.mock('../SourceManager');
 
 describe('GIVEN PullDocs', () => {
   test('THEN it should instantiate correctly', () => {
     expect(new PullDocs({ sources: [], plugins: [] })).toBeDefined();
-  });
-
-  test('THEN it should have an addSource method', () => {
-    expect(new PullDocs({ sources: [], plugins: [] })).toHaveProperty('addSource');
   });
 
   test('THEN it should have an onSourceUpdate method', () => {
@@ -21,69 +18,78 @@ describe('GIVEN PullDocs', () => {
     let pullDocs;
 
     beforeEach(() => {
+      SourceManager.mockReset();
       pullDocs = new PullDocs({
-        sources: [{modulePath: 'source', name: 'name'}],
+        sources: [{ modulePath: 'source', name: 'name' }],
         plugins: [{ modulePath: 'plugin', filter: /[a-z]$/ }]
       });
-      pullDocs.addSource('name', {});
     });
 
     test('THEN the SourceManager should be passed the plugins', () => {
       expect(SourceManager).toHaveBeenCalledWith(
-        [{ modulePath: 'plugin', filter: /[a-z]$/ }]
+        [
+          {
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$CodeModPlugin.js/),
+            options: {},
+            priority: Infinity
+          },
+          {
+            filter: /[a-z]$/,
+            modulePath: 'plugin'
+          },
+          {
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$TagPlugin.js/),
+            options: {}
+          },
+          {
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$AliasPlugin.js/),
+            options: {},
+            priority: -1
+          },
+          {
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$RefPlugin.js/),
+            options: {},
+            priority: -1
+          }
+        ],
+        [
+          {
+            filter: /\.json$/,
+            modulePath: expect.stringMatching(/\/packages\/serialisers\/dist\/json.js/),
+            options: {}
+          }
+        ],
+        ['.mdx'],
+        [],
+        expect.any(UnionVolume),
+        expect.any(MutableVolume)
       );
     });
-  });
 
-  describe('WITH sources specified', () => {
-    let pullDocs: PullDocs;
+    describe('WITH sources specified', () => {
+      let pullDocs: PullDocs;
 
-    const source1 = { name: 'source', modulePath: 'source-module' };
-    const source2 = { name: 'source2', modulePath: 'source2-module' };
+      const source1 = { name: 'source', modulePath: 'source-module' };
+      const source2 = { name: 'source2', modulePath: 'source2-module' };
 
-    beforeEach(() => {
-      pullDocs = new PullDocs({
-        sources: [source1, source2],
-        plugins: []
-      });
-    });
-
-    describe('AND a source changes', () => {
-      test('THEN onSourceUpdate should be called', () => {
-        const onSourceUpdateSpy = jest.fn();
-        pullDocs.onSourceUpdate(onSourceUpdateSpy);
-
-        const onSourceUpdateCallback = (
-          SourceManager.prototype.onSourceUpdate as jest.MockedFunction<any>
-        ).mock.calls[0][0];
-        onSourceUpdateCallback();
-        expect(onSourceUpdateSpy).toHaveBeenCalled();
-      });
-    });
-
-    describe('AND adding a new source', () => {
       beforeEach(() => {
-        (SourceManager.prototype.addSource as jest.MockedFunction<any>).mockClear();
-      });
-      test('THEN an error should throw if the source does not exist', () => {
-        expect(() => pullDocs.addSource('does-not-exist', {})).rejects.toThrow(
-          new Error(`Source definition 'does-not-exist' could not be found.`)
-        );
+        pullDocs = new PullDocs({
+          sources: [source1, source2],
+          plugins: []
+        });
       });
 
-      test('THEN the sources should be registered with a manager', () => {
-        pullDocs.addSource('source', {});
-        pullDocs.addSource('source2', {});
+      describe('AND a source changes', () => {
+        test('THEN onSourceUpdate should be called', () => {
+          const onSourceUpdateSpy = jest.fn();
+          pullDocs.onSourceUpdate(onSourceUpdateSpy);
 
-        expect(SourceManager.prototype.addSource).toHaveBeenCalledTimes(2);
-        expect(SourceManager.prototype.addSource).toHaveBeenCalledWith(
-          { modulePath: 'source-module', name: 'source' },
-          {}
-        );
-        expect(SourceManager.prototype.addSource).toHaveBeenCalledWith(
-          { modulePath: 'source2-module', name: 'source2' },
-          {}
-        );
+          const onSourceUpdateCallback = (
+            SourceManager.prototype.onSourceUpdate as jest.MockedFunction<any>
+          ).mock.calls[0][0];
+          onSourceUpdateCallback();
+          expect(onSourceUpdateSpy).toHaveBeenCalled();
+        });
       });
     });
   });

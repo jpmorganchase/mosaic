@@ -50,7 +50,7 @@ export default class WorkerSubscription {
     return () => this.#emitter.off(type, handler);
   }
 
-  #onNext = ({ type, data }: { data: Uint8Array, type: 'init' | 'message' }) => {
+  #onNext = ({ type, data }: { data: Uint8Array; type: 'init' | 'message' }) => {
     if (type === 'message') {
       this.#emitter.emit(EVENT.UPDATE, { data: JSON.parse(textDecoder.decode(data)) });
     } else if (type === 'init') {
