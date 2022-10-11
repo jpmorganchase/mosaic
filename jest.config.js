@@ -1,4 +1,16 @@
 'use strict';
+const util = require('util');
+
+class MockEncoder {
+  encode(value) {
+    return value;
+  }
+}
+class MockDecoder {
+  decode(value) {
+    return value;
+  }
+}
 
 module.exports = {
   collectCoverage: true,
@@ -11,9 +23,13 @@ module.exports = {
       statements: 1
     }
   },
+  globals: {
+    TextEncoder: MockEncoder,
+    TextDecoder: MockDecoder
+  },
   testRegex: '(/__tests__/.+\\.test)\\.(js|ts)x?$',
   transform: {
-    '\\.[jt]sx?$': require.resolve('babel-jest'),
+    '\\.[jt]sx?$': require.resolve('babel-jest')
   },
   transformIgnorePatterns: ['/node_modules/']
 };

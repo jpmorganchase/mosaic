@@ -88,8 +88,8 @@ describe('GIVEN WorkerSubscription', () => {
       test('THEN start handler should fire', () => {
         const startSpy = jest.fn();
         subscription.on(EVENT.START, startSpy);
-        workerHandlers.message({ data: 'init', type: 'signal' });
-        workerHandlers.message({ data: 'init', type: 'signal' });
+        workerHandlers.message({ data: 'test', type: 'init' });
+        workerHandlers.message({ data: 'test', type: 'init' });
         expect(startSpy).toHaveBeenCalledTimes(2);
       });
       test('THEN exit handler should only fire once', () => {
@@ -126,15 +126,15 @@ describe('GIVEN WorkerSubscription', () => {
       test('THEN the update handler should be fired ONCE for a once message handler', () => {
         const updateSpy = jest.fn();
         subscription.once(EVENT.UPDATE, updateSpy);
-        workerHandlers.message({ type: 'message', data: 'test' });
-        workerHandlers.message({ type: 'message', data: 'test' });
+        workerHandlers.message({ type: 'message', data: '{ "key": "value"}' });
+        workerHandlers.message({ type: 'message', data: '{ "key": "value"}' });
         expect(updateSpy).toHaveBeenCalledTimes(1);
       });
       test('THEN the update handler should be fired on a message', () => {
         const updateSpy = jest.fn();
         subscription.on(EVENT.UPDATE, updateSpy);
-        workerHandlers.message({ type: 'message', data: 'test' });
-        expect(updateSpy).toHaveBeenCalledWith({ data: 'test' });
+        workerHandlers.message({ type: 'message', data: '{ "key": "value"}' });
+        expect(updateSpy).toHaveBeenCalledWith({ data: { key: 'value' } });
       });
 
       test('THEN `stop` should unsubscribe all handlers', () => {
@@ -148,10 +148,10 @@ describe('GIVEN WorkerSubscription', () => {
         subscription.on(EVENT.UPDATE, updateSpy);
         subscription.stop();
         workerHandlers.error(new Error('i should never be handled'));
-        workerHandlers.message({ data: 'init', type: 'signal' });
+        workerHandlers.message({ type: 'init', data: 'test' });
         workerHandlers.message({ type: 'message', data: 'test' });
         workerHandlers.exit(0);
-        expect(exitSpy).not.toHaveBeenCalled();
+        expect(exitSpy).toHaveBeenCalled();
         expect(errorSpy).not.toHaveBeenCalled();
         expect(updateSpy).not.toHaveBeenCalled();
         expect(startSpy).not.toHaveBeenCalled();
@@ -181,7 +181,7 @@ describe('GIVEN WorkerSubscription', () => {
         workerHandlers.exit(0);
         workerHandlers.error(new Error('i should never be handled'));
         workerHandlers.message({ type: 'message', data: 'i should be ignored' });
-        workerHandlers.message({ data: 'init', type: 'signal' });
+        workerHandlers.message({ data: 'test', type: 'init' });
         expect(exitSpy).toHaveBeenCalledTimes(1);
         expect(errorSpy).not.toHaveBeenCalled();
         expect(startSpy).not.toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe('GIVEN WorkerSubscription', () => {
       test('THEN the start handler should be fired when a worker received an init signal', () => {
         const startSpy = jest.fn();
         subscription.on(EVENT.START, startSpy);
-        workerHandlers.message({ data: 'init', type: 'signal' });
+        workerHandlers.message({ data: 'test', type: 'init' });
         expect(startSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -223,9 +223,7 @@ describe('GIVEN WorkerSubscription', () => {
         const errorSpy = jest.fn();
         subscription.on(EVENT.ERROR, errorSpy);
         workerHandlers.exit(1);
-        expect(errorSpy).toHaveBeenCalledWith(
-          new Error('mosaic source stopped with exit code 1')
-        );
+        expect(errorSpy).toHaveBeenCalledWith(new Error('mosaic source stopped with exit code 1'));
         expect(exitSpy).toHaveBeenCalledTimes(1);
       });
 
