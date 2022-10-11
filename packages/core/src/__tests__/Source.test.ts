@@ -11,7 +11,8 @@ describe('GIVEN Source', () => {
   test('THEN it should instantiate correctly', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toBeDefined();
   });
@@ -19,16 +20,19 @@ describe('GIVEN Source', () => {
   test('THEN sources should get a unique id', () => {
     expect(
       typeof new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       }).id
     ).toEqual('symbol');
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       }).id
     ).not.toBe(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       }).id
     );
   });
@@ -36,7 +40,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have a use method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('use');
   });
@@ -44,7 +49,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have an onStart method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('onStart');
   });
@@ -52,7 +58,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have a start method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('start');
   });
@@ -60,7 +67,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have a stop method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('stop');
   });
@@ -68,7 +76,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have a onUpdate method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('onUpdate');
   });
@@ -76,7 +85,8 @@ describe('GIVEN Source', () => {
   test('THEN it should have a onError method', () => {
     expect(
       new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       })
     ).toHaveProperty('onError');
   });
@@ -86,18 +96,24 @@ describe('GIVEN Source', () => {
 
     beforeEach(async () => {
       source = new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       });
 
       source.use([{ modulePath: 'plugin', filter: /$/, options: { plugin: true } }]);
-      await source.start({});
+      await source.start();
     });
 
     test('THEN the plugins should be passed to the worker', async () => {
       expect(WorkerSubscription).toHaveBeenCalledWith({
+        ignorePages: undefined,
         plugins: [{ modulePath: 'plugin', options: { plugin: true }, filter: /$/ }],
-        modulePath: 'source-module-path',
-        options: {}
+        modulePath: 'plugin',
+        name: expect.stringMatching(/#5e543256/),
+        namespace: 'test-namespace',
+        options: undefined,
+        pageExtensions: undefined,
+        serialisers: []
       });
     });
   });
@@ -105,29 +121,28 @@ describe('GIVEN Source', () => {
   describe('WHEN calling `start`', () => {
     let source: Source;
     beforeEach(() => {
-      source = new Source({
-        modulePath: 'source-module-path',
-        options: { primary: true }
-      });
+      source = new Source(
+        {
+          modulePath: 'plugin',
+          namespace: 'test-namespace'
+        },
+        { primary: true }
+      );
       source.use([]);
       (WorkerSubscription as jest.MockedFunction<any>).mockClear();
     });
-
-    test('THEN the options should be merged', async () => {
-      await source.start({ secondary: true });
-      expect(WorkerSubscription).toHaveBeenCalledWith({
-        plugins: [],
-        modulePath: 'source-module-path',
-        options: { primary: true, secondary: true }
-      });
-    });
-
+    
     test('THEN the child worker should be created', async () => {
-      await source.start({});
+      await source.start();
       expect(WorkerSubscription).toHaveBeenCalledWith({
+        ignorePages: undefined,
+        modulePath: 'plugin',
+        namespace: 'test-namespace',
+        name: expect.stringMatching(/#c7b08e60/),
+        options: { primary: true },
+        pageExtensions: undefined,
         plugins: [],
-        modulePath: 'source-module-path',
-        options: { primary: true }
+        serialisers: []
       });
     });
   });
@@ -150,9 +165,10 @@ describe('GIVEN Source', () => {
         () => workerSubscriptionSingletonMock
       );
       source = new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       });
-      source.start();
+      await source.start();
     });
     test('THEN the worker should throw if the source has not started', () => {
       source.stop();
@@ -206,7 +222,8 @@ describe('GIVEN Source', () => {
         } as any);
 
       source = new Source({
-        modulePath: 'source-module-path'
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
       });
       source.filesystem.reset = jest.fn();
 
@@ -216,7 +233,7 @@ describe('GIVEN Source', () => {
     describe('AND exceptions occur', () => {
       test('THEN the worker should clear the filesystem on exit', () => {
         workerHandlers.exit(1);
-        expect(source.filesystem.reset).toHaveBeenCalled();
+        expect(source.filesystem).toEqual(null);
       });
       test('THEN the worker should remove listeners on exit', () => {
         spyOn(EventEmitter.prototype, 'removeAllListeners');
@@ -267,11 +284,15 @@ describe('GIVEN Source', () => {
         const updateSpy = jest.fn();
         source.onUpdate(updateSpy);
         workerHandlers.message({
-          data: { content: ['test'], meta: {}, data: {} },
+          data: { content: ['test'], meta: {}, data: { testValue: 'someValue' } },
           type: 'message'
         });
         await new Promise(resolve => setTimeout(resolve));
-        expect(updateSpy).toHaveBeenCalledWith({ filesystem: source.filesystem, data: {} });
+        expect(updateSpy).toHaveBeenCalledWith({
+          data: { testValue: 'someValue' },
+          pages: undefined,
+          symlinks: undefined
+        });
       });
 
       test('THEN the exit handler should unsubscribe all other handlers', async () => {
