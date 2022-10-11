@@ -1,24 +1,22 @@
 {
-    "name": "@jpmorganchase/mosaic-types",
-    "version": "0.1.0-beta.0",
-    "types": "./dist/**",
-    "description": "",
-    "license": "Apache-2.0",
-    "engines": {
-      "node": ">= 12.0.0"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git@github.com:jpmorganchase/mosaic.git"
-    },
-    "scripts": {
-      "build": "tsc",
-      "clean": "rm -fr dist"
-    },
-    "devDependencies": {
-      "rxjs": "^7.5.5"
-    },
-    "author": "",
-    "license": "ISC"
-  }
-  
+  "name": "@jpmorganchase/mosaic-types",
+  "version": "0.1.0",
+  "types": "./dist/**",
+  "description": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist"
+  },
+  "devDependencies": {
+    "rxjs": "^7.5.5"
+  },
+  "author": ""
+}
