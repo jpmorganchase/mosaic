@@ -29,7 +29,7 @@ describe('GIVEN PullDocs', () => {
       expect(SourceManager).toHaveBeenCalledWith(
         [
           {
-            modulePath: '/Users/I587180/dev/mosaic-github/packages/plugins/dist/$CodeModPlugin.js',
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$CodeModPlugin.js/),
             options: {},
             priority: Infinity
           },
@@ -38,16 +38,16 @@ describe('GIVEN PullDocs', () => {
             modulePath: 'plugin'
           },
           {
-            modulePath: '/Users/I587180/dev/mosaic-github/packages/plugins/dist/$TagPlugin.js',
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$TagPlugin.js/),
             options: {}
           },
           {
-            modulePath: '/Users/I587180/dev/mosaic-github/packages/plugins/dist/$AliasPlugin.js',
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$AliasPlugin.js/),
             options: {},
             priority: -1
           },
           {
-            modulePath: '/Users/I587180/dev/mosaic-github/packages/plugins/dist/$RefPlugin.js',
+            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$RefPlugin.js/),
             options: {},
             priority: -1
           }
@@ -55,7 +55,7 @@ describe('GIVEN PullDocs', () => {
         [
           {
             filter: /\.json$/,
-            modulePath: '/Users/I587180/dev/mosaic-github/packages/serialisers/dist/json.js',
+            modulePath: expect.stringMatching(/\/packages\/serialisers\/dist\/json.js/),
             options: {}
           }
         ],
