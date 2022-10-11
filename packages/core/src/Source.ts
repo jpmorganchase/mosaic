@@ -83,10 +83,12 @@ export default class Source {
   }
 
   stop() {
-    if (this.#worker?.closed) {
+    if (this.#worker && this.#worker.closed) {
       throw new Error('Cannot stop source that has not started');
     }
-    this.#worker.stop();
+    if (this.#worker) {
+      this.#worker.stop();
+    }
   }
 
   /**
@@ -116,7 +118,7 @@ export default class Source {
     }
   }
 
-  async use(plugins: PluginModuleDefinition[], serialisers: SerialiserModuleDefinition[]) {
+  async use(plugins: PluginModuleDefinition[] = [], serialisers: SerialiserModuleDefinition[] = []) {
     this.#plugins.push(...plugins);
     this.#serialisers.push(...serialisers);
   }
