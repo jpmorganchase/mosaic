@@ -4,8 +4,9 @@ import WorkerSubscription, { EVENT } from '../WorkerSubscription';
 import Source from '../Source';
 
 jest.mock('../WorkerSubscription');
-
 jest.mock('plugin', () => ({}), { virtual: true });
+
+const utf8Encoder = new TextEncoder();
 
 describe('GIVEN Source', () => {
   test('THEN it should instantiate correctly', () => {
@@ -131,7 +132,7 @@ describe('GIVEN Source', () => {
       source.use([]);
       (WorkerSubscription as jest.MockedFunction<any>).mockClear();
     });
-    
+
     test('THEN the child worker should be created', async () => {
       await source.start();
       expect(WorkerSubscription).toHaveBeenCalledWith({
@@ -236,7 +237,7 @@ describe('GIVEN Source', () => {
         expect(source.filesystem).toEqual(null);
       });
       test('THEN the worker should remove listeners on exit', () => {
-        spyOn(EventEmitter.prototype, 'removeAllListeners');
+        jest.spyOn(EventEmitter.prototype, 'removeAllListeners');
         workerHandlers.exit(1);
         expect(EventEmitter.prototype.removeAllListeners).toHaveBeenCalled();
       });
@@ -268,7 +269,7 @@ describe('GIVEN Source', () => {
         const updateSpy = jest.fn();
         const cleanup = source.onUpdate(updateSpy);
         cleanup();
-        workerHandlers.message({ data: 'test', type: 'message' });
+        workerHandlers.message({ data: utf8Encoder.encode("{ key : 'test' }"), type: 'message' });
         await new Promise(resolve => setTimeout(resolve));
         expect(updateSpy).not.toHaveBeenCalled();
       });
