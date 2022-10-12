@@ -8,4 +8,4 @@
 '@jpmorganchase/mosaic-types': patch
 ---
 
-initial 0.1.0-beta.0 release of Mosaic to NPM
+pipped to 0.1.0-beta.1 for publishing to NPM

@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-core",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "author": "",
   "description": "",
   "license": "Apache-2.0",
@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.0",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.1",
     "md5": "*",
     "unionfs": "^4.4.0",
     "lodash": "^4.17.21",
