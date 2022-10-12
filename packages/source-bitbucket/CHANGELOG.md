@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-bitbucket
 
+## 0.1.0-beta.4
+
+### Patch Changes
+
+- bd285df: added dist to package.json
+- Updated dependencies [bd285df]
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.4
+  - @jpmorganchase/mosaic-types@0.1.0-beta.4
+
 ## 0.1.0-beta.3
 
 ### Patch Changes
