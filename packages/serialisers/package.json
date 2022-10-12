@@ -1,28 +1,26 @@
 {
-    "name": "@jpmorganchase/mosaic-serialisers",
-    "version": "0.1.0-beta.0",
-    "description": "",
-    "license": "Apache-2.0",
-    "main": "./dist/index.js",
-    "engines": {
-      "node": ">= 12.0.0"
-    },
-    "scripts": {
-      "build": "tsc",
-      "clean": "rm -fr dist"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git@github.com:jpmorganchase/mosaic.git"
-    },
-    "devDependencies": {
-      "rxjs": "^7.5.5"
-    },
-    "dependencies": {
-      "@jpmorganchase/mosaic-types": "^0.1.0-beta.0",
-        "gray-matter": "^4.0.3"
-      },
-    "author": "",
-    "license": "ISC"
-  }
-  
+  "name": "@jpmorganchase/mosaic-serialisers",
+  "version": "0.1.0",
+  "description": "",
+  "license": "ISC",
+  "main": "./dist/index.js",
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git"
+  },
+  "devDependencies": {
+    "rxjs": "^7.5.5"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-types": "^0.1.0",
+    "gray-matter": "^4.0.3"
+  },
+  "author": ""
+}
