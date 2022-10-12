@@ -2,7 +2,7 @@
   "name": "@jpmorganchase/mosaic-cli",
   "version": "0.1.0-beta.3",
   "author": "",
-  "description": "",
+  "description": "Mosaic command line scripts",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "engines": {
@@ -11,6 +11,9 @@
   "bin": {
     "mosaic": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "mkdir -p ./dist && cp -f ./src/** ./dist",
     "clean": "rm -fr dist"
