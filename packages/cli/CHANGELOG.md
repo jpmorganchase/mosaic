@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.4
+
+### Patch Changes
+
+- bd285df: added dist to package.json
+
 ## 0.1.0-beta.3
 
 ### Patch Changes
