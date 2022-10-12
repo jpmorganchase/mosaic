@@ -2,12 +2,15 @@
   "name": "@jpmorganchase/mosaic-plugins",
   "version": "0.1.0-beta.3",
   "author": "",
-  "description": "",
+  "description": "Mosaic plugins for core file system",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "engines": {
     "node": ">= 12.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "yarn clean && tsc && swc ./src/*.mjs.ts -d ./dist -C module.type=es6 -C sourceMaps=true && renamer --find '.mjs.js' --replace '.mjs' './dist/*.mjs.js' && renamer --find '.mjs.js.map' --replace '.mjs.map' './dist/*.mjs.js.map'",
     "clean": "rm -fr dist"
