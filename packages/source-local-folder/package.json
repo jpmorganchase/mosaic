@@ -2,13 +2,16 @@
   "name": "@jpmorganchase/mosaic-source-local-folder",
   "version": "0.1.0-beta.2",
   "author": "",
-  "description": "",
+  "description": "Mosaic local folder source for core file system",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "engines": {
     "node": ">= 12.0.0"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist"

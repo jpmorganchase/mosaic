@@ -2,7 +2,7 @@
   "name": "@jpmorganchase/mosaic-types",
   "version": "0.1.0-beta.2",
   "author": "",
-  "description": "",
+  "description": "Mosaic BitBucket source for core file system",
   "license": "Apache-2.0",
   "types": "./dist/**",
   "engines": {
@@ -12,6 +12,9 @@
     "type": "git",
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist"
