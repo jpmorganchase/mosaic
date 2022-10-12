@@ -1,8 +1,9 @@
 {
   "name": "@jpmorganchase/mosaic-source-local-folder",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.0",
+  "author": "",
   "description": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "engines": {
@@ -17,8 +18,7 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.0",
     "rxjs": "^7.5.5"
-  },
-  "author": ""
+  }
 }

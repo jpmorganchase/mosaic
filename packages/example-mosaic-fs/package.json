@@ -1,25 +1,23 @@
 {
-    "name": "@jpmorganchase/mosaic-example-mosaic",
-    "version": "0.1.0-beta.0",
-    "private": true,
-    "description": "",
-    "license": "Apache-2.0",
-    "main": "./dist/index.js",
-    "engines": {
-      "node": ">= 12.0.0"
-    },
-    "scripts": {
-      "build": "tsc",
-      "clean": "rm -fr dist"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git@github.com:jpmorganchase/mosaic.git"
-    },
-    "dependencies": {
-      "@jpmorganchase/mosaic-types": "^0.1.0-beta.0"
-    },
-    "author": "",
-    "license": "ISC"
+  "name": "@jpmorganchase/mosaic-example-mosaic",
+  "version": "0.1.0-beta.0",
+  "author": "",
+  "description": "",
+  "license": "Apache-2.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.0"
   }
-  
+}

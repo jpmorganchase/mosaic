@@ -1,8 +1,9 @@
 {
   "name": "@jpmorganchase/mosaic-core",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.0",
+  "author": "",
   "description": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "./dist/index.js",
   "engines": {
     "node": ">= 12.0.0"
@@ -24,13 +25,12 @@
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "@jpmorganchase/mosaic-types": "^0.1.0",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.0",
     "md5": "*",
     "unionfs": "^4.4.0",
     "lodash": "^4.17.21",
     "fast-glob": "*",
     "memfs": "^3.3.0",
     "rxjs": "^7.5.5"
-  },
-  "author": ""
+  }
 }
