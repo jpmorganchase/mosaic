@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-serialisers
 
+## 0.1.0-beta.3
+
+### Patch Changes
+
+- 457df5e: switch to public package
+- Updated dependencies [457df5e]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.3
+
 ## 0.1.0-beta.2
 
 ### Patch Changes

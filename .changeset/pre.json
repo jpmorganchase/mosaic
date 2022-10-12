@@ -13,6 +13,7 @@
     "@jpmorganchase/mosaic-types": "0.1.0-beta.1"
   },
   "changesets": [
+    "eighty-rings-marry",
     "green-rocks-promise",
     "large-avocados-know"
   ]
