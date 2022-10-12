@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-local-folder",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "author": "",
   "description": "",
   "license": "Apache-2.0",
@@ -18,7 +18,7 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.1",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.2",
     "rxjs": "^7.5.5"
   }
 }
