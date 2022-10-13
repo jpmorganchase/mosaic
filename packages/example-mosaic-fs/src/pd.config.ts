@@ -10,7 +10,11 @@ const config: PullDocsConfig = {
       filter: /\.mdx$/,
       options: {}
     },
-    { modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/md'), filter: /\.md$/, options: {} }
+    {
+      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/md'),
+      filter: /\.md$/,
+      options: {}
+    }
   ],
   plugins: [
     {
@@ -78,9 +82,9 @@ const config: PullDocsConfig = {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
       options: {
-        rootDir: path.join(__dirname, '../../../../developer-docs', 'docs'),
+        rootDir: path.join(__dirname, '../', 'docs'),
         cache: true,
-        prefixDir: 'developer',
+        prefixDir: 'example',
         extensions: ['.mdx']
       }
     }
