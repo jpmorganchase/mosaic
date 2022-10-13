@@ -19,7 +19,7 @@
     "test": "jest --runInBand",
     "build": "turbo run build",
     "clean": "yarn workspace @jpmorganchase/mosaic-types clean & yarn workspace @jpmorganchase/mosaic-source-local-folder clean & yarn workspace @jpmorganchase/mosaic-source-bitbucket clean & yarn workspace @jpmorganchase/mosaic-cli clean & yarn workspace @jpmorganchase/mosaic-serialisers clean & yarn workspace @jpmorganchase/mosaic-plugins clean & yarn workspace @jpmorganchase/mosaic-core clean",
-    "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @jpmorganchase/mosaic-example-nextjs-ssr dev' './node_modules/.bin/mosaic serve -c ./packages/example-mosaic/dist/pd.config.js' -p 8080",
+    "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @jpmorganchase/mosaic-example-nextjs-ssr dev' 'yarn mosaic serve -c ./packages/example-mosaic-fs/dist/pd.config.js' -p 8080",
     "start": "./node_modules/.bin/mosaic serve -c ./packages/example-mosaic-fs/dist/pd.config.js -p 8080"
   },
   "repository": {
