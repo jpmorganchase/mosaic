@@ -12,7 +12,8 @@ module.exports = async (config, targetDir, scope) => {
     options: { ...source.options, cache: false }
   }));
   const pullDocs = new PullDocs(config);
-  await fsExtra.emptyDir(targetDir);
+  const datedDir = path.posix.join(targetDir, new Date().toISOString());
+  await fsExtra.emptyDir(datedDir);
   await pullDocs.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
   const filesystem = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
@@ -44,10 +45,10 @@ module.exports = async (config, targetDir, scope) => {
 Try using \`--scope\` to just output certain namespaced sources, or adding a \`prefixDir\` to the source options to move the source files into a separate folder.`);
           }
           //}
-          await fs.promises.mkdir(path.dirname(path.join(targetDir, String(filePath))), {
+          await fs.promises.mkdir(path.dirname(path.join(datedDir, String(filePath))), {
             recursive: true
           });
-          await fs.promises.writeFile(path.join(targetDir, String(filePath)), rawFile);
+          await fs.promises.writeFile(path.join(datedDir, String(filePath)), rawFile);
         }
         for (const alias in symlinks) {
           if (alias.startsWith('/.tags')) {
@@ -57,20 +58,20 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
             if (target.startsWith('/.tags')) {
               continue;
             }
-            await fsExtra.ensureDir(path.join(targetDir, path.dirname(alias)));
+            await fsExtra.ensureDir(path.join(datedDir, path.dirname(alias)));
 
             try {
-              const exists = !!(await fs.promises.stat(path.join(targetDir, alias)));
+              const exists = !!(await fs.promises.stat(path.join(datedDir, alias)));
               if (exists) {
                 console.error(
                   new Error(
-                    `Symlink at '${path.join(targetDir, alias)}' already exists. Aborting build.`
+                    `Symlink at '${path.join(datedDir, alias)}' already exists. Aborting build.`
                   )
                 );
                 process.exit(1);
               }
             } catch {
-              await fs.promises.symlink(path.join(targetDir, target), path.join(targetDir, alias));
+              await fs.promises.symlink(path.join(datedDir, target), path.join(datedDir, alias));
             }
           }
         }
@@ -78,7 +79,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
         console.log(
           `Filesystem for ${
             Array.isArray(scope) ? scope.length : config.sources.length
-          } source(s) written to disk at '${targetDir}'`
+          } source(s) written to disk at '${datedDir}'`
         );
         pullDocs.stop();
       }
