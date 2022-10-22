@@ -31,5 +31,6 @@ module.exports = {
   transform: {
     '\\.[jt]sx?$': require.resolve('babel-jest')
   },
-  transformIgnorePatterns: ['/node_modules/']
+  transformIgnorePatterns: ['/node_modules/'],
+  setupFiles: ['./testSetup.js']
 };
