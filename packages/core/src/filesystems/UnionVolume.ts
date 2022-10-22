@@ -1,4 +1,4 @@
-import type { IUnionVolume } from '@jpmorganchase/mosaic-types/dist/Volume';
+import type { IUnionVolume } from '@jpmorganchase/mosaic-types';
 
 import type UnionFileAccess from './UnionFileAccess';
 import { create } from 'lodash';

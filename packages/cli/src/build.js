@@ -1,4 +1,4 @@
-const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
+const PullDocs = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 const fsExtra = require('fs-extra');
 const fs = require('fs');
@@ -7,12 +7,15 @@ module.exports = async (config, targetDir, scope) => {
   // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
   config.plugins = config.plugins.filter(({ runTimeOnly }) => !runTimeOnly);
   // Turn off `cache` for each source
-  config.sources = config.sources.map(source => ({ ...source, options: { ...source.options, cache: false } }));
+  config.sources = config.sources.map(source => ({
+    ...source,
+    options: { ...source.options, cache: false }
+  }));
   const pullDocs = new PullDocs(config);
   await fsExtra.emptyDir(targetDir);
   await pullDocs.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
-  const filesystem = (Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem);
+  const filesystem = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
   let calls = 0;
   pullDocs.onSourceUpdate(async (value, source) => {
     try {
@@ -44,10 +47,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
           await fs.promises.mkdir(path.dirname(path.join(targetDir, String(filePath))), {
             recursive: true
           });
-          await fs.promises.writeFile(
-            path.join(targetDir, String(filePath)),
-            rawFile
-          );
+          await fs.promises.writeFile(path.join(targetDir, String(filePath)), rawFile);
         }
         for (const alias in symlinks) {
           if (alias.startsWith('/.tags')) {
@@ -62,7 +62,11 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
             try {
               const exists = !!(await fs.promises.stat(path.join(targetDir, alias)));
               if (exists) {
-                console.error(new Error(`Symlink at '${path.join(targetDir, alias)}' already exists. Aborting build.`));
+                console.error(
+                  new Error(
+                    `Symlink at '${path.join(targetDir, alias)}' already exists. Aborting build.`
+                  )
+                );
                 process.exit(1);
               }
             } catch {
@@ -71,7 +75,11 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
           }
         }
 
-        console.log(`Filesystem for ${Array.isArray(scope) ? scope.length : config.sources.length} source(s) written to disk at '${targetDir}'`);
+        console.log(
+          `Filesystem for ${
+            Array.isArray(scope) ? scope.length : config.sources.length
+          } source(s) written to disk at '${targetDir}'`
+        );
         pullDocs.stop();
       }
     } catch (e) {
@@ -79,6 +87,4 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
       process.exit(1);
     }
   });
-
-
 };

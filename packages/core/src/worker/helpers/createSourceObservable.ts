@@ -1,11 +1,9 @@
-import { isObservable, map } from 'rxjs';
-import type { Observable } from 'rxjs';
-
-import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import path from 'path';
 import { escapeRegExp } from 'lodash';
+import path from 'path';
+import type { Observable } from 'rxjs';
+import { isObservable, map } from 'rxjs';
+
+import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
 
 export default async function createSourceObservable(
   { modulePath, options, pageExtensions, ignorePages }: WorkerData,
@@ -46,9 +44,7 @@ NOTE: Only ${pageExtensions.join(
           ...page,
           title: page.title || page.fullPath,
           fullPath: page.fullPath.toLowerCase(),
-          route: page.route
-            ? page.route.toLowerCase()
-            : page.fullPath.toLowerCase()
+          route: page.route ? page.route.toLowerCase() : page.fullPath.toLowerCase()
         });
       }, []);
     })

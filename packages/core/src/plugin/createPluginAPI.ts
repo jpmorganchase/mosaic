@@ -1,13 +1,15 @@
-import type { LoadedPlugin } from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types/dist/Serialiser';
-import type Plugin from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
-import type Serialiser from '@jpmorganchase/mosaic-types/dist/Serialiser';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type {
+  LoadedPlugin,
+  LoadedSerialiser,
+  Page,
+  Plugin,
+  PluginModuleDefinition,
+  Serialiser
+} from '@jpmorganchase/mosaic-types';
 
 import loadDefinitionModules from './loadDefinitionModules';
-import serialiserRunner from './serialiserRunner';
 import pluginRunner from './pluginRunner';
+import serialiserRunner from './serialiserRunner';
 
 function createProxyBaseSerialiserAPI(): Serialiser {
   return {

@@ -1,13 +1,12 @@
 import path from 'path';
 
-import reduce from 'lodash/reduce';
 import omit from 'lodash/omit';
+import reduce from 'lodash/reduce';
 
-import escapeRegExp from 'lodash/escapeRegExp';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
+import escapeRegExp from 'lodash/escapeRegExp';
 
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
 import normaliseRefs from './utils/normaliseRefs';
 
@@ -36,9 +35,13 @@ const $RefPlugin: PluginType<{
             ignorePages
           ))
         } as any;
-        const resolve = createRefResolver({
-          [pagePath]: normalisedRef
-        }, serialiser, globalFilesystem);
+        const resolve = createRefResolver(
+          {
+            [pagePath]: normalisedRef
+          },
+          serialiser,
+          globalFilesystem
+        );
         const refParser = new $RefParser();
 
         try {

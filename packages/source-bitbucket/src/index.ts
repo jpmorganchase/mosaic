@@ -1,13 +1,12 @@
-import { defer, delay, merge, mergeMap, Observable, switchMap } from 'rxjs';
-import path from 'path';
 import _merge from 'lodash/merge';
+import path from 'path';
+import { defer, delay, merge, mergeMap, Observable, switchMap } from 'rxjs';
 
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
 import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
+import type { Page, Source } from '@jpmorganchase/mosaic-types';
 
-import Repo from './Repo';
 import fromCommitChange from './fromCommitChange';
+import Repo from './Repo';
 
 export interface BitbucketSourceOptions {
   /**

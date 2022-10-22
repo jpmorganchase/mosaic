@@ -1,5 +1,4 @@
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import path from 'path';
 
 export type Breadcrumb = { label: string; path: string; id: string };

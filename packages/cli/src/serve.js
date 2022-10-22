@@ -1,14 +1,17 @@
 const express = require('express');
 const cors = require('cors');
-const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
+const PullDocs = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 
 const app = express();
 
 module.exports = async (config, port, scope) => {
-
   app.listen(port, () => {
-    console.log(`[PullDocs] Listening on port ${port}${Array.isArray(scope) ? ` (scoped to ${scope.join(', ')})` : ''}`);
+    console.log(
+      `[PullDocs] Listening on port ${port}${
+        Array.isArray(scope) ? ` (scoped to ${scope.join(', ')})` : ''
+      }`
+    );
   });
   const pullDocs = new PullDocs(config);
   await pullDocs.start();
@@ -35,12 +38,11 @@ module.exports = async (config, port, scope) => {
             res.contentType('application/json');
           } else if (path.extname(pagePath) === '.xml') {
             res.contentType('application/xml');
-          } 
+          }
           const result = await fs.promises.readFile(req.path);
           res.send(result);
         }
-      }
-      else {
+      } else {
         res.status(404).end();
       }
     } catch (e) {

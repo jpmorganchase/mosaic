@@ -1,7 +1,7 @@
 import { IUnionFs, Union } from 'unionfs';
 import merge from 'lodash/merge';
 
-import type { IVolumeMutable } from '@jpmorganchase/mosaic-types/dist/Volume';
+import type { IVolumeMutable } from '@jpmorganchase/mosaic-types';
 
 import FileAccess from './FileAccess';
 import { IFS } from 'unionfs/lib/fs';

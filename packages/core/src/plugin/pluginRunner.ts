@@ -1,4 +1,4 @@
-import type { LoadedPlugin } from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type { LoadedPlugin } from '@jpmorganchase/mosaic-types';
 
 import PluginError from '../PluginError';
 

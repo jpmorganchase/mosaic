@@ -1,11 +1,10 @@
-import { concatMap, delay, merge, Observable, of, switchMap } from 'rxjs';
 import glob from 'fast-glob';
-import path from 'path';
 import fs from 'fs';
 import lodashMerge from 'lodash/merge';
+import path from 'path';
+import { concatMap, delay, merge, Observable, of, switchMap } from 'rxjs';
 
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Source } from '@jpmorganchase/mosaic-types';
 
 import fromFsWatch from './fromFsWatch';
 

@@ -1,1 +1,2 @@
-export { default } from './PullDocs';
+import PullDocs from './PullDocs';
+export default PullDocs;
