@@ -296,7 +296,7 @@ describe('GIVEN Source', () => {
         });
       });
 
-      test('THEN the exit handler should unsubscribe all other handlers', async () => {
+      test('THEN the exit handler should unsubscribe all other handlers', () => {
         const exitSpy = jest.fn();
         const errorSpy = jest.fn();
         const updateSpy = jest.fn();
@@ -307,7 +307,7 @@ describe('GIVEN Source', () => {
         source.onUpdate(updateSpy);
         workerHandlers.exit(0);
         workerHandlers.error(new Error('i should never be handled'));
-        workerHandlers.message('i should be ignored');
+        workerHandlers.message({ data: 'i should be ignored' });
         workerHandlers.start();
         expect(exitSpy).toHaveBeenCalledTimes(1);
         expect(errorSpy).not.toHaveBeenCalled();
