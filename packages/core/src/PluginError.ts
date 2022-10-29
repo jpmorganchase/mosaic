@@ -1,3 +1,1 @@
-export default class PluginError extends Error {
-    
-}
+export default class PluginError extends Error {}

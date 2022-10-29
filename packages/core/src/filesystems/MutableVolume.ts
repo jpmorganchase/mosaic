@@ -38,7 +38,13 @@ export default class MutableVolume extends FileSystemRestricted implements IVolu
   }
 
   async symlinksFromJSON(json: { [key: string]: { target: string; type: string }[] }) {
-    return await this.#vfs.$$symlinksFromJSON(json);
+    let result;
+    try {
+      result = await this.#vfs.$$symlinksFromJSON(json);
+    } catch (e) {
+      throw new Error(e);
+    }
+    return result;
   }
 
   fromJSON(json: DirectoryJSON) {

@@ -1,9 +1,6 @@
 import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
 
-const SiteMapPlugin: PluginType<
-  { sitemaps: string[][] },
-  {}
-> = {
+const SiteMapPlugin: PluginType<{ sitemaps: string[][] }, {}> = {
   // Merge together all of the individual sitemaps from each source
   async afterUpdate(mutableFilesystem, { sharedFilesystem, globalConfig }) {
     if (!Array.isArray(globalConfig.data.sitemaps)) {

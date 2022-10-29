@@ -41,19 +41,19 @@ describe('GIVEN SourceManager', () => {
     );
   });
   test('THEN it should instantiate correctly', () => {
-    expect(new SourceManager([])).toBeDefined();
+    expect(new SourceManager({}, {})).toBeDefined();
   });
 
   test('THEN it should have an addSource method', () => {
-    expect(new SourceManager([])).toHaveProperty('addSource');
+    expect(new SourceManager({}, {})).toHaveProperty('addSource');
   });
 
   test('THEN it should have an getSource method', () => {
-    expect(new SourceManager([])).toHaveProperty('getSource');
+    expect(new SourceManager({}, {})).toHaveProperty('getSource');
   });
 
   test('THEN it should have an destroyAll method', () => {
-    expect(new SourceManager([])).toHaveProperty('destroyAll');
+    expect(new SourceManager({}, {})).toHaveProperty('destroyAll');
   });
 
   describe('WHEN destroying a source', () => {
@@ -66,7 +66,7 @@ describe('GIVEN SourceManager', () => {
       jest.spyOn(Source.prototype, 'onStart').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'stop').mockReturnValue(jest.fn());
 
-      sourceManager = new SourceManager([]);
+      sourceManager = new SourceManager({}, {});
     });
 
     afterEach(() => {
@@ -94,7 +94,7 @@ describe('GIVEN SourceManager', () => {
     beforeEach(async () => {
       Source.prototype.constructorSpy.mockReset();
       Source.prototype.use.mockReset();
-      sourceManager = new SourceManager([{ options: { plugins: true } }]);
+      sourceManager = new SourceManager({}, {}, [{ options: { plugins: true } }]);
       scheduleOnStartCallback();
       await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
     });
@@ -125,7 +125,7 @@ describe('GIVEN SourceManager', () => {
     afterEach(() => {});
     beforeEach(() => {
       Source.prototype.constructorSpy.mockReset();
-      sourceManager = new SourceManager([]);
+      sourceManager = new SourceManager({}, {});
       jest.spyOn(Source.prototype, 'onExit').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'onError').mockReturnValue(jest.fn());
       jest.spyOn(Source.prototype, 'onUpdate').mockReturnValue(jest.fn());

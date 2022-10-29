@@ -6,6 +6,25 @@ import type { LoadedPlugin } from '@jpmorganchase/mosaic-types/dist/Plugin';
 
 const loadedPluginsAndSerialisers: { [key: string]: LoadedPlugin | LoadedSerialiser } = {};
 
+function createInvoker(plugin, api) {
+  return new Proxy(plugin, {
+    get(obj, prop) {
+      if (typeof obj[prop] !== 'undefined') {
+        return obj[prop];
+      }
+
+      if (typeof api === 'function') {
+        return api;
+      }
+
+      if (prop in api) {
+        return api[prop];
+      }
+      return undefined;
+    }
+  });
+}
+
 export default async function loadDefinitionModules(
   plugins: (PluginModuleDefinition | SerialiserModuleDefinition)[]
 ): Promise<LoadedPlugin[] | LoadedSerialiser[]> {
@@ -18,7 +37,10 @@ export default async function loadDefinitionModules(
         const {
           default: definitionExports
         }: {
-          default: Partial<Plugin | Serialiser> | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
+          default:
+            | Partial<Plugin | Serialiser>
+            | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
+          // eslint-disable-next-line no-await-in-loop
         } = await import(modulePath);
         const pluginApi: Partial<Plugin | Serialiser> =
           '__esModule' in definitionExports && 'default' in definitionExports
@@ -37,22 +59,4 @@ export default async function loadDefinitionModules(
     throw new Error(`Could not load plugin/serialiser modules due to error.
 ${e}`);
   }
-}
-
-function createInvoker(plugin, api) {
-  return new Proxy(plugin, {
-    get(obj, prop) {
-      if (typeof obj[prop] !== 'undefined') {
-        return obj[prop];
-      }
-
-      if (typeof api === 'function') {
-        return api;
-      }
-
-      if (prop in api) {
-        return api[prop];
-      }
-    }
-  });
 }

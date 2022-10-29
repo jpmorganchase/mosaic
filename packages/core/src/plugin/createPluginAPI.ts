@@ -37,7 +37,7 @@ function createProxyBaseAPI<ConfigData>(): Plugin<ConfigData> {
   };
 }
 
-export default async function createPluginAPI<PluginInput, ConfigData = {}>(
+export default async function createPluginAPI<PluginInput, ConfigData = Record<string, unknown>>(
   plugins: PluginModuleDefinition[]
 ): Promise<Plugin<ConfigData>> {
   const loadedPlugins: LoadedPlugin[] | LoadedSerialiser[] = await loadDefinitionModules(plugins);
@@ -46,30 +46,45 @@ export default async function createPluginAPI<PluginInput, ConfigData = {}>(
 
   return new Proxy(baseObj, {
     get(obj, propOrLifecycleName) {
-      if (baseSerialiserObj.hasOwnProperty(propOrLifecycleName)) {
-        return async (pagePath, ...args: [string | Page, {}]) =>
-          await serialiserRunner(
-            {
-              serialiserMethod: String(propOrLifecycleName),
-              loadedPlugins: loadedPlugins as LoadedSerialiser[]
-            },
-            pagePath,
-            ...args
-          );
+      if (Object.prototype.hasOwnProperty.call(baseSerialiserObj, propOrLifecycleName)) {
+        return async (pagePath, ...args: [string | Page, Record<string, unknown>]) => {
+          let result;
+          try {
+            result = await serialiserRunner(
+              {
+                serialiserMethod: String(propOrLifecycleName),
+                loadedPlugins: loadedPlugins as LoadedSerialiser[]
+              },
+              pagePath,
+              ...args
+            );
+          } catch (e) {
+            throw new Error(e);
+          }
+          return result;
+        };
       }
-      if (baseObj.hasOwnProperty(propOrLifecycleName)) {
-        return async (...args: [PluginInput, {}]) =>
-          await pluginRunner(
-            {
-              loadedPlugins: loadedPlugins as LoadedPlugin[],
-              lifecycleName: String(propOrLifecycleName)
-            },
-            ...args
-          );
+      if (Object.prototype.hasOwnProperty.call(baseObj, propOrLifecycleName)) {
+        return async (...args: [PluginInput, Record<string, unknown>]) => {
+          let result;
+          try {
+            result = await pluginRunner(
+              {
+                loadedPlugins: loadedPlugins as LoadedPlugin[],
+                lifecycleName: String(propOrLifecycleName)
+              },
+              ...args
+            );
+          } catch (e) {
+            throw new Error(e);
+          }
+          return result;
+        };
       }
       if (typeof obj[propOrLifecycleName] !== 'undefined') {
         return obj[propOrLifecycleName];
       }
+      return undefined;
     }
   });
 }

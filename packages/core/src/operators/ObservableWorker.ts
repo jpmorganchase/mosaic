@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
 
-export function from<T>(workerData: WorkerData) {
+export default function from<T>(workerData: WorkerData) {
   return new Observable<T>(observer => {
     const worker = new Worker(require.resolve('../worker/Source.worker'), { workerData });
     worker.on('message', message => observer.next(message));

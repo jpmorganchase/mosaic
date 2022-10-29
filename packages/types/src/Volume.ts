@@ -111,7 +111,7 @@ export interface IVolumeMutable extends IVolume {
    * Is this filesystem frozen/mutable?
    * @returns {boolean}
    */
-  get frozen(): boolean;
+  readonly frozen: boolean;
   /**
    * Appends content to the filesystem
    * @param json A JSON blob in the form of {[fullPath]: "{fullPath: '', content: ''}"}
