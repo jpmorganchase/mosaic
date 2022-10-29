@@ -1,4 +1,4 @@
-type MutableData<T = {}> = ImmutableData<T> & {
+export type MutableData<T = {}> = ImmutableData<T> & {
   /**
    * Set arbitrary data onto the config object. This value will persist across plugins and
    * also be sent to the parent process when it executes plugins there as well.
@@ -51,5 +51,3 @@ export type ImmutableData<T = {}> = {
     T & { readonly refs: string[]; readonly aliases: Set<{ $$path: string[]; $$value: string }> }
   >;
 };
-
-export default MutableData;

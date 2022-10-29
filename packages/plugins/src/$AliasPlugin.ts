@@ -1,7 +1,6 @@
 import path from 'path';
 
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash';
 
 /**

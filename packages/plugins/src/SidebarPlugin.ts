@@ -1,5 +1,5 @@
 import path from 'path';
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
 /**
  * Sorts the pages in a folder by priority and then exports a JSON file (name: `options.filename`) with the

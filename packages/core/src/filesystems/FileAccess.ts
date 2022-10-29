@@ -5,7 +5,7 @@ import { createFsFromVolume } from 'memfs';
 import type { DirectoryJSON, IRealpathOptions, Volume } from 'memfs/lib/volume';
 import type { TDataOut } from 'memfs/lib/encoding';
 
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
+import type { IFileAccess } from '@jpmorganchase/mosaic-types';
 
 export default class FileAccess implements IFileAccess {
   #adapter: Volume;

@@ -1,8 +1,8 @@
-import type SerialiserModuleDefinition from './SerialiserModuleDefinition';
-import type PluginModuleDefinition from './PluginModuleDefinition';
-import type SourceModuleDefinition from './SourceModuleDefinition';
+import type { SerialiserModuleDefinition } from './SerialiserModuleDefinition';
+import type { PluginModuleDefinition } from './PluginModuleDefinition';
+import type { SourceModuleDefinition } from './SourceModuleDefinition';
 
-type WorkerData<Options = {}> = {
+export type WorkerData<Options = {}> = {
   options: Options &
     Pick<PluginModuleDefinition, 'options'> &
     Pick<SourceModuleDefinition, 'options'> & {
@@ -16,5 +16,3 @@ type WorkerData<Options = {}> = {
   serialisers: SerialiserModuleDefinition[];
   modulePath: string;
 };
-
-export default WorkerData;

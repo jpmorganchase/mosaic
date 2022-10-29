@@ -2,7 +2,7 @@ import { Worker } from 'worker_threads';
 
 import { Observable } from 'rxjs';
 
-import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
+import type { WorkerData } from '@jpmorganchase/mosaic-types';
 
 export default function from<T>(workerData: WorkerData) {
   return new Observable<T>(observer => {

@@ -1,4 +1,4 @@
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import flatten from 'lodash/flatten';
 import path from 'path';
 

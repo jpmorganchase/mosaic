@@ -12,13 +12,13 @@ import type Stats from 'memfs/lib/Stats';
 import type { TStatNumber } from 'memfs/lib/Stats';
 import type { IStatOptions } from 'memfs/lib/volume';
 import type { PathLike, symlink } from 'fs';
-import type Page from './Page';
+import type { Page } from './Page';
 import type { Options, Pattern, Entry } from 'fast-glob';
 
 /**
  * This is the core underlying filesystem, which directly interfaces with a memfs Volume to mutate the filesystem
  */
-export default interface IFileAccess {
+export interface IFileAccess {
   glob(pattern: Pattern, options?: Omit<Options, 'absolute' | 'fs'>): Promise<string[] | Entry[]>;
   mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
   readdir(dir: PathLike, options?: string | IReaddirOptions): Promise<TDataOut[] | Dirent[]>;

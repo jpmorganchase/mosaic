@@ -1,10 +1,12 @@
 import type { TDataOut } from 'memfs/lib/encoding';
 
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import type Serialiser from '@jpmorganchase/mosaic-types/dist/Serialiser';
-import type Plugin from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type { IVolumeMutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
+import type {
+  IVolumeMutable,
+  Page,
+  Plugin,
+  PluginModuleDefinition,
+  Serialiser
+} from '@jpmorganchase/mosaic-types';
 
 import loadPlugins from './createPluginAPI';
 

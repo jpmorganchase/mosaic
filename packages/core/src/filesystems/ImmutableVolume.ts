@@ -1,5 +1,4 @@
-import type { IVolumeImmutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
+import type { IFileAccess, IVolumeImmutable } from '@jpmorganchase/mosaic-types';
 
 export default class ImmutableVolume implements IVolumeImmutable {
   #vfs: IFileAccess;

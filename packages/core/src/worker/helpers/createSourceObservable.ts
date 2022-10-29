@@ -1,11 +1,9 @@
 import { isObservable, map } from 'rxjs';
 import type { Observable } from 'rxjs';
-
-import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
 import path from 'path';
 import { escapeRegExp } from 'lodash';
+
+import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
 
 async function getSourceDefinitionExports(modulePath): Promise<Source> {
   const { default: defaultProp }: { default: Source | { __esModule: boolean; default: Source } } =

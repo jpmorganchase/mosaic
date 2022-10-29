@@ -3,18 +3,20 @@ import { Union } from 'unionfs';
 import type { IFS } from 'unionfs/lib/fs';
 import { Volume } from 'memfs';
 
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
-import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
-import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
+import type {
+  PluginModuleDefinition,
+  SerialiserModuleDefinition,
+  SourceModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 
 import SourceManager from './SourceManager';
 
 // TODO:
 // Remove $ref /index resolution
+import FileAccess from './filesystems/FileAccess';
 import MutableVolume from './filesystems/MutableVolume';
 import UnionFileAccess from './filesystems/UnionFileAccess';
 import UnionVolume from './filesystems/UnionVolume';
-import FileAccess from './filesystems/FileAccess';
 
 export default class PullDocs {
   #sourceDefinitions: SourceModuleDefinition[];

@@ -4,8 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import lodashMerge from 'lodash/merge';
 
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Source } from '@jpmorganchase/mosaic-types';
 
 import fromFsWatch from './fromFsWatch';
 

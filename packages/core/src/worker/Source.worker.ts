@@ -1,18 +1,17 @@
-import { parentPort, isMainThread, workerData as unTypedWorkerData } from 'worker_threads';
+import { isMainThread, parentPort, workerData as unTypedWorkerData } from 'worker_threads';
 
 import path from 'path';
 import fs from 'fs';
-import { tap, switchMap } from 'rxjs';
 import { DirectoryJSON, Volume } from 'memfs';
+import { switchMap, tap } from 'rxjs';
 
-import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, WorkerData } from '@jpmorganchase/mosaic-types';
 
-import createSourceObservable from './helpers/createSourceObservable';
-import { bindSerialiser, bindPluginMethods } from '../plugin';
-import createConfig from '../helpers/createConfig';
 import FileAccess from '../filesystems/FileAccess';
 import MutableVolume from '../filesystems/MutableVolume';
+import createConfig from '../helpers/createConfig';
+import { bindPluginMethods, bindSerialiser } from '../plugin';
+import createSourceObservable from './helpers/createSourceObservable';
 
 const workerData: WorkerData<{ cache: boolean }> = unTypedWorkerData;
 
