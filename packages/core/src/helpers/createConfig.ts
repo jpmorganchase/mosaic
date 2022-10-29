@@ -1,5 +1,4 @@
-import type MutableData from '@jpmorganchase/mosaic-types/dist/MutableData';
-import { ImmutableData } from '@jpmorganchase/mosaic-types/dist/MutableData';
+import type { ImmutableData, MutableData } from '@jpmorganchase/mosaic-types';
 import { merge } from 'lodash';
 import path from 'path';
 

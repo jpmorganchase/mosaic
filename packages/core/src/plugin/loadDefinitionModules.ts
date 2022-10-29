@@ -1,8 +1,11 @@
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
-import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
-import type Plugin from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type { LoadedSerialiser, Serialiser } from '@jpmorganchase/mosaic-types/dist/Serialiser';
-import type { LoadedPlugin } from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type {
+  LoadedPlugin,
+  LoadedSerialiser,
+  Plugin,
+  PluginModuleDefinition,
+  Serialiser,
+  SerialiserModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 
 const loadedPluginsAndSerialisers: { [key: string]: LoadedPlugin | LoadedSerialiser } = {};
 

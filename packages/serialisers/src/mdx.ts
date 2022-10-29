@@ -1,6 +1,6 @@
 import matter from 'gray-matter';
 import type { TDataOut } from 'memfs/lib/encoding';
-import type Serialiser from '@jpmorganchase/mosaic-types/dist/Serialiser';
+import type { Serialiser } from '@jpmorganchase/mosaic-types';
 
 const Serialisers: Serialiser = {
   async serialise(_fullPath, { content = '', ...meta }) {

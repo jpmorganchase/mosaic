@@ -1,7 +1,6 @@
 import type { DirectoryJSON } from 'memfs/lib/volume';
 
-import type { IVolumeMutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
+import type { IFileAccess, IVolumeMutable } from '@jpmorganchase/mosaic-types';
 
 import FileSystemRestricted from './RestrictedVolume';
 

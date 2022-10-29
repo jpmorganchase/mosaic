@@ -1,5 +1,5 @@
 import path from 'path';
-import type { PullDocsConfig } from '@jpmorganchase/mosaic-types/dist/PullDocsConfig';
+import type { PullDocsConfig } from '@jpmorganchase/mosaic-types';
 
 const config: PullDocsConfig = {
   pageExtensions: ['.mdx', '.json'],

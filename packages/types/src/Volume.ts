@@ -18,7 +18,7 @@ import type { Options, Pattern, Entry } from 'fast-glob';
  * Volumes are lightweight decorators which wrap `FileAccess` and limit access to the underlying API for different use-cases
  * Examples include disallowing mutation or allowing underlying functions like resetting
  */
-interface IVolume {
+export interface IVolume {
   namespace: string;
   reset?(): void;
   toJSON(): DirectoryJSON;

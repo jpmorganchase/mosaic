@@ -1,4 +1,4 @@
-const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
+const PullDocs = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 const fsExtra = require('fs-extra');
 const fs = require('fs');

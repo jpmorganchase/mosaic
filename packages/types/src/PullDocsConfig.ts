@@ -1,6 +1,6 @@
-import PluginModuleDefinition from './PluginModuleDefinition';
-import SerialiserModuleDefinition from './SerialiserModuleDefinition';
-import SourceModuleDefinition from './SourceModuleDefinition';
+import type { PluginModuleDefinition } from './PluginModuleDefinition';
+import type { SerialiserModuleDefinition } from './SerialiserModuleDefinition';
+import type { SourceModuleDefinition } from './SourceModuleDefinition';
 
 export interface PullDocsConfig {
   pageExtensions: Array<string>;

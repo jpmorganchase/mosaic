@@ -1,12 +1,12 @@
 import { merge } from 'lodash';
-import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
-import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
 import type {
   IUnionVolume,
   IVolumeImmutable,
-  IVolumeMutable
-} from '@jpmorganchase/mosaic-types/dist/Volume';
+  IVolumeMutable,
+  PluginModuleDefinition,
+  SerialiserModuleDefinition,
+  SourceModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 
 import Source from './Source';
 import createConfig from './helpers/createConfig';

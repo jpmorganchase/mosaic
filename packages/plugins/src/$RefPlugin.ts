@@ -6,8 +6,7 @@ import omit from 'lodash/omit';
 import escapeRegExp from 'lodash/escapeRegExp';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
 import normaliseRefs from './utils/normaliseRefs';
 

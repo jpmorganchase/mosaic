@@ -1,10 +1,9 @@
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import { visit } from 'unist-util-visit';
-import markdown from 'remark-parse';
-import { unified } from 'unified';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import Slugger from 'github-slugger';
 import { toString } from 'hast-util-to-string';
+import markdown from 'remark-parse';
+import { unified } from 'unified';
+import { visit } from 'unist-util-visit';
 
 type TOCItem = { level: number; id: string; text: string };
 

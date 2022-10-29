@@ -1,8 +1,6 @@
-import type PluginModuleDefinition from './PluginModuleDefinition';
+import type { PluginModuleDefinition } from './PluginModuleDefinition';
 
-type SourceModuleDefinition = PluginModuleDefinition & {
+export type SourceModuleDefinition = PluginModuleDefinition & {
   namespace: string;
   cache?: boolean;
 };
-
-export default SourceModuleDefinition;

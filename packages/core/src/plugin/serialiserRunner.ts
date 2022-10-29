@@ -1,4 +1,4 @@
-import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types/dist/Serialiser';
+import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types';
 
 import PluginError from '../PluginError';
 

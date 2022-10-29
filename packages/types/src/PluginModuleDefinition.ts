@@ -1,4 +1,4 @@
-export default interface PluginModuleDefinition {
+export interface PluginModuleDefinition {
   /**
    * Options to pass to the plugin lifecycle methods.
    */
