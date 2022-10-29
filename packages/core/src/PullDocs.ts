@@ -1,20 +1,22 @@
 import type { IUnionFs } from 'unionfs';
 import { Union } from 'unionfs';
 import type { IFS } from 'unionfs/lib/fs';
+import { Volume } from 'memfs';
 
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
-import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
-import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
+import type {
+  PluginModuleDefinition,
+  SerialiserModuleDefinition,
+  SourceModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 
 import SourceManager from './SourceManager';
 
 // TODO:
 // Remove $ref /index resolution
+import FileAccess from './filesystems/FileAccess';
 import MutableVolume from './filesystems/MutableVolume';
 import UnionFileAccess from './filesystems/UnionFileAccess';
 import UnionVolume from './filesystems/UnionVolume';
-import { Volume } from 'memfs';
-import FileAccess from './filesystems/FileAccess';
 
 export default class PullDocs {
   #sourceDefinitions: SourceModuleDefinition[];
@@ -38,6 +40,7 @@ export default class PullDocs {
     pageExtensions: string[];
   }) {
     const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#ufs.use(sharedFilesystem as unknown as any);
     const {
       ignorePages = [],
@@ -49,6 +52,8 @@ export default class PullDocs {
     this.#sourceDefinitions = sources;
     this.#vfs = new UnionVolume(new UnionFileAccess(this.#ufs), '*');
     this.#sourceManager = new SourceManager(
+      this.#vfs,
+      sharedFilesystem,
       // Refs and aliases should be applied after all other plugins, so we add them manually with a negative priority
       plugins
         .concat(
@@ -81,9 +86,7 @@ export default class PullDocs {
         options: {}
       }),
       pageExtensions,
-      ignorePages,
-      this.#vfs,
-      sharedFilesystem
+      ignorePages
     );
   }
 

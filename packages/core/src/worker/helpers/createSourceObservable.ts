@@ -1,59 +1,9 @@
 import { isObservable, map } from 'rxjs';
 import type { Observable } from 'rxjs';
-
-import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
-import type Source from '@jpmorganchase/mosaic-types/dist/Source';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
 import path from 'path';
 import { escapeRegExp } from 'lodash';
 
-export default async function createSourceObservable(
-  { modulePath, options, pageExtensions, ignorePages }: WorkerData,
-  serialiser
-): Promise<Observable<Page[]>> {
-  const api = await getSourceDefinitionExports(modulePath);
-  const source$ = api.create(options, { serialiser, pageExtensions });
-
-  if (!isObservable(source$)) {
-    throw new Error(`Source at '${modulePath}' did not return an Observable.`);
-  }
-  const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
-
-  // TODO: Move this formatter
-  return source$.pipe(
-    map((pages: Page[]) => {
-      return pages.reduce((pages, page) => {
-        if (!isNonHiddenPage(page.fullPath)) {
-          console.warn(
-            `File '${
-              page.fullPath
-            }' does not have a matching page file extension, it will be removed from the output.
-            
-NOTE: Only ${pageExtensions.join(
-              ', '
-            )} extensions are supported (as per the value defined in PullDocs config \`pageExtensions\`). To add non-page files to the filesystem, start their names with a dot to indicate they are hidden files.`
-          );
-          return pages;
-        }
-        if (!page.fullPath) {
-          console.warn(
-            `Page '${page.fullPath}' is missing the \`fullPath\` property. It will be removed from the output.`
-          );
-          return pages;
-        }
-
-        return pages.concat({
-          ...page,
-          title: page.title || page.fullPath,
-          fullPath: page.fullPath.toLowerCase(),
-          route: page.route
-            ? page.route.toLowerCase()
-            : page.fullPath.toLowerCase()
-        });
-      }, []);
-    })
-  );
-}
+import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
 
 async function getSourceDefinitionExports(modulePath): Promise<Source> {
   const { default: defaultProp }: { default: Source | { __esModule: boolean; default: Source } } =
@@ -78,7 +28,52 @@ async function getSourceDefinitionExports(modulePath): Promise<Source> {
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
   const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file => {
-    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-  };
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+}
+
+export default async function createSourceObservable(
+  { modulePath, options, pageExtensions, ignorePages }: WorkerData,
+  serialiser
+): Promise<Observable<Page[]>> {
+  const api = await getSourceDefinitionExports(modulePath);
+  const source$ = api.create(options, { serialiser, pageExtensions });
+
+  if (!isObservable(source$)) {
+    throw new Error(`Source at '${modulePath}' did not return an Observable.`);
+  }
+  const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
+
+  // TODO: Move this formatter
+  return source$.pipe(
+    map((pages: Page[]) =>
+      pages.reduce((pagesResult, page) => {
+        if (!isNonHiddenPage(page.fullPath)) {
+          console.warn(
+            `File '${
+              page.fullPath
+            }' does not have a matching page file extension, it will be removed from the output.
+            
+NOTE: Only ${pageExtensions.join(
+              ', '
+            )} extensions are supported (as per the value defined in PullDocs config \`pageExtensions\`). To add non-page files to the filesystem, start their names with a dot to indicate they are hidden files.`
+          );
+          return pagesResult;
+        }
+        if (!page.fullPath) {
+          console.warn(
+            `Page '${page.fullPath}' is missing the \`fullPath\` property. It will be removed from the output.`
+          );
+          return pagesResult;
+        }
+
+        return pagesResult.concat({
+          ...page,
+          title: page.title || page.fullPath,
+          fullPath: page.fullPath.toLowerCase(),
+          route: page.route ? page.route.toLowerCase() : page.fullPath.toLowerCase()
+        });
+      }, [])
+    )
+  );
 }

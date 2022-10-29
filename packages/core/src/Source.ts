@@ -1,23 +1,25 @@
 import EventEmitter from 'events';
-import { Volume } from 'memfs';
-import util from 'util';
 import md5 from 'md5';
+import { Volume } from 'memfs';
 import path from 'path';
+import util from 'util';
 
-import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
-import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
-import type { IUnionVolume, IVolumeImmutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type Serialiser from '@jpmorganchase/mosaic-types/dist/Serialiser';
-import type MutableData from '@jpmorganchase/mosaic-types/dist/MutableData';
-import type Plugin from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
+import type {
+  IUnionVolume,
+  IVolumeImmutable,
+  MutableData,
+  Plugin,
+  PluginModuleDefinition,
+  Serialiser,
+  SerialiserModuleDefinition,
+  SourceModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 
-import { bindSerialiser, bindPluginMethods } from './plugin';
-import WorkerSubscription from './WorkerSubscription';
-import { EVENT } from './WorkerSubscription';
-import createConfig from './helpers/createConfig';
-import MutableVolume from './filesystems/MutableVolume';
 import FileAccess from './filesystems/FileAccess';
+import MutableVolume from './filesystems/MutableVolume';
+import createConfig from './helpers/createConfig';
+import { bindPluginMethods, bindSerialiser } from './plugin';
+import WorkerSubscription, { EVENT } from './WorkerSubscription';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -31,10 +33,10 @@ export default class Source {
   #pageExtensions: string[];
   #ignorePages: string[];
 
-  config: MutableData<{}>;
+  config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
   namespace: string;
-  id: Symbol;
+  id: symbol;
   filesystem: MutableVolume;
 
   constructor(
@@ -118,7 +120,10 @@ export default class Source {
     }
   }
 
-  async use(plugins: PluginModuleDefinition[] = [], serialisers: SerialiserModuleDefinition[] = []) {
+  async use(
+    plugins: PluginModuleDefinition[] = [],
+    serialisers: SerialiserModuleDefinition[] = []
+  ) {
     this.#plugins.push(...plugins);
     this.#serialisers.push(...serialisers);
   }
@@ -159,7 +164,7 @@ export default class Source {
     worker.once(EVENT.EXIT, () => {
       this.#emitter.emit(EVENT.EXIT);
       this.#emitter.removeAllListeners();
-      //this.filesystem.reset();
+      // this.filesystem.reset();
       this.filesystem = null;
     });
     worker.once(EVENT.START, () => this.#emitter.emit(EVENT.START));

@@ -1,8 +1,7 @@
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
-import type { IVolumePartiallyMutable } from '@jpmorganchase/mosaic-types/dist/Volume';
+import { create } from 'lodash';
+import type { IFileAccess, IVolumePartiallyMutable } from '@jpmorganchase/mosaic-types';
 
 import ImmutableFileSystem from './ImmutableVolume';
-import { create } from 'lodash';
 
 /**
  * Restricted filesystems can be written to, but cannot be frozen, updated or reset
@@ -16,18 +15,10 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
   }
 
   promises = create(this.promises, {
-    unlink: target => {
-      return this.#vfs.unlink(target);
-    },
-    symlink: (target, alias, type) => {
-      return this.#vfs.symlink(target, alias, type);
-    },
-    writeFile: (file, data) => {
-      return this.#vfs.writeFile(file, data);
-    },
-    mkdir: (dir, options) => {
-      return this.#vfs.mkdir(dir, options);
-    }
+    unlink: target => this.#vfs.unlink(target),
+    symlink: (target, alias, type) => this.#vfs.symlink(target, alias, type),
+    writeFile: (file, data) => this.#vfs.writeFile(file, data),
+    mkdir: (dir, options) => this.#vfs.mkdir(dir, options)
   });
 
   /**
@@ -45,7 +36,7 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
     return this.#vfs.toJSON();
   }
 
-  get frozen() {
+  get frozen(): boolean {
     return this.#vfs.$$frozen;
   }
 

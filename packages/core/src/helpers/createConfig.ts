@@ -1,10 +1,18 @@
-import type MutableData from '@jpmorganchase/mosaic-types/dist/MutableData';
-import { ImmutableData } from '@jpmorganchase/mosaic-types/dist/MutableData';
+import type { Aliases, BaseData, GlobalRefs, ImmutableData, MutableData, ScopedRefs } from '@jpmorganchase/mosaic-types';
 import { merge } from 'lodash';
 import path from 'path';
 
-export default function createConfig<T = {}>(initialData: Partial<T> = {}): MutableData<T> {
-  let data: { refs?: {}; globalRefs?: {}; aliases?: {} } = { refs: {}, globalRefs: {}, aliases: {}, ...initialData };
+export default function createConfig<T = BaseData>(initialData?: Partial<T>): MutableData<T> {
+  let data: {
+    refs?: ScopedRefs | [];
+    globalRefs?: GlobalRefs | [];
+    aliases?: Aliases | [];
+  } = {
+    refs: {},
+    globalRefs: {},
+    aliases: {},
+    ...initialData
+  };
 
   const configReadOnly = {
     get data() {

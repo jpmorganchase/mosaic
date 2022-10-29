@@ -4,7 +4,7 @@ import '../../../../digital-platform-docs/packages/components-next/index.css';
 import '../styles/fonts.css';
 
 function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />
+  return <Component {...pageProps} />;
 }
 
-export default MyApp
+export default MyApp;

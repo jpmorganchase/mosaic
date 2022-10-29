@@ -1,7 +1,6 @@
 import type { DirectoryJSON } from 'memfs/lib/volume';
 
-import type { IVolumeMutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
+import type { IFileAccess, IVolumeMutable } from '@jpmorganchase/mosaic-types';
 
 import FileSystemRestricted from './RestrictedVolume';
 
@@ -38,7 +37,13 @@ export default class MutableVolume extends FileSystemRestricted implements IVolu
   }
 
   async symlinksFromJSON(json: { [key: string]: { target: string; type: string }[] }) {
-    return await this.#vfs.$$symlinksFromJSON(json);
+    let result;
+    try {
+      result = await this.#vfs.$$symlinksFromJSON(json);
+    } catch (e) {
+      throw new Error(e);
+    }
+    return result;
   }
 
   fromJSON(json: DirectoryJSON) {

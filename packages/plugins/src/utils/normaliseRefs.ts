@@ -10,7 +10,13 @@ function createFileGlob(url, pageExtensions) {
   return `${url}{${pageExtensions.join(',')}}`;
 }
 
-export default async function normaliseRefs(filepath, refs, filesystem, pageExtensions, ignorePages) {
+export default async function normaliseRefs(
+  filepath,
+  refs,
+  filesystem,
+  pageExtensions,
+  ignorePages
+) {
   const configWithoutGlobs = {};
 
   for (let i = 0; i < refs.length; i++) {

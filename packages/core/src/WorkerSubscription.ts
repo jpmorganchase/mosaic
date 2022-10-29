@@ -1,7 +1,7 @@
 import { EventEmitter } from 'stream';
 import type { Subscription } from 'rxjs';
 
-import * as ObservableWorker from './operators/ObservableWorker';
+import from from './operators/ObservableWorker';
 
 export enum EVENT {
   ERROR = 'ERROR',
@@ -17,9 +17,11 @@ export default class WorkerSubscription {
   #emitter = new EventEmitter();
 
   constructor(workerData) {
-    this.#worker$ = ObservableWorker.from<{ type: 'message' | 'init'; data: Uint8Array }>(
-      workerData
-    ).subscribe({ next: this.#onNext, error: this.#onError, complete: this.#onComplete });
+    this.#worker$ = from<{ type: 'message' | 'init'; data: Uint8Array }>(workerData).subscribe({
+      next: this.#onNext,
+      error: this.#onError,
+      complete: this.#onComplete
+    });
   }
 
   get closed() {

@@ -1,34 +1,21 @@
-import type { IVolumeImmutable } from '@jpmorganchase/mosaic-types/dist/Volume';
-import type IFileAccess from '@jpmorganchase/mosaic-types/dist/IFileAccess';
+import type { IFileAccess, IVolumeImmutable } from '@jpmorganchase/mosaic-types';
 
 export default class ImmutableVolume implements IVolumeImmutable {
   #vfs: IFileAccess;
   namespace: string;
-  
+
   constructor(vfs, namespace) {
     this.#vfs = vfs;
     this.namespace = namespace;
   }
 
   promises: IVolumeImmutable['promises'] = {
-    readFile: file => {
-      return this.#vfs.readFile(file);
-    },
-    readdir: (dir, options) => {
-      return this.#vfs.readdir(dir, options);
-    },
-    stat: (file, options) => {
-      return this.#vfs.stat(file, options);
-    },
-    realpath: (target, options) => {
-      return this.#vfs.realpath(target, options);
-    },
-    exists: file => {
-      return this.#vfs.exists(file);
-    },
-    glob: (pattern, options) => {
-      return this.#vfs.glob(pattern, options);
-    }
+    readFile: file => this.#vfs.readFile(file),
+    readdir: (dir, options) => this.#vfs.readdir(dir, options),
+    stat: (file, options) => this.#vfs.stat(file, options),
+    realpath: (target, options) => this.#vfs.realpath(target, options),
+    exists: file => this.#vfs.exists(file),
+    glob: (pattern, options) => this.#vfs.glob(pattern, options)
   };
 
   get frozen() {

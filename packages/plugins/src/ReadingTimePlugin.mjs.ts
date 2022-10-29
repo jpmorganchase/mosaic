@@ -1,9 +1,8 @@
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import getReadingTime from 'reading-time';
+import markdown from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
-import markdown from 'remark-parse';
 
 /**
  * Calculates reading time for pages and adds to frontmatter

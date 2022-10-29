@@ -1,6 +1,6 @@
 import matter from 'gray-matter';
 
-import type Serialiser from '@jpmorganchase/mosaic-types/dist/Serialiser';
+import type { Serialiser } from '@jpmorganchase/mosaic-types';
 
 // Markdown is not really a suitable format, as it doesn't allow for storing metadata - so this serialiser is more of an
 // example than anything - it should ideally not be used

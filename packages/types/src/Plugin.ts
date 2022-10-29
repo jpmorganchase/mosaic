@@ -1,9 +1,14 @@
-import type Page from './Page';
-import type MutableData from './MutableData';
-import type PluginModuleDefinition from './PluginModuleDefinition';
+import type { Page } from './Page';
+import type { MutableData } from './MutableData';
+import type { PluginModuleDefinition } from './PluginModuleDefinition';
 import type { ImmutableData } from './MutableData';
-import type { IUnionVolume, IVolumeImmutable, IVolumeMutable, IVolumePartiallyMutable } from './Volume';
-import type Serialiser from './Serialiser';
+import type {
+  IUnionVolume,
+  IVolumeImmutable,
+  IVolumeMutable,
+  IVolumePartiallyMutable
+} from './Volume';
+import type { Serialiser } from './Serialiser';
 
 export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
 
@@ -12,7 +17,7 @@ export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
  * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,
  * it will trigger `pluginRunner` which executes it on every source automatically.
  */
-type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = ConfigData> = {
+export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = ConfigData> = {
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * The first lifecycle hook to trigger after receiving pages from a source. The pages can safely be mutated and will be reflected in the final
@@ -108,5 +113,3 @@ type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = ConfigData> 
 };
 
 export type LifecycleMethod = keyof Plugin;
-
-export default Plugin;

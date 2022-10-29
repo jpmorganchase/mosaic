@@ -1,7 +1,7 @@
 import type { TDataOut } from 'memfs/lib/encoding';
 
-import type Page from './Page';
-import type SerialiserModuleDefinition from './SerialiserModuleDefinition';
+import type { Page } from './Page';
+import type { SerialiserModuleDefinition } from './SerialiserModuleDefinition';
 
 /**
  * Serialisers are a form of plugin that tells PullDocs how to turn a file from/to a storable form for the filesystem
@@ -27,5 +27,3 @@ export type Serialiser = {
 };
 
 export type LoadedSerialiser = Serialiser & SerialiserModuleDefinition;
-
-export default Serialiser;

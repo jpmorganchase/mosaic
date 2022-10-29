@@ -1,7 +1,5 @@
-import PluginModuleDefinition from './PluginModuleDefinition';
+import type { PluginModuleDefinition } from './PluginModuleDefinition';
 
-type SerialiserModuleDefinition = PluginModuleDefinition & {
+export type SerialiserModuleDefinition = PluginModuleDefinition & {
   filter: RegExp;
 };
-
-export default SerialiserModuleDefinition;

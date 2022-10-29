@@ -1,11 +1,9 @@
 import path from 'path';
 
-import reduce from 'lodash/reduce';
 import escapeRegExp from 'lodash/escapeRegExp';
+import reduce from 'lodash/reduce';
 
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
-import type Page from '@jpmorganchase/mosaic-types/dist/Page';
-import type Meta from '@jpmorganchase/mosaic-types/dist/Meta';
+import type { Meta, Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.

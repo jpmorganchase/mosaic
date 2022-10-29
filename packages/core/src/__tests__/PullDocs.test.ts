@@ -27,6 +27,8 @@ describe('GIVEN PullDocs', () => {
 
     test('THEN the SourceManager should be passed the plugins', () => {
       expect(SourceManager).toHaveBeenCalledWith(
+        expect.any(UnionVolume),
+        expect.any(MutableVolume),
         [
           {
             modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$CodeModPlugin.js/),
@@ -60,9 +62,7 @@ describe('GIVEN PullDocs', () => {
           }
         ],
         ['.mdx'],
-        [],
-        expect.any(UnionVolume),
-        expect.any(MutableVolume)
+        []
       );
     });
 

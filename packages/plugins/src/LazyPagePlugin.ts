@@ -1,4 +1,4 @@
-import type PluginType from '@jpmorganchase/mosaic-types/dist/Plugin';
+import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
 import merge from 'lodash/merge';
@@ -48,10 +48,7 @@ const LazyPagePlugin: PluginType<
       cwd: '/',
       onlyFiles: true
     });
-    const baseDir = path.join(
-      process.cwd(),
-      options.cacheDir || '.mosaic-lazy-page-plugin-cache'
-    );
+    const baseDir = path.join(process.cwd(), options.cacheDir || '.mosaic-lazy-page-plugin-cache');
     await fsExtra.ensureDir(baseDir);
     for (const filePath of allPages) {
       const rawPage = await mutableFilesystem.promises.readFile(String(filePath));
@@ -70,7 +67,7 @@ const LazyPagePlugin: PluginType<
       newDiskSize += redactedPage.length;
     }
 
-    config.setData({hddPaths});
+    config.setData({ hddPaths });
 
     const reduction = originalDiskSize - newDiskSize;
     console.info(

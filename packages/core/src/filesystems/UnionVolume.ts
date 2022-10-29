@@ -1,8 +1,8 @@
-import type { IUnionVolume } from '@jpmorganchase/mosaic-types/dist/Volume';
-
-import type UnionFileAccess from './UnionFileAccess';
 import { create } from 'lodash';
 import { TDataOut } from 'memfs/lib/encoding';
+import type { IUnionVolume } from '@jpmorganchase/mosaic-types';
+
+import type UnionFileAccess from './UnionFileAccess';
 import MutableVolume from './MutableVolume';
 
 export default class UnionVolume extends MutableVolume implements IUnionVolume {

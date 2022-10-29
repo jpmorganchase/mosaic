@@ -1,4 +1,24 @@
-type MutableData<T = {}> = ImmutableData<T> & {
+export interface Aliases {
+  [key: string]: Set<string>;
+}
+export interface FSRef {
+  $$path?: string | string[];
+  $$value?: string;
+}
+export interface GlobalRefs {
+  [key: string]: FSRef;
+}
+export interface ScopedRefs {
+  [key: string]: FSRef;
+}
+
+export interface BaseData {
+  refs?: ScopedRefs | [];
+  globalRefs?: GlobalRefs | [];
+  aliases?: Aliases | [];
+}
+
+export type MutableData<T = {}> = ImmutableData<T> & {
   /**
    * Set arbitrary data onto the config object. This value will persist across plugins and
    * also be sent to the parent process when it executes plugins there as well.
@@ -51,5 +71,3 @@ export type ImmutableData<T = {}> = {
     T & { readonly refs: string[]; readonly aliases: Set<{ $$path: string[]; $$value: string }> }
   >;
 };
-
-export default MutableData;

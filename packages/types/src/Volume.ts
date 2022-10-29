@@ -18,7 +18,7 @@ import type { Options, Pattern, Entry } from 'fast-glob';
  * Volumes are lightweight decorators which wrap `FileAccess` and limit access to the underlying API for different use-cases
  * Examples include disallowing mutation or allowing underlying functions like resetting
  */
-interface IVolume {
+export interface IVolume {
   namespace: string;
   reset?(): void;
   toJSON(): DirectoryJSON;
@@ -111,7 +111,7 @@ export interface IVolumeMutable extends IVolume {
    * Is this filesystem frozen/mutable?
    * @returns {boolean}
    */
-  get frozen(): boolean;
+  readonly frozen: boolean;
   /**
    * Appends content to the filesystem
    * @param json A JSON blob in the form of {[fullPath]: "{fullPath: '', content: ''}"}
