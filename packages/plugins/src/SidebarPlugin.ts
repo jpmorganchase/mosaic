@@ -26,14 +26,16 @@ const SidebarPlugin: PluginType<
       const sidebarFilePath = path.posix.join(String(dirName), options.filename);
       const pages = (
         await Promise.all(
-          ((await mutableFilesystem.promises.glob(
-            createFileGlob(['*', '*/index'], pageExtensions),
-            {
-              onlyFiles: true,
-              cwd: String(dirName),
-              ignore: ignorePages.map(ignore => `**/${ignore}`)
-            }
-          )) as string[]).map(async pagePath => {
+          (
+            (await mutableFilesystem.promises.glob(
+              createFileGlob(['*', '*/index'], pageExtensions),
+              {
+                onlyFiles: true,
+                cwd: String(dirName),
+                ignore: ignorePages.map(ignore => `**/${ignore}`)
+              }
+            )) as string[]
+          ).map(async pagePath => {
             return await serialiser.deserialise(
               pagePath,
               await mutableFilesystem.promises.readFile(pagePath)
@@ -78,14 +80,16 @@ const SidebarPlugin: PluginType<
         const childNodeSidebarPath = path.posix.join(childDirName, options.filename);
         const childPages = (
           await Promise.all(
-            ((await mutableFilesystem.promises.glob(
-              createFileGlob(['*', '*/index'], pageExtensions),
-              {
-                onlyFiles: true,
-                cwd: String(childDirName),
-                ignore: ignorePages.map(ignore => `**/${ignore}`)
-              }
-            )) as string[]).map(async pagePath => {
+            (
+              (await mutableFilesystem.promises.glob(
+                createFileGlob(['*', '*/index'], pageExtensions),
+                {
+                  onlyFiles: true,
+                  cwd: String(childDirName),
+                  ignore: ignorePages.map(ignore => `**/${ignore}`)
+                }
+              )) as string[]
+            ).map(async pagePath => {
               return await serialiser.deserialise(
                 pagePath,
                 await mutableFilesystem.promises.readFile(pagePath)

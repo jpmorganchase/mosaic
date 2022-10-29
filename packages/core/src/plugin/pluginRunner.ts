@@ -16,6 +16,7 @@ export default async function pluginRunner(
       }
 
       if (typeof plugin[lifecycleName] !== 'function') {
+        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -23,6 +24,7 @@ export default async function pluginRunner(
       //   `[PullDocs] Applying plugin method \`${lifecycleName}\`${lifecycleName.startsWith('$') ? ' (in a child worker)' : ''} for '${plugin.modulePath}'.`
       // );
 
+      // eslint-disable-next-line no-await-in-loop
       const result = await plugin[lifecycleName](
         lifecycleName === '$afterSource' ? transformedInput : input,
         ...args,

@@ -3,9 +3,11 @@ import type PluginModuleDefinition from './PluginModuleDefinition';
 import type SourceModuleDefinition from './SourceModuleDefinition';
 
 type WorkerData<Options = {}> = {
-  options: Options & Pick<PluginModuleDefinition, 'options'> & Pick<SourceModuleDefinition, 'options'> & {
-    pageExtensions: string[]
-  };
+  options: Options &
+    Pick<PluginModuleDefinition, 'options'> &
+    Pick<SourceModuleDefinition, 'options'> & {
+      pageExtensions: string[];
+    };
   name: string;
   namespace: string;
   pageExtensions: string[];

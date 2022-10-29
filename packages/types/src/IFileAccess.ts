@@ -33,7 +33,7 @@ export default interface IFileAccess {
   exists(file: PathLike): Promise<boolean>;
   $$reset(): void;
   $$freeze(): void;
-  get $$frozen(): boolean;
+  readonly $$frozen: boolean;
   $$unfreeze(): void;
   $$clearCache(): void;
   $$symlinksFromJSON(page: { [key: string]: { target: string; type: string }[] }): Promise<void>;

@@ -1,3 +1,4 @@
+import { merge } from 'lodash';
 import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
 import type SerialiserModuleDefinition from '@jpmorganchase/mosaic-types/dist/SerialiserModuleDefinition';
 import type PluginModuleDefinition from '@jpmorganchase/mosaic-types/dist/PluginModuleDefinition';
@@ -9,13 +10,25 @@ import type {
 
 import Source from './Source';
 import createConfig from './helpers/createConfig';
-import { merge } from 'lodash';
+
+function logUpdateStatus(sourceId, initOrStartTime) {
+  if (initOrStartTime) {
+    console.debug(
+      `[PullDocs] Source '${sourceId.description}' received first docs snapshot ${
+        (new Date().getTime() - initOrStartTime) / 1000
+      }s after starting.`
+    );
+  } else {
+    console.debug(`[PullDocs] Source '${sourceId.description}' received updated docs`);
+  }
+}
 
 export default class SourceManager {
-  #sources: Map<Symbol, Source> = new Map();
+  #sources: Map<symbol, Source> = new Map();
   #plugins: PluginModuleDefinition[];
   #serialisers: SerialiserModuleDefinition[];
-  #handlers: Set<(filesystem: IVolumeImmutable, source: Source) => {}> = new Set();
+  #handlers: Set<(filesystem: IVolumeImmutable, source: Source) => Record<string, unknown>> =
+    new Set();
   #globalFilesystem: IUnionVolume;
   #sharedFilesystem: IVolumeMutable;
   #pageExtensions: string[];
@@ -23,12 +36,12 @@ export default class SourceManager {
   #globalConfig = createConfig();
 
   constructor(
+    globalFilesystem,
+    sharedFilesystem,
     plugins = [],
     serialisers = [],
-    pageExtensions,
-    ignorePages,
-    globalFilesystem,
-    sharedFilesystem
+    pageExtensions = [],
+    ignorePages = []
   ) {
     this.#plugins = plugins;
     this.#pageExtensions = pageExtensions;
@@ -46,7 +59,7 @@ export default class SourceManager {
     return () => this.#handlers.delete(handler);
   }
 
-  getSource(id: Symbol) {
+  getSource(id: symbol) {
     return this.#sources.get(id);
   }
 
@@ -58,6 +71,7 @@ export default class SourceManager {
     sourceDefinition: SourceModuleDefinition,
     options: Record<string, unknown>
   ): Promise<Source> {
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       let sourceActive = false;
 
@@ -81,7 +95,7 @@ export default class SourceManager {
 
       await source.start();
 
-      source.onUpdate(async ({ pages, symlinks, data }) => {
+      source.onUpdate(async ({ pages, symlinks }) => {
         if (!sourceActive) {
           reject(
             new Error(
@@ -178,19 +192,8 @@ export default class SourceManager {
         if (existingSource !== source && existingSource.filesystem.frozen) {
           return existingSource.requestCacheClear(immutableSourceFilesystem);
         }
+        return existingSource;
       })
     );
-  }
-}
-
-function logUpdateStatus(sourceId, initOrStartTime) {
-  if (initOrStartTime) {
-    console.debug(
-      `[PullDocs] Source '${sourceId.description}' received first docs snapshot ${
-        (new Date().getTime() - initOrStartTime) / 1000
-      }s after starting.`
-    );
-  } else {
-    console.debug(`[PullDocs] Source '${sourceId.description}' received updated docs`);
   }
 }

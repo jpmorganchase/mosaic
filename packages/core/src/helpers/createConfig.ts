@@ -3,8 +3,37 @@ import { ImmutableData } from '@jpmorganchase/mosaic-types/dist/MutableData';
 import { merge } from 'lodash';
 import path from 'path';
 
-export default function createConfig<T = {}>(initialData: Partial<T> = {}): MutableData<T> {
-  let data: { refs?: {}; globalRefs?: {}; aliases?: {} } = { refs: {}, globalRefs: {}, aliases: {}, ...initialData };
+export interface Aliases {
+  [key: string]: Set<string>;
+}
+export interface FSRef {
+  $$path?: string | string[];
+  $$value?: string;
+}
+export interface GlobalRefs {
+  [key: string]: FSRef;
+}
+export interface ScopedRefs {
+  [key: string]: FSRef;
+}
+
+export interface FSConfig {
+  refs?: ScopedRefs | [];
+  globalRefs?: GlobalRefs | [];
+  aliases?: Aliases | [];
+}
+
+export default function createConfig<T = FSConfig>(initialData?: Partial<T>): MutableData<T> {
+  let data: {
+    refs?: ScopedRefs | [];
+    globalRefs?: GlobalRefs | [];
+    aliases?: Aliases | [];
+  } = {
+    refs: {},
+    globalRefs: {},
+    aliases: {},
+    ...initialData
+  };
 
   const configReadOnly = {
     get data() {

@@ -2,7 +2,7 @@ import { parentPort, isMainThread, workerData as unTypedWorkerData } from 'worke
 
 import path from 'path';
 import fs from 'fs';
-import { map, tap, switchMap } from 'rxjs';
+import { tap, switchMap } from 'rxjs';
 import { DirectoryJSON, Volume } from 'memfs';
 
 import type WorkerData from '@jpmorganchase/mosaic-types/dist/WorkerData';
@@ -27,7 +27,7 @@ if (isMainThread) {
   const cachePath = path.join(process.cwd(), '.tmp', '.cache', `${workerData.name}.json`);
 
   if (workerData.options.cache !== false) {
-  await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
+    await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
   }
 
   (await createSourceObservable(workerData, serialiser))
@@ -64,7 +64,13 @@ if (isMainThread) {
         // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
         // we don't bother freezing
         // Turn data into buffer
-        return Buffer.from(JSON.stringify({ pages: filesystem.toJSON(), data: config.data, symlinks: filesystem.symlinksToJSON() }));
+        return Buffer.from(
+          JSON.stringify({
+            pages: filesystem.toJSON(),
+            data: config.data,
+            symlinks: filesystem.symlinksToJSON()
+          })
+        );
       }),
       tap(() => {
         // Reset filesystem and config memory
@@ -76,16 +82,16 @@ if (isMainThread) {
     .subscribe(async (pagesAndSymlinks: Buffer) => {
       if (workerData.options.cache !== false) {
         console.info(`[PullDocs] Saving cached filesystem of ${workerData.name}`);
-        await fs.promises.writeFile(
-          cachePath,
-          pagesAndSymlinks
-        );
+        await fs.promises.writeFile(cachePath, pagesAndSymlinks);
       }
 
-      parentPort.postMessage({
-        type: 'message',
-        data: pagesAndSymlinks
-      }, /* transferList */ [pagesAndSymlinks.buffer]);
+      parentPort.postMessage(
+        {
+          type: 'message',
+          data: pagesAndSymlinks
+        },
+        /* transferList */ [pagesAndSymlinks.buffer]
+      );
     });
 
   if (workerData.options.cache !== false) {
@@ -93,10 +99,13 @@ if (isMainThread) {
       if (await fs.promises.stat(cachePath)) {
         const data = await fs.promises.readFile(cachePath);
         console.info(`Restoring cached filesystem for ${workerData.name}`);
-        parentPort.postMessage({
-          type: 'init',
-          data
-        }, /* transferList */ [data.buffer]);
+        parentPort.postMessage(
+          {
+            type: 'init',
+            data
+          },
+          /* transferList */ [data.buffer]
+        );
       }
       // Important: Return to avoid sending another init signal on L107
       return;

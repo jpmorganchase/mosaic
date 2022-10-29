@@ -2,7 +2,12 @@ import type Page from './Page';
 import type MutableData from './MutableData';
 import type PluginModuleDefinition from './PluginModuleDefinition';
 import type { ImmutableData } from './MutableData';
-import type { IUnionVolume, IVolumeImmutable, IVolumeMutable, IVolumePartiallyMutable } from './Volume';
+import type {
+  IUnionVolume,
+  IVolumeImmutable,
+  IVolumeMutable,
+  IVolumePartiallyMutable
+} from './Volume';
 import type Serialiser from './Serialiser';
 
 export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;

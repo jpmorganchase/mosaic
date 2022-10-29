@@ -9,9 +9,7 @@ import path from 'path';
  * The plugin also modifies the `route` to point to the shorter alias. Friendly fullPaths are the shortest possible paths that
  * will point to the page (see `Page` docs)
  */
-const PagesWithoutFileExtPlugin: PluginType<
-  {}
-> = {
+const PagesWithoutFileExtPlugin: PluginType<{}> = {
   async $afterSource(pages: Page[], { config, ignorePages, pageExtensions }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
     const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);

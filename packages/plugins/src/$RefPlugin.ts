@@ -36,9 +36,13 @@ const $RefPlugin: PluginType<{
             ignorePages
           ))
         } as any;
-        const resolve = createRefResolver({
-          [pagePath]: normalisedRef
-        }, serialiser, globalFilesystem);
+        const resolve = createRefResolver(
+          {
+            [pagePath]: normalisedRef
+          },
+          serialiser,
+          globalFilesystem
+        );
         const refParser = new $RefParser();
 
         try {

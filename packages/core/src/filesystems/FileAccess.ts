@@ -21,12 +21,19 @@ export default class FileAccess implements IFileAccess {
 
   async readFile(file) {
     const resolvedPath = await this.#resolvePath(file);
-    return await this.#getFileFromCache(resolvedPath);
-    //return this.#adapter.promises.readFile(resolvedPath);
+    let result;
+    try {
+      result = await this.#getFileFromCache(resolvedPath);
+    } catch (e) {
+      throw new Error(e);
+    }
+    return result;
+    // return this.#adapter.promises.readFile(resolvedPath);
   }
 
   async glob(pattern, options) {
     // We need a created filesystem, not a Volume, for glob
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#rawReadonlyFs = this.#rawReadonlyFs || createFsFromVolume(this.#adapter as any);
     const paths = Array.from(
       new Set(
@@ -60,7 +67,7 @@ export default class FileAccess implements IFileAccess {
     return this.#adapter.promises.stat(file, options);
   }
 
-  get $$frozen() {
+  get $$frozen(): boolean {
     return this.#frozen;
   }
 
@@ -73,17 +80,21 @@ export default class FileAccess implements IFileAccess {
     if (this.#frozen) {
       throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
-    for (const alias in symlinks) {
+    Object.keys(symlinks).forEach(async alias => {
       for (const { target, type = 'file' } of symlinks[alias]) {
+        // eslint-disable-next-line no-await-in-loop
         if (!(await this.exists(alias))) {
+          // eslint-disable-next-line no-await-in-loop
           if (!(await this.exists(path.dirname(alias)))) {
             // TODO: This works... But why are the subdirs not being passed from the child process as `null`s?
+            // eslint-disable-next-line no-await-in-loop
             await this.#adapter.promises.mkdir(path.dirname(alias), { recursive: true });
           }
+          // eslint-disable-next-line no-await-in-loop
           await this.#adapter.promises.symlink(target, alias, type);
         }
       }
-    }
+    });
   }
 
   async unlink(target) {
@@ -165,7 +176,7 @@ export default class FileAccess implements IFileAccess {
     // }
     if (!stat.isFile()) {
       return file;
-      //throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
+      // throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
     }
     return realPath;
   }
@@ -183,6 +194,7 @@ export default class FileAccess implements IFileAccess {
     }
 
     // Bit of parallel programming needed here, to avoid 2+ requests triggering a file load at the same time and making a race condition
+    // eslint-disable-next-line no-async-promise-executor
     const loadPagePromise = new Promise(async resolve => {
       const rawFile = await this.#adapter.promises.readFile(file);
 
@@ -192,9 +204,10 @@ export default class FileAccess implements IFileAccess {
       let fileData = rawFile;
 
       for (const hook of this.#hooks) {
+        // eslint-disable-next-line no-await-in-loop
         fileData = await hook(file, fileData);
       }
-      return resolve(fileData);
+      resolve(fileData);
     });
 
     this.#cachedPages.set(file, loadPagePromise);
@@ -211,7 +224,7 @@ export default class FileAccess implements IFileAccess {
     return result;
 
     // this.#cachedPages.add(file);
-    //return this.#adapter.promises.writeFile(file, JSON.stringify(currentPage));
+    // return this.#adapter.promises.writeFile(file, JSON.stringify(currentPage));
   }
 
   async #isNonHiddenPageCached(fileArg) {

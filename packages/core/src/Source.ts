@@ -13,8 +13,7 @@ import type Plugin from '@jpmorganchase/mosaic-types/dist/Plugin';
 import type SourceModuleDefinition from '@jpmorganchase/mosaic-types/dist/SourceModuleDefinition';
 
 import { bindSerialiser, bindPluginMethods } from './plugin';
-import WorkerSubscription from './WorkerSubscription';
-import { EVENT } from './WorkerSubscription';
+import WorkerSubscription, { EVENT } from './WorkerSubscription';
 import createConfig from './helpers/createConfig';
 import MutableVolume from './filesystems/MutableVolume';
 import FileAccess from './filesystems/FileAccess';
@@ -31,10 +30,10 @@ export default class Source {
   #pageExtensions: string[];
   #ignorePages: string[];
 
-  config: MutableData<{}>;
+  config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
   namespace: string;
-  id: Symbol;
+  id: symbol;
   filesystem: MutableVolume;
 
   constructor(
@@ -118,7 +117,10 @@ export default class Source {
     }
   }
 
-  async use(plugins: PluginModuleDefinition[] = [], serialisers: SerialiserModuleDefinition[] = []) {
+  async use(
+    plugins: PluginModuleDefinition[] = [],
+    serialisers: SerialiserModuleDefinition[] = []
+  ) {
     this.#plugins.push(...plugins);
     this.#serialisers.push(...serialisers);
   }
@@ -159,7 +161,7 @@ export default class Source {
     worker.once(EVENT.EXIT, () => {
       this.#emitter.emit(EVENT.EXIT);
       this.#emitter.removeAllListeners();
-      //this.filesystem.reset();
+      // this.filesystem.reset();
       this.filesystem = null;
     });
     worker.once(EVENT.START, () => this.#emitter.emit(EVENT.START));

@@ -24,7 +24,11 @@ const NextPrevPlugin: PluginType<
     })) as string[];
     for (const dirName of pageDirs) {
       const pages = (
-        await mutableFilesystem.promises.glob(createFileGlob('*', pageExtensions), { onlyFiles: true, cwd: dirName, ignore: ignorePages })
+        await mutableFilesystem.promises.glob(createFileGlob('*', pageExtensions), {
+          onlyFiles: true,
+          cwd: dirName,
+          ignore: ignorePages
+        })
       ).sort(createSortFn(pageExtensions, { indexFirst, sortBy })) as string[];
       for (let i = 0; i < pages.length; i++) {
         if (i > 0) {
