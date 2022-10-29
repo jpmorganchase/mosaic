@@ -1,28 +1,8 @@
-import type { ImmutableData, MutableData } from '@jpmorganchase/mosaic-types';
+import type { Aliases, BaseData, GlobalRefs, ImmutableData, MutableData, ScopedRefs } from '@jpmorganchase/mosaic-types';
 import { merge } from 'lodash';
 import path from 'path';
 
-export interface Aliases {
-  [key: string]: Set<string>;
-}
-export interface FSRef {
-  $$path?: string | string[];
-  $$value?: string;
-}
-export interface GlobalRefs {
-  [key: string]: FSRef;
-}
-export interface ScopedRefs {
-  [key: string]: FSRef;
-}
-
-export interface FSConfig {
-  refs?: ScopedRefs | [];
-  globalRefs?: GlobalRefs | [];
-  aliases?: Aliases | [];
-}
-
-export default function createConfig<T = FSConfig>(initialData?: Partial<T>): MutableData<T> {
+export default function createConfig<T = BaseData>(initialData?: Partial<T>): MutableData<T> {
   let data: {
     refs?: ScopedRefs | [];
     globalRefs?: GlobalRefs | [];
