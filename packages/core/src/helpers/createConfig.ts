@@ -1,4 +1,11 @@
-import type { Aliases, BaseData, GlobalRefs, ImmutableData, MutableData, ScopedRefs } from '@jpmorganchase/mosaic-types';
+import type {
+  Aliases,
+  BaseData,
+  GlobalRefs,
+  ImmutableData,
+  MutableData,
+  ScopedRefs
+} from '@jpmorganchase/mosaic-types';
 import { merge } from 'lodash';
 import path from 'path';
 
