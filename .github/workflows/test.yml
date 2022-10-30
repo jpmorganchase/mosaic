@@ -10,7 +10,7 @@ on:
     branches: [main, 'release/**']
 
 jobs:
-  Test:
+  test:
     name: ${{ matrix.os }} (${{ matrix.node-version }})
     runs-on: ${{ matrix.os }}
 
@@ -39,7 +39,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: run-${{ matrix.node-version }}
           parallel: true
-  finish:
+  upload-coverage:
     name: Upload Coverage
     if: ${{ always() }}
     needs: test
@@ -50,3 +50,20 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14.20.0'
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+      - name: Prettier
+        run: yarn run prettier:ci
+      - name: Lint
+        run: yarn run lint
