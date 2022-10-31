@@ -13,7 +13,7 @@ const SharedConfigPlugin: PluginType<{}, { filename: string }> = {
     options
   ) {
     const pagePaths = await mutableFilesystem.promises.glob(
-      createFileGlob('**/index,/index', pageExtensions),
+      createFileGlob('**/index', pageExtensions),
       {
         ignore: [options.filename, ...flatten(ignorePages.map(ignore => [ignore, `**/${ignore}`]))],
         cwd: '/'
