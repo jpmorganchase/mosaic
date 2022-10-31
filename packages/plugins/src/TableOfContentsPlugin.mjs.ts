@@ -13,8 +13,8 @@ type TOCItem = { level: number; id: string; text: string };
 const TableOfContentsPlugin: PluginType<{}, { minRank: 2; maxRank: 4 }> = {
   async $afterSource(pages: Page[], {}, { minRank, maxRank }) {
     const processor = unified().use(markdown);
-    const slugger = new Slugger();
     for (const page of pages) {
+      const slugger = new Slugger();
       const tree = await processor.parse(page.content);
       const items: TOCItem[] = [];
       visit(
