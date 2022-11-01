@@ -10,7 +10,7 @@ const BreadcrumbsPlugin: PluginType<{}, { indexPageName: string }> = {
   async $afterSource(pages: Page[], {}, options) {
     for (const page of pages) {
       const breadcrumbs: Array<Breadcrumb> = [];
-      let currentPage = page;
+      let currentPage = page;   
       let parentDir = path.posix.dirname(currentPage.fullPath);
 
       while (currentPage !== undefined) {
@@ -19,6 +19,8 @@ const BreadcrumbsPlugin: PluginType<{}, { indexPageName: string }> = {
             label: currentPage.title,
             path: currentPage.route,
             id: currentPage.fullPath
+
+
           });
         }
 

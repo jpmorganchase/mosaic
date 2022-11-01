@@ -9,7 +9,7 @@ module.exports = async (config, targetDir, scope) => {
   // Turn off `cache` for each source
   config.sources = config.sources.map(source => ({
     ...source,
-    options: { ...source.options, cache: false }
+    options: { ...source.options, cache: false }    
   }));
   const pullDocs = new PullDocs(config);
   await fsExtra.emptyDir(targetDir);
