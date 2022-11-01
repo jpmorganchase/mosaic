@@ -110,6 +110,35 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
     },
     options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
   ): Promise<boolean>;
+  /**
+   * Plugin lifecycle method that triggers inside the main process whenever a request to save content is made.
+   * This method should return the result of the save
+   * Returning `undefined`, false or no value, will result in the plugin runner discarding the result.
+   * @param path the route of the content being edited.
+   * @param data the data from the the request
+   * @param sourceOptions options used to create the source that is running the plugin
+   * @param mutableFilesystem Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source.
+   * @param param.sharedFilesystem Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps
+   * @param param.namespace The namespace of the source running the plugin
+   * @param options The options passed in when declaring the plugin
+   * @returns {Promise<unknown>} The result of the save
+   */
+  saveContent?(
+    path: string,
+    data: unknown,
+    sourceOptions: unknown,
+    {}: {
+      serialiser: Serialiser;
+      config: ImmutableData<ConfigData>;
+      sharedFilesystem: IVolumeMutable;
+      pageExtensions: string[];
+      ignorePages: string[];
+      namespace: string;
+    },
+    options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
+  ): Promise<unknown>;
 };
 
 export type LifecycleMethod = keyof Plugin;

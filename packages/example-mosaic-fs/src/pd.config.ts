@@ -81,6 +81,7 @@ const config: PullDocsConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
+      editable: true,
       options: {
         rootDir: path.join('../developer-docs', 'docs'),
         cache: true,
@@ -91,6 +92,7 @@ const config: PullDocsConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
       namespace: 'developer', // each site has it's own namespace, think of this as your content's uid
+      editable: true, // flag to indicate content is editable using the in-browser content editor
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
         // !! Polite Reminder... do not store credentials in code !!
