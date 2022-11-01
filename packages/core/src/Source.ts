@@ -32,6 +32,7 @@ export default class Source {
   #mergedOptions: Record<string, unknown>;
   #pageExtensions: string[];
   #ignorePages: string[];
+  #editable: boolean;
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -40,7 +41,7 @@ export default class Source {
   filesystem: MutableVolume;
 
   constructor(
-    { modulePath, namespace }: SourceModuleDefinition,
+    { editable, modulePath, namespace }: SourceModuleDefinition,
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
@@ -50,6 +51,7 @@ export default class Source {
     this.#mergedOptions = mergedOptions;
     this.#globalFilesystem = globalFilesystem;
     this.#ignorePages = ignorePages;
+    this.#editable = editable || false;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
