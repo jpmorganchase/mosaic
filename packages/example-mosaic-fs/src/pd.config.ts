@@ -75,6 +75,16 @@ const config: PullDocsConfig = {
         filename: 'shared-config.json'
       },
       priority: 3
+    },
+    {
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BitBucketPullRequestPlugin'),
+      options: {},
+      priority: 3
+    },
+    {
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/LocalFolderSavePlugin'),
+      options: { targetNamespace: 'local' },
+      priority: 4
     }
   ],
   sources: [
