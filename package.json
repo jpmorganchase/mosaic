@@ -31,7 +31,6 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "devDependencies": {
-    "concurrently": "^7.1.0",
     "@babel/core": "^7.11.4",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
@@ -40,33 +39,38 @@
     "@babel/preset-env": "7.13.8",
     "@babel/preset-typescript": "^7.10.4",
     "@changesets/cli": "^2.24.2",
-    "@typescript-eslint/parser": "5.38.0",
-    "@typescript-eslint/eslint-plugin": "5.38.0",
     "@types/jest": "^29.1.2",
     "@types/lodash": "^4.14.182",
     "@types/node": "^17.0.24",
+    "@typescript-eslint/eslint-plugin": "5.38.0",
+    "@typescript-eslint/parser": "5.38.0",
     "babel-jest": "^29.1.2",
+    "concurrently": "^7.1.0",
     "eslint": "^7.23.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.0.1",
-    "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-react": "7.31.8",
-    "prettier": "^2.7.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "husky": "^8.0.0",
     "jest": "^29.1.2",
+    "prettier": "^2.7.1",
     "ts-node": "^9.0.0",
-    "typescript": "^4.8.3",
-    "husky": "^8.0.0"
+    "typescript": "^4.8.3"
   },
   "dependencies": {
+    "lint-staged": "^13.0.3",
     "turbo": "latest"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": ["prettier --write", "eslint"]
+    "*.{js,jsx,ts,tsx}": [
+      "prettier",
+      "lint"
+    ]
   }
 }
