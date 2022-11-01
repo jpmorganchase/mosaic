@@ -8,6 +8,8 @@ import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 import Repo from './Repo';
 import fromCommitChange from './fromCommitChange';
 
+export { Repo };
+
 export interface BitbucketSourceOptions {
   /**
    * The Bitbucket Repository URL
@@ -22,7 +24,7 @@ export interface BitbucketSourceOptions {
    */
   branch: string;
   /**
-   * The name of the git remot to use
+   * The name of the git remote to use
    */
   remote: string;
   /**

@@ -19,10 +19,20 @@ export type DiffResult = Array<{
   file: string;
 }>;
 
-function getCloneDirName(repoUrl: string) {
+function getProjectNameAndRepoName(repoUrl: string) {
   const [, projectNameAndRepoName] = path
     .normalize(repoUrl)
     .match(/([^/]+\/[^/]+)\.git$/) as RegExpMatchArray;
+  const parts = projectNameAndRepoName.split('/');
+  return {
+    projectNameAndRepoName,
+    projectName: parts[0],
+    repoName: parts[1]
+  };
+}
+
+function getCloneDirName(repoUrl: string) {
+  const { projectNameAndRepoName } = getProjectNameAndRepoName(repoUrl);
 
   return path.join(process.cwd(), '.tmp/.cloned_docs', projectNameAndRepoName);
 }
@@ -93,7 +103,7 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
       return false;
     }
     // Output will look something like:
-    // origin	ssh://git@bitbucketdc-ssh.xxxx.net:7999/x/x.git (fetch)
+    // origin	ssh://git@bitbucketdc-ssh.jpmchase.net:7999/x/x.git (fetch)
     const [, projectURI] = (await spawn('git', ['remote', '-v'], dir)).match(
       /\s+([^ ]+)/
     ) as RegExpMatchArray;
@@ -111,10 +121,12 @@ export default class Repo {
   #cloned = false;
   #dir = '';
   #cloneRootDir = '';
+  #worktreeRootDir = '';
   #remote = '';
   #name = '';
   #branch = '';
   #repo = '';
+  #credentials: string | null = null;
 
   constructor(credentials: string, remote = 'origin', branch: string, repo: string) {
     if (!repo) {
@@ -124,9 +136,11 @@ export default class Repo {
       console.warn('[PullDocs] No `credentials` provided for bitbucket request.');
     }
     this.#cloneRootDir = getCloneDirName(repo);
-    this.#dir = path.join(this.#cloneRootDir, '.mosaic-worktrees', branch);
+    this.#worktreeRootDir = path.join(this.#cloneRootDir, '.pull-docs-worktrees');
+    this.#dir = path.join(this.#worktreeRootDir, branch);
     this.#remote = remote;
     this.#branch = branch;
+    this.#credentials = credentials;
     this.#repo = credentials
       ? `https://${credentials
           .split(':')
@@ -287,7 +301,16 @@ export default class Repo {
         await fs.emptyDir(this.#cloneRootDir);
         await spawn(
           'git',
-          ['clone', this.#repo, '--no-checkout', `--origin=${this.#remote}`],
+          [
+            'clone',
+            this.#repo,
+            '--no-checkout',
+            '--single-branch',
+            '--no-tags',
+            '--depth',
+            '1',
+            `--origin=${this.#remote}`
+          ],
           // Go up 1 dir, so the clone creates the main worktree folder
           path.dirname(this.#cloneRootDir)
         );
@@ -311,6 +334,24 @@ export default class Repo {
     }
   }
 
+  async createWorktree(sid: string, branchName: string) {
+    this.#dir = path.posix.join(this.#worktreeRootDir, sid);
+    console.debug(`[PullDocs] Creating worktree for content save @ ${this.#dir}`);
+    await spawn(
+      'git',
+      ['worktree', 'add', '-f', '-B', branchName, this.#dir],
+      this.#worktreeRootDir
+    );
+    console.debug(`[PullDocs] Creating linked worktree for ${sid}`);
+  }
+
+  async removeWorktree(sid: string) {
+    console.debug(`[PullDocs] Removing worktree for content save @ ${this.#dir}`);
+    await spawn('git', ['worktree', 'remove', sid], this.#dir);
+    this.#dir = path.join(this.#worktreeRootDir, this.#branch);
+    console.debug(`[PullDocs] Removed linked worktree for ${sid}`);
+  }
+
   getTagInfo = async (tag: string) => {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
@@ -322,4 +363,111 @@ export default class Repo {
       description
     };
   };
+
+  async configureGitUser(name: string, email: string) {
+    await spawn('git', ['config', 'user.name', `${name}`], this.#dir);
+    await spawn('git', ['config', 'user.email', `${email}`], this.#dir);
+  }
+
+  async addChanges() {
+    await spawn('git', ['add', '-A'], this.#dir);
+  }
+
+  async commitChanges(name: string, email: string, filePath: string) {
+    await spawn(
+      'git',
+      [
+        'commit',
+        '-m',
+        `docs: updated content ${filePath} (UIE-7026)`,
+        '--author',
+        `${name}<${email}>`
+      ],
+      this.#dir
+    );
+  }
+
+  async pushBranch(branchName: string) {
+    await spawn('git', ['push', 'origin', `${branchName}`], this.#dir);
+  }
+
+  async curlPullRequest(branchName: string, filePath: string) {
+    const { projectName, repoName } = getProjectNameAndRepoName(this.#repo);
+
+    const bitBucketRequest = {
+      title: `Mosaic Docs - Content update - ${filePath}`,
+      fromRef: {
+        id: `refs/heads/${branchName}`,
+        repository: {
+          slug: `${repoName}`,
+          name: null,
+          project: {
+            key: `${projectName}`
+          }
+        }
+      },
+      toRef: {
+        id: `refs/heads/${this.#branch}`,
+        repository: {
+          slug: `${repoName}`,
+          name: null,
+          project: {
+            key: `${projectName}`
+          }
+        }
+      }
+    };
+
+    const curlResponse = await spawn(
+      'curl',
+      [
+        '--silent',
+        `https://bitbucketdc.jpmchase.net/rest/api/1.0/projects/${projectName}/repos/${repoName}/pull-requests`,
+        '--request',
+        'POST',
+        '--header',
+        'Content-Type: application/json',
+        '-u',
+        `${this.#credentials}`,
+        '-d',
+        `${JSON.stringify(bitBucketRequest)}`
+      ],
+      this.#dir
+    );
+
+    return curlResponse;
+  }
+
+  async createPullRequest(
+    user: { sid: string; name: string; email: string },
+    branchName: string,
+    filePath: string
+  ): Promise<string | { error: string; source: string }> {
+    if (!this.#cloned) {
+      throw new Error('No repository cloned. Call init() to clone the initial repository.');
+    }
+
+    const sid = user.sid.toLowerCase();
+    try {
+      await this.configureGitUser(user.name, user.email);
+      await this.addChanges();
+      await this.commitChanges(user.name, user.email, filePath);
+      await this.pushBranch(branchName);
+      const curlResult = await this.curlPullRequest(branchName, filePath);
+      const jsonResult = await JSON.parse(curlResult);
+      return jsonResult;
+    } catch (e) {
+      console.group('Pull Request Error');
+      console.warn('An Exception occurred while raising a PR');
+      console.log('fullPath', filePath);
+      console.log('Branch Name', branchName);
+      console.log('Name', this.#name);
+      console.log('Remote', this.#remote);
+      console.error(e);
+      console.groupEnd();
+      return { error: 'Error creating Pull Request ', source: `${this.#name}` };
+    } finally {
+      await this.removeWorktree(sid);
+    }
+  }
 }
