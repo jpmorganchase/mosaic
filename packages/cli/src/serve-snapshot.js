@@ -20,7 +20,6 @@ module.exports = async (targetDir, port, scope) => {
   app.get('/**', async (req, res) => {
     const fullPath = path.posix.join(targetDir, req.path);
     try {
-
       fs.stat(fullPath, (err, stats) => {
         if (err) {
           res.status(404).end();
