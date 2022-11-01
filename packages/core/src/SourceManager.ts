@@ -59,6 +59,20 @@ export default class SourceManager {
     return () => this.#handlers.delete(handler);
   }
 
+  async saveContent(filePath: string, data: unknown): Promise<boolean> {
+    let result;
+
+    for (const source of this.#sources.values()) {
+      // eslint-disable-next-line no-await-in-loop
+      const isSaved = await source.saveContent(filePath, data);
+      if (isSaved) {
+        result = isSaved;
+        break;
+      }
+    }
+    return result;
+  }
+
   getSource(id: symbol) {
     return this.#sources.get(id);
   }
