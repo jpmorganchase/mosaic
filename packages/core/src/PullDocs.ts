@@ -106,6 +106,10 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
+  async saveContent<TData>(filePath: string, data: TData) {
+    return this.#sourceManager.saveContent(filePath, data);
+  }
+
   async #addSource(sourceDefinition) {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {
