@@ -25,4 +25,4 @@ Open your browser, navigate to http://localhost:8080/example/index
 
 ### Serve Snapshot
 
-`yarn mosaic serve-snapshot <path/to/snapshot>`
+`yarn mosaic serve --snapshot <path/to/snapshot>`
