@@ -46,6 +46,7 @@ export default async function pluginRunner(
         console.warn(
           `[PullDocs] \`${lifecycleName}\` plugin returned a falsy value - this result has been discarded.`
         );
+        // eslint-disable-next-line no-continue
         continue;
       }
 

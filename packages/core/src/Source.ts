@@ -186,16 +186,16 @@ export default class Source {
   async saveContent(filePath: string, data: unknown): Promise<unknown> {
     if (this.#editable) {
       const isFileInSource = await this.filesystem.promises.exists(filePath);
-      return isFileInSource
-        ? await this.#pluginApi.saveContent(filePath, data, this.#mergedOptions, {
-            sharedFilesystem: this.filesystem,
-            pageExtensions: this.#pageExtensions,
-            ignorePages: this.#ignorePages,
-            serialiser: this.serialiser,
-            config: this.config.asReadOnly(),
-            namespace: this.namespace
-          })
-        : false;
+      const result = await this.#pluginApi.saveContent(filePath, data, this.#mergedOptions, {
+        sharedFilesystem: this.filesystem,
+        pageExtensions: this.#pageExtensions,
+        ignorePages: this.#ignorePages,
+        serialiser: this.serialiser,
+        config: this.config.asReadOnly(),
+        namespace: this.namespace
+      });
+      return isFileInSource ? result : false;
     }
+    return false;
   }
 }
