@@ -8,4 +8,4 @@
 '@jpmorganchase/mosaic-types': patch
 ---
 
-Release featuring build and serve snapshots
+This releases add support for generate / build and serve snapshots
