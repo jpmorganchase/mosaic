@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-bitbucket",
-  "version": "0.1.0-beta.4",
+  "version": "0.1.0-beta.5",
   "author": "",
   "description": "Mosaic BitBucket source for core file system",
   "license": "Apache-2.0",
@@ -20,8 +20,8 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.4",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.4",
+    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.5",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.5",
     "rxjs": "^7.5.5",
     "deepmerge": "^4.2.2",
     "fs-extra": "^9.1.0"

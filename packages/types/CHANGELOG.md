@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.5
+
+### Patch Changes
+
+- 61a246c: This releases add support for generate / build and serve snapshots
+
 ## 0.1.0-beta.4
 
 ### Patch Changes
