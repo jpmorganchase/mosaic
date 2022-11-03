@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-bitbucket
 
+## 0.1.0-beta.5
+
+### Patch Changes
+
+- 61a246c: This releases add support for generate / build and serve snapshots
+- Updated dependencies [61a246c]
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.5
+  - @jpmorganchase/mosaic-types@0.1.0-beta.5
+
 ## 0.1.0-beta.4
 
 ### Patch Changes
