@@ -3,10 +3,22 @@ import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
 import lodashMerge from 'lodash/merge';
-
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 
 import fromFsWatch from './fromFsWatch';
+
+async function getLastModifiedDate(fullPath: string) {
+  const resolvedRoute = await fs.promises.realpath(fullPath);
+  const stats = await fs.promises.stat(resolvedRoute);
+  return stats?.mtimeMs ? stats.mtimeMs : 0;
+}
+
+function createFileGlob(url: string, pageExtensions: string[]) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}
 
 export interface LocalFolderSourceOptions {
   extensions: string[];
@@ -15,7 +27,7 @@ export interface LocalFolderSourceOptions {
 }
 
 const LocalFolderSource: Source<LocalFolderSourceOptions> = {
-  create(options, { serialiser }): Observable<Page<{}>[]> {
+  create(options, { serialiser }): Observable<Page[]> {
     return merge(of(null), fromFsWatch(options.rootDir, { recursive: true })).pipe(
       delay(1000),
       switchMap(() =>
@@ -26,6 +38,7 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
       ),
       concatMap(
         async (filepaths: string[]) =>
+          // eslint-disable-next-line @typescript-eslint/return-await
           await Promise.all(
             filepaths.map(async (filepath: string) => {
               const fullPath = path.join(options.rootDir, filepath);
@@ -45,18 +58,5 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
     );
   }
 };
-
-async function getLastModifiedDate(fullPath: string) {
-  const resolvedRoute = await fs.promises.realpath(fullPath);
-  const stats = await fs.promises.stat(resolvedRoute);
-  return stats?.mtimeMs ? stats.mtimeMs : 0;
-}
-
-function createFileGlob(url: string, pageExtensions: string[]) {
-  if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
-  }
-  return `${url}{${pageExtensions.join(',')}}`;
-}
 
 export default LocalFolderSource;
