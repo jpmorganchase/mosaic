@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-// const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 
 const app = express();
