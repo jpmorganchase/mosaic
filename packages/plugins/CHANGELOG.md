@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.6
+
+### Patch Changes
+
+- c103b24: Release fixes for snapshot serve
+- Updated dependencies [c103b24]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.6
+
 ## 0.1.0-beta.5
 
 ### Patch Changes
