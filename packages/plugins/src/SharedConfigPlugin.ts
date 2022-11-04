@@ -1,12 +1,27 @@
-import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import flatten from 'lodash/flatten';
 import path from 'path';
+
+function createFileGlob(url, pageExtensions) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}
+
+interface SharedConfigPluginPage extends Page {
+  sharedConfig?: string;
+}
+
+interface SharedConfigPluginOptions {
+  filename: string;
+}
 
 /**
  * Plugin that crawls the page hierarchy to find the closest `sharedConfig` from any parent index's page metadata.
  * It then exports a JSON file (name: `options.filename`) into each directory with the merged config for that level
  */
-const SharedConfigPlugin: PluginType<{}, { filename: string }> = {
+const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginOptions> = {
   async $beforeSend(
     mutableFilesystem,
     { config, serialiser, ignorePages, pageExtensions },
@@ -40,10 +55,3 @@ const SharedConfigPlugin: PluginType<{}, { filename: string }> = {
 };
 
 export default SharedConfigPlugin;
-
-function createFileGlob(url, pageExtensions) {
-  if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
-  }
-  return `${url}{${pageExtensions.join(',')}}`;
-}

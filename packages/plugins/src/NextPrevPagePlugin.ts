@@ -1,17 +1,45 @@
-import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash';
+
+function createFileGlob(url, pageExtensions) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}
+
+function createSortFn(
+  pageExtensions: string[],
+  { sortBy: _sortBy, indexFirst }: NextPrevPluginOptions
+) {
+  const indexRegExp =
+    indexFirst && new RegExp(`index${pageExtensions.map(escapeRegExp).join('|')}$`);
+
+  // TODO: Switch out the algorithm here, based on `sortBy`
+  return function sortFn(fullPathA, fullPathB) {
+    // Always pin /index to the front
+    if (indexFirst && indexRegExp.test(fullPathA)) {
+      return -1;
+    }
+    return fullPathA.localeCompare(fullPathB);
+  };
+}
+
+interface NextPrevPluginPage extends Page {
+  nextPrev: { [key: string]: string[] };
+  refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
+}
+
+interface NextPrevPluginOptions {
+  indexFirst?: boolean;
+  sortBy?: string;
+}
 
 /**
  * Sorts the pages in a folder alphabetically and then embeds a `navigation` property to the metadata with ordered
  * next/prev pages
  */
-const NextPrevPlugin: PluginType<
-  {
-    nextPrev: { [key: string]: string[] };
-    refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
-  },
-  { indexFirst?: boolean; sortBy?: 'a-z' }
-> = {
+const NextPrevPlugin: PluginType<NextPrevPluginPage, NextPrevPluginOptions> = {
   async $beforeSend(
     mutableFilesystem,
     { config, pageExtensions, ignorePages },
@@ -61,24 +89,3 @@ const NextPrevPlugin: PluginType<
 };
 
 export default NextPrevPlugin;
-
-function createFileGlob(url, pageExtensions) {
-  if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
-  }
-  return `${url}{${pageExtensions.join(',')}}`;
-}
-
-function createSortFn(pageExtensions, { sortBy: _sortBy, indexFirst }) {
-  const indexRegExp =
-    indexFirst && new RegExp(`index${pageExtensions.map(escapeRegExp).join('|')}$`);
-
-  // TODO: Switch out the algorithm here, based on `sortBy`
-  return function sortFn(fullPathA, fullPathB) {
-    // Always pin /index to the front
-    if (indexFirst && indexRegExp.test(fullPathA)) {
-      return -1;
-    }
-    return fullPathA.localeCompare(fullPathB);
-  };
-}

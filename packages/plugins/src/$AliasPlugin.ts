@@ -1,18 +1,24 @@
 import path from 'path';
-
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+}
+
+interface AliasPluginPage extends Page {
+  aliases?: string[];
+}
 
 /**
  * Plugin that scrapes `aliases` from page metadata and also applies all aliases stored in `config.data.aliases`
  * Other plugins can use `setAliases` to apply new aliases, as long as they call it before this plugin has reaches `$beforeSend`
  */
-const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
-  async $afterSource(
-    pages: Page<{ aliases?: string[] }>[],
-    { config, ignorePages, pageExtensions },
-    options
-  ) {
+const $AliasPlugin: PluginType<AliasPluginPage> = {
+  async $afterSource(pages, { config, ignorePages, pageExtensions }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     // Group together all aliases defined in the frontmatter and store them in the alias config object
@@ -60,11 +66,3 @@ const $AliasPlugin: PluginType<{ aliases: { [key: string]: Set<string> } }> = {
 };
 
 export default $AliasPlugin;
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file => {
-    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-  };
-}
