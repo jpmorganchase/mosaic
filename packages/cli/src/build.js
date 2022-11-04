@@ -3,7 +3,7 @@ const path = require('path');
 const fsExtra = require('fs-extra');
 const fs = require('fs');
 
-module.exports = async (config, targetDir, scope) => {
+module.exports = async (config, targetDir, options) => {
   // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
   config.plugins = config.plugins.filter(({ runTimeOnly }) => !runTimeOnly);
   // Turn off `cache` for each source
@@ -11,9 +11,10 @@ module.exports = async (config, targetDir, scope) => {
     ...source,
     options: { ...source.options, cache: false }
   }));
+  const scope = options.scope && options.scope.split(',');
   const pullDocs = new PullDocs(config);
-  const datedDir = path.posix.join(targetDir, new Date().toISOString());
-  await fsExtra.emptyDir(datedDir);
+  const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
+  await fsExtra.emptyDir(pathDir);
   await pullDocs.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
   const filesystem = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
@@ -45,10 +46,10 @@ module.exports = async (config, targetDir, scope) => {
 Try using \`--scope\` to just output certain namespaced sources, or adding a \`prefixDir\` to the source options to move the source files into a separate folder.`);
           }
           //}
-          await fs.promises.mkdir(path.dirname(path.join(datedDir, String(filePath))), {
+          await fs.promises.mkdir(path.dirname(path.join(pathDir, String(filePath))), {
             recursive: true
           });
-          await fs.promises.writeFile(path.join(datedDir, String(filePath)), rawFile);
+          await fs.promises.writeFile(path.join(pathDir, String(filePath)), rawFile);
         }
         for (const alias in symlinks) {
           if (alias.startsWith('/.tags')) {
@@ -58,20 +59,20 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
             if (target.startsWith('/.tags')) {
               continue;
             }
-            await fsExtra.ensureDir(path.join(datedDir, path.dirname(alias)));
+            await fsExtra.ensureDir(path.join(pathDir, path.dirname(alias)));
 
             try {
-              const exists = !!(await fs.promises.stat(path.join(datedDir, alias)));
+              const exists = !!(await fs.promises.stat(path.join(pathDir, alias)));
               if (exists) {
                 console.error(
                   new Error(
-                    `Symlink at '${path.join(datedDir, alias)}' already exists. Aborting build.`
+                    `Symlink at '${path.join(pathDir, alias)}' already exists. Aborting build.`
                   )
                 );
                 process.exit(1);
               }
             } catch {
-              await fs.promises.symlink(path.join(datedDir, target), path.join(datedDir, alias));
+              await fs.promises.symlink(path.join(pathDir, target), path.join(pathDir, alias));
             }
           }
         }
@@ -79,7 +80,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
         console.log(
           `Filesystem for ${
             Array.isArray(scope) ? scope.length : config.sources.length
-          } source(s) written to disk at '${datedDir}'`
+          } source(s) written to disk at '${pathDir}'`
         );
         pullDocs.stop();
       }
