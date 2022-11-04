@@ -11,6 +11,7 @@ program
   .option('-o, --out <string>', 'Output directory', '.tmp/.mosaic-build')
   .option('-s, --scope <strings>', 'Command separated namespaces')
   .option('-p, --port <number>', 'Port to serve on', 8080)
+  .option('-n, --name <string>', 'Snapshot name')
   .option('-S, --snapshot <string>', 'Snapshot path');
 
 program.parse();
@@ -25,11 +26,7 @@ if (program.args[0] === 'build') {
         `Could not find config file at ${path.resolve(process.cwd(), options.config)}.`
       );
     }
-    build(
-      config,
-      path.resolve(process.cwd(), options.out),
-      options.scope && options.scope.split(',')
-    );
+    build(config, path.resolve(process.cwd(), options.out), options);
   }
 } else if (program.args[0] === 'serve') {
   if (options.snapshot !== undefined) {

@@ -84,7 +84,7 @@ const config: PullDocsConfig = {
       options: {
         rootDir: path.join('../developer-docs', 'docs'),
         cache: true,
-        prefixDir: 'developer',
+        prefixDir: 'local',
         extensions: ['.mdx']
       }
     },
@@ -99,6 +99,7 @@ const config: PullDocsConfig = {
         // If running locally
         // create an environment variable like BITBUCKET_CLONE_CREDENTIALS to let the user define it via the CLI
         // export BITBUCKET_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+        prefixDir: 'developer',
         credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
         repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git', // repo url without any protocol
