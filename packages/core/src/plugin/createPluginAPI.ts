@@ -22,7 +22,7 @@ function createProxyBaseSerialiserAPI(): Serialiser {
   };
 }
 
-function createProxyBaseAPI<ConfigData>(): Plugin<ConfigData> {
+function createProxyBaseAPI<ConfigData>(): Plugin<Page, ConfigData> {
   return {
     $afterSource() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
@@ -41,7 +41,7 @@ function createProxyBaseAPI<ConfigData>(): Plugin<ConfigData> {
 
 export default async function createPluginAPI<PluginInput, ConfigData = Record<string, unknown>>(
   plugins: PluginModuleDefinition[]
-): Promise<Plugin<ConfigData>> {
+): Promise<Plugin<Page, ConfigData>> {
   const loadedPlugins: LoadedPlugin[] | LoadedSerialiser[] = await loadDefinitionModules(plugins);
   const baseObj = createProxyBaseAPI<ConfigData>();
   const baseSerialiserObj = createProxyBaseSerialiserAPI();
