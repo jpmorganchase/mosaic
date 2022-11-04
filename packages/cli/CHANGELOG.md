@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.6
+
+### Patch Changes
+
+- c103b24: Release fixes for snapshot serve
+
 ## 0.1.0-beta.5
 
 ### Patch Changes
