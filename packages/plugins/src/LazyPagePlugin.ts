@@ -1,4 +1,4 @@
-import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
 import merge from 'lodash/merge';
@@ -6,10 +6,29 @@ import escapeRegExp from 'lodash/escapeRegExp';
 import path from 'path';
 import { TDataOut } from 'memfs/lib/encoding';
 
-const LazyPagePlugin: PluginType<
-  { aliases: { [key: string]: Set<string> }; hddPaths: { [key: string]: string } },
-  { cacheDir: string }
-> = {
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+}
+
+function createFileGlob(url, pageExtensions) {
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
+}
+
+interface LazyPagePluginPage extends Page {
+  aliases: { [key: string]: Set<string> };
+  hddPaths: { [key: string]: string };
+}
+interface LazyPagePluginOptions {
+  cacheDir?: string;
+}
+
+const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
   async afterUpdate(mutableFilesystem, { ignorePages, config, pageExtensions, serialiser }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
@@ -80,19 +99,4 @@ const LazyPagePlugin: PluginType<
   }
 };
 
-function createFileGlob(url, pageExtensions) {
-  if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
-  }
-  return `${url}{${pageExtensions.join(',')}}`;
-}
-
 export default LazyPagePlugin;
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file => {
-    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-  };
-}

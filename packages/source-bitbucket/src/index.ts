@@ -46,7 +46,7 @@ const BitbucketSource: Source<BitbucketSourceOptions> = {
 
     const rootDir = path.join(repo.dir, options.subfolder);
 
-    const watchFolder$: Observable<Page<{}>[]> = localFolderSource.create(
+    const watchFolder$: Observable<Page[]> = localFolderSource.create(
       {
         rootDir,
         prefixDir,

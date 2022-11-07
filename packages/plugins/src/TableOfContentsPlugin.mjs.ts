@@ -1,50 +1,48 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import Slugger from 'github-slugger';
-import { toString } from 'hast-util-to-string';
-import markdown from 'remark-parse';
+import remarkParse from 'remark-parse';
 import { unified } from 'unified';
-import { visit } from 'unist-util-visit';
+import remarkStringify from 'remark-stringify';
+import remarkHeadings from '@vcarl/remark-headings';
+import type { Heading as MarkdownHeading } from 'mdast';
 
 type TOCItem = { level: number; id: string; text: string };
+
+interface TableOfContentsPluginPage extends Page {
+  tableOfContents?: TOCItem[];
+}
+type Rank = MarkdownHeading['depth'];
+interface TableOfContentsPluginOptions {
+  minRank: Rank;
+  maxRank: Rank;
+}
 
 /**
  * Calculates table of contents from page headings
  */
-const TableOfContentsPlugin: PluginType<{}, { minRank: 2; maxRank: 4 }> = {
-  async $afterSource(pages: Page[], {}, { minRank, maxRank }) {
-    const processor = unified().use(markdown);
+const TableOfContentsPlugin: PluginType<TableOfContentsPluginPage, TableOfContentsPluginOptions> = {
+  async $afterSource(pages, _, { minRank, maxRank }) {
+    const processor = unified().use(remarkParse).use(remarkStringify).use(remarkHeadings);
     for (const page of pages) {
       const slugger = new Slugger();
-      const tree = await processor.parse(page.content);
-      const items: TOCItem[] = [];
-      visit(
-        tree,
-        node => test(node),
-        node => {
-          const text = toString(node).trim();
-          items.push({
-            level: node.depth,
-            id: slugger.slug(text),
-            text: text
+      if (page.content) {
+        const vfile = await processor.process(page.content);
+        const headings = vfile.data.headings as [{ depth: number; value: string }];
+        const items: TOCItem[] = headings
+          .filter(heading => heading.depth >= minRank && heading.depth <= maxRank)
+          .map(validHeading => {
+            const text = validHeading.value.trim();
+            return {
+              level: validHeading.depth,
+              id: slugger.slug(text),
+              text
+            };
           });
-        }
-      );
-      page.tableOfContents = items;
+        page.tableOfContents = items;
+      }
     }
 
     return pages;
-
-    function test(node) {
-      return node.type === 'heading' && isHeadingInRange(node);
-    }
-
-    function isHeadingInRange(node) {
-      const depth = node.depth;
-      if (depth < minRank || depth > maxRank) {
-        return false;
-      }
-      return true;
-    }
   }
 };
 
