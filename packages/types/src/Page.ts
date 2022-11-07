@@ -1,7 +1,7 @@
 /**
  * `Page` is a type, which at a minimum has a `fullPath`, but can also contain metadata and `content`
  */
-export type Page<AdditionalProps = {}> = {
+export type Page = {
   fullPath: string;
   title?: string;
   /**
@@ -17,5 +17,4 @@ export type Page<AdditionalProps = {}> = {
   lastModified?: Date;
   type?: string;
   content?: string;
-} & Record<string, unknown> &
-  AdditionalProps;
+};

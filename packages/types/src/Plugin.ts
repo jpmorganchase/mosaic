@@ -1,7 +1,6 @@
 import type { Page } from './Page';
-import type { MutableData } from './MutableData';
+import type { MutableData, ImmutableData } from './MutableData';
 import type { PluginModuleDefinition } from './PluginModuleDefinition';
-import type { ImmutableData } from './MutableData';
 import type {
   IUnionVolume,
   IVolumeImmutable,
@@ -10,14 +9,20 @@ import type {
 } from './Volume';
 import type { Serialiser } from './Serialiser';
 
-export type LoadedPlugin = Partial<Plugin> & PluginModuleDefinition;
+export type LoadedPlugin = Partial<Plugin<Page>> & PluginModuleDefinition;
+export type LifecycleMethod = keyof Plugin<Page>;
 
 /**
  * Plugins are lifecycle-based hooks that are called on every source at different stages.
  * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,
  * it will trigger `pluginRunner` which executes it on every source automatically.
  */
-export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = ConfigData> = {
+export type Plugin<
+  TPage extends Page = Page,
+  TOptions = Record<string, unknown>,
+  ConfigData = Record<string, unknown>,
+  GlobalConfigData = ConfigData
+> = {
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * The first lifecycle hook to trigger after receiving pages from a source. The pages can safely be mutated and will be reflected in the final
@@ -28,16 +33,16 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<Page[]>} Must re-return an array of `Page` objects, modified or not
    */
-  $afterSource?(
-    pages: Page[],
-    {}: {
-      serialiser: Serialiser;
+  $afterSource?: (
+    pages: TPage[],
+    helpers: {
+      serialiser: Serialiser<TPage>;
       config: MutableData<ConfigData>;
       pageExtensions: string[];
       ignorePages: string[];
     },
-    options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
-  ): Promise<Page[]>;
+    options?: TOptions
+  ) => Promise<Array<TPage>>;
   /**
    * Plugin lifecycle method that triggers inside child processes.
    * Calls after a filesystem has been built up from the source pages.
@@ -47,16 +52,16 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
    */
-  $beforeSend?(
+  $beforeSend?: (
     mutableFilesystem: IVolumePartiallyMutable,
-    {}: {
-      serialiser: Serialiser;
+    helpers: {
+      serialiser: Serialiser<TPage>;
       pageExtensions: string[];
       ignorePages: string[];
       config: MutableData<ConfigData>;
     },
-    options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
-  ): Promise<void>;
+    options?: TOptions
+  ) => Promise<void>;
   /**
    * Plugin lifecycle method that triggers inside the main process.
    * Calls after the filesystem and symlinks have been reconstructed due to a change to the current source. This happens in the main thread.
@@ -74,10 +79,10 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
    */
-  afterUpdate?(
+  afterUpdate?: (
     mutableFilesystem: IVolumePartiallyMutable,
-    {}: {
-      serialiser: Serialiser;
+    helpers: {
+      serialiser: Serialiser<TPage>;
       config: ImmutableData<ConfigData>;
       globalFilesystem: IUnionVolume;
       sharedFilesystem: IVolumeMutable;
@@ -85,8 +90,8 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
       pageExtensions: string[];
       ignorePages: string[];
     },
-    options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
-  ): Promise<void>;
+    options?: TOptions
+  ) => Promise<void>;
   /**
    * Plugin lifecycle method that triggers inside the main process everytime ANY source emits new pages.
    * This method should return a boolean that will indicate if this source should clear page caches.
@@ -99,17 +104,15 @@ export type Plugin<ConfigData = {}, PluginOptions = {}, GlobalConfigData = Confi
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<boolean>} A boolean indicating whether to clear the cache for this source
    */
-  shouldClearCache?(
+  shouldClearCache?: (
     updatedSourceFilesystem: IVolumeImmutable,
-    {}: {
-      serialiser: Serialiser;
+    helpers: {
+      serialiser: Serialiser<TPage>;
       config: ImmutableData<ConfigData>;
       globalFilesystem: IUnionVolume;
       pageExtensions: string[];
       ignorePages: string[];
     },
-    options?: Pick<PluginModuleDefinition, 'options'> & PluginOptions
-  ): Promise<boolean>;
+    options?: TOptions
+  ) => Promise<boolean>;
 };
-
-export type LifecycleMethod = keyof Plugin;

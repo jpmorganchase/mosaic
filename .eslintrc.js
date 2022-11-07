@@ -8,7 +8,11 @@ module.exports = {
     'no-console': 'off',
     'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
-    'no-underscore-dangle': 'off'
+    'no-underscore-dangle': 'off',
+    'no-await-in-loop': 'off',
+    'no-continue': 'off',
+    'no-plusplus': 'off',
+    'guard-for-in': 'off'
   },
   overrides: [
     {

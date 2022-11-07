@@ -1,9 +1,39 @@
 import path from 'path';
-
 import escapeRegExp from 'lodash/escapeRegExp';
 import reduce from 'lodash/reduce';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
-import type { Meta, Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+function createPageTest(ignorePages, pageExtensions) {
+  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+}
+
+const findKeys = (obj, targetProp, pathParts: string[] = []) =>
+  reduce<string, { $$path: string[]; $$value: string }[]>(
+    obj,
+    (found, value, key) => {
+      if (key === targetProp) {
+        return found.concat({ $$path: pathParts.concat(String(key)), $$value: value });
+      }
+      if (typeof value === 'object') {
+        const foundParents = findKeys(value, targetProp, pathParts.concat(String(key)));
+        return found.concat(...foundParents);
+      }
+      return found;
+    },
+    []
+  );
+
+interface TagPluginPage extends Page {
+  tags?: string[];
+}
+interface TagPluginConfigData {
+  tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
+  globalRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
+  subscribedTags: string[];
+}
 
 /**
  * Plugin that scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
@@ -12,11 +42,7 @@ import type { Meta, Page, Plugin as PluginType } from '@jpmorganchase/mosaic-typ
  * Other plugins can use `setData()` and modify the `tags` property, to apply new global refs, as long as
  * they do so before this plugin has reaches `$beforeSend`
  */
-const $TagPlugin: PluginType<{
-  tagRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
-  globalRefs: { [key: string]: { $$path: string[]; $$value: string[] }[] };
-  subscribedTags: string[];
-}> = {
+const $TagPlugin: PluginType<TagPluginPage, unknown, TagPluginConfigData> = {
   // Check if the updated source has any /.tag aliases that we care about - if it does, we should re-run `afterUpdate` to
   // make sure we pull in the latest pages
   async shouldClearCache(updatedSourceFilesystem, { config }) {
@@ -32,14 +58,14 @@ const $TagPlugin: PluginType<{
     );
   },
   // Every source with tags will create symlinks with the tagged pages, inside /.tags
-  async $afterSource(pages: Page<{ tags?: string[] }>[], { config, ignorePages, pageExtensions }) {
+  async $afterSource(pages, { config, ignorePages, pageExtensions }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
       if (!isNonHiddenPage(page.fullPath)) {
         continue;
       }
-      const meta = page as Meta<{ tags?: string[] }>;
+      const meta = page;
       // Symlink every `tag` item to '/.tags' folder
       if (meta.tags?.length) {
         config.setTags(page.fullPath, meta.tags);
@@ -70,28 +96,3 @@ const $TagPlugin: PluginType<{
 };
 
 export default $TagPlugin;
-
-const findKeys = (obj, targetProp, pathParts: string[] = []) => {
-  return reduce<string, { $$path: string[]; $$value: string }[]>(
-    obj,
-    (found, value, key) => {
-      if (key === targetProp) {
-        return found.concat({ $$path: pathParts.concat(String(key)), $$value: value });
-      }
-      if (typeof value === 'object') {
-        const foundParents = findKeys(value, targetProp, pathParts.concat(String(key)));
-        return found.concat(...foundParents);
-      }
-      return found;
-    },
-    []
-  );
-};
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file => {
-    return !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-  };
-}
