@@ -23,6 +23,10 @@ const config: MosaicConfig = {
       options: {}
     },
     {
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SearchIndexPlugin.mjs'),
+      options: {}
+    },
+    {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BreadcrumbsPlugin'),
       options: {
         indexPageName: 'index.mdx'
@@ -102,7 +106,8 @@ const config: MosaicConfig = {
         // create an environment variable like BITBUCKET_CLONE_CREDENTIALS to let the user define it via the CLI
         // export BITBUCKET_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
         prefixDir: 'developer',
-        credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
+        // credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
+        credentials: 'v791122:ODU0MTEyMzgzMDc1OtTaOqllTLo7/rytDvumLWXYsYti',
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
         repo: process.env.DEVELOPER_DOCS_REPO, // repo url without any protocol
         branch: 'develop', // branch where docs are pulled from

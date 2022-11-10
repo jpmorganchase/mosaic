@@ -17,4 +17,5 @@ export type Page = {
   lastModified?: Date;
   type?: string;
   content?: string;
+  description?: string;
 };
