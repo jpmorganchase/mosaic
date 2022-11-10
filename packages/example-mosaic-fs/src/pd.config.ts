@@ -78,7 +78,11 @@ const config: PullDocsConfig = {
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BitBucketPullRequestPlugin'),
-      options: {},
+      options: {
+        titlePrefix: 'Mosaic Docs',
+        apiEndpoint: process.env.BITBUCKET_API_URL,
+        commitMessage: 'docs: updated content (UIE-7026)'
+      },
       priority: 3
     },
     {
@@ -91,7 +95,6 @@ const config: PullDocsConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
-      editable: true,
       options: {
         rootDir: path.join('../developer-docs', 'docs'),
         cache: true,
@@ -114,8 +117,8 @@ const config: PullDocsConfig = {
         prefixDir: 'developer',
         credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git', // repo url without any protocol
-        branch: 'master', // branch where docs are pulled from
+        repo: process.env.DEVELOPER_DOCS_REPO, // repo url without any protocol
+        branch: 'develop', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }

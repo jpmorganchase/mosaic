@@ -31,6 +31,11 @@ function getProjectNameAndRepoName(repoUrl: string) {
   };
 }
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
 function getCloneDirName(repoUrl: string) {
   const { projectNameAndRepoName } = getProjectNameAndRepoName(repoUrl);
 
@@ -157,6 +162,14 @@ export default class Repo {
 
   get dir() {
     return this.#dir;
+  }
+
+  get projectName() {
+    return getProjectNameAndRepoName(this.#repo).projectName;
+  }
+
+  get repoName() {
+    return getProjectNameAndRepoName(this.#repo).repoName;
   }
 
   onCommitChange(
@@ -347,7 +360,7 @@ export default class Repo {
 
   async removeWorktree(sid: string) {
     console.debug(`[PullDocs] Removing worktree for content save @ ${this.#dir}`);
-    await spawn('git', ['worktree', 'remove', sid], this.#dir);
+    await spawn('git', ['worktree', 'remove', sid, '--force'], this.#dir);
     this.#dir = path.join(this.#worktreeRootDir, this.#branch);
     console.debug(`[PullDocs] Removed linked worktree for ${sid}`);
   }
@@ -373,16 +386,10 @@ export default class Repo {
     await spawn('git', ['add', '-A'], this.#dir);
   }
 
-  async commitChanges(name: string, email: string, filePath: string) {
+  async commitChanges(name: string, email: string, commitMessage: string) {
     await spawn(
       'git',
-      [
-        'commit',
-        '-m',
-        `docs: updated content ${filePath} (UIE-7026)`,
-        '--author',
-        `${name}<${email}>`
-      ],
+      ['commit', '-m', `${commitMessage}`, '--author', `${name}<${email}>`],
       this.#dir
     );
   }
@@ -391,38 +398,12 @@ export default class Repo {
     await spawn('git', ['push', 'origin', `${branchName}`], this.#dir);
   }
 
-  async curlPullRequest(branchName: string, filePath: string) {
-    const { projectName, repoName } = getProjectNameAndRepoName(this.#repo);
-
-    const bitBucketRequest = {
-      title: `Mosaic Docs - Content update - ${filePath}`,
-      fromRef: {
-        id: `refs/heads/${branchName}`,
-        repository: {
-          slug: `${repoName}`,
-          name: null,
-          project: {
-            key: `${projectName}`
-          }
-        }
-      },
-      toRef: {
-        id: `refs/heads/${this.#branch}`,
-        repository: {
-          slug: `${repoName}`,
-          name: null,
-          project: {
-            key: `${projectName}`
-          }
-        }
-      }
-    };
-
+  async curlPullRequest(endpoint: string, data: string) {
     const curlResponse = await spawn(
       'curl',
       [
         '--silent',
-        `https://bitbucketdc.jpmchase.net/rest/api/1.0/projects/${projectName}/repos/${repoName}/pull-requests`,
+        `${endpoint}`,
         '--request',
         'POST',
         '--header',
@@ -430,7 +411,7 @@ export default class Repo {
         '-u',
         `${this.#credentials}`,
         '-d',
-        `${JSON.stringify(bitBucketRequest)}`
+        `${data}`
       ],
       this.#dir
     );
@@ -441,7 +422,10 @@ export default class Repo {
   async createPullRequest(
     user: { sid: string; name: string; email: string },
     branchName: string,
-    filePath: string
+    filePath: string,
+    endpoint: string,
+    requestData: string,
+    commitMessage: string
   ): Promise<string | { error: string; source: string }> {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
@@ -451,21 +435,27 @@ export default class Repo {
     try {
       await this.configureGitUser(user.name, user.email);
       await this.addChanges();
-      await this.commitChanges(user.name, user.email, filePath);
+      await this.commitChanges(user.name, user.email, commitMessage);
       await this.pushBranch(branchName);
-      const curlResult = await this.curlPullRequest(branchName, filePath);
+      const curlResult = await this.curlPullRequest(endpoint, requestData);
       const jsonResult = await JSON.parse(curlResult);
+
+      if (jsonResult.errors) {
+        throw new Error(jsonResult.errors?.[0].message);
+      }
       return jsonResult;
-    } catch (e) {
-      console.group('Pull Request Error');
-      console.warn('An Exception occurred while raising a PR');
+    } catch (e: unknown) {
+      console.group('[PullDocs] Pull Request Error');
       console.log('fullPath', filePath);
       console.log('Branch Name', branchName);
       console.log('Name', this.#name);
       console.log('Remote', this.#remote);
       console.error(e);
       console.groupEnd();
-      return { error: 'Error creating Pull Request ', source: `${this.#name}` };
+      return {
+        error: `Error creating Pull Request: ${getErrorMessage(e)} `,
+        source: `${this.#name}`
+      };
     } finally {
       await this.removeWorktree(sid);
     }
