@@ -7519,6 +7519,14 @@ unist-util-visit-parents@^5.0.0:
     "@types/unist" "^2.0.0"
     unist-util-is "^5.0.0"
 
+unist-util-visit-parents@^5.1.1:
+  version "5.1.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/unist-util-visit-parents/-/unist-util-visit-parents-5.1.1.tgz#868f353e6fce6bf8fa875b251b0f4fec3be709bb"
+  integrity sha1-ho81Pm/Oa/j6h1slGw9P7DvnCbs=
+  dependencies:
+    "@types/unist" "^2.0.0"
+    unist-util-is "^5.0.0"
+
 unist-util-visit@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/unist-util-visit/-/unist-util-visit-4.1.0.tgz#f41e407a9e94da31594e6b1c9811c51ab0b3d8f5"
@@ -7527,6 +7535,15 @@ unist-util-visit@^4.0.0:
     "@types/unist" "^2.0.0"
     unist-util-is "^5.0.0"
     unist-util-visit-parents "^5.0.0"
+
+unist-util-visit@^4.1.1:
+  version "4.1.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/unist-util-visit/-/unist-util-visit-4.1.1.tgz#1c4842d70bd3df6cc545276f5164f933390a9aad"
+  integrity sha1-HEhC1wvT32zFRSdvUWT5MzkKmq0=
+  dependencies:
+    "@types/unist" "^2.0.0"
+    unist-util-is "^5.0.0"
+    unist-util-visit-parents "^5.1.1"
 
 universalify@^0.1.0:
   version "0.1.2"
