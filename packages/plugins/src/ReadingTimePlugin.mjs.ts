@@ -22,7 +22,7 @@ const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
         tree,
         node => node.type === 'text' || node.type === 'code',
         node => {
-          textContent += node.data;
+          textContent += node.value;
         }
       );
       page.readingTime = getReadingTime(textContent);
