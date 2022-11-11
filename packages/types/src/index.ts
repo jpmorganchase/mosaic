@@ -9,5 +9,6 @@ export * from './Serialiser';
 export * from './SerialiserModuleDefinition';
 export * from './Source';
 export * from './SourceModuleDefinition';
+export * from './SourceWorkflow';
 export * from './Volume';
 export * from './WorkerData';

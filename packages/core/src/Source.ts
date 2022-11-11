@@ -12,7 +12,8 @@ import type {
   PluginModuleDefinition,
   Serialiser,
   SerialiserModuleDefinition,
-  SourceModuleDefinition
+  SourceModuleDefinition,
+  SourceWorkflow
 } from '@jpmorganchase/mosaic-types';
 
 import FileAccess from './filesystems/FileAccess';
@@ -32,7 +33,7 @@ export default class Source {
   #mergedOptions: Record<string, unknown>;
   #pageExtensions: string[];
   #ignorePages: string[];
-  #editable: boolean;
+  #workflows: SourceWorkflow[] = [];
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -41,17 +42,18 @@ export default class Source {
   filesystem: MutableVolume;
 
   constructor(
-    { editable, modulePath, namespace }: SourceModuleDefinition,
+    { modulePath, namespace }: SourceModuleDefinition,
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
-    globalFilesystem: IUnionVolume
+    globalFilesystem: IUnionVolume,
+    workflows: SourceWorkflow[]
   ) {
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
     this.#globalFilesystem = globalFilesystem;
     this.#ignorePages = ignorePages;
-    this.#editable = editable || false;
+    this.#workflows = workflows;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
@@ -183,18 +185,30 @@ export default class Source {
     });
   }
 
-  async saveContent(filePath: string, data: unknown): Promise<unknown> {
-    if (this.#editable) {
-      const isFileInSource = await this.filesystem.promises.exists(filePath);
-      const result = await this.#pluginApi.saveContent(filePath, data, this.#mergedOptions, {
-        sharedFilesystem: this.filesystem,
-        pageExtensions: this.#pageExtensions,
-        ignorePages: this.#ignorePages,
-        serialiser: this.serialiser,
-        config: this.config.asReadOnly(),
-        namespace: this.namespace
-      });
-      return isFileInSource ? result : false;
+  async isOwner(filePath: string) {
+    const isFileInSource = await this.filesystem.promises.exists(filePath);
+    return isFileInSource;
+  }
+
+  async triggerWorkflow(name: string, filePath: string, data: unknown) {
+    const foundWorkflows = this.#workflows?.filter(workflow => workflow.name === name);
+
+    if (foundWorkflows.length === 0) {
+      return {
+        error: `[Pull Docs] Workflow ${name} not found for ${this.id.description.toString()} `
+      };
+    }
+
+    if (foundWorkflows.length > 1) {
+      return {
+        error: `[Pull Docs] Multiple workflows with ${name} found for ${this.id.description.toString()} `
+      };
+    }
+
+    const triggerdWorkflow = foundWorkflows[0];
+
+    if (triggerdWorkflow) {
+      return triggerdWorkflow.action(this.#mergedOptions, triggerdWorkflow.options, filePath, data);
     }
     return false;
   }

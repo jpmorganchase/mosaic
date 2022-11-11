@@ -53,24 +53,19 @@ export default class SourceManager {
 
   onSourceUpdate(callback) {
     const handler = (filesystem: IVolumeImmutable, source: Source) => callback(filesystem, source);
-
     this.#handlers.add(handler);
-
     return () => this.#handlers.delete(handler);
   }
 
-  async saveContent(filePath: string, data: unknown): Promise<boolean> {
-    let result;
-
+  async triggerWorkflow(name: string, filePath: string, data: unknown): Promise<unknown> {
     for (const source of this.#sources.values()) {
       // eslint-disable-next-line no-await-in-loop
-      const isSaved = await source.saveContent(filePath, data);
-      if (isSaved) {
-        result = isSaved;
-        break;
+      if (await source.isOwner(filePath)) {
+        const result = await source.triggerWorkflow(name, filePath, data);
+        return result;
       }
     }
-    return result;
+    return 'Workflow not found';
   }
 
   getSource(id: symbol) {
@@ -97,7 +92,8 @@ export default class SourceManager {
         },
         this.#pageExtensions,
         this.#ignorePages,
-        this.#globalFilesystem
+        this.#globalFilesystem,
+        sourceDefinition.workflows
       );
       const immutableSourceFilesystem = source.filesystem.asReadOnly();
 

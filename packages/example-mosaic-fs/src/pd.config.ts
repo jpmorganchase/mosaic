@@ -1,5 +1,6 @@
 import path from 'path';
 import type { PullDocsConfig } from '@jpmorganchase/mosaic-types';
+import { BitBucketPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
 
 const config: PullDocsConfig = {
   pageExtensions: ['.mdx', '.json'],
@@ -75,20 +76,6 @@ const config: PullDocsConfig = {
         filename: 'shared-config.json'
       },
       priority: 3
-    },
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BitBucketPullRequestPlugin'),
-      options: {
-        titlePrefix: 'Mosaic Docs',
-        apiEndpoint: process.env.BITBUCKET_API_URL,
-        commitMessage: 'docs: updated content (UIE-7026)'
-      },
-      priority: 3
-    },
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/LocalFolderSavePlugin'),
-      options: { targetNamespace: 'local' },
-      priority: 4
     }
   ],
   sources: [
@@ -105,7 +92,7 @@ const config: PullDocsConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
       namespace: 'developer', // each site has it's own namespace, think of this as your content's uid
-      editable: true, // flag to indicate content is editable using the in-browser content editor
+      workflows: [BitBucketPullRequestWorkflow],
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
         // !! Polite Reminder... do not store credentials in code !!

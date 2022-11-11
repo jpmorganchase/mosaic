@@ -51,19 +51,22 @@ module.exports = async (config, port, scope) => {
     }
   });
 
-  app.post('/savecontent', async (req, res) => {
+  app.post('/workflows', async (req, res) => {
     try {
-      const { user, route: routeReq, markdown } = req.body;
+      const { user, route: routeReq, markdown, name } = req.body;
+
+      if (!name) {
+        throw new Error('Workflow name is required');
+      }
+
       if (await fs.promises.exists(routeReq)) {
         const route = (await fs.promises.stat(routeReq)).isDirectory()
           ? path.posix.join(routeReq, 'index')
           : routeReq;
         const pagePath = await fs.promises.realpath(route);
-        const result = await pullDocs.saveContent(pagePath, { user, markdown });
+        const result = await pullDocs.triggerWorkflow(name, pagePath, { user, markdown });
         res.contentType('application/json');
         res.send(result);
-      } else {
-        res.status(404).end();
       }
     } catch (e) {
       console.error(e);

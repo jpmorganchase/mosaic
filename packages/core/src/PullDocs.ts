@@ -106,8 +106,8 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
-  async saveContent<TData>(filePath: string, data: TData) {
-    return this.#sourceManager.saveContent(filePath, data);
+  async triggerWorkflow(name: string, filePath: string, data) {
+    return this.#sourceManager.triggerWorkflow(name, filePath, data);
   }
 
   async #addSource(sourceDefinition) {

@@ -15,5 +15,4 @@ export type WorkerData<Options = {}> = {
   plugins: PluginModuleDefinition[];
   serialisers: SerialiserModuleDefinition[];
   modulePath: string;
-  editable: boolean;
 };
