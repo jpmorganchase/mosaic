@@ -1,4 +1,4 @@
-const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
+const { default: Mosaic } = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 const fsExtra = require('fs-extra');
 const fs = require('fs');
@@ -12,14 +12,14 @@ module.exports = async (config, targetDir, options) => {
     options: { ...source.options, cache: false }
   }));
   const scope = options.scope && options.scope.split(',');
-  const pullDocs = new PullDocs(config);
+  const mosaic = new Mosaic(config);
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
   await fsExtra.emptyDir(pathDir);
-  await pullDocs.start();
+  await mosaic.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
-  const filesystem = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
+  const filesystem = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
   let calls = 0;
-  pullDocs.onSourceUpdate(async (value, source) => {
+  mosaic.onSourceUpdate(async (value, source) => {
     try {
       if (++calls === config.sources.length) {
         const symlinks = filesystem.symlinksToJSON();
@@ -82,7 +82,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
             Array.isArray(scope) ? scope.length : config.sources.length
           } source(s) written to disk at '${pathDir}'`
         );
-        pullDocs.stop();
+        mosaic.stop();
       }
     } catch (e) {
       console.error(e);

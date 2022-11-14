@@ -14,12 +14,12 @@ import createConfig from './helpers/createConfig';
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
     console.debug(
-      `[PullDocs] Source '${sourceId.description}' received first docs snapshot ${
+      `[Mosaic] Source '${sourceId.description}' received first docs snapshot ${
         (new Date().getTime() - initOrStartTime) / 1000
       }s after starting.`
     );
   } else {
-    console.debug(`[PullDocs] Source '${sourceId.description}' received updated docs`);
+    console.debug(`[Mosaic] Source '${sourceId.description}' received updated docs`);
   }
 }
 
@@ -149,7 +149,7 @@ export default class SourceManager {
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
           } catch (e) {
             console.warn(
-              `[PullDocs] Exceptions during source update are currently set to terminate the parent source. Terminating '${String(
+              `[Mosaic] Exceptions during source update are currently set to terminate the parent source. Terminating '${String(
                 source.id.description
               )}'. See error:`
             );
@@ -171,7 +171,7 @@ export default class SourceManager {
             new Error(`Source '${source.id.description}' silently exited before initialising.`)
           );
         }
-        console.debug(`[PullDocs] Source '${source.id.description}' closed`);
+        console.debug(`[Mosaic] Source '${source.id.description}' closed`);
 
         this.#sources.delete(source.id);
         sourceActive = false;
@@ -179,7 +179,7 @@ export default class SourceManager {
       source.onStart(() => {
         sourceActive = true;
         console.debug(
-          `[PullDocs] Source '${source.id.description}' started in ${
+          `[Mosaic] Source '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime
           }ms - awaiting first docs snapshot`
         );

@@ -4,7 +4,7 @@ export * from './MutableData';
 export * from './Page';
 export * from './Plugin';
 export * from './PluginModuleDefinition';
-export * from './PullDocsConfig';
+export * from './MosaicConfig';
 export * from './Serialiser';
 export * from './SerialiserModuleDefinition';
 export * from './Source';

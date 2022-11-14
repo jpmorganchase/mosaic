@@ -138,10 +138,10 @@ export default class Repo {
       throw new Error('Repo is a required option.');
     }
     if (!credentials) {
-      console.warn('[PullDocs] No `credentials` provided for bitbucket request.');
+      console.warn('[Mosaic] No `credentials` provided for bitbucket request.');
     }
     this.#cloneRootDir = getCloneDirName(repo);
-    this.#worktreeRootDir = path.join(this.#cloneRootDir, '.pull-docs-worktrees');
+    this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-fs-worktrees');
     this.#dir = path.join(this.#worktreeRootDir, branch);
     this.#remote = remote;
     this.#branch = branch;
@@ -188,7 +188,7 @@ export default class Repo {
           callback(updatedFiles);
         }
       } catch (e: unknown) {
-        console.warn(`[PullDocs] Unsubscribing from \`onCommitChange\` for ${this.name}`);
+        console.warn(`[Mosaic] Unsubscribing from \`onCommitChange\` for ${this.name}`);
         unsubscribe();
         errCallback(e);
       }
@@ -262,7 +262,7 @@ export default class Repo {
     }
     const result = await spawn('git', ['rev-parse', 'HEAD'], this.#dir);
     if (!result) {
-      console.warn('[PullDocs] No revision found for HEAD');
+      console.warn('[Mosaic] No revision found for HEAD');
       return null;
     }
     return result ? result.trim() : '';
@@ -275,7 +275,7 @@ export default class Repo {
     const result = await spawn('git', ['rev-parse', `${this.#branch}`], this.#dir);
 
     if (!result) {
-      console.warn(`[PullDocs] No revision found for tag ${this.#branch}`);
+      console.warn(`[Mosaic] No revision found for tag ${this.#branch}`);
       return null;
     }
     return result.trim();
@@ -310,7 +310,7 @@ export default class Repo {
       this.#cloned = true;
 
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
-        console.debug(`[PullDocs] Creating main worktree for repo '${this.#name}'`);
+        console.debug(`[Mosaic] Creating main worktree for repo '${this.#name}'`);
         await fs.emptyDir(this.#cloneRootDir);
         await spawn(
           'git',
@@ -328,16 +328,16 @@ export default class Repo {
           path.dirname(this.#cloneRootDir)
         );
       } else {
-        console.debug(`[PullDocs] Re-using main worktree for repo '${this.#name}'`);
+        console.debug(`[Mosaic] Re-using main worktree for repo '${this.#name}'`);
       }
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
         console.debug(
-          `[PullDocs] Creating linked worktree repo '${this.#name} branch '${this.#branch}'`
+          `[Mosaic] Creating linked worktree repo '${this.#name} branch '${this.#branch}'`
         );
         await spawn('git', ['worktree', 'add', '-f', this.#dir, this.#branch], this.#cloneRootDir);
       } else {
         console.debug(
-          `[PullDocs] Re-using linked worktree repo '${this.#name} branch '${this.#branch}'`
+          `[Mosaic] Re-using linked worktree repo '${this.#name} branch '${this.#branch}'`
         );
         await this.pull();
       }
@@ -349,20 +349,20 @@ export default class Repo {
 
   async createWorktree(sid: string, branchName: string) {
     this.#dir = path.posix.join(this.#worktreeRootDir, sid);
-    console.debug(`[PullDocs] Creating worktree for content save @ ${this.#dir}`);
+    console.debug(`[Mosaic] Creating worktree for content save @ ${this.#dir}`);
     await spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir],
       this.#worktreeRootDir
     );
-    console.debug(`[PullDocs] Creating linked worktree for ${sid}`);
+    console.debug(`[Mosaic] Creating linked worktree for ${sid}`);
   }
 
   async removeWorktree(sid: string) {
-    console.debug(`[PullDocs] Removing worktree for content save @ ${this.#dir}`);
+    console.debug(`[Mosaic] Removing worktree for content save @ ${this.#dir}`);
     await spawn('git', ['worktree', 'remove', sid, '--force'], this.#dir);
     this.#dir = path.join(this.#worktreeRootDir, this.#branch);
-    console.debug(`[PullDocs] Removed linked worktree for ${sid}`);
+    console.debug(`[Mosaic] Removed linked worktree for ${sid}`);
   }
 
   getTagInfo = async (tag: string) => {
@@ -445,7 +445,7 @@ export default class Repo {
       }
       return jsonResult;
     } catch (e: unknown) {
-      console.group('[PullDocs] Pull Request Error');
+      console.group('[Mosaic] Pull Request Error');
       console.log('fullPath', filePath);
       console.log('Branch Name', branchName);
       console.log('Name', this.#name);
