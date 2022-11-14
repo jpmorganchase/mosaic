@@ -18,7 +18,7 @@ module.exports = async (config, port, scope) => {
 
   const fs = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
 
-  app.use(cors());
+  app.use(cors(), express.json());
 
   app.get('/**', async (req, res) => {
     try {
@@ -48,6 +48,29 @@ module.exports = async (config, port, scope) => {
     } catch (e) {
       console.error(e);
       res.status(500).end();
+    }
+  });
+
+  app.post('/workflows', async (req, res) => {
+    try {
+      const { user, route: routeReq, markdown, name } = req.body;
+
+      if (!name) {
+        throw new Error('Workflow name is required');
+      }
+
+      if (await fs.promises.exists(routeReq)) {
+        const route = (await fs.promises.stat(routeReq)).isDirectory()
+          ? path.posix.join(routeReq, 'index')
+          : routeReq;
+        const pagePath = await fs.promises.realpath(route);
+        const result = await pullDocs.triggerWorkflow(name, pagePath, { user, markdown });
+        res.contentType('application/json');
+        res.send(result);
+      }
+    } catch (e) {
+      console.error(e);
+      res.status(500).send(e.message).end();
     }
   });
 };

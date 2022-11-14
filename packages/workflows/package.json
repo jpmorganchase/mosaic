@@ -1,0 +1,31 @@
+{
+  "name": "@jpmorganchase/mosaic-workflows",
+  "version": "0.1.0-beta.6",
+  "author": "",
+  "description": "Mosaic workflows for core file system",
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git"
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.3.4"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.6",
+    "@jpmorganchase/mosaic-source-bitbucket": "^0.1.0-beta.6",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.6",
+    "uuid": "^7.0.3"
+  }
+}

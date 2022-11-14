@@ -1,5 +1,6 @@
 import path from 'path';
 import type { PullDocsConfig } from '@jpmorganchase/mosaic-types';
+import { BitBucketPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
 
 const config: PullDocsConfig = {
   pageExtensions: ['.mdx', '.json'],
@@ -91,6 +92,7 @@ const config: PullDocsConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
       namespace: 'developer', // each site has it's own namespace, think of this as your content's uid
+      workflows: [BitBucketPullRequestWorkflow],
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
         // !! Polite Reminder... do not store credentials in code !!
@@ -102,8 +104,8 @@ const config: PullDocsConfig = {
         prefixDir: 'developer',
         credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git', // repo url without any protocol
-        branch: 'master', // branch where docs are pulled from
+        repo: process.env.DEVELOPER_DOCS_REPO, // repo url without any protocol
+        branch: 'develop', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }

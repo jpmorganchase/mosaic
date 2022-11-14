@@ -74,6 +74,20 @@ export async function bindPluginMethods(plugins: PluginModuleDefinition[]): Prom
         throw new Error(e);
       }
       return result;
+    },
+    async saveContent(
+      filePath: string,
+      data: unknown,
+      sourceOptions: Record<string, unknown>,
+      args
+    ) {
+      let result;
+      try {
+        result = await pluginApi.saveContent(filePath, data, sourceOptions, args);
+      } catch (e) {
+        throw new Error(e);
+      }
+      return result;
     }
   };
 }

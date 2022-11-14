@@ -12,7 +12,8 @@ import type {
   PluginModuleDefinition,
   Serialiser,
   SerialiserModuleDefinition,
-  SourceModuleDefinition
+  SourceModuleDefinition,
+  SourceWorkflow
 } from '@jpmorganchase/mosaic-types';
 
 import FileAccess from './filesystems/FileAccess';
@@ -32,6 +33,7 @@ export default class Source {
   #mergedOptions: Record<string, unknown>;
   #pageExtensions: string[];
   #ignorePages: string[];
+  #workflows: SourceWorkflow[] = [];
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -44,12 +46,14 @@ export default class Source {
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
-    globalFilesystem: IUnionVolume
+    globalFilesystem: IUnionVolume,
+    workflows: SourceWorkflow[]
   ) {
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
     this.#globalFilesystem = globalFilesystem;
     this.#ignorePages = ignorePages;
+    this.#workflows = workflows;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
@@ -179,5 +183,33 @@ export default class Source {
       this.config = createConfig(data);
       this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
     });
+  }
+
+  async isOwner(filePath: string) {
+    const isFileInSource = await this.filesystem.promises.exists(filePath);
+    return isFileInSource;
+  }
+
+  async triggerWorkflow(name: string, filePath: string, data: unknown) {
+    const foundWorkflows = this.#workflows?.filter(workflow => workflow.name === name);
+
+    if (foundWorkflows.length === 0) {
+      return {
+        error: `[Pull Docs] Workflow ${name} not found for ${this.id.description.toString()} `
+      };
+    }
+
+    if (foundWorkflows.length > 1) {
+      return {
+        error: `[Pull Docs] Multiple workflows with ${name} found for ${this.id.description.toString()} `
+      };
+    }
+
+    const triggerdWorkflow = foundWorkflows[0];
+
+    if (triggerdWorkflow) {
+      return triggerdWorkflow.action(this.#mergedOptions, triggerdWorkflow.options, filePath, data);
+    }
+    return false;
   }
 }

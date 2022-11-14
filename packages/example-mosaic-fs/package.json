@@ -21,6 +21,7 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.1"
+    "@jpmorganchase/mosaic-workflows": "0.1.0-beta.6",
+    "@jpmorganchase/mosaic-types": "0.1.0-beta.6"
   }
 }
