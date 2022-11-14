@@ -120,7 +120,7 @@ export default class PullDocs {
       this.#ufs.fss.splice(this.#ufs.fss.indexOf(source.filesystem), 1);
 
       if (this.#ufs.fss.length < 1) {
-        console.debug("[PullDocs] All of my source have been terminated. That's sad :-(");
+        console.debug("[Mosaic] All of my source have been terminated. That's sad :-(");
       }
     });
 

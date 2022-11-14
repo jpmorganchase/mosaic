@@ -195,13 +195,13 @@ export default class Source {
 
     if (foundWorkflows.length === 0) {
       return {
-        error: `[Pull Docs] Workflow ${name} not found for ${this.id.description.toString()} `
+        error: `[Mosaic] Workflow ${name} not found for ${this.id.description.toString()}`
       };
     }
 
     if (foundWorkflows.length > 1) {
       return {
-        error: `[Pull Docs] Multiple workflows with ${name} found for ${this.id.description.toString()} `
+        error: `[Mosaic] Multiple workflows with ${name} found for ${this.id.description.toString()}`
       };
     }
 

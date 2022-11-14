@@ -4,10 +4,10 @@ import type { Page } from './Page';
 import type { SerialiserModuleDefinition } from './SerialiserModuleDefinition';
 
 /**
- * Serialisers are a form of plugin that tells PullDocs how to turn a file from/to a storable form for the filesystem
+ * Serialisers are a form of plugin that tells Mosaic how to turn a file from/to a storable form for the filesystem
  * or a `Page` object.
  * For technical clarity - when a parser method is called, it will trigger `parserRunner` which checks the `fullPath` against
- * the `test` option that was passed in the PullDocs config file, to find a suitable parser.
+ * the `test` option that was passed in the Mosaic config file, to find a suitable parser.
  */
 export type Serialiser<TPage extends Page = Page> = {
   /**

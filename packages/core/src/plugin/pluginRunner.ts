@@ -21,7 +21,7 @@ export default async function pluginRunner(
       }
 
       // console.debug(
-      //   `[PullDocs] Applying plugin method \`${lifecycleName}\`${lifecycleName.startsWith('$') ? ' (in a child worker)' : ''} for '${plugin.modulePath}'.`
+      //   `[Mosaic] Applying plugin method \`${lifecycleName}\`${lifecycleName.startsWith('$') ? ' (in a child worker)' : ''} for '${plugin.modulePath}'.`
       // );
 
       // eslint-disable-next-line no-await-in-loop
@@ -38,13 +38,13 @@ export default async function pluginRunner(
         lifecycleName !== 'saveContent'
       ) {
         console.warn(
-          `[PullDocs] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
+          `[Mosaic] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
         );
       }
 
       if (lifecycleName === 'saveContent' && !result) {
         console.warn(
-          `[PullDocs] \`${lifecycleName}\` plugin returned a falsy value - this result has been discarded.`
+          `[Mosaic] \`${lifecycleName}\` plugin returned a falsy value - this result has been discarded.`
         );
         // eslint-disable-next-line no-continue
         continue;

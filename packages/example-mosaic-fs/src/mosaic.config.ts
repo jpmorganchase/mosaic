@@ -1,8 +1,8 @@
 import path from 'path';
-import type { PullDocsConfig } from '@jpmorganchase/mosaic-types';
+import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import { BitBucketPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
 
-const config: PullDocsConfig = {
+const config: MosaicConfig = {
   pageExtensions: ['.mdx', '.json'],
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [

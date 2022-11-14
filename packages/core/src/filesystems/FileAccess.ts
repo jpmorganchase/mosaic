@@ -112,7 +112,7 @@ export default class FileAccess implements IFileAccess {
     }
     this.#symlinks[alias] = this.#symlinks[alias] || [];
     this.#symlinks[alias].push({ target, type });
-    // console.debug('[PullDocs]', target, 'aliased to', alias);
+    // console.debug('[Mosaic]', target, 'aliased to', alias);
     return this.#adapter.promises.symlink(target, alias, type);
   }
 

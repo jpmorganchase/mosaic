@@ -56,7 +56,7 @@ export default async function createSourceObservable(
             
 NOTE: Only ${pageExtensions.join(
               ', '
-            )} extensions are supported (as per the value defined in PullDocs config \`pageExtensions\`). To add non-page files to the filesystem, start their names with a dot to indicate they are hidden files.`
+            )} extensions are supported (as per the value defined in Mosaic Core config \`pageExtensions\`). To add non-page files to the filesystem, start their names with a dot to indicate they are hidden files.`
           );
           return pagesResult;
         }
