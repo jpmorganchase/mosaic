@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { default: PullDocs } = require('@jpmorganchase/mosaic-core');
+const { default: MosaicCore } = require('@jpmorganchase/mosaic-core');
 const path = require('path');
 
 const app = express();
@@ -8,15 +8,15 @@ const app = express();
 module.exports = async (config, port, scope) => {
   app.listen(port, () => {
     console.log(
-      `[PullDocs] Listening on port ${port}${
+      `[Mosaic] Listening on port ${port}${
         Array.isArray(scope) ? ` (scoped to ${scope.join(', ')})` : ''
       }`
     );
   });
-  const pullDocs = new PullDocs(config);
-  await pullDocs.start();
+  const mosaic = new MosaicCore(config);
+  await mosaic.start();
 
-  const fs = Array.isArray(scope) ? pullDocs.filesystem.scope(scope) : pullDocs.filesystem;
+  const fs = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
 
   app.use(cors(), express.json());
 
@@ -64,7 +64,7 @@ module.exports = async (config, port, scope) => {
           ? path.posix.join(routeReq, 'index')
           : routeReq;
         const pagePath = await fs.promises.realpath(route);
-        const result = await pullDocs.triggerWorkflow(name, pagePath, { user, markdown });
+        const result = await mosaic.triggerWorkflow(name, pagePath, { user, markdown });
         res.contentType('application/json');
         res.send(result);
       }

@@ -23,7 +23,7 @@
     "clean": "yarn workspace @jpmorganchase/mosaic-types clean & yarn workspace @jpmorganchase/mosaic-source-local-folder clean & yarn workspace @jpmorganchase/mosaic-source-bitbucket clean & yarn workspace @jpmorganchase/mosaic-cli clean & yarn workspace @jpmorganchase/mosaic-serialisers clean & yarn workspace @jpmorganchase/mosaic-plugins clean & yarn workspace @jpmorganchase/mosaic-core clean",
     "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @jpmorganchase/mosaic-example-nextjs-ssr dev' 'yarn mosaic serve -c ./packages/example-mosaic-fs/dist/pd.config.js' -p 8080",
     "serve:latest": "mosaic serve --snapshot snapshots/latest",
-    "start": "./node_modules/.bin/mosaic serve -c ./packages/example-mosaic-fs/dist/pd.config.js -p 8080",
+    "start": "./node_modules/.bin/mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js -p 8080",
     "lint": "yarn eslint \"packages/core/src/**/*.{ts,tsx}\" --ignore-pattern \"**/__tests__/**\"",
     "prettier": "prettier --write . --ignore-path .gitignore",
     "prettier:ci": "prettier --check . --ignore-path .gitignore",

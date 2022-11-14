@@ -80,7 +80,7 @@ if (isMainThread) {
     )
     .subscribe(async (pagesAndSymlinks: Buffer) => {
       if (workerData.options.cache !== false) {
-        console.info(`[PullDocs] Saving cached filesystem of ${workerData.name}`);
+        console.info(`[Mosaic] Saving cached filesystem of ${workerData.name}`);
         await fs.promises.writeFile(cachePath, pagesAndSymlinks);
       }
 

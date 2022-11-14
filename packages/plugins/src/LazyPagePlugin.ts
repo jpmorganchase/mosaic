@@ -90,7 +90,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
 
     const reduction = originalDiskSize - newDiskSize;
     console.info(
-      `[PullDocs] LazyPagePlugin moved ${((reduction / originalDiskSize) * 100).toFixed(
+      `[Mosaic] LazyPagePlugin moved ${((reduction / originalDiskSize) * 100).toFixed(
         2
       )}% of virtual filesystem content to the hard disk. This reduced the virtual filesystem size from ${(
         originalDiskSize / 1000000
