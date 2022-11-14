@@ -3,6 +3,11 @@ import getReadingTime from 'reading-time';
 import markdown from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
+import type { Node } from 'unist';
+
+type LeafNode = Node & {
+  value?: string;
+};
 
 interface ReadingTimePluginPage extends Page {
   readingTime?: ReturnType<typeof getReadingTime>;
@@ -21,8 +26,8 @@ const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
       visit(
         tree,
         node => node.type === 'text' || node.type === 'code',
-        node => {
-          textContent += node.data;
+        (node: LeafNode) => {
+          textContent += node.value;
         }
       );
       page.readingTime = getReadingTime(textContent);
