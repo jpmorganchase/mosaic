@@ -106,6 +106,10 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
+  async triggerWorkflow(name: string, filePath: string, data) {
+    return this.#sourceManager.triggerWorkflow(name, filePath, data);
+  }
+
   async #addSource(sourceDefinition) {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {

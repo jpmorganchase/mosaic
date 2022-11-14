@@ -2,6 +2,7 @@ package.json
 package-lock.json
 yarn.lock
 .prettierignore
+.gitignore
 static/scripts
 CHANGELOG.md
 /coverage
