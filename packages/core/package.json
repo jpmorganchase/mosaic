@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
+     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.6",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.6",
     "md5": "*",
     "unionfs": "^4.4.0",
