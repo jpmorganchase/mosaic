@@ -1,8 +1,9 @@
-import { PathLike, watch, WatchOptions } from 'fs';
+import { WatchOptions } from 'fs';
 import { Observable } from 'rxjs';
+import { watch } from 'chokidar';
 
 export default function fromFsWatch(
-  filename: PathLike,
+  filename: string,
   options?:
     | WatchOptions
     | BufferEncoding
@@ -12,7 +13,9 @@ export default function fromFsWatch(
     | 'buffer'
 ) {
   return new Observable(subscriber => {
-    const watcher = watch(filename, options as any, (_eventType, filename) => {
+    const watcher = watch(filename, options as any);
+
+    watcher.on('all', (_eventType, filename) => {
       subscriber.next(filename);
     });
 
