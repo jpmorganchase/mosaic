@@ -1,6 +1,7 @@
 import path from 'path';
 import reduce from 'lodash/reduce';
 import omit from 'lodash/omit';
+import merge from 'lodash/merge';
 import escapeRegExp from 'lodash/escapeRegExp';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
@@ -74,16 +75,16 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
   ) {
     mutableFilesystem.__internal_do_not_use_addReadFileHook(async (pagePath: string, fileData) => {
       if (globalConfig.data.globalRefs[pagePath]) {
-        const normalisedRef = {
-          ...(await serialiser.deserialise(pagePath, fileData)),
-          ...(await normaliseRefs(
+        const normalisedRef = merge(
+          await serialiser.deserialise(pagePath, fileData),
+          await normaliseRefs(
             String(pagePath),
             globalConfig.data.globalRefs[pagePath],
             globalFilesystem,
             pageExtensions,
             ignorePages
-          ))
-        };
+          )
+        );
         const resolve = createRefResolver(
           {
             [pagePath]: normalisedRef
@@ -98,10 +99,10 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
             resolve,
             dereference: { circular: false }
           });
-          const serialisedPage = await serialiser.serialise(pagePath, {
-            ...normalisedRef,
-            ...resolved
-          });
+          const serialisedPage = await serialiser.serialise(
+            pagePath,
+            merge(normalisedRef, resolved)
+          );
           return serialisedPage;
         } catch (e) {
           console.warn(
@@ -132,17 +133,16 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
           fullPath,
           await mutableFilesystem.promises.readFile(fullPath)
         );
-
-        normalisedRefs[fullPath] = {
-          ...page,
-          ...(await normaliseRefs(
+        normalisedRefs[fullPath] = merge(
+          page,
+          await normaliseRefs(
             String(fullPath),
             config.data.refs[fullPath],
             mutableFilesystem,
             pageExtensions,
             ignorePages
-          ))
-        };
+          )
+        );
       }
 
       const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
