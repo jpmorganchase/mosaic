@@ -20,6 +20,10 @@ const config: MosaicConfig = {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SiteMapPlugin')
     },
     {
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SearchIndexPlugin.mjs'),
+      options: {}
+    },
+    {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BreadcrumbsPlugin'),
       options: {
         indexPageName: 'index.mdx'
