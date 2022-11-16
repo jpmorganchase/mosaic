@@ -15,7 +15,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "mkdir -p ./dist && cp -f ./src/** ./dist",
+    "build": "mkdirp dist && cp -f src/** dist",
     "clean": "rm -fr dist"
   },
   "repository": {
@@ -26,5 +26,8 @@
     "@jpmorganchase/mosaic-core": "^0.1.0-beta.6",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.6",
     "commander": "^9.3.0"
+  },
+  "dependencies": {
+    "mkdirp": "^1.0.4"
   }
 }
