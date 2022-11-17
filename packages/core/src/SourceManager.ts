@@ -87,7 +87,7 @@ export default class SourceManager {
       const source = new Source(
         sourceDefinition,
         {
-          ...sourceDefinition.options,
+          ...(sourceDefinition.options as Record<string, unknown>),
           ...options
         },
         this.#pageExtensions,

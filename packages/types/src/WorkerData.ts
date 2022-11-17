@@ -1,6 +1,8 @@
-import type { SerialiserModuleDefinition } from './SerialiserModuleDefinition';
-import type { PluginModuleDefinition } from './PluginModuleDefinition';
-import type { SourceModuleDefinition } from './SourceModuleDefinition';
+import type {
+  SerialiserModuleDefinition,
+  PluginModuleDefinition,
+  SourceModuleDefinition
+} from './index';
 
 export type WorkerData<Options = {}> = {
   options: Options &

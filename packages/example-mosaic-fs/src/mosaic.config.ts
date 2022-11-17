@@ -8,19 +8,16 @@ const config: MosaicConfig = {
   serialisers: [
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/mdx'),
-      filter: /\.mdx$/,
-      options: {}
+      filter: /\.mdx$/
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/md'),
-      filter: /\.md$/,
-      options: {}
+      filter: /\.md$/
     }
   ],
   plugins: [
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SiteMapPlugin'),
-      options: {}
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SiteMapPlugin')
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BreadcrumbsPlugin'),
@@ -57,8 +54,7 @@ const config: MosaicConfig = {
       priority: 2
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/PagesWithoutFileExtPlugin'),
-      options: {}
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/PagesWithoutFileExtPlugin')
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SidebarPlugin'),
@@ -67,8 +63,7 @@ const config: MosaicConfig = {
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/ReadingTimePlugin.mjs'),
-      options: {}
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/ReadingTimePlugin.mjs')
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SharedConfigPlugin'),
@@ -91,7 +86,7 @@ const config: MosaicConfig = {
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
-      namespace: 'developer', // each site has it's own namespace, think of this as your content's uid
+      namespace: 'developer',
       workflows: [BitBucketPullRequestWorkflow],
       options: {
         // To run locally, enter your credentials to access the BitBucket repo

@@ -98,7 +98,7 @@ async function createPullRequest(
   );
 }
 
-const workflow: SourceWorkflow<BitbucketSourceOptions, BitBucketPullRequestWorkflowOptions> = {
+const workflow: SourceWorkflow = {
   name: 'save',
   options: {
     titlePrefix: 'Mosaic Docs',
