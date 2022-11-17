@@ -3,6 +3,7 @@ import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
 import lodashMerge from 'lodash/merge';
+import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 
 import fromFsWatch from './fromFsWatch';
@@ -20,14 +21,29 @@ function createFileGlob(url: string, pageExtensions: string[]) {
   return `${url}{${pageExtensions.join(',')}}`;
 }
 
-export interface LocalFolderSourceOptions {
-  extensions: string[];
-  prefixDir?: string;
-  rootDir: string;
-}
+export const schema = z.object({
+  /**
+   * Collection of file extensions to look for
+   */
+  extensions: z
+    .string({ required_error: 'Please provide the collection of file extensions to look for' })
+    .array()
+    .nonempty(),
+  /**
+   * Add to use a folder prefix
+   */
+  prefixDir: z.string({ required_error: 'Please provide a prefix directory name' }),
+  /**
+   * The root directory containing docs
+   */
+  rootDir: z.string({ required_error: 'Please provide a root directory name' })
+});
+
+export type LocalFolderSourceOptions = z.infer<typeof schema>;
 
 const LocalFolderSource: Source<LocalFolderSourceOptions> = {
   create(options, { serialiser }): Observable<Page[]> {
+    schema.parse(options);
     return merge(of(null), fromFsWatch(options.rootDir, { recursive: true })).pipe(
       delay(1000),
       switchMap(() =>

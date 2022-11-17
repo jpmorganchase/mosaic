@@ -1,6 +1,6 @@
 import type { Page } from './Page';
 import type { MutableData, ImmutableData } from './MutableData';
-import type { PluginModuleDefinition } from './PluginModuleDefinition';
+import type { PluginModuleDefinition } from './index';
 import type {
   IUnionVolume,
   IVolumeImmutable,

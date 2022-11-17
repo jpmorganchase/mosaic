@@ -2,25 +2,39 @@ import PullDocs from '../PullDocs';
 import SourceManager from '../SourceManager';
 import UnionVolume from '../filesystems/UnionVolume';
 import MutableVolume from '../filesystems/MutableVolume';
+import { MosaicConfig } from '@jpmorganchase/mosaic-schemas';
 
 jest.mock('../SourceManager');
 
+const mockConfig: MosaicConfig = {
+  sources: [
+    {
+      modulePath: 'source-module',
+      namespace: 'namespace'
+    }
+  ],
+  plugins: [],
+  serialisers: [],
+  pageExtensions: ['.mdx']
+};
+
 describe('GIVEN PullDocs', () => {
   test('THEN it should instantiate correctly', () => {
-    expect(new PullDocs({ sources: [], plugins: [] })).toBeDefined();
+    expect(new PullDocs(mockConfig)).toBeDefined();
   });
 
   test('THEN it should have an onSourceUpdate method', () => {
-    expect(new PullDocs({ sources: [], plugins: [] })).toHaveProperty('onSourceUpdate');
+    expect(new PullDocs(mockConfig)).toHaveProperty('onSourceUpdate');
   });
 
   describe('WITH plugins specified', () => {
     let pullDocs;
 
     beforeEach(() => {
-      SourceManager.mockReset();
+      (SourceManager as jest.Mock<SourceManager>).mockReset();
+
       pullDocs = new PullDocs({
-        sources: [{ modulePath: 'source', name: 'name' }],
+        ...mockConfig,
         plugins: [{ modulePath: 'plugin', filter: /[a-z]$/ }]
       });
     });
@@ -57,8 +71,7 @@ describe('GIVEN PullDocs', () => {
         [
           {
             filter: /\.json$/,
-            modulePath: expect.stringMatching(/\/packages\/serialisers\/dist\/json.js/),
-            options: {}
+            modulePath: expect.stringMatching(/\/packages\/serialisers\/dist\/json.js/)
           }
         ],
         ['.mdx'],
@@ -69,14 +82,8 @@ describe('GIVEN PullDocs', () => {
     describe('WITH sources specified', () => {
       let pullDocs: PullDocs;
 
-      const source1 = { name: 'source', modulePath: 'source-module' };
-      const source2 = { name: 'source2', modulePath: 'source2-module' };
-
       beforeEach(() => {
-        pullDocs = new PullDocs({
-          sources: [source1, source2],
-          plugins: []
-        });
+        pullDocs = new PullDocs(mockConfig);
       });
 
       describe('AND a source changes', () => {

@@ -3,11 +3,8 @@ import { Union } from 'unionfs';
 import type { IFS } from 'unionfs/lib/fs';
 import { Volume } from 'memfs';
 
-import type {
-  PluginModuleDefinition,
-  SerialiserModuleDefinition,
-  SourceModuleDefinition
-} from '@jpmorganchase/mosaic-types';
+import { MosaicConfig, SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
+import { mosaicConfigSchema } from '@jpmorganchase/mosaic-schemas';
 
 import SourceManager from './SourceManager';
 
@@ -32,16 +29,12 @@ export default class PullDocs {
    * @param config.ignorePages Page names to exclude from lazy loading / `$ref`s / `$tag`s / serialisers and also any plugins that expect pages as input. Example input would be "ignore-me.xml"
    * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
    */
-  constructor(config: {
-    ignorePages?: string[];
-    plugins?: PluginModuleDefinition[];
-    serialisers?: SerialiserModuleDefinition[];
-    sources: SourceModuleDefinition[];
-    pageExtensions: string[];
-  }) {
+  constructor(config: MosaicConfig) {
+    mosaicConfigSchema.parse(config);
     const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#ufs.use(sharedFilesystem as unknown as any);
+
     const {
       ignorePages = [],
       sources = [],
@@ -82,8 +75,7 @@ export default class PullDocs {
       // Auto add JSON serialiser
       serialisers.concat({
         modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/json'),
-        filter: /\.json$/,
-        options: {}
+        filter: /\.json$/
       }),
       pageExtensions,
       ignorePages
