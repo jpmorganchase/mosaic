@@ -205,10 +205,15 @@ export default class Source {
       };
     }
 
-    const triggerdWorkflow = foundWorkflows[0];
+    const triggeredWorkflow = foundWorkflows[0];
 
-    if (triggerdWorkflow) {
-      return triggerdWorkflow.action(this.#mergedOptions, triggerdWorkflow.options, filePath, data);
+    if (triggeredWorkflow) {
+      return triggeredWorkflow.action(
+        this.#mergedOptions,
+        triggeredWorkflow.options,
+        filePath,
+        data
+      );
     }
     return false;
   }

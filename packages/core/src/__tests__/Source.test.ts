@@ -92,6 +92,24 @@ describe('GIVEN Source', () => {
     ).toHaveProperty('onError');
   });
 
+  test('THEN it should have a isOwner method', () => {
+    expect(
+      new Source({
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
+      })
+    ).toHaveProperty('isOwner');
+  });
+
+  test('THEN it should have a triggerWorkflow method', () => {
+    expect(
+      new Source({
+        modulePath: 'plugin',
+        namespace: 'test-namespace'
+      })
+    ).toHaveProperty('triggerWorkflow');
+  });
+
   describe('WHEN calling `use`', () => {
     let source: Source;
 
@@ -335,6 +353,127 @@ describe('GIVEN Source', () => {
         source.onError(errorSpy);
         workerHandlers.error(error);
         expect(errorSpy).toHaveBeenCalledWith(error);
+      });
+    });
+  });
+
+  describe('WHEN workflows are triggered', () => {
+    let source: Source;
+    const actionSpy = jest.fn();
+    beforeEach(async () => {
+      source = new Source(
+        {
+          modulePath: 'plugin',
+          namespace: 'test-namespace'
+        },
+        { sourceOption: 'source option' },
+        [],
+        [],
+        {},
+        [
+          {
+            name: 'workflow-name',
+            options: {
+              workflowOption: 'workflow option'
+            },
+            action: actionSpy
+          }
+        ]
+      );
+      await source.start();
+    });
+    afterEach(() => {
+      actionSpy.mockReset();
+    });
+
+    test('THEN the workflow action is called', async () => {
+      await source.triggerWorkflow('workflow-name', '/path/to/file', { data: { name: 'test' } });
+      expect(actionSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('THEN the workflow action can access the source options', async () => {
+      await source.triggerWorkflow('workflow-name', '/path/to/file', { data: { name: 'test' } });
+      expect(actionSpy.mock.calls[0][0]).toEqual({
+        sourceOption: 'source option'
+      });
+    });
+
+    test('THEN the workflow action can access the workflow options', async () => {
+      await source.triggerWorkflow('workflow-name', '/path/to/file', { data: { name: 'test' } });
+      expect(actionSpy.mock.calls[0][1]).toEqual({
+        workflowOption: 'workflow option'
+      });
+    });
+
+    test('THEN the workflow action can access the filepath', async () => {
+      await source.triggerWorkflow('workflow-name', '/path/to/file', { data: { name: 'test' } });
+      expect(actionSpy.mock.calls[0][2]).toEqual('/path/to/file');
+    });
+
+    test('THEN the workflow action can access the custom data object', async () => {
+      await source.triggerWorkflow('workflow-name', '/path/to/file', { data: { name: 'test' } });
+      expect(actionSpy.mock.calls[0][3]).toEqual({ data: { name: 'test' } });
+    });
+
+    describe('AND WHEN there is no matching workflow', () => {
+      test('THEN an error is returned', async () => {
+        const result = await source.triggerWorkflow('unknown-workflow', '/path/to/file', {
+          data: { name: 'test' }
+        });
+        expect(result).toHaveProperty('error');
+        expect(actionSpy).toHaveBeenCalledTimes(0);
+      });
+
+      test('AND the action is not triggered', async () => {
+        await source.triggerWorkflow('unknown-workflow', '/path/to/file', {
+          data: { name: 'test' }
+        });
+        expect(actionSpy).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    describe('AND WHEN there are multiple workflows with the same name', () => {
+      beforeEach(async () => {
+        source = new Source(
+          {
+            modulePath: 'plugin',
+            namespace: 'test-namespace'
+          },
+          { sourceOption: 'source option' },
+          [],
+          [],
+          {},
+          [
+            {
+              name: 'workflow-name',
+              options: {
+                workflowOption: 'workflow option'
+              },
+              action: actionSpy
+            },
+            {
+              name: 'workflow-name',
+              options: {
+                workflowOption: 'workflow option'
+              },
+              action: actionSpy
+            }
+          ]
+        );
+        await source.start();
+      });
+      test('THEN an error is returned', async () => {
+        const result = await source.triggerWorkflow('workflow-name', '/path/to/file', {
+          data: { name: 'test' }
+        });
+        expect(result).toHaveProperty('error');
+      });
+
+      test('AND the action is not triggered', async () => {
+        await source.triggerWorkflow('unknown-workflow', '/path/to/file', {
+          data: { name: 'test' }
+        });
+        expect(actionSpy).toHaveBeenCalledTimes(0);
       });
     });
   });
