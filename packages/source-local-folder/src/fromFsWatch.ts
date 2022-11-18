@@ -1,7 +1,6 @@
 import { WatchOptions } from 'fs';
 import { Observable } from 'rxjs';
 import { watch } from 'chokidar';
-
 export default function fromFsWatch(
   filename: string,
   options?:
@@ -23,12 +22,13 @@ export default function fromFsWatch(
       subscriber.error(error);
     });
 
-    watcher.once('close', () => {
+    watcher.once('close', async () => {
+      await watcher.close();
       subscriber.complete();
     });
 
     return function unsubscribe() {
-      watcher.close();
+      watcher.emit('close');
     };
   });
 }
