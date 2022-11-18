@@ -1,3 +1,5 @@
+import { pathToFileURL } from 'url';
+
 import type {
   LoadedPlugin,
   LoadedSerialiser,
@@ -36,7 +38,8 @@ export default async function loadDefinitionModules(
   try {
     for (const plugin of plugins) {
       const { modulePath }: { modulePath: string } = plugin;
-      if (!loadedPluginsAndSerialisers[modulePath]) {
+      const modulePathAbs = pathToFileURL(modulePath).href;
+      if (!loadedPluginsAndSerialisers[modulePathAbs]) {
         const {
           default: definitionExports
         }: {
@@ -44,7 +47,7 @@ export default async function loadDefinitionModules(
             | Partial<Plugin | Serialiser>
             | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
           // eslint-disable-next-line no-await-in-loop
-        } = await import(modulePath);
+        } = await import(modulePathAbs);
         const pluginApi: Partial<Plugin | Serialiser> =
           '__esModule' in definitionExports && 'default' in definitionExports
             ? definitionExports.default
@@ -53,9 +56,9 @@ export default async function loadDefinitionModules(
           throw new Error(`Plugin or serialiser '${modulePath}' did not have a default export.`);
         }
 
-        loadedPluginsAndSerialisers[modulePath] = createInvoker(plugin, pluginApi);
+        loadedPluginsAndSerialisers[modulePathAbs] = createInvoker(plugin, pluginApi);
       }
-      results.push(loadedPluginsAndSerialisers[modulePath]);
+      results.push(loadedPluginsAndSerialisers[modulePathAbs]);
     }
     return results;
   } catch (e) {
