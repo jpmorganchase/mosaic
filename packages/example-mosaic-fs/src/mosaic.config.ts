@@ -3,7 +3,7 @@ import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import { BitBucketPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
 
 const config: MosaicConfig = {
-  pageExtensions: ['.mdx', '.json'],
+  pageExtensions: ['.mdx', '.json', '.md'],
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [
     {
@@ -85,7 +85,7 @@ const config: MosaicConfig = {
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
       namespace: 'developer',
       workflows: [BitBucketPullRequestWorkflow],
       options: {
@@ -103,6 +103,19 @@ const config: MosaicConfig = {
         branch: 'develop', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
+      }
+    },
+    {
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
+      namespace: 'fusion',
+      options: {
+        prefixDir: 'fusion',
+        credentials: process.env.FUSION_CLONE_CREDENTIALS,
+        subfolder: 'docs',
+        repo: 'github.com/DavieReid/fusion.git',
+        branch: 'master',
+        extensions: ['.md'],
+        remote: 'origin'
       }
     }
   ]
