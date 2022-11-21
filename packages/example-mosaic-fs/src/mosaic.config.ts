@@ -107,14 +107,14 @@ const config: MosaicConfig = {
     },
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
-      namespace: 'fusion',
+      namespace: 'mosaic-docs',
       options: {
-        prefixDir: 'fusion',
-        credentials: process.env.FUSION_CLONE_CREDENTIALS,
+        prefixDir: 'mosaic-docs',
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
         subfolder: 'docs',
-        repo: 'github.com/DavieReid/fusion.git',
-        branch: 'master',
-        extensions: ['.md'],
+        repo: 'github.com/DavieReid/mosaic-docs.git',
+        branch: 'main',
+        extensions: ['.mdx'],
         remote: 'origin'
       }
     }
