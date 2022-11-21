@@ -28,7 +28,6 @@ export default async function normaliseRefs(
     }
 
     const fullUrl = path.resolve(path.dirname(filepath), url);
-
     if (!glob.isDynamicPattern(url)) {
       if (!(await filesystem.promises.exists(fullUrl))) {
         throw new Error(

@@ -20,9 +20,7 @@ export type DiffResult = Array<{
 }>;
 
 function getProjectNameAndRepoName(repoUrl: string) {
-  const [, projectNameAndRepoName] = path
-    .normalize(repoUrl)
-    .match(/([^/]+\/[^/]+)\.git$/) as RegExpMatchArray;
+  const [, projectNameAndRepoName] = repoUrl.match(/([^/]+\/[^/]+)\.git$/) as RegExpMatchArray;
   const parts = projectNameAndRepoName.split('/');
   return {
     projectNameAndRepoName,
@@ -150,7 +148,10 @@ export default class Repo {
     this.#repo = credentials
       ? `https://${credentials
           .split(':')
-          .map(credential => encodeURIComponent(credential))
+          .map(credential => {
+            credential.replace(/[\",\']/, '');
+            return encodeURIComponent(credential);
+          })
           .join(':')}@${repo}`
       : repo;
 
