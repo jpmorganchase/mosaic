@@ -97,7 +97,7 @@ if (isMainThread) {
     try {
       if (await fs.promises.stat(cachePath)) {
         const data = await fs.promises.readFile(cachePath);
-        console.info(`Restoring cached filesystem for ${workerData.name}`);
+        console.info(`[Mosaic] Restoring cached filesystem for ${workerData.name}`);
         parentPort.postMessage(
           {
             type: 'init',
