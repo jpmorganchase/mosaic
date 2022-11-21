@@ -21,7 +21,7 @@
     "build": "turbo run build",
     "build:snapshot": "yarn mosaic build --out ./snapshots --config ./packages/example-mosaic-fs/dist/mosaic.config.js",
     "build:snapshot:latest": "yarn mosaic build --out ./snapshots --name latest --config ./packages/example-mosaic-fs/dist/mosaic.config.js",
-    "clean": "yarn workspace @jpmorganchase/mosaic-types clean & yarn workspace @jpmorganchase/mosaic-source-local-folder clean & yarn workspace @jpmorganchase/mosaic-source-bitbucket clean & yarn workspace @jpmorganchase/mosaic-cli clean & yarn workspace @jpmorganchase/mosaic-serialisers clean & yarn workspace @jpmorganchase/mosaic-plugins clean & yarn workspace @jpmorganchase/mosaic-core clean",
+    "clean": "turbo run clean",
     "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @jpmorganchase/mosaic-example-nextjs-ssr dev' 'yarn mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js' -p 8080",
     "serve:latest": "yarn mosaic serve --snapshot snapshots/latest",
     "start": "yarn mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js -p 8080",
