@@ -1,4 +1,4 @@
-# @jpmorganchase/mosaic-source-bitbucket
+# @jpmorganchase/mosaic-source-git-repo
 
 ## 0.1.0-beta.6
 
