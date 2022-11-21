@@ -4,3 +4,4 @@ export * from './SerialiserModuleSchema';
 export * from './SourceModuleSchema';
 export * from './SourceWorkflowSchema';
 export * from './fileExtensionSchema';
+export * from './credentialsSchema';

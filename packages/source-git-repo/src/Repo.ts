@@ -120,7 +120,7 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
 }
 
 function stripCredentials(url: string) {
-  return url.split('@')[1];
+  return url.replace(/(\b(ssh|https?):\/\/[^:]+?:)([^@]+)@/i, (_, $1) => `${$1}*@`);
 }
 
 export default class Repo {
