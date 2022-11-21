@@ -4,7 +4,7 @@ import _merge from 'lodash/merge';
 import { z } from 'zod';
 
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
-import { fileExtensionSchema } from '@jpmorganchase/mosaic-schemas';
+import { fileExtensionSchema, credentialsSchema } from '@jpmorganchase/mosaic-schemas';
 import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 
 import Repo from './Repo';
@@ -21,10 +21,11 @@ export const schema = z.object({
   }),
   /**
    * Credentials used to read/write from the Repository
+   * Must be in the form username:password or username:token
    * Personal Access tokens are preferred:
    * https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
    */
-  credentials: z.string({ required_error: 'Please provide credentials to access the repository' }),
+  credentials: credentialsSchema,
   /**
    * The git branch name to checkout
    */
@@ -78,6 +79,7 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
       switchMap(() => watchFolder$),
       mergeMap(async pages => {
         const out = [];
+        console.log(pages);
         for (const page of pages) {
           const baseDir = path.join(rootDir, page.fullPath.replace(prefixDir || '', ''));
           out.push(
