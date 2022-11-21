@@ -14,13 +14,15 @@ export { Repo };
 
 export const schema = z.object({
   /**
-   * The Bitbucket Repository URL without any protocol
+   * The git repository URL without any protocol
    */
   repo: z.string({
-    required_error: 'Please provide a bitbucket repository URL (without any protocol)'
+    required_error: 'Please provide a git repository URL (without any protocol)'
   }),
   /**
    * Credentials used to read/write from the Repository
+   * Personal Access tokens are preferred:
+   * https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
    */
   credentials: z.string({ required_error: 'Please provide credentials to access the repository' }),
   /**
@@ -48,9 +50,9 @@ export const schema = z.object({
   prefixDir: z.string({ required_error: 'Please provide a prefix directory name' })
 });
 
-export type BitbucketSourceOptions = z.infer<typeof schema>;
+export type GitRepoSourceOptions = z.infer<typeof schema>;
 
-const BitbucketSource: Source<BitbucketSourceOptions> = {
+const GitRepoSource: Source<GitRepoSourceOptions> = {
   create(options, { serialiser, pageExtensions }): Observable<Page[]> {
     schema.parse(options);
     const { credentials, remote, branch, repo: repoUrl, prefixDir, extensions } = options;
@@ -92,4 +94,4 @@ const BitbucketSource: Source<BitbucketSourceOptions> = {
   }
 };
 
-export default BitbucketSource;
+export default GitRepoSource;

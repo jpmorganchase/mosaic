@@ -1,8 +1,8 @@
 {
-  "name": "@jpmorganchase/mosaic-source-bitbucket",
+  "name": "@jpmorganchase/mosaic-source-git-repo",
   "version": "0.1.0-beta.6",
   "author": "",
-  "description": "Mosaic BitBucket source for core file system",
+  "description": "Mosaic git repository source for core file system",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "engines": {

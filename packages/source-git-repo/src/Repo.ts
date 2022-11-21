@@ -109,6 +109,7 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
     }
     // Output will look something like:
     // origin	ssh://git@bitbucketdc-ssh.jpmchase.net:7999/x/x.git (fetch)
+    // origin	https://github_pat_xxxxxxxx@github.com/username/reponame.git (fetch)
     const [, projectURI] = (await spawn('git', ['remote', '-v'], dir)).match(
       /\s+([^ ]+)/
     ) as RegExpMatchArray;
@@ -119,7 +120,7 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
 }
 
 function stripCredentials(url: string) {
-  return url.replace(/(\b(ssh|https?):\/\/[^:]+?:)([^@]+)@/i, (_, $1) => `${$1}*@`);
+  return url.split('@')[1];
 }
 
 export default class Repo {
@@ -138,7 +139,7 @@ export default class Repo {
       throw new Error('Repo is a required option.');
     }
     if (!credentials) {
-      console.warn('[Mosaic] No `credentials` provided for bitbucket request.');
+      console.warn('[Mosaic] No `credentials` provided for git repo request.');
     }
     this.#cloneRootDir = getCloneDirName(repo);
     this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-fs-worktrees');
@@ -152,6 +153,7 @@ export default class Repo {
           .map(credential => encodeURIComponent(credential))
           .join(':')}@${repo}`
       : repo;
+
     // Hide credentials when displaying repository name
     this.#name = `${stripCredentials(this.#repo)}#${branch}`;
   }
