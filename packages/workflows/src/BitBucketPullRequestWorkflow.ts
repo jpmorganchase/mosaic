@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { Repo, BitbucketSourceOptions } from '@jpmorganchase/mosaic-source-bitbucket';
+import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import mdxSerialisers from '@jpmorganchase/mosaic-serialisers/dist/mdx';
 import type { SourceWorkflow } from '@jpmorganchase/mosaic-types';
 
@@ -19,7 +19,7 @@ interface BitBucketPullRequestWorkflowOptions {
 let repoInstance: Repo | null = null;
 
 async function createPullRequest(
-  sourceOptions: BitbucketSourceOptions,
+  sourceOptions: GitRepoSourceOptions,
   { apiEndpoint, commitMessage, titlePrefix }: BitBucketPullRequestWorkflowOptions,
   filePath: string,
   { user, markdown }: BitBucketPullRequestWorkflowData
