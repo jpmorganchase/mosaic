@@ -79,7 +79,6 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
       switchMap(() => watchFolder$),
       mergeMap(async pages => {
         const out = [];
-        console.log(pages);
         for (const page of pages) {
           const baseDir = path.join(rootDir, page.fullPath.replace(prefixDir || '', ''));
           out.push(
