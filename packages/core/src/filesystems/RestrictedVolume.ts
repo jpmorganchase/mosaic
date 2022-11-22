@@ -1,7 +1,7 @@
-import { create } from 'lodash';
+import { create } from 'lodash-es';
 import type { IFileAccess, IVolumePartiallyMutable } from '@jpmorganchase/mosaic-types';
 
-import ImmutableFileSystem from './ImmutableVolume';
+import ImmutableFileSystem from './ImmutableVolume.js';
 
 /**
  * Restricted filesystems can be written to, but cannot be frozen, updated or reset

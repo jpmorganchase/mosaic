@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import type Repo from './Repo';
-import { type DiffResult } from './Repo';
+import type Repo from './Repo.js';
+import { type DiffResult } from './Repo.js';
 
 export default function fromFsWatch(repo: Repo) {
   return new Observable<DiffResult | null>(subscriber => {

@@ -56,7 +56,7 @@ const optimizeContentForSearch = async ({
 
   visit(
     tree,
-    node => node.type === 'text' || node.type === 'code',
+    (node: Node) => node.type === 'text' || node.type === 'code',
     (node: LeafNode) => {
       if (maxLineLength) {
         sentences.push(node.value.slice(0, maxLineLength));

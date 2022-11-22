@@ -5,8 +5,28 @@
   "description": "Mosaic serializers for core file system",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./mdx": {
+      "types": "./dist/mdx.d.ts",
+      "import": "./dist/mdx.js"
+    },
+    "./json": {
+      "types": "./dist/json.d.ts",
+      "import": "./dist/json.js"
+    },
+    "./md": {
+      "types": "./dist/md.d.ts",
+      "import": "./dist/md.js"
+    }
+  },
   "engines": {
-    "node": ">= 12.0.0"
+    "node": ">= 16.0.0"
   },
   "files": [
     "dist"

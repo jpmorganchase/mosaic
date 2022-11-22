@@ -1,11 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const { default: MosaicCore } = require('@jpmorganchase/mosaic-core');
-const path = require('path');
+import express from 'express';
+import cors from 'cors';
+import path from 'node:path';
+import MosaicCore from '@jpmorganchase/mosaic-core';
 
 const app = express();
 
-module.exports = async (config, port, scope) => {
+export default async function serve(config, port, scope) {
   app.listen(port, () => {
     console.log(
       `[Mosaic] Listening on port ${port}${
@@ -13,7 +13,8 @@ module.exports = async (config, port, scope) => {
       }`
     );
   });
-  const mosaic = new MosaicCore(config);
+  const mosaic = new MosaicCore();
+  await mosaic.init(config);
   await mosaic.start();
 
   const fs = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
@@ -73,4 +74,4 @@ module.exports = async (config, port, scope) => {
       res.status(500).send(e.message).end();
     }
   });
-};
+}

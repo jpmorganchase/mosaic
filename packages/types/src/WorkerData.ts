@@ -2,7 +2,7 @@ import type {
   SerialiserModuleDefinition,
   PluginModuleDefinition,
   SourceModuleDefinition
-} from './index';
+} from './index.js';
 
 export type WorkerData<Options = {}> = {
   options: Options &

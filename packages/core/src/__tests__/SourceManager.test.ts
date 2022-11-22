@@ -1,10 +1,10 @@
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es';
 
 import SourceManager from '../SourceManager';
 import Source from '../Source';
 
 jest.mock('../Source');
-jest.mock('lodash/debounce');
+jest.mock('lodash-es');
 // jest.mock('../worker/helpers/plugins', () => async (plugins, _fs) => {
 //   return async (_, input) => input;
 // });

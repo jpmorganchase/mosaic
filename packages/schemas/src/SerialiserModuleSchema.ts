@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pluginModuleSchema } from './PluginModuleSchema';
+import { pluginModuleSchema } from './PluginModuleSchema.js';
 
 export const serialiserModuleSchema = pluginModuleSchema.merge(
   z.object({

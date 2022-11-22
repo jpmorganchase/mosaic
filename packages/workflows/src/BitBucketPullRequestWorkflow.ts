@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
-import mdxSerialisers from '@jpmorganchase/mosaic-serialisers/dist/mdx';
+import { mdx } from '@jpmorganchase/mosaic-serialisers';
 import type { SourceWorkflow } from '@jpmorganchase/mosaic-types';
 
 interface BitBucketPullRequestWorkflowData {
@@ -57,10 +57,10 @@ async function createPullRequest(
   );
 
   const rawPage = await fs.promises.readFile(pathOnDisk);
-  const { content, ...metadata } = await mdxSerialisers.deserialise(pathOnDisk, rawPage);
+  const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
   const updatedPage = { ...metadata, content: markdown };
 
-  await fs.promises.writeFile(pathOnDisk, await mdxSerialisers.serialise(pathOnDisk, updatedPage));
+  await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
 
   const bitBucketRequest = JSON.stringify({
     title: `${titlePrefix} - Content update - ${filePath}`,

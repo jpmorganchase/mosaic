@@ -1,7 +1,6 @@
 import path from 'path';
-
 import glob from 'fast-glob';
-import set from 'lodash/set';
+import { set } from 'lodash-es';
 
 function createFileGlob(url, pageExtensions) {
   if (pageExtensions.length === 1) {

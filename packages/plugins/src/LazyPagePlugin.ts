@@ -1,10 +1,9 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import merge from 'lodash/merge';
-import escapeRegExp from 'lodash/escapeRegExp';
+import { merge, escapeRegExp } from 'lodash-es';
 import path from 'path';
-import { TDataOut } from 'memfs/lib/encoding';
+import { TDataOut } from 'memfs';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);

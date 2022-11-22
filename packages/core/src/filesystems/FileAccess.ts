@@ -1,21 +1,19 @@
-import path from 'path';
+import path from 'node:path';
 import glob from 'fast-glob';
-import { PathLike } from 'fs';
-import { createFsFromVolume } from 'memfs';
-import type { DirectoryJSON, IRealpathOptions, Volume } from 'memfs/lib/volume';
-import type { TDataOut } from 'memfs/lib/encoding';
+import { PathLike } from 'node:fs';
+import { createFsFromVolume, DirectoryJSON, IRealpathOptions, _Volume, TDataOut } from 'memfs';
 
 import type { IFileAccess } from '@jpmorganchase/mosaic-types';
 
 export default class FileAccess implements IFileAccess {
-  #adapter: Volume;
+  #adapter: _Volume;
   #hooks: ((filepath: PathLike, fileData: TDataOut) => Promise<TDataOut>)[] = [];
   #rawReadonlyFs;
   #symlinks: { [key: string]: { target: string; type: string }[] } = {};
   #frozen = false;
   #cachedPages = new Map();
 
-  constructor(filesystemAdapter: Volume) {
+  constructor(filesystemAdapter: _Volume) {
     this.#adapter = filesystemAdapter;
   }
 

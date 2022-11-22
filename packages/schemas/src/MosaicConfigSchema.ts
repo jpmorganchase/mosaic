@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { fileExtensionSchema } from './fileExtensionSchema';
-import { pluginModuleSchema } from './PluginModuleSchema';
-import { serialiserModuleSchema } from './SerialiserModuleSchema';
-import { sourceModuleSchema } from './SourceModuleSchema';
+import { fileExtensionSchema } from './fileExtensionSchema.js';
+import { pluginModuleSchema } from './PluginModuleSchema.js';
+import { serialiserModuleSchema } from './SerialiserModuleSchema.js';
+import { sourceModuleSchema } from './SourceModuleSchema.js';
 
 export const mosaicConfigSchema = z.object({
   /**

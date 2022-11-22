@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { LocalFolderSourceOptions } from '@jpmorganchase/mosaic-source-local-folder';
-import { default as mdxSerialisers } from '@jpmorganchase/mosaic-serialisers/dist/mdx';
+import mdx from '@jpmorganchase/mosaic-serialisers/mdx';
 
 export interface LocalFolderSavePluginData {
   markdown: string;
@@ -25,13 +25,10 @@ const LocalFolderSavePlugin: PluginType = {
 
     const pathOnDisk = path.posix.join(rootDir, filePath.replace(new RegExp(`${prefixDir}/`), ''));
     const rawPage = await fs.promises.readFile(pathOnDisk);
-    const { content, ...metadata } = await mdxSerialisers.deserialise(pathOnDisk, rawPage);
+    const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
     const updatedPage = { ...metadata, content: markdown };
 
-    await fs.promises.writeFile(
-      pathOnDisk,
-      await mdxSerialisers.serialise(pathOnDisk, updatedPage)
-    );
+    await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
     return true;
   }
 };

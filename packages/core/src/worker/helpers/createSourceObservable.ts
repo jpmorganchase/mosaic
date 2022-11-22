@@ -1,7 +1,7 @@
 import { isObservable, map } from 'rxjs';
 import type { Observable } from 'rxjs';
 import path from 'path';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 
 import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
 

@@ -3,14 +3,14 @@ import type {
   IRealpathOptions,
   IMkdirOptions,
   IReaddirOptions,
+  IStatOptions,
   TData,
-  TMode
-} from 'memfs/lib/volume';
-import type { TDataOut } from 'memfs/lib/encoding';
-import type Dirent from 'memfs/lib/Dirent';
-import type Stats from 'memfs/lib/Stats';
-import type { TStatNumber } from 'memfs/lib/Stats';
-import type { IStatOptions } from 'memfs/lib/volume';
+  TMode,
+  TDataOut,
+  Dirent,
+  Stats,
+  TStatNumber
+} from 'memfs';
 import type { PathLike, symlink } from 'fs';
 import type { Options, Pattern, Entry } from 'fast-glob';
 
