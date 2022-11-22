@@ -5,6 +5,7 @@ import fs from 'fs';
 import lodashMerge from 'lodash/merge';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
+import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
 import fromFsWatch from './fromFsWatch';
 
@@ -43,7 +44,7 @@ export type LocalFolderSourceOptions = z.infer<typeof schema>;
 
 const LocalFolderSource: Source<LocalFolderSourceOptions> = {
   create(options, { serialiser }): Observable<Page[]> {
-    schema.parse(options);
+    validateMosaicSchema(schema, options);
     return merge(of(null), fromFsWatch(options.rootDir, { recursive: true })).pipe(
       delay(1000),
       switchMap(() =>

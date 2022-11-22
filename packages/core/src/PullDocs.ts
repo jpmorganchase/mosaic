@@ -4,7 +4,7 @@ import type { IFS } from 'unionfs/lib/fs';
 import { Volume } from 'memfs';
 
 import { MosaicConfig, SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
-import { mosaicConfigSchema } from '@jpmorganchase/mosaic-schemas';
+import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
 import SourceManager from './SourceManager';
 
@@ -30,7 +30,7 @@ export default class PullDocs {
    * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
    */
   constructor(config: MosaicConfig) {
-    mosaicConfigSchema.parse(config);
+    validateMosaicSchema(mosaicConfigSchema, config);
     const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#ufs.use(sharedFilesystem as unknown as any);
