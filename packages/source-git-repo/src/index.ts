@@ -1,6 +1,6 @@
 import { defer, delay, merge, mergeMap, Observable, switchMap } from 'rxjs';
 import path from 'path';
-import _merge from 'lodash/merge';
+import { merge as lodashMerge } from 'lodash-es';
 import { z } from 'zod';
 
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
@@ -11,8 +11,8 @@ import {
 } from '@jpmorganchase/mosaic-schemas';
 import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 
-import Repo from './Repo';
-import fromCommitChange from './fromCommitChange';
+import Repo from './Repo.js';
+import fromCommitChange from './fromCommitChange.js';
 
 export { Repo };
 
@@ -86,7 +86,7 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
         for (const page of pages) {
           const baseDir = path.join(rootDir, page.fullPath.replace(prefixDir || '', ''));
           out.push(
-            _merge({}, page, {
+            lodashMerge({}, page, {
               lastModified: new Date(
                 await repo.getLatestCommitDate(path.relative(repo.dir, baseDir))
               ).getTime()

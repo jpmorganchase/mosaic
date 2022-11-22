@@ -1,5 +1,5 @@
 import matter from 'gray-matter';
-import type { TDataOut } from 'memfs/lib/encoding';
+import type { TDataOut } from 'memfs';
 import type { Serialiser } from '@jpmorganchase/mosaic-types';
 
 const Serialisers: Serialiser = {

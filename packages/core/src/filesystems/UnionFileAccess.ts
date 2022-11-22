@@ -1,10 +1,8 @@
 import { IUnionFs, Union } from 'unionfs';
-import { IFS } from 'unionfs/lib/fs';
-import merge from 'lodash/merge';
-
+import { merge } from 'lodash-es';
 import type { IVolumeMutable } from '@jpmorganchase/mosaic-types';
 
-import FileAccess from './FileAccess';
+import FileAccess from './FileAccess.js';
 
 export default class UnionFileAccess extends FileAccess {
   #ufs: IUnionFs & { fss: IVolumeMutable[] };
@@ -41,7 +39,7 @@ export default class UnionFileAccess extends FileAccess {
           .join(', ')}.`
       );
     }
-    matchingNamespaceFSs.forEach(fss => scopedUnion.use(fss as unknown as IFS));
+    matchingNamespaceFSs.forEach(fss => scopedUnion.use(fss as unknown as IUnionFs));
     return new UnionFileAccess(scopedUnion);
   }
   /**

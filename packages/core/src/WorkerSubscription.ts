@@ -1,7 +1,7 @@
-import { EventEmitter } from 'stream';
+import EventEmitter from 'events';
 import type { Subscription } from 'rxjs';
 
-import from from './operators/ObservableWorker';
+import from from './operators/ObservableWorker.js';
 
 export enum EVENT {
   ERROR = 'ERROR',

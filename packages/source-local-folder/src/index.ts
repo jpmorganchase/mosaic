@@ -2,12 +2,12 @@ import { concatMap, delay, merge, Observable, of, switchMap } from 'rxjs';
 import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
-import lodashMerge from 'lodash/merge';
+import { merge as lodashMerge } from 'lodash-es';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
-import fromFsWatch from './fromFsWatch';
+import fromFsWatch from './fromFsWatch.js';
 
 async function getLastModifiedDate(fullPath: string) {
   const resolvedRoute = await fs.promises.realpath(fullPath);

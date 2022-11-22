@@ -1,6 +1,6 @@
 import type { LoadedPlugin } from '@jpmorganchase/mosaic-types';
 
-import PluginError from '../PluginError';
+import PluginError from '../PluginError.js';
 
 export default async function pluginRunner(
   { loadedPlugins, lifecycleName }: { loadedPlugins: LoadedPlugin[]; lifecycleName: string },

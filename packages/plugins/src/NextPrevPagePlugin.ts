@@ -1,5 +1,5 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { escapeRegExp } from 'lodash';
+import { escapeRegExp } from 'lodash-es';
 
 function createFileGlob(url, pageExtensions) {
   if (pageExtensions.length === 1) {

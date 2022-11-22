@@ -1,12 +1,9 @@
 import path from 'path';
-import reduce from 'lodash/reduce';
-import omit from 'lodash/omit';
-import merge from 'lodash/merge';
-import escapeRegExp from 'lodash/escapeRegExp';
+import { reduce, omit, merge, escapeRegExp } from 'lodash-es';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
-import normaliseRefs from './utils/normaliseRefs';
+import normaliseRefs from './utils/normaliseRefs.js';
 
 function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
   return {

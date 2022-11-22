@@ -1,5 +1,5 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import flatten from 'lodash/flatten';
+import { flatten } from 'lodash-es';
 import path from 'path';
 
 function createFileGlob(url, pageExtensions) {

@@ -1,7 +1,7 @@
 import type { Observable } from 'rxjs';
 
-import type { Serialiser } from './Serialiser';
-import type { Page } from './Page';
+import type { Serialiser } from './Serialiser.js';
+import type { Page } from './Page.js';
 
 export type Source<Options = {}> = {
   create(

@@ -16,11 +16,11 @@ import type {
   SourceWorkflow
 } from '@jpmorganchase/mosaic-types';
 
-import FileAccess from './filesystems/FileAccess';
-import MutableVolume from './filesystems/MutableVolume';
-import createConfig from './helpers/createConfig';
-import { bindPluginMethods, bindSerialiser } from './plugin';
-import WorkerSubscription, { EVENT } from './WorkerSubscription';
+import FileAccess from './filesystems/FileAccess.js';
+import MutableVolume from './filesystems/MutableVolume.js';
+import createConfig from './helpers/createConfig.js';
+import { bindPluginMethods, bindSerialiser } from './plugin/index.js';
+import WorkerSubscription, { EVENT } from './WorkerSubscription.js';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();

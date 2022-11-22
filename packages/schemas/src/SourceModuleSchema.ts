@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { pluginModuleSchema } from './PluginModuleSchema';
-import { sourceWorkflowSchema } from './SourceWorkflowSchema';
+import { pluginModuleSchema } from './PluginModuleSchema.js';
+import { sourceWorkflowSchema } from './SourceWorkflowSchema.js';
 
 export const sourceModuleSchema = pluginModuleSchema.merge(
   z.object({

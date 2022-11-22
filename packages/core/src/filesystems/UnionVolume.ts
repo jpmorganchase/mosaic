@@ -1,9 +1,9 @@
-import { create } from 'lodash';
-import { TDataOut } from 'memfs/lib/encoding';
+import { create } from 'lodash-es';
+import { TDataOut } from 'memfs';
 import type { IUnionVolume } from '@jpmorganchase/mosaic-types';
 
-import type UnionFileAccess from './UnionFileAccess';
-import MutableVolume from './MutableVolume';
+import type UnionFileAccess from './UnionFileAccess.js';
+import MutableVolume from './MutableVolume.js';
 
 export default class UnionVolume extends MutableVolume implements IUnionVolume {
   #vfs: UnionFileAccess;

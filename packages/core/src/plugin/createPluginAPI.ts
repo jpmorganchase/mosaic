@@ -7,9 +7,9 @@ import type {
   Serialiser
 } from '@jpmorganchase/mosaic-types';
 
-import loadDefinitionModules from './loadDefinitionModules';
-import pluginRunner from './pluginRunner';
-import serialiserRunner from './serialiserRunner';
+import loadDefinitionModules from './loadDefinitionModules.js';
+import pluginRunner from './pluginRunner.js';
+import serialiserRunner from './serialiserRunner.js';
 
 function createProxyBaseSerialiserAPI(): Serialiser {
   return {

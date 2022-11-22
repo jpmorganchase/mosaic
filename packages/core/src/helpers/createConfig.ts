@@ -6,7 +6,7 @@ import type {
   MutableData,
   ScopedRefs
 } from '@jpmorganchase/mosaic-types';
-import { merge } from 'lodash';
+import { merge } from 'lodash-es';
 import path from 'path';
 
 export default function createConfig<T = BaseData>(initialData?: Partial<T>): MutableData<T> {

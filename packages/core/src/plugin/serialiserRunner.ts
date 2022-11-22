@@ -1,6 +1,6 @@
 import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types';
 
-import PluginError from '../PluginError';
+import PluginError from '../PluginError.js';
 
 export default async function serialiserRunner(
   {

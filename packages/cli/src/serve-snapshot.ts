@@ -1,10 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+import path from 'node:path';
+import fs from 'node:fs';
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 
-module.exports = async (targetDir, port, scope) => {
+export default async function serveSnapshot(targetDir, port, scope) {
   app.listen(port, () => {
     console.log(
       `Serving ${targetDir} on port ${port}${
@@ -12,8 +13,6 @@ module.exports = async (targetDir, port, scope) => {
       }`
     );
   });
-
-  const fs = require('fs');
 
   app.use(cors());
   app.get('/**', async (req, res) => {
@@ -83,4 +82,4 @@ module.exports = async (targetDir, port, scope) => {
       res.status(500).end();
     }
   });
-};
+}

@@ -1,8 +1,4 @@
-import type { Page } from '@jpmorganchase/mosaic-types';
-
 import BreadcrumbsPlugin, { BreadcrumbsPluginPage } from '../BreadcrumbsPlugin';
-
-// jest.mock('fs');
 
 const pages: BreadcrumbsPluginPage[] = [
   {
@@ -58,6 +54,7 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
   let updatedPages: BreadcrumbsPluginPage[] = [];
   beforeEach(async () => {
     const $afterSource = BreadcrumbsPlugin.$afterSource;
+    // @ts-ignore
     updatedPages = (await $afterSource?.(pages, {}, { indexPageName: 'index.mdx' })) || [];
   });
   test('THEN it should use the `$afterSource` lifecycle event', () => {
