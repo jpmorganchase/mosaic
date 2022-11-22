@@ -1,19 +1,21 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2019",
-    "lib": ["es2019"],
+    "allowSyntheticDefaultImports": true,
+    "module": "ES2022",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "esModuleInterop": true,
     "sourceMap": true,
     "allowJs": false,
     "strict": true,
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "Node16",
     "strictNullChecks": true,
     "declaration": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@jpmorganchase/mosaic-*": ["packages/*/dist"]

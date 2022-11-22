@@ -1,19 +1,19 @@
+import type { Options, Pattern, Entry } from 'fast-glob';
 import type {
   DirectoryJSON,
   IRealpathOptions,
   IMkdirOptions,
   IReaddirOptions,
+  IStatOptions,
   TData,
-  TMode
-} from 'memfs/lib/volume';
-import type { TDataOut } from 'memfs/lib/encoding';
-import type Dirent from 'memfs/lib/Dirent';
-import type Stats from 'memfs/lib/Stats';
-import type { TStatNumber } from 'memfs/lib/Stats';
-import type { IStatOptions } from 'memfs/lib/volume';
+  TMode,
+  TDataOut,
+  Dirent,
+  Stats,
+  TStatNumber
+} from 'memfs';
 import type { PathLike, symlink } from 'fs';
-import type { Page } from './Page';
-import type { Options, Pattern, Entry } from 'fast-glob';
+import type { Page } from './Page.js';
 
 /**
  * This is the core underlying filesystem, which directly interfaces with a memfs Volume to mutate the filesystem

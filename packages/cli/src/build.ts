@@ -1,9 +1,9 @@
-const { default: Mosaic } = require('@jpmorganchase/mosaic-core');
-const path = require('path');
-const fsExtra = require('fs-extra');
-const fs = require('fs');
+import fs from 'node:fs';
+import path from 'node:path';
+import fsExtra from 'fs-extra';
+import MosaicCore from '@jpmorganchase/mosaic-core';
 
-module.exports = async (config, targetDir, options) => {
+export default async function build(config, targetDir, options) {
   // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
   config.plugins = config.plugins.filter(({ runTimeOnly }) => !runTimeOnly);
   // Turn off `cache` for each source
@@ -12,14 +12,15 @@ module.exports = async (config, targetDir, options) => {
     options: { ...source.options, cache: false }
   }));
   const scope = options.scope && options.scope.split(',');
-  const mosaic = new Mosaic(config);
+  const mosaic = new MosaicCore();
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
   await fsExtra.emptyDir(pathDir);
+  await mosaic.init(config);
   await mosaic.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
   const filesystem = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
   let calls = 0;
-  mosaic.onSourceUpdate(async (value, source) => {
+  mosaic.onSourceUpdate(async () => {
     try {
       if (++calls === config.sources.length) {
         const symlinks = filesystem.symlinksToJSON();
@@ -34,7 +35,7 @@ module.exports = async (config, targetDir, options) => {
           const rawFiles = await filesystem.promises.readFile(String(filePath), {
             includeConflicts: true
           });
-          let rawFile = rawFiles[0];
+          const rawFile = rawFiles[0];
           if (rawFiles.length > 1) {
             // TODO: We could join colliding JSON files together. e.g. sidebar.json files
             // if (path.basename(String(filePath)).startsWith('.') && path.extname(String(filePath)) === '.json') {
@@ -89,4 +90,4 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
       process.exit(1);
     }
   });
-};
+}

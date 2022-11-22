@@ -1,8 +1,8 @@
-import type { DirectoryJSON } from 'memfs/lib/volume';
+import type { DirectoryJSON } from 'memfs';
 
 import type { IFileAccess, IVolumeMutable } from '@jpmorganchase/mosaic-types';
 
-import FileSystemRestricted from './RestrictedVolume';
+import FileSystemRestricted from './RestrictedVolume.js';
 
 export default class MutableVolume extends FileSystemRestricted implements IVolumeMutable {
   #vfs: IFileAccess;

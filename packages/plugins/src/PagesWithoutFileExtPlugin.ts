@@ -1,5 +1,5 @@
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { escapeRegExp } from 'lodash';
+import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import { escapeRegExp } from 'lodash-es';
 import path from 'path';
 
 function createPageTest(ignorePages, pageExtensions) {

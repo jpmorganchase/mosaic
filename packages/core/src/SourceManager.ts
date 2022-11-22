@@ -1,4 +1,4 @@
-import { merge } from 'lodash';
+import { merge } from 'lodash-es';
 import type {
   IUnionVolume,
   IVolumeImmutable,
@@ -8,8 +8,8 @@ import type {
   SourceModuleDefinition
 } from '@jpmorganchase/mosaic-types';
 
-import Source from './Source';
-import createConfig from './helpers/createConfig';
+import Source from './Source.js';
+import createConfig from './helpers/createConfig.js';
 
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {

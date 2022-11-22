@@ -1,4 +1,4 @@
-import type { TDataOut } from 'memfs/lib/encoding';
+import type { TDataOut } from 'memfs';
 
 import type {
   IVolumeMutable,
@@ -8,7 +8,7 @@ import type {
   Serialiser
 } from '@jpmorganchase/mosaic-types';
 
-import loadPlugins from './createPluginAPI';
+import loadPlugins from './createPluginAPI.js';
 
 export async function bindSerialiser(serialisers): Promise<Serialiser> {
   const pluginApi = (await loadPlugins<Page>(serialisers)) as Serialiser;

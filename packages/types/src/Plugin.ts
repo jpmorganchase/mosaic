@@ -1,13 +1,13 @@
-import type { Page } from './Page';
-import type { MutableData, ImmutableData } from './MutableData';
-import type { PluginModuleDefinition } from './index';
 import type {
   IUnionVolume,
   IVolumeImmutable,
   IVolumeMutable,
   IVolumePartiallyMutable
-} from './Volume';
-import type { Serialiser } from './Serialiser';
+} from './Volume.js';
+import type { PluginModuleDefinition } from './index.js';
+import type { Serialiser } from './Serialiser.js';
+import type { Page } from './Page.js';
+import type { MutableData, ImmutableData } from './MutableData.js';
 
 export type LoadedPlugin = Partial<Plugin<Page>> & PluginModuleDefinition;
 export type LifecycleMethod = keyof Plugin<Page>;

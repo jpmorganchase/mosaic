@@ -1,3 +1,3 @@
-import PullDocs from './PullDocs';
+import PullDocs from './PullDocs.js';
 
 export default PullDocs;

@@ -1,19 +1,18 @@
 import type { IUnionFs } from 'unionfs';
 import { Union } from 'unionfs';
-import type { IFS } from 'unionfs/lib/fs';
 import { Volume } from 'memfs';
-
 import { MosaicConfig, SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
 import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
-import SourceManager from './SourceManager';
-
 // TODO:
 // Remove $ref /index resolution
-import FileAccess from './filesystems/FileAccess';
-import MutableVolume from './filesystems/MutableVolume';
-import UnionFileAccess from './filesystems/UnionFileAccess';
-import UnionVolume from './filesystems/UnionVolume';
+import FileAccess from './filesystems/FileAccess.js';
+import MutableVolume from './filesystems/MutableVolume.js';
+import UnionFileAccess from './filesystems/UnionFileAccess.js';
+import UnionVolume from './filesystems/UnionVolume.js';
+import SourceManager from './SourceManager.js';
+
+const resolveModule = async (modulePath: string) => (await import.meta.resolve?.(modulePath)) || '';
 
 export default class PullDocs {
   #sourceDefinitions: SourceModuleDefinition[];
@@ -29,8 +28,8 @@ export default class PullDocs {
    * @param config.ignorePages Page names to exclude from lazy loading / `$ref`s / `$tag`s / serialisers and also any plugins that expect pages as input. Example input would be "ignore-me.xml"
    * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
    */
-  constructor(config: MosaicConfig) {
-    validateMosaicSchema(mosaicConfigSchema, config);
+  async init(config: MosaicConfig) {
+    validateMosaicSchema(mosaicConfigSchema, config, true);
     const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#ufs.use(sharedFilesystem as unknown as any);
@@ -51,22 +50,22 @@ export default class PullDocs {
       plugins
         .concat(
           {
-            modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/$TagPlugin'),
+            modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/$TagPlugin'),
             options: {}
           },
           {
-            modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/$CodeModPlugin'),
+            modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/$CodeModPlugin'),
             options: {},
             // Make sure this happens as the very first plugin, so it can fix any page issues
             priority: Number.POSITIVE_INFINITY
           },
           {
-            modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/$AliasPlugin'),
+            modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/$AliasPlugin'),
             options: {},
             priority: -1
           },
           {
-            modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/$RefPlugin'),
+            modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/$RefPlugin'),
             options: {},
             priority: -1
           }
@@ -74,7 +73,7 @@ export default class PullDocs {
         .sort(({ priority: priorityA = 0 }, { priority: priorityB = 0 }) => priorityB - priorityA),
       // Auto add JSON serialiser
       serialisers.concat({
-        modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/json'),
+        modulePath: await resolveModule('@jpmorganchase/mosaic-serialisers/json'),
         filter: /\.json$/
       }),
       pageExtensions,
@@ -116,7 +115,7 @@ export default class PullDocs {
       }
     });
 
-    this.#ufs.use(source.filesystem as unknown as IFS);
+    this.#ufs.use(source.filesystem as unknown as IUnionFs);
 
     return source;
   }

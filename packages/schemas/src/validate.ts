@@ -1,19 +1,19 @@
 import { z, ZodError } from 'zod';
-import { fromZodError } from 'zod-validation-error';
 
 // eslint-disable-next-line import/prefer-default-export
 export function validateMosaicSchema<T extends z.ZodTypeAny>(
   schema: T,
-  options: Record<string, unknown>
+  options: Record<string, unknown>,
+  exitOnError = false
 ) {
   try {
     schema.parse(options);
   } catch (err: unknown) {
-    const { message, details } = fromZodError(err as ZodError);
     console.group('[Mosaic] schema validation error');
-    console.log(message);
-    console.table(details);
+    console.table((err as ZodError).issues);
     console.groupEnd();
-    process.exit(1);
+    if (exitOnError) {
+      process.exit(1);
+    }
   }
 }
