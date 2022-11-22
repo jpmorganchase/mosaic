@@ -14,5 +14,6 @@ export function validateMosaicSchema<T extends z.ZodTypeAny>(
     console.log(message);
     console.table(details);
     console.groupEnd();
+    process.exit(1);
   }
 }
