@@ -4,7 +4,11 @@ import _merge from 'lodash/merge';
 import { z } from 'zod';
 
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
-import { fileExtensionSchema, credentialsSchema } from '@jpmorganchase/mosaic-schemas';
+import {
+  fileExtensionSchema,
+  credentialsSchema,
+  validateMosaicSchema
+} from '@jpmorganchase/mosaic-schemas';
 import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 
 import Repo from './Repo';
@@ -55,7 +59,7 @@ export type GitRepoSourceOptions = z.infer<typeof schema>;
 
 const GitRepoSource: Source<GitRepoSourceOptions> = {
   create(options, { serialiser, pageExtensions }): Observable<Page[]> {
-    schema.parse(options);
+    validateMosaicSchema(schema, options);
     const { credentials, remote, branch, repo: repoUrl, prefixDir, extensions } = options;
     const repo = new Repo(credentials, remote, branch, repoUrl);
 
