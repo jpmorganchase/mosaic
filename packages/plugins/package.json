@@ -38,6 +38,7 @@
     "lodash": "^4.17.21",
     "memfs": "^3.3.0",
     "reading-time": "^1.5.0",
+    "remark-mdx": "^2.1.5",
     "remark-parse": "^10.0.1",
     "remark-stringify": "^10.0.2",
     "rxjs": "^7.5.5",
