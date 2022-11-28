@@ -1,0 +1,1 @@
+export * from './componentExample.css';
