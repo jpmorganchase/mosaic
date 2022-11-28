@@ -1,6 +1,12 @@
 import { useStore } from './store';
-import { MenuItemType, AppHeaderMenuLinkItem, AppHeaderMenuLinksItem } from './types';
-import type { AppHeaderSlice, Menu, MenuLinkItem, MenuLinksItem } from './types';
+import { MenuItemType } from './types';
+import type {
+  AppHeaderSlice,
+  AppHeaderMenuLinkItem,
+  AppHeaderMenuLinksItem,
+  MenuLinkItem,
+  MenuLinksItem
+} from './types';
 
 function isMenu(menu: MenuLinkItem | MenuLinksItem): menu is MenuLinksItem {
   return (menu as MenuLinksItem).links !== undefined;
