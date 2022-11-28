@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.esm",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]
+}
