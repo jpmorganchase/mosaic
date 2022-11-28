@@ -10,7 +10,11 @@
     "@jpmorganchase/mosaic-serialisers": "0.1.0-beta.1",
     "@jpmorganchase/mosaic-source-bitbucket": "0.1.0-beta.1",
     "@jpmorganchase/mosaic-source-local-folder": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-types": "0.1.0-beta.1"
+    "@jpmorganchase/mosaic-types": "0.1.0-beta.1",
+    "@jpmorganchase/mosaic-schemas": "0.1.0-beta.6",
+    "@jpmorganchase/mosaic-source-git-repo": "0.1.0-beta.6",
+    "@jpmorganchase/mosaic-theme": "0.1.0-beta.6",
+    "@jpmorganchase/mosaic-workflows": "0.1.0-beta.6"
   },
   "changesets": [
     "eighty-rings-marry",
@@ -18,6 +22,7 @@
     "fresh-coats-learn",
     "green-rocks-promise",
     "large-avocados-know",
-    "neat-cherries-remain"
+    "neat-cherries-remain",
+    "silver-seas-applaud"
   ]
 }
