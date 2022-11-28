@@ -7,7 +7,7 @@ import type { BreadcrumbsSlice } from './types/breadcrumbs';
 import type { SharedConfigSlice } from './types/sharedConfig';
 import type { LayoutSlice } from './types/layout';
 import type { SidebarSlice } from './types/sidebar';
-import type { TableOfContentsSlice } from './types/TableOfContents';
+import type { TableOfContentsSlice } from './types/tableOfContents';
 
 let store: StoreApi<SiteState>;
 
