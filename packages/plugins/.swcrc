@@ -1,5 +1,5 @@
 {
-  "test": ".*\\.mjs.ts$",
+  "test": "(\.test|\.mjs)+\.(t|j)s$",
   "sourceMaps": true,
   "jsc": {
     "parser": {
