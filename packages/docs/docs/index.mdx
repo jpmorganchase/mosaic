@@ -1,0 +1,17 @@
+---
+title: Docs
+description: Docs index
+layout: ProductPreview
+data:
+  items:
+    $ref: ./*/index#/data
+---
+
+<Hero
+  datestamp={meta.lastModifiedDate}
+  description="Browse our documentation."
+  image=""
+  title={meta.title}
+/>
+
+<PageFilterView view={meta.data.items} />
