@@ -29,7 +29,7 @@ module.exports = {
   },
   testRegex: '(/__tests__/.+\\.test)\\.(js|ts)x?$',
   transform: {
-    '\\.[jt]sx?$': require.resolve('babel-jest')
+    '^.+\\.(t|j)sx?$': ['@swc/jest']
   },
   transformIgnorePatterns: ['/node_modules/'],
   setupFiles: ['./testSetup.js']
