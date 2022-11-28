@@ -1,17 +1,14 @@
 ---
-title: Docs
-description: Docs index
-layout: ProductPreview
+title: Getting Started
+layout: DetailTechnical
 data:
-  items:
-    $ref: ./*/index#/data
+  name:
+    $ref: '#/title'
+  action: Learn More
+  description: Learn how to create your first Mosaic site with this quickstart guide.
+  link: /mosaic/docs/getting-started
 ---
 
-<Hero
-  datestamp={meta.lastModifiedDate}
-  description="Browse our documentation."
-  image=""
-  title={meta.title}
-/>
+<H1>{meta.title}</H1>
 
-<PageFilterView view={meta.data.items} />
+<Callout>Coming Soon</Callout>

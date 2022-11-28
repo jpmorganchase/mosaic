@@ -1,6 +1,6 @@
 ---
 title: Mosaic
-layout: DetailContentOnly
+layout: FullWidth
 frameOverrides:
   header:
     homeLink: /mosaic/index
@@ -11,14 +11,16 @@ frameOverrides:
         link: /mosaic/introduction/index
       - title: Docs
         link: /mosaic/docs/index
-      - title: Support
-        link: /mosaic/support/index
+  footer:
+    description: Insert your footer here
+    title: Insert a title here
+    href: /mosaic
 ---
 
 <Hero
-  eyebrow="Mosaic"
-  image=""
-  title={<H0>Build powerful documentation sites using our scalable solution</H0>}
+  description="Build powerful documentation sites using our NEW scalable solution, watch this space for more developments"
+  eyebrow="Mosaic is currently in BETA"
+  title="Mosaic"
   variant="fullWidth"
 />
 
@@ -26,17 +28,13 @@ frameOverrides:
   <TileLink
     action="Learn more"
     description="What is Mosaic?"
-    image=""
     link="/mosaic/introduction/index"
-    size="small"
     title="Introduction"
   />
   <TileLink
     action="Learn more"
     description="Browse our documentation."
-    image=""
     link="/mosaic/docs/index"
-    size="small"
     title="Docs"
   />
 </Tiles>
