@@ -78,7 +78,8 @@
     "turbo": "latest"
   },
   "resolutions": {
-    "@types/react": "^16.9.34"
+    "@types/react": "^16.9.34",
+    "@braintree/sanitize-url": "^6.0.0"
   },
   "lint-staged": {
     "*": [
