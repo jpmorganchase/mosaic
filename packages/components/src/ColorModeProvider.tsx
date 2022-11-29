@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useState, createContext, useContext, ReactNode } from 'react';
 
-import { Button } from '../Button';
-import styles from './styles.css';
-
 export const lightMode = 'light';
 export const darkMode = 'dark';
 
@@ -71,17 +68,3 @@ export function ColorModeProvider({
 
   return <ColorModeContext.Provider value={value}>{children}</ColorModeContext.Provider>;
 }
-
-export interface ColorModeToggleProps {
-  className?: string;
-}
-
-export const ColorModeToggle: React.FC<ColorModeToggleProps> = ({ className }) => {
-  const { colorMode, setColorMode } = useContext(ColorModeContext);
-  return (
-    <Button
-      classes={{ label: styles.root, root: className }}
-      onClick={() => setColorMode(colorMode === 'light' ? 'dark' : 'light')}
-    />
-  );
-};

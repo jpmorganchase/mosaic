@@ -54,12 +54,7 @@ function PreviewComponent({
         </ComponentExample>
         <div className={styles.showLiveCodeContainer}>
           <div className={styles.showLiveCode}>
-            <Switch
-              density="high"
-              label="Show Live Code"
-              role="checkbox"
-              onChange={() => setHidden(!hidden)}
-            />
+            <Switch label="Show Live Code" role="checkbox" onChange={() => setHidden(!hidden)} />
           </div>
         </div>
         <LiveError className={styles.liveError} />

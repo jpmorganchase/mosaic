@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import classnames from 'classnames';
-import { Button } from '../Button';
+import { LinkButton } from '../LinkButton';
 
 import styles from './styles.css';
 import { Eyebrow, H1, P2 } from '../Typography';
@@ -157,9 +157,9 @@ export const Hero: React.FC<HeroProps> = ({
                   })}
                   key={link.label}
                 >
-                  <Button href={link.url} variant="primary">
+                  <LinkButton href={link.url} variant="cta">
                     {link.label}
-                  </Button>
+                  </LinkButton>
                 </div>
               );
             })}

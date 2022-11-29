@@ -8,10 +8,6 @@ export interface LabelProps {
   children?: React.ReactNode;
   /** Additional class name for root class override */
   className?: string;
-  /* List of labelled values */
-  labelItems?: string[];
-  /* Label name */
-  labelName?: string;
   /* Tooltip */
   tooltip?: React.ReactNode;
   /* Tooltip ClassName */
@@ -29,7 +25,7 @@ export const Label: React.FC<LabelProps> = ({
   ...rest
 }) => {
   const { getTriggerProps, getTooltipProps } = useTooltip();
-  const labelProps = tooltip ? getTriggerProps(rest) : undefined;
+  const labelProps = tooltip ? getTriggerProps<'span'>(rest) : undefined;
   const tooltipProps = getTooltipProps({
     ...TooltipProps,
     status: 'info'

@@ -30,7 +30,7 @@ function editionSort(view: Edition[], sort = 'DESC'): Edition[] {
   });
 }
 
-const itemToLabel = item => item;
+const itemToString = item => item;
 const labelButton = item => item;
 
 export type Edition = {
@@ -105,7 +105,7 @@ export const EditionFilterView: React.FC<EditionFilterViewProps> = ({
       ) : null}
       <FilterSortDropdown
         source={['Oldest', 'Newest']}
-        itemToLabel={itemToLabel}
+        itemToString={itemToString}
         labelButton={labelButton}
       />
     </FilterView>

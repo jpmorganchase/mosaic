@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import type { MermaidProps } from 'mdx-mermaid';
-import { Mermaid } from 'mdx-mermaid/lib/Mermaid';
+import { Mermaid, MermaidProps } from 'mdx-mermaid/lib/Mermaid';
 import warning from 'warning';
 
 let warnOnce: boolean;

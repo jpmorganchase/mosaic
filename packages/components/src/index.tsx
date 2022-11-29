@@ -4,7 +4,7 @@ export * from './Button';
 export * from './Callout';
 export * from './Card';
 export * from './Cards';
-export * from './ColorModeToggle';
+export * from './ColorModeProvider';
 export * from './ComponentExample';
 export * from './DataTable';
 export * from './EditionFilterView';

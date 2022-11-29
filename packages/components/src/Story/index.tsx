@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
 
-import { Button } from '../Button';
+import { LinkButton } from '../LinkButton';
 import { useImageComponent } from '../ImageProvider';
 import styles from './styles.css';
 
@@ -61,14 +61,9 @@ export const Story: React.FC<StoryProps> = ({
       {image ? <ImageComponent className={styles.image} src={image} /> : null}
       {children}
       {link ? (
-        <Button
-          aria-label="Read more about article"
-          className={styles.readMore}
-          href={link}
-          target="_blank"
-        >
+        <LinkButton aria-label="Read more about article" className={styles.readMore} href={link}>
           {linkText}
-        </Button>
+        </LinkButton>
       ) : null}
     </div>
   );

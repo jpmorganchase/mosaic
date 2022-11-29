@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import { Dropdown, DropdownButton, DropdownProps } from '@jpmorganchase/uitk-lab';
+import {
+  Dropdown,
+  DropdownButton,
+  DropdownProps,
+  SelectionChangeHandler
+} from '@jpmorganchase/uitk-lab';
 import { Icon } from '../../Icon';
 import styles from './styles.css';
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';
 import { itemToLabel as defaultItemToLabel, source as defaultSource } from './defaultSort';
 
-type PartialDropdownProps<Item> = Omit<DropdownProps<Item>, 'source'>;
+type PartialDropdownProps = Omit<DropdownProps<string, 'default'>, 'source'>;
 
-export interface FilterSortDropdownProps<Item> extends PartialDropdownProps<Item> {
+export interface FilterSortDropdownProps extends PartialDropdownProps {
   /** Callback to translate the selected list item to a Button label */
   labelButton?: (selectedItem: string | undefined) => string;
   /** Dropdown list source */
@@ -17,19 +22,21 @@ export interface FilterSortDropdownProps<Item> extends PartialDropdownProps<Item
 
 const DropdownIcon = () => <Icon name="chevronDown" />;
 
-export function FilterSortDropdown<T>({
+export function FilterSortDropdown({
   className,
   itemToString = defaultItemToLabel,
   labelButton,
   source = defaultSource,
   ...rest
-}: FilterSortDropdownProps<T>) {
+}: FilterSortDropdownProps) {
   const dispatch = useToolbarDispatch();
   const { sort = source[0] } = useToolbarState();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSelect = (_event: Event, selectedItem: string) => {
-    dispatch({ type: 'setSort', value: selectedItem });
+  const handleSelect: SelectionChangeHandler<string, 'default'> = (_e, selectedItem) => {
+    if (selectedItem) {
+      dispatch({ type: 'setSort', value: selectedItem });
+    }
   };
 
   return (

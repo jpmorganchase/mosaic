@@ -20,7 +20,7 @@ const defaultButtonLabel = (selectedItems: string[] | undefined) => {
   return `${selectedItems.length} Items Selected`;
 };
 
-export interface FilterDropdownProps<Item> extends DropdownProps<Item> {
+export interface FilterDropdownProps extends DropdownProps<string, 'multiple'> {
   /** Callback to translate the selected list item to a Button label */
   labelButton?: (selectedItems: string[] | undefined) => string;
 }
@@ -29,23 +29,23 @@ const CLEAR_ALL = 'Clear all';
 
 const DropdownIcon = () => <Icon name="chevronDown" />;
 
-export function FilterDropdown<T>({
+export function FilterDropdown({
   className,
   itemToString,
   labelButton,
   source = [],
   ...rest
-}: FilterDropdownProps<T>) {
+}: FilterDropdownProps) {
   const dispatch = useToolbarDispatch();
   const { filters = [] } = useToolbarState();
   const [isOpen, setIsOpen] = useState(false);
   const listItems = useMemo(() => (source.length > 1 ? [...source, CLEAR_ALL] : source), [source]);
-  const handleSelect: SelectionChangeHandler<string, 'multiselect'> = (_e, selectedItems) => {
+  const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) => {
     const nextSelectedItems: string[] = selectedItems.includes(CLEAR_ALL) ? [] : selectedItems;
     dispatch({ type: 'setFilters', value: nextSelectedItems });
   };
   return (
-    <Dropdown
+    <Dropdown<string, 'multiple'>
       aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
       className={classnames(className, styles.root)}
       itemToString={itemToString}

@@ -11,9 +11,9 @@ import { Icon } from '../../Icon';
 import { useToolbarDispatch } from '../ToolbarProvider';
 import styles from '../SortDropdown/styles.css';
 
-export interface FilterSearchProps<T> extends ComboBoxProps<T> {}
+export interface FilterSearchProps extends ComboBoxProps<string, 'deselectable'> {}
 
-export function FilterSearch<T>({ className, source = [], ...rest }: ComboBoxProps<T>) {
+export function FilterSearch({ className, source = [], ...rest }: FilterSearchProps) {
   const dispatch = useToolbarDispatch();
 
   // TODO convert to multiselect once UITK Odysseys supports Multiselect from a ComboBox

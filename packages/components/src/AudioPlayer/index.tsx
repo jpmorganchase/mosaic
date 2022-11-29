@@ -1,20 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ButtonBar, OrderedButton } from '@jpmorganchase/uitk-lab';
-import {
-  VolumeUpIcon,
-  VolumeOffIcon,
-  DownloadIcon,
-  PlaySolidIcon,
-  PauseSolidIcon,
-  Replay5Icon,
-  Replay10Icon,
-  Replay15Icon,
-  Replay30Icon,
-  Forward5Icon,
-  Forward10Icon,
-  Forward15Icon,
-  Forward30Icon
-} from '@jpmorganchase/uitk-icons';
+import { Icon } from '../Icon';
 
 import { Caption3, Caption6 } from '../Typography';
 import styles from './styles.css';
@@ -33,17 +19,17 @@ function timeFormat(durationS): string {
 }
 
 const forwardIconByVariant = {
-  5: Forward5Icon,
-  10: Forward10Icon,
-  15: Forward15Icon,
-  20: Forward30Icon
+  5: 'forward5',
+  10: 'forward5',
+  15: 'forward15',
+  20: 'forward20'
 };
 
 const replayIconByVariant = {
-  5: Replay5Icon,
-  10: Replay10Icon,
-  15: Replay15Icon,
-  30: Replay30Icon
+  5: 'replay5',
+  10: 'replay10',
+  15: 'replay15',
+  30: 'replay30'
 };
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDuration = 15 }) => {
@@ -55,8 +41,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
   const [timeNowString, setTimeNowString] = useState('00:00:00');
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [timeNowSeconds, setTimeNowSeconds] = useState(0);
-  const ForwardIcon = forwardIconByVariant[skipDuration];
-  const ReplayIcon = replayIconByVariant[skipDuration];
 
   const audioRef = useCallback(audioNode => {
     setAudioElem(audioNode);
@@ -92,7 +76,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
     };
   }, [audioElem, onLoad, timeUpdate]);
 
-  const handleFastForward = () => {
+  const handleFastforward = () => {
     if (audioElem) {
       audioElem.currentTime += skipDuration;
     }
@@ -152,12 +136,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
         <div>
           <a href={src} download target="_blank" rel="noreferrer">
             <OrderedButton variant="secondary" className={styles.button}>
-              <DownloadIcon size="small" />
+              <Icon name="download" size="small" />
             </OrderedButton>
           </a>
         </div>
         <OrderedButton className={styles.button} variant="secondary" onClick={handleRewind}>
-          <ReplayIcon size="large" />
+          <Icon name={replayIconByVariant[skipDuration]} size="large" />
         </OrderedButton>
         <OrderedButton
           className={styles.button}
@@ -165,13 +149,17 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
           onClick={handlePlay}
           disabled={playDisabled}
         >
-          {isPlaying ? <PauseSolidIcon size="large" /> : <PlaySolidIcon size="large" />}
+          {isPlaying ? (
+            <Icon name="pauseSolid" size="large" />
+          ) : (
+            <Icon name="playSolid" size="large" />
+          )}
         </OrderedButton>
-        <OrderedButton className={styles.button} variant="secondary" onClick={handleFastForward}>
-          <ForwardIcon size="large" />
+        <OrderedButton className={styles.button} variant="secondary" onClick={handleFastforward}>
+          <Icon name={forwardIconByVariant[skipDuration]} size="large" />
         </OrderedButton>
         <OrderedButton variant="secondary" onClick={handleMute} className={styles.button}>
-          {mute ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          {mute ? <Icon name="volumeOff" /> : <Icon name="volumeUp" />}
         </OrderedButton>
       </ButtonBar>
     </div>

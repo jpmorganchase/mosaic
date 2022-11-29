@@ -42,7 +42,6 @@ export const ContentLabelWithTooltip: React.FC<TileContentLabelProps> = ({
   return (
     <Label
       TooltipProps={{
-        placement: 'top',
         title: labelName,
         children: (
           <span className={styles.numRemaining}>{`${

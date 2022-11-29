@@ -17,7 +17,7 @@ export interface PaginationProps {
    * @param {object} event The event source of the callback.
    * @param {number} page The page selected.
    */
-  onPageChange?: UITKPaginationProps['onChange'];
+  onPageChange?: UITKPaginationProps['onPageChange'];
   /** The current page */
   page?: UITKPaginationProps['page'];
   /** Number of pages  */

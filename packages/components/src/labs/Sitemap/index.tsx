@@ -1,6 +1,6 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Dropdown, DropdownButton, Spinner } from '@jpmorganchase/uitk-lab';
+import { Dropdown, DropdownButton, SelectionChangeHandler, Spinner } from '@jpmorganchase/uitk-lab';
 import warning from 'warning';
 import { Icon } from '../../Icon';
 
@@ -148,7 +148,7 @@ export const Sitemap: React.FC<SitemapProps> = ({
         .then((siteJSON: any) => {
           const { slugs } = siteJSON;
           setLoading(false);
-          const loadedNamespaces: string[] = slugs.reduce<string[]>((namespaceResult, pagePath) => {
+          const loadedNamespaces = slugs.reduce((namespaceResult, pagePath) => {
             const pageNamespaceMatches = pagePath.match(/\/([^/]*)/);
             if (!pageNamespaceMatches) {
               return namespaceResult;
@@ -182,7 +182,7 @@ export const Sitemap: React.FC<SitemapProps> = ({
     }
   }, [href, namespaceFilters]);
 
-  const handleSelect = (_event: Event, selectedItems: string[]) => {
+  const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) => {
     setNamespaceFilters(selectedItems);
   };
 

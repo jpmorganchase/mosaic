@@ -10,7 +10,7 @@ export interface FilterNoResultsProps {
 }
 
 export function DefaultNoResults() {
-  return <ContentStatus density="touch" message="No Results Found" status="info" />;
+  return <ContentStatus message="No Results Found" status="info" />;
 }
 
 export const FilterNoResults: React.FC<FilterNoResultsProps> = ({

@@ -20,7 +20,7 @@ export interface TabsMenuButtonItem {
 export interface TabsMenuButtonProps {
   children: React.ReactNode;
   item: TabsMenuButtonItem;
-  className: 'string';
+  className?: string;
 }
 
 export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, item }) => (

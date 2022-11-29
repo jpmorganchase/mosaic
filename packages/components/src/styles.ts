@@ -1,7 +1,6 @@
 import './Accordion/styles.css';
 import './Callout/styles.css';
 import './Card/styles.css';
-import './ColorModeToggle/styles.css';
 import './ComponentExample/styles.css';
 import './EditionTileLink/styles.css';
 import './Feature/styles.css';
