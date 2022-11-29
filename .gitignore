@@ -3,6 +3,7 @@ node_modules
 **/.tmp/
 **/dist/
 **/build/
+**/.next/
 
 # Dependencies
 **/node_modules
