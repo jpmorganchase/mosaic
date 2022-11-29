@@ -21,7 +21,7 @@ export const FilterPillGroup: React.FC<FilterPillGroupProps> = ({ className }) =
     <div className={classnames(styles.root, className)}>
       {filters.map((item: string, itemIndex: number) => (
         <Pill
-          data-dpmosaic-testid="pill"
+          data-mosaic-testid="pill"
           key={`pill-${item}`}
           label={item}
           onDelete={() => handleDeletePill(itemIndex)}

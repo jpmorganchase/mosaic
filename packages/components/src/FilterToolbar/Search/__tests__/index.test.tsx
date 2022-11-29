@@ -12,7 +12,7 @@ test('updates the toolbar filters state when Filter 2 is selected', async () => 
   const { getByTestId } = render(
     <ToolbarProvider onStateChange={handleStateChangeMock}>
       <FilterSearch
-        InputProps={{ inputProps: { 'data-dpmosaic-testid': 'test-input' } }}
+        InputProps={{ inputProps: { 'data-mosaic-testid': 'test-input' } }}
         source={source}
       />
     </ToolbarProvider>

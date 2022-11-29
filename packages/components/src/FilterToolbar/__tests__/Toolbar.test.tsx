@@ -9,13 +9,13 @@ function renderToolbar(initialState, onStateChange) {
       <label>Another component</label>
       <FilterToolbar.PillGroup />
       <FilterToolbar.SortDropdown
-        ListProps={{ 'data-dpmosaic-testid': 'sort-dropdown' }}
-        itemToLabel={item => `Item ${item}`}
+        ListProps={{ 'data-mosaic-testid': 'sort-dropdown' }}
+        itemToString={item => `Item ${item}`}
         source={['Sort 1', 'Sort 2', 'Sort 3']}
       />
       <FilterToolbar.FilterDropdown
-        ListProps={{ 'data-dpmosaic-testid': 'filter-dropdown' }}
-        itemToLabel={item => `Item ${item}`}
+        ListProps={{ 'data-mosaic-testid': 'filter-dropdown' }}
+        itemToString={item => `Item ${item}`}
         source={['Filter 1', 'Filter 2', 'Filter 3']}
       />
     </FilterToolbar>

@@ -13,7 +13,7 @@ function renderFilterView(props = {}) {
     <FilterView<TestData>
       filter={(items, filters) => items.filter(item => filters.includes(item.title))}
       itemRenderer={(item, itemIndex) => (
-        <label data-dpmosaic-testid="product" id={item.title} key={`${item.title}-${itemIndex}`}>
+        <label data-mosaic-testid="product" id={item.title} key={`${item.title}-${itemIndex}`}>
           {item.title}
           <button type="button" />
         </label>
@@ -29,9 +29,9 @@ function renderFilterView(props = {}) {
       {...props}
     >
       <FilterView.ResultCount />
-      <FilterView.SortDropdown ListProps={{ 'data-dpmosaic-testid': 'sort-dropdown' }} />
+      <FilterView.SortDropdown ListProps={{ 'data-mosaic-testid': 'sort-dropdown' }} />
       <FilterView.FilterDropdown
-        ListProps={{ 'data-dpmosaic-testid': 'filter-dropdown' }}
+        ListProps={{ 'data-mosaic-testid': 'filter-dropdown' }}
         source={['Product A', 'Product B', 'Product C']}
       />
     </FilterView>
