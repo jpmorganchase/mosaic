@@ -3,6 +3,8 @@ package-lock.json
 yarn.lock
 .prettierignore
 .gitignore
+.alexignore
+.alexrc.js
 static/scripts
 CHANGELOG.md
 /coverage
