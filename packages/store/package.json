@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-store",
   "description": "Mosaic - Store for site configuration",
-  "version": "0.1.0-beta.7",
+  "version": "0.1.0-beta.8",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",
