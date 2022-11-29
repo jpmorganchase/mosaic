@@ -1,0 +1,9 @@
+import React from 'react';
+import classnames from 'classnames';
+import { code } from '@jpmorganchase/mosaic-theme';
+
+export interface InlineCodeProps extends React.HTMLProps<HTMLPreElement> {}
+
+export const InlineCode: React.FC<InlineCodeProps> = ({ className, ...rest }) => (
+  <code className={classnames(className, code())} {...rest} />
+);
