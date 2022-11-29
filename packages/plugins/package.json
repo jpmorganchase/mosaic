@@ -12,7 +12,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "yarn clean && tsc && swc src -d dist && renamer --find \".mjs.js\" --replace \".mjs\" \"dist/*.mjs.js\" && renamer --find \".mjs.js.map\" --replace \".mjs.map\" \"dist/*.mjs.js.map\"",
+    "build": "yarn clean && tsc && swc ./src/*.mjs.ts -d dist && renamer --find \".mjs.js\" --replace \".mjs\" \"dist/*.mjs.js\" && renamer --find \".mjs.js.map\" --replace \".mjs.map\" \"dist/*.mjs.js.map\"",
     "clean": "rm -fr dist"
   },
   "repository": {
