@@ -1,0 +1,18 @@
+import React from 'react';
+import classnames from 'classnames';
+
+import { P2 } from '../../Typography';
+import styles from './index.css';
+
+export interface BlockQuoteProps extends React.HTMLProps<HTMLDivElement> {}
+
+export const BlockQuote: React.FC<BlockQuoteProps> = ({ children, className }) => {
+  const rawChildren =
+    React.isValidElement(children) && children.props ? children.props.children : children;
+  return (
+    <div className={classnames(className, styles.root)}>
+      <div className={styles.watermark} />
+      <P2>{rawChildren}</P2>
+    </div>
+  );
+};
