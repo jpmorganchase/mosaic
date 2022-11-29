@@ -18,8 +18,8 @@
   "scripts": {
     "mosaic": "node ./packages/cli/dist/index.js",
     "test": "npm-run-all --parallel test:*",
-    "test:client": "jest --config ./jest.config.client.js",
-    "test:server": "jest  --config ./jest.config.server.js",
+    "test:client": "jest --config ./jest.config.client.js --coverage",
+    "test:server": "jest  --config ./jest.config.server.js --coverage",
     "build": "turbo run build",
     "build:snapshot": "yarn mosaic build --out ./snapshots --config ./packages/example-mosaic-fs/dist/mosaic.config.js",
     "build:snapshot:latest": "yarn mosaic build --out ./snapshots --name latest --config ./packages/example-mosaic-fs/dist/mosaic.config.js",
