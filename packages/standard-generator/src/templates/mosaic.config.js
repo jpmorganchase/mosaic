@@ -1,6 +1,6 @@
 const path = require('path');
 const deepmerge = require('deepmerge');
-const mosaicConfig = require('@dpmosaic/standard-generator/dist/fs.config.js');
+const mosaicConfig = require('@dpmosaic/mosaic-standard-generator/dist/fs.config.js');
 
 /** Enhance/modify your Mosaic core fs
  * pageExtensions: supported file extensions which can be stored in the Virtual File System (VFS) created by Core FS
@@ -12,19 +12,18 @@ const mosaicConfig = require('@dpmosaic/standard-generator/dist/fs.config.js');
 module.exports = deepmerge(mosaicConfig, {
   sources: [
     {
-      modulePath: require.resolve('<MODULE PATH>'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
       options: {
-        rootDir: path.join(process.env.INIT_CWD, '<RELATIVE FILE PATH>', 'docs'),
+        rootDir: path.join(process.env.INIT_CWD, 'INSERT RELATIVE PATH', 'docs'),
         cache: true,
-        prefixDir: '<PREFIX>',
+        prefixDir: 'mosaic',
         extensions: ['.mdx']
       }
     },
-
     {
-      modulePath: require.resolve('<MODULE PATH>'),
-      namespace: '<SITE NAME>', // each site has it's own namespace, think of this as your content's uid
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
+      namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
         // !! Polite Reminder... do not store credentials in code !!
@@ -37,8 +36,8 @@ module.exports = deepmerge(mosaicConfig, {
         // Add to use a folder prefix
         // prefixDir: 'cibdat',
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: '<REPO URL>', // repo url without any protocol
-        branch: '<BRANCH NAME>', // branch where docs are pulled from
+        repo: 'INSERT REPO URL', // repo url without any protocol
+        branch: 'INSERT BRANCH NAME', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }

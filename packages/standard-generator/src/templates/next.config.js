@@ -16,8 +16,8 @@ module.exports = {
   },
   images: {
     domains: [
-        /** Insert the domains where you will load images from */
-        /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
+      /** Insert the domains where you will load images from */
+      /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
     ]
   },
   webpack(config) {

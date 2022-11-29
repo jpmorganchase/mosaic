@@ -10,7 +10,6 @@
     "clean": "del-cli 'dist/**' && find . -type d -empty -delete",
     "watch": "node ./scripts/bundle.js watch"
   },
-
   "files": [
     "dist",
     "src"
