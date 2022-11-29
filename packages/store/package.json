@@ -1,0 +1,32 @@
+{
+  "name": "@jpmorganchase/mosaic-store",
+  "description": "Mosaic - Store for site configuration",
+  "version": "0.1.0-beta.7",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:bundle": "node ../../scripts/bundle.js",
+    "build:types": "tsc",
+    "clean": "del-cli 'dist/**' && find . -type d -empty -delete",
+    "dev": "node ../../scripts/bundle.js watch"
+  },
+  "devDependencies": {
+    "del-cli": "^4.0.1",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@testing-library/react": "^12.1.5",
+    "@testing-library/react-hooks": "8.0.1",
+    "react-test-renderer": "^16.9.0",
+    "zustand": "^4.1.1"
+  },
+  "peerDependencies": {
+    "@types/react": "^16.9.34",
+    "react": "^16.8.0",
+    "react-dom": "^16.9.0"
+  },
+  "author": "",
+  "license": "ISC"
+}
