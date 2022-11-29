@@ -9,6 +9,7 @@ node_modules
 
 # Production
 **/dist
+**/dist-labs
 **/.tmp
 tsconfig.tsbuildinfo
 **/snapshots
