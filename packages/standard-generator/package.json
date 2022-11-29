@@ -1,5 +1,5 @@
 {
-  "name": "@jpmorganchase/standard-generator",
+  "name": "@jpmorganchase/mosaic-standard-generator",
   "version": "0.1.0-beta.8",
   "private": true,
   "description": "Mosaic - Standard site generator used by Mosaic's create command",
