@@ -9,12 +9,14 @@ export interface OpenAPIProps {
   url?: string;
 }
 
-//TODO: remove ts-ignore and fix type issue
-// @ts-ignore
-const LazySwagger = lazy(() => import('./SwaggerUi.js'));
+const LazySwagger = lazy(() =>
+  import('./SwaggerUi.js').then(x => {
+    return x.default;
+  })
+);
 
-export const OpenAPI: React.FC<OpenAPIProps> = ({ className, url }) => (
+export const OpenAPI: React.FC<OpenAPIProps> = ({ url }) => (
   <IsomorphicSuspense fallback={<span>Loading Swagger component...</span>}>
-    <LazySwagger className={className} url={url} />
+    <LazySwagger url={url} />
   </IsomorphicSuspense>
 );
