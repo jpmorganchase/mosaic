@@ -4,7 +4,7 @@ import { Pre, getMarkdownComponents, withMarkdownSpacing } from '@jpmorganchase/
 import type { PreProps } from '@jpmorganchase/mosaic-components';
 import { getLabMarkdownComponents } from '@jpmorganchase/mosaic-components/dist-labs/index';
 // import { OpenAPI } from '@jpmorganchase/mosaic-components-open-api';
-// import type { OpenAPIProps } from '@jpmorganchase/mosaic-components-open-api';
+import type { OpenAPIProps } from '@jpmorganchase/mosaic-components-open-api';
 
 import { Home } from './Home';
 import { Image } from './Image';
