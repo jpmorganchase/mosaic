@@ -1,16 +1,4 @@
 'use strict';
-const util = require('util');
-
-class MockEncoder {
-  encode(value) {
-    return value;
-  }
-}
-class MockDecoder {
-  decode(value) {
-    return value;
-  }
-}
 
 module.exports = {
   collectCoverage: true,
@@ -23,14 +11,10 @@ module.exports = {
       statements: 1
     }
   },
-  globals: {
-    TextEncoder: MockEncoder,
-    TextDecoder: MockDecoder
-  },
+  coveragePathIgnorePatterns: ['/node_modules/', '/dist/.*\\.(ts|js)$'],
   testRegex: '(/__tests__/.+\\.test)\\.(js|ts)x?$',
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest']
   },
-  transformIgnorePatterns: ['/node_modules/'],
-  setupFiles: ['./testSetup.js']
+  testPathIgnorePatterns: ['/node_modules/', '/dist/.*\\.(ts|js)$']
 };
