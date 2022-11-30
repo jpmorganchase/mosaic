@@ -1,5 +1,20 @@
 # @jpmorganchase/mosaic-source-git-repo
 
+## 0.1.0-beta.9
+
+### Minor Changes
+
+- c3fee89: initial components package
+
+  - added JSDOM testing
+
+### Patch Changes
+
+- Updated dependencies [c3fee89]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.9
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.9
+  - @jpmorganchase/mosaic-types@0.1.0-beta.9
+
 ## 0.1.0-beta.8
 
 ### Minor Changes
