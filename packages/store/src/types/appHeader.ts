@@ -17,8 +17,10 @@ export type Menu = MenuLinksItem | MenuLinkItem;
 export interface MenuLinksItem {
   /** Collection of link options */
   links: MenuLinkItem[];
-  /** Title of Tab */
+  /** Title of MenuLinksItem */
   title: string;
+  /** Type of MenuLinksItem */
+  type: MenuItemType;
 }
 
 /**
