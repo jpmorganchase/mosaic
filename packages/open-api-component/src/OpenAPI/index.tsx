@@ -9,6 +9,7 @@ export interface OpenAPIProps {
   url?: string;
 }
 
+//TODO: remove ts-ignore and fix type issue
 // @ts-ignore
 const LazySwagger = lazy(() => import('./SwaggerUi.js'));
 
