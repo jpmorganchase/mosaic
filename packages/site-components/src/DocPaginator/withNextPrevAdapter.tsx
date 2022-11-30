@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNextPrev } from '@dpmosaic/site-store';
+import { useNextPrev } from '@jpmorganchase/mosaic-store';
 
 export const withNextPrevAdapter =
   Component =>

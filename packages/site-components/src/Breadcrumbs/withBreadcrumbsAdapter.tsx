@@ -1,5 +1,5 @@
 import React from 'react';
-import { useBreadcrumbs } from '@dpmosaic/site-store';
+import { useBreadcrumbs } from '@jpmorganchase/mosaic-store';
 
 export const withBreadcrumbsAdapter = Component => () => {
   const { breadcrumbs, enabled } = useBreadcrumbs();

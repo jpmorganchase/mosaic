@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { link, navigableBorder, responsiveSprinkles } from '@dpmosaic/theme';
+import { link, navigableBorder, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style({

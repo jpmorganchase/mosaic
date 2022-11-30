@@ -1,5 +1,5 @@
 import React from 'react';
-import { Hero } from '@dpmosaic/components';
+import { Hero } from '@jpmorganchase/mosaic-components';
 
 export function Page500() {
   return (

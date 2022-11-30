@@ -1,6 +1,6 @@
 {
-  "name": "@dpmosaic/site-components",
-  "version": "1.0.0",
+  "name": "@jpmorganchase/mosaic-site-components",
+  "version": "0.1.0-beta.8",
   "license": "SEE LICENSE IN LICENSE.md",
   "private": true,
   "description": "Mosaic - Site components",
@@ -25,11 +25,9 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@dpmosaic/components": "^1.0.0",
-    "@dpmosaic/components-open-api": "^1.0.0",
-    "@dpmosaic/plugin-content-editor": "^1.0.0",
-    "@dpmosaic/site-store": "^1.0.0",
-    "@dpmosaic/theme": "^1.0.0",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.8",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.8",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.8",
     "@jpmorganchase/uitk-lab": "^0.8.0",
     "@types/mdast": "^3.0.0",
     "@uiservices/node-common": "^10.73.0",

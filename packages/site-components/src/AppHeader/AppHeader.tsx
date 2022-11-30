@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { Logo } from '@jpmorganchase/uitk-lab';
-import { useBreakpoint, Link } from '@dpmosaic/components';
-import type { TabsMenu } from '@dpmosaic/components';
+import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
+import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 
 import type { HeaderControlsProps } from '../AppHeaderControls';
 import { AppHeaderControls } from '../AppHeaderControls';

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { hasProtocol, TabsBase, TabMenuItemType } from '@dpmosaic/components';
-import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@dpmosaic/components';
+import { hasProtocol, TabsBase, TabMenuItemType } from '@jpmorganchase/mosaic-components';
+import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@jpmorganchase/mosaic-components';
 
 import { useWindowResize, Size } from './useWindowResize';
 
-export type { TabsMenu } from '@dpmosaic/components';
+export type { TabsMenu } from '@jpmorganchase/mosaic-components';
 
 function resolveSelectedIndex(menu, itemPath) {
   let selectedIndex = -1;

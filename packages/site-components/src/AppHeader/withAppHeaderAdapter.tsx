@@ -1,8 +1,8 @@
 import React from 'react';
-import type { TabsLinkItem, TabsMenu, TabsMenuButtonItem } from '@dpmosaic/components';
-import { TabMenuItemType } from '@dpmosaic/components';
-import type { Menu, MenuLinkItem } from '@dpmosaic/site-store';
-import { useAppHeader, MenuItemType } from '@dpmosaic/site-store';
+import type { TabsLinkItem, TabsMenu, TabsMenuButtonItem } from '@jpmorganchase/mosaic-components';
+import { TabMenuItemType } from '@jpmorganchase/mosaic-components';
+import type { Menu, MenuLinkItem } from '@jpmorganchase/mosaic-store';
+import { useAppHeader, MenuItemType } from '@jpmorganchase/mosaic-store';
 
 function createTabsMenu(menu: Menu[]): TabsMenu {
   const tabsMenu = menu.reduce<(TabsMenuButtonItem | TabsLinkItem)[]>((result, menuItem) => {

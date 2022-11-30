@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react-hooks';
 
 import { BaseUrlProvider, useResolveRelativeUrl } from '../BaseUrlProvider';
 
-jest.mock('@dpmosaic/site-store', () => ({
+jest.mock('@jpmorganchase/mosaic-store', () => ({
   useRoute: jest.fn(() => ({ route: '/a/b/c' }))
 }));
 

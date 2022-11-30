@@ -1,6 +1,6 @@
 import { TooltipProps } from '@jpmorganchase/uitk-core';
 import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
-import { Link } from '@dpmosaic/components';
+import { Link } from '@jpmorganchase/mosaic-components';
 
 export interface BreadcrumbProps {
   children?: ReactNode;

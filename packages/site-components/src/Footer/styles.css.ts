@@ -1,5 +1,11 @@
 import { style } from '@vanilla-extract/css';
-import { action, neutralBorder, responsiveSprinkles, foregroundColor, link } from '@dpmosaic/theme';
+import {
+  action,
+  neutralBorder,
+  responsiveSprinkles,
+  foregroundColor,
+  link
+} from '@jpmorganchase/mosaic-theme';
 
 export default {
   button: style([

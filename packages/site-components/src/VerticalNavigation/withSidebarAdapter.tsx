@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSidebar } from '@dpmosaic/site-store';
+import { useSidebar } from '@jpmorganchase/mosaic-store';
 
 export const withSidebarAdapter = Component => () => {
   const { sidebarData, selectedNodeId, expandedNodeIds } = useSidebar();

@@ -1,6 +1,6 @@
 import React, { ElementType } from 'react';
-import { useMeta } from '@dpmosaic/site-store';
-import type { MetaSlice } from '@dpmosaic/site-store';
+import { useMeta } from '@jpmorganchase/mosaic-store';
+import type { MetaSlice } from '@jpmorganchase/mosaic-store';
 
 import type { Session } from './types/session';
 import { useSession } from './SessionProvider';

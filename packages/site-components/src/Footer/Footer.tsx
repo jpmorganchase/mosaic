@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'classnames';
-import { HelpLinks, Button, H6, P2 } from '@dpmosaic/components';
-import type { ButtonProps, HelpLinkIconProps } from '@dpmosaic/components';
+import { HelpLinks, Button, H6, P2 } from '@jpmorganchase/mosaic-components';
+import type { ButtonProps, HelpLinkIconProps } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
 
 export interface FooterProps {

@@ -1,6 +1,6 @@
 import React, { createContext, Context, useContext } from 'react';
-import { hasProtocol } from '@dpmosaic/components';
-import { useRoute } from '@dpmosaic/site-store';
+import { hasProtocol } from '@jpmorganchase/mosaic-components';
+import { useRoute } from '@jpmorganchase/mosaic-store';
 
 // The pathname of the current route. We don't get this from router, as we want the full
 // path including the /index on index pages.
