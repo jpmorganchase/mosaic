@@ -32,7 +32,7 @@ jobs:
       - name: 'Build internal prerequisites'
         run: yarn build
       - name: Run Tests
-        run: yarn test --coverage
+        run: yarn test
       - name: Coveralls Parallel
         uses: coverallsapp/github-action@master
         with:

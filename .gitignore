@@ -3,12 +3,13 @@ node_modules
 **/.tmp/
 **/dist/
 **/build/
+**/.next/
 
 # Dependencies
 **/node_modules
 
 # Production
-**/dist
+**/dist-labs/
 **/.tmp
 tsconfig.tsbuildinfo
 **/snapshots
