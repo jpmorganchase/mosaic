@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-components",
   "description": "Mosaic - UI Components",
-  "version": "0.1.0-beta.8",
+  "version": "0.1.0-beta.9",
   "author": "",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "d3": "^7.6.1",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.8",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.9",
     "@jpmorganchase/uitk-core": "^0.8.0",
     "@jpmorganchase/uitk-lab": "^0.8.0",
     "@vanilla-extract/css": "^1.6.0",
