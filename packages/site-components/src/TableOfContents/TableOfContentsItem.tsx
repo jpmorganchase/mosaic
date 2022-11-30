@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import { Caption2, Caption3 } from '@dpmosaic/components';
+import { Caption2, Caption3 } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';
 import { stripMarkdownLinks } from './utils';

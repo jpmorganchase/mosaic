@@ -1,5 +1,5 @@
 import React from 'react';
-import { Action6, Link } from '@dpmosaic/components';
+import { Action6, Link } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';
 

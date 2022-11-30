@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles } from '@dpmosaic/theme';
+import { responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 export default {
   section: responsiveSprinkles({

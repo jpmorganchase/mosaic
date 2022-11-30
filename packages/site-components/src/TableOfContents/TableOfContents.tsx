@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import throttle from 'lodash/throttle';
-import { Caption1, useSize } from '@dpmosaic/components';
+import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
 
 import { TableOfContentsItem } from './TableOfContentsItem';
 import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';

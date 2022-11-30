@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import classnames from 'classnames';
-import { Icon, Button } from '@dpmosaic/components';
+import { Icon, Button } from '@jpmorganchase/mosaic-components';
 import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { useRouter } from 'next/router';
-import type { TabsMenu } from '@dpmosaic/components';
+import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { LayerLayout } from '@jpmorganchase/uitk-core';
 
 import styles from './styles.css';

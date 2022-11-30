@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
-import type { SharedConfig, SharedConfigSlice } from '@dpmosaic/site-store';
+import type { SharedConfig, SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 import { MosaicMiddleware } from './createMiddlewareRunner';
 import MiddlewareError, { ActionEnum } from './MiddlewareError';
 

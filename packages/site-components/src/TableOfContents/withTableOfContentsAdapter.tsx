@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTableOfContents } from '@dpmosaic/site-store';
+import { useTableOfContents } from '@jpmorganchase/mosaic-store';
 
 export const withTableOfContentsAdapter = Component => () => {
   const { tableOfContents } = useTableOfContents();

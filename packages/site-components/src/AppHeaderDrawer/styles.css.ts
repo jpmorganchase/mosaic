@@ -1,5 +1,11 @@
 import { style } from '@vanilla-extract/css';
-import { button, config, neutralBorder, responsiveSprinkles, sidebar } from '@dpmosaic/theme';
+import {
+  button,
+  config,
+  neutralBorder,
+  responsiveSprinkles,
+  sidebar
+} from '@jpmorganchase/mosaic-theme';
 
 export default {
   sidebarLeftDrawer: style([{ zIndex: '-1' }]),

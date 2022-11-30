@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
-import { Icon } from '@dpmosaic/components';
+import { Icon } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';
 
