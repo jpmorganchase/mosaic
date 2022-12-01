@@ -1,9 +1,9 @@
 {
   "name": "@jpmorganchase/mosaic-content-editor-plugin",
-  "license": "SEE LICENSE IN LICENSE.md",
-  "private": true,
   "description": "Mosaic - In Browser content editing plugin",
   "version": "0.1.0-beta.9",
+  "license": "Apache-2.0",
+  "author": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",
