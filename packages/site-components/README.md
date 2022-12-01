@@ -1,6 +1,6 @@
 # Mosaic Site Components Library
 
-`@dpmosaic/site-components` contains site specific UI components that conform to the Mosaic Design language.
+`@jpmorganchase/mosaic-site-components` contains site specific UI components that conform to the Mosaic Design language.
 A typical Site component is Mosaic specific.
 
 Site **can** contain Next JS specific dependencies.
@@ -11,4 +11,4 @@ Site **can** contain Next JS specific dependencies.
 
 ## Installation
 
-`yarn add @dpmosaic/site-components`
+`yarn add @jpmorganchase/mosaic-site-components`
