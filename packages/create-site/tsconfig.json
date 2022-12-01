@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "types": ["@types/node"],
+    "outDir": "dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/templates/**/*", "src/**/__tests__/**/*", "src/__tests__/**/*"]
+}
