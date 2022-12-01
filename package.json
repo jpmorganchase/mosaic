@@ -90,8 +90,7 @@
   },
   "resolutions": {
     "@braintree/sanitize-url": "^6.0.0",
-    "@types/react": "^16.9.34",
-    "jest-fetch-mock": "^3.0.3"
+    "@types/react": "^16.9.34"
   },
   "lint-staged": {
     "*": [
