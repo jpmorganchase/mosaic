@@ -1,5 +1,4 @@
 import { GetServerSidePropsContext } from 'next';
-import { validateIdaToken } from '@uiservices/node-common';
 import { getSessionFromToken, getToken, getIsCypressSession } from '../session';
 import type { Session } from '../types/session';
 import { MosaicMiddleware } from './createMiddlewareRunner';
@@ -47,8 +46,7 @@ const getRedirectOptions = (context: GetServerSidePropsContext) => {
 async function resolveSession(accessToken) {
   return (
     accessToken &&
-    (process.env.DISABLE_IDA_SERVICE_AUTH_TOKEN_VERIFICATION === 'true' ||
-      (await validateIdaToken(accessToken))) &&
+    process.env.DISABLE_IDA_SERVICE_AUTH_TOKEN_VERIFICATION === 'true' &&
     (getSessionFromToken(accessToken) as Session)
   );
 }

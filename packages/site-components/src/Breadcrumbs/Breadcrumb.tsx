@@ -10,7 +10,7 @@ export interface BreadcrumbProps {
 }
 
 // TODO replace with Odyssey Breadcrumb when it supports an API that can customize Links
-export const Breadcrumb = forwardRef<HTMLLIElement, BreadcrumbProps>(function Breadcrumb(
+export const Breadcrumb = forwardRef<HTMLLinkElement, BreadcrumbProps>(function Breadcrumb(
   { children, isCurrentLevel, ...props },
   ref
 ) {
