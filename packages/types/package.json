@@ -1,9 +1,9 @@
 {
   "name": "@jpmorganchase/mosaic-types",
   "version": "0.1.0-beta.9",
-  "author": "",
   "description": "Mosaic BitBucket source for core file system",
   "license": "Apache-2.0",
+  "author": "",
   "types": "./dist/index.d.ts",
   "engines": {
     "node": ">= 12.0.0"
