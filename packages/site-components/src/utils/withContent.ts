@@ -42,9 +42,14 @@ export const withContent: MosaicMiddleware<ContentProps> = async context => {
         }
       };
     }
-  } catch (error: Error) {
-    console.error(error.message);
-    throw new MiddlewareError(500, resolvedUrl, [error.message], { show500: true });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      throw new MiddlewareError(500, resolvedUrl, [error.message], { show500: true });
+    } else {
+      console.error('unexpected error');
+      throw new MiddlewareError(500, resolvedUrl, ['unexpected error'], { show500: true });
+    }
   }
   throw new MiddlewareError(404, resolvedUrl, [`Could not find any content for ${resolvedUrl}`], {
     show404: true

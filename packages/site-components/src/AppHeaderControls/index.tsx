@@ -25,7 +25,7 @@ function toUpperFirst(str) {
 export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   const router = useRouter();
 
-  const { colorMode, setColorMode } = useContext(ColorModeContext);
+  const { colorMode, setColorMode } = useContext<{ colorMode; setColorMode }>(ColorModeContext);
   const { isLoggedIn, ...session } = useSession();
   const { user: { avatarUrl = '', firstName = '' } = {} } = session || {};
   const loginPath = `/api/auth/login?referrer=${encodeURIComponent(router.asPath)}`;
@@ -40,16 +40,16 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   ];
 
   if (isLoggedIn) {
-    actionMenuOptions.push({
-      title: pageState === 'EDIT' ? 'Stop Editing' : 'Edit Document',
-      onSelect: () => {
-        if (pageState !== 'EDIT') {
-          startEditing();
-        } else {
-          stopEditing();
-        }
-      }
-    });
+    // actionMenuOptions.push({
+    //   title: pageState === 'EDIT' ? 'Stop Editing' : 'Edit Document',
+    //   onSelect: () => {
+    //     if (pageState !== 'EDIT') {
+    //       startEditing();
+    //     } else {
+    //       stopEditing();
+    //     }
+    //   }
+    // });
   }
   if (isLoggedIn) {
     actionMenuOptions = [...actionMenuOptions, { title: 'Logout', link: '/api/auth/logout' }];
@@ -103,7 +103,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
         }}
         className={styles.menuButton}
         hideCaret
-        key={`${colorMode} - ${pageState}`}
+        // key={`${colorMode} - ${pageState}`}
       >
         <Icon aria-label="select an action" name="microMenu" />
       </MenuButton>

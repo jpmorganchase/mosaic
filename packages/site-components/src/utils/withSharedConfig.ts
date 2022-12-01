@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import type { SharedConfig, SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 import { MosaicMiddleware } from './createMiddlewareRunner';
-import MiddlewareError, { ActionEnum } from './MiddlewareError';
+import MiddlewareError from './MiddlewareError';
 
 export { SharedConfig };
 
@@ -30,8 +30,13 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
       return { props: { sharedConfig: config } };
     }
   } catch (error) {
-    console.error(error.message);
-    throw new MiddlewareError(500, sharedConfigUrl, [error.message], { show500: true });
+    if (error instanceof Error) {
+      console.error(error.message);
+      throw new MiddlewareError(500, sharedConfigUrl, [error.message], { show500: true });
+    } else {
+      console.error('unexpected error');
+      throw new MiddlewareError(500, sharedConfigUrl, ['unexpected error'], { show500: true });
+    }
   }
   const show500 = response.status !== 404 && response.status !== 204;
   const show404 = response.status === 404 || response.status === 204;

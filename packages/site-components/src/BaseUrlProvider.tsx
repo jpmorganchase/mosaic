@@ -9,7 +9,7 @@ export type BaseUrlValue = string;
 export const BaseUrlContext: Context<BaseUrlValue> = createContext<BaseUrlValue>('/');
 export const BaseUrlProvider = ({ children }) => {
   const { route } = useRoute();
-  return <BaseUrlContext.Provider value={route}>{children}</BaseUrlContext.Provider>;
+  return <BaseUrlContext.Provider value={route!}>{children}</BaseUrlContext.Provider>;
 };
 
 function resolveRelativeUrl(href: string, baseRoute: string) {

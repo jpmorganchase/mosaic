@@ -1,7 +1,7 @@
 import React from 'react';
 import { Hero } from '@jpmorganchase/mosaic-components';
 
-export function Page500() {
+export function Page500(errors) {
   return (
     <Hero
       description="A 500 error occurred."
