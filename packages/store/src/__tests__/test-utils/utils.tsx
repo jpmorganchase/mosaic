@@ -1,7 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import { useCreateStore, StoreProvider, type SiteState } from '../../store';
+import { useCreateStore, StoreProvider } from '../../store';
+import type { SiteState } from '../../store';
 
 export function renderWithStore(ui: React.ReactElement) {
   const { rerender, ...result } = render(<Store>{ui}</Store>);
