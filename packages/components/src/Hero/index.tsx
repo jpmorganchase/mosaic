@@ -43,11 +43,6 @@ export interface HeroProps {
   image?: string;
   /** The title of the Hero. */
   title: string | ReactElement;
-  /* Scope. */
-
-
-  //TODO: Fix Type Error
-  scope: string | ReactElement;
   links?: HeroLink[];
   /** Defines the variant.
    * @defaultValue `regular`
@@ -116,8 +111,6 @@ export const Hero: React.FC<HeroProps> = ({
   eyebrow,
   image,
   title,
-  //TODO: Fix Type Error
-  scope,
   links,
   variant = 'regular',
   ...rest

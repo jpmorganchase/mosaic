@@ -9,7 +9,7 @@ const transitionStyles = {
 };
 
 type FadeProps = {
-  children?: React.ReactNode;
+  children: React.ReactElement;
   duration?: {
     enter: number;
     exit: number;
@@ -17,11 +17,11 @@ type FadeProps = {
   in: boolean;
 };
 
-export const Fade: FC<FadeProps> = ({ children, duration, in: inProp }) => {
+export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp }) => {
   const nodeRef = useRef(null);
   const [hasExited, setHasExited] = useState<boolean>(false);
   const defaultStyle = {
-    transition: `opacity ${duration.enter}ms ease-in-out`,
+    transition: `opacity ${duration?.enter}ms ease-in-out`,
     opacity: 0
   };
   const handleExit = () => {

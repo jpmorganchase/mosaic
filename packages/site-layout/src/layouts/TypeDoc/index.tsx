@@ -7,7 +7,7 @@ import {
   Breadcrumbs,
   Footer,
   VerticalNavigation
-} from '@jpmorganchase/mosaic-site-components';;
+} from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutBase } from '../../LayoutBase';
 import { LayoutColumns } from '../../LayoutColumns';
@@ -20,7 +20,7 @@ const APIHero = ({ description, name, pageType, releaseDate, title, version }) =
     datestamp={releaseDate}
     datestampLabel="Release Date"
     description={description}
-    scope={pageType === 'root' ? `Version ${version}` : `${name} - v${version}`}
+    eyebrow={pageType === 'root' ? `Version ${version}` : `${name} - v${version}`}
     title={pageType === 'root' ? name : title}
   />
 );

@@ -22,7 +22,7 @@ const APIHero = ({ description, name, pageType, releaseDate, title, version }) =
     datestamp={releaseDate}
     datestampLabel="Release Date"
     description={description}
-    scope={pageType === 'root' ? `Version ${version}` : `${name} - v${version}`}
+    eyebrow={pageType === 'root' ? `Version ${version}` : `${name} - v${version}`}
     title={pageType === 'root' ? name : title}
   />
 );
