@@ -14,5 +14,10 @@ module.exports = {
   setupFiles: ['./scripts/jest/client/jest.setup.js'],
   setupFilesAfterEnv: ['./scripts/jest/client/jest.environment.js'],
   // Add tests paths to roots
-  roots: ['<rootDir>/packages/components', '<rootDir>/packages/store']
+  roots: [
+    '<rootDir>/__mocks__',
+    '<rootDir>/packages/components',
+    '<rootDir>/packages/content-editor-plugin',
+    '<rootDir>/packages/store'
+  ]
 };
