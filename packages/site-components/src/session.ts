@@ -93,7 +93,7 @@ export function getSessionFromToken(accessToken): Session | null {
         isLoggedIn: true,
         accessToken,
         user: {
-          avatarUrl: process.env.AVATAR_URL,
+          avatarUrl: process.env.AVATAR_URL!,
           sid,
           country: Country,
           countryCode: CountryCode,

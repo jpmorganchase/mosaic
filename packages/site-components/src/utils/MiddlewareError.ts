@@ -11,7 +11,12 @@ export default class MiddlewareError extends Error {
   /** Props to pass back */
   public props: { show404?: boolean; show500?: boolean };
 
-  constructor(status, location = '', errors = [], props = {}) {
+  constructor(
+    status: MiddlewareError['status'],
+    location: MiddlewareError['location'] = '',
+    errors: MiddlewareError['errors'] = [],
+    props: MiddlewareError['props'] = {}
+  ) {
     super(`${status} error`);
     this.status = status;
     this.location = location;

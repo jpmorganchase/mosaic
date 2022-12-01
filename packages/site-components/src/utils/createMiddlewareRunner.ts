@@ -64,7 +64,7 @@ export function createMiddlewareRunner<TProps>(
           arrayMerge: overwriteMerge
         });
       } catch (error) {
-        errors.push(error);
+        errors.push(error as Error);
       }
     }
     if (result.redirect) {
@@ -95,6 +95,6 @@ export function createMiddlewareRunner<TProps>(
     if (show404 || show500) {
       context.res.setHeader(`X-Mosaic-${show404 ? '404' : '500'}`, 'true');
     }
-    return { props: { ...result.props, show404, show500 } };
+    return { props: { ...result.props, show404, show500 } as TProps };
   };
 }

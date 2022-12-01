@@ -20,7 +20,7 @@ export interface MenuLinksItem {
   /** Title of MenuLinksItem */
   title: string;
   /** Type of MenuLinksItem */
-  type: MenuItemType;
+  type: MenuItemType.MENU;
 }
 
 /**
@@ -43,6 +43,8 @@ export interface MenuLinkItem {
   link: string;
   /** Title of Tab */
   title?: string;
+  /** Type of MenuLinkItem */
+  type: MenuItemType.LINK;
 }
 
 /**

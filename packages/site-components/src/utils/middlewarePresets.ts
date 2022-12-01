@@ -7,6 +7,7 @@ import { withSharedConfig } from './withSharedConfig';
 import { withContent } from './withContent';
 import type { ContentProps } from './withContent';
 import { MosaicMiddleware, MosaicMiddlewareWithConfig } from './createMiddlewareRunner';
+import { SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 
 export type BaseMosaicAppProps = {
   /** Flag to show custom 404 page, whilst maintaining current state/layout */
@@ -39,10 +40,7 @@ export type GetMosaicServerSidePropsResult<T> = MosaicAppProps<T>;
 export type MiddlewarePresetsProps = ContentProps & SessionProps & SharedConfig;
 
 /** A collection of preset [[`Middleware`]] plugins that will compose together the page props */
-export const middlewarePresets: Array<
-  | MosaicMiddleware<MiddlewarePresetsProps>
-  | MosaicMiddlewareWithConfig<MiddlewarePresetsProps, SessionOptions>
-> = [
+export const middlewarePresets = [
   [withSession, { loginRequired: process.env.DISABLE_GLOBAL_AUTH !== 'true' }],
   withSharedConfig,
   withContent

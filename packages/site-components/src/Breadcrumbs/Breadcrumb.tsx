@@ -6,6 +6,7 @@ export interface BreadcrumbProps {
   children?: ReactNode;
   href?: string;
   isCurrentLevel?: boolean;
+  overflowLabel?: string;
 }
 
 // TODO replace with Odyssey Breadcrumb when it supports an API that can customize Links
