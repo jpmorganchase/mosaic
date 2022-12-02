@@ -78,7 +78,7 @@ export const PythonDoc: React.FC<LayoutProps> = ({
             />
           ) : null}
           {children}
-          <DocPaginator />
+          <DocPaginator linkSuffix={undefined} />
         </main>
       </LayoutColumns>
     </LayoutBase>

@@ -40,7 +40,7 @@ export const DetailOverview: React.FC<LayoutProps> = ({
       >
         <Breadcrumbs />
         {children}
-        <DocPaginator />
+        <DocPaginator linkSuffix={undefined} />
       </LayoutColumns>
     </LayoutBase>
   );
