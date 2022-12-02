@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Icon, ColorModeContext, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@jpmorganchase/uitk-lab';
 import { useRouter } from 'next/router';
-// import { useContentEditor, EditorControls } from '@dpmosaic/plugin-content-editor';
+import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 
 import { useSession } from '../SessionProvider';
 import { UserProfile } from '../UserProfile';
@@ -29,7 +29,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   const { isLoggedIn, ...session } = useSession();
   const { user: { avatarUrl = '', firstName = '' } = {} } = session || {};
   const loginPath = `/api/auth/login?referrer=${encodeURIComponent(router.asPath)}`;
-  // const { pageState, startEditing, stopEditing } = useContentEditor();
+  const { pageState, startEditing, stopEditing } = useContentEditor();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -40,16 +40,16 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   ];
 
   if (isLoggedIn) {
-    // actionMenuOptions.push({
-    //   title: pageState === 'EDIT' ? 'Stop Editing' : 'Edit Document',
-    //   onSelect: () => {
-    //     if (pageState !== 'EDIT') {
-    //       startEditing();
-    //     } else {
-    //       stopEditing();
-    //     }
-    //   }
-    // });
+    actionMenuOptions.push({
+      title: pageState === 'EDIT' ? 'Stop Editing' : 'Edit Document',
+      onSelect: () => {
+        if (pageState !== 'EDIT') {
+          startEditing();
+        } else {
+          stopEditing();
+        }
+      }
+    });
   }
   if (isLoggedIn) {
     actionMenuOptions = [...actionMenuOptions, { title: 'Logout', link: '/api/auth/logout' }];
@@ -78,7 +78,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
 
   return (
     <div className={styles.root}>
-      {/* <EditorControls isLoggedIn={isLoggedIn} /> */}
+      <EditorControls isLoggedIn={isLoggedIn} />
       {process.env.ENABLE_LOGIN === 'true' ? (
         <div className={styles.userInfo}>
           {isLoggedIn ? (
@@ -103,7 +103,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
         }}
         className={styles.menuButton}
         hideCaret
-        // key={`${colorMode} - ${pageState}`}
+        key={`${colorMode} - ${pageState}`}
       >
         <Icon aria-label="select an action" name="microMenu" />
       </MenuButton>
