@@ -1,7 +1,7 @@
 # Mosaic Open API Component
 
-`@jpmorganchase/components-open-api` is an Open API UI component for documenting APIs.
+`@jpmorganchase/mosaic-open-api-component` is an Open API UI component for documenting APIs.
 
 ## Installation
 
-`yarn add @jpmorganchase/components-open-api`
+`yarn add @jpmorganchase/mosaic-open-api-component``
