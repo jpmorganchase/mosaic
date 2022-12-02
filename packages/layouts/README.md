@@ -1,10 +1,10 @@
-# Mosaic Site Layouts
+# Mosaic Layouts
 
-`@jpmorganchase/site-layout`, containing re-usable Mosaic layouts and the UI elements needed to build your own layouts.
+`@jpmorganchase/mosaic-layouts`, containing re-usable Mosaic layouts and the UI elements needed to build your own layouts.
 
 ## Installation
 
-`yarn add @jpmorganchase/site-layout`
+`yarn add @jpmorganchase/mosaic-layouts`
 
 ## What is a layout component ?
 

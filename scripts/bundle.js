@@ -38,13 +38,13 @@ esbuild
       'react',
       'react-dom',
       'next/*',
-      '@dpmosaic/components',
-      '@dpmosaic/components-open-api',
-      '@dpmosaic/plugin-content-editor',
-      '@dpmosaic/site-components',
-      '@dpmosaic/site-layout',
-      '@dpmosaic/site-store',
-      '@dpmosaic/theme'
+      '@jpmorganchase/mosaic-components',
+      '@jpmorganchase/mosaic-open-api-component',
+      '@jpmorganchase/mosaic-content-editor-plugin',
+      '@jpmorganchase/mosaic-site-components',
+      '@jpmorganchase/mosaic-layouts',
+      '@jpmorganchase/mosaic-store',
+      '@jpmorganchase/mosaic-theme'
     ],
     watch: watchConfig
   })
