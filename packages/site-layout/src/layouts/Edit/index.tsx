@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useContentEditor } from '@jpmorganchase/mosaic-plugin-content-editor';
+import { useContentEditor } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { AppHeader } from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutBase } from '../../LayoutBase';

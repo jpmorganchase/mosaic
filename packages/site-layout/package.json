@@ -16,12 +16,13 @@
   },
   "devDependencies": {
     "del-cli": "^4.0.1",
+    "esbuild-node-externals": "^1.0.2",
     "jest-fetch-mock": "^3.0.1",
     "typescript": "^4.8.3"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.9",
-    "@jpmorganchase/mosaic-plugin-content-editor": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.9",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.9",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.9",
@@ -29,7 +30,8 @@
     "@vanilla-extract/css": "^1.6.0",
     "classnames": "^2.2.6",
     "lodash": "^4.17.21",
-    "next": "^12.1.0"
+    "next": "^12.1.0",
+    "react-transition-group": "^4.4.5"
   },
   "peerDependencies": {
     "@types/react": "^16.9.34",

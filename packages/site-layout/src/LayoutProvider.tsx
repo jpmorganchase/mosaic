@@ -1,6 +1,6 @@
 import React, { FC, ReactNode } from 'react';
 import { useLayout } from '@jpmorganchase/mosaic-store';
-import { usePageState } from '@jpmorganchase/mosaic-plugin-content-editor';
+import { usePageState } from '@jpmorganchase/mosaic-content-editor-plugin';
 
 import type { LayoutProps } from './types';
 
