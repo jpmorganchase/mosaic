@@ -1,0 +1,47 @@
+// eslint-disable import/no-duplicates
+import { AppProps } from 'next/app';
+import Head from 'next/head';
+import {
+BaseUrlProvider,
+Image,
+Link,
+Metadata,
+SessionProvider,
+SidebarProvider
+} from '@dpmosaic/site-components';
+import { ImageProvider, LinkProvider, ThemeProvider } from '@dpmosaic/components';
+import { LayoutProvider } from '@dpmosaic/site-layout';
+import { useCreateStore, StoreProvider } from '@dpmosaic/site-store';
+{{{ printImports imports }}}
+
+import { MyAppProps } from '../types/mosaic';
+
+const components = {{{ printComponentIdentifiers imports }}};
+const layoutComponents = {{{ printLayoutIdentifiers imports }}};
+
+export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
+  const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
+
+  const storeProps = { sharedConfig, ...frontmatter };
+  const createStore = useCreateStore(storeProps);
+  return (
+  <SessionProvider session={session}>
+    <StoreProvider value={createStore()}>
+      <Metadata Component={Head} />
+      <ThemeProvider>
+        <BaseUrlProvider>
+          <ImageProvider value={Image}>
+            <LinkProvider value={Link}>
+              <SidebarProvider>
+                <LayoutProvider layoutComponents={layoutComponents}>
+                  <Component components={components} {...pageProps} />
+                </LayoutProvider>
+              </SidebarProvider>
+            </LinkProvider>
+          </ImageProvider>
+        </BaseUrlProvider>
+      </ThemeProvider>
+    </StoreProvider>
+  </SessionProvider>
+  );
+  }
