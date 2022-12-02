@@ -43,13 +43,13 @@ const initialConfig = {
 
 interface PreviewComponentProps {
   source: any;
-  meta: any;
+  meta?: any;
   components: any;
 }
 
-interface EditorProps extends PreviewComponentProps, PreviewPluginProps {
+interface EditorProps extends PreviewComponentProps, Partial<PreviewPluginProps> {
   content: string;
-  PreviewComponent: ComponentType<PreviewComponentProps>;
+  PreviewComponent?: ComponentType<PreviewComponentProps>;
   user?: any;
 }
 
@@ -118,7 +118,9 @@ const Editor: FC<EditorProps> = ({
               <ContentEditor />
             </ScrollableSection>
             <ScrollableSection>
-              <PreviewComponent source={previewContent} meta={meta} components={components} />
+              {PreviewComponent && (
+                <PreviewComponent source={previewContent} meta={meta} components={components} />
+              )}
             </ScrollableSection>
           </Split>
           <HistoryPlugin />
@@ -126,7 +128,7 @@ const Editor: FC<EditorProps> = ({
           <TablePlugin />
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={transformers} />
-          <PreviewPlugin compileMDX={compileMDX} />
+          {compileMDX && <PreviewPlugin compileMDX={compileMDX} />}
           <MarkdownImagePlugin />
           <MarkdownLinkPlugin />
           <LinkEditor />
