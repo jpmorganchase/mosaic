@@ -1,16 +1,12 @@
 import type { ReactNode } from 'react';
-import type { Breadcrumb, Item as LinkType } from '@jpmorganchase/mosaic-site-components';
-import type { FooterProps } from '@jpmorganchase/mosaic-components';
-
-export type ToCItemProp = {
-  text: string
-}
+import type { Breadcrumb, LinkType } from '@jpmorganchase/mosaic-site-components';
+import { FooterProps } from '@jpmorganchase/mosaic-site-components';
 
 export type LayoutProps = {
   children?: ReactNode;
   className?: string;
   ToCProps?: {
-    items: Array<ToCItemProp>
+    items: any;
   };
   SidebarProps?: {
     helpLinks: Pick<FooterProps, 'helpLinks'>;
@@ -19,9 +15,9 @@ export type LayoutProps = {
     next?: LinkType;
     prev?: LinkType;
   };
-  BreadcrumbsProps?: { breadcrumbs: Breadcrumb[] };
+  BreadcrumbsProps?: { breadcrumbs: typeof Breadcrumb[] };
   BackLinkProps?: { label?: string; link: string };
-  FooterProps?: FooterProps;
+  FooterProps?: any;
   layout?: string;
   meta?: {
     data: { [key: string]: any };

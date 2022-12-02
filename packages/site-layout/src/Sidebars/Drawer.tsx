@@ -45,7 +45,7 @@ export const Drawer: FC<DrawerProps> = ({ children }) => {
               className={styles.toggleButton}
               onClick={toggleDrawer}
               variant="regular"
-              accessibleText="show the secondary navigation"
+              aria-label="show the secondary navigation"
             >
               {open ? (
                 <Icon aria-label="close the main navigation" name="close" />

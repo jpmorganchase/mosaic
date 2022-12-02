@@ -1,5 +1,10 @@
 import React from 'react';
-import { AppHeader, Breadcrumbs, Footer, TableOfContents } from '@jpmorganchase/mosaic-site-components';
+import {
+  AppHeader,
+  Breadcrumbs,
+  Footer,
+  TableOfContents
+} from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutBase } from '../../LayoutBase';
 import { LayoutColumns } from '../../LayoutColumns';
