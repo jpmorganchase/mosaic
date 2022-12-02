@@ -28,8 +28,8 @@
     "serve:latest": "yarn mosaic serve --snapshot snapshots/latest",
     "start": "yarn mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js -p 8080",
     "lint": "yarn eslint \"packages/core/src/**/*.{ts,tsx}\" --ignore-pattern \"**/__tests__/**\"",
-    "prettier": "prettier --write . --ignore-path .gitignore",
-    "prettier:ci": "prettier --check . --ignore-path .gitignore",
+    "prettier": "prettier --write .",
+    "prettier:ci": "prettier --check .",
     "prepare": "husky install"
   },
   "repository": {
