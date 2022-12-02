@@ -18,6 +18,7 @@ module.exports = {
     '<rootDir>/__mocks__',
     '<rootDir>/packages/components',
     '<rootDir>/packages/content-editor-plugin',
+    '<rootDir>/packages/site-components',
     '<rootDir>/packages/store'
   ]
 };

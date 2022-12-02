@@ -64,7 +64,14 @@ export function createMiddlewareRunner<TProps>(
           arrayMerge: overwriteMerge
         });
       } catch (error) {
-        errors.push(error as Error);
+        if (error instanceof Error) {
+          errors.push(error);
+        } else {
+          const unexpectedError = new MiddlewareError(500, undefined, [String(error)], {
+            show500: true
+          });
+          errors.push(unexpectedError);
+        }
       }
     }
     if (result.redirect) {
@@ -95,6 +102,7 @@ export function createMiddlewareRunner<TProps>(
     if (show404 || show500) {
       context.res.setHeader(`X-Mosaic-${show404 ? '404' : '500'}`, 'true');
     }
-    return { props: { ...result.props, show404, show500 } as TProps };
+    const props: TProps = { ...result.props, show404, show500 } as TProps;
+    return { props };
   };
 }

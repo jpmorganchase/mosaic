@@ -8,9 +8,11 @@ import { createMDXScope } from './utils/createMDXScope';
 import { Page500 } from './500';
 import { Page404 } from './404';
 
-const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' } }) => (
-  <Page500 errors={[`Error with page content: ${errorMessage}`]} />
-);
+const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' } }) => {
+  console.error('An un-handled error created a 500 message');
+  console.error(errorMessage);
+  return <Page500 />;
+};
 
 function MDXRemoteWithErrorBoundary({ components, source, meta }) {
   return (
