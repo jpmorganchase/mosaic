@@ -9,7 +9,10 @@ export type BaseUrlValue = string;
 export const BaseUrlContext: Context<BaseUrlValue> = createContext<BaseUrlValue>('/');
 export const BaseUrlProvider = ({ children }) => {
   const { route } = useRoute();
-  return <BaseUrlContext.Provider value={route!}>{children}</BaseUrlContext.Provider>;
+  if (!route) {
+    throw new Error('Base route not defined in store');
+  }
+  return <BaseUrlContext.Provider value={route}>{children}</BaseUrlContext.Provider>;
 };
 
 function resolveRelativeUrl(href: string, baseRoute: string) {
@@ -17,7 +20,7 @@ function resolveRelativeUrl(href: string, baseRoute: string) {
     return href;
   }
   if (!baseRoute) {
-    throw new Error('Base route not defined.');
+    throw new Error('Cannot resolve relative url as base route is undefined');
   }
   const url = new URL('http://jpmorgan.com');
   const anchorMatches = href.match(/(.*)#(.*)/);

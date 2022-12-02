@@ -10,7 +10,6 @@ export class Document extends NextDocument {
     return (
       <Html>
         <Head>
-          {(this.props as any).muiStyleTags}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           <link

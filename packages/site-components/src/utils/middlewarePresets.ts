@@ -2,7 +2,6 @@ import type { Redirect } from 'next';
 
 import type { SessionProps, SessionOptions } from './withSession';
 import { withSession } from './withSession';
-import type { SharedConfig } from './withSharedConfig';
 import { withSharedConfig } from './withSharedConfig';
 import { withContent } from './withContent';
 import type { ContentProps } from './withContent';
@@ -37,10 +36,13 @@ export type MosaicAppProps<T> = {
 export type GetMosaicServerSidePropsResult<T> = MosaicAppProps<T>;
 
 /** MiddlewarePresets props */
-export type MiddlewarePresetsProps = ContentProps & SessionProps & SharedConfig;
+export type MiddlewarePresetsProps = ContentProps & SessionProps & SharedConfigSlice;
 
 /** A collection of preset [[`Middleware`]] plugins that will compose together the page props */
-export const middlewarePresets = [
+export const middlewarePresets: Array<
+  | MosaicMiddleware<MiddlewarePresetsProps>
+  | MosaicMiddlewareWithConfig<MiddlewarePresetsProps, SessionOptions>
+> = [
   [withSession, { loginRequired: process.env.DISABLE_GLOBAL_AUTH !== 'true' }],
   withSharedConfig,
   withContent

@@ -3,7 +3,7 @@ export default class MiddlewareError extends Error {
   public status: number;
 
   /** Related route location */
-  public location: string;
+  public location: string | undefined;
 
   /** Array of errors */
   public errors: string[];
@@ -13,7 +13,7 @@ export default class MiddlewareError extends Error {
 
   constructor(
     status: MiddlewareError['status'],
-    location: MiddlewareError['location'] = '',
+    location: MiddlewareError['location'],
     errors: MiddlewareError['errors'] = [],
     props: MiddlewareError['props'] = {}
   ) {
