@@ -1,4 +1,4 @@
-import { clearSession } from '@dpmosaic/site-components/dist/session';
+import { clearSession } from '@jpmorganchase/mosaic-site-components/dist/session';
 
 const login = (_, res) => {
   clearSession(res);

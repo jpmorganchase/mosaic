@@ -1,6 +1,9 @@
 import { getJavascriptWebToken } from '@uiservices/node-common';
-import type { Session } from '@dpmosaic/site-components';
-import { createSession, getSessionFromToken } from '@dpmosaic/site-components/dist/session';
+import type { Session } from '@jpmorganchase/mosaic-site-components';
+import {
+  createSession,
+  getSessionFromToken
+} from '@jpmorganchase/mosaic-site-components/dist/session';
 
 if (
   !process.env.ADFS_CALLBACK_DOMAIN ||

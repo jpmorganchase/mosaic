@@ -98,10 +98,10 @@ const config: MosaicConfig = {
         // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
         // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
         // If running locally
-        // create an environment variable like BITBUCKET_CLONE_CREDENTIALS to let the user define it via the CLI
-        // export BITBUCKET_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+        // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
+        // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
         prefixDir: 'developer',
-        credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
         repo: process.env.DEVELOPER_DOCS_REPO, // repo url without any protocol
         branch: 'develop', // branch where docs are pulled from

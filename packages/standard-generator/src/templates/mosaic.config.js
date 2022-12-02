@@ -1,6 +1,6 @@
 const path = require('path');
 const deepmerge = require('deepmerge');
-const mosaicConfig = require('@dpmosaic/mosaic-standard-generator/dist/fs.config.js');
+const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
 
 /** Enhance/modify your Mosaic core fs
  * pageExtensions: supported file extensions which can be stored in the Virtual File System (VFS) created by Core FS
@@ -22,7 +22,7 @@ module.exports = deepmerge(mosaicConfig, {
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-source-bitbucket'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
@@ -30,9 +30,9 @@ module.exports = deepmerge(mosaicConfig, {
         // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
         // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
         // If running locally
-        // create an environment variable like BITBUCKET_CLONE_CREDENTIALS to let the user define it via the CLI
-        // export BITBUCKET_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
-        credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
+        // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
+        // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
         // Add to use a folder prefix
         // prefixDir: 'cibdat',
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'

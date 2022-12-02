@@ -1,11 +1,11 @@
 import React from 'react';
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
-import { Body } from '@dpmosaic/site-components';
+import { Body } from '@jpmorganchase/mosaic-site-components';
 import {
   createMiddlewareRunner,
   MiddlewareResult
-} from '@dpmosaic/site-components/dist/utils/createMiddlewareRunner';
-import { middlewarePresets } from '@dpmosaic/site-components/dist/utils/middlewarePresets';
+} from '@jpmorganchase/mosaic-site-components/dist/utils/createMiddlewareRunner';
+import { middlewarePresets } from '@jpmorganchase/mosaic-site-components/dist/utils/middlewarePresets';
 
 import type { MyAppProps, MyMiddlewareProps } from '../types/mosaic';
 

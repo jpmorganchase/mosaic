@@ -1,7 +1,7 @@
 import type {
   MosaicAppProps,
   MiddlewarePresetsProps
-} from '@dpmosaic/site-components/dist/utils/middlewarePresets';
+} from '@jpmorganchase/mosaic-site-components/dist/utils/middlewarePresets';
 
 /**
  * In this file, define each of your own Middleware props, which combine together into MyAppProps
