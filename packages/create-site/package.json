@@ -1,0 +1,27 @@
+{
+  "name": "@jpmorganchase/mosaic-create-site",
+  "version": "0.1.0-beta.9",
+  "license": "Apache-2.0",
+  "description": "Mosaic - Create Site CLI",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:bundle": "node ./scripts/bundle.js",
+    "clean": "del-cli 'dist/**' && find . -type d -empty -delete",
+    "watch": "node ./scripts/bundle.js watch"
+  },
+  "bin": {
+    "mosaic-create-site": "./bin/mosaic-create-site.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.9",
+    "@types/inquirer": "^8.2.4",
+    "@types/node": "^18.7.19",
+    "node-plop": "^0.31.0"
+  }
+}
