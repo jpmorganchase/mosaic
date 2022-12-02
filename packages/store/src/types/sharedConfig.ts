@@ -12,5 +12,5 @@ export type SharedConfig = {
 };
 
 export type SharedConfigSlice = {
-  sharedConfig: SharedConfig;
+  sharedConfig?: SharedConfig;
 };
