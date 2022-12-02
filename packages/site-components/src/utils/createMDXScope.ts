@@ -1,6 +1,6 @@
 import { recipes } from '@jpmorganchase/mosaic-theme';
 import { useColorMode } from '@jpmorganchase/mosaic-components';
-import { flow as esFlow } from 'lodash-es';
+import flowImpl from 'lodash/flow';
 
 type SortViewByDate = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;
 type SortValueCallback = (item: { [key: string]: string }) => string;
@@ -47,7 +47,7 @@ const limit: LimitFactory =
   view =>
     view.slice(0, Math.min(max, view.length));
 
-const flow = (...funcs) => esFlow(...funcs);
+const flow = (...funcs) => flowImpl(...funcs);
 
 export function createMDXScope(meta = {}) {
   return {

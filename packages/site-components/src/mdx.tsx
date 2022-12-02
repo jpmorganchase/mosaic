@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import warning from 'warning';
+import React from 'react';
 import { Pre, getMarkdownComponents, withMarkdownSpacing } from '@jpmorganchase/mosaic-components';
 import type { PreProps } from '@jpmorganchase/mosaic-components';
 import { getLabMarkdownComponents } from '@jpmorganchase/mosaic-components/dist-labs/index';
