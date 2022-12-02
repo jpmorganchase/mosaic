@@ -1,0 +1,60 @@
+{
+  "name": "@jpmorganchase/mosaic-site-components",
+  "version": "0.1.0-beta.9",
+  "license": "Apache-2.0",
+  "description": "Mosaic - Site components",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:bundle": "node ../../scripts/bundle.js",
+    "build:types": "tsc",
+    "clean": "del-cli 'dist/**' && find . -type d -empty -delete",
+    "dev": "node ../../scripts/bundle.js watch"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "@types/styled-components": "^5.1.26",
+    "@vanilla-extract/esbuild-plugin": "^2.0.2",
+    "del-cli": "^4.0.1",
+    "jest-fetch-mock": "^3.0.3",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.9",
+    "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.0",
+    "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.9",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.9",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.9",
+    "@jpmorganchase/uitk-lab": "^0.8.0",
+    "@material-ui/lab": "4.0.0-alpha.56",
+    "@types/mdast": "^3.0.0",
+    "@vanilla-extract/css": "^1.6.0",
+    "@vanilla-extract/recipes": "^0.2.1",
+    "@vanilla-extract/sprinkles": "^1.3.0",
+    "acorn": "^8.0.0",
+    "acorn-jsx": "^5.0.0",
+    "classnames": "^2.2.6",
+    "deepmerge": "^4.2.2",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
+    "next": "^12.1.0",
+    "next-mdx-remote": "^4.0.0",
+    "node-cookie": "^2.1.2",
+    "react-error-boundary": "^3.1.4",
+    "react-pro-sidebar": "1.0.0-alpha.7",
+    "rehype-slug": "^5.0.1",
+    "unified": "^10.0.0",
+    "unist-util-visit": "^2.0.0",
+    "warning": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@types/react": "^16.9.34",
+    "react": "^16.8.0",
+    "react-dom": "^16.9.0"
+  }
+}
