@@ -5,6 +5,7 @@ import type { ButtonProps, LinkIconProps } from '@jpmorganchase/mosaic-component
 import styles from './styles.css';
 
 export interface FooterProps {
+  helloFooterProps: any;
   ButtonProps?: ButtonProps;
   className?: string;
   description?: string;

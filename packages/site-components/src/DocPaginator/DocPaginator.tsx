@@ -6,15 +6,13 @@ import { useRouter } from 'next/router';
 import styles from './styles.css';
 import type { LinkType } from '../Link';
 
-export function DocPaginator({
-  linkSuffix = '',
-  next,
-  prev
-}: {
+export interface DocPaginatorProps {
   linkSuffix?: string;
   next?: LinkType;
   prev?: LinkType;
-}) {
+}
+
+export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, prev }) => {
   const router = useRouter();
 
   const handleRouteChangeComplete = () => {
@@ -68,4 +66,4 @@ export function DocPaginator({
       </div>
     </div>
   );
-}
+};
