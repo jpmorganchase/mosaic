@@ -12,7 +12,11 @@ export interface CurrentItem extends Item {
 }
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-export function TableOfContents({ items }) {
+export type TableOfContentsProps = {
+  items?: Item[];
+};
+
+export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
   if (!items) {
     throw new Error('No `items` specified for Table of Contents.');
   }
@@ -101,4 +105,4 @@ export function TableOfContents({ items }) {
       </ul>
     </nav>
   ) : null;
-}
+};

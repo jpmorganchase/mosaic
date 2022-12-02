@@ -1,5 +1,11 @@
 import { keyframes, style } from '@vanilla-extract/css';
-import { button, neutralBorder, responsiveSprinkles, sidebar, config } from '@jpmorganchase/mosaic-theme';
+import {
+  button,
+  neutralBorder,
+  responsiveSprinkles,
+  sidebar,
+  config
+} from '@jpmorganchase/mosaic-theme';
 
 const fadeIn = keyframes({
   '0%': { opacity: 0 },
