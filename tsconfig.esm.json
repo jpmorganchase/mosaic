@@ -17,7 +17,7 @@
     "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
-      "@dpmosaic/*": ["packages/*/dist"]
+      "@jpmorganchase/mosaic*": ["packages/*/dist"]
     },
     "types": ["jest", "node"]
   },
