@@ -1,9 +1,9 @@
 {
   "name": "@jpmorganchase/mosaic-site-preset-styles",
   "version": "0.1.0-beta.9",
-  "license": "SEE LICENSE IN LICENSE.md",
-  "private": true,
+  "license": "Apache-2.0",
   "description": "Mosaic - Preset styles",
+  "author": "",
   "main": "./dist/index.js",
   "style": "./dist/index.css",
   "scripts": {
@@ -24,7 +24,7 @@
     "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-site-layout": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-layouts": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-theme": "0.1.0-beta.9",
     "prismjs": "^1.23.0"
   },
