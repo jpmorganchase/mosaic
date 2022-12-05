@@ -25,9 +25,11 @@
     "build:snapshot:latest": "yarn mosaic build --out ./snapshots --name latest --config ./packages/example-mosaic-fs/dist/mosaic.config.js",
     "clean": "turbo run clean",
     "example-nextjs": "yarn build && concurrently --kill-others 'yarn workspace @jpmorganchase/mosaic-example-nextjs-ssr dev' 'yarn mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js' -p 8080",
+    "gen": "yarn mosaic-create-site create -o packages/site -i",
     "serve:latest": "yarn mosaic serve --snapshot snapshots/latest",
     "start": "yarn mosaic serve -c ./packages/example-mosaic-fs/dist/mosaic.config.js -p 8080",
     "lint": "yarn eslint \"packages/core/src/**/*.{ts,tsx}\" --ignore-pattern \"**/__tests__/**\"",
+    "postinstall": "patch-package",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",
     "prepare": "husky install"
@@ -77,6 +79,7 @@
     "jest-fetch-mock": "^3.0.3",
     "lint-staged": "^13.0.3",
     "npm-run-all": "^4.0.2",
+    "patch-package": "^6.2.2",
     "prettier": "^2.7.1",
     "regenerator-runtime": "^0.13.10",
     "resize-observer-polyfill": "1.5.1",
@@ -90,7 +93,8 @@
   },
   "resolutions": {
     "@braintree/sanitize-url": "^6.0.0",
-    "@types/react": "^16.9.34"
+    "@types/react": "^16.9.34",
+    "commander": "^9.4.0"
   },
   "lint-staged": {
     "*": [
