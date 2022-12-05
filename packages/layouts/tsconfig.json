@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.esm",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "jsx": "react"
+  },
+  "include": ["src"]
+}
