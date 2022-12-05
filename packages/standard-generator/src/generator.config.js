@@ -55,7 +55,7 @@ module.exports = {
       type: 'component'
     },
     {
-      import: `import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-site-layout';`,
+      import: `import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';`,
       identifier: 'mosaicLayouts',
       type: 'layout'
     },
