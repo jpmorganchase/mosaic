@@ -34,7 +34,7 @@ esbuild
     format: 'esm',
     target: ['es2015'],
     plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({})],
-    external: ['react', '@material-ui/*', 'react-dom', '@jpmuitk/*', '@dpmosaic/theme'],
+    external: ['react', 'react-dom', '@jpmorganchase/uitk*', '@jpmorganchase/mosaic-theme'],
     watch: watchConfig
   })
   .catch(e => {
