@@ -1,0 +1,63 @@
+diff --git a/node_modules/node-plop/src/node-plop.js b/node_modules/node-plop/src/node-plop.js
+index 043bd12..53bdde0 100644
+--- a/node_modules/node-plop/src/node-plop.js
++++ b/node_modules/node-plop/src/node-plop.js
+@@ -17,7 +17,9 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+   let defaultInclude = { generators: true };
+ 
+   let welcomeMessage;
+-  const { destBasePath, force } = plopCfg;
++  const { destBasePath, force, description:descriptionProp } = plopCfg;
++  let description = descriptionProp;
++
+   const generators = {};
+   const partials = {};
+   const actionTypes = {};
+@@ -33,6 +35,9 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+   const setWelcomeMessage = (message) => {
+     welcomeMessage = message;
+   };
++  const setDescription = (name, value) => {
++    generators[name].description = value;
++  };
+   const setHelper = (name, fn) => {
+     helpers[name] = fn;
+   };
+@@ -54,6 +59,7 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+   }
+ 
+   const getWelcomeMessage = () => welcomeMessage;
++  const getDescription = (name) => generators[name].description;
+   const getHelper = (name) => helpers[name];
+   const getPartial = (name) => partials[name];
+   const getActionType = (name) => actionTypes[name];
+@@ -129,6 +135,12 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+           setGenerator,
+           (proxyName) => ({ proxyName, proxy })
+         );
++        loadAsset(
++            genNameList,
++            includeCfg === true || include.generators,
++            setDescription,
++            proxy.getDescription
++        );
+         loadAsset(
+           proxy.getPartialList(),
+           includeCfg === true || include.partials,
+@@ -190,6 +202,8 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+     setPrompt,
+     setWelcomeMessage,
+     getWelcomeMessage,
++    setDescription,
++    getDescription,
+     setGenerator,
+     getGenerator,
+     getGeneratorList,
+@@ -251,6 +265,7 @@ async function nodePlop(plopfilePath = "", plopCfg = {}) {
+     },
+     setGenerator(name, config) {
+       const g = plopfileApi.setGenerator(name, config);
++      g.setDescription(name, config.description);
+       return this.getGenerator(g.name);
+     },
+   });

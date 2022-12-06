@@ -8,10 +8,7 @@ export type BaseUrlValue = string;
 
 export const BaseUrlContext: Context<BaseUrlValue> = createContext<BaseUrlValue>('/');
 export const BaseUrlProvider = ({ children }) => {
-  const { route } = useRoute();
-  if (!route) {
-    throw new Error('Base route not defined in store');
-  }
+  const { route = '/' } = useRoute();
   return <BaseUrlContext.Provider value={route}>{children}</BaseUrlContext.Provider>;
 };
 
