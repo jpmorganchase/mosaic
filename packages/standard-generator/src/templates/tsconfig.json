@@ -9,7 +9,9 @@
     "incremental": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "noImplicitAny": false,
+    "jsx": "preserve",
+    "skipLibCheck": true
   },
   "include": ["src"],
   "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]

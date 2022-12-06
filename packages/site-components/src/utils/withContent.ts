@@ -20,7 +20,9 @@ export interface ContentProps {
 export const withContent: MosaicMiddleware<ContentProps> = async context => {
   const { resolvedUrl } = context;
   try {
-    const req = await fetch(`http://localhost:8080${resolvedUrl}`);
+    // Use env: MOSAIC_URL="http://localhost:3000/api/snapshots" to point to static data api
+    const mosaicUrl = process.env.MOSAIC_URL || 'http://localhost:8080';
+    const req = await fetch(`${mosaicUrl}${resolvedUrl}`);
 
     if (req.ok) {
       const contentType = req.headers.get('content-type');
