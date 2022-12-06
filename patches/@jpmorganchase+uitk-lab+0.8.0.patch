@@ -1,0 +1,25 @@
+diff --git a/node_modules/@jpmorganchase/uitk-lab/dist-cjs/node_modules/style-inject/dist/style-inject.es.js b/node_modules/@jpmorganchase/uitk-lab/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
+index fac049a..5663033 100644
+--- a/node_modules/@jpmorganchase/uitk-lab/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
++++ b/node_modules/@jpmorganchase/uitk-lab/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
+@@ -2,7 +2,7 @@
+ 
+ function styleInject(css, ref) {
+   if ( ref === void 0 ) ref = {};
+-  var insertAt = ref.insertAt;
++  var insertAt = ref.insertAt || 'top';
+ 
+   if (!css || typeof document === 'undefined') { return; }
+ 
+diff --git a/node_modules/@jpmorganchase/uitk-lab/dist-es/node_modules/style-inject/dist/style-inject.es.js b/node_modules/@jpmorganchase/uitk-lab/dist-es/node_modules/style-inject/dist/style-inject.es.js
+index 69a6f1b..8268fdc 100644
+--- a/node_modules/@jpmorganchase/uitk-lab/dist-es/node_modules/style-inject/dist/style-inject.es.js
++++ b/node_modules/@jpmorganchase/uitk-lab/dist-es/node_modules/style-inject/dist/style-inject.es.js
+@@ -1,6 +1,6 @@
+ function styleInject(css, ref) {
+   if ( ref === void 0 ) ref = {};
+-  var insertAt = ref.insertAt;
++  var insertAt = ref.insertAt || 'top';
+ 
+   if (!css || typeof document === 'undefined') { return; }
+ 

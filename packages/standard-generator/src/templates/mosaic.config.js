@@ -15,12 +15,13 @@ module.exports = deepmerge(mosaicConfig, {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
       options: {
-        rootDir: path.join(process.env.INIT_CWD, 'INSERT RELATIVE PATH', 'docs'),
+        rootDir: path.join(process.env.INIT_CWD, '../docs'),
         cache: true,
         prefixDir: 'mosaic',
         extensions: ['.mdx']
       }
-    },
+    }
+    /*
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
@@ -42,5 +43,6 @@ module.exports = deepmerge(mosaicConfig, {
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }
     }
+    */
   ]
 });

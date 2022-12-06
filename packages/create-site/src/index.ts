@@ -1,10 +1,10 @@
-const standardGeneratorConfig = require('@jpmorganchase/standard-generator/dist/generator.config.js');
+const standardGeneratorConfig = require('@jpmorganchase/mosaic-standard-generator/dist/generator.config.js');
 
 /**
  * Get list of Mosaic default generators, can be composed with your own generators
  */
 const getGenerators = () => [
-  ['@jpmorganchase/standard-generator/dist/generator', standardGeneratorConfig]
+  ['@jpmorganchase/mosaic-standard-generator/dist/generator', standardGeneratorConfig]
 ];
 
 module.exports = {

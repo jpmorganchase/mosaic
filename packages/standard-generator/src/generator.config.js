@@ -26,20 +26,20 @@ module.exports = {
     /* Mosaic site dependencies */
     { package: '@jpmorganchase/mosaic-components', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-content-editor-plugin', version: '^0.1.0-beta.9' },
+    { package: '@jpmorganchase/mosaic-layouts', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-site-components', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-site-layout', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-site-preset-styles', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-store', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-theme', version: '^0.1.0-beta.9' },
     /* Mosaic core filesystem dependencies */
     { package: '@jpmorganchase/mosaic-cli', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-core', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-types', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-serialisers', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-schemas', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-plugins', version: '^0.1.0-beta.9' },
+    { package: '@jpmorganchase/mosaic-schemas', version: '^0.1.0-beta.9' },
+    { package: '@jpmorganchase/mosaic-serialisers', version: '^0.1.0-beta.9' },
+    { package: '@jpmorganchase/mosaic-source-git-repo', version: '^0.1.0-beta.9' },
     { package: '@jpmorganchase/mosaic-source-local-folder', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-source-git-repo', version: '^0.1.0-beta.9' }
+    { package: '@jpmorganchase/mosaic-types', version: '^0.1.0-beta.9' }
   ],
   /**
    * Extended imports used in site's _app.tsx
@@ -55,7 +55,7 @@ module.exports = {
       type: 'component'
     },
     {
-      import: `import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-site-layout';`,
+      import: `import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';`,
       identifier: 'mosaicLayouts',
       type: 'layout'
     },
