@@ -13,6 +13,7 @@ export * from './HTMLView';
 export * from './Link';
 export * from './Image';
 export * from './Metadata';
+export * from './MosaicProvider';
 export * from './SessionProvider';
 export * from './SidebarProvider';
 export * from './TableOfContents';
