@@ -12,10 +12,9 @@ export default async function build(config, targetDir, options) {
     options: { ...source.options, cache: false }
   }));
   const scope = options.scope && options.scope.split(',');
-  const mosaic = new MosaicCore();
+  const mosaic = new MosaicCore(config);
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
   await fsExtra.emptyDir(pathDir);
-  await mosaic.init(config);
   await mosaic.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
   const filesystem = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;

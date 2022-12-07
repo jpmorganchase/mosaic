@@ -1,45 +1,46 @@
 import path from 'node:path';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import { BitBucketPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
+import { createRequire } from 'node:module';
 
-const resolveModule = async (modulePath: string) => (await import.meta.resolve?.(modulePath)) || '';
+const require = createRequire(import.meta.url);
 
 const config: MosaicConfig = {
   pageExtensions: ['.mdx', '.json', '.md'],
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-serialisers/mdx'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/mdx'),
       filter: /\.mdx$/
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-serialisers/md'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/md'),
       filter: /\.md$/
     }
   ],
   plugins: [
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/SiteMapPlugin')
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SiteMapPlugin')
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/SearchIndexPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SearchIndexPlugin'),
       options: { maxLineLength: 240, maxLineCount: 240, keys: ['description'] }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin'),
       options: {
         indexPageName: 'index.mdx'
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/TableOfContentsPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/TableOfContentsPlugin'),
       options: {
         minRank: 2,
         maxRank: 4
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/LazyPagePlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/LazyPagePlugin'),
       // This plugin must be the very last to run, so it can strip off metadata and content after the other
       // plugins are done with them
       priority: -2,
@@ -50,7 +51,7 @@ const config: MosaicConfig = {
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/NextPrevPagePlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/NextPrevPagePlugin'),
       options: {
         // Make sure the index is always the first item in the next/prev queue
         indexFirst: true,
@@ -60,19 +61,19 @@ const config: MosaicConfig = {
       priority: 2
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin')
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin')
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/SidebarPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SidebarPlugin'),
       options: {
         filename: 'sidebar.json'
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/ReadingTimePlugin')
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/ReadingTimePlugin')
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-plugins/SharedConfigPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SharedConfigPlugin'),
       options: {
         filename: 'shared-config.json'
       },
@@ -81,7 +82,7 @@ const config: MosaicConfig = {
   ],
   sources: [
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-source-local-folder'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
       namespace: 'local',
       options: {
         rootDir: path.join('../developer-docs', 'docs'),
@@ -91,7 +92,7 @@ const config: MosaicConfig = {
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-source-git-repo'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
       namespace: 'developer',
       workflows: [BitBucketPullRequestWorkflow],
       options: {
@@ -112,7 +113,7 @@ const config: MosaicConfig = {
       }
     },
     {
-      modulePath: await resolveModule('@jpmorganchase/mosaic-source-git-repo'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
       namespace: 'mosaic-docs',
       options: {
         prefixDir: 'mosaic-docs',
