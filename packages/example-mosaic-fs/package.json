@@ -10,7 +10,8 @@
   "exports": {
     ".": {
       "types": "./dist/mosaic.config.d.ts",
-      "import": "./dist/mosaic.config.js"
+      "import": "./dist/mosaic.config.js",
+      "node": "./dist/mosaic.config.js"
     }
   },
   "engines": {

@@ -13,8 +13,7 @@ export default async function serve(config, port, scope) {
       }`
     );
   });
-  const mosaic = new MosaicCore();
-  await mosaic.init(config);
+  const mosaic = new MosaicCore(config);
   await mosaic.start();
 
   const fs = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;

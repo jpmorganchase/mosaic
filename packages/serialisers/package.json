@@ -8,21 +8,25 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
     "./mdx": {
       "types": "./dist/mdx.d.ts",
-      "import": "./dist/mdx.js"
+      "import": "./dist/mdx.js",
+      "node": "./dist/mdx.js"
     },
     "./json": {
       "types": "./dist/json.d.ts",
-      "import": "./dist/json.js"
+      "import": "./dist/json.js",
+      "node": "./dist/json.js"
     },
     "./md": {
       "types": "./dist/md.d.ts",
-      "import": "./dist/md.js"
+      "import": "./dist/md.js",
+      "node": "./dist/md.js"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
     }
   },
   "engines": {
