@@ -11,7 +11,10 @@
     "build": "next build",
     "clean": "rm -fr public/.tmp .next",
     "dev":"next dev",
-    "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080"
+    "snapshot:latest": "yarn mosaic build --out public/snapshots --name latest --config mosaic.config.js",
+    "start":"yarn site:serve:snapshot",
+    "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080",
+    "site:serve:snapshot": "yarn snapshot:latest && yarn build && cross-env MOSAIC_URL=http://localhost:3000/api/snapshots concurrently --kill-others 'next start'"
   },
   "dependencies": {
 {{{ printDependencies dependencies }}}
@@ -20,8 +23,10 @@
     "next": "^12.1.0"
   },
   "devDependencies": {
-    "concurrently": "^7.1.0",
     "@next/eslint-plugin-next": "12.3.1",
+    "concurrently": "^7.1.0",
+    "cross-env": "^7.0.3",
+    "eslint-config-next": "^12.3.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0"
   }

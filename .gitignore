@@ -12,7 +12,11 @@ node_modules
 **/dist-labs/
 **/.tmp
 tsconfig.tsbuildinfo
-**/snapshots
+/snapshots
+
+# Deployment
+packages/site
+mosaic.generators.js
 
 # Test Results
 coverage
