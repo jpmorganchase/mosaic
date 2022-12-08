@@ -8,6 +8,7 @@
     "build": "npm-run-all --parallel build:*",
     "build:bundle": "node ./scripts/bundle.js",
     "clean": "del-cli 'dist/**' && find . -type d -empty -delete",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "watch": "node ./scripts/bundle.js watch"
   },
   "bin": {

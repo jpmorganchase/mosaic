@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "build": "mkdirp dist && cp -f src/** dist",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "clean": "rm -fr dist"
   },
   "repository": {
