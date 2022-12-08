@@ -8,4 +8,4 @@ jobs:
       - name: Verified Github Authors
         uses: joshwooding/verified-github-author-action@v0
         with:
-          GITHUB_TOKEN: ${{ secrets.MOSAIC_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
