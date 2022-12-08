@@ -28,6 +28,7 @@
     "gen": "turbo run gen:site copy:site:images gen:snapshot --filter=//",
     "gen:site": "yarn mosaic-create-site create -g mosaic -o packages/site -f",
     "gen:snapshot": "turbo run gen:snapshot --filter=@jpmorganchase/mosaic-site",
+    "lint": "turbo run lint",
     "serve": "turbo run serve --filter=@jpmorganchase/mosaic-site",
     "serve:snapshot": "turbo run serve:snapshot --filter=@jpmorganchase/mosaic-site",
     "serve:example": "turbo run serve --filter=@jpmorganchase/mosaic-example-fs",
