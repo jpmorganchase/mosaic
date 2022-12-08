@@ -1,4 +1,4 @@
-import React, { FC, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Transition } from 'react-transition-group';
 
 const transitionStyles = {

@@ -1,10 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import {
-  backgroundColor,
-  responsiveSprinkles,
-  responsiveStyle,
-  vars
-} from '@jpmorganchase/mosaic-theme';
+import { backgroundColor, responsiveSprinkles, responsiveStyle } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([

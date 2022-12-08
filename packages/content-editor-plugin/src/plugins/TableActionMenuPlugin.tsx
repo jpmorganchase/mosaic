@@ -256,10 +256,6 @@ export function TableActionMenuPlugin() {
     [anchorEl?.classList, tableCellNode]
   );
 
-  const closePopper = () => {
-    setAnchorEl(null);
-  };
-
   const handleComplete = () => {
     setAnchorEl(null);
     setTableMenuCellNode(null);

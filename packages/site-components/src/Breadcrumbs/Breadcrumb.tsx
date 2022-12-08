@@ -1,5 +1,4 @@
-import { TooltipProps } from '@jpmorganchase/uitk-core';
-import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
+import React, { forwardRef, ReactNode } from 'react';
 import { Link } from '@jpmorganchase/mosaic-components';
 
 export interface BreadcrumbProps {

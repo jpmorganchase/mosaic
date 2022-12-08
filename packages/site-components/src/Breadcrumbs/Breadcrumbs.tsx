@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { Breadcrumbs as UITKBreadcrumbs } from '@jpmorganchase/uitk-lab';
 import { Breadcrumb } from './Breadcrumb';
 

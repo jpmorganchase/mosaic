@@ -1,22 +1,22 @@
 import React from 'react';
 import { ToolkitProvider } from '@jpmorganchase/uitk-core';
-import { themeClassName } from '@jpmorganchase/mosaic-theme';
+// import { themeClassName } from '@jpmorganchase/mosaic-theme';
 
 import { useColorMode, ColorModeProvider } from './ColorModeProvider';
 
-function ColorModeThemeProvider({ theme: themeOverrides = {}, children }) {
+function ColorModeThemeProvider({ children }) {
   const colorMode = useColorMode();
   return (
     <ToolkitProvider applyClassesTo="child" mode={colorMode}>
-      <div className={themeClassName}>{children}</div>
+      {children}
     </ToolkitProvider>
   );
 }
 
-export function ThemeProvider({ theme: themeOverrides = {}, children }) {
+export function ThemeProvider({ children }) {
   return (
     <ColorModeProvider>
-      <ColorModeThemeProvider theme={themeOverrides}>{children}</ColorModeThemeProvider>
+      <ColorModeThemeProvider>{children}</ColorModeThemeProvider>
     </ColorModeProvider>
   );
 }

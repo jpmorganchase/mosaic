@@ -32,7 +32,7 @@ esbuild
     splitting: true,
     minify: true,
     format: 'esm',
-    target: ['es2015'],
+    target: ['es2022'],
     plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({})],
     external: [
       'react',

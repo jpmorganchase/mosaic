@@ -2,7 +2,6 @@ import React from 'react';
 import type { TabsLinkItem, TabsMenu, TabsMenuButtonItem } from '@jpmorganchase/mosaic-components';
 import { TabMenuItemType } from '@jpmorganchase/mosaic-components';
 import type {
-  Menu,
   MenuLinkItem,
   AppHeaderMenuLinksItem,
   AppHeaderMenuLinkItem

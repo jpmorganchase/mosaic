@@ -1,4 +1,4 @@
-import React, { forwardRef, HTMLAttributes, ReactNode, Ref, useEffect } from 'react';
+import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { Portal, useWindow } from '@jpmorganchase/uitk-core';
 import classnames from 'classnames';
 

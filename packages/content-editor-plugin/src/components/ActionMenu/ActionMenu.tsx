@@ -4,8 +4,6 @@ import { Icon } from '@jpmorganchase/mosaic-components';
 
 import type { CascadingMenuProps } from '@jpmorganchase/uitk-lab';
 
-import styles from './ActionMenu.css';
-
 export type ActionMenuSource = MenuDescriptor;
 
 interface ActionMenuProps {
