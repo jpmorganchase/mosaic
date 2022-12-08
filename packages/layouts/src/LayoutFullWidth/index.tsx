@@ -2,7 +2,6 @@ import React from 'react';
 import classnames from 'classnames';
 
 import styles from './styles.css';
-import { FooterProps } from '@jpmorganchase/mosaic-site-components';
 
 export interface LayoutFullWidthProps {
   Footer?: React.ReactElement;

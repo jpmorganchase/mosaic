@@ -2,7 +2,7 @@ import React, { forwardRef, Ref } from 'react';
 import classnames from 'classnames';
 
 import { LinkBase, LinkBaseProps } from '../LinkBase';
-import { LinkText, LinkIconProps, LinkTextProps } from '../LinkText';
+import { LinkText, LinkTextProps } from '../LinkText';
 import styles from './styles.css';
 
 export interface LinkProps extends LinkBaseProps, Omit<LinkTextProps, 'variant'> {

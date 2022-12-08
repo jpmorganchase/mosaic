@@ -2,7 +2,6 @@ import React, { ElementType } from 'react';
 import { useMeta } from '@jpmorganchase/mosaic-store';
 import type { MetaSlice } from '@jpmorganchase/mosaic-store';
 
-import type { Session } from './types/session';
 import { useSession } from './SessionProvider';
 
 export interface HTMLMeta extends MetaSlice {}

@@ -31,7 +31,7 @@ export function FilterSortDropdown({
 }: FilterSortDropdownProps) {
   const dispatch = useToolbarDispatch();
   const { sort = source[0] } = useToolbarState();
-  const [isOpen, setIsOpen] = useState(false);
+  const [, setIsOpen] = useState(false);
 
   const handleSelect: SelectionChangeHandler<string, 'default'> = (_e, selectedItem) => {
     if (selectedItem) {

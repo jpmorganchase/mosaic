@@ -1,11 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import {
-  heading,
-  link,
-  paragraph,
-  headingSprinkles,
-  responsiveSprinkles
-} from '@jpmorganchase/mosaic-theme';
+import { heading, link, paragraph } from '@jpmorganchase/mosaic-theme';
 
 const styles = {
   summary: style([

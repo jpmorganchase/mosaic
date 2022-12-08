@@ -8,6 +8,4 @@ export * from './useRoute';
 export * from './useSidebar';
 export * from './useTableOfContents';
 export * from './useFooter';
-
 export * from './types';
-export { MenuItemType } from './types';

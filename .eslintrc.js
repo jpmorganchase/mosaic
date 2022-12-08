@@ -7,13 +7,14 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
-    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
+    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.tsx'] }],
     'no-underscore-dangle': 'off',
     'no-await-in-loop': 'off',
     'no-continue': 'off',
     'no-plusplus': 'off',
     'guard-for-in': 'off',
-    'max-classes-per-file': 'off'
+    'max-classes-per-file': 'off',
+    'import/prefer-default-export': 'off'
   },
   overrides: [
     {

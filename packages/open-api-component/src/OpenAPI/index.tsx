@@ -9,11 +9,7 @@ export interface OpenAPIProps {
   url?: string;
 }
 
-const LazySwagger = lazy(() =>
-  import('./SwaggerUi.js').then(x => {
-    return x.default;
-  })
-);
+const LazySwagger = lazy(() => import('./SwaggerUi').then((module: { default }) => module.default));
 
 export const OpenAPI: React.FC<OpenAPIProps> = ({ url }) => (
   <IsomorphicSuspense fallback={<span>Loading Swagger component...</span>}>

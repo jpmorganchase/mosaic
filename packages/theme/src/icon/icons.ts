@@ -25,6 +25,8 @@ export const icons = allIconKeys.reduce<IconMap>(
   (result, iconComponentName) => {
     const iconName = iconComponentName.replace(/Icon$/, '');
     const shortName = iconName.charAt(0).toLowerCase() + iconName.slice(1);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     return { ...result, [shortName]: allIcons[iconComponentName] };
   },
   { ...additionalIcons }

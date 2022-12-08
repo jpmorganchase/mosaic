@@ -32,7 +32,7 @@ esbuild
     splitting: false,
     minify: true,
     format: 'esm',
-    target: ['es2015'],
+    target: ['es2022'],
     plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({})],
     external: ['react', 'react-dom', '@jpmorganchase/uitk*', '@jpmorganchase/mosaic-theme'],
     watch: watchConfig
