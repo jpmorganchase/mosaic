@@ -1,9 +1,9 @@
-import { EventEmitter } from 'stream';
-import { Worker } from 'worker_threads';
+import EventEmitter from 'events';
+import { Worker } from 'node:worker_threads';
 
 import WorkerSubscription, { EVENT } from '../WorkerSubscription';
 
-jest.mock('worker_threads');
+jest.mock('node:worker_threads');
 
 const utf8Encoder = new TextEncoder();
 
