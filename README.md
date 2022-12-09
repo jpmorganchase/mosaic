@@ -1,28 +1,32 @@
 # Mosaic
 
-## Build mosaic
+Mosaic is a content aggregating, headless CMS solution which can be ran with Server Side Rendering (SSR) or as a Statically Generated Site (SGS).
 
-```
-yarn
-yarn build
-```
+Running with SSR enables you to publish updates in realtime, just by updating the originating source.
+Running as a SGS enables you to create an immutable snapshot of your content which will not update in realtime.
 
-## Example
+## To Create Your Initial Site
 
-`yarn example-nextjs`
+`yarn gen`
 
-Open your browser, navigate to http://localhost:8080/example/index
+This will create a `packages/site` directory containing content, pulled from a local directory path.
 
-## CLI
+This can be re-configured to pull from remote data sources (or both).
 
-### Serve
+## Creating a Server Side Rendered Site
 
-`yarn mosaic serve --port 8080 --config <path/to/pd.config>`
+To serve your site, pulling the content in realtime and rendering with SSR
 
-### Generate Snapshot of Docs
+`yarn serve`
 
-`yarn mosaic build --out <path/to/snapshots> --config <path/to/pd.config>`
+## Creating a Statically Generated Site
 
-### Serve Snapshot
+To create an immutable snapshot of your content for serving as a SGS
 
-`yarn mosaic serve --snapshot <path/to/snapshot>`
+`yarn gen:snapshot`
+
+This will create a snapshot in `packages/site/public/snapshots/latest`.
+
+### To serve your snapshot
+
+`yarn serve:snapshot`

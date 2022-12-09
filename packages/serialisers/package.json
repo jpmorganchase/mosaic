@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -fr dist"
+    "clean": "rm -fr dist",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
   },
   "repository": {
     "type": "git",

@@ -13,6 +13,7 @@
     "build:labs": "node ../../scripts/bundleLabs.js",
     "build:types": "tsc",
     "clean": "del-cli 'dist/**' 'dist-labs/**' && find . -type d -empty -delete",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "doc": "node ../../scripts/updateDocs.js",
     "watch": "node ../../scripts/bundle.js watch\" \"node ../../scripts/bundleLabs.js watch"
   },

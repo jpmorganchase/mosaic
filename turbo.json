@@ -5,14 +5,44 @@
       "dependsOn": ["^clean", "^build"],
       "outputs": ["dist/**", ".next/**"]
     },
-    "test": {},
-    "types": {},
-    "lint": {},
-    "lint:fix": {},
+    "build:snapshot": {
+      "cache": false
+    },
+    "build:snapshot:latest": {
+      "cache": false
+    },
+    "clean": {},
+    "//#clean:site": {},
+    "//#copy:site:images": {
+      "dependsOn": ["gen:site"],
+      "inputs": ["./assets/*"]
+    },
     "dev": {
       "cache": false
     },
-    "clean": {}
+    "//#gen:site": {
+      "dependsOn": ["^build"],
+      "outputs": ["./packages/site/**"]
+    },
+    "//#gen:snapshot": {
+      "outputs": ["./packages/site/public/snapshots/[0-9]*/**"]
+    },
+    "gen:snapshot": {
+      "outputs": ["./packages/site/public/snapshots/latest/**"]
+    },
+    "lint": {},
+    "lint:fix": {},
+
+    "//#serve": {},
+    "serve": {
+      "outputs": []
+    },
+    "//#serve:snapshot": {},
+    "serve:snapshot": {
+      "outputs": []
+    },
+    "test": {},
+    "types": {}
   },
   "globalDependencies": ["tsconfig.json"]
 }
