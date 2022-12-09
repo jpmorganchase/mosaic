@@ -19,29 +19,29 @@ module.exports = {
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/mdx'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/mdx'),
       filter: /\.mdx$/,
       options: {}
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/dist/md'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-serialisers/md'),
       filter: /\.md$/,
       options: {}
     }
   ],
   plugins: [
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SiteMapPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SiteMapPlugin'),
       options: {}
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BreadcrumbsPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin'),
       options: {
         indexPageName: 'index.mdx'
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/LazyPagePlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/LazyPagePlugin'),
       // This plugin must be the very last to run, so it can strip off metadata and content after the other
       // plugins are done with them
       priority: -2,
@@ -52,7 +52,7 @@ module.exports = {
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/NextPrevPagePlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/NextPrevPagePlugin'),
       options: {
         // Make sure the index is always the first item in the next/prev queue
         indexFirst: true,
@@ -63,21 +63,21 @@ module.exports = {
     },
     // TODO: Remove this plugin once the docs add file extensions in refs
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/PagesWithoutFileExtPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin'),
       options: {}
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SidebarPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SidebarPlugin'),
       options: {
         filename: 'sidebar.json'
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/ReadingTimePlugin.mjs'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/ReadingTimePlugin'),
       options: {}
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SharedConfigPlugin'),
+      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/SharedConfigPlugin'),
       options: {
         filename: 'shared-config.json'
       },
