@@ -13,3 +13,5 @@ LICENSE
 
 **/build
 **/dist
+.tmp
+.next
