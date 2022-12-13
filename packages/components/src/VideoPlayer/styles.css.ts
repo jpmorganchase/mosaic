@@ -73,9 +73,10 @@ export default {
     }),
     style({
       position: 'relative',
-      overflow: 'hidden',
       top: 0,
-      height: '10px'
+      height: '10px',
+      marginLeft: '5px',
+      marginRight: '5px'
     })
   ]),
   button: style({
