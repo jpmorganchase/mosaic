@@ -57,7 +57,6 @@ export default {
     responsiveSprinkles({ margin: ['x2', 'x2', 'x4', 'x4'] }),
     style({
       display: 'flex',
-      justifyContent: 'center',
       flexDirection: 'row',
       position: 'relative',
       ':hover': {
@@ -73,9 +72,10 @@ export default {
       desktop: { width: '350px' }
     }),
     style({
-      height: '4px',
-      opacity: '0.9',
-      borderRadius: '10px'
+      position: 'relative',
+      overflow: 'hidden',
+      top: 0,
+      height: '10px'
     })
   ]),
   button: style({
