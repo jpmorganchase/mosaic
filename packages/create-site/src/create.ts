@@ -1,17 +1,18 @@
 import { spawn } from 'child_process';
 import nodePlop from 'node-plop';
+import resolve from 'resolve';
 
 const { default: inquirer } = await import('inquirer');
 
-async function promptForGenerator(plop) {
+async function promptForGenerator(plop, allGeneratorsConfig) {
   const allGenerators = plop.getGeneratorList();
   const { generator } = await inquirer.prompt([
     {
       type: 'list',
       name: 'generator',
       message: 'Please choose a generator',
-      choices: allGenerators.map(({ description: defaultDescription, name }) => {
-        const description = plop.getDescription(name);
+      choices: allGenerators.map(({ name }) => {
+        const description = allGeneratorsConfig[name].config.description;
         const choiceLabel = description ? `${name} - ${description}` : name;
         return {
           name: choiceLabel,
@@ -41,29 +42,42 @@ type CreateMosaicAppEnv = {
 };
 
 export default async function createMosaicApp(env: CreateMosaicAppEnv): Promise<void> {
-  const { config = {}, generators = [], interactive = false } = env;
+  const { generators = [], interactive = false } = env;
+  const generatorConfig = {};
   const plop = await nodePlop();
-  await plop.load(generators, {
-    destBasePath: env.outputPath,
-    force: env.force
-  });
 
-  let generatorAnswer;
+  await Promise.all(
+    generators.map(async generator => {
+      const { generatorName, ...generatorRest } = generator[1];
+      generatorConfig[generatorName] = {
+        plopFile: resolve.sync(generator[0]),
+        config: generatorRest
+      };
+      return import(generator[0]).then(generatorExports => {
+        generatorExports.default(plop, {
+          destBasePath: env.outputPath,
+          force: env.force,
+          generatorName
+        });
+      });
+    })
+  );
+
+  let selectedGeneratorName = env.defaultGenerator;
   if (interactive) {
-    generatorAnswer = await promptForGenerator(plop);
+    selectedGeneratorName = await promptForGenerator(plop, generatorConfig);
   }
-  const generatorName = generatorAnswer || env.defaultGenerator;
-  const generator = plop.getGenerator(generatorName);
-
-  let promptAnswers;
-  if (generators?.prompts?.length) {
-    promptAnswers = await generator.runPrompts();
+  const selectedGenerator = plop.getGenerator(selectedGeneratorName);
+  plop.setPlopfilePath(generatorConfig[selectedGeneratorName].plopFile);
+  let selectedGeneratorConfig = generatorConfig[selectedGeneratorName].config;
+  if (interactive && selectedGenerator?.prompts?.length) {
+    const promptAnswers = await selectedGenerator.runPrompts();
+    selectedGeneratorConfig = {
+      ...selectedGeneratorConfig,
+      answers: promptAnswers
+    };
   }
-  const generatorConfig = {
-    ...config[generatorName],
-    answers: promptAnswers
-  };
-  generator.runActions(generatorConfig).then(results => {
+  selectedGenerator.runActions(selectedGeneratorConfig).then(results => {
     const { changes, failures } = results;
     if (changes && changes.length) {
       changes.forEach(({ path }) => {

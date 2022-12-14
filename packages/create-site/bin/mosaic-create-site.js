@@ -31,7 +31,7 @@ async function init({ silent = false } = {}) {
       '1. Edit your `mosaic.generators.js`, if you want to configure your site`s components, layouts or theme'
     );
     console.log(
-      '2. Run `yarn mosaic-create-site create create -i` to generate your Mosaic site (use -f to overwrite existing files)'
+      '2. Run `yarn mosaic-create-site create -i` to generate your Mosaic site (use -f to overwrite existing files)'
     );
   });
 }
@@ -84,22 +84,9 @@ program
     const mosaicConfig = await readMosaicConfig(options.config);
 
     const { generators } = mosaicConfig;
-    const generatorsList = generators.map(generatorItem => {
-      if (Array.isArray(generatorItem)) {
-        return generatorItem[0];
-      }
-      return generatorItem;
-    });
-    const generatorsConfig = generators.reduce((result, generatorItem) => {
-      if (Array.isArray(generatorItem)) {
-        const { generatorName, ...generatorConfig } = generatorItem[1];
-        return { ...result, [generatorName]: generatorConfig };
-      }
-      return result;
-    }, {});
+
     const env = {
-      generators: generatorsList,
-      config: generatorsConfig,
+      generators,
       defaultGenerator: options.generator || 'mosaic',
       force: options.force || false,
       interactive: options.interactive || false,
