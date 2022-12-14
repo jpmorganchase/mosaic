@@ -18,7 +18,7 @@ export default {
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      margin: 'auto'
+      margin: vars.space.vertical.x4
     }),
     backgroundColor({ variant: 'emphasis' })
   ]),
@@ -73,10 +73,9 @@ export default {
     }),
     style({
       position: 'relative',
-      top: 0,
-      height: '10px',
-      marginLeft: '5px',
-      marginRight: '5px'
+      top: '-5px',
+      marginLeft: vars.space.horizontal.x2,
+      marginRight: vars.space.horizontal.x2
     })
   ]),
   button: style({

@@ -111,9 +111,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
   };
 
   const handleSliderInput = e => {
-    console.log(e.target);
     if (videoElem) {
-      //videoElem.currentTime = e.target.value;
+      videoElem.currentTime = e;
       timeUpdate();
     }
   };
@@ -152,9 +151,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
             className={styles.slider}
             min={0}
             max={durationSeconds}
-            // value={timeNowSeconds}
-            pushable={true}
-            pushDistance={10}
+            value={timeNowSeconds}
             onChange={handleSliderInput}
           />
           <Caption6> {durationString}</Caption6>
