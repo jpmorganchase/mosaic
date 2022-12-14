@@ -7,7 +7,7 @@ export const getServerSideProps = async function getServerSideProps() {
     return {
       redirect: {
         permanent: true,
-        destination: '/mosaic/'
+        destination: '{{homepage}}'
       }
     };
   } catch (e: any) {

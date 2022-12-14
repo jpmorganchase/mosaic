@@ -16,7 +16,6 @@ tsconfig.tsbuildinfo
 
 # Deployment
 packages/site
-mosaic.generators.js
 
 # Test Results
 coverage

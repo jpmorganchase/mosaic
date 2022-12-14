@@ -10,16 +10,53 @@
 
 ### `yarn mosaic-create-site init`
 
-Running `init` will create a basic `mosaic.config.js` in your current directory, that pre-configures your project with
-the available Mosaic site generators and config.
+Running `init` will create a basic `mosaic.generators.js` in your current directory, this is an optional file, which enables
+you to add configurations to generators.
 
-`yarn mosaic-create-site init`
+For instance, generators do not need to define any sources, additional sources can be added via `mosaic.generators.js`.
 
-After running this command you should have an initial config called `mosaic.config.js` in the current directory.
+To add a source such as Github/BitBucket the contents might look like this.
+This particular config would create a package called `@jpmorganchase/mosaic-demo` and load the Mosaic tech docs into `demo` namespace.
+
+```
+    [
+      '@jpmorganchase/mosaic-standard-generator/dist/generator.js',
+      {
+        ...standardGeneratorConfig,
+        generatorName: 'demo',
+        name: '@jpmorganchase/mosaic-demo',
+        namespace: 'demo',
+        description: "Mosaic Development Rig",
+        homepage: '/demo',
+        sources: [
+          {
+            modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
+            namespace: 'demo', // each site has it's own namespace, think of this as your content's uid
+            options: {
+              // To run locally, enter your credentials to access the BitBucket repo
+              // !! Polite Reminder... do not store credentials in code !!
+              // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
+              // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
+              // If running locally
+              // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
+              // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+              credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+              prefixDir: 'demo',
+              subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
+              repo: 'github.com/jpmorganchase/mosaic.git', // repo url without any protocol
+              branch: 'main', // branch where docs are pulled from
+              extensions: ['.mdx'], // extensions of content which should be pulled
+              remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
+            }
+          }
+        ]
+      }
+    ]
+```
 
 ### `yarn mosaic-create-site create`
 
-Once you have created your `mosaic.config.js`, we can think about configuring your first Mosaic site.
+Once you have created your `mosaic.generators.js`, we can think about configuring your first Mosaic site.
 
 Running `create` will generate a Mosaic site from the configured templates.
 Lets see what this looks like by running the script with the `--interactive (-i)` and the `--output (-o)` flags.
@@ -29,6 +66,7 @@ Lets see what this looks like by running the script with the `--interactive (-i)
 You should see a menu appear giving you a list of the available Mosaic templates.
 
 Select `mosaic - Create a standard Mosaic site` and a standard Mosaic site should be generated in the specified output directory.
+You will be asked which sources you would like to add `local` (pre-cloned docs) or a remote docs repo.
 
 A standard Mosaic template creates a site, pre-configured with the Mosaic components, layout and theme.
 
@@ -48,10 +86,10 @@ If you don't want to run in interactive mode, you could use the CLI arguments in
 #### How It Works
 
 Running `create` will scaffold a Mosaic site, combining published templates with local config.
-To do this, we employ a config file (`mosaic.config.js`) which specifies [Plop JS](http://plopjs) generators and
+To do this, we employ a config file (`mosaic.generators.js`) which specifies [Plop JS](http://plopjs) generators and
 related config.
 
-By editing `mosaic.config.js`, you can extend the Mosaic design language, adding your own components, layouts or theme packages.
+By editing `mosaic.generators.js`, you can extend the Mosaic design language, adding your own components, layouts or theme packages.
 
 The generated content from `create` consists of a Mosaic site with no content. Mosaic is created using [NextJS](https://nextjs.org/).
 The Mosaic templates create a Next JS application containing a `_app.tsx` file that serves as an escape hatch to configure your site, with
@@ -62,7 +100,7 @@ Instead review the templates that `mosaic-create-site` provides and consider cre
 
 ### Configuration
 
-Your `mosaic.config.js` config defines the `dependencies` created in your `package.json` and `imports` used by your Next JS `_app.tsx`.
+Your `mosaic.generators.js` config defines the `dependencies` created in your `package.json` and `imports` used by your Next JS `_app.tsx`.
 These are available within templates as variables, which can be referenced inside your templates using the Mustache notation.
 
 ```
@@ -168,12 +206,22 @@ would generate something like (based at time of writing on the current Mosaic im
 const components = [ ...mosaicComponents ];
 ```
 
+#### `join`
+
+`join` is used to construct a list of comma seperated values.
+
+```
+  "sources": [
+{{{ join sources }}}
+  ],
+```
+
 ## How to add your own Component, Layouts or Theme CSS
 
 If you wish to add your own components or layouts, you simply need to add your own additional packages to the `imports` array,
 of the related template.
 
-Inside `mosaic.config.js` combine together the standard settings from the Mosaic package with your own imports using `getConfig`.
+Inside `mosaic.generators.js` combine together the standard settings from the Mosaic package with your own imports using `getConfig`.
 Alternatively, you can 'roll your own' solution, although this creates the added responsibility of keeping them in sync with Mosaic.
 
 ```
@@ -210,7 +258,7 @@ Note: Components and Layout packages must share the same React/UITK versions as 
 ## How to update Mosaic
 
 To update Mosaic, you can choose to just pip the Mosaic dependencies inside your site's generated `package.json`.
-After re-running `yarn` his will re-use the existing site configuration from `mosaic.config.js` with the latest Mosaic dependencies.
+After re-running `yarn` this will re-use the existing site configuration from `mosaic.generators.js` with the latest Mosaic dependencies.
 
 Occasionally you might want to re-generate your site or switch templates.
 For this, you will need to pip the version of `@jpmorganchase/mosaic-create-site` to the latest version and re-run
@@ -232,7 +280,7 @@ To convert any file into a template, just add a `.hbs` suffix to your file.
 Refer to the [Mustache docs](https://github.com/janl/mustache.js#variables) for further info.
 
 Once you have created a set of templates, you would need to create a [Plop JS](http://plopjs) generator which uses these templates and add that  
-generator to your `mosaic.config.js`.
+generator to your `mosaic.generators.js`.
 
 You can specify the generator path as either a NPM/Artifactory package or a local path.
 
