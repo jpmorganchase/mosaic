@@ -27,7 +27,7 @@
     "copy:site:images": "cp -r ./assets/[!.]* ./packages/site/public/img",
     "clean": "turbo run clean clean:site",
     "clean:site": "rimraf packages/site",
-    "gen": "turbo run gen:site copy:site:images gen:snapshot --filter=//",
+    "gen": "turbo run gen:site copy:site:images --filter=//",
     "gen:site": "yarn mosaic-create-site create -g mosaic -o packages/site -f",
     "gen:snapshot": "turbo run gen:snapshot --filter=@jpmorganchase/mosaic-site",
     "lint": "turbo run lint",
