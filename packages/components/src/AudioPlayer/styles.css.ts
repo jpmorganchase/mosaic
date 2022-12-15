@@ -32,7 +32,6 @@ export default {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    margin: vars.space.vertical.x2,
     ':hover': {
       cursor: 'pointer'
     }
@@ -46,7 +45,7 @@ export default {
     }),
     style({
       position: 'relative',
-      top: '-7px',
+      top: -vars.space.vertical.x4,
       margin: vars.space.horizontal.x2
     })
   ]),

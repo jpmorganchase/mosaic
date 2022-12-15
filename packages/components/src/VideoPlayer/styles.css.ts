@@ -73,7 +73,7 @@ export default {
     }),
     style({
       position: 'relative',
-      top: '-5px',
+      top: '-7px',
       marginLeft: vars.space.horizontal.x2,
       marginRight: vars.space.horizontal.x2
     })
