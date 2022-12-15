@@ -8,8 +8,7 @@ Link,
 Metadata,
 MosaicProvider
 } from '@jpmorganchase/mosaic-site-components';
-import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
-import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
+import { ImageProvider, LinkProvider } from '@jpmorganchase/mosaic-components';
 {{{ printImports imports }}}
 
 import { MyAppProps } from '../types/mosaic';
@@ -23,15 +22,15 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   const storeProps = { sharedConfig, ...frontmatter };
 
   return (
+    <MosaicProvider storeProps={storeProps} layoutComponents={layoutComponents} pageProps={...pageProps}> 
     <Metadata Component={Head} />
         <BaseUrlProvider>
           <ImageProvider value={Image}>
             <LinkProvider value={Link}>
-              <MosaicProvider storeProps={storeProps} layoutComponents={layoutComponents} pageProps={...pageProps}> 
                 <Component components={components} {...pageProps} />
-              </MosaicProvider>
             </LinkProvider>
           </ImageProvider>
         </BaseUrlProvider>
+    </MosaicProvider>
   );
 }
