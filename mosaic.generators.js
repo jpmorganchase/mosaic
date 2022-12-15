@@ -170,7 +170,7 @@ module.exports = {
               prefixDir: 'rig',
               subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
               repo: 'github.com/jpmorganchase/mosaic.git', // repo url without any protocol
-              branch: 'develop', // branch where docs are pulled from
+              branch: 'main', // branch where docs are pulled from
               extensions: ['.mdx'], // extensions of content which should be pulled
               remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
             }
