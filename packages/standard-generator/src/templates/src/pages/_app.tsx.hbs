@@ -7,10 +7,10 @@ Image,
 Link,
 Metadata,
 SessionProvider,
-SidebarProvider
+SidebarProvider,
+MosaicAppProvider
 } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
-import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 {{{ printImports imports }}}
 
@@ -25,23 +25,15 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   const storeProps = { sharedConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);
   return (
-  <SessionProvider session={session}>
-    <StoreProvider value={createStore()}>
-      <Metadata Component={Head} />
-      <ThemeProvider>
+    <Metadata Component={Head} />
         <BaseUrlProvider>
           <ImageProvider value={Image}>
             <LinkProvider value={Link}>
-              <SidebarProvider>
-                <LayoutProvider layoutComponents={layoutComponents}>
-                  <Component components={components} {...pageProps} />
-                </LayoutProvider>
-              </SidebarProvider>
+              <MosaicProvider storeProps={storeProps} layoutComponents={layoutComponents} pageProps={...pageProps}> 
+                <Component components={components} {...pageProps} />
+              </MosaicProvider>
             </LinkProvider>
           </ImageProvider>
         </BaseUrlProvider>
-      </ThemeProvider>
-    </StoreProvider>
-  </SessionProvider>
   );
   }
