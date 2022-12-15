@@ -14,7 +14,7 @@
     "gen:snapshot": "yarn mosaic build --out public/snapshots --name latest --config mosaic.config.js",
     "serve:snapshot": "yarn cross-env MOSAIC_URL=http://localhost:3000/api/snapshots concurrently --kill-others 'yarn dev'",
     "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080",
-    "start": "yarn cross-env MOSAIC_URL=http://localhost:3000/api/snapshots concurrently --kill-others 'next start'"
+    "start": "cross-env MOSAIC_URL=http://localhost:3000/api/snapshots next start",
   },
   "dependencies": {
 {{{ printDependencies dependencies }}}
