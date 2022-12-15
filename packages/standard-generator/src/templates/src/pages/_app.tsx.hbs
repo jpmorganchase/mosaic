@@ -17,7 +17,7 @@ const components = {{{ printComponentIdentifiers imports }}};
 const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
+  const { sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
 
   const storeProps = { sharedConfig, ...frontmatter };
 
