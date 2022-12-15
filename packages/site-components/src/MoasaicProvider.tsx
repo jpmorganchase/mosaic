@@ -1,6 +1,5 @@
 import React from 'react';
-import { SessionProvider } from './SessionProvider';
-import { SidebarProvider } from './SidebarProvider';
+import { SidebarProvider } from '@jpmorganchase/mosaic-site-components';
 import { ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';

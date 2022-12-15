@@ -6,9 +6,7 @@ BaseUrlProvider,
 Image,
 Link,
 Metadata,
-SessionProvider,
-SidebarProvider,
-MosaicAppProvider
+MosaicProvider
 } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
@@ -23,7 +21,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
 
   const storeProps = { sharedConfig, ...frontmatter };
-  const createStore = useCreateStore(storeProps);
+
   return (
     <Metadata Component={Head} />
         <BaseUrlProvider>
@@ -36,4 +34,4 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
           </ImageProvider>
         </BaseUrlProvider>
   );
-  }
+}
