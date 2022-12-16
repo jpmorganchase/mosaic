@@ -1,18 +1,26 @@
 import React from 'react';
-import { SidebarProvider } from '@jpmorganchase/mosaic-site-components';
-import { ThemeProvider } from '@jpmorganchase/mosaic-components';
+import Head from 'next/head';
+import { BaseUrlProvider } from './BaseUrlProvider';
+import { Image } from './Image';
+import { Link } from './Link';
+import { Metadata } from './Metadata';
+import { SidebarProvider } from './SidebarProvider';
+import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
-import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 
-export const MosaicProvider = ({ storeProps, children, layoutComponents }) => {
+export const MosaicProvider = ({ storeProps, children }) => {
   const createStore = useCreateStore(storeProps);
-
   return (
     <StoreProvider value={createStore()}>
+      <Metadata Component={Head} />
       <ThemeProvider>
-        <SidebarProvider>
-          <LayoutProvider layoutComponents={layoutComponents}>{children}</LayoutProvider>
-        </SidebarProvider>
+        <BaseUrlProvider>
+          <ImageProvider value={Image}>
+            <LinkProvider value={Link}>
+              <SidebarProvider>{children}</SidebarProvider>
+            </LinkProvider>
+          </ImageProvider>
+        </BaseUrlProvider>
       </ThemeProvider>
     </StoreProvider>
   );
