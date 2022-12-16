@@ -15,7 +15,7 @@ import { $isHeadingNode } from '@lexical/rich-text';
 import { $isCodeNode } from '@lexical/code';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
-import { Tooltray } from '@jpmorganchase/uitk-lab';
+import { Tooltray } from '@salt-ds/lab';
 import { TextFormatToolbarButton } from './TextFormatToolbarButton';
 import styles from './TextFormatTooltray.css';
 import { InsertBlockDropdown } from './InsertBlockDropdown';

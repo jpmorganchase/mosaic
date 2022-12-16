@@ -1,5 +1,5 @@
 import React from 'react';
-import { Toolbar as ToolkitToolbar, ToolbarButton, Tooltray } from '@jpmorganchase/uitk-lab';
+import { Toolbar as ToolkitToolbar, ToolbarButton, Tooltray } from '@salt-ds/lab';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { useEditHistory } from '../../hooks/useEditHistory';

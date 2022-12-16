@@ -8,8 +8,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions
-} from '@jpmorganchase/uitk-lab';
-import { FormField, Input } from '@jpmorganchase/uitk-core';
+} from '@salt-ds/lab';
+import { FormField, Input } from '@salt-ds/lab';
 
 import { TextFormatToolbarButton } from './TextFormatToolbarButton';
 import {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
-import { Toolbar as ToolkitToolbar, Tooltray, ToolbarButton } from '@jpmorganchase/uitk-lab';
+import { Toolbar as ToolkitToolbar, Tooltray, ToolbarButton } from '@salt-ds/lab';
 
 import { default as useContentEditor } from '../store';
 import styles from './EditorControls.css';

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import { FormField, Input } from '@jpmorganchase/uitk-core';
+import { FormField, Input } from '@salt-ds/lab';
 import {
   ButtonBar,
   Dialog as ToolkitDialog,
   DialogTitle,
   DialogContent,
   DialogActions
-} from '@jpmorganchase/uitk-lab';
+} from '@salt-ds/lab';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
 import { TextFormatToolbarButton } from './TextFormatToolbarButton';

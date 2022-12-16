@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ButtonBar, OrderedButton } from '@jpmorganchase/uitk-lab';
+import { ButtonBar, OrderedButton } from '@salt-ds/lab';
 import { Icon } from '../Icon';
 
 import { Caption3, Caption6 } from '../Typography';

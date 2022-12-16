@@ -3,7 +3,7 @@ import { Icon } from '@jpmorganchase/mosaic-components';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { INSERT_TABLE_COMMAND } from '@lexical/table';
 
-import { useFloatingUI } from '@jpmorganchase/uitk-core';
+import { useFloatingUI } from '@salt-ds/lab';
 import { useDismiss, useInteractions } from '@floating-ui/react-dom-interactions';
 import { Popper } from '../Popper/Popper';
 import { TextFormatToolbarButton } from './TextFormatToolbarButton';

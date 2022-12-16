@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  Accordion as UITKAccordion,
+  Accordion as SaltAccordion,
   AccordionSection,
   AccordionSummary,
   AccordionDetails
-} from '@jpmorganchase/uitk-lab';
-import type { AccordionProps as UITKAccordionProps } from '@jpmorganchase/uitk-lab';
+} from '@salt-ds/lab';
+import type { AccordionProps as SaltAccordionProps } from '@salt-ds/lab';
 import styles from './styles.css';
 
 export interface Panel {
@@ -14,9 +14,9 @@ export interface Panel {
   content: React.ReactNode;
 }
 
-export { AccordionSection, AccordionSummary, AccordionDetails } from '@jpmorganchase/uitk-lab';
+export { AccordionSection, AccordionSummary, AccordionDetails } from '@salt-ds/lab';
 
-export interface AccordionProps extends UITKAccordionProps {
+export interface AccordionProps extends SaltAccordionProps {
   panels?: Panel[];
 }
 
@@ -68,8 +68,8 @@ export const Accordion: React.FC<AccordionProps> = ({ children, panels, ...rest 
     ));
   }
   return (
-    <UITKAccordion maxExpandedItems={1} {...rest}>
+    <SaltAccordion maxExpandedItems={1} {...rest}>
       {accordionChildren}
-    </UITKAccordion>
+    </SaltAccordion>
   );
 };

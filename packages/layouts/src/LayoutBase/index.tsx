@@ -1,5 +1,5 @@
 import React from 'react';
-import { Spinner } from '@jpmorganchase/uitk-lab';
+import { Spinner } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import classnames from 'classnames';
 

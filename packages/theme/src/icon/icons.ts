@@ -1,6 +1,6 @@
 import React from 'react';
-import * as UITKIcons from '@jpmorganchase/uitk-icons';
-import type { IconProps as UITKIconProps } from '@jpmorganchase/uitk-icons';
+import * as UITKIcons from '@salt-ds/icons';
+import type { IconProps as UITKIconProps } from '@salt-ds/icons';
 import { StackOverflowIcon } from './StackOverflowIcon';
 import type { uitkIconNames } from '../../types/uitkIconNames';
 

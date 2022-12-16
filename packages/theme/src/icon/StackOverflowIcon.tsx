@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Icon, IconProps } from '@jpmorganchase/uitk-icons';
+import { Icon, IconProps } from '@salt-ds/icons';
 
 export const StackOverflowIcon: React.FC<IconProps> = props => (
   <Icon {...props}>

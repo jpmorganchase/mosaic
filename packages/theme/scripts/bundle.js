@@ -26,7 +26,7 @@ const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {
 esbuild
   .build({
     entryPoints: glob.sync([
-      '../../node_modules/@jpmorganchase/uitk-icons/dist-es/packages/icons/src/components/*.js'
+      '../../node_modules/@salt-ds/icons/dist-es/packages/icons/src/components/*.js'
     ]),
     bundle: false,
     outdir: 'dist',

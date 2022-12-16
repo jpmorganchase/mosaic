@@ -1,5 +1,5 @@
-import '@jpmorganchase/uitk-theme/css/global.css';
-import '@jpmorganchase/uitk-theme/css/theme.css';
+import '@salt-ds/theme/css/global.css';
+import '@salt-ds/theme/css/theme.css';
 import '@jpmorganchase/mosaic-theme/dist/index.css';
 import '@jpmorganchase/mosaic-theme/dist/baseline/index.css';
 import '@jpmorganchase/mosaic-theme/dist/uitk/index.css';
