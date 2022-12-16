@@ -9,7 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "dev": "next dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "devDependencies": {
     "next": "^12.1.0",
