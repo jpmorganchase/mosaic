@@ -1,7 +1,9 @@
 // eslint-disable import/no-duplicates
 import { AppProps } from 'next/app';
-import { SessionProvider, MosaicProvider } from '@jpmorganchase/mosaic-site-components';
+import { SessionProvider, MosaicProvider, BaseUrlProvider, Metadata, ImageProvider, Image } from '@jpmorganchase/mosaic-site-components';
+import { ImageProvider } from '@jpmorganchase/mosaic-components'
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
+import Head from 'next/head';
 {{{ printImports imports }}}
 
 import { MyAppProps } from '../types/mosaic';
@@ -10,17 +12,22 @@ const components = {{{ printComponentIdentifiers imports }}};
 const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
+  const { sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
 
   const storeProps = { sharedConfig, ...frontmatter };
 
   return (
-    <SessionProvider session={session}>
-    <MosaicProvider storeProps={storeProps}>
-      <LayoutProvider layoutComponents={layoutComponents}>
-        <Component components={components} {...pageProps} />
-      </LayoutProvider>
-    </MosaicProvider>
-    </SessionProvider>
+      <MosaicProvider storeProps={storeProps}>
+        <Metadata Component={Head} />
+          <BaseUrlProvider>
+            <ImageProvider value={Image}>
+              <LinkProvider value={Link}>
+                <LayoutProvider layoutComponents={layoutComponents}>
+                  <Component components={components} {...pageProps} />
+                </LayoutProvider>
+              </LinkProvider>
+            </ImageProvider>
+          </BaseUrlProvider>
+      </MosaicProvider>
   );
 }
