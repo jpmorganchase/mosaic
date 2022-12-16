@@ -2,12 +2,7 @@ import React, { FC, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
-import {
-  Dialog as ToolkitDialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
-} from '@jpmorganchase/uitk-lab';
+import { Dialog as ToolkitDialog, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { useEditorUser, usePageState } from '../../store';
 import { save } from '../../api/save';

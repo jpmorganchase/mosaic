@@ -205,7 +205,7 @@ module.exports = myExtendedConfig;
 The `component` and `layout` imports should have a `type` defined so Mosaic can attach the import `identifier` to the correct
 Provider in `_app.tsx`.
 
-Note: Components and Layout packages must share the same React/UITK versions as Mosaic.
+Note: Components and Layout packages must share the same React/Salt versions as Mosaic.
 
 ## How to update Mosaic
 

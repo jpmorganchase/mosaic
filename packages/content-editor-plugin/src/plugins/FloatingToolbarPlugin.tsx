@@ -7,9 +7,9 @@ import {
   COMMAND_PRIORITY_LOW,
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
-import { Toolbar as ToolkitToolbar, Tooltray as ToolkitTooltray } from '@jpmorganchase/uitk-lab';
+import { Toolbar as ToolkitToolbar, Tooltray as ToolkitTooltray } from '@salt-ds/lab';
 import { flip, inline } from '@floating-ui/react-dom';
-import { useFloatingUI, UseFloatingUIProps } from '@jpmorganchase/uitk-core';
+import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/lab';
 import { useInteractions, useDismiss } from '@floating-ui/react-dom-interactions';
 import { Popper } from '../components/Popper/Popper';
 import { TextFormatTooltray } from '../components/Toolbar/TextFormatTooltray';

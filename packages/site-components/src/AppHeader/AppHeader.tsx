@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Logo } from '@jpmorganchase/uitk-lab';
+import { Logo } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 

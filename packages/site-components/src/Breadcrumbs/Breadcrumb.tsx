@@ -1,3 +1,4 @@
+import { TooltipProps } from '@salt-ds/lab';
 import React, { forwardRef, ReactNode } from 'react';
 import { Link } from '@jpmorganchase/mosaic-components';
 

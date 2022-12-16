@@ -9,7 +9,7 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { Input, useFloatingUI } from '@jpmorganchase/uitk-core';
+import { Input, useFloatingUI } from '@salt-ds/lab';
 import { useDismiss, useInteractions } from '@floating-ui/react-dom-interactions';
 
 import styles from './LinkEditor.css';

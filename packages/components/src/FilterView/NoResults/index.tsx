@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import { ContentStatus } from '@jpmorganchase/uitk-lab';
+import { ContentStatus } from '@salt-ds/lab';
 
 import styles from './styles.css';
 

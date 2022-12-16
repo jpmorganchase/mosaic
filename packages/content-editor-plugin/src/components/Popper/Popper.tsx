@@ -1,5 +1,5 @@
 import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
-import { Portal, useWindow } from '@jpmorganchase/uitk-core';
+import { Portal, useWindow } from '@salt-ds/lab';
 import classnames from 'classnames';
 
 import styles from './Popper.css';

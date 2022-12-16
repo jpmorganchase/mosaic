@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dropdown, SelectionChangeHandler } from '@jpmorganchase/uitk-lab';
+import { Dropdown, SelectionChangeHandler } from '@salt-ds/lab';
 import { $createCodeNode } from '@lexical/code';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';

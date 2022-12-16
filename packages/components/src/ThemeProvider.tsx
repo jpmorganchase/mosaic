@@ -1,14 +1,15 @@
 import React, { ReactNode } from 'react';
-import { ToolkitProvider } from '@jpmorganchase/uitk-core';
+import { SaltProvider } from '@salt-ds/core';
+import { themeClassName } from '@jpmorganchase/mosaic-theme';
 
 import { useColorMode, ColorModeProvider } from './ColorModeProvider';
 
 function ColorModeThemeProvider({ children }: { children?: ReactNode }) {
   const colorMode = useColorMode();
   return (
-    <ToolkitProvider applyClassesTo="child" mode={colorMode}>
-      <div>{children}</div>
-    </ToolkitProvider>
+    <SaltProvider applyClassesTo="child" mode={colorMode}>
+      <div className={themeClassName}>{children}</div>
+    </SaltProvider>
   );
 }
 

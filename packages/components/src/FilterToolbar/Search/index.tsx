@@ -1,11 +1,6 @@
 import React from 'react';
 import classnames from 'classnames';
-import {
-  escapeRegExp,
-  ComboBox,
-  ComboBoxProps,
-  SelectionChangeHandler
-} from '@jpmorganchase/uitk-lab';
+import { escapeRegExp, ComboBox, ComboBoxProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';
 
 import { useToolbarDispatch } from '../ToolbarProvider';
@@ -16,7 +11,7 @@ export interface FilterSearchProps extends ComboBoxProps<string, 'deselectable'>
 export function FilterSearch({ className, source = [], ...rest }: FilterSearchProps) {
   const dispatch = useToolbarDispatch();
 
-  // TODO convert to multiselect once UITK Odysseys supports Multiselect from a ComboBox
+  // TODO convert to multiselect once Salt supports Multiselect from a ComboBox
   const handleSelect: SelectionChangeHandler<string, 'deselectable'> = (_e, item) => {
     const value = item === null ? [] : [item];
     dispatch({ type: 'setFilters', value });
