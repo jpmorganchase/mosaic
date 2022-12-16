@@ -15,7 +15,6 @@ tsconfig.tsbuildinfo
 /snapshots
 
 # Deployment
-packages/site
 mosaic.generators.js
 
 # Test Results

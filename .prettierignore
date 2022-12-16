@@ -13,3 +13,5 @@ LICENSE
 
 **/build
 **/dist
+/packages/site/**
+.tmp
