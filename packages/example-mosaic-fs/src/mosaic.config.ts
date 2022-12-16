@@ -19,23 +19,14 @@ const config: MosaicConfig = {
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SiteMapPlugin')
     },
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SearchIndexPlugin.mjs'),
-      options: { maxLineLength: 240, maxLineCount: 240, keys: ['description'] }
-    },
+
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/BreadcrumbsPlugin'),
       options: {
         indexPageName: 'index.mdx'
       }
     },
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/TableOfContentsPlugin.mjs'),
-      options: {
-        minRank: 2,
-        maxRank: 4
-      }
-    },
+
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/LazyPagePlugin'),
       // This plugin must be the very last to run, so it can strip off metadata and content after the other
@@ -66,9 +57,7 @@ const config: MosaicConfig = {
         filename: 'sidebar.json'
       }
     },
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/ReadingTimePlugin.mjs')
-    },
+
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SharedConfigPlugin'),
       options: {

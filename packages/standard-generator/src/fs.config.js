@@ -73,10 +73,6 @@ module.exports = {
       }
     },
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/ReadingTimePlugin.mjs'),
-      options: {}
-    },
-    {
       modulePath: require.resolve('@jpmorganchase/mosaic-plugins/dist/SharedConfigPlugin'),
       options: {
         filename: 'shared-config.json'
