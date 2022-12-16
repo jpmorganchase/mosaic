@@ -1,4 +1,4 @@
-import { TooltipProps } from '@jpmorganchase/uitk-core';
+import { TooltipProps } from '@salt-ds/lab';
 import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { Link } from '@jpmorganchase/mosaic-components';
 

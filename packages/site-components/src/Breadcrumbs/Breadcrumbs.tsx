@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Breadcrumbs as UITKBreadcrumbs } from '@jpmorganchase/uitk-lab';
+import { Breadcrumbs as UITKBreadcrumbs } from '@salt-ds/lab';
 import { Breadcrumb } from './Breadcrumb';
 
 import styles from './styles.css';

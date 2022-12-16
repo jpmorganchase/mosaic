@@ -1,0 +1,92 @@
+diff --git a/node_modules/@salt-ds/core/dist-cjs/node_modules/style-inject/dist/style-inject.es.js b/node_modules/@salt-ds/core/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
+index fac049a..5663033 100644
+--- a/node_modules/@salt-ds/core/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
++++ b/node_modules/@salt-ds/core/dist-cjs/node_modules/style-inject/dist/style-inject.es.js
+@@ -2,7 +2,7 @@
+ 
+ function styleInject(css, ref) {
+   if ( ref === void 0 ) ref = {};
+-  var insertAt = ref.insertAt;
++  var insertAt = ref.insertAt || 'top';
+ 
+   if (!css || typeof document === 'undefined') { return; }
+ 
+diff --git a/node_modules/@salt-ds/core/dist-cjs/packages/core/src/aria-announcer/AriaAnnouncerProvider.js b/node_modules/@salt-ds/core/dist-cjs/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
+index c700ca9..0d17a83 100644
+--- a/node_modules/@salt-ds/core/dist-cjs/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
++++ b/node_modules/@salt-ds/core/dist-cjs/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
+@@ -11,6 +11,10 @@ function AriaAnnouncerProvider({
+   children,
+   style
+ }) {
++  if (typeof window === 'undefined') {
++    return children;
++  }
++
+   const [currentAnnouncement, setCurrentAnnouncement] = React.useState("");
+   const announcementsRef = React.useRef([]);
+   const isAnnouncingRef = React.useRef(false);
+diff --git a/node_modules/@salt-ds/core/dist-cjs/packages/core/src/viewport/ViewportProvider.js b/node_modules/@salt-ds/core/dist-cjs/packages/core/src/viewport/ViewportProvider.js
+index e8bc6b2..e268bbc 100644
+--- a/node_modules/@salt-ds/core/dist-cjs/packages/core/src/viewport/ViewportProvider.js
++++ b/node_modules/@salt-ds/core/dist-cjs/packages/core/src/viewport/ViewportProvider.js
+@@ -7,6 +7,9 @@ var React = require('react');
+ 
+ const ViewportContext = React.createContext(null);
+ const ViewportProvider = ({ children }) => {
++  if (typeof window === 'undefined') {
++    return null;
++  }
+   const existingViewport = React.useContext(ViewportContext);
+   const [viewport, setViewport] = React.useState(existingViewport);
+   const noExistingViewport = existingViewport === null;
+@@ -14,6 +17,9 @@ const ViewportProvider = ({ children }) => {
+   React.useLayoutEffect(() => {
+     let observer = null;
+     if (noExistingViewport) {
++      if (typeof window === undefined) {
++        return null;
++      }
+       observer = new ResizeObserver(
+         (observerEntries) => {
+           setViewport(observerEntries[0].contentRect.width);
+diff --git a/node_modules/@salt-ds/core/dist-es/node_modules/style-inject/dist/style-inject.es.js b/node_modules/@salt-ds/core/dist-es/node_modules/style-inject/dist/style-inject.es.js
+index 69a6f1b..8268fdc 100644
+--- a/node_modules/@salt-ds/core/dist-es/node_modules/style-inject/dist/style-inject.es.js
++++ b/node_modules/@salt-ds/core/dist-es/node_modules/style-inject/dist/style-inject.es.js
+@@ -1,6 +1,6 @@
+ function styleInject(css, ref) {
+   if ( ref === void 0 ) ref = {};
+-  var insertAt = ref.insertAt;
++  var insertAt = ref.insertAt || 'top';
+ 
+   if (!css || typeof document === 'undefined') { return; }
+ 
+diff --git a/node_modules/@salt-ds/core/dist-es/packages/core/src/aria-announcer/AriaAnnouncerProvider.js b/node_modules/@salt-ds/core/dist-es/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
+index 289a42e..311b64f 100644
+--- a/node_modules/@salt-ds/core/dist-es/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
++++ b/node_modules/@salt-ds/core/dist-es/packages/core/src/aria-announcer/AriaAnnouncerProvider.js
+@@ -7,6 +7,9 @@ function AriaAnnouncerProvider({
+   children,
+   style
+ }) {
++  if (typeof window === 'undefined') {
++    return children;
++  }
+   const [currentAnnouncement, setCurrentAnnouncement] = useState("");
+   const announcementsRef = useRef([]);
+   const isAnnouncingRef = useRef(false);
+diff --git a/node_modules/@salt-ds/core/dist-es/packages/core/src/viewport/ViewportProvider.js b/node_modules/@salt-ds/core/dist-es/packages/core/src/viewport/ViewportProvider.js
+index 4654605..ded3a65 100644
+--- a/node_modules/@salt-ds/core/dist-es/packages/core/src/viewport/ViewportProvider.js
++++ b/node_modules/@salt-ds/core/dist-es/packages/core/src/viewport/ViewportProvider.js
+@@ -3,6 +3,9 @@ import { createContext, useContext, useState, useLayoutEffect } from 'react';
+ 
+ const ViewportContext = createContext(null);
+ const ViewportProvider = ({ children }) => {
++  if (typeof window === 'undefined') {
++    return null;
++  }
+   const existingViewport = useContext(ViewportContext);
+   const [viewport, setViewport] = useState(existingViewport);
+   const noExistingViewport = existingViewport === null;

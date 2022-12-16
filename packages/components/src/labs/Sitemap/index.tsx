@@ -1,6 +1,6 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Dropdown, DropdownButton, SelectionChangeHandler, Spinner } from '@jpmorganchase/uitk-lab';
+import { Dropdown, DropdownButton, SelectionChangeHandler, Spinner } from '@salt-ds/lab';
 import warning from 'warning';
 import { Icon } from '../../Icon';
 

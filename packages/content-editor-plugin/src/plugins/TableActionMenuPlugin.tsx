@@ -14,7 +14,7 @@ import {
   $removeTableRowAtIndex,
   TableCellNode
 } from '@lexical/table';
-import { useFloatingUI } from '@jpmorganchase/uitk-core';
+import { useFloatingUI } from '@salt-ds/lab';
 import { useDismiss, useInteractions } from '@floating-ui/react-dom-interactions';
 import {
   ArrowDownIcon,
@@ -23,8 +23,8 @@ import {
   ArrowUpIcon,
   DeleteIcon,
   DeleteSolidIcon
-} from '@jpmorganchase/uitk-icons';
-import type { MenuDescriptor } from '@jpmorganchase/uitk-lab';
+} from '@salt-ds/icons';
+import type { MenuDescriptor } from '@salt-ds/lab';
 
 import { Popper } from '../components/Popper/Popper';
 import { ActionMenu, ActionMenuSource } from '../components/ActionMenu/ActionMenu';

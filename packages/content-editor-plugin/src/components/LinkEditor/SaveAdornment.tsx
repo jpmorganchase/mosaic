@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import type { ButtonProps } from '@jpmorganchase/mosaic-components';
-import { StaticInputAdornment } from '@jpmorganchase/uitk-core';
+import { StaticInputAdornment } from '@salt-ds/lab';
 
 interface SaveAdornmentProps {
   onSave: ButtonProps['onClick'];

@@ -1,6 +1,6 @@
 import React, { forwardRef, Ref } from 'react';
 import classnames from 'classnames';
-import { ToolbarButton, ToolbarButtonProps } from '@jpmorganchase/uitk-lab';
+import { ToolbarButton, ToolbarButtonProps } from '@salt-ds/lab';
 
 import styles from './TextFormatToolbarButton.css';
 
@@ -16,7 +16,7 @@ export const TextFormatToolbarButton = forwardRef(function TextFormatToolbarButt
     <ToolbarButton
       ref={ref}
       onClick={onClick}
-      // TODO remove once UITK Odyssey ToolbarButton supports className overrides
+      // TODO remove once Salt ToolbarButton supports className overrides
       style={{ width: 28, height: 28 }}
       className={classnames(className, styles.root, {
         [styles.active]: active
