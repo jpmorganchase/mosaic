@@ -18,6 +18,9 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
   const urlPath = matches?.length ? matches[1] : '';
   // Use env: MOSAIC_URL="http://localhost:3000/api/snapshots" to point to static data api
   const mosaicUrl = process.env.MOSAIC_URL || 'http://localhost:8080';
+
+  console.log('WITH SHARED CONFIG', mosaicUrl);
+
   const sharedConfigUrl = `${mosaicUrl}${urlPath}/shared-config.json`;
   let response;
   try {
