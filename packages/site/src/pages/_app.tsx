@@ -26,6 +26,8 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   // @ts-ignore
   const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
 
+  console.log('ENV', process.env.MOSAIC_URL);
+
   const storeProps = { sharedConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);
   return (
