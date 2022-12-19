@@ -19,7 +19,7 @@
     "test": "npm-run-all --parallel test:*",
     "test:client": "jest --config ./jest.config.client.js --coverage",
     "test:server": "jest  --config ./jest.config.server.js --coverage",
-    "build": "turbo run build --filter=!@jpmorganchase/mosaic-site",
+    "build": "turbo run build --filter=!@jpmorganchase/mosaic-example-nextjs-ssr",
     "build:snapshot": "turbo run build:snapshot --filter=@jpmorganchase/mosaic-example",
     "build:snapshot:latest": "turbo run build:snapshot:latest --filter=@jpmorganchase/mosaic-example",
     "copy:site:images": "cp -r ./assets/[!.]* ./packages/site/public/img",
