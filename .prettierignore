@@ -15,4 +15,4 @@ LICENSE
 **/dist
 .tmp
 .next
-.env
+**/.env*
