@@ -21,8 +21,6 @@ import { MyAppProps } from '../types/mosaic';
 const components = mosaicComponents;
 const layoutComponents = mosaicLayouts;
 
-console.log('MOSAIC URL', process.env.MOSAIC_URL);
-
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
