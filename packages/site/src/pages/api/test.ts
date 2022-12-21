@@ -7,7 +7,7 @@ export default async function handler(_request: NextApiRequest, response: NextAp
   const rootDir = __dirname.split('.next')[0];
   const sharedConfigPath = path.join(
     rootDir,
-    'public',
+    // 'public',
     mosaicSnapshotDir,
     'mosaic',
     'shared-config.json'
