@@ -49,7 +49,7 @@ const namespacePrompt = {
   default: 'mosaic'
 };
 
-export async function addSourcePrompts(inquirer) {
+async function addSourcePrompts(inquirer) {
   const promptQueue = [];
   let sourcePaths = [];
   promptQueue.push(addNewSourcePrompt);
@@ -152,4 +152,5 @@ function standardGenerator(plop, env) {
   );
 }
 
-module.exports = standardGenerator;
+const generatorModule = (module.exports = standardGenerator);
+generatorModule.addSourcePrompts = addSourcePrompts;
