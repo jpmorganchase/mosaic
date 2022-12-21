@@ -5,9 +5,9 @@ export default async function handler(req, res) {
   const { route } = req.query;
   const fileUrl = route.join('/');
   // Use env: MOSAIC_SNAPSHOT_DIR="<folder-containing-mosaic-build-output>" for what data you want to serve
-  const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
-  // Find the absolute path for  the file/dir requested
-  const filePath = path.join(process.cwd(), `${mosaicSnapshotDir}/${fileUrl}`);
+  const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
+  const rootDir = __dirname.split('.next')[0];
+  const filePath = path.join(rootDir, 'public', mosaicSnapshotDir, fileUrl);
   try {
     const stats = fs.statSync(filePath);
     if (stats !== undefined) {
