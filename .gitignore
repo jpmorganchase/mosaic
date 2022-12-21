@@ -12,7 +12,6 @@ node_modules
 **/dist-labs/
 **/.tmp
 tsconfig.tsbuildinfo
-**/snapshots
 
 # Deployment
 mosaic.generators.js
