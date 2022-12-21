@@ -1,13 +1,19 @@
-import * as path from 'path';
-import * as fs from 'fs';
+import { NextApiRequest, NextApiResponse } from 'next';
+import path from 'path';
+import  fs  from 'fs';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { route } = req.query;
-  const fileUrl = route.join('/');
+
+  const test = route?.length ? [...route] : [route]
+  
+
+  const fileUrl = test.join( '/')
   // Use env: MOSAIC_SNAPSHOT_DIR="<folder-containing-mosaic-build-output>" for what data you want to serve
-  const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
+  const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
   // Find the absolute path for  the file/dir requested
-  const filePath = path.join(process.cwd(), `${mosaicSnapshotDir}/${fileUrl}`);
+  const filePath = path.join(process.cwd(), mosaicSnapshotDir, fileUrl);
+  
   try {
     const stats = fs.statSync(filePath);
     if (stats !== undefined) {
@@ -20,9 +26,9 @@ export default async function handler(req, res) {
         } else if (path.extname(realPath) === '.mdx') {
           res.setHeader('Content-Type', 'text/mdx');
         } else if (path.extname(realPath) === '.xml') {
-          res.contentType('application/xml');
+           res.setHeader('Content-Type', 'application/xml');
         }
-        const data = fs.readFileSync(realPath);
+        const data = fs.readFileSync(realPath, 'utf-8');
         res.status(200).send(data.toString());
       }
     } else {
