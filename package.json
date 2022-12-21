@@ -25,7 +25,7 @@
     "build:snapshot:latest": "turbo run build:snapshot:latest --filter=@jpmorganchase/mosaic-example",
     "copy:site:images": "cp -r ./assets/[!.]* ./packages/site/public/img",
     "clean": "turbo run clean",
-    "deploy": " yarn build:site && yarn gen:snapshot && yarn copy:site:images",
+    "deploy": " yarn build:site && yarn copy:site:images",
     "gen": "turbo run gen:site copy:site:images gen:snapshot --filter=//",
     "gen:site": "yarn mosaic-create-site create -g mosaic -o packages/site -f",
     "gen:snapshot": "turbo run gen:snapshot --filter=@jpmorganchase/mosaic-site",
