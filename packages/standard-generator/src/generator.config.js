@@ -38,14 +38,14 @@ module.exports = {
     { package: '@jpmorganchase/mosaic-store', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-theme', version: `^${version}` },
     /* Mosaic core filesystem dependencies */
-    { package: '@jpmorganchase/mosaic-cli', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-core', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-plugins', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-schemas', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-serialisers', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-source-git-repo', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-source-local-folder', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-types', version: '^0.1.0-beta.9' }
+    { package: '@jpmorganchase/mosaic-cli', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-core', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-plugins', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-schemas', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-serialisers', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-source-git-repo', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-source-local-folder', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-types', version: `^${version}` }
   ],
   /**
    * Extended imports used in site's _app.tsx
