@@ -16,3 +16,4 @@ LICENSE
 .tmp
 .next
 **/.env*
+**/snapshots
