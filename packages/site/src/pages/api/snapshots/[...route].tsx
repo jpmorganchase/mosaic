@@ -15,7 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const filePath = path.join(process.cwd(), mosaicSnapshotDir, fileUrl);
   
   try {
+    console.log(`Loading filePath ${filePath}`);
     const stats = fs.statSync(filePath);
+    console.log(`Stats filePath ${filePath}`, stats);
     if (stats !== undefined) {
       if (stats.isDirectory()) {
         res.status(302).json({ redirect: `/${fileUrl}/index` });
