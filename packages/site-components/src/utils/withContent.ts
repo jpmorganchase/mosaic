@@ -22,7 +22,7 @@ export const withContent: MosaicMiddleware<ContentProps> = async context => {
   try {
     // Use env: MOSAIC_URL="http://localhost:3000/api/snapshots" to point to static data api
     const mosaicUrl = process.env.MOSAIC_URL || 'http://localhost:8080';
-    console.log('WITH CONTENT', mosaicUrl);
+    console.log('MARKS DEBUG WITH CONTENT', `${mosaicUrl}${resolvedUrl}`);
     const req = await fetch(`${mosaicUrl}${resolvedUrl}`);
 
     if (req.ok) {
