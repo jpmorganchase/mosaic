@@ -20,13 +20,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (stats.isDirectory()) {
         res.status(302).json({ redirect: `/${fileUrl}/index` });
       } else {
-        const realPath = fs.realpathSync(filePath);
+        let realPath = filePath;
         if (path.extname(realPath) === '.json') {
           res.setHeader('Content-Type', 'application/json');
-        } else if (path.extname(realPath) === '.mdx') {
-          res.setHeader('Content-Type', 'text/mdx');
         } else if (path.extname(realPath) === '.xml') {
            res.setHeader('Content-Type', 'application/xml');
+        } else if (path.extname(realPath) === '.mdx') {
+          res.setHeader('Content-Type', 'text/mdx');
+        } else if (path.extname(realPath) === '') {
+          res.setHeader('Content-Type', 'text/mdx');
+          realPath = `${realPath}.mdx`
         }
         const data = fs.readFileSync(realPath, 'utf-8');
         res.status(200).send(data.toString());
