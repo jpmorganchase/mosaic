@@ -4,7 +4,7 @@ const { vanillaExtractPlugin } = require('@vanilla-extract/esbuild-plugin');
 const glob = require('fast-glob');
 
 const publicImageResolver = require('./publicImageResolver');
-const uitkIconNames = require('./uitkIconNames');
+const saltIconNames = require('./saltIconNames');
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
@@ -30,7 +30,7 @@ esbuild
     ]),
     bundle: false,
     outdir: 'dist',
-    plugins: [uitkIconNames]
+    plugins: [saltIconNames]
   })
   .catch(e => {
     if (e.errors && e.errors.length > 0) {
