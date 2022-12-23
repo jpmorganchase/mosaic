@@ -37,7 +37,7 @@ export default {
       width: '100%',
       position: 'sticky',
       top: 0,
-      // This is high so that the header can overlay the UITK component for mobile
+      // This is high so that the header can overlay the Salt component for mobile
       // sidebars and menus. If Drawer (with a zIndex of 1300) is ever refactored, we should reduce
       // this to a more sensible number.
       zIndex: 1500
