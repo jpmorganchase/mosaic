@@ -1,5 +1,5 @@
 import React from 'react';
-import { Breadcrumbs as UITKBreadcrumbs } from '@salt-ds/lab';
+import { Breadcrumbs as SaltBreadcrumbs } from '@salt-ds/lab';
 import { Breadcrumb } from './Breadcrumb';
 
 import styles from './styles.css';
@@ -21,7 +21,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
   }
 
   return (
-    <UITKBreadcrumbs className={styles.root} itemsBeforeCollapse={2} maxItems={5}>
+    <SaltBreadcrumbs className={styles.root} itemsBeforeCollapse={2} maxItems={5}>
       {breadcrumbs.map(
         (value, index) =>
           value && (
@@ -30,6 +30,6 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
             </Breadcrumb>
           )
       )}
-    </UITKBreadcrumbs>
+    </SaltBreadcrumbs>
   );
 };
