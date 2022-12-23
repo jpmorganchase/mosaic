@@ -1,11 +1,6 @@
-@font-face {
-  font-family: 'jpmuitk-icons';
-  font-display: block;
-  src: url('./jpmuitk-icons.woff') format('woff');
-}
 /* OpenSans-Light */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: normal;
   font-weight: 200;
@@ -13,7 +8,7 @@
 }
 /* OpenSans-LightItalic */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: italic;
   font-weight: 200;
@@ -22,7 +17,7 @@
 
 /* OpenSans-Regular */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: normal;
   font-weight: 400;
@@ -30,7 +25,7 @@
 }
 /* OpenSans-Italic */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: italic;
   font-weight: 400;
@@ -39,7 +34,7 @@
 
 /* OpenSans-SemiBold */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: normal;
   font-weight: 600;
@@ -47,7 +42,7 @@
 }
 /* OpenSans-SemiBoldItalic */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: optional;
   font-style: italic;
   font-weight: 600;
@@ -56,7 +51,7 @@
 
 /* OpenSans-Bold */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: normal;
   font-weight: 700;
@@ -64,7 +59,7 @@
 }
 /* OpenSans-BoldItalic */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: italic;
   font-weight: 700;
@@ -73,7 +68,7 @@
 
 /* OpenSans-ExtraBold */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: normal;
   font-weight: 800;
@@ -81,7 +76,7 @@
 }
 /* OpenSans-ExtraBoldItalic */
 @font-face {
-  font-family: 'jpmuitk-sans';
+  font-family: 'Open Sans';
   font-display: swap;
   font-style: italic;
   font-weight: 800;
