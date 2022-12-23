@@ -1,4 +1,4 @@
-import { shadowVars as shadows } from '../uitk';
+import { shadowVars as shadows } from '../salt';
 import { colorVars } from '../color/vars.css';
 
 const unknownShadow = `0 2px 4px rgba(0, 0, 0, 0.10), inset 0px -1px 0px ${colorVars.unknown}`;

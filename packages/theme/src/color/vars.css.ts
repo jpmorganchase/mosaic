@@ -1,4 +1,4 @@
-import { colorVars as color } from '../uitk';
+import { colorVars as color } from '../salt';
 
 export var RESERVED_HOT_PINK = '#FF69b4';
 
