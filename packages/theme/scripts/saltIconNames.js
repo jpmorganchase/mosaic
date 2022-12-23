@@ -8,7 +8,7 @@ function writeIconType(icons) {
     const sep = index < icons.length ? '|' : '';
     return `  ${sep} '${icon}'`;
   });
-  return `export type uitkIconNames =
+  return `export type saltIconNames =
 ${iconItems.join('\n')};
 `;
 }
