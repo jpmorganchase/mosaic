@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const typesPath = path.join(process.cwd(), 'types/uitkIconNames.d.ts');
+const typesPath = path.join(process.cwd(), 'types/saltIconNames.d.ts');
 
 function writeIconType(icons) {
   const iconItems = icons.sort().map((icon, index) => {
@@ -13,7 +13,7 @@ ${iconItems.join('\n')};
 `;
 }
 
-const uitkIconNames = {
+const saltIconNames = {
   name: 'iconEnum',
   setup(build) {
     const icons = [];
@@ -32,4 +32,4 @@ const uitkIconNames = {
   }
 };
 
-module.exports = uitkIconNames;
+module.exports = saltIconNames;
