@@ -20,9 +20,9 @@ const components = {{{ printComponentIdentifiers imports }}};
 const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
-
-  const storeProps = { sharedConfig, ...frontmatter };
+  const { session, sharedConfig, source } = pageProps;
+  
+  const frontmatter = source?.frontmatter || {};
   const createStore = useCreateStore(storeProps);
   return (
   <SessionProvider session={session}>
