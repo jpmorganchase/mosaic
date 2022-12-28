@@ -25,4 +25,4 @@ import type {
 
 export declare type MyMiddlewareProps = MiddlewarePresetsProps /* & ExampleMiddlewareOptions */;
 
-export interface MyAppProps extends MosaicAppProps<MyMiddlewareProps> {}
+export type MyAppProps = MosaicAppProps<MyMiddlewareProps>['props'];

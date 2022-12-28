@@ -22,10 +22,9 @@ const components = mosaicComponents;
 const layoutComponents = mosaicLayouts;
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
+  const { session, sharedConfig, source } = pageProps;
 
+  const frontmatter = source?.frontmatter || {};
   const storeProps = { sharedConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);
   return (
