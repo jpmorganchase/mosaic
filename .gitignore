@@ -12,10 +12,8 @@ node_modules
 **/dist-labs/
 **/.tmp
 tsconfig.tsbuildinfo
-/snapshots
 
 # Deployment
-packages/site
 mosaic.generators.js
 
 # Test Results
