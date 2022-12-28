@@ -51,6 +51,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
           });
           await fs.promises.writeFile(path.join(pathDir, String(filePath)), rawFile);
         }
+        const pwd = process.cwd();
         for (const alias in symlinks) {
           if (alias.startsWith('/.tags')) {
             continue;
@@ -72,11 +73,19 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
                 process.exit(1);
               }
             } catch {
-              await fs.promises.symlink(path.join(pathDir, target), path.join(pathDir, alias));
+              const targetPath = path.join(pathDir, target);
+              const aliasPath = path.join(pathDir, alias);
+              const aliasBasename = path.basename(aliasPath);
+              const targetSymlink = path.relative(path.dirname(aliasPath), targetPath);
+              process.chdir(path.dirname(aliasPath));
+              if (fs.existsSync(aliasBasename)) {
+                fs.unlinkSync(aliasBasename);
+              }
+              await fs.promises.symlink(targetSymlink, aliasBasename);
             }
           }
         }
-
+        process.chdir(pwd);
         console.log(
           `Filesystem for ${
             Array.isArray(scope) ? scope.length : config.sources.length
