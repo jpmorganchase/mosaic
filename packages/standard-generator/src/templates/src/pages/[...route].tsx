@@ -24,7 +24,8 @@ const middlewareRunner = createMiddlewareRunner<MyMiddlewareProps>({}, middlewar
 export async function getServerSideProps(
   context: GetServerSidePropsContext
 ): Promise<Partial<GetServerSidePropsResult<MiddlewareResult<MyAppProps>>>> {
-  return middlewareRunner(context, {});
+  const props = middlewareRunner(context, {});
+  return props;
 }
 
 /** MyApp will be passed MyAppProps which is created by combining the result of all props created by Middleware */
