@@ -1,1 +1,1 @@
-export type MosaicMode = 'active' | 'snapshot';
+export type MosaicMode = 'active' | 'static';

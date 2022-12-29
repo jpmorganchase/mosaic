@@ -17,6 +17,9 @@ export { SharedConfig };
 export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
   context: GetServerSidePropsContext
 ) => {
+  if (context.res.getHeader('X-Mosaic-Mode') !== 'active') {
+    return {};
+  }
   const matches = context.resolvedUrl.match(/(.*)[!/]/);
   const urlPath = matches?.length ? matches[1] : '';
   const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
