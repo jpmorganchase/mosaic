@@ -11,13 +11,11 @@ export { SharedConfig };
  * @param _params
  */
 export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
-  _context: GetServerSidePropsContext,
-  _params
+  context: GetServerSidePropsContext
 ) => {
-  const matches = _context.resolvedUrl.match(/(.*)[!/]/);
+  const matches = context.resolvedUrl.match(/(.*)[!/]/);
   const urlPath = matches?.length ? matches[1] : '';
-  // Use env: MOSAIC_URL="http://localhost:3000/api/snapshots" to point to static data api
-  const mosaicUrl = process.env.MOSAIC_URL || 'http://localhost:8080';
+  const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
   const sharedConfigUrl = `${mosaicUrl}${urlPath}/shared-config.json`;
   let response;
   try {
