@@ -3,9 +3,10 @@ import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { Body } from '@jpmorganchase/mosaic-site-components';
 import {
   createMiddlewareRunner,
-  MiddlewareResult
-} from '@jpmorganchase/mosaic-site-components/dist/utils/createMiddlewareRunner';
-import { middlewarePresets } from '@jpmorganchase/mosaic-site-components/dist/utils/middlewarePresets';
+  MiddlewareResult,
+  middlewarePresets,
+  withStaticContent
+} from '@jpmorganchase/mosaic-site-middleware';
 
 import type { MyAppProps, MyMiddlewareProps } from '../types/mosaic';
 
@@ -19,7 +20,10 @@ import type { MyAppProps, MyMiddlewareProps } from '../types/mosaic';
    ]
  );
  */
-const middlewareRunner = createMiddlewareRunner<MyMiddlewareProps>({}, middlewarePresets);
+const middlewareRunner = createMiddlewareRunner<MyMiddlewareProps>({}, [
+  ...middlewarePresets,
+  withStaticContent
+]);
 
 export async function getServerSideProps(
   context: GetServerSidePropsContext
