@@ -1,0 +1,35 @@
+{
+  "name": "@jpmorganchase/mosaic-site-middleware",
+  "version": "0.1.0-beta.9",
+  "license": "Apache-2.0",
+  "description": "Mosaic - Site middleware",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+  },
+  "devDependencies": {
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.9",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.9",
+    "@types/mdast": "^3.0.0",
+    "acorn": "^8.0.0",
+    "acorn-jsx": "^5.0.0",
+    "deepmerge": "^4.2.2",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
+    "next": "^12.1.0",
+    "next-mdx-remote": "^4.0.0",
+    "node-cookie": "^2.1.2",
+    "react-error-boundary": "^3.1.4",
+    "react-pro-sidebar": "1.0.0-alpha.7",
+    "rehype-slug": "^5.0.1",
+    "unified": "^10.0.0",
+    "unist-util-visit": "^2.0.0",
+    "warning": "^3.0.0"
+  }
+}
