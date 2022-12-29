@@ -1,6 +1,5 @@
 import React, { Context, ReactNode } from 'react';
-
-import type { Session } from './types/session';
+import type { Session } from '@jpmorganchase/mosaic-types';
 
 let SessionContext: Context<Record<string, any>>;
 
