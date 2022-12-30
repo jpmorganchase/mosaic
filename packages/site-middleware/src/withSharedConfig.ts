@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { GetServerSidePropsContext } from 'next';
 import type { SharedConfig, SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
@@ -10,6 +12,43 @@ if (typeof window !== 'undefined') {
 export { SharedConfig };
 
 /**
+ * Fetch from mosaic the shared-config.json.
+ *
+ * @param url the shared config file URL
+ * @returns shared config JSON
+ */
+async function fetchSharedConfig(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  return response;
+}
+
+/**
+ * Read from the file system the shared config
+ *
+ * @param url the shared config file URL
+ * @returns shared config JSON
+ */
+async function readSharedConfig(url: string) {
+  const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
+  const filePath = path.posix.join(process.cwd(), mosaicSnapshotDir, url);
+  const isImgDir = path.posix.dirname(filePath).endsWith('img');
+  if (!isImgDir) {
+    const stats = fs.statSync(filePath);
+    if (stats !== undefined) {
+      const realPath = fs.realpathSync(filePath);
+      const data = fs.readFileSync(realPath, 'utf-8');
+      return new Response(data.toString(), { status: 200 });
+    }
+  }
+
+  return new Response('', { status: 404 });
+}
+
+/**
  * Adds the [[`SharedConfig`]] props to the page props
  * @param _context
  * @param _params
@@ -17,20 +56,18 @@ export { SharedConfig };
 export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
   context: GetServerSidePropsContext
 ) => {
-  if (context.res.getHeader('X-Mosaic-Mode') !== 'active') {
-    return {};
-  }
-  const matches = context.resolvedUrl.match(/(.*)[!/]/);
+  const { resolvedUrl, res } = context;
+  const isStatic = res.getHeader('X-Mosaic-Mode') === 'static';
+  const matches = resolvedUrl.match(/(.*)[!/]/);
   const urlPath = matches?.length ? matches[1] : '';
-  const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
+  const mosaicUrl = isStatic ? '' : res.getHeader('X-Mosaic-Content-Url');
   const sharedConfigUrl = `${mosaicUrl}${urlPath}/shared-config.json`;
   let response;
   try {
-    response = await fetch(sharedConfigUrl, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    response = isStatic
+      ? await readSharedConfig(sharedConfigUrl)
+      : await fetchSharedConfig(sharedConfigUrl);
+
     if (response.ok) {
       const { config } = (await response.json()) as { config: SharedConfig };
 
