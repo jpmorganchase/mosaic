@@ -63,7 +63,7 @@ export const switchVars = createGlobalThemeContract({
 });
 
 createGlobalTheme('.saltSwitch', switchVars, {
-  // Odyssey increased the size of the switch by 2px
+  // Salt increased the size of the switch by 2px
   height: '16px'
 });
 
@@ -211,7 +211,7 @@ export const shadowVars = createGlobalThemeContract({
 
 createGlobalTheme(`${lightMode},${darkMode}`, shadowVars);
 
-// TODO Odyssey toolbars wrap every child in a Formfield, creating multiple focus rings
+// TODO Salt toolbars wrap every child in a Formfield, creating multiple focus rings
 // Toolbar focus is buggy, this improves things until Salt provide a fix
 // Remove this once Salt Toolbar issues are resolved
 globalStyle('.saltToolbar > .Responsive-inner > .saltFormField.saltToolbarField::before', {
