@@ -1658,7 +1658,7 @@
   dependencies:
     classnames "^2.2.6"
 
-"@salt-ds/lab@1.0.0-alpha.0", "@salt-ds/lab@^1.0.0-alpha.0":
+"@salt-ds/lab@^1.0.0-alpha.0":
   version "1.0.0-alpha.0"
   resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.0.tgz#a8e55299f58ea2bd3aae28fbd575c797536d8909"
   integrity sha512-BG3u2a0zHgoT1XjXtbHrKQ7t/JBQ3mArwO9AyEjvLmeNCLNSj2yA0XKYW6hS+Sg4P6en5RZBQ7P4nsOsJC6kLg==
