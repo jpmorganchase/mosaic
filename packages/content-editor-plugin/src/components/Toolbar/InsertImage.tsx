@@ -4,7 +4,7 @@ import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
 import {
   ButtonBar,
-  Dialog as ToolkitDialog,
+  Dialog as SaltDialog,
   DialogTitle,
   DialogContent,
   DialogActions
@@ -93,7 +93,7 @@ export const InsertImage = () => {
         <Icon name="addDocument" />
       </TextFormatToolbarButton>
 
-      <ToolkitDialog onClose={handleClose} open={isOpen} width={600}>
+      <SaltDialog onClose={handleClose} open={isOpen} width={600}>
         <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>Insert Image</DialogTitle>
           <DialogContent>
@@ -126,7 +126,7 @@ export const InsertImage = () => {
             </ButtonBar>
           </DialogActions>
         </form>
-      </ToolkitDialog>
+      </SaltDialog>
     </>
   );
 };
