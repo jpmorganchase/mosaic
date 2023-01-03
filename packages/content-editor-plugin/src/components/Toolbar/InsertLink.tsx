@@ -5,7 +5,7 @@ import { string, object } from 'yup';
 import { FormField, Input } from '@salt-ds/lab';
 import {
   ButtonBar,
-  Dialog as ToolkitDialog,
+  Dialog as SaltDialog,
   DialogTitle,
   DialogContent,
   DialogActions
@@ -110,7 +110,7 @@ export const InsertLinkDialog = () => {
   };
 
   return (
-    <ToolkitDialog onClose={handleClose} open={isInsertingLink} width={600}>
+    <SaltDialog onClose={handleClose} open={isInsertingLink} width={600}>
       <form onSubmit={handleSubmit} noValidate>
         <DialogTitle>Insert Link</DialogTitle>
         <DialogContent>
@@ -140,6 +140,6 @@ export const InsertLinkDialog = () => {
           </ButtonBar>
         </DialogActions>
       </form>
-    </ToolkitDialog>
+    </SaltDialog>
   );
 };

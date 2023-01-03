@@ -1,5 +1,5 @@
 import React from 'react';
-import { Toolbar as ToolkitToolbar, ToolbarButton, Tooltray } from '@salt-ds/lab';
+import { Toolbar as SaltToolbar, ToolbarButton, Tooltray } from '@salt-ds/lab';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { useEditHistory } from '../../hooks/useEditHistory';
@@ -16,7 +16,7 @@ const Toolbar = () => {
   const { setPageState } = usePageState();
 
   return (
-    <ToolkitToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
+    <SaltToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
       <Tooltray aria-label="history tooltray">
         <ToolbarButton label="Undo" disabled={!canUndo} onClick={undoEdit}>
           <Icon name="undo" />
@@ -40,7 +40,7 @@ const Toolbar = () => {
       <Tooltray aria-label="copy tooltray" data-pad-start>
         <SaveButton />
       </Tooltray>
-    </ToolkitToolbar>
+    </SaltToolbar>
   );
 };
 

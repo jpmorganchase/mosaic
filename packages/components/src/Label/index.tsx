@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTooltip, Tooltip, TooltipProps as SaltToolkitProps } from '@salt-ds/lab';
+import { useTooltip, Tooltip, TooltipProps as SaltTooltipProps } from '@salt-ds/lab';
 
 import styles from './styles.css';
 
@@ -13,7 +13,7 @@ export interface LabelProps {
   /* Tooltip ClassName */
   tooltipClass?: string;
   /* Additional Tooltip Props */
-  TooltipProps?: SaltToolkitProps;
+  TooltipProps?: SaltTooltipProps;
 }
 
 export const Label: React.FC<LabelProps> = ({
