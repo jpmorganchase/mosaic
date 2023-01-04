@@ -8,7 +8,6 @@ import Head from 'next/head';
 import { MyAppProps } from '../types/mosaic';
 
 const components = {{{ printComponentIdentifiers imports }}};
-const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
   const { session, sharedConfig, source: { frontmatter = {} } = {} } = pageProps;
