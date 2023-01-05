@@ -35,17 +35,14 @@ async function fetchSharedConfig(url: string) {
 async function readSharedConfig(url: string) {
   const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
   const filePath = path.posix.join(process.cwd(), mosaicSnapshotDir, url);
-  const isImgDir = path.posix.dirname(filePath).endsWith('img');
-  if (!isImgDir) {
-    const stats = fs.statSync(filePath);
-    if (stats !== undefined) {
-      const realPath = fs.realpathSync(filePath);
-      const data = fs.readFileSync(realPath, 'utf-8');
-      return new Response(data.toString(), { status: 200 });
-    }
+  try {
+    const realPath = await fs.promises.realpath(filePath);
+    const data = await fs.promises.readFile(realPath, 'utf-8');
+    return new Response(data.toString(), { status: 200 });
+  } catch (e) {
+    // it doesn't matter if no shared config file was found
+    return new Response('', { status: 204 });
   }
-
-  return new Response('', { status: 404 });
 }
 
 /**
@@ -68,7 +65,7 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
       ? await readSharedConfig(sharedConfigUrl)
       : await fetchSharedConfig(sharedConfigUrl);
 
-    if (response.ok) {
+    if (response.ok && response.status !== 204) {
       const { config } = (await response.json()) as { config: SharedConfig };
 
       return { props: { sharedConfig: config } };
@@ -83,7 +80,7 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
     }
   }
   const show500 = response.status !== 404 && response.status !== 204;
-  const show404 = response.status === 404 || response.status === 204;
+  const show404 = response.status === 404;
   let errorMessage = `Could not find any shared config defined for ${sharedConfigUrl}`;
   if (show500) {
     errorMessage = `An un-expected error occurred reading ${sharedConfigUrl}`;
