@@ -12,33 +12,23 @@ import { ContentProps } from './withContent.js';
  */
 export const withStaticContent: MosaicMiddleware<ContentProps> = async context => {
   const { resolvedUrl, res } = context;
+  const isStatic = res.getHeader('X-Mosaic-Mode') === 'static';
 
-  if (res.getHeader('X-Mosaic-Mode') !== 'static') {
+  if (!isStatic) {
     return {};
   }
-
   const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
   // Find the absolute path for  the file/dir requested
-  let filePath = path.posix.join(process.cwd(), mosaicSnapshotDir, resolvedUrl);
+  const filePath = path.posix.join(process.cwd(), mosaicSnapshotDir, resolvedUrl);
+
   try {
-    const stats = fs.statSync(filePath);
-    if (stats !== undefined) {
-      if (stats.isDirectory()) {
-        filePath = path.posix.join(filePath, 'index');
-      }
-      const realPath = fs.realpathSync(filePath);
-      const extname = path.extname(realPath);
-      const data = fs.readFileSync(realPath, 'utf-8');
+    const realPath = await fs.promises.realpath(filePath);
+    const extname = path.extname(realPath);
+    if (extname === '.mdx') {
+      const data = await fs.promises.readFile(filePath, 'utf-8');
       const text = data.toString();
-
-      if (extname === '.json') {
-        return { props: { type: 'json', ...JSON.parse(text) } };
-      }
-
-      if (extname === '.mdx') {
-        const mdxSource = await compileMDX(text);
-        return { props: { type: 'mdx', source: mdxSource, raw: text } };
-      }
+      const mdxSource = await compileMDX(text);
+      return { props: { type: 'mdx', source: mdxSource, raw: text } };
     }
   } catch (error) {
     if (error instanceof Error) {
