@@ -6,8 +6,7 @@
   "description": "Mosaic - Standard site generator used by Mosaic's create command",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "npm-run-all --parallel build:*",
-    "build:bundle": "node ./scripts/bundle.js",
+    "build": "node ./scripts/bundle.js",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "watch": "node ./scripts/bundle.js watch"
