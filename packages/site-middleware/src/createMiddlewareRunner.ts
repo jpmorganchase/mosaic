@@ -1,8 +1,8 @@
 import type { GetServerSidePropsContext } from 'next';
 import deepmerge from 'deepmerge';
 
-import type { MosaicAppProps } from './middlewarePresets';
-import MiddlewareError from './MiddlewareError';
+import type { MosaicAppProps } from './middlewarePresets.js';
+import MiddlewareError from './MiddlewareError.js';
 
 const overwriteMerge = (_, sourceArray) => sourceArray;
 

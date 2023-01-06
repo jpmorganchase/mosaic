@@ -1,7 +1,6 @@
 import cookie from 'node-cookie';
 import decode from 'jwt-decode';
-
-import { Session, JWT } from './types/session';
+import { Session, JWT } from '@jpmorganchase/mosaic-types';
 
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
