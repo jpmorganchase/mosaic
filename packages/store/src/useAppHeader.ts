@@ -5,7 +5,8 @@ import type {
   AppHeaderMenuLinkItem,
   AppHeaderMenuLinksItem,
   MenuLinkItem,
-  MenuLinksItem
+  MenuLinksItem,
+  SearchIndexSlice
 } from './types';
 
 function isMenu(menu: MenuLinkItem | MenuLinksItem): menu is MenuLinksItem {
@@ -26,12 +27,14 @@ export type AppHeaderMenu = Array<AppHeaderMenuLinksItem | AppHeaderMenuLinkItem
 export interface AppHeader extends Omit<AppHeaderSlice, 'searchNamespace | menu'> {
   HeaderControlsProps?: {
     searchEndpoint: string;
+    searchIndex: SearchIndexSlice;
   };
   menu: AppHeaderMenu;
 }
 
 export function useAppHeader(): AppHeader | undefined {
   const appHeader = useStore(state => state.sharedConfig?.header);
+  const allState = useStore(state => state);
   if (!appHeader) {
     return undefined;
   }
@@ -39,7 +42,8 @@ export function useAppHeader(): AppHeader | undefined {
   if (appHeader.searchNamespace) {
     additionalProps = {
       HeaderControlsProps: {
-        searchEndpoint: parseSearchEndpoint(appHeader.searchNamespace)
+        searchEndpoint: parseSearchEndpoint(appHeader.searchNamespace),
+        searchIndex: allState.searchIndex
       }
     };
   }
