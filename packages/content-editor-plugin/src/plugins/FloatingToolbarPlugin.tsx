@@ -7,9 +7,9 @@ import {
   COMMAND_PRIORITY_LOW,
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
-import { Toolbar as ToolkitToolbar, Tooltray as ToolkitTooltray } from '@jpmorganchase/uitk-lab';
+import { Toolbar as SaltToolbar, Tooltray as SaltTooltray } from '@salt-ds/lab';
 import { flip, inline } from '@floating-ui/react-dom';
-import { useFloatingUI, UseFloatingUIProps } from '@jpmorganchase/uitk-core';
+import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/lab';
 import { useInteractions, useDismiss } from '@floating-ui/react-dom-interactions';
 import { Popper } from '../components/Popper/Popper';
 import { TextFormatTooltray } from '../components/Toolbar/TextFormatTooltray';
@@ -89,12 +89,12 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
   }
   return (
     <Popper ref={floating} open={open} style={style} {...getFloatingProps({})}>
-      <ToolkitToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
+      <SaltToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
         <TextFormatTooltray floating />
-        <ToolkitTooltray aria-label="text format tooltray">
+        <SaltTooltray aria-label="text format tooltray">
           <InsertLinkButton />
-        </ToolkitTooltray>
-      </ToolkitToolbar>
+        </SaltTooltray>
+      </SaltToolbar>
     </Popper>
   );
 }

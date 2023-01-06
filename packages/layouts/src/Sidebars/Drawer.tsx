@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useEffect, useLayoutEffect, useState } from 'react';
-import { LayerLayout } from '@jpmorganchase/uitk-core';
+import { LayerLayout } from '@salt-ds/lab';
 import { Icon, Button, useBreakpoint } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
 

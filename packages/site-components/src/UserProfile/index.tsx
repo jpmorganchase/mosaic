@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import classnames from 'classnames';
-import { Avatar } from '@jpmorganchase/uitk-lab';
+import { Avatar } from '@salt-ds/lab';
 
 import styles from './styles.css';
 

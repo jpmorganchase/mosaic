@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import { Switch } from '@jpmorganchase/uitk-core';
+import { Switch } from '@salt-ds/lab';
 
 import { ComponentExample } from '../ComponentExample';
 import { getMarkdownComponents } from '../Markdown';

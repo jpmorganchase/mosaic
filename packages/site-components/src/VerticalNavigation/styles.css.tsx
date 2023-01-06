@@ -9,7 +9,7 @@ export default {
     fontWeight: 'var(--fontWeight-bold)'
   },
   hoverMenuAnchor: {
-    backgroundColor: 'var(--uitk-color-grey-20)'
+    backgroundColor: 'var(--salt-navigable-primary-background-hover)'
   },
   menuAnchor: {
     height: 'auto',

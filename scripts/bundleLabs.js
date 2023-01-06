@@ -34,7 +34,7 @@ esbuild
     format: 'esm',
     target: ['es2022'],
     plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({})],
-    external: ['react', 'react-dom', '@jpmorganchase/uitk*', '@jpmorganchase/mosaic-theme'],
+    external: ['react', 'react-dom', '@salt-ds/*', '@jpmorganchase/mosaic-theme'],
     watch: watchConfig
   })
   .catch(e => {

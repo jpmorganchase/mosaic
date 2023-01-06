@@ -1,5 +1,5 @@
 import React from 'react';
-import { Banner } from '@jpmorganchase/uitk-lab';
+import { Banner } from '@salt-ds/lab';
 
 import { usePageState } from '../store';
 

@@ -1,5 +1,5 @@
 import { assignVars, styleVariants } from '@vanilla-extract/css';
-import { iconSizeVars } from '../uitk';
+import { iconSizeVars } from '../salt';
 
 export const icon = styleVariants({
   small: {

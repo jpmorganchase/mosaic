@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pill } from '@jpmorganchase/uitk-core';
+import { Pill } from '@salt-ds/lab';
 import classnames from 'classnames';
 
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';

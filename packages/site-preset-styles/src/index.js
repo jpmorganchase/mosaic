@@ -1,8 +1,8 @@
-import '@jpmorganchase/uitk-theme/css/global.css';
-import '@jpmorganchase/uitk-theme/css/theme.css';
+import '@salt-ds/theme/css/global.css';
+import '@salt-ds/theme/css/theme.css';
 import '@jpmorganchase/mosaic-theme/dist/index.css';
 import '@jpmorganchase/mosaic-theme/dist/baseline/index.css';
-import '@jpmorganchase/mosaic-theme/dist/uitk/index.css';
+import '@jpmorganchase/mosaic-theme/dist/salt/index.css';
 import '@jpmorganchase/mosaic-layouts/dist/index.css';
 import '@jpmorganchase/mosaic-site-components/dist/index.css';
 import '@jpmorganchase/mosaic-components/dist/index.css';
