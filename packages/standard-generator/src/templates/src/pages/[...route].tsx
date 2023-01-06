@@ -4,7 +4,8 @@ import { Body } from '@jpmorganchase/mosaic-site-components';
 import {
   createMiddlewareRunner,
   MiddlewareResult,
-  middlewarePresets
+  middlewarePresets,
+  withStaticContent
 } from '@jpmorganchase/mosaic-site-middleware';
 
 import type { MyAppProps, MyMiddlewareProps } from '../types/mosaic';
@@ -19,12 +20,15 @@ import type { MyAppProps, MyMiddlewareProps } from '../types/mosaic';
    ]
  );
  */
-const middlewareRunner = createMiddlewareRunner<MyMiddlewareProps>({}, middlewarePresets);
+const middlewareRunner = createMiddlewareRunner<MyMiddlewareProps>({}, [
+  ...middlewarePresets,
+  withStaticContent
+]);
 
 export async function getServerSideProps(
   context: GetServerSidePropsContext
 ): Promise<Partial<GetServerSidePropsResult<MiddlewareResult<MyAppProps>>>> {
-  const props = middlewareRunner(context, {});
+  const props = await middlewareRunner(context, {});
   return props;
 }
 

@@ -8,10 +8,12 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
-    "build": "next build",
     "clean": "rm -fr public/.tmp .next",
+    "mosaic": "node ../cli/dist/index.js",
+    "build": "next build",
     "dev":"next dev",
-    "gen:snapshot": "yarn mosaic build --out public/snapshots --name latest --config mosaic.config.js",
+    "start": "next start",
+    "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
     "serve:snapshot": "yarn cross-env MOSAIC_URL=http://localhost:3000/api/snapshots concurrently --kill-others 'yarn dev'",
     "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080"
   },
