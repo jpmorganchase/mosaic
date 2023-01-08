@@ -39,12 +39,12 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/mosaic/index',
+        destination: '/{{namespace}}/index',
         permanent: true
       },
       {
-        source: '/mosaic',
-        destination: '/mosaic/index',
+        source: '/{{namespace}}',
+        destination: '/{{namespace}}/index',
         permanent: true
       }
     ];

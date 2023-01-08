@@ -14,7 +14,8 @@ node_modules
 tsconfig.tsbuildinfo
 
 # Deployment
-mosaic.generators.js
+packages/site
+packages/rig
 
 # Test Results
 coverage
