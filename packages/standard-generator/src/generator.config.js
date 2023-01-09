@@ -18,6 +18,7 @@ module.exports = {
   /** Generator name */
   generatorName: 'mosaic',
   description: 'Standard Site Generator',
+  version: '0.1.0',
   /** Package Name */
   name: '@jpmorganchase/mosaic-site',
   /** Home page URL */

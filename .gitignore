@@ -10,7 +10,7 @@ node_modules
 
 # Production
 **/dist-labs/
-**/.tmp
+**/.tmp/**
 tsconfig.tsbuildinfo
 
 # Deployment

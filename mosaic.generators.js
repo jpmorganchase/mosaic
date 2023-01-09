@@ -135,6 +135,8 @@
 const { getGenerators } = require('@jpmorganchase/mosaic-create-site');
 const standardGeneratorConfig = require('@jpmorganchase/mosaic-standard-generator/dist/generator.config.js');
 
+const { version } = require('@jpmorganchase/mosaic-site/package.json');
+
 module.exports = {
   /** generators defines an array of Mosaic generators and associated config, which configure your generated site
    * e.g
@@ -149,6 +151,7 @@ module.exports = {
       '@jpmorganchase/mosaic-standard-generator/dist/generator.js',
       {
         ...standardGeneratorConfig,
+        version,
         generatorName: 'rig',
         name: '@jpmorganchase/mosaic-rig',
         namespace: 'rig',
