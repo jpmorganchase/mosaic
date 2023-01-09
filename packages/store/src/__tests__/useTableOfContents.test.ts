@@ -1,7 +1,8 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 
 import { createWrapper } from './test-utils/utils';
-import { TableOfContentsItem, useTableOfContents } from '../useTableOfContents';
+import { useTableOfContents } from '../useTableOfContents';
+import type { TableOfContentsItem } from '../types/tableOfContents';
 
 const tableOfContents: TableOfContentsItem[] = [
   { level: 2, id: 'what-is-analytics', text: 'What is Analytics' },
