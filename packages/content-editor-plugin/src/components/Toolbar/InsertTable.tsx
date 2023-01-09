@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, MouseEventHandler, useRef, useState } from 'react';
+import React, { ReactElement, FC, ReactNode, MouseEventHandler, useRef, useState } from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { INSERT_TABLE_COMMAND } from '@lexical/table';
@@ -10,6 +10,7 @@ import { TextFormatToolbarButton } from './TextFormatToolbarButton';
 import styles from './InsertTable.css';
 
 interface IndexableEntity {
+  children?: ReactNode;
   index: number;
 }
 
