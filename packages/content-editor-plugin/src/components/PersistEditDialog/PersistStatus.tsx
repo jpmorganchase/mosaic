@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, ReactNode, useEffect, useState } from 'react';
 import classnames from 'classnames';
 import { P2 } from '@jpmorganchase/mosaic-components';
 
@@ -8,6 +8,7 @@ const steps = ['Making a copy...', 'Applying changes...', 'Creating a Pull Reque
 const lastStep = steps.length - 1;
 
 interface StepProps {
+  children?: ReactNode;
   isComplete: boolean;
   isCurrent: boolean;
 }
