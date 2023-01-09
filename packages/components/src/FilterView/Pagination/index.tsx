@@ -24,7 +24,7 @@ export interface PaginationProps {
   pageCount: number;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
+export const Pagination: React.FC<React.PropsWithChildren<PaginationProps>> = ({
   className,
   pageCount,
   page,

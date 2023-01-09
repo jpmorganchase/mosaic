@@ -77,7 +77,7 @@ export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item
     />
   );
 };
-export const EditionFilterView: React.FC<EditionFilterViewProps> = ({
+export const EditionFilterView: React.FC<React.PropsWithChildren<EditionFilterViewProps>> = ({
   className,
   ItemRenderer = DefaultEditionFilterViewRenderer,
   view,

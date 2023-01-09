@@ -51,7 +51,9 @@ export interface TileContentProps {
 }
 
 const TileImage: FC<
-  Pick<TileContentProps, 'classes' | 'image' | 'imagePlacement' | 'onImageError'>
+  React.PropsWithChildren<
+    Pick<TileContentProps, 'classes' | 'image' | 'imagePlacement' | 'onImageError'>
+  >
 > = ({ classes = {}, image, imagePlacement, onImageError }) => {
   let tileImage = image;
   const imageUrl = typeof image === 'string' ? image : undefined;
@@ -71,7 +73,7 @@ const TileImage: FC<
   return <div className={tileImageRecipe({ imagePlacement })}>{tileImage}</div>;
 };
 
-export const TileContent: FC<TileContentProps> = forwardRef(
+export const TileContent: FC<React.PropsWithChildren<TileContentProps>> = forwardRef(
   (
     {
       action,

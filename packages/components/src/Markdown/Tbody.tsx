@@ -4,6 +4,6 @@ import { tbody } from '@jpmorganchase/mosaic-theme';
 
 export interface TbodyProps extends React.HTMLProps<HTMLTableSectionElement> {}
 
-export const Tbody: React.FC<TbodyProps> = ({ className, ...rest }) => (
+export const Tbody: React.FC<React.PropsWithChildren<TbodyProps>> = ({ className, ...rest }) => (
   <tbody className={classnames(className, tbody())} {...rest} />
 );

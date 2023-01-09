@@ -15,7 +15,7 @@ export function usePagination({ itemsPerPage, displayedCount }: UsePaginationPro
   const pageCount = Math.ceil(displayedCount / itemsPerPage);
 
   const onPageChange = useCallback(
-    newPage => {
+    (newPage: number) => {
       setPage(newPage);
     },
     [setPage]

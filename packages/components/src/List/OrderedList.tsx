@@ -6,7 +6,10 @@ import { ListItemProps } from './ListItem';
 
 export interface OrderedListProps extends Omit<React.HTMLProps<HTMLUListElement>, 'size'> {}
 
-export const OrderedList: React.FC<OrderedListProps> = ({ children, className }) => {
+export const OrderedList: React.FC<React.PropsWithChildren<OrderedListProps>> = ({
+  children,
+  className
+}) => {
   const formattedChildren = React.Children.map(children, child => {
     if (!React.isValidElement(child)) {
       return child;

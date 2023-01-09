@@ -4,6 +4,7 @@ import { code } from '@jpmorganchase/mosaic-theme';
 
 export interface InlineCodeProps extends React.HTMLProps<HTMLPreElement> {}
 
-export const InlineCode: React.FC<InlineCodeProps> = ({ className, ...rest }) => (
-  <code className={classnames(className, code())} {...rest} />
-);
+export const InlineCode: React.FC<React.PropsWithChildren<InlineCodeProps>> = ({
+  className,
+  ...rest
+}) => <code className={classnames(className, code())} {...rest} />;

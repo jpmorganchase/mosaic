@@ -15,7 +15,7 @@ export interface TileContentLabelProps {
   labelName?: string;
 }
 
-export const ContentLabel: React.FC<TileContentLabelProps> = ({
+export const ContentLabel: React.FC<React.PropsWithChildren<TileContentLabelProps>> = ({
   className,
   labelItems = [],
   labelName,
@@ -27,7 +27,7 @@ export const ContentLabel: React.FC<TileContentLabelProps> = ({
   </Label>
 );
 
-export const ContentLabelWithTooltip: React.FC<TileContentLabelProps> = ({
+export const ContentLabelWithTooltip: React.FC<React.PropsWithChildren<TileContentLabelProps>> = ({
   className,
   labelItems = [],
   labelName,
@@ -64,7 +64,7 @@ export const ContentLabelWithTooltip: React.FC<TileContentLabelProps> = ({
   );
 };
 
-export const TileContentLabel: React.FC<TileContentLabelProps> = props => {
+export const TileContentLabel: React.FC<React.PropsWithChildren<TileContentLabelProps>> = props => {
   const labelContent = props.labelItems?.join(', ') || '';
   return labelContent.length > MAX_LENGTH ? (
     <ContentLabelWithTooltip {...props} />

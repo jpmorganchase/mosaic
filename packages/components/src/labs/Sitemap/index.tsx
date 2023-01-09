@@ -122,7 +122,7 @@ const filterButtonLabel = (selectedItems: string[] | undefined) => {
 
 const DropdownIcon = () => <Icon name="chevronDown" />;
 
-export const Sitemap: React.FC<SitemapProps> = ({
+export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
   href,
   initialNamespaceFilters = [],
   ...rest

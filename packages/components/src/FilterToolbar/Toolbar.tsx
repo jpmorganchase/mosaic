@@ -22,11 +22,8 @@ export interface FilterToolbarProps extends ToolbarProviderProps {
   className?: string;
 }
 
-export const FilterToolbar: React.FC<FilterToolbarProps> & ToolbarComposition = function Toolbar({
-  children,
-  className,
-  ...rest
-}) {
+export const FilterToolbar: React.FC<React.PropsWithChildren<FilterToolbarProps>> &
+  ToolbarComposition = function Toolbar({ children, className, ...rest }) {
   return (
     <ToolbarProvider {...rest}>
       <div className={classnames(styles.root, className)}>{children}</div>

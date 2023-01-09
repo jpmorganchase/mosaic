@@ -54,7 +54,11 @@ export interface AccordionProps extends SaltAccordionProps {
  *   </AccordionSection>
  * </Accordion>
  */
-export const Accordion: React.FC<AccordionProps> = ({ children, panels, ...rest }) => {
+export const Accordion: React.FC<React.PropsWithChildren<AccordionProps>> = ({
+  children,
+  panels,
+  ...rest
+}) => {
   let accordionChildren = children;
   /** Panels props to be deprecated in the future and create as a compound component */
   if (panels) {

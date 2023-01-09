@@ -10,7 +10,7 @@ export interface StickyHeaderProps {
   offset?: number;
 }
 
-export const StickyHeader: FC<StickyHeaderProps> = ({
+export const StickyHeader: FC<React.PropsWithChildren<StickyHeaderProps>> = ({
   children,
   className,
   offset = 0,

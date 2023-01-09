@@ -11,12 +11,9 @@ export interface FilterViewContentAreaProps {
   size?: GridItemSize;
 }
 
-export const FilterViewContentArea: React.FC<FilterViewContentAreaProps> = ({
-  children,
-  className,
-  size = 'small',
-  ...rest
-}) => (
+export const FilterViewContentArea: React.FC<
+  React.PropsWithChildren<FilterViewContentAreaProps>
+> = ({ children, className, size = 'small', ...rest }) => (
   <Grid
     className={classnames(className, styles.root, { [styles.gutter]: size !== 'fullWidth' })}
     size={size}

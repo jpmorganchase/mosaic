@@ -8,8 +8,11 @@ export function withStyledTypography(
   variantClassName: string,
   Component: React.ElementType = 'p',
   defaultProps: Record<string, unknown> = {}
-): React.FC<TypographyProps> {
-  const StyledTypography: React.FC<TypographyProps> = ({ className, ...rest }) => (
+): React.FC<React.PropsWithChildren<TypographyProps>> {
+  const StyledTypography: React.FC<React.PropsWithChildren<TypographyProps>> = ({
+    className,
+    ...rest
+  }) => (
     <Typography
       className={classnames(variantClassName, className)}
       component={Component}
