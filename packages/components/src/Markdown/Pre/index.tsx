@@ -32,7 +32,7 @@ const httpPattern = /^((http[s]?):\/\/)/;
  * <div>I will be live editable!</div>
  * ```
  */
-export const Pre: React.FC<PreProps> = ({
+export const Pre: React.FC<React.PropsWithChildren<PreProps>> = ({
   children,
   className,
   code: codeProp = '',
@@ -124,25 +124,23 @@ const CodeBlock = React.memo(
   )
 );
 
-const CodeHighlight: React.FC<{ code: string; language: Language }> = function CodeHighlight({
-  code,
-  language
-}) {
-  return (
-    <Highlight {...defaultPrismProps} code={code} language={language}>
-      {({ tokens, getLineProps, getTokenProps }) => (
-        <>
-          {tokens.map((line, i) => (
-            // eslint-disable-next-line react/jsx-key
-            <div {...getLineProps({ line, key: i })} style={{}}>
-              {line.map((token, key) => (
-                // eslint-disable-next-line react/jsx-key
-                <span {...getTokenProps({ token, key })} style={{}} />
-              ))}
-            </div>
-          ))}
-        </>
-      )}
-    </Highlight>
-  );
-};
+const CodeHighlight: React.FC<React.PropsWithChildren<{ code: string; language: Language }>> =
+  function CodeHighlight({ code, language }) {
+    return (
+      <Highlight {...defaultPrismProps} code={code} language={language}>
+        {({ tokens, getLineProps, getTokenProps }) => (
+          <>
+            {tokens.map((line, i) => (
+              // eslint-disable-next-line react/jsx-key
+              <div {...getLineProps({ line, key: i })} style={{}}>
+                {line.map((token, key) => (
+                  // eslint-disable-next-line react/jsx-key
+                  <span {...getTokenProps({ token, key })} style={{}} />
+                ))}
+              </div>
+            ))}
+          </>
+        )}
+      </Highlight>
+    );
+  };

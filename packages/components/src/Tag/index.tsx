@@ -30,7 +30,7 @@ export interface TagProps {
  * />
  * ```
  */
-export const Tag: React.FC<TagProps> = ({
+export const Tag: React.FC<React.PropsWithChildren<TagProps>> = ({
   className,
   category = '0',
   icon: iconName = 'none',

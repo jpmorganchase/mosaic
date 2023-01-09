@@ -34,10 +34,9 @@ export type EditionTileLinkProps = {
   title?: string;
 };
 
-const TileImage: FC<Pick<EditionTileLinkProps, 'image' | 'imagePlacement'>> = ({
-  image,
-  imagePlacement
-}) => {
+const TileImage: FC<
+  React.PropsWithChildren<Pick<EditionTileLinkProps, 'image' | 'imagePlacement'>>
+> = ({ image, imagePlacement }) => {
   const ImageComponent = useImageComponent();
   if (!image || !ImageComponent) {
     return null;
@@ -55,7 +54,7 @@ const TileImage: FC<Pick<EditionTileLinkProps, 'image' | 'imagePlacement'>> = ({
   );
 };
 
-export const EditionTileLink: React.FC<EditionTileLinkProps> = ({
+export const EditionTileLink: React.FC<React.PropsWithChildren<EditionTileLinkProps>> = ({
   description,
   eyebrow = null,
   image,

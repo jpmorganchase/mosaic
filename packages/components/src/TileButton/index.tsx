@@ -17,7 +17,7 @@ function PseudoButton({ children }) {
   );
 }
 
-export const TileButton: FC<TileButtonProps> = forwardRef(
+export const TileButton: FC<React.PropsWithChildren<TileButtonProps>> = forwardRef(
   (
     {
       action = 'Edit',

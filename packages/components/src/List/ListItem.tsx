@@ -9,7 +9,7 @@ export interface ListItemProps extends Omit<React.HTMLProps<HTMLLIElement>, 'che
   variant?: 'regular' | 'document' | 'image';
 }
 
-export const ListItem: React.FC<ListItemProps> = ({
+export const ListItem: React.FC<React.PropsWithChildren<ListItemProps>> = ({
   children,
   size = 'small',
   variant = 'document',

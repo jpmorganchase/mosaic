@@ -9,7 +9,9 @@ export interface FilterResultCountProps {
   className?: string;
 }
 
-export const FilterResultCount: React.FC<FilterResultCountProps> = ({ className }) => {
+export const FilterResultCount: React.FC<React.PropsWithChildren<FilterResultCountProps>> = ({
+  className
+}) => {
   const { displayedCount, totalItemCount } = useFilterViewState();
   return (
     <div aria-label="result count" className={classnames(className, styles.root)}>

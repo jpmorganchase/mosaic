@@ -102,7 +102,7 @@ function HeroImageContainer({ isFramed, heroBackgroundImage, heroImage, isFullWi
  * />
  * ```
  */
-export const Hero: React.FC<HeroProps> = ({
+export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
   backgroundImage,
   className,
   datestamp,

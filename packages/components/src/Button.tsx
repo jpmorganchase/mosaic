@@ -7,7 +7,12 @@ export interface ButtonProps extends Omit<SaltButtonProps, 'variant'> {
   variant?: 'regular' | 'secondary' | 'cta';
 }
 
-export const Button: FC<ButtonProps> = ({ children, className, variant = 'regular', ...rest }) => (
+export const Button: FC<React.PropsWithChildren<ButtonProps>> = ({
+  children,
+  className,
+  variant = 'regular',
+  ...rest
+}) => (
   <SaltButton
     className={classnames(buttonStyles({ variant }), className)}
     variant={variant == 'regular' ? 'primary' : variant}

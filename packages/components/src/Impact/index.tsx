@@ -15,7 +15,7 @@ export interface ImpactProps {
   title: React.ReactNode;
 }
 
-export const Impact: React.FC<ImpactProps> = ({
+export const Impact: React.FC<React.PropsWithChildren<ImpactProps>> = ({
   className,
   image,
   title,

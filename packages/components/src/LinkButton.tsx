@@ -8,7 +8,7 @@ export interface LinkButtonProps {
   variant?: 'regular' | 'cta';
 }
 
-export const LinkButton: FC<LinkButtonProps> = ({
+export const LinkButton: FC<React.PropsWithChildren<LinkButtonProps>> = ({
   className,
   children,
   variant = 'regular',

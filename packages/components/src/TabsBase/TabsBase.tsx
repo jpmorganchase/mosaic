@@ -33,7 +33,7 @@ function TabsItem({ children, item }) {
   return <TabsLink item={item}>{children}</TabsLink>;
 }
 
-export const TabsBase: FC<TabsBaseProps> = forwardRef(
+export const TabsBase: FC<React.PropsWithChildren<TabsBaseProps>> = forwardRef(
   ({ className, menu, selectedIndex = -1 }, ref: Ref<HTMLDivElement>) => {
     const [cursorIndex, setCursorIndex] = useState(() => -1);
 

@@ -14,11 +14,11 @@ export interface MarkdownComponentProps {
 }
 
 export function withMarkdownSpacing<TProps extends MarkdownComponentProps>(
-  Component: React.ComponentType<TProps>,
+  Component: React.ComponentType<React.PropsWithChildren<TProps>>,
   spacing = 'regular',
   inline = false
-): React.FC<TProps> {
-  const MarkdownComponent: React.FC<TProps> = ({
+): React.FC<React.PropsWithChildren<TProps>> {
+  const MarkdownComponent: React.FC<React.PropsWithChildren<TProps>> = ({
     className = '',
     spacing: spacingProp,
     ...rest

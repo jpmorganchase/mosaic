@@ -30,7 +30,10 @@ const replayIconByVariant = {
   20: 'replay30'
 };
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) => {
+export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = ({
+  src,
+  skipDuration
+}) => {
   const [videoElem, setVideoElem] = useState<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [durationString, setDurationString] = useState('00:00:00');
@@ -40,7 +43,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
   const [volumeOn, setVolumeOn] = useState(true);
   const [metaDataLoaded, setMetaDataLoaded] = useState(false);
 
-  const videoRef = useCallback(videoNode => {
+  const videoRef = useCallback((videoNode: HTMLVideoElement | null) => {
     if (videoNode) {
       setVideoElem(videoNode);
     }

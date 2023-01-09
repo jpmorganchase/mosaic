@@ -15,7 +15,7 @@ export interface TabsButtonItem {
 interface TabButtonProps {
   item: TabsButtonItem;
 }
-export const TabsButton: FC<TabButtonProps> = ({ item }) => (
+export const TabsButton: FC<React.PropsWithChildren<TabButtonProps>> = ({ item }) => (
   <div
     className={styles.menuButton}
     onClick={event => item.onSelect(event, item.title)}

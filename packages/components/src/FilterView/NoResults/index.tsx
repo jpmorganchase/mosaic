@@ -13,7 +13,7 @@ export function DefaultNoResults() {
   return <ContentStatus message="No Results Found" status="info" />;
 }
 
-export const FilterNoResults: React.FC<FilterNoResultsProps> = ({
+export const FilterNoResults: React.FC<React.PropsWithChildren<FilterNoResultsProps>> = ({
   children,
   className
 }): React.ReactElement => <div className={classnames(className, styles.root)}>{children}</div>;

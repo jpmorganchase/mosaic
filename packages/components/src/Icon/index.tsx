@@ -16,7 +16,12 @@ const deprecatedIcons = {
   tick: 'successTick'
 };
 
-export const Icon: React.FC<IconProps> = ({ className, name, size = 'small', ...rest }) => {
+export const Icon: React.FC<React.PropsWithChildren<IconProps>> = ({
+  className,
+  name,
+  size = 'small',
+  ...rest
+}) => {
   if (name === 'none') {
     return null;
   }

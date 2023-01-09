@@ -28,7 +28,7 @@ const PseudoLink = ({ children, disabled, link }) => {
   );
 };
 
-export const TileLink: FC<TileLinkProps> = forwardRef(
+export const TileLink: FC<React.PropsWithChildren<TileLinkProps>> = forwardRef(
   (
     {
       action = 'Documentation Overview',

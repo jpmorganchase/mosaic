@@ -23,7 +23,11 @@ function layoutChildren(children) {
   );
 }
 
-export const FeatureActions: React.FC<FeatureActionsProps> = ({ children, className, ...rest }) => (
+export const FeatureActions: React.FC<React.PropsWithChildren<FeatureActionsProps>> = ({
+  children,
+  className,
+  ...rest
+}) => (
   <div className={classNames(className, styles.root)} {...rest}>
     {layoutChildren(children)}
   </div>

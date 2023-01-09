@@ -4,6 +4,6 @@ import { tr } from '@jpmorganchase/mosaic-theme';
 
 export interface TrProps extends React.HTMLProps<HTMLTableRowElement> {}
 
-export const Tr: React.FC<TrProps> = ({ className, ...rest }) => (
+export const Tr: React.FC<React.PropsWithChildren<TrProps>> = ({ className, ...rest }) => (
   <tr className={classnames(className, tr())} {...rest} />
 );

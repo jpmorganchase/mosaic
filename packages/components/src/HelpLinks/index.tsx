@@ -40,7 +40,7 @@ export interface HelpLinksProps {
  * />
  * ```
  */
-export const HelpLinks: React.FC<HelpLinksProps> = ({
+export const HelpLinks: React.FC<React.PropsWithChildren<HelpLinksProps>> = ({
   className,
   stackoverflowLabel = 'Stack Overflow',
   stackoverflowUrl,

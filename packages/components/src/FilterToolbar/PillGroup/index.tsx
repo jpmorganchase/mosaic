@@ -10,7 +10,9 @@ export interface FilterPillGroupProps {
   className?: string;
 }
 
-export const FilterPillGroup: React.FC<FilterPillGroupProps> = ({ className }) => {
+export const FilterPillGroup: React.FC<React.PropsWithChildren<FilterPillGroupProps>> = ({
+  className
+}) => {
   const { filters = [] } = useToolbarState();
   const dispatch = useToolbarDispatch();
   const handleDeletePill = (itemIndex: number) => {

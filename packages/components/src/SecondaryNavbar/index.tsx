@@ -28,7 +28,7 @@ const getSelectedTabIndex = (items: TabsMenu, itemPath: string): number =>
     return itemPath.startsWith((item as TabsLinkItem).link);
   });
 
-export const SecondaryNavbar: React.FC<SecondaryNavbarProps> = ({
+export const SecondaryNavbar: React.FC<React.PropsWithChildren<SecondaryNavbarProps>> = ({
   className,
   items = [],
   supportLink,

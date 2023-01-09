@@ -10,7 +10,7 @@ export interface UnOrderedListProps extends Omit<React.HTMLProps<HTMLUListElemen
   variant?: 'regular' | 'document' | 'image';
 }
 
-export const UnorderedList: React.FC<UnOrderedListProps> = ({
+export const UnorderedList: React.FC<React.PropsWithChildren<UnOrderedListProps>> = ({
   children,
   className,
   size = 'small',

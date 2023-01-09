@@ -8,11 +8,11 @@ import styles from './index.css';
 
 export interface AnchorHeadingProps extends React.HTMLProps<HTMLHeadingElement> {
   children: React.ReactNode[];
-  Component: React.FC<TypographyProps>;
+  Component: React.FC<React.PropsWithChildren<TypographyProps>>;
   LinkProps?: LinkProps;
 }
 
-export const AnchorHeading: React.FC<AnchorHeadingProps> = ({
+export const AnchorHeading: React.FC<React.PropsWithChildren<AnchorHeadingProps>> = ({
   Component,
   children,
   className,

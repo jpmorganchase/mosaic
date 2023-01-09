@@ -4,7 +4,7 @@ import { table, tableContainer } from '@jpmorganchase/mosaic-theme';
 
 export interface TableProps extends React.HTMLProps<HTMLTableElement> {}
 
-export const Table: React.FC<TableProps> = ({ className, ...rest }) => (
+export const Table: React.FC<React.PropsWithChildren<TableProps>> = ({ className, ...rest }) => (
   <div className={classnames(className, tableContainer())}>
     <table className={table()} {...rest} />
   </div>

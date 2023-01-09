@@ -64,7 +64,7 @@ const renderers = {
   listItem: ({ node, children, ...props }) => <ListItem {...props}>{children}</ListItem>
 };
 
-export const FormattedContent: React.FC<FormattedContentProps> = ({
+export const FormattedContent: React.FC<React.PropsWithChildren<FormattedContentProps>> = ({
   children,
   components = {},
   ...rest

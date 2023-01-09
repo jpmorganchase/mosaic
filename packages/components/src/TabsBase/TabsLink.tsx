@@ -18,7 +18,7 @@ export interface TabsLinkProps {
   item: TabsLinkItem;
 }
 
-export const TabsLink: FC<TabsLinkProps> = ({ children, item }) => (
+export const TabsLink: FC<React.PropsWithChildren<TabsLinkProps>> = ({ children, item }) => (
   <Link className={styles.menuLink} link={item.link} variant="selectable">
     {item.title}
     {children}
