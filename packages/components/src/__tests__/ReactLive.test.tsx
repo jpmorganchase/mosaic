@@ -8,9 +8,10 @@ describe('GIVEN a ReactLive view', () =>
     const { getAllByRole } = render(<ReactLive language="jsx">{'<h1>Hello World</h1>'}</ReactLive>);
 
     // assert
-    await waitFor(() => expect(screen.getByText('Show Live Code')).toBeInTheDocument());
-    expect(screen.getByText('Hello World')).toBeInTheDocument();
-
+    await waitFor(() => {
+      expect(screen.getByText('Show Live Code')).toBeInTheDocument();
+      expect(screen.getByText('Hello World')).toBeInTheDocument();
+    });
     // act
     const showLiveCode = screen.getByText('Show Live Code');
     fireEvent.click(showLiveCode);

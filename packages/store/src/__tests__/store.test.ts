@@ -119,8 +119,9 @@ describe('GIVEN the `useStore` hook', () => {
 
   describe('WHEN rendered outside of the StoreContext', () => {
     test('THEN the hook throws an error', () => {
-      const { result } = renderHook(() => useStore(state => state.title));
-      expect(result.error?.message).toBe('Missing StoreProvider in the tree');
+      expect(() => renderHook(() => useStore(state => state.title))).toThrowError(
+        'Missing StoreProvider in the tree'
+      );
     });
   });
 });
