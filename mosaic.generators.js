@@ -135,7 +135,7 @@
 const { getGenerators } = require('@jpmorganchase/mosaic-create-site');
 const standardGeneratorConfig = require('@jpmorganchase/mosaic-standard-generator/dist/generator.config.js');
 
-const { version } = require('@jpmorganchase/mosaic-site/package.json');
+const { version } = require('@jpmorganchase/mosaic-standard-generator/package.json');
 
 module.exports = {
   /** generators defines an array of Mosaic generators and associated config, which configure your generated site
