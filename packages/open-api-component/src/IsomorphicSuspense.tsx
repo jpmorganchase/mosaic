@@ -4,7 +4,10 @@ export interface IsomorphicSuspenseProps {
   fallback: JSX.Element;
 }
 
-export const IsomorphicSuspense: React.FC<IsomorphicSuspenseProps> = ({ children, fallback }) => {
+export const IsomorphicSuspense: React.FC<React.PropsWithChildren<IsomorphicSuspenseProps>> = ({
+  children,
+  fallback
+}) => {
   if (typeof window === 'undefined') {
     return fallback;
   }
