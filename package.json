@@ -16,6 +16,7 @@
   },
   "scripts": {
     "mosaic": "node ./packages/cli/dist/index.js",
+    "dev": "turbo run dev",
     "test": "npm-run-all --parallel test:*",
     "test:client": "jest --config ./jest.config.client.js --coverage",
     "test:server": "jest  --config ./jest.config.server.js --coverage",
