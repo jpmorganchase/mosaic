@@ -37,7 +37,9 @@ export function ColorModeProvider({
     let nextColorMode;
     try {
       const chosenMode = localStorage.getItem(themePrefKey);
-      const prefersDarkMode = matchMedia('(prefers-color-scheme:dark)').matches;
+      const prefersDarkMode = matchMedia('(prefers-color-scheme:dark)').matches
+        ? 'dark'
+        : defaultColorMode;
       // Precedence rules
       // 1. respect user's choice
       // 2. respect user's OS/browser color choice
@@ -47,8 +49,6 @@ export function ColorModeProvider({
     } catch (e) {
       console.error(`Could not set default color mode to ${nextColorMode}`);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultColorMode]);
 
   const value = useMemo(
