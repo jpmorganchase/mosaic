@@ -4,7 +4,7 @@ const { vanillaExtractPlugin } = require('@vanilla-extract/esbuild-plugin');
 const glob = require('fast-glob');
 
 const publicImageResolver = require('./publicImageResolver');
-const uitkIconNames = require('./uitkIconNames');
+const saltIconNames = require('./saltIconNames');
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
@@ -26,11 +26,11 @@ const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {
 esbuild
   .build({
     entryPoints: glob.sync([
-      '../../node_modules/@jpmorganchase/uitk-icons/dist-es/packages/icons/src/components/*.js'
+      '../../node_modules/@salt-ds/icons/dist-es/packages/icons/src/components/*.js'
     ]),
     bundle: false,
     outdir: 'dist',
-    plugins: [uitkIconNames]
+    plugins: [saltIconNames]
   })
   .catch(e => {
     if (e.errors && e.errors.length > 0) {

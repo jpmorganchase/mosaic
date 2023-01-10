@@ -1,12 +1,11 @@
 import type { Redirect } from 'next';
-
-import type { SessionProps, SessionOptions } from './withSession';
-import { withSession } from './withSession';
-import { withSharedConfig } from './withSharedConfig';
-import { withContent } from './withContent';
-import type { ContentProps } from './withContent';
-import { MosaicMiddleware, MosaicMiddlewareWithConfig } from './createMiddlewareRunner';
 import { SharedConfigSlice } from '@jpmorganchase/mosaic-store';
+
+import { withSession, type SessionProps, type SessionOptions } from './withSession.js';
+import { withSharedConfig } from './withSharedConfig.js';
+import { withContent, type ContentProps } from './withContent.js';
+import { MosaicMiddleware, MosaicMiddlewareWithConfig } from './createMiddlewareRunner.js';
+import { withMosaicMode, type MosaicModeProps } from './withMosaicMode.js';
 
 export type BaseMosaicAppProps = {
   /** Flag to show custom 404 page, whilst maintaining current state/layout */
@@ -36,7 +35,10 @@ export type MosaicAppProps<T> = {
 export type GetMosaicServerSidePropsResult<T> = MosaicAppProps<T>;
 
 /** MiddlewarePresets props */
-export type MiddlewarePresetsProps = ContentProps & SessionProps & SharedConfigSlice;
+export type MiddlewarePresetsProps = MosaicModeProps &
+  ContentProps &
+  SessionProps &
+  SharedConfigSlice;
 
 /** A collection of preset [[`Middleware`]] plugins that will compose together the page props */
 export const middlewarePresets: Array<
@@ -44,6 +46,7 @@ export const middlewarePresets: Array<
   | MosaicMiddlewareWithConfig<MiddlewarePresetsProps, SessionOptions>
 > = [
   [withSession, { loginRequired: process.env.DISABLE_GLOBAL_AUTH !== 'true' }],
+  withMosaicMode,
   withSharedConfig,
   withContent
 ];

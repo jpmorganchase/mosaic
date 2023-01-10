@@ -2,9 +2,9 @@ import React from 'react';
 import classnames from 'classnames';
 import {
   Paginator,
-  Pagination as UITKPagination,
-  PaginationProps as UITKPaginationProps
-} from '@jpmorganchase/uitk-lab';
+  Pagination as SaltPagination,
+  PaginationProps as SaltPaginationProps
+} from '@salt-ds/lab';
 
 import styles from './styles.css';
 
@@ -17,9 +17,9 @@ export interface PaginationProps {
    * @param {object} event The event source of the callback.
    * @param {number} page The page selected.
    */
-  onPageChange?: UITKPaginationProps['onPageChange'];
+  onPageChange?: SaltPaginationProps['onPageChange'];
   /** The current page */
-  page?: UITKPaginationProps['page'];
+  page?: SaltPaginationProps['page'];
   /** Number of pages  */
   pageCount: number;
 }
@@ -31,8 +31,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange
 }) => (
   <div className={classnames(styles.root, className)}>
-    <UITKPagination count={pageCount} onPageChange={onPageChange} page={page}>
+    <SaltPagination count={pageCount} onPageChange={onPageChange} page={page}>
       <Paginator />
-    </UITKPagination>
+    </SaltPagination>
   </div>
 );

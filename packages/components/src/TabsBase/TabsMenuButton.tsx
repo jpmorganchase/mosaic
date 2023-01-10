@@ -1,5 +1,5 @@
 import React, { FC, KeyboardEvent, MouseEvent } from 'react';
-import { MenuButton, MenuDescriptor } from '@jpmorganchase/uitk-lab';
+import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import classnames from 'classnames';
 
 import styles from './tabsMenuButton.css';

@@ -1,24 +1,21 @@
 import React from 'react';
-import * as UITKIcons from '@jpmorganchase/uitk-icons';
-import type { IconProps as UITKIconProps } from '@jpmorganchase/uitk-icons';
-import { StackOverflowIcon } from './StackOverflowIcon';
-import type { uitkIconNames } from '../../types/uitkIconNames';
+import * as SaltIcons from '@salt-ds/icons';
+import type { IconProps as SaltIconProps } from '@salt-ds/icons';
+import type { saltIconNames } from '../../types/saltIconNames';
 
 const {
   DEFAULT_ICON_SIZE: DEDEFAULT_ICON_SIZE,
   Icon: _Icon,
   makePrefixer: _makePrefixer,
   ...allIcons
-} = UITKIcons;
+} = SaltIcons;
 
-export type IconMap = Record<string, React.FC<UITKIconProps>>;
+export type IconMap = Record<string, React.FC<SaltIconProps>>;
 
 /** Add any additional icons here */
-const additionalIcons: IconMap = {
-  stackOverflow: StackOverflowIcon
-};
+const additionalIcons: IconMap = {};
 
-export type IconNames = keyof typeof additionalIcons | 'none' | uitkIconNames;
+export type IconNames = keyof typeof additionalIcons | 'none' | saltIconNames;
 
 const allIconKeys = Object.keys(allIcons);
 export const icons = allIconKeys.reduce<IconMap>(

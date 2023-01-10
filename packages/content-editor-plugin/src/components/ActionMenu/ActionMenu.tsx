@@ -1,8 +1,8 @@
 import React from 'react';
-import { MenuButton, MenuDescriptor } from '@jpmorganchase/uitk-lab';
+import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
-import type { CascadingMenuProps } from '@jpmorganchase/uitk-lab';
+import type { CascadingMenuProps } from '@salt-ds/lab';
 
 export type ActionMenuSource = MenuDescriptor;
 

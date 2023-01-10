@@ -23,6 +23,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   const { session, sharedConfig, source } = pageProps;
   
   const frontmatter = source?.frontmatter || {};
+  const storeProps = { sharedConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);
   return (
   <SessionProvider session={session}>

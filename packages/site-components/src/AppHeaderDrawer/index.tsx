@@ -4,7 +4,7 @@ import { Icon, Button } from '@jpmorganchase/mosaic-components';
 import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { useRouter } from 'next/router';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
-import { LayerLayout } from '@jpmorganchase/uitk-core';
+import { LayerLayout } from '@salt-ds/lab';
 import type { CSSObject } from 'styled-components';
 
 import styles from './styles.css';

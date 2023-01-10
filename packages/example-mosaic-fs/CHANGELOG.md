@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-example-mosaic
 
+## 0.1.0-beta.4
+
+### Patch Changes
+
+- Updated dependencies [af2f579]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.10
+  - @jpmorganchase/mosaic-workflows@0.1.0-beta.10
+
 ## 0.1.0-beta.3
 
 ### Patch Changes

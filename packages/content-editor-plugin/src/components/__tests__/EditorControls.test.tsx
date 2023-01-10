@@ -33,7 +33,7 @@ describe('GIVEN an EditorControls component', () => {
     test('THEN the edit button is enabled', () => {
       render(<EditorControls isLoggedIn />);
       const button = screen.getByRole('button');
-      expect(button.getAttribute('aria-disabled')).toBe('false');
+      expect(button).not.toBeDisabled();
     });
 
     describe('AND WHEN **NOT** editing and the edit button is clicked', () => {

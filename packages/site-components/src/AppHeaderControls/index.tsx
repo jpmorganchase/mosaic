@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Icon, ColorModeContext, Link } from '@jpmorganchase/mosaic-components';
-import { MenuButton, MenuDescriptor } from '@jpmorganchase/uitk-lab';
+import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 

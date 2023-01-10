@@ -1,8 +1,9 @@
 import { GetServerSidePropsContext } from 'next';
-import { getSessionFromToken, getToken, getIsCypressSession } from '../session';
-import type { Session } from '../types/session';
-import { MosaicMiddleware } from './createMiddlewareRunner';
-import MiddlewareError from './MiddlewareError';
+import type { Session } from '@jpmorganchase/mosaic-types';
+
+import { getSessionFromToken, getToken, getIsCypressSession } from './session.js';
+import { MosaicMiddleware } from './createMiddlewareRunner.js';
+import MiddlewareError from './MiddlewareError.js';
 
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');

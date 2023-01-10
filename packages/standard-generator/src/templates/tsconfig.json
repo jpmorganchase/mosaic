@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "noImplicitAny": false,
     "jsx": "preserve",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "esnext"
   },
   "include": ["src"],
   "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]

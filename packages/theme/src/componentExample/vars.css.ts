@@ -1,4 +1,4 @@
-import { colorVars } from '../uitk';
+import { colorVars } from '../salt';
 
 const defaultComponentExampleVars = {
   light: {

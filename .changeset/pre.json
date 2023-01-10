@@ -15,15 +15,24 @@
     "@jpmorganchase/mosaic-workflows": "0.1.0-beta.6",
     "@jpmorganchase/mosaic-example-mosaic": "0.1.0-beta.1",
     "@jpmorganchase/mosaic-example-nextjs-ssr": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-components": "0.1.0-beta.8"
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.8",
+    "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-create-site": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-layouts": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-site": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-site-components": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-site-middleware": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-site-preset-styles": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-standard-generator": "0.1.0-beta.9"
   },
   "changesets": [
     "eighty-rings-marry",
     "four-cups-watch",
     "fresh-coats-learn",
-    "green-rocks-promise",
     "large-avocados-know",
     "neat-cherries-remain",
+    "shy-otters-fry",
     "silver-seas-applaud",
     "tall-pots-rule",
     "wise-apricots-report"

@@ -1,11 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import classnames from 'classnames';
-import {
-  Dropdown,
-  DropdownButton,
-  DropdownProps,
-  SelectionChangeHandler
-} from '@jpmorganchase/uitk-lab';
+import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';
 import styles from './styles.css';
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';

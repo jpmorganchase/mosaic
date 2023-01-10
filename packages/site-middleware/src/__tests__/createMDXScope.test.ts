@@ -1,4 +1,4 @@
-import { createMDXScope } from '../createMDXScope';
+import { createMDXScope } from '../utils/createMDXScope';
 
 describe('GIVEN createMDXScope', () => {
   test("should add meta to it's scope", () => {

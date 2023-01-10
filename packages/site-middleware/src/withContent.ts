@@ -1,6 +1,11 @@
-import { compileMDX } from './compileMdx';
-import { MosaicMiddleware } from './createMiddlewareRunner';
-import MiddlewareError from './MiddlewareError';
+import { compileMDX } from './compileMdx.js';
+import { MosaicMiddleware } from './createMiddlewareRunner.js';
+import MiddlewareError from './MiddlewareError.js';
+
+if (typeof window !== 'undefined') {
+  throw new Error('This file should not be loaded on the client.');
+}
+
 /**
  *  [[`ContentProps`]] specifies the page source/content
  */
@@ -18,10 +23,13 @@ export interface ContentProps {
  * @param context
  */
 export const withContent: MosaicMiddleware<ContentProps> = async context => {
+  if (context.res.getHeader('X-Mosaic-Mode') !== 'active') {
+    return {};
+  }
+
   const { resolvedUrl } = context;
   try {
-    // Use env: MOSAIC_URL="http://localhost:3000/api/snapshots" to point to static data api
-    const mosaicUrl = process.env.MOSAIC_URL || 'http://localhost:8080';
+    const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
     const req = await fetch(`${mosaicUrl}${resolvedUrl}`);
 
     if (req.ok) {
