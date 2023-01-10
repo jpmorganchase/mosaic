@@ -11,7 +11,7 @@
     "mosaic": "node ../cli/dist/index.js",
     "build": "next build",
     "clean": "rm -fr public/.tmp .next",
-    "dev":"next dev",
+    "dev":"concurrently --kill-others 'next dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080",
     "start": "next start",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
     "serve:snapshot": "yarn cross-env MOSAIC_URL=http://localhost:3000/api/snapshots concurrently --kill-others 'yarn dev'",
