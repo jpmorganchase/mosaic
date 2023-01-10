@@ -9,13 +9,20 @@
  * imports: Extended imports used in site's _app.tsx
  *
  */
+const path = require('path');
 const { generatorName } = require('./generator');
+
+const { version } = require('../package.json');
 
 module.exports = {
   /** Generator name */
-  generatorName,
-  /** Name */
+  generatorName: 'mosaic',
+  description: 'Standard Site Generator',
+  version: '0.1.0',
+  /** Package Name */
   name: '@jpmorganchase/mosaic-site',
+  /** Home page URL */
+  homepage: '/mosaic',
   /**
    * Dependencies added to package.json
    *
@@ -24,22 +31,22 @@ module.exports = {
    * */
   dependencies: [
     /* Mosaic site dependencies */
-    { package: '@jpmorganchase/mosaic-components', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-content-editor-plugin', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-layouts', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-site-components', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-site-preset-styles', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-store', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-theme', version: '^0.1.0-beta.9' },
+    { package: '@jpmorganchase/mosaic-components', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-content-editor-plugin', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-layouts', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-site-components', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-site-preset-styles', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-store', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-theme', version: `^${version}` },
     /* Mosaic core filesystem dependencies */
-    { package: '@jpmorganchase/mosaic-cli', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-core', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-plugins', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-schemas', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-serialisers', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-source-git-repo', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-source-local-folder', version: '^0.1.0-beta.9' },
-    { package: '@jpmorganchase/mosaic-types', version: '^0.1.0-beta.9' }
+    { package: '@jpmorganchase/mosaic-cli', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-core', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-plugins', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-schemas', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-serialisers', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-source-git-repo', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-source-local-folder', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-types', version: `^${version}` }
   ],
   /**
    * Extended imports used in site's _app.tsx
@@ -61,6 +68,18 @@ module.exports = {
     },
     {
       import: "import '@jpmorganchase/mosaic-site-preset-styles/dist/index.css';"
+    }
+  ],
+  sources: [
+    {
+      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
+      namespace: 'mosaic',
+      options: {
+        rootDir: path.join(process.env.INIT_CWD, 'docs'),
+        cache: true,
+        prefixDir: 'mosaic',
+        extensions: ['.mdx']
+      }
     }
   ]
 };

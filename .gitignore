@@ -10,11 +10,12 @@ node_modules
 
 # Production
 **/dist-labs/
-**/.tmp
+**/.tmp/**
 tsconfig.tsbuildinfo
 
 # Deployment
-mosaic.generators.js
+packages/site
+packages/rig
 
 # Test Results
 coverage

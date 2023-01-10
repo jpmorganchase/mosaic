@@ -13,16 +13,33 @@
     },
     "clean": {},
     "//#clean:site": {},
+    "//#copy:rig:images": {
+      "dependsOn": ["create:rig"],
+      "outputs": ["packages/rig/**"],
+      "inputs": ["./assets/*"]
+    },
     "//#copy:site:images": {
-      "dependsOn": ["gen:site"],
+      "dependsOn": ["create:site"],
+      "outputs": ["packages/site/**"],
       "inputs": ["./assets/*"]
     },
     "dev": {
       "cache": false
     },
+    "//#create:site": {
+      "cache": false
+    },
+    "//#create:rig": {
+      "cache": false
+    },
+    "//#gen": {
+      "cache": false
+    },
+    "//#gen:rig": {
+      "cache": false
+    },
     "//#gen:site": {
-      "dependsOn": ["^build"],
-      "outputs": ["./packages/site/**"]
+      "cache": false
     },
     "//#gen:snapshot": {
       "outputs": ["./packages/site/public/snapshots/[0-9]*/**"]
@@ -35,6 +52,10 @@
 
     "//#serve": {},
     "serve": {
+      "outputs": []
+    },
+    "//#serve:rig": {},
+    "serve:rig": {
       "outputs": []
     },
     "//#serve:snapshot": {},
