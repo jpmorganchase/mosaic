@@ -14,7 +14,7 @@ export const Link = React.forwardRef(
     const url = useResolveRelativeUrl(href);
 
     return (
-      <NextLink as={url} href={url}>
+      <NextLink as={url} href={url} legacyBehavior>
         <a {...props} ref={ref} />
       </NextLink>
     );
