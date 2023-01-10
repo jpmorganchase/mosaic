@@ -11,6 +11,19 @@ index fac049a..5663033 100644
  
    if (!css || typeof document === 'undefined') { return; }
  
+diff --git a/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/cascading-menu/CascadingMenu.js b/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/cascading-menu/CascadingMenu.js
+index 989ee90..71d83bf 100644
+--- a/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/cascading-menu/CascadingMenu.js
++++ b/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/cascading-menu/CascadingMenu.js
+@@ -42,7 +42,7 @@ const CascadingMenu = React.forwardRef(
+       getScreenBounds = menuPositioning.defaultGetScreenBounds,
+       disableMouseOutInteractions,
+       disableClickAway,
+-      containingDocument = document,
++      containingDocument = typeof window !== 'undefined' ? window.document : undefined,
+       source: sourceProp
+     } = props;
+     const density = core.useDensity();
 diff --git a/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/deck-layout/DeckLayout.js b/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/deck-layout/DeckLayout.js
 index 318520a..0cf82b1 100644
 --- a/node_modules/@salt-ds/lab/dist-cjs/packages/lab/src/deck-layout/DeckLayout.js
