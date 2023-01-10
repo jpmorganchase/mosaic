@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@jpmorganchase/mosaic-rig", "@jpmorganchase/mosaic-site"]
+  "ignore": []
 }
