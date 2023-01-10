@@ -4,6 +4,7 @@ import type { PreProps } from '@jpmorganchase/mosaic-components';
 import { getLabMarkdownComponents } from '@jpmorganchase/mosaic-components/dist-labs/index';
 import { OpenAPI } from '@jpmorganchase/mosaic-open-api-component';
 import type { OpenAPIProps } from '@jpmorganchase/mosaic-open-api-component';
+import type {} from '@salt-ds/lab';
 
 import { Home } from './Home';
 import { Image } from './Image';
