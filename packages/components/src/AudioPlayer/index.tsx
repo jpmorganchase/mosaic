@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ButtonBar, OrderedButton } from '@salt-ds/lab';
+
+import { ButtonBar, OrderedButton, Slider } from '@salt-ds/lab';
 import { Icon } from '../Icon';
 
 import { Caption3, Caption6 } from '../Typography';
@@ -20,7 +21,7 @@ function timeFormat(durationS): string {
 
 const forwardIconByVariant = {
   5: 'forward5',
-  10: 'forward5',
+  10: 'forward10',
   15: 'forward15',
   20: 'forward20'
 };
@@ -110,7 +111,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
 
   const handleSliderInput = e => {
     if (audioElem) {
-      audioElem.currentTime = e.target.value;
+      audioElem.currentTime = e;
       timeUpdate();
     }
   };
@@ -121,10 +122,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
       <Caption3 className={styles.title}>{title}</Caption3>
       <div className={styles.sliderContainer}>
         <Caption6>{timeNowString}</Caption6>
-        <input
+        <Slider
           className={styles.slider}
-          type="range"
-          min="0"
+          min={0}
           max={durationSeconds}
           value={timeNowSeconds}
           onChange={handleSliderInput}
@@ -141,7 +141,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
           </a>
         </div>
         <OrderedButton className={styles.button} variant="secondary" onClick={handleRewind}>
-          <Icon name={replayIconByVariant[skipDuration]} size="large" />
+          <Icon name={replayIconByVariant[skipDuration]} />
         </OrderedButton>
         <OrderedButton
           className={styles.button}
@@ -149,14 +149,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
           onClick={handlePlay}
           disabled={playDisabled}
         >
-          {isPlaying ? (
-            <Icon name="pauseSolid" size="large" />
-          ) : (
-            <Icon name="playSolid" size="large" />
-          )}
+          {isPlaying ? <Icon name="pauseSolid" /> : <Icon name="playSolid" />}
         </OrderedButton>
         <OrderedButton className={styles.button} variant="secondary" onClick={handleFastforward}>
-          <Icon name={forwardIconByVariant[skipDuration]} size="large" />
+          <Icon name={forwardIconByVariant[skipDuration]} />
         </OrderedButton>
         <OrderedButton variant="secondary" onClick={handleMute} className={styles.button}>
           {mute ? <Icon name="volumeOff" /> : <Icon name="volumeUp" />}

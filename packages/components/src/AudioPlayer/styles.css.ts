@@ -13,7 +13,8 @@ export default {
       left: '0px',
       top: '0px',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      margin: vars.space.vertical.x4
     }),
     responsiveSprinkles({ padding: ['x2', 'x2', 'x4', 'x4'] }),
     backgroundColor({ variant: 'emphasis' })
@@ -44,9 +45,9 @@ export default {
       desktop: { width: '350px' }
     }),
     style({
-      height: '4px',
-      opacity: '0.8',
-      borderRadius: '10px'
+      position: 'relative',
+      top: '-7px',
+      margin: vars.space.horizontal.x2
     })
   ]),
   buttonBar: style({

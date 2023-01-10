@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ButtonBar, OrderedButton, Spinner } from '@salt-ds/lab';
+import { ButtonBar, OrderedButton, Spinner, Slider } from '@salt-ds/lab';
 import { Icon } from '../Icon';
 import { Caption6 } from '../Typography';
 import styles from './styles.css';
@@ -112,7 +112,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
 
   const handleSliderInput = e => {
     if (videoElem) {
-      videoElem.currentTime = e.target.value;
+      videoElem.currentTime = e;
       timeUpdate();
     }
   };
@@ -130,7 +130,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
       <div className={styles.controlsBar}>
         <ButtonBar stackAtBreakpoint={0} disableAutoAlignment>
           <OrderedButton className={styles.button} variant="secondary" onClick={handleReplay}>
-            <Icon name={replayIconByVariant[skipDuration]} size="medium" />
+            <Icon name={replayIconByVariant[skipDuration]} />
           </OrderedButton>
           <OrderedButton
             className={styles.button}
@@ -138,24 +138,23 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, skipDuration }) =
             onClick={handlePlay}
             disabled={!metaDataLoaded}
           >
-            <Icon name={isPlaying ? 'pauseSolid' : 'playSolid'} size="large" />
+            <Icon name={isPlaying ? 'pauseSolid' : 'playSolid'} />
           </OrderedButton>
           <OrderedButton className={styles.button} variant="secondary" onClick={handleFastForward}>
-            <Icon name={forwardIconByVariant[skipDuration]} size="medium" />
+            <Icon name={forwardIconByVariant[skipDuration]} />
           </OrderedButton>
         </ButtonBar>
 
         <div className={styles.sliderContainer}>
           <Caption6>{timeNowString}</Caption6>
-          <input
+          <Slider
             className={styles.slider}
-            type="range"
-            min="0"
+            min={0}
             max={durationSeconds}
             value={timeNowSeconds}
             onChange={handleSliderInput}
           />
-          <Caption6>{durationString}</Caption6>
+          <Caption6> {durationString}</Caption6>
         </div>
         <ButtonBar stackAtBreakpoint={0} alignLeft>
           <a href={src} target="_blank" download rel="noreferrer">

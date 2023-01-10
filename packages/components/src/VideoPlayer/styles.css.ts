@@ -1,5 +1,10 @@
 import { style } from '@vanilla-extract/css';
-import { backgroundColor, responsiveSprinkles, responsiveStyle } from '@jpmorganchase/mosaic-theme';
+import {
+  backgroundColor,
+  responsiveSprinkles,
+  responsiveStyle,
+  vars
+} from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -13,7 +18,7 @@ export default {
       position: 'relative',
       display: 'flex',
       flexDirection: 'column',
-      margin: 'auto'
+      margin: vars.space.vertical.x4
     }),
     backgroundColor({ variant: 'emphasis' })
   ]),
@@ -52,7 +57,6 @@ export default {
     responsiveSprinkles({ margin: ['x2', 'x2', 'x4', 'x4'] }),
     style({
       display: 'flex',
-      justifyContent: 'center',
       flexDirection: 'row',
       position: 'relative',
       ':hover': {
@@ -68,9 +72,10 @@ export default {
       desktop: { width: '350px' }
     }),
     style({
-      height: '4px',
-      opacity: '0.9',
-      borderRadius: '10px'
+      position: 'relative',
+      top: '-5px',
+      marginLeft: vars.space.horizontal.x2,
+      marginRight: vars.space.horizontal.x2
     })
   ]),
   button: style({
