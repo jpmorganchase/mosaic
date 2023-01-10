@@ -8,7 +8,6 @@
 '@jpmorganchase/mosaic-layouts': patch
 '@jpmorganchase/mosaic-open-api-component': patch
 '@jpmorganchase/mosaic-plugins': patch
-'@jpmorganchase/mosaic-rig': patch
 '@jpmorganchase/mosaic-schemas': patch
 '@jpmorganchase/mosaic-serialisers': patch
 '@jpmorganchase/mosaic-site': patch
