@@ -1,6 +1,6 @@
 import React, { FC, forwardRef, Ref } from 'react';
-import { default as NextImage } from 'next/image';
-import type { ImageProps as NextImageProps } from 'next/image';
+import { default as NextImage } from 'next/legacy/image';
+import type { ImageProps as NextImageProps } from 'next/legacy/image';
 import classnames from 'classnames';
 
 import { useResolveRelativeUrl } from '../BaseUrlProvider';

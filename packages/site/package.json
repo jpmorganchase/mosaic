@@ -37,7 +37,7 @@
     "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.11",
     "@philpl/buble": "^0.19.7",
     "@types/react": "^18.2.0",
-    "next": "^12.1.0"
+    "next": "^13.1.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "12.3.1",
