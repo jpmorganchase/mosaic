@@ -72,7 +72,7 @@ module.exports = {
   ],
   sources: [
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
+      modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic',
       options: {
         rootDir: path.join(process.env.INIT_CWD, 'docs'),

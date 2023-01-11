@@ -8,7 +8,6 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
-    "mosaic": "node ../cli/dist/index.js",
     "build": "next build",
     "clean": "rm -fr public/.tmp .next",
     "dev": "concurrently --kill-others 'next dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080",
