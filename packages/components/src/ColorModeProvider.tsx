@@ -1,10 +1,18 @@
-import React, { useEffect, useMemo, useState, createContext, ReactNode } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  createContext,
+  ReactNode
+} from 'react';
 
 export const lightMode = 'light';
 export const darkMode = 'dark';
 
 export type ColorMode = 'dark' | 'light';
 export const themePrefKey = 'mosaic-theme-pref';
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 interface ColorModeContextValues {
   colorMode: ColorMode;
@@ -33,7 +41,7 @@ export function ColorModeProvider({
 }) {
   const [colorMode, setColorMode] = useState<ColorMode>(defaultColorMode);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     let nextColorMode;
     try {
       const chosenMode = localStorage.getItem(themePrefKey);
