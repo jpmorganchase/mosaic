@@ -11,20 +11,19 @@ const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.c
  */
 module.exports = deepmerge(mosaicConfig, {
   sources: [
-    {
-      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
-      namespace: 'local',
-      options: {
-        rootDir: path.join(process.env.INIT_CWD, 'docs'),
-        cache: true,
-        prefixDir: 'mosaic',
-        extensions: ['.mdx']
-      }
-    }
-    /*
+    // {
+    //   modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
+    //   namespace: 'local',
+    //   options: {
+    //     rootDir: path.join(process.env.INIT_CWD, '../../docs'),
+    //     cache: true,
+    //     prefixDir: 'mosaic',
+    //     extensions: ['.mdx']
+    //   }
+    //}
     {
       modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
-      namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
+      namespace: 'developer', // each site has it's own namespace, think of this as your content's uid
       options: {
         // To run locally, enter your credentials to access the BitBucket repo
         // !! Polite Reminder... do not store credentials in code !!
@@ -33,16 +32,15 @@ module.exports = deepmerge(mosaicConfig, {
         // If running locally
         // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
         // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
-        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        credentials: 'o717918:VictoriaPark @1jp', //how do i set this ?
         // Add to use a folder prefix
-        // prefixDir: 'cibdat',
+        prefixDir: 'developer',
         subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: 'INSERT REPO URL', // repo url without any protocol
-        branch: 'INSERT BRANCH NAME', // branch where docs are pulled from
+        repo: 'bitbucketdc.jpmchase.net/scm/devconsole/developer-docs.git', // repo url without any protocol
+        branch: 'develop', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }
     }
-    */
   ]
 });

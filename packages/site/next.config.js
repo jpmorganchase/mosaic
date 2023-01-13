@@ -15,9 +15,12 @@ module.exports = {
     };
   },
   images: {
-    domains: [
-      /** Insert the domains where you will load images from */
-      /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**'
+        //https://nextjs.org/docs/messages/next-image-unconfigured-host
+      }
     ]
   },
   webpack(config) {
