@@ -53,7 +53,7 @@ export const HelpLinks: React.FC<React.PropsWithChildren<HelpLinksProps>> = ({
     {subTitle && <Caption1>{subTitle}</Caption1>}
     {stackoverflowUrl && (
       <Link className={styles.link} link={stackoverflowUrl} variant="component">
-        <Icon className={classnames(styles.startAdornment)} name="stackOverflow" />
+        <Icon className={classnames(styles.startAdornment)} name="stackoverflow" />
         {stackoverflowLabel}
         <Icon className={classnames(styles.endAdornment)} name="tearOut" />
       </Link>
