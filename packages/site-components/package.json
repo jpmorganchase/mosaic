@@ -27,6 +27,7 @@
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.11",
     "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.11",
+    "@jpmorganchase/mosaic-labs-components": "^0.1.0-beta.11",
     "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.11",
     "@jpmorganchase/mosaic-site-middleware": "^0.1.0-beta.11",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.11",

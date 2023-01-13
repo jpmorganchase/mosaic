@@ -44,4 +44,3 @@ import './TileBase/styles.css';
 import './TileContent/styles.css';
 import './TileContentLabel/styles.css';
 import './TileLink/styles.css';
-import './labs/Sitemap/styles.css';

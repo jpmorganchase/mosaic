@@ -6,6 +6,6 @@ import '@jpmorganchase/mosaic-theme/dist/salt/index.css';
 import '@jpmorganchase/mosaic-layouts/dist/index.css';
 import '@jpmorganchase/mosaic-site-components/dist/index.css';
 import '@jpmorganchase/mosaic-components/dist/index.css';
-import '@jpmorganchase/mosaic-components/dist-labs/index.css';
+import '@jpmorganchase/mosaic-labs-components/dist/index.css';
 import '@jpmorganchase/mosaic-content-editor-plugin/dist/index.css';
 import 'prismjs/themes/prism.css';
