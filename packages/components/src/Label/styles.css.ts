@@ -1,6 +1,6 @@
 import { style } from '@vanilla-extract/css';
 import { paragraph } from '@jpmorganchase/mosaic-theme';
-import { backgroundColor } from '@jpmorganchase/mosaic-theme/dist';
+import { backgroundColor } from '@jpmorganchase/mosaic-theme';
 
 export default {
   tooltip: style([

@@ -5,14 +5,13 @@ module.exports = {
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
+    '@jpmorganchase/mosaic-components-labs',
     '@jpmorganchase/mosaic-content-editor-plugin',
     '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-open-api-component',
     '@jpmorganchase/mosaic-site-components',
     '@jpmorganchase/mosaic-site-middleware',
     '@jpmorganchase/mosaic-site-preset-styles',
-    '@jpmorganchase/mosaic-site-preset-styles',
-    '@jpmorganchase/mosaic-site-theme',
     '@jpmorganchase/mosaic-store'
   ],
   rewrites() {

@@ -6,7 +6,17 @@
   "author": "",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "types": "./dist/types/index.d.ts",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    "./baseline.css": "./dist/baseline/index.css",
+    "./salt.css": "./dist/salt/index.css", 
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],

@@ -7,6 +7,15 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/styles.css",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "npm-run-all --parallel build:*",
     "build:types": "tsc",

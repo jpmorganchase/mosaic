@@ -67,7 +67,7 @@ module.exports = {
       type: 'layout'
     },
     {
-      import: "import '@jpmorganchase/mosaic-site-preset-styles/dist/index.css';"
+      import: "import '@jpmorganchase/mosaic-site-preset-styles/index.css';"
     }
   ],
   sources: [
