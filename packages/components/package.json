@@ -4,9 +4,10 @@
   "version": "0.1.0-beta.11",
   "author": "",
   "license": "Apache-2.0",
+  "type" : "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "style": "./dist/styles.css",
+  "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
     ".": {

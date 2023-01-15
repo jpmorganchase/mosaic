@@ -4,12 +4,10 @@
   "version": "0.1.0-beta.11",
   "license": "Apache-2.0",
   "author": "",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "exports": {
     "./index.css": "./dist/index.css",
     "./baseline.css": "./dist/baseline/index.css",
-    "./salt.css": "./dist/salt/index.css", 
+    "./salt.css": "./dist/salt/index.css",
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
