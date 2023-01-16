@@ -1,10 +1,10 @@
 {
   "name": "@jpmorganchase/mosaic-store",
   "description": "Mosaic - Store for site configuration",
-  "version": "0.1.0-beta.11",
+  "version": "0.1.0-beta.12",
   "license": "Apache-2.0",
   "author": "",
-  "type" : "module",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

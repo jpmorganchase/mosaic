@@ -22,7 +22,8 @@
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site-middleware": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site-preset-styles": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-standard-generator": "0.1.0-beta.9"
+    "@jpmorganchase/mosaic-standard-generator": "0.1.0-beta.9",
+    "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.11"
   },
   "changesets": [
     "eighty-rings-marry",
@@ -30,7 +31,9 @@
     "fresh-coats-learn",
     "large-avocados-know",
     "neat-cherries-remain",
+    "neat-swans-agree",
     "rich-queens-exercise",
+    "short-taxis-doubt",
     "shy-otters-fry",
     "silver-seas-applaud",
     "tall-pots-rule",

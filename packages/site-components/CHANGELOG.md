@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.12
+
+### Patch Changes
+
+- 9ec358b: Upgrade React to version 18 and NextJs to version 13
+- 3eb35bf: initial work to enable generators to run outside of the repo
+- Updated dependencies [9ec358b]
+- Updated dependencies [3eb35bf]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.12
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.12
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.12
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.12
+  - @jpmorganchase/mosaic-store@0.1.0-beta.12
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.12
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.12
+
 ## 0.1.0-beta.11
 
 ### Patch Changes

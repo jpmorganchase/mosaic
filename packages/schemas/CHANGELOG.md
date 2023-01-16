@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-schemas
 
+## 0.1.0-beta.12
+
+### Patch Changes
+
+- 9ec358b: Upgrade React to version 18 and NextJs to version 13
+
 ## 0.1.0-beta.11
 
 ### Patch Changes
