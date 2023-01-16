@@ -39,12 +39,12 @@ esbuild
       'react-dom',
       'next/*',
       '@jpmorganchase/mosaic-components',
+      '@jpmorganchase/mosaic-components-lab',
       '@jpmorganchase/mosaic-open-api-component',
       '@jpmorganchase/mosaic-content-editor-plugin',
       '@jpmorganchase/mosaic-site-components',
       '@jpmorganchase/mosaic-layouts',
-      '@jpmorganchase/mosaic-store',
-      '@jpmorganchase/mosaic-theme'
+      '@jpmorganchase/mosaic-store'
     ],
     watch: watchConfig
   })

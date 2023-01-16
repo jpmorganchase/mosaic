@@ -3,6 +3,17 @@ const webpack = require('webpack');
 module.exports = {
   reactStrictMode: true,
   swcMinify: true,
+  transpilePackages: [
+    '@jpmorganchase/mosaic-components',
+    '@jpmorganchase/mosaic-components-labs',
+    '@jpmorganchase/mosaic-content-editor-plugin',
+    '@jpmorganchase/mosaic-layouts',
+    '@jpmorganchase/mosaic-open-api-component',
+    '@jpmorganchase/mosaic-site-components',
+    '@jpmorganchase/mosaic-site-middleware',
+    '@jpmorganchase/mosaic-site-preset-styles',
+    '@jpmorganchase/mosaic-store'
+  ],
   rewrites() {
     return {
       // These rewrites are checked after headers/redirects

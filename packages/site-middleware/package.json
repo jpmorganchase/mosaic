@@ -5,6 +5,15 @@
   "description": "Mosaic - Site middleware",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",

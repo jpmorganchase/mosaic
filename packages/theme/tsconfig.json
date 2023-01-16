@@ -1,3 +1,26 @@
+/**
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "target": "es2015",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "rootDir": "src",
+    "outDir": "dist/types",
+    "jsx": "react",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false
+  },
+  "include": ["src"]
+}
+*/
 {
   "extends": "../../tsconfig.bundle.json",
   "compilerOptions": {

@@ -67,12 +67,12 @@ module.exports = {
       type: 'layout'
     },
     {
-      import: "import '@jpmorganchase/mosaic-site-preset-styles/dist/index.css';"
+      import: "import '@jpmorganchase/mosaic-site-preset-styles/index.css';"
     }
   ],
   sources: [
     {
-      modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
+      modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic',
       options: {
         rootDir: path.join(process.env.INIT_CWD, 'docs'),

@@ -26,7 +26,7 @@ const localDirectoryPrompt = {
   type: 'input',
   name: 'localPath',
   message: 'Which local directory do you want to use?',
-  default: '../../docs'
+  default: './docs'
 };
 
 const remoteURLPrompt = {

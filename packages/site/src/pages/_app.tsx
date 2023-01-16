@@ -14,7 +14,7 @@ import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 import { components as mosaicComponents } from '@jpmorganchase/mosaic-site-components';
 import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
-import '@jpmorganchase/mosaic-site-preset-styles/dist/index.css';
+import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 
 import { MyAppProps } from '../types/mosaic';
 

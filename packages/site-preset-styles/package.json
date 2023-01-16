@@ -6,6 +6,9 @@
   "author": "",
   "main": "./dist/index.js",
   "style": "./dist/index.css",
+  "exports": {
+    "./index.css": "./dist/index.css"
+  },
   "scripts": {
     "build": "npm-run-all --parallel build:*",
     "build:bundle": "node ./scripts/bundle.js",

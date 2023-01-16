@@ -1,6 +1,22 @@
 {
-  "extends": "../../tsconfig",
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "target": "es2022",
+    "lib": ["es2022", "DOM", "DOM.iterable"],
+    "esModuleInterop": true,
+    "moduleResolution": "Node16",
+    "isolatedModules": true,
+    "sourceMap": true,
+    "declaration": true,
+    "allowJs": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
     "rootDir": "./src",
     "outDir": "./dist",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
@@ -8,12 +24,10 @@
     "noEmit": true,
     "incremental": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noImplicitAny": false,
     "jsx": "preserve",
-    "skipLibCheck": true,
     "module": "esnext"
   },
   "include": ["src"],
-  "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]
+  "exclude": ["node_modules", "dist/**/*"]
 }
