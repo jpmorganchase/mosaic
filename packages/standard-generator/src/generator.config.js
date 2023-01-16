@@ -36,6 +36,7 @@ module.exports = {
     { package: '@jpmorganchase/mosaic-layouts', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-site-components', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-site-preset-styles', version: `^${version}` },
+    { package: '@jpmorganchase/mosaic-standard-generator', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-store', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-theme', version: `^${version}` },
     /* Mosaic core filesystem dependencies */
