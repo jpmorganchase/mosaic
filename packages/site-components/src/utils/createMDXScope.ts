@@ -1,5 +1,5 @@
 import { recipes } from '@jpmorganchase/mosaic-theme';
-import { useColorMode } from '@jpmorganchase/mosaic-components';
+import { useColorMode } from '@jpmorganchase/mosaic-store';
 import flowImpl from 'lodash/flow';
 
 type SortViewByDate = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;

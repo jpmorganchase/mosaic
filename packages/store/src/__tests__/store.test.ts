@@ -1,13 +1,18 @@
 import { renderHook } from '@testing-library/react';
 
 import { createWrapper } from './test-utils/utils';
-import { initializeStore, useCreateStore, useStore } from '../store';
+import { initializeStore, SiteState, useCreateStore, useStore } from '../store';
+
+function getStateToVerify(currentState: SiteState) {
+  let { actions, ...stateToVerify } = currentState;
+  return stateToVerify;
+}
 
 describe('GIVEN the store initializer', () => {
   describe('WHEN no other state is provided', () => {
     test('THEN the store api provides the initial default state', () => {
       const storeApi = initializeStore();
-      expect(storeApi.getState()).toEqual({
+      expect(getStateToVerify(storeApi.getState())).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
@@ -15,7 +20,8 @@ describe('GIVEN the store initializer', () => {
         description: undefined,
         layout: undefined,
         route: undefined,
-        title: undefined
+        title: undefined,
+        colorMode: 'light'
       });
     });
   });
@@ -30,11 +36,13 @@ describe('GIVEN the store initializer', () => {
       };
 
       const storeApi = initializeStore(state);
-      expect(storeApi.getState()).toEqual({
+      expect(getStateToVerify(storeApi.getState())).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
+        colorMode: 'light',
+
         ...state
       });
     });
@@ -46,11 +54,14 @@ describe('GIVEN the `useCreateStore` hook', () => {
     test('THEN the store content is replaced', () => {
       const state = { layout: 'layout', description: 'des' };
       const { result, rerender } = renderHook(() => useCreateStore(state));
-      expect(result.current().getState()).toEqual({
+      let currentState = result.current().getState();
+
+      expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
+        colorMode: 'light',
         ...state,
         route: undefined,
         title: undefined
@@ -61,11 +72,13 @@ describe('GIVEN the `useCreateStore` hook', () => {
       state.description = 'description';
       rerender();
 
-      expect(result.current().getState()).toEqual({
+      currentState = result.current().getState();
+      expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
+        colorMode: 'light',
         description: 'description',
         layout: 'new',
         route: undefined,
@@ -78,11 +91,14 @@ describe('GIVEN the `useCreateStore` hook', () => {
     test('THEN the store is always reinitialized', () => {
       const state = { layout: 'layout', description: 'des' };
       const { result, rerender } = renderHook(() => useCreateStore(state, true));
-      expect(result.current().getState()).toEqual({
+      let currentState = result.current().getState();
+
+      expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
+        colorMode: 'light',
         ...state,
         route: undefined,
         title: undefined
@@ -93,11 +109,14 @@ describe('GIVEN the `useCreateStore` hook', () => {
       state.description = 'description';
       rerender();
 
-      expect(result.current().getState()).toEqual({
+      currentState = result.current().getState();
+
+      expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
+        colorMode: 'light',
         description: 'description',
         layout: 'new',
         route: undefined,

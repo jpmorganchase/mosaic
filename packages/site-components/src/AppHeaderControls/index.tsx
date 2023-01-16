@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
-import { Icon, ColorModeContext, Link } from '@jpmorganchase/mosaic-components';
+import React from 'react';
+import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { useColorMode, useStoreActions } from '@jpmorganchase/mosaic-store';
 
 import { useSession } from '../SessionProvider';
 import { UserProfile } from '../UserProfile';
@@ -24,8 +25,9 @@ function toUpperFirst(str) {
 
 export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   const router = useRouter();
+  const colorMode = useColorMode();
+  const { setColorMode } = useStoreActions();
 
-  const { colorMode, setColorMode } = useContext<{ colorMode; setColorMode }>(ColorModeContext);
   const { isLoggedIn, ...session } = useSession();
   const { user: { avatarUrl = '', firstName = '' } = {} } = session || {};
   const loginPath = `/api/auth/login?referrer=${encodeURIComponent(router.asPath)}`;

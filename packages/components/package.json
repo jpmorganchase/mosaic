@@ -35,6 +35,7 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.11",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.11",
     "@salt-ds/core": "^1.0.0",
     "@salt-ds/lab": "^1.0.0-alpha.0",
