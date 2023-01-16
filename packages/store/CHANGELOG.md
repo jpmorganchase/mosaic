@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.12
+
+### Patch Changes
+
+- 9ec358b: Upgrade React to version 18 and NextJs to version 13
+- 3eb35bf: initial work to enable generators to run outside of the repo
+
 ## 0.1.0-beta.11
 
 ### Patch Changes

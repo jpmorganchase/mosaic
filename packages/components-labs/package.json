@@ -1,12 +1,12 @@
 {
   "name": "@jpmorganchase/mosaic-labs-components",
-  "version": "0.1.0-beta.11",
+  "version": "0.1.0-beta.12",
   "license": "Apache-2.0",
   "description": "Mosaic - Labs components",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",
-  "type" : "module",
+  "type": "module",
   "exports": {
     "./index.css": "./dist/index.css",
     ".": {
@@ -35,8 +35,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.11",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.11",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.12",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.12",
     "@salt-ds/core": "^1.0.0",
     "@salt-ds/lab": "^1.0.0-alpha.0",
     "@vanilla-extract/css": "^1.6.0",

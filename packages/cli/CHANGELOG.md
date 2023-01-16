@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.12
+
+### Patch Changes
+
+- 9ec358b: Upgrade React to version 18 and NextJs to version 13
+- Updated dependencies [9ec358b]
+  - @jpmorganchase/mosaic-core@0.1.0-beta.12
+
 ## 0.1.0-beta.11
 
 ### Patch Changes
