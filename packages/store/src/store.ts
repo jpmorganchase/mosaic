@@ -1,13 +1,13 @@
 import { useLayoutEffect, createContext, useContext } from 'react';
 import { createStore, StoreApi, useStore as useZustandStore } from 'zustand';
-
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 import type { BreadcrumbsSlice } from './types/breadcrumbs';
 import type { SharedConfigSlice } from './types/sharedConfig';
 import type { LayoutSlice } from './types/layout';
 import type { SidebarSlice } from './types/sidebar';
 import type { TableOfContentsSlice } from './types/tableOfContents';
+import type { ColorMode } from './types/colorMode';
 
 let store: StoreApi<SiteState>;
 
@@ -22,9 +22,16 @@ export type SiteState = BreadcrumbsSlice &
     route?: string;
     /** Page title */
     title?: string;
+    colorMode: ColorMode;
+    actions: {
+      setColorMode: (colorMode: ColorMode) => void;
+    };
   };
 
-function getDefaultInitialState(): SiteState {
+type PeristedStoreState = Pick<SiteState, 'colorMode'>;
+type DefaultSiteState = Omit<SiteState, 'actions'>;
+
+function getDefaultInitialState(): DefaultSiteState {
   return {
     breadcrumbs: [],
     sidebarData: [],
@@ -33,22 +40,38 @@ function getDefaultInitialState(): SiteState {
     description: undefined,
     layout: undefined,
     route: undefined,
-    title: undefined
+    title: undefined,
+    colorMode: 'light'
   };
 }
 
 const StoreContext = createContext<typeof store | undefined>(undefined);
 const StoreProvider = StoreContext.Provider;
 
-const initializeStore = (preloadedState: Partial<SiteState> = {}) =>
-  createStore(
-    devtools<SiteState>(() => ({
-      ...getDefaultInitialState(),
-      ...preloadedState
-    }))
+const storeMiddlewares = stateCreatorFn =>
+  devtools(
+    persist<SiteState, [], [], PeristedStoreState>(stateCreatorFn, {
+      name: 'mosaic-theme-pref',
+      partialize: (state: SiteState) => ({
+        colorMode: state.colorMode
+      })
+    })
   );
 
-function useCreateStore(serverInitialState: Partial<SiteState>, isSSR: boolean = false) {
+const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
+  const mosaicStore = createStore(
+    storeMiddlewares(set => ({
+      ...getDefaultInitialState(),
+      ...preloadedState,
+      actions: {
+        setColorMode: (colorMode: ColorMode) => set({ colorMode })
+      }
+    }))
+  );
+  return mosaicStore;
+};
+
+function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
   // Server side code: For SSR & SSG, always use a new store.
   if (typeof window === 'undefined' || isSSR) {
     return () => initializeStore(serverInitialState);
@@ -67,7 +90,6 @@ function useCreateStore(serverInitialState: Partial<SiteState>, isSSR: boolean =
   //
   // eslint complaining "React Hooks must be called in the exact same order in every component render"
   // is ignorable as this code runs in same order in a given environment (i.e. client or server)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useLayoutEffect(() => {
     // serverInitialState is undefined for CSR pages. It is up to you if you want to reset
     // states on CSR page navigation or not. I have chosen not to, but if you choose to,
@@ -95,11 +117,11 @@ function useStore<T>(
   selector: (state: SiteState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ): T {
-  const store = useContext(StoreContext);
-  if (!store) {
+  const storeFromContext = useContext(StoreContext);
+  if (!storeFromContext) {
     throw new Error('Missing StoreProvider in the tree');
   }
-  return useZustandStore(store, selector, equalityFn);
+  return useZustandStore(storeFromContext, selector, equalityFn);
 }
 
 export { useCreateStore, StoreProvider, useStore, initializeStore };
