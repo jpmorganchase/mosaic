@@ -47,17 +47,10 @@ module.exports = {
   },
   env: {},
   async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/{{namespace}}/index',
-        permanent: true
-      },
-      {
-        source: '/{{namespace}}',
-        destination: '/{{namespace}}/index',
-        permanent: true
-      }
-    ];
+{{#if answers}}
+    return {{{ printNamespaceRedirects answers }}};
+{{^}}
+    return {{{ printNamespaceRedirects sources }}};
+{{/if}}
   }
 };

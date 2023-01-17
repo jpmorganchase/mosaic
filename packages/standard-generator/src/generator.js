@@ -122,7 +122,14 @@ function standardGenerator(plop, env) {
   });
   plop.setHelper('join', items => {
     const itemStrs = items.reduce((result, item) => [...result, JSON.stringify(item, null, 4)], []);
-    return itemStrs.join(',');
+    return itemStrs
+      .join(',')
+      .replace(/^/, '    ')
+      .replace(/\n/g, '\n' + '    ');
+  });
+  plop.setHelper('isNotLastItem', (items, currentIndex) => {
+    console.log(items, currentIndex);
+    return currentIndex < items.length - 1;
   });
   plop.setHelper('printDependencies', dependencies =>
     dependencies.map(({ package: pkg, version }) => `    "${pkg}": "${version}",`).join('\n')
@@ -150,6 +157,24 @@ function standardGenerator(plop, env) {
   plop.setHelper('printImports', imports =>
     imports.map(({ import: importedDependency }) => importedDependency).join('\n')
   );
+  plop.setHelper('printNamespaceRedirects', sources => {
+    const redirects = sources.reduce((accum, { namespace }) => {
+      return [
+        ...accum,
+        {
+          source: '/',
+          destination: `/${namespace}/index`,
+          permanent: true
+        },
+        {
+          source: `/${namespace}`,
+          destination: `/${namespace}/index`,
+          permanent: true
+        }
+      ];
+    }, []);
+    return JSON.stringify(redirects, null, 2).replace(/[\n]/g, `\n    `);
+  });
 }
 
 const generatorModule = (module.exports = standardGenerator);
