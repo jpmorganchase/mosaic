@@ -6,3 +6,4 @@ export * from './SourceWorkflowSchema.js';
 export * from './fileExtensionSchema.js';
 export * from './credentialsSchema.js';
 export * from './validate.js';
+export * from './breadcrumbsLayoutSchema.js';
