@@ -121,11 +121,16 @@ function standardGenerator(plop, env) {
     prompts: async inquirer => addSourcePrompts(inquirer)
   });
   plop.setHelper('join', items => {
-    const itemStrs = items.reduce((result, item) => [...result, JSON.stringify(item, null, 4)], []);
-    return itemStrs
-      .join(',')
-      .replace(/^/, '    ')
-      .replace(/\n/g, '\n' + '    ');
+    const itemStrs = items.reduce(
+      (result, item) => [
+        ...result,
+        JSON.stringify(item, null, 4)
+          .replace(/"([^"]+)":/g, '$1:')
+          .replace(/"/g, "'")
+      ],
+      []
+    );
+    return itemStrs.join(',').replace(/^/, '    ').replace(/\n/g, '\n    ');
   });
   plop.setHelper('isNotLastItem', (items, currentIndex) => {
     console.log(items, currentIndex);
@@ -173,7 +178,10 @@ function standardGenerator(plop, env) {
         }
       ];
     }, []);
-    return JSON.stringify(redirects, null, 2).replace(/[\n]/g, `\n    `);
+    return JSON.stringify(redirects, null, 2)
+      .replace(/[\n]/g, '\n    ')
+      .replace(/"([^"]+)":/g, '$1:')
+      .replace(/"/g, "'");
   });
 }
 
