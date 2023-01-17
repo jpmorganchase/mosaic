@@ -1,6 +1,6 @@
 import path from 'path';
-import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { Page } from '@jpmorganchase/mosaic-types';
+import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
+import { sidebarDataLayoutSchema } from '@jpmorganchase/mosaic-schemas';
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
@@ -32,7 +32,10 @@ function sortFn(pageA, pageB, dirName) {
 }
 
 function filterFn(page) {
-  return !(page.sidebar && page.sidebar.exclude);
+  return (
+    !(page.sidebar && page.sidebar.exclude) &&
+    sidebarDataLayoutSchema.safeParse(page.layout).success
+  );
 }
 
 interface SidebarPluginConfigData {
