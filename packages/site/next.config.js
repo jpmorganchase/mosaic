@@ -5,13 +5,13 @@ module.exports = {
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
-    '@jpmorganchase/mosaic-components-labs',
     '@jpmorganchase/mosaic-content-editor-plugin',
+    '@jpmorganchase/mosaic-labs-components',
     '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-open-api-component',
     '@jpmorganchase/mosaic-site-components',
     '@jpmorganchase/mosaic-site-middleware',
-    '@jpmorganchase/mosaic-site-preset-styles',
+    '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
   rewrites() {
@@ -50,12 +50,12 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/mosaic/index',
+        destination: '/local/index',
         permanent: true
       },
       {
-        source: '/mosaic',
-        destination: '/mosaic/index',
+        source: '/local',
+        destination: '/local/index',
         permanent: true
       }
     ];

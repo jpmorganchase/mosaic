@@ -11,25 +11,25 @@ const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.c
  */
 module.exports = deepmerge(mosaicConfig, {
   sources: [
+{{#unless answers}}
 {{#if sources}}
-{{{ join sources }}}
+{{{join sources}}}
 {{/if}}
-{{#if sources}}{{#if answers}},{{/if}}{{/if}}
+{{/unless}}
 {{#each answers}}
     {{#if localPath}}
     {
-        modulePath: require.resolve('@jpmorganchase/mosaic-source-local-folder'),
+        modulePath: '@jpmorganchase/mosaic-source-local-folder',
         namespace: '{{namespace}}',
         options: {
-            rootDir: path.join(process.env.INIT_CWD, '{{localPath}}'),
-            cache: true,
+            rootDir: '{{localPath}}',
             prefixDir: '{{namespace}}',
             extensions: ['.mdx']
         }
-    }
+    }{{#if (isNotLastItem ../answers @index)}},{{/if}}
     {{^}}
     {
-        modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
+        modulePath: '@jpmorganchase/mosaic-source-git-repo',
         namespace: '{{namespace}}', // each site has it's own namespace, think of this as your content's uid
         options: {
             // To run locally, enter your credentials to access the BitBucket repo
@@ -41,6 +41,7 @@ module.exports = deepmerge(mosaicConfig, {
             // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
             credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
             prefixDir: '{{namespace}}',
+            cache: true,
             subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
             repo: '{{remotePath}}', // repo url without any protocol
             branch: '{{branch}}', // branch where docs are pulled from
