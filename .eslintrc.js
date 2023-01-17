@@ -14,7 +14,9 @@ module.exports = {
     'no-plusplus': 'off',
     'guard-for-in': 'off',
     'max-classes-per-file': 'off',
-    'import/prefer-default-export': 'off'
+    'import/prefer-default-export': 'off',
+    'react/function-component-definition': 'off',
+    'react/require-default-props': 'off'
   },
   overrides: [
     {
