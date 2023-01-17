@@ -4,37 +4,44 @@ const pages: BreadcrumbsPluginPage[] = [
   {
     fullPath: '/FolderA/index.mdx',
     route: 'route/folderA/index',
-    title: 'Folder A Index'
+    title: 'Folder A Index',
+    layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/pageA.mdx',
     route: 'route/folderA/pageA',
-    title: 'Folder A Page A'
+    title: 'Folder A Page A',
+    layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/pageB.mdx',
     route: 'route/folderA/pageB',
-    title: 'Folder A Page B'
+    title: 'Folder A Page B',
+    layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/index.mdx',
     route: 'route/folderA/subfolderA/index',
-    title: 'Subfolder A Index'
+    title: 'Subfolder A Index',
+    layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/PageA.mdx',
     route: 'route/folderA/subfolderA/pageA',
-    title: 'Subfolder A Page A'
-  },
-  {
-    fullPath: '/FolderA/SubfolderA/PageB.mdx',
-    route: 'route/folderA/subfolderA/pageB',
-    title: 'Subfolder A Page B'
+    title: 'Subfolder A Page A',
+    layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/PageB.mdx',
     route: 'route/folderA/subfolderA/pageB',
     title: 'Subfolder A Page B',
+    layout: 'DetailOverview'
+  },
+  {
+    fullPath: '/FolderA/SubfolderA/PageB.mdx',
+    route: 'route/folderA/subfolderA/pageB',
+    title: 'Subfolder A Page B',
+    layout: 'DetailOverview',
     breadcrumbs: [
       {
         label: 'Label A',
@@ -97,6 +104,33 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
           path: 'path/B',
           id: 'id B'
         });
+      });
+    });
+
+    describe('AND WHEN a page has a layout without breadcrumbs UI', () => {
+      beforeEach(async () => {
+        const pagesWithWrongLayout = [
+          {
+            fullPath: '/FolderA/index.mdx',
+            route: 'route/folderA/index',
+            title: 'Folder A Index',
+            layout: 'Landing'
+          },
+          {
+            fullPath: '/FolderA/pageA.mdx',
+            route: 'route/folderA/pageA',
+            title: 'Folder A Page A',
+            layout: 'Newsletter'
+          }
+        ];
+        const $afterSource = BreadcrumbsPlugin.$afterSource;
+        // @ts-ignore
+        updatedPages =
+          (await $afterSource?.(pagesWithWrongLayout, {}, { indexPageName: 'index.mdx' })) || [];
+      });
+      test('THEN **NO** breadcrumbs are added to the page', () => {
+        const breadcrumbs = (updatedPages && updatedPages[0].breadcrumbs) || [];
+        expect(breadcrumbs.length).toEqual(0);
       });
     });
   });

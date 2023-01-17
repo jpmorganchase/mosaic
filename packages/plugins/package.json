@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^9.0.9",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.12",
     "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.12",
     "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.12",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.12",
