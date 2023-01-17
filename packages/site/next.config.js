@@ -50,12 +50,12 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '//index',
+        destination: '/local/index',
         permanent: true
       },
       {
-        source: '/',
-        destination: '//index',
+        source: '/local',
+        destination: '/local/index',
         permanent: true
       }
     ];

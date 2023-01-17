@@ -13,11 +13,10 @@ module.exports = deepmerge(mosaicConfig, {
   sources: [
     {
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
-      namespace: 'mosaic',
+      namespace: 'local',
       options: {
-        rootDir: path.join(process.env.INIT_CWD, 'docs'),
-        cache: true,
-        prefixDir: 'mosaic',
+        rootDir: 'docs',
+        prefixDir: 'local',
         extensions: ['.mdx']
       }
     }
