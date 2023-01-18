@@ -123,7 +123,7 @@ function stripCredentials(url: string) {
   return url.replace(/(\b(ssh|https?):\/\/[^:]+?:)([^@]+)@/i, (_, $1) => `${$1}*@`);
 }
 
-function createRepoURL(repo, credentials) {
+function createRepoURL(repo: string, credentials: string) {
   let repoPath;
   let repoProtocol;
   try {
