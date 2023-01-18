@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import create from 'zustand';
+import { create } from 'zustand';
 
 type PageState = 'VIEW' | 'EDIT' | 'REVIEW' | 'SAVING' | 'ERROR';
 type UserType = { sid: string; displayName: string; email: string };

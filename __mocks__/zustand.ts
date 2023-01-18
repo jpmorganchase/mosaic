@@ -1,6 +1,6 @@
 const actualZustand = jest.requireActual('zustand');
 
-const actualCreate = actualZustand.default;
+const actualCreate = actualZustand.create;
 
 const stores = new Set<Function>();
 
@@ -19,5 +19,4 @@ afterEach(() => {
 
 const { createStore, useStore } = actualZustand;
 
-export { createStore, useStore };
-export default create;
+export { create, createStore, useStore };
