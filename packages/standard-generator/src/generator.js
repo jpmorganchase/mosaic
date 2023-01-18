@@ -8,7 +8,7 @@
 const addNewSourcePrompt = {
   type: 'confirm',
   name: 'addNewSource',
-  message: 'Do you want to add Mosaic sources ?',
+  message: 'Do you want to add Mosaic sources?',
   default: true
 };
 
@@ -26,26 +26,26 @@ const localDirectoryPrompt = {
   type: 'input',
   name: 'localPath',
   message: 'Which local directory do you want to use?',
-  default: './docs'
+  default: '../docs'
 };
 
 const remoteURLPrompt = {
   type: 'input',
   name: 'remotePath',
-  message: 'Which is the url of the repo ?'
+  message: 'What is the url of the docs repo?'
 };
 
 const remoteBranchPrompt = {
   type: 'input',
   name: 'remoteBranch',
-  message: 'Which is the branch name you want to pull from ?',
-  default: 'develop'
+  message: 'What is the branch name you want to pull from?',
+  default: 'main'
 };
 
 const namespacePrompt = {
   type: 'input',
   name: 'namespace',
-  message: 'Which is the namespace for this source ?',
+  message: 'Which is the namespace for this source?',
   default: 'mosaic'
 };
 
