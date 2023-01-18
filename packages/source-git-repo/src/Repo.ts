@@ -123,6 +123,30 @@ function stripCredentials(url: string) {
   return url.replace(/(\b(ssh|https?):\/\/[^:]+?:)([^@]+)@/i, (_, $1) => `${$1}*@`);
 }
 
+function createRepoURL(repo, credentials) {
+  let repoPath;
+  let repoProtocol;
+  try {
+    const { protocol, hostname, path } = new URL(repo);
+    repoProtocol = protocol;
+    repoPath = `${hostname}/${path}`;
+  } catch {
+    repoProtocol = 'https';
+    repoPath = repo;
+  }
+  let encodedCredentials;
+  if (credentials) {
+    encodedCredentials = credentials
+      .split(':')
+      .map(credential => encodeURIComponent(credential))
+      .join(':');
+  }
+  const repoURL = encodedCredentials
+    ? `${repoProtocol}://${encodedCredentials}@${repoPath}`
+    : `${repoProtocol}://${repoPath}`;
+  return repoURL;
+}
+
 export default class Repo {
   #cloned = false;
   #dir = '';
@@ -141,18 +165,14 @@ export default class Repo {
     if (!credentials) {
       console.warn('[Mosaic] No `credentials` provided for git repo request.');
     }
+
     this.#cloneRootDir = getCloneDirName(repo);
     this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-worktrees');
     this.#dir = path.join(this.#worktreeRootDir, branch);
     this.#remote = remote;
     this.#branch = branch;
     this.#credentials = credentials;
-    this.#repo = credentials
-      ? `https://${credentials
-          .split(':')
-          .map(credential => encodeURIComponent(credential))
-          .join(':')}@${repo}`
-      : repo;
+    this.#repo = createRepoURL(repo, credentials);
 
     // Hide credentials when displaying repository name
     this.#name = `${stripCredentials(this.#repo)}#${branch}`;
