@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-cli",
-  "version": "0.1.0-beta.12",
+  "version": "0.1.0-beta.13",
   "author": "",
   "description": "Mosaic command line scripts",
   "license": "Apache-2.0",
@@ -32,10 +32,10 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "devDependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.12"
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.13"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-core": "^0.1.0-beta.12",
+    "@jpmorganchase/mosaic-core": "^0.1.0-beta.13",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",

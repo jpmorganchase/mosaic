@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-site-middleware",
-  "version": "0.1.0-beta.12",
+  "version": "0.1.0-beta.13",
   "license": "Apache-2.0",
   "description": "Mosaic - Site middleware",
   "main": "./dist/index.js",
@@ -23,8 +23,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.12",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.12",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.13",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.13",
     "@types/mdast": "^3.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
