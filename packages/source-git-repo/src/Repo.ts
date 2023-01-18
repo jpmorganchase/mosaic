@@ -127,9 +127,9 @@ function createRepoURL(repo: string, credentials: string) {
   let repoPath;
   let repoProtocol;
   try {
-    const { protocol, hostname, path } = new URL(repo);
+    const { protocol, hostname, pathname } = new URL(repo);
     repoProtocol = protocol;
-    repoPath = `${hostname}/${path}`;
+    repoPath = `${hostname}/${pathname}`;
   } catch {
     repoProtocol = 'https';
     repoPath = repo;
