@@ -82,7 +82,7 @@ export const Feature: React.FC<FeatureProps> = ({
             alt="feature image"
             aria-describedby="feature image"
             className={classnames(classes.image, styles.image, styles[`${imagePlacement}Image`])}
-            layout="fill"
+            fill
             src={image}
           />
         )}
