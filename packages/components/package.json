@@ -24,7 +24,7 @@
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "doc": "node ../../scripts/updateDocs.js",
-    "watch": "node ../../scripts/bundle.js watch"
+    "dev": "node ../../scripts/bundle.js watch"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
