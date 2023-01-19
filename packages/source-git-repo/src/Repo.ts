@@ -142,7 +142,7 @@ export default class Repo {
       console.warn('[Mosaic] No `credentials` provided for git repo request.');
     }
     this.#cloneRootDir = getCloneDirName(repo);
-    this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-fs-worktrees');
+    this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-worktrees');
     this.#dir = path.join(this.#worktreeRootDir, branch);
     this.#remote = remote;
     this.#branch = branch;
@@ -316,16 +316,7 @@ export default class Repo {
         await fs.emptyDir(this.#cloneRootDir);
         await spawn(
           'git',
-          [
-            'clone',
-            this.#repo,
-            '--no-checkout',
-            '--single-branch',
-            '--no-tags',
-            '--depth',
-            '1',
-            `--origin=${this.#remote}`
-          ],
+          ['clone', this.#repo, '--no-checkout', `--origin=${this.#remote}`],
           // Go up 1 dir, so the clone creates the main worktree folder
           path.dirname(this.#cloneRootDir)
         );
