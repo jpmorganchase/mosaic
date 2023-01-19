@@ -1,4 +1,3 @@
-const path = require('path');
 const deepmerge = require('deepmerge');
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
 
@@ -15,9 +14,30 @@ module.exports = deepmerge(mosaicConfig, {
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'local',
       options: {
-        rootDir: 'docs',
+        rootDir: '../../docs',
         prefixDir: 'local',
         extensions: ['.mdx']
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
+      options: {
+        // To run locally, enter your credentials to access the BitBucket repo
+        // !! Polite Reminder... do not store credentials in code !!
+        // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
+        // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
+        // If running locally
+        // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
+        // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        prefixDir: 'mosaic',
+        cache: true,
+        subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
+        repo: 'https://github.com/jpmorganchase/mosaic.git', // repo url without any protocol
+        branch: 'main', // branch where docs are pulled from
+        extensions: ['.mdx'], // extensions of content which should be pulled
+        remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }
     }
   ]
