@@ -50,7 +50,12 @@ module.exports = {
     return [
       {
         source: '/',
-        destination: '/local/index',
+        destination: '/mosaic/index',
+        permanent: true
+      },
+      {
+        source: '/mosaic',
+        destination: '/mosaic/index',
         permanent: true
       },
       {
