@@ -6,5 +6,8 @@ export default {
   }),
   root: style({
     position: 'relative'
+  }),
+  nextImage: style({
+    objectFit: 'scale-down'
   })
 };

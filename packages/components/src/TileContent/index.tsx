@@ -64,7 +64,7 @@ const TileImage: FC<
         alt=""
         aria-describedby="tilecontent-description"
         className={classnames(classes.image, imageRecipe({ imagePlacement }))}
-        layout="fill"
+        fill
         onError={onImageError}
         src={imageUrl}
       />
