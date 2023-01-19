@@ -131,7 +131,7 @@ function createRepoURL(repo: string, credentials: string) {
     repoProtocol = protocol;
     repoPath = `${hostname}/${pathname}`;
   } catch {
-    repoProtocol = 'https';
+    repoProtocol = 'https:';
     repoPath = repo;
   }
   let encodedCredentials;
@@ -142,8 +142,8 @@ function createRepoURL(repo: string, credentials: string) {
       .join(':');
   }
   const repoURL = encodedCredentials
-    ? `${repoProtocol}://${encodedCredentials}@${repoPath}`
-    : `${repoProtocol}://${repoPath}`;
+    ? `${repoProtocol}//${encodedCredentials}@${repoPath}`
+    : `${repoProtocol}//${repoPath}`;
   return repoURL;
 }
 
