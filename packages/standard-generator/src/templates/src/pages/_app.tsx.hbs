@@ -2,12 +2,12 @@
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import {
-BaseUrlProvider,
-Image,
-Link,
-Metadata,
-SessionProvider,
-SidebarProvider
+  BaseUrlProvider,
+  Image,
+  Link,
+  Metadata,
+  SessionProvider,
+  SidebarProvider
 } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
@@ -20,8 +20,7 @@ const components = {{{ printComponentIdentifiers imports }}};
 const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  const { session, sharedConfig, source } = pageProps
-    
+  const { session, sharedConfig, source } = pageProps;
   const frontmatter = source?.frontmatter || {};
   const storeProps = { sharedConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);

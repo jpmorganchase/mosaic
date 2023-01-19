@@ -1,4 +1,3 @@
-const path = require('path');
 const deepmerge = require('deepmerge');
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
 
@@ -17,12 +16,12 @@ module.exports = deepmerge(mosaicConfig, {
 {{/if}}
 {{/unless}}
 {{#each answers}}
+    {{#if localPath}}
     /**
     * Demonstrates a local file-system source, in this case a relative path to where the
     * site was generated.
     * Access from your browser as http://localhost:3000/local
     */
-    {{#if localPath}}
     {
         modulePath: '@jpmorganchase/mosaic-source-local-folder',
         namespace: '{{namespace}}', // each site has it's own namespace, think of this as your content's uid
@@ -56,7 +55,7 @@ module.exports = deepmerge(mosaicConfig, {
             extensions: ['.mdx'], // extensions of content which should be pulled
             remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
         }
-    }
+    }{{#if (isNotLastItem ../answers @index)}},{{/if}}
     {{/if}}
 {{~/each}}
   ]

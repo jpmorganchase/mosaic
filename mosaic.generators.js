@@ -162,13 +162,12 @@ module.exports = {
             modulePath: require.resolve('@jpmorganchase/mosaic-source-git-repo'),
             namespace: 'rig', // each site has it's own namespace, think of this as your content's uid
             options: {
-              // To run locally, enter your credentials to access the BitBucket repo
+              // To run locally, enter your credentials to access the Git repo
+              // e.g create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
               // !! Polite Reminder... do not store credentials in code !!
-              // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
-              // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
-              // If running locally
-              // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
-              // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+              // For final deployments: you could put repo access credentials securely in environment variables provided by your host.
+              // If running locally: create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
+              // export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
               credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
               prefixDir: 'rig',
               subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
