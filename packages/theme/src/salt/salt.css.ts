@@ -67,29 +67,17 @@ createGlobalTheme('.saltSwitch', switchVars, {
   height: '16px'
 });
 
-export const buttonVars = createGlobalThemeContract({
-  regular: {
+export const menuButtonTriggerVars = createGlobalThemeContract({
+  open: {
     fontWeight: '--saltButton-fontWeight'
   }
 });
 
-createGlobalTheme('.saltButton', buttonVars, {
-  regular: {
+createGlobalTheme('.saltMenuButtonTrigger', menuButtonTriggerVars, {
+  open: {
     fontWeight: fontWeightVars.regular
   }
 });
-
-// export const menuButtonTriggerVars = createGlobalThemeContract({
-//   open: {
-//     color: '--saltMenuButton-trigger-open-color'
-//   }
-// });
-
-// createGlobalTheme('.saltMenuButtonTrigger', menuButtonTriggerVars, {
-//   open: {
-//     color: 'currentColor'
-//   }
-// });
 
 export const colorVars = createGlobalThemeContract({
   white: '--salt-color-white',
