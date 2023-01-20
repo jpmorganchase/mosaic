@@ -1,11 +1,10 @@
 import React from 'react';
 import classnames from 'classnames';
 import { HelpLinks, LinkButton, H6, P2 } from '@jpmorganchase/mosaic-components';
-import type { ButtonProps, LinkIconProps } from '@jpmorganchase/mosaic-components';
+import type { LinkIconProps } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
 
 export interface FooterProps {
-  ButtonProps?: ButtonProps;
   className?: string;
   description?: string;
   label?: string;
@@ -43,12 +42,7 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
       {helpLinks && (
         <div className={styles.links}>
-          <HelpLinks
-            stackoverflowLabel={helpLinks.stackoverflowLabel}
-            stackoverflowUrl={helpLinks.stackoverflowUrl}
-            symphonyLabel={helpLinks.symphonyLabel}
-            symphonyUrl={helpLinks.symphonyUrl}
-          />
+          {helpLinks ? <HelpLinks subTitle="Need Help?" {...helpLinks} /> : null}
         </div>
       )}
     </footer>
