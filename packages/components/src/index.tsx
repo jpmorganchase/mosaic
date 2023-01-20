@@ -24,6 +24,7 @@ export * from './Impacts';
 export * from './Label';
 export * from './Link';
 export * from './LinkBase';
+export * from './LinkButton';
 export * from './LinkProvider';
 export * from './Links';
 export * from './LinkText';

@@ -15,7 +15,7 @@ module.exports = deepmerge(mosaicConfig, {
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'local',
       options: {
-        rootDir: 'docs',
+        rootDir: '../../docs',
         prefixDir: 'local',
         extensions: ['.mdx']
       }
