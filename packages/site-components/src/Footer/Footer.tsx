@@ -1,11 +1,10 @@
 import React from 'react';
 import classnames from 'classnames';
-import { HelpLinks, Button, H6, P2 } from '@jpmorganchase/mosaic-components';
-import type { ButtonProps, LinkIconProps } from '@jpmorganchase/mosaic-components';
+import { HelpLinks, LinkButton, H6, P2 } from '@jpmorganchase/mosaic-components';
+import type { LinkIconProps } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
 
 export interface FooterProps {
-  ButtonProps?: ButtonProps;
   className?: string;
   description?: string;
   helpLinks?: {
@@ -15,35 +14,33 @@ export interface FooterProps {
     symphonyUrl: string;
   };
   iconProps?: LinkIconProps;
+  href?: string;
+  label?: string;
   title?: string;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  ButtonProps,
   className,
   description,
   helpLinks,
-  title
+  title,
+  label,
+  href
 }) => (
   <footer className={classnames(styles.root, className)}>
     <div className={styles.content}>
       {title && <H6 className={styles.title}>{title}</H6>}
       {description && <P2 className={styles.description}> {description}</P2>}
     </div>
-    {ButtonProps && (
+    {href && (
       <div className={styles.button}>
-        <Button {...ButtonProps} />
+        <LinkButton href={href}>{label}</LinkButton>
       </div>
     )}
 
     {helpLinks && (
       <div className={styles.links}>
-        <HelpLinks
-          stackoverflowLabel={helpLinks.stackoverflowLabel}
-          stackoverflowUrl={helpLinks.stackoverflowUrl}
-          symphonyLabel={helpLinks.symphonyLabel}
-          symphonyUrl={helpLinks.symphonyUrl}
-        />
+        {helpLinks ? <HelpLinks subTitle="Need Help?" {...helpLinks} /> : null}
       </div>
     )}
   </footer>

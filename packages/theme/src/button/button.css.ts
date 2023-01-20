@@ -33,7 +33,12 @@ export const button = recipe({
   base: style([
     {
       border: 'none !important',
-      boxSizing: 'content-box'
+      boxSizing: 'content-box',
+      textTransform: 'var(--saltButton-textTransform, var(--salt-actionable-textTransform))',
+      fontFamily: 'var(--saltButton-fontFamily, var(--salt-text-fontFamily))',
+      fontWeight: 'var(--salt-actionable-primary-fontWeight)',
+      padding: 'var(--saltButton-padding, var(--salt-size-unit))',
+      fontSize: 'var(--saltButton-fontSize, var(--salt-text-fontSize))'
     },
     responsiveSprinkles({ paddingX: ['x2', 'x2', 'x2', 'x4'] })
   ]),
