@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.14
+
+### Patch Changes
+
+- dde3b5a: Feature release
+
+  - Enhanced generators now have defaults.
+    With one command (`yarn mosaic-create-site create`) it will generate a fully working site with both local and remote sources
+  - Fix an issue where we could not clone from the master branch of git repos
+  - Migrate to Next 13 image
+
+- Updated dependencies [dde3b5a]
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.14
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.14
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.14
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.14
+  - @jpmorganchase/mosaic-types@0.1.0-beta.14
+
 ## 0.1.0-beta.13
 
 ### Patch Changes
