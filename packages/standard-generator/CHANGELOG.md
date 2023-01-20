@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.14
+
+### Patch Changes
+
+- dde3b5a: Feature release
+
+  - Enhanced generators now have defaults.
+    With one command (`yarn mosaic-create-site create`) it will generate a fully working site with both local and remote sources
+  - Fix an issue where we could not clone from the master branch of git repos
+  - Migrate to Next 13 image
+
 ## 0.1.0-beta.13
 
 ### Patch Changes

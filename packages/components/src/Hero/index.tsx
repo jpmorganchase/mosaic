@@ -60,18 +60,12 @@ function HeroImageContainer({ isFramed, heroBackgroundImage, heroImage, isFullWi
           <ImageComponent
             alt="main background image"
             className={styles.frameBackgroundImage}
-            layout="fill"
+            fill
             src={heroBackgroundImage}
             priority
           />
         )}
-        <ImageComponent
-          alt="main"
-          className={styles.frameImage}
-          layout="fill"
-          src={heroImage}
-          priority
-        />
+        <ImageComponent alt="main" className={styles.frameImage} src={heroImage} priority fill />
       </div>
     );
   }
@@ -82,8 +76,7 @@ function HeroImageContainer({ isFramed, heroBackgroundImage, heroImage, isFullWi
         [styles.fullWidthImage]: isFullWidth,
         [styles.imageWidth]: !isFullWidth
       })}
-      layout="fill"
-      objectFit="scale-down"
+      fill
       src={heroImage}
       priority
     />
