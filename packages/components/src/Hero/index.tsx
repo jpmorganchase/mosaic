@@ -150,7 +150,7 @@ export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
                   })}
                   key={link.label}
                 >
-                  <LinkButton href={link.url} variant="cta">
+                  <LinkButton href={link.url} variant="regular">
                     {link.label}
                   </LinkButton>
                 </div>
