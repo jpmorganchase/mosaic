@@ -34,19 +34,19 @@ function BackgroundImages() {
   return (
     <>
       <div className={classnames(styles.backgroundImage, styles.backgroundImage1)}>
-        <ImageComponent width={254} height={193} src={'/img/backgroundImg_pink.png'} />
+        <ImageComponent width={254} height={193} src={'/img/backgroundImg1.png'} />
       </div>
       <div className={classnames(styles.backgroundImage, styles.backgroundImage2)}>
-        <ImageComponent width={385} height={214} src={'/img/backgroundImg_purple.png'} />
+        <ImageComponent width={385} height={214} src={'/img/backgroundImg2.png'} />
       </div>
       <div className={classnames(styles.backgroundImage, styles.backgroundImage3)}>
-        <ImageComponent width={629} height={1024} src={'/img/backgroundImg_x.png'} />
+        <ImageComponent width={629} height={1024} src={'/img/backgroundImg3.png'} />
       </div>
       <div className={classnames(styles.backgroundImage, styles.backgroundImage4)}>
-        <ImageComponent width={750} height={813} src={'/img/backgroundImg_gear.png'} />
+        <ImageComponent width={750} height={813} src={'/img/backgroundImg4.png'} />
       </div>
       <div className={classnames(styles.backgroundImage, styles.backgroundImage5)}>
-        <ImageComponent width={385} height={214} src={'/img/backgroundImg_purple.png'} />
+        <ImageComponent width={385} height={214} src={'/img/backgroundImg2.png'} />
       </div>
     </>
   );
