@@ -29,12 +29,12 @@ export const Footer: React.FC<FooterProps> = ({
     <div className={styles.content}>
       {title && <H6 className={styles.title}>{title}</H6>}
       {description && <P2 className={styles.description}> {description}</P2>}
+      {label && href && (
+        <div className={styles.button}>
+          <LinkButton href={href}>{label}</LinkButton>
+        </div>
+      )}
     </div>
-    {ButtonProps && (
-      <div className={styles.button}>
-        <Button {...ButtonProps} />
-      </div>
-    )}
 
     {helpLinks && (
       <div className={styles.links}>
