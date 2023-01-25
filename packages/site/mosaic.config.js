@@ -32,9 +32,9 @@ module.exports = deepmerge(mosaicConfig, {
         credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
         prefixDir: 'mosaic', // root path used for namespace
         cache: true,
-        subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: 'https://github.com/jpmorganchase/mosaic.git', // repo url without any protocol
-        branch: 'main', // branch where docs are pulled from
+        subfolder: './packages/components/docs', // subfolder within your branch containing the docs, typically 'docs'
+        repo: 'github.com/jpmorganchase/mosaic.git', // repo url without any protocol
+        branch: 'sourceTypedocs', // branch where docs are pulled from
         extensions: ['.mdx'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }
@@ -44,14 +44,14 @@ module.exports = deepmerge(mosaicConfig, {
      * site was generated.
      * Access from your browser as http://localhost:3000/local
      */
-    {
-      modulePath: '@jpmorganchase/mosaic-source-local-folder',
-      namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-      options: {
-        rootDir: '../../docs', // relative path to content
-        prefixDir: 'local', // root path used for namespace
-        extensions: ['.mdx'] // extensions of content which should be pulled
-      }
-    }
+    // {
+    //   modulePath: '@jpmorganchase/mosaic-source-local-folder',
+    //   namespace: 'local', // each site has it's own namespace, think of this as your content's uid
+    //   options: {
+    //     rootDir: '../../docs', // relative path to content
+    //     prefixDir: 'local', // root path used for namespace
+    //     extensions: ['.mdx'] // extensions of content which should be pulled
+    //   }
+    // }
   ]
 });

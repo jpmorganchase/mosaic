@@ -1,0 +1,119 @@
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@jpmdevconsole/components-next</title><meta name="description" content="Documentation for @jpmdevconsole/components-next"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">@jpmdevconsole/components-next</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1> @jpmdevconsole/components-next </h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#digital-platform-developer-components" id="digital-platform-developer-components" style="color: inherit; text-decoration: none;">
+  <h2>Digital Platform Developer Components</h2>
+</a>
+<p>This is the home of Digital Platform components.</p>
+<p>The components conform to the Digital Platform Developer Design language, as specified by <a href="https://go/developer-spec">Developer Design Spec</a></p>
+<p>The Developer Design language is a local design system built upon a JPM UI Toolkit foundation.</p>
+
+<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+  <h2>Features</h2>
+</a>
+<ol>
+<li>Components are theme-able and by default support light/dark modes.</li>
+<li>Components support both the Markdown use-case and stand-alone usage.</li>
+</ol>
+
+<a href="#nomenclature" id="nomenclature" style="color: inherit; text-decoration: none;">
+  <h3>Nomenclature</h3>
+</a>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Context</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>area</td>
+<td>layout</td>
+<td>a reserved space or region within a <code>layout</code> designated for specific content</td>
+<td>StickyArea</td>
+</tr>
+<tr>
+<td>base</td>
+<td>component</td>
+<td>the lowest level component which has common functionality shared by other components</td>
+<td>TileBase</td>
+</tr>
+<tr>
+<td>grid</td>
+<td>component</td>
+<td>an ordered component <code>layout</code></td>
+<td>Grid</td>
+</tr>
+<tr>
+<td>layout</td>
+<td>component</td>
+<td>arranges the same component on a page in a uniform way</td>
+<td>StickyArea</td>
+</tr>
+<tr>
+<td>layout</td>
+<td>layout</td>
+<td>an empty page anatomy which is composed of empty <code>area</code> elements</td>
+<td>StickyArea</td>
+</tr>
+<tr>
+<td>link</td>
+<td>component</td>
+<td>a component which creates a user journey</td>
+<td>TileLink</td>
+</tr>
+<tr>
+<td>button</td>
+<td>component</td>
+<td>a component which alters a state</td>
+<td>TileButton</td>
+</tr>
+<tr>
+<td>tile</td>
+<td>component</td>
+<td>an interactive composition of components, organized inside a uniform <code>grid</code></td>
+<td>Tile</td>
+</tr>
+<tr>
+<td>root</td>
+<td>dom</td>
+<td>the first element of a component</td>
+<td>the first div of any component</td>
+</tr>
+<tr>
+<td>container</td>
+<td>dom</td>
+<td>an element which might wrap a root element to modify it&#39;s presentation or behavior</td>
+<td></td>
+</tr>
+<tr>
+<td>content</td>
+<td>dom</td>
+<td>the children of any component, usually defined by the <code>children</code> prop</td>
+<td></td>
+</tr>
+</tbody></table>
+
+<a href="#labs" id="labs" style="color: inherit; text-decoration: none;">
+  <h3>Labs</h3>
+</a>
+<p>The <code>src/labs</code> directory contains &#39;ALPHA&#39; components which are NOT yet ready for use in production.<br>It&#39;s an experimentation area, some of these components might never be used or are in-complete.</p>
+<p><strong>Do not use any &#39;lab&#39; components in a Production environment</strong></p>
+<p>Contact the <a href="symphony://?streamId=6LRSm5dQPHeQtEruLMFlon___o6be6nldA&amp;streamType=chatroom">Developer Dev Team</a> if you wish to learn more.</p>
+
+<a href="#contribution--feature-requests" id="contribution--feature-requests" style="color: inherit; text-decoration: none;">
+  <h3>Contribution / Feature Requests</h3>
+</a>
+<p>As a team with limited resources, we direct all feature requests to our <a href="symphony://?streamId=6LRSm5dQPHeQtEruLMFlon___o6be6nldA&amp;streamType=chatroom">Developer Product Team</a></p>
+<p>We consider Developer an open platform and pull-requests are welcome.</p>
+<p>Refer to our <a href="https://developer-next.apps.dev.na-1z.gap.jpmchase.net/developer/support/contributing">Contribution Guide</a></p>
+
+<a href="#roadmap" id="roadmap" style="color: inherit; text-decoration: none;">
+  <h3>Roadmap</h3>
+</a>
+<ul>
+<li>Publish our Prod ready components in their own package.</li>
+<li>Improve accessibility.</li>
+<li>Improve test coverage, including both functional and visual regression.</li>
+</ul>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Modules</a></li><li class=" tsd-kind-module"><a href="modules/Accordion.html">Accordion</a></li><li class=" tsd-kind-module"><a href="modules/AudioPlayer.html">Audio<wbr/>Player</a></li><li class=" tsd-kind-module"><a href="modules/Callout.html">Callout</a></li><li class=" tsd-kind-module"><a href="modules/Card.html">Card</a></li><li class=" tsd-kind-module"><a href="modules/ColorModeToggle.html">Color<wbr/>Mode<wbr/>Toggle</a></li><li class=" tsd-kind-module"><a href="modules/ComponentExample.html">Component<wbr/>Example</a></li><li class=" tsd-kind-module"><a href="modules/EditionFilterView.html">Edition<wbr/>Filter<wbr/>View</a></li><li class=" tsd-kind-module"><a href="modules/EditionTileLink.html">Edition<wbr/>Tile<wbr/>Link</a></li><li class=" tsd-kind-module"><a href="modules/Feature.html">Feature</a></li><li class=" tsd-kind-module"><a href="modules/Features.html">Features</a></li><li class=" tsd-kind-module"><a href="modules/FilterToolbar.html">Filter<wbr/>Toolbar</a></li><li class=" tsd-kind-module"><a href="modules/FilterView.html">Filter<wbr/>View</a></li><li class=" tsd-kind-module"><a href="modules/Footer.html">Footer</a></li><li class=" tsd-kind-module"><a href="modules/Grid.html">Grid</a></li><li class=" tsd-kind-module"><a href="modules/GridBase.html">Grid<wbr/>Base</a></li><li class=" tsd-kind-module"><a href="modules/HelpLinks.html">Help<wbr/>Links</a></li><li class=" tsd-kind-module"><a href="modules/Hero.html">Hero</a></li><li class=" tsd-kind-module"><a href="modules/Impact.html">Impact</a></li><li class=" tsd-kind-module"><a href="modules/Label.html">Label</a></li><li class=" tsd-kind-module"><a href="modules/Link.html">Link</a></li><li class=" tsd-kind-module"><a href="modules/LinkBase.html">Link<wbr/>Base</a></li><li class=" tsd-kind-module"><a href="modules/LinkText.html">Link<wbr/>Text</a></li><li class=" tsd-kind-module"><a href="modules/Links.html">Links</a></li><li class=" tsd-kind-module"><a href="modules/List.html">List</a></li><li class=" tsd-kind-module"><a href="modules/Markdown.html">Markdown</a></li><li class=" tsd-kind-module"><a href="modules/PageFilterView.html">Page<wbr/>Filter<wbr/>View</a></li><li class=" tsd-kind-module"><a href="modules/ReactLive.html">React<wbr/>Live</a></li><li class=" tsd-kind-module"><a href="modules/SecondaryNavbar.html">Secondary<wbr/>Navbar</a></li><li class=" tsd-kind-module"><a href="modules/SectionHeading.html">Section<wbr/>Heading</a></li><li class=" tsd-kind-module"><a href="modules/SidebarContent.html">Sidebar<wbr/>Content</a></li><li class=" tsd-kind-module"><a href="modules/StickyHeader.html">Sticky<wbr/>Header</a></li><li class=" tsd-kind-module"><a href="modules/Story.html">Story</a></li><li class=" tsd-kind-module"><a href="modules/Tabs.html">Tabs</a></li><li class=" tsd-kind-module"><a href="modules/Tag.html">Tag</a></li><li class=" tsd-kind-module"><a href="modules/ThemeProvider.html">Theme<wbr/>Provider</a></li><li class=" tsd-kind-module"><a href="modules/TileButton.html">Tile<wbr/>Button</a></li><li class=" tsd-kind-module"><a href="modules/TileContent.html">Tile<wbr/>Content</a></li><li class=" tsd-kind-module"><a href="modules/TileContentLabel.html">Tile<wbr/>Content<wbr/>Label</a></li><li class=" tsd-kind-module"><a href="modules/TileLink.html">Tile<wbr/>Link</a></li><li class=" tsd-kind-module"><a href="modules/Typography.html">Typography</a></li><li class=" tsd-kind-module"><a href="modules/VideoPlayer.html">Video<wbr/>Player</a></li><li class=" tsd-kind-module"><a href="modules/ViewStack.html">View<wbr/>Stack</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-namespace"><span class="tsd-kind-icon">Namespace</span></li><li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li><li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li><li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li><li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li><li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
