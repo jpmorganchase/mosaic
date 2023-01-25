@@ -1,0 +1,49 @@
+{
+  "name": "@jpmorganchase/mosaic-source-typedoc",
+  "version": "0.1.0-beta.14",
+  "main": "./dist/index.js",
+  "type": "module",
+  "module": "dist/index.js",
+  "css": "dist/index.css",
+  "types": "./dist/index.d.ts",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "engines": {
+    "node": ">= 16.0.0"
+  },
+  "scripts": {
+    "build": "yarn clean && npm-run-all --parallel build:*",
+    "build:bundle": "node ./scripts/bundle.js",
+    "build:types": "tsc",
+    "clean": "rimraf dist",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.7",
+    "esbuild": "^0.14.36",
+    "esbuild-node-externals": "^1.0.2",
+    "rimraf": "^3.0.2",
+    "unified": "^10.1.2",
+    "rehype-parse": "^8.0.4",
+    "remark-stringify": "^10.0.2",
+    "rehype-stringify": "^9.0.2"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.14",
+    "@jpmorganchase/mosaic-core": "^0.1.0-beta.14",
+    "@types/unist": "^2.0.0",
+    "fast-glob": "^3.2.7",
+    "fs-extra": "^9.1.0",
+    "hast-util-to-text": "^3.1.1",
+    "minimatch": "^3.0.4",
+    "react-element-to-jsx-string": "^14.3.4",
+    "rehype-parse": "^8.0.4",
+    "rehype-react": "^7.1.1",
+    "sanitize-html": "^2.3.2",
+    "unified": "^10.1.2",
+    "unist-util-remove": "^3.1.0",
+    "unist-util-visit": "^4.1.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0"
+  }
+}
