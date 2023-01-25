@@ -1,29 +1,16 @@
 import path from 'path';
 import fs from 'fs';
-
 import glob from 'fast-glob';
 import minimatch from 'minimatch';
-import type { SourceDefinition, CommonSourceOptions, Meta } from '@jpmorganchase/mosaic-types';
-
 import GitClone from './lib/git-clone/index';
 import createModulesIndex from './createModulesIndex';
 import createContent from './createContent';
 import createIndex from './createIndex';
 import createRootIndex from './createRootIndex';
-import type Repo from './lib/git-clone';
-
-export type Options = CommonSourceOptions & {
-  targetFolders: string[];
-  subfolder?: string;
-  checkIntervalMins?: number;
-  repoBranch: string;
-  repoUrl: string;
-};
-
 /**
  * A source definition for syncing with Bitbucket repositories.
  */
-export default async function init(options: Options): Promise<SourceDefinition> {
+export default async function init(options) {
   if (
     !process.env.MOSAIC_DOCS_CLONE_CREDENTIALS ||
     process.env.MOSAIC_DOCS_CLONE_CREDENTIALS.indexOf(':') === -1
@@ -37,25 +24,21 @@ export default async function init(options: Options): Promise<SourceDefinition> 
   }
   return await syncRepoSource(options);
 }
-
-export async function cloneRepo(endpoint, branch, credentials): Promise<Repo> {
+export async function cloneRepo(endpoint, branch, credentials) {
   const cloneDocs = new GitClone({
     branch,
     repo: endpoint,
     credentials
   });
   await cloneDocs.init();
-
   return cloneDocs;
 }
-
-function createRootIndexDescriptors(contentRoot, options, repositoryAPI): SourceDefinition {
+function createRootIndexDescriptors(contentRoot, options, repositoryAPI) {
   return getRootIndexRoute(contentRoot).map(async pagePath => {
     const contentRootReplace = contentRoot.replace(/\\/g, '/');
     const pagePathMatcher = new RegExp(`${contentRootReplace}/(.+?)/.*$`);
     const pagePageMatches = pagePath.match(pagePathMatcher);
     const version = pagePageMatches?.[1];
-
     let route = pagePath.replace(/\.html$/, '.mdx');
     route = `/${path.relative(contentRoot, route).replace(/\\/g, '/')}`;
     const fullRoute = `/${options.namespace}${route}`;
@@ -80,21 +63,18 @@ function createRootIndexDescriptors(contentRoot, options, repositoryAPI): Source
       : null;
   });
 }
-
 function createModuleIndexDescriptors(contentRoot, options) {
   return getAllModuleIndexRoutes(contentRoot).map(async pagePath => {
     const contentRootReplace = contentRoot.replace(/\\/g, '/');
     const modulesIndexMatcher = new RegExp(`${contentRootReplace}/(.+?)/modules.html$`);
     const moduleIndexMatches = pagePath.match(modulesIndexMatcher);
     const version = moduleIndexMatches[1];
-
     const modulesNewPath = path.join(contentRoot, version, 'modules');
     if (!fs.existsSync(modulesNewPath)) {
       fs.mkdirSync(modulesNewPath);
     }
     const modulesNewIndex = path.join(contentRoot, version, 'modules', 'index.mdx');
     fs.renameSync(pagePath, modulesNewIndex);
-
     const route = `/${path
       .relative(contentRoot, path.join(contentRoot, version, 'modules', 'index.mdx'))
       .replace(/\\/g, '/')}`;
@@ -109,7 +89,6 @@ function createModuleIndexDescriptors(contentRoot, options) {
       : null;
   });
 }
-
 function createPageDescriptors(contentRoot, options, repositoryAPI) {
   const docsPattern = getDocsGlob(options.targetFolders);
   return getAllPageRoutes(contentRoot, docsPattern).map(async pagePath => {
@@ -118,7 +97,6 @@ function createPageDescriptors(contentRoot, options, repositoryAPI) {
     const pagePageMatches = pagePath.match(pagePathMatcher);
     const version = pagePageMatches?.[1];
     const rootIndex = pagePageMatches?.[2];
-
     let route = pagePath.replace('.html', '.mdx');
     route = `/${path.relative(contentRoot, route).replace(/\\/g, '/')}`;
     const fullRoute = `/${options.namespace}${route}`;
@@ -143,7 +121,6 @@ function createPageDescriptors(contentRoot, options, repositoryAPI) {
     return descriptor;
   });
 }
-
 function createIndexDescriptors(contentRoot) {
   return getAllIndexPageRoutes(contentRoot).map(indexPath => {
     let route = indexPath.replace('.html', '.mdx');
@@ -157,13 +134,11 @@ function createIndexDescriptors(contentRoot) {
       : null;
   });
 }
-
-async function syncRepoSource(options: Options) {
+async function syncRepoSource(options) {
   const { repositoryAPI } = await cloneAndSyncRepo(
     options,
     process.env.BITBUCKET_CLONE_CREDENTIALS
   );
-
   return {
     namespace: options.namespace,
     name: repositoryAPI.name,
@@ -172,14 +147,11 @@ async function syncRepoSource(options: Options) {
     watch: (callback, errCallback) => watchRepo(options, repositoryAPI, callback, errCallback)
   };
 }
-
 async function watchRepo(options, repositoryAPI, callback, errCallback) {
   const docsPattern = getDocsGlob(options.targetFolders);
-
   const { checkIntervalMins = 10, subfolder: clonedDocsSubfolder } = options;
   const contentRoot = path.join(repositoryAPI.dir, clonedDocsSubfolder);
   let unsubscribe;
-
   const getPageDescriptors = () =>
     Promise.all([
       ...createRootIndexDescriptors(contentRoot, options, repositoryAPI),
@@ -187,7 +159,6 @@ async function watchRepo(options, repositoryAPI, callback, errCallback) {
       ...createIndexDescriptors(contentRoot),
       ...createPageDescriptors(contentRoot, options, repositoryAPI)
     ]);
-
   try {
     // Call returned `unsubscribe` fn to stop listening for changes
     unsubscribe = await repositoryAPI.onCommitChange(
@@ -203,25 +174,21 @@ async function watchRepo(options, repositoryAPI, callback, errCallback) {
       checkIntervalMins * 60000
     );
     callback(await getPageDescriptors());
-
     return () => {
       unsubscribe();
     };
   } catch (e) {
     errCallback(e);
     console.error(e);
-
     if (unsubscribe) {
       unsubscribe();
     }
   }
 }
-
 async function cloneAndSyncRepo(options, repoCredentials) {
   const { repoBranch, repoUrl, subfolder: clonedDocsSubfolder = '' } = options;
   const repositoryAPI = await cloneRepo(repoUrl, repoBranch, repoCredentials);
   const contentRoot = path.join(repositoryAPI.dir, clonedDocsSubfolder);
-
   try {
     await fs.promises.stat(contentRoot);
   } catch (e) {
@@ -230,7 +197,6 @@ async function cloneAndSyncRepo(options, repoCredentials) {
     );
     process.exit(1);
   }
-
   return {
     contentRoot,
     repositoryAPI,
@@ -238,7 +204,6 @@ async function cloneAndSyncRepo(options, repoCredentials) {
     getLastModifiedDate: repositoryAPI.getLatestCommitDate.bind(repositoryAPI)
   };
 }
-
 function filterPathsByPatterns(files, basePath, docsPattern) {
   return files.filter(file => {
     // Use a pathname relative to cloned repo root, like we do in getAllPageRoutes
@@ -247,7 +212,6 @@ function filterPathsByPatterns(files, basePath, docsPattern) {
     return minimatch(relativeFilePath, docsPattern);
   });
 }
-
 function getRootIndexRoute(contentRoot) {
   const globbedFiles = glob.sync('*/index.html', {
     absolute: true,
@@ -255,12 +219,10 @@ function getRootIndexRoute(contentRoot) {
   });
   return globbedFiles;
 }
-
 function getAllIndexPageRoutes(contentRoot) {
   // Typedocs does not generate an index.html for each sub-directory.
   // To align with our site's expectations which says 'each directory should have an index.html'
   // we create one for the possible Typedoc subdirectories
-
   // The top level directory of content should contain Typedocs directory structure
   // <contentRoot>/<version>/modules
   // <contentRoot>/<version>/interfaces
@@ -270,7 +232,6 @@ function getAllIndexPageRoutes(contentRoot) {
   // For the rest we create a simple index page by globbing the content and building a page of links
   const entries = fs.readdirSync(contentRoot, { withFileTypes: true });
   const folders = entries.filter(folder => folder.isDirectory());
-
   const indexPageRoutes = folders.reduce((indexPageResult, versionFolder) => {
     const docTypeResult = ['interfaces', 'enums', 'classes'].reduce((result, docType) => {
       const docTypeSubdir = path.join(contentRoot, versionFolder.name, docType);
@@ -285,7 +246,6 @@ function getAllIndexPageRoutes(contentRoot) {
   }, []);
   return indexPageRoutes;
 }
-
 function getAllModuleIndexRoutes(contentRoot) {
   const globbedFiles = glob.sync('*/modules.html', {
     absolute: true,
@@ -293,7 +253,6 @@ function getAllModuleIndexRoutes(contentRoot) {
   });
   return globbedFiles;
 }
-
 function getDocsGlob(targetFolderNames) {
   if (!targetFolderNames) {
     return '**/*.html';
@@ -303,7 +262,6 @@ function getDocsGlob(targetFolderNames) {
     : '';
   return `**/${namespaceRootGlob}/**/*.html`;
 }
-
 function getAllPageRoutes(contentRoot, docsPattern) {
   const globbedFiles = glob.sync(docsPattern, {
     absolute: true,

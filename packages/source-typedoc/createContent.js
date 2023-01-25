@@ -1,39 +1,27 @@
 import fs from 'fs';
 import fsPromises from 'fs/promises';
 import path from 'path';
-
-import React, { createElement } from 'react';
+import { createElement } from 'react';
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
-import rehypeReact, { Options } from 'rehype-react';
+import rehypeReact from 'rehype-react';
 import { default as reactElementToJSXStringEntry } from 'react-element-to-jsx-string';
-import type { Page, Meta } from '@jpmorganchase/mosaic-types';
-
-type PageDescriptor = Page & { meta: Meta<any> };
-
 import createSidebarMeta from './createSidebarMeta';
 import preprocessTree from './preprocessTree';
 import removeUnusedElements from './removeUnusedElements';
-
-const createLinkElement = (
-  name: string,
-  { href, ...rest }: { href: string },
-  children: React.ReactNode
-) => {
+const createLinkElement = (name, { href, ...rest }, children) => {
   // Keep anchors for local anchors on current page
   if (!href) {
     return createElement('a', { ...rest, href }, children);
   }
   return createElement(name, { ...rest, link: href, variant: 'component' }, children);
 };
-
 const reactElementToJSXString =
   // eslint-disable-next-line dot-notation
   reactElementToJSXStringEntry && reactElementToJSXStringEntry['__esModule']
     ? // eslint-disable-next-line dot-notation
       reactElementToJSXStringEntry['default']
     : reactElementToJSXStringEntry;
-
 const htmlTagToReactName = {
   h1: 'H1',
   h2: 'H2',
@@ -52,13 +40,7 @@ const htmlTagToReactName = {
   td: 'Td',
   tr: 'Tr'
 };
-
-const createContent = async (
-  contentRoot: string,
-  pagePath: string,
-  route: string,
-  className: string
-): Promise<PageDescriptor> => {
+const createContent = async (contentRoot, pagePath, route, className) => {
   if (!fs.existsSync(pagePath)) {
     console.warn(`${pagePath} not found.`);
     return null;
@@ -67,13 +49,8 @@ const createContent = async (
   if (data.length === 0) {
     return null;
   }
-
-  const options: Options = {
-    createElement: function createElementFactory(
-      name: string,
-      props,
-      children: React.ReactNode
-    ): React.ReactElement {
+  const options = {
+    createElement: function createElementFactory(name, props, children) {
       if (name === 'a') {
         return createLinkElement('Link', props, children);
       }
@@ -81,13 +58,12 @@ const createContent = async (
         return createElement('Pre', { ...props, code: children[0], language: 'tsx' }, []);
       }
       if (Object.hasOwnProperty.call(htmlTagToReactName, name)) {
-        const reactName = name as keyof typeof htmlTagToReactName;
+        const reactName = name;
         return createElement(htmlTagToReactName[reactName], props, children);
       }
       return createElement(name, props, children);
     }
   };
-
   const sourcePage = data.toString();
   let sidebarNavOptions;
   const content = await unified()
@@ -101,14 +77,11 @@ const createContent = async (
     .use(rehypeReact, options)
     .use(removeUnusedElements)
     .process(sourcePage);
-
   let formattedContent = reactElementToJSXString(content.result, {
     maxInlineAttributesLineLength: Infinity
   });
-
   /** Remove all newlines to avoid them being replaced with a paragraph by MDX2 */
   formattedContent = formattedContent.replace(/[\n]+\s*/g, ' ');
-
   /** Remove spaces that have been added to children */
   formattedContent = formattedContent.replace(/> /g, '>');
   formattedContent = formattedContent.replace(/ </g, '<');
@@ -129,5 +102,4 @@ const createContent = async (
     }
   };
 };
-
 export default createContent;

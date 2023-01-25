@@ -24,6 +24,7 @@
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
     "build:snapshot": "turbo run build:snapshot --filter=@jpmorganchase/mosaic-example",
     "build:snapshot:latest": "turbo run build:snapshot:latest --filter=@jpmorganchase/mosaic-example",
+    "build:typedoc": "cross-var yarn workspace @jpmorganchase/mosaic-components doc",
     "copy:rig:images": "cp -r ./assets/[!.]* ./packages/rig/public/img",
     "copy:site:images": "cp -r ./assets/[!.]* ./packages/site/public/img",
     "clean": "turbo run clean",
@@ -93,8 +94,10 @@
   },
   "dependencies": {
     "@types/swagger-ui-react": "^4.11.0",
+    "cross-var": "^1.1.0",
     "swagger-ui-react": "^4.15.5",
-    "turbo": "latest"
+    "turbo": "latest",
+    "typedoc": "^0.23.24"
   },
   "resolutions": {
     "@braintree/sanitize-url": "^6.0.0",
