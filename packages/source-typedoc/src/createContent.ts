@@ -114,6 +114,7 @@ const createContent = async (
   formattedContent = formattedContent.replace(/ </g, '<');
   const routeBasename = path.posix.basename(route, '.mdx');
   return {
+    fullPath: '',
     content: formattedContent,
     meta: {
       layout: 'TypeDoc',

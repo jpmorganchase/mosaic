@@ -23,7 +23,10 @@ export type Options = CommonSourceOptions & {
 /**
  * A source definition for syncing with Bitbucket repositories.
  */
+
+
 export default async function init(options: Options): Promise<SourceDefinition> {
+  console.log('#####################index')
   if (
     !process.env.MOSAIC_DOCS_CLONE_CREDENTIALS ||
     process.env.MOSAIC_DOCS_CLONE_CREDENTIALS.indexOf(':') === -1
@@ -38,6 +41,12 @@ export default async function init(options: Options): Promise<SourceDefinition> 
   return await syncRepoSource(options);
 }
 
+// import GitRepoSource from '@jpmorganchase/mosaic-source-git-repo';
+// const { create: createRepoSource } = GitRepoSource;
+// createRepoSource().pipe(/** transform pages here */);
+
+
+
 export async function cloneRepo(endpoint, branch, credentials): Promise<Repo> {
   const cloneDocs = new GitClone({
     branch,
@@ -45,9 +54,9 @@ export async function cloneRepo(endpoint, branch, credentials): Promise<Repo> {
     credentials
   });
   await cloneDocs.init();
-
   return cloneDocs;
 }
+
 
 function createRootIndexDescriptors(contentRoot, options, repositoryAPI): SourceDefinition {
   return getRootIndexRoute(contentRoot).map(async pagePath => {
@@ -80,6 +89,8 @@ function createRootIndexDescriptors(contentRoot, options, repositoryAPI): Source
       : null;
   });
 }
+
+
 
 function createModuleIndexDescriptors(contentRoot, options) {
   return getAllModuleIndexRoutes(contentRoot).map(async pagePath => {

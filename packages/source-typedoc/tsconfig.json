@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "module": "es2015",
-    "allowJs": true,
+    "allowJs": false,
     "target": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "outDir": ".",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "skipLibCheck": true,
-    "rootDir": "./src"
   },
   "include": ["src/**/*", "src/*"],
   "exclude": ["node_modules", "*/__tests__/*", "**/dist/**/*"]
