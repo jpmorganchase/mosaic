@@ -13,10 +13,6 @@ export const Link = React.forwardRef(
   ({ href = '', ...props }: LinkProps, ref: Ref<HTMLAnchorElement>) => {
     const url = useResolveRelativeUrl(href);
 
-    return (
-      <NextLink as={url} href={url} legacyBehavior>
-        <a {...props} ref={ref} />
-      </NextLink>
-    );
+    return <NextLink as={url} href={url} ref={ref} {...props} />;
   }
 );
