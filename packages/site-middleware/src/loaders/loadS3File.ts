@@ -1,5 +1,5 @@
-import assert from 'assert';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { s3LoaderProcessEnvSchema } from '@jpmorganchase/mosaic-schemas';
 
 let client;
 
@@ -24,26 +24,21 @@ export async function readFile(client, bucket, key) {
 }
 
 export const loadS3File = async (key: string): Promise<string> => {
-  assert(
-    process.env.MOSAIC_S3_BUCKET,
-    'Cannot read S3 bucket - MOSAIC_S3_BUCKET environment var is missing'
-  );
-  assert(
-    process.env.MOSAIC_S3_REGION,
-    'Cannot read S3 bucket - MOSAIC_S3_REGION environment var is missing'
-  );
-  assert(
-    process.env.MOSAIC_S3_ACCESS_KEY_ID,
-    'Cannot read S3 bucket - MOSAIC_S3_ACCESS_KEY_ID environment var is missing'
-  );
-  assert(
-    process.env.MOSAIC_S3_SECRET_ACCESS_KEY,
-    'Cannot read S3 bucket - MOSAIC_S3_SECRET_ACCESS_KEY environment var is missing'
-  );
-  const bucket: string = process.env.MOSAIC_S3_BUCKET;
-  const region: string = process.env.MOSAIC_S3_REGION;
-  const accessKeyId: string = process.env.MOSAIC_S3_ACCESS_KEY_ID;
-  const secretAccessKey: string = process.env.MOSAIC_S3_SECRET_ACCESS_KEY;
+  const env = s3LoaderProcessEnvSchema.safeParse(process.env);
+  if (!env.success) {
+    env.error.issues.forEach(issue => {
+      console.error(
+        `Missing process.env.${issue.path.join()} environment variable required to load S3 ${key}`
+      );
+    });
+    throw new Error(`Environment variables missing for loading of S3 content for key ${key}`);
+  }
+  const {
+    MOSAIC_S3_BUCKET: bucket,
+    MOSAIC_S3_REGION: region,
+    MOSAIC_S3_ACCESS_KEY_ID: accessKeyId,
+    MOSAIC_S3_SECRET_ACCESS_KEY: secretAccessKey
+  } = env.data;
   if (!client) {
     client = createClient(region, accessKeyId, secretAccessKey);
   }

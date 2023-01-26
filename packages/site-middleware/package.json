@@ -26,8 +26,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.256.0",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.14",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.14",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.14",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.14",
     "@types/mdast": "^3.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",

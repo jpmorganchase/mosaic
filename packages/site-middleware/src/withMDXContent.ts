@@ -1,8 +1,7 @@
 import path from 'path';
-import assert from 'assert';
 import { GetServerSidePropsContext } from 'next';
 import type { ContentProps, MosaicMode } from '@jpmorganchase/mosaic-types';
-
+import { fileLoaderProcessEnvSchema } from '@jpmorganchase/mosaic-schemas';
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
 import { loadLocalFile, loadS3File } from './loaders/index.js';
@@ -32,12 +31,17 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
 
   let text;
   if (mosaicMode === 'snapshot-file') {
-    assert(
-      process.env.MOSAIC_SNAPSHOT_DIR,
-      'Cannot read local snapshot - MOSAIC_SNAPSHOT_DIR environment var is missing'
-    );
-    const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
-    const filePath = path.posix.join(process.cwd(), snapshotDir, normalizedUrl);
+    const env = fileLoaderProcessEnvSchema.safeParse(process.env);
+    if (!env.success) {
+      env.error.issues.forEach(issue => {
+        console.error(
+          `Missing process.env.${issue.path.join()} environment variable required to load MDX for ${resolvedUrl}`
+        );
+      });
+      throw new Error(`Environment variables missing for loading of MDX content ${resolvedUrl}`);
+    }
+    const { MOSAIC_SNAPSHOT_DIR: mosaicSnapshotDir } = env.data;
+    const filePath = path.posix.join(process.cwd(), mosaicSnapshotDir, normalizedUrl);
     try {
       text = await loadLocalFile(filePath);
     } catch (error) {

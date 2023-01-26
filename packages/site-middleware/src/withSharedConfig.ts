@@ -1,6 +1,6 @@
-import assert from 'assert';
 import path from 'path';
 import { GetServerSidePropsContext } from 'next';
+import { fileLoaderProcessEnvSchema } from '@jpmorganchase/mosaic-schemas';
 import type { SharedConfig, SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
@@ -27,11 +27,18 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
   try {
     let sharedConfig;
     if (isSnapshotFile) {
-      assert(
-        process.env.MOSAIC_SNAPSHOT_DIR,
-        'Cannot read snapshot - MOSAIC_SNAPSHOT_DIR environment var is missing'
-      );
-      const mosaicSnapshotDir = process.env.MOSAIC_SNAPSHOT_DIR || '';
+      const env = fileLoaderProcessEnvSchema.safeParse(process.env);
+      if (!env.success) {
+        env.error.issues.forEach(issue => {
+          console.error(
+            `Missing process.env.${issue.path.join()} environment variable required to load shared-config for ${resolvedUrl}`
+          );
+        });
+        throw new Error(
+          `Environment variables missing for loading of shared-config required by ${resolvedUrl}`
+        );
+      }
+      const { MOSAIC_SNAPSHOT_DIR: mosaicSnapshotDir } = env.data;
       const filePath = path.join(process.cwd(), mosaicSnapshotDir, urlPath, 'shared-config.json');
       const rawSharedConfig = await loadLocalFile(filePath);
       sharedConfig = JSON.parse(rawSharedConfig);
