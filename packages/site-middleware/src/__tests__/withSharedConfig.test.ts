@@ -7,13 +7,17 @@ const mockFs = require('mock-fs');
 import { withSharedConfig } from '../withSharedConfig';
 describe('GIVEN withSharedConfig', () => {
   describe('GIVEN dynamic Mosaic mode', () => {
+    let s3ClientMock;
     beforeAll(() => {
-      const s3ClientMock = mockClient(S3Client);
+      s3ClientMock = mockClient(S3Client);
       const stream = new Readable();
       stream.push('{"config": { "someValue": true }}');
       stream.push(null); // end of stream
       const contentStream = sdkStreamMixin(stream);
       s3ClientMock.on(GetObjectCommand).resolves({ Body: contentStream });
+    });
+    afterEach(() => {
+      s3ClientMock.reset();
     });
     test('runs when Mosaic mode is snapshot-s3', async () => {
       // arrange
