@@ -1,4 +1,4 @@
-import globby from 'globby';
+import { globby } from 'globby';
 import path from 'path';
 import fs from 'fs';
 import { S3Client, CreateBucketCommand, PutObjectCommand } from '@aws-sdk/client-s3';
