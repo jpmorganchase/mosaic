@@ -9,18 +9,17 @@ const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.c
  * sources: <...source definitions>
  */
 module.exports = deepmerge(mosaicConfig, {
-  sources: [
-    /**
-     * Demonstrates a local file-system source, in this case a relative path to where the
-     * site was generated.
-     * Access from your browser as http://localhost:3000/local
-     */
-    /**
-     * Demonstrates a remote source, in this case the Mosaic site
-     * Access from your browser as http://localhost:3000/mosaic
-     */
+  pageExtensions: ['.html'],
+  serialisers: [
     {
-      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      modulePath: '@jpmorganchase/mosaic-serialisers/html',
+      filter: /\.html$/,
+      options: {}
+    }
+  ],
+  sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-typedoc',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
         // To run locally, enter your credentials to access the Git repo
@@ -29,28 +28,14 @@ module.exports = deepmerge(mosaicConfig, {
         // For final deployments: you could put repo access credentials securely in environment variables provided by your host.
         // If running locally: create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
         // export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
-        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
         prefixDir: 'mosaic', // root path used for namespace
         cache: true,
-        subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
-        repo: 'https://github.com/jpmorganchase/mosaic.git', // repo url without any protocol
-        branch: 'main', // branch where docs are pulled from
-        extensions: ['.mdx'], // extensions of content which should be pulled
+        subfolder: 'packages/components-next/html-docs', // subfolder within your branch containing the docs, typically 'docs'
+        repo: 'bitbucketdc.jpmchase.net/scm/devconsole/digital-platform-docs.git', // repo url without any protocol
+        branch: 'typedocs-current', // branch where docs are pulled from
+        extensions: ['.html'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
-      }
-    },
-    /**
-     * Demonstrates a local file-system source, in this case a relative path to where the
-     * site was generated.
-     * Access from your browser as http://localhost:3000/local
-     */
-    {
-      modulePath: '@jpmorganchase/mosaic-source-local-folder',
-      namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-      options: {
-        rootDir: '../../docs', // relative path to content
-        prefixDir: 'local', // root path used for namespace
-        extensions: ['.mdx'] // extensions of content which should be pulled
       }
     }
   ]

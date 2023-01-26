@@ -1,5 +1,6 @@
 import json from './json.js';
 import md from './md.js';
 import mdx from './mdx.js';
+import html from './html.js';
 
-export { json, md, mdx };
+export { html, json, md, mdx };
