@@ -1,0 +1,109 @@
+import path from 'path';
+import assert from 'assert';
+import { GetServerSidePropsContext } from 'next';
+import type { ContentProps, MosaicMode } from '@jpmorganchase/mosaic-types';
+
+import { MosaicMiddleware } from './createMiddlewareRunner.js';
+import MiddlewareError from './MiddlewareError.js';
+import { loadLocalFile, loadS3File } from './loaders/index.js';
+import { compileMDX } from './compileMdx.js';
+
+if (typeof window !== 'undefined') {
+  throw new Error('This file should not be loaded on the client.');
+}
+
+/**
+ * Adds the [[`ContentProps`]] object to the page props
+ * @param context
+ */
+export const withMDXContent: MosaicMiddleware<ContentProps> = async (
+  context: GetServerSidePropsContext
+) => {
+  const { resolvedUrl } = context;
+  const mosaicMode = context.res.getHeader('X-Mosaic-Mode' || 'active') as MosaicMode;
+  const extname = path.extname(resolvedUrl);
+  // Any urls which are not prefixed, will default to MDX
+  const isMDX = extname === '.mdx' || extname === '';
+  if (!isMDX) {
+    return {};
+  }
+
+  const normalizedUrl = /\/index$/.test(resolvedUrl) ? `${resolvedUrl}.mdx` : resolvedUrl;
+
+  let text;
+  if (mosaicMode === 'snapshot-file') {
+    assert(
+      process.env.MOSAIC_SNAPSHOT_DIR,
+      'Cannot read local snapshot - MOSAIC_SNAPSHOT_DIR environment var is missing'
+    );
+    const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
+    const filePath = path.posix.join(process.cwd(), snapshotDir, normalizedUrl);
+    try {
+      text = await loadLocalFile(filePath);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+      throw new MiddlewareError(
+        404,
+        resolvedUrl,
+        [`Could not read local file '${filePath}' for '${resolvedUrl}'`],
+        {
+          show404: true
+        }
+      );
+    }
+  } else if (mosaicMode === 'snapshot-s3') {
+    try {
+      const s3Key = normalizedUrl.replace(/^\//, '');
+      text = await loadS3File(s3Key);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      }
+      throw new MiddlewareError(
+        404,
+        resolvedUrl,
+        [`Could not find an S3 object for '${resolvedUrl}'`],
+        {
+          show404: true
+        }
+      );
+    }
+  } else {
+    const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
+    const response = await fetch(`${mosaicUrl}${normalizedUrl}`);
+    if (response.ok) {
+      text = await response.text();
+      // If redirect url was returned
+    } else if (response.status === 302) {
+      return {
+        redirect: {
+          destination: (await response.json()).redirect,
+          permanent: true
+        }
+      };
+    } else {
+      throw new MiddlewareError(
+        404,
+        resolvedUrl,
+        [`Could not fetch any content for ${resolvedUrl}`],
+        {
+          show404: true
+        }
+      );
+    }
+  }
+  try {
+    const mdxSource = await compileMDX(text);
+    return { props: { type: 'mdx', source: mdxSource, raw: text } };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      throw new MiddlewareError(500, resolvedUrl, [error.message], { show500: true });
+    } else {
+      console.error('unexpected error');
+      throw new MiddlewareError(500, resolvedUrl, ['unexpected error'], { show500: true });
+    }
+  }
+};
