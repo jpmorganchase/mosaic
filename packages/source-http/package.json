@@ -1,0 +1,42 @@
+{
+  "name": "@jpmorganchase/mosaic-source-http",
+  "version": "0.1.0-beta.14",
+  "author": "",
+  "description": "Mosaic HTTP source for core file system",
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">= 16.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -fr dist",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.14",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.14",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.14",
+    "rxjs": "^7.5.5",
+    "zod": "^3.19.1"
+  },
+  "devDependencies": {
+    "msw":"^0.47.4"
+  }
+}

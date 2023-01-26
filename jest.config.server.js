@@ -15,7 +15,9 @@ module.exports = {
   // Add tests paths to roots
   roots: [
     '<rootDir>/packages/core',
+    '<rootDir>/packages/fromHttpRequest',
     '<rootDir>/packages/plugins',
-    '<rootDir>/packages/site-middleware'
+    '<rootDir>/packages/site-middleware',
+    '<rootDir>/packages/source-http'
   ]
 };
