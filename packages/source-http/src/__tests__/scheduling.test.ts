@@ -12,7 +12,9 @@ jest.mock('@jpmorganchase/mosaic-from-http-request', () => ({
 jest.mock('../fromDynamicImport', () => ({
   ...jest.requireActual('../fromDynamicImport'),
   __esModule: true,
-  fromDynamicImport: jest.fn().mockImplementation((modulePath: string) => of(mockTransformer))
+  fromDynamicImport: jest
+    .fn()
+    .mockImplementation((modulePath: string) => of({ transformer: mockTransformer }))
 }));
 
 function mockTransformer(response: any) {

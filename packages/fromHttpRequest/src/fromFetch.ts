@@ -2,15 +2,14 @@
 import * as nodeFetch from 'node-fetch';
 import { fromFetch } from 'rxjs/fetch';
 
-declare global {
+if (!globalThis.fetch) {
   // eslint-disable-next-line
   // @ts-ignore
-  var fetch: typeof nodeFetch.default;
+  globalThis.fetch = nodeFetch.default;
+  // eslint-disable-next-line
+  // @ts-ignore
+  globalThis.Request = nodeFetch.Request;
 }
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-global.fetch = nodeFetch.default;
 
 export { fromFetch };
 /* eslint-enable eslint-comments/no-unlimited-disable */
