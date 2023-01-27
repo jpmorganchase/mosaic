@@ -39,6 +39,7 @@
     "serve": "turbo run serve --filter=@jpmorganchase/mosaic-site",
     "serve:rig": "turbo run serve --filter=@jpmorganchase/mosaic-rig",
     "serve:snapshot": "turbo run serve:snapshot --filter=@jpmorganchase/mosaic-site",
+    "start": "turbo run start --filter=@jpmorganchase/mosaic-site",
     "postinstall": "patch-package",
     "prettier": "prettier --write .",
     "prettier:ci": "prettier --check .",

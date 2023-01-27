@@ -13,6 +13,7 @@
     },
     "clean": {},
     "debug": {},
+    "start": {},
     "//#clean:site": {},
     "//#copy:rig:images": {
       "dependsOn": ["create:rig"],
