@@ -3,19 +3,19 @@ import { from } from 'rxjs';
 
 export type ResponseTransformer = (...args: unknown[]) => Page[];
 
-let transformer: ResponseTransformer | null = null;
+let transformer: { transformer: ResponseTransformer; requestConfig?: RequestInit };
 
-async function importTransformer(modulePath: string): Promise<ResponseTransformer> {
-  if (transformer !== null) {
+async function importTransformer(modulePath: string): Promise<typeof transformer> {
+  if (transformer !== undefined) {
     return transformer;
   }
 
-  const { default: transformResponseToPages } = await import(modulePath);
+  const { default: transformResponseToPages, requestConfig } = await import(modulePath);
   if (!transformResponseToPages) {
     throw new Error(`[Mosaic] '${modulePath}' did not have a default export.`);
   }
-  transformer = transformResponseToPages;
-  return transformResponseToPages;
+  transformer = { transformer: transformResponseToPages, requestConfig };
+  return transformer;
 }
 
 export const fromDynamicImport = (modulePath: string) => from(importTransformer(modulePath));

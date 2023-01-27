@@ -32,11 +32,11 @@
   "dependencies": {
     "event-target-polyfill": "^0.0.3",
     "rxjs": "^7.5.5",
-    "node-fetch": "^2.6.1",
-    "yet-another-abortcontroller-polyfill": "0.0.4"
+    "node-fetch": "^2.6.2",
+    "yet-another-abortcontroller-polyfill":"0.0.4"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.5.8",
-    "msw": "^0.47.4"
+    "@types/node-fetch": "^2.6.2",
+    "msw":"^0.47.4"
   }
 }

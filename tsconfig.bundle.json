@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
+    "lib": ["es2022", "DOM", "DOM.iterable"],
     "jsx": "react",
     "moduleResolution": "node",
     "noImplicitAny": false,
