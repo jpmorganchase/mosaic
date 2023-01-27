@@ -42,7 +42,7 @@ export default async function uploadS3Snapshot(targetDir) {
   paths.forEach(async filePath => {
     const key = filePath.replace(`${targetDir}${path.sep}`, '');
     console.log(`Upload ${key} to bucket ${bucket}`);
-    const body = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    const body = await fs.promises.readFile(filePath, { encoding: 'utf-8' });
     const putCommand = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
