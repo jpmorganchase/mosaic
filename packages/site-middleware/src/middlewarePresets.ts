@@ -1,9 +1,10 @@
 import type { Redirect } from 'next';
 import { SharedConfigSlice } from '@jpmorganchase/mosaic-store';
+import type { ContentProps } from '@jpmorganchase/mosaic-types';
 
 import { withSession, type SessionProps, type SessionOptions } from './withSession.js';
 import { withSharedConfig } from './withSharedConfig.js';
-import { withContent, type ContentProps } from './withContent.js';
+import { withMDXContent } from './withMDXContent.js';
 import { MosaicMiddleware, MosaicMiddlewareWithConfig } from './createMiddlewareRunner.js';
 import { withMosaicMode, type MosaicModeProps } from './withMosaicMode.js';
 
@@ -48,5 +49,5 @@ export const middlewarePresets: Array<
   [withSession, { loginRequired: process.env.DISABLE_GLOBAL_AUTH !== 'true' }],
   withMosaicMode,
   withSharedConfig,
-  withContent
+  withMDXContent
 ];

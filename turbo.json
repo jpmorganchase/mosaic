@@ -58,8 +58,12 @@
     "serve:rig": {
       "outputs": []
     },
-    "//#serve:snapshot": {},
-    "serve:snapshot": {
+    "//#serve:snapshot:file": {},
+    "serve:snapshot:file": {
+      "outputs": []
+    },
+    "//#serve:snapshot:s3": {},
+    "serve:snapshot:s3": {
       "outputs": []
     },
     "test": {},

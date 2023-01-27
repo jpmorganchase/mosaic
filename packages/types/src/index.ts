@@ -6,6 +6,7 @@ import type {
   SourceWorkflow
 } from '@jpmorganchase/mosaic-schemas';
 
+export * from './Content.js';
 export * from './IFileAccess.js';
 export * from './Meta.js';
 export * from './MutableData.js';
