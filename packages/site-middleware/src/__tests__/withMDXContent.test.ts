@@ -2,6 +2,8 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@aws-sdk/util-stream-node';
 import { Readable } from 'stream';
+import { default as fetchMock, disableFetchMocks, enableFetchMocks } from 'jest-fetch-mock';
+
 const mockFs = require('mock-fs');
 
 import { withMDXContent } from '../withMDXContent';
@@ -71,7 +73,11 @@ describe('GIVEN withMDXContent', () => {
 
   describe('WHEN dynamic Mosaic mode is set', () => {
     beforeAll(() => {
+      enableFetchMocks();
       fetchMock.mockOnce('my content');
+    });
+    afterAll(() => {
+      disableFetchMocks();
     });
     test('THEN content is fetched from the data source', async () => {
       // arrange
