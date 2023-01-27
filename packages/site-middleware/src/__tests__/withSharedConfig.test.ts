@@ -15,8 +15,8 @@ describe('GIVEN withSharedConfig', () => {
         ...process.env,
         MOSAIC_S3_BUCKET: 'some-bucket',
         MOSAIC_S3_REGION: 'some-region',
-        MOSAIC_S3_SECRET_ACCESS_KEY: 'some-secret-key',
-        MOSAIC_S3_ACCESS_KEY: 'some-access-key'
+        MOSAIC_S3_ACCESS_KEY_ID: 'some-access-key',
+        MOSAIC_S3_SECRET_ACCESS_KEY: 'some-secret-key'
       };
       s3ClientMock = mockClient(S3Client);
       const stream = new Readable();
