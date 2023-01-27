@@ -12,6 +12,7 @@
       "cache": false
     },
     "clean": {},
+    "debug": {},
     "//#clean:site": {},
     "//#copy:rig:images": {
       "dependsOn": ["create:rig"],

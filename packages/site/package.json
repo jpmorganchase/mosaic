@@ -11,6 +11,7 @@
     "clean": "rm -fr public/.tmp .next",
     "build": "next build",
     "dev": "next dev",
+    "debug":"yarn mosaic serve -c ./mosaic.config.js -p 8080",
     "postinstall": "patch-package",
     "start": "next start",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
