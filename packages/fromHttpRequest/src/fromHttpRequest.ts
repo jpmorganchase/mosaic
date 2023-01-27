@@ -11,8 +11,13 @@ export function isErrorResponse<TData>(response: TData | ErrorResponse): respons
   return (response as ErrorResponse).error !== undefined;
 }
 
-export function fromHttpRequest<TData>(url: string): Observable<TData | ErrorResponse> {
-  return fromFetch(url).pipe(
+/**
+ *
+ * @param input The resource you would like to fetch. Can be a url or a request object.
+ * @returns Observable of JSON or ErrorResponse
+ */
+export function fromHttpRequest<TData>(input: string | Request): Observable<TData | ErrorResponse> {
+  return fromFetch(input).pipe(
     switchMap(response => {
       if (response.ok) {
         return response.json() as Promise<TData>;
