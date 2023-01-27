@@ -4,7 +4,7 @@
 
 ## Installation
 
-`yarn add -D @jpmorganchase/mosaic-create-site`
+`yarn add -g @jpmorganchase/mosaic-create-site`
 
 ## Basic Commands
 
