@@ -92,14 +92,17 @@ export function createMiddlewareRunner<TProps>(
         return true;
       });
 
-    if (show500) {
-      console.error('An un-expected error(s) was thrown which caused the 500 page to appear');
-      errors.forEach(error => {
-        console.error(error.message);
-      });
-    }
-
     if (show404 || show500) {
+      errors.forEach(error => {
+        if (error instanceof MiddlewareError) {
+          console.error(
+            `A ${error.status} error occurred loading resources for '${error.location}`
+          );
+          console.error(error.errors.join('\n'));
+        } else if (error instanceof Error) {
+          console.error(error.message);
+        }
+      });
       context.res.setHeader(`X-Mosaic-${show404 ? '404' : '500'}`, 'true');
     }
     const props: TProps = { ...result.props, show404, show500 } as TProps;

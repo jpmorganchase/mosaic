@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { GetServerSidePropsContext } from 'next';
 import { fileLoaderProcessEnvSchema } from '@jpmorganchase/mosaic-schemas';
@@ -5,6 +6,7 @@ import type { SharedConfig, SharedConfigSlice } from '@jpmorganchase/mosaic-stor
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
 import { loadLocalFile, loadS3File } from './loaders';
+import { S3ServiceException } from '@aws-sdk/client-s3';
 
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
@@ -21,11 +23,15 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
   const { resolvedUrl, res } = context;
   const isSnapshotFile = res.getHeader('X-Mosaic-Mode') === 'snapshot-file';
   const isSnapshotS3 = res.getHeader('X-Mosaic-Mode') === 'snapshot-s3';
-
+  const extname = path.extname(resolvedUrl);
+  const isMDX = extname === '.mdx' || extname === '';
+  if (!isMDX) {
+    return {};
+  }
   const matches = resolvedUrl.match(/(.*)[!/]/);
   const urlPath = matches?.length ? matches[1] : '';
   try {
-    let sharedConfig;
+    let sharedConfig = {};
     if (isSnapshotFile) {
       const env = fileLoaderProcessEnvSchema.safeParse(process.env);
       if (!env.success) {
@@ -40,12 +46,24 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
       }
       const { MOSAIC_SNAPSHOT_DIR: mosaicSnapshotDir } = env.data;
       const filePath = path.join(process.cwd(), mosaicSnapshotDir, urlPath, 'shared-config.json');
-      const rawSharedConfig = await loadLocalFile(filePath);
-      sharedConfig = JSON.parse(rawSharedConfig);
+      if (fs.existsSync(filePath)) {
+        const rawSharedConfig = await loadLocalFile(filePath);
+        sharedConfig = JSON.parse(rawSharedConfig);
+      }
     } else if (isSnapshotS3) {
       const s3Key = `${urlPath}/shared-config.json`.replace(/^\//, '');
-      const rawSharedConfig = await loadS3File(s3Key);
-      sharedConfig = JSON.parse(rawSharedConfig);
+      let rawSharedConfig;
+      try {
+        rawSharedConfig = await loadS3File(s3Key);
+      } catch (error) {
+        const is404 = error instanceof S3ServiceException && error.name === 'NoSuchKey';
+        if (!is404) {
+          throw error;
+        }
+      }
+      if (rawSharedConfig) {
+        sharedConfig = JSON.parse(rawSharedConfig);
+      }
     } else {
       const mosaicUrl = res.getHeader('X-Mosaic-Content-Url');
       const response = await fetch(`${mosaicUrl}${urlPath}/shared-config.json`, {
@@ -53,12 +71,14 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
           'Content-Type': 'application/json'
         }
       });
-      sharedConfig = await response.json();
+      if (response.ok) {
+        sharedConfig = await response.json();
+      }
     }
     const { config } = sharedConfig as { config: SharedConfig };
     return { props: { sharedConfig: config } };
   } catch (error) {
-    let errorMessage = `Could not load any shared config for ${resolvedUrl}`;
+    let errorMessage = 'Could not load any shared config';
     throw new MiddlewareError(500, resolvedUrl, [errorMessage], {
       show404: false,
       show500: true

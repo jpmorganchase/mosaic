@@ -6,6 +6,7 @@ import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
 import { loadLocalFile, loadS3File } from './loaders/index.js';
 import { compileMDX } from './compileMdx.js';
+import { S3ServiceException } from '@aws-sdk/client-s3';
 
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
@@ -48,31 +49,27 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
       if (error instanceof Error) {
         console.error(error.message);
       }
-      throw new MiddlewareError(
-        404,
-        resolvedUrl,
-        [`Could not read local file '${filePath}' for '${resolvedUrl}'`],
-        {
-          show404: true
-        }
-      );
+      throw new MiddlewareError(404, resolvedUrl, [`Could not read local file '${filePath}'`], {
+        show404: true
+      });
     }
   } else if (mosaicMode === 'snapshot-s3') {
+    const s3Key = normalizedUrl.replace(/^\//, '');
     try {
-      const s3Key = normalizedUrl.replace(/^\//, '');
       text = await loadS3File(s3Key);
     } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
+      if (error instanceof S3ServiceException && error.name === 'NoSuchKey') {
+        throw new MiddlewareError(
+          404,
+          resolvedUrl,
+          [`Could not find an S3 object for key '${s3Key}'`],
+          {
+            show404: true
+          }
+        );
+      } else {
+        throw error;
       }
-      throw new MiddlewareError(
-        404,
-        resolvedUrl,
-        [`Could not find an S3 object for '${resolvedUrl}'`],
-        {
-          show404: true
-        }
-      );
     }
   } else {
     const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
@@ -88,14 +85,9 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
         }
       };
     } else {
-      throw new MiddlewareError(
-        404,
-        resolvedUrl,
-        [`Could not fetch any content for ${resolvedUrl}`],
-        {
-          show404: true
-        }
-      );
+      throw new MiddlewareError(404, resolvedUrl, ['Could not fetch content'], {
+        show404: true
+      });
     }
   }
   try {
