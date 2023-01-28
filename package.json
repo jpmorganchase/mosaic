@@ -5,9 +5,15 @@
   "description": "",
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "nohoist": [
+      "packages/site",
+      "packages/site/**"
+    ],
+    "packages": [
+      "packages/*"
+    ]
+  },
   "engines": {
     "node": ">= 16.0.0"
   },
