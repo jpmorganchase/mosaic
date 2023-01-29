@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const path = require('path');
 
 module.exports = {
   reactStrictMode: true,
@@ -64,5 +65,10 @@ module.exports = {
         permanent: true
       }
     ];
+  },
+  experimental: {
+    turbotrace: {
+      contextDirectory: path.join(__dirname, '../../')
+    }
   }
 };
