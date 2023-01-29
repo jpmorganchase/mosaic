@@ -67,8 +67,6 @@ module.exports = {
     ];
   },
   experimental: {
-    turbotrace: {
-      contextDirectory: path.join(__dirname, '../../')
-    }
+    outputFileTracingRoot: path.join(__dirname, '../../')
   }
 };
