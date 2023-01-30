@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import nodePlop from 'node-plop';
 import resolve from 'resolve';
+import resolveGlobal from 'resolve-global';
 
 const { default: inquirer } = await import('inquirer');
 
@@ -41,6 +42,16 @@ type CreateMosaicAppEnv = {
   outputPath: string;
 };
 
+const resolvePath = filePath => {
+  let resolvedPath;
+  try {
+    resolvedPath = resolve.sync(filePath);
+  } catch {
+    resolvedPath = resolveGlobal(filePath);
+  }
+  return resolvedPath;
+};
+
 export default async function createMosaicApp(env: CreateMosaicAppEnv): Promise<void> {
   const { generators = [], interactive = false } = env;
   const generatorConfig = {};
@@ -49,8 +60,9 @@ export default async function createMosaicApp(env: CreateMosaicAppEnv): Promise<
   await Promise.all(
     generators.map(async generator => {
       const { generatorName, ...generatorRest } = generator[1];
+      const generatorPath = resolvePath(generator[0]);
       generatorConfig[generatorName] = {
-        plopFile: resolve.sync(generator[0]),
+        plopFile: generatorPath,
         config: generatorRest
       };
       return import(generator[0]).then(generatorExports => {

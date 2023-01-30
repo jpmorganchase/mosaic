@@ -76,7 +76,7 @@ program
   )
   .option('-g, --generator <generator name>', 'name of generator to run (if not interactive)')
   .option('-i, --interactive', 'interactive mode')
-  .option('-o, --output <output path>', 'path to directory where site is generated', './site')
+  .option('-o, --output <output path>', 'path to directory where site is generated', '.')
   .option('-f, --force', 'flag to force overwrite of existing content')
   .action(async options => {
     const outputPath = normalizeRelativePath(options.output);
