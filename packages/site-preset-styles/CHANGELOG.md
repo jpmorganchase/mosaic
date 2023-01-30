@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.15
+
+### Patch Changes
+
+- aaaf255: initial release of HTTP Source package.
+
+  An HTTP source accepts a collection of endpoints and a path to a transformer module.
+  The response from fetching is transformed and merged together into 1 single collection of pages.
+  Should 1 of the endpoints request fail then it will have no impact on the other requests.
+
+- Updated dependencies [aaaf255]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.15
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.15
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.15
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.15
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.15
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.15
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.15
+
 ## 0.1.0-beta.14
 
 ### Patch Changes

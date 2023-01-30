@@ -23,7 +23,9 @@
     "@jpmorganchase/mosaic-site-middleware": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site-preset-styles": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-standard-generator": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.11"
+    "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.11",
+    "@jpmorganchase/mosaic-from-http-request": "0.1.0-beta.14",
+    "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14"
   },
   "changesets": [
     "eighty-rings-marry",
@@ -40,6 +42,7 @@
     "slow-doors-deny",
     "tall-pots-rule",
     "tasty-pillows-tickle",
+    "thin-phones-travel",
     "wise-apricots-report"
   ]
 }
