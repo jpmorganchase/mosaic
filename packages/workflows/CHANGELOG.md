@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-workflows
 
+## 0.1.0-beta.16
+
+### Patch Changes
+
+- 3a5c88a: add missing `@types/node` dependency for generator
+- Updated dependencies [3a5c88a]
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.16
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.16
+  - @jpmorganchase/mosaic-types@0.1.0-beta.16
+
 ## 0.1.0-beta.15
 
 ### Patch Changes

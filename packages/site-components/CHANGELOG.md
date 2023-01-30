@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.16
+
+### Patch Changes
+
+- 3a5c88a: add missing `@types/node` dependency for generator
+- Updated dependencies [3a5c88a]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.16
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.16
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.16
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.16
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.16
+  - @jpmorganchase/mosaic-store@0.1.0-beta.16
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.16
+
 ## 0.1.0-beta.15
 
 ### Patch Changes
