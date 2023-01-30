@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.16
+
+### Patch Changes
+
+- 3a5c88a: add missing `@types/node` dependency for generator
+- Updated dependencies [3a5c88a]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.16
+
 ## 0.1.0-beta.15
 
 ### Patch Changes
