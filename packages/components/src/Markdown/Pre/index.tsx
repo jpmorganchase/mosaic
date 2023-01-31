@@ -126,8 +126,12 @@ const CodeBlock = React.memo(
 
 const CodeHighlight: React.FC<React.PropsWithChildren<{ code: string; language: Language }>> =
   function CodeHighlight({ code, language }) {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    let trimmedCode = code.replace(/\n+$/, '');
     return (
-      <Highlight {...defaultPrismProps} code={code} language={language}>
+      <Highlight {...defaultPrismProps} code={trimmedCode} language={language}>
         {({ tokens, getLineProps, getTokenProps }) => (
           <>
             {tokens.map((line, i) => (
