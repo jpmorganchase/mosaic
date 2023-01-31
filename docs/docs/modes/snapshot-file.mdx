@@ -1,0 +1,24 @@
+---
+title: Snapshot file mode
+layout: DetailTechnical
+---
+
+In `snapshot-file` mode a local immutable snapshot can be loaded by the site. Typically, the snapshot and the site are
+deployed together and upon startup the site can load the snapshot from the local file-system.
+
+To use `snapshot-file` mode
+
+```
+export MOSAIC_MODE="snapshot-file"
+export MOSAIC_SNAPSHOT_DIR="./snapshot/latest"
+```
+
+## Generating snapshot
+
+To generate a snapshot, run
+
+```
+yarn gen:snapshot
+```
+
+Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.

@@ -1,0 +1,38 @@
+---
+title: Modes of operation
+layout: DetailTechnical
+---
+
+# {meta.title}
+
+Mosaic can operate in 3 different modes
+
+- `active`
+- `snapshot-file`
+- `snapshot-s3`
+
+## Active updates
+
+In _active_ mode, content updates in real-time.
+
+_active_ mode content is pulled at configured intervals in real-time, as defined by `mosaic.config.js`.
+
+Read the [active](./active) configuration docs.
+
+## Static content
+
+Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
+
+In a snapshot mode, the snapshot does update itself.
+
+### File based snapshots
+
+In `snapshot-file` mode, immutable snapshots of content are loaded at startup from the local file-system.
+
+Read the [snapshot-file](./snapshot-file) configuration docs.
+
+### S3 based snapshots
+
+In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
+
+Read the [snapshot-s3](./snapshot-s3) configuration docs.

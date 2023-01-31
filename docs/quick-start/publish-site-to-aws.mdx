@@ -1,0 +1,92 @@
+---
+title: Publish a site to AWS
+layout: DetailTechnical
+---
+
+Publish a site to AWS using S3 snapshots.
+
+## Step 1: Generate a Mosaic site
+
+```
+> yarn global add @jpmorganchase/mosaic-create-site
+> mkdir mosaic-sample-site
+> cd mosaic-sample-site
+> mosaic-create-site create -f .
+```
+
+## Step 2: Create the Github repository
+
+```
+> git init
+> git remote add origin git@github.com:username/my-next-app.git
+> git add .
+> git commit -m "initial commit"
+> git push origin main
+```
+
+## Step 3: Generate a snapshot of content
+
+```
+> yarn gen:snapshot
+```
+
+## Step 4: Configure environment for S3
+
+```
+> export MOSAIC_MODE="snapshot-s3"
+> export MOSAIC_S3_BUCKET="<your S3 bucket id>"
+> export MOSAIC_S3_REGION="<your S3 region>"
+> export MOSAIC_S3_ACCESS_KEY_ID=""<your S3 access key>"
+> export MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret>"
+> yarn mosaic upload -S ./snapshots/latest
+```
+
+## Step 5: Setup AWS
+
+Switch to the [AWS Amplify](https://aws.amazon.com/amplify/hosting/) console and deploy your app as a SSR application by following the [AWS docs](https://docs.amplify.aws/guides/hosting/nextjs/q/platform/js/).
+
+Setup an S3 bucket as per the [AWS S3 docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html).
+
+## Step 7: Configure Your AWS App
+
+Add the environment vars to the hosted app via your console
+
+```
+MOSAIC_MODE="snapshot-s3"
+MOSAIC_S3_BUCKET="<your S3 bucket id>"
+MOSAIC_S3_REGION="<your S3 region>"
+MOSAIC_S3_ACCESS_KEY_ID=""<your S3 access key>"
+MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret access key>"
+```
+
+Add the following build settings
+
+```
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - yarn install
+        - env | grep -e MOSAIC >> .env.production
+    build:
+      commands:
+        - yarn run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+```
+
+Ensure the Node is set to 16
+
+## Step 8: Upload your snapshot
+
+Upload your snapshot to S3 storage.
+
+```
+> yarn mosaic upload -S ./snapshots/latest
+```
