@@ -25,16 +25,16 @@ async function promptForGenerator(plop, allGeneratorsConfig) {
   return generator;
 }
 
-function install() {
+function install(installPath) {
   return spawn('yarn', [], {
-    cwd: process.cwd(),
+    cwd: installPath || process.cwd(),
     shell: true,
     stdio: 'inherit'
   });
 }
 
 type CreateMosaicAppEnv = {
-  generators: (plop: [], env: Record<string, any>) => void[];
+  generators: Array<(plop: [], env: Record<string, any>) => void[]>;
   config: Record<string, any>;
   defaultGenerator: string;
   force: boolean;
@@ -89,7 +89,7 @@ export default async function createMosaicApp(env: CreateMosaicAppEnv): Promise<
       answers: promptAnswers
     };
   }
-  selectedGenerator.runActions(selectedGeneratorConfig).then(results => {
+  await selectedGenerator.runActions(selectedGeneratorConfig).then(results => {
     const { changes, failures } = results;
     if (changes && changes.length) {
       changes.forEach(({ path }) => {
@@ -104,7 +104,7 @@ export default async function createMosaicApp(env: CreateMosaicAppEnv): Promise<
     }
   });
 
-  install().on('close', code => {
+  install(env.outputPath).on('close', code => {
     if (!code) {
       console.log('Success!');
       console.log('You can now serve your site');
