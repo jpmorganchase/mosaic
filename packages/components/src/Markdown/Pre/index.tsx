@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import classnames from 'classnames';
 import Highlight, { defaultProps as defaultPrismProps } from 'prism-react-renderer';
 import type { Language } from 'prism-react-renderer';
@@ -126,7 +126,12 @@ const CodeBlock = React.memo(
 
 const CodeHighlight: React.FC<React.PropsWithChildren<{ code: string; language: Language }>> =
   function CodeHighlight({ code, language }) {
-    if (typeof window === 'undefined') {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+      setIsClient(true);
+    }, []);
+
+    if (!isClient) {
       return null;
     }
     let trimmedCode = code.replace(/\n+$/, '');
