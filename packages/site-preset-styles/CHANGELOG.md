@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.17
+
+### Patch Changes
+
+- b2f6d52: Fix `pre` block code block rendering
+- Updated dependencies [b2f6d52]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.17
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.17
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.17
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.17
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.17
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.17
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.17
+
 ## 0.1.0-beta.16
 
 ### Patch Changes

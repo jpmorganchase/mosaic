@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.17
+
+### Patch Changes
+
+- b2f6d52: Fix `pre` block code block rendering
+- Updated dependencies [b2f6d52]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.17
+
 ## 0.1.0-beta.16
 
 ### Patch Changes
