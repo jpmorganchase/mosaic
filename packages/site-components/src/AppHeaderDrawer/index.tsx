@@ -5,7 +5,6 @@ import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { useRouter } from 'next/router';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { LayerLayout } from '@salt-ds/lab';
-import type { CSSObject } from 'styled-components';
 
 import styles from './styles.css';
 import { parseMenu } from './utils';
@@ -81,12 +80,17 @@ export function AppHeaderDrawer({ menu }: AppHeaderDrawerProps) {
               renderExpandIcon={({ open }) =>
                 open ? <Icon name="chevronDown" /> : <Icon name="chevronRight" />
               }
-              renderMenuItemStyles={() =>
-                ({
-                  '.menu-anchor': styles.menuAnchor,
-                  '.menu-label': styles.menuLabel
-                } as CSSObject)
-              }
+              menuItemStyles={{
+                button: ({ active }) => {
+                  return {
+                    fontSize: '14px',
+                    height: 'auto',
+                    minHeight: '35px',
+                    backgroundColor: 'inherit',
+                    fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)'
+                  };
+                }
+              }}
             >
               {renderMenu(menuItems.items)}
             </Menu>

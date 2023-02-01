@@ -2,9 +2,6 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { Icon } from '@jpmorganchase/mosaic-components';
-import type { CSSObject } from 'styled-components';
-
-import styles from './styles.css';
 
 export type SidebarItem = {
   /** The id of the item */
@@ -43,7 +40,7 @@ export const VerticalNavigation: React.FC<SidebarProps> = ({
       item.childNodes ? (
         <SubMenu
           active={selectedNodeId === item.id}
-          defaultOpen={expandedNodeIds.has(item.id)}
+          open={expandedNodeIds.has(item.id)}
           onClick={e => {
             e.stopPropagation();
             router.push(item.data.link);
@@ -73,15 +70,17 @@ export const VerticalNavigation: React.FC<SidebarProps> = ({
         renderExpandIcon={({ open }) =>
           open ? <Icon name="chevronDown" /> : <Icon name="chevronRight" />
         }
-        renderMenuItemStyles={({ active }) =>
-          ({
-            /** override the sidebar library styling */
-            '.menu-anchor': active ? styles.activeMenuAnchor : styles.menuAnchor,
-            '.menu-anchor:hover': styles.hoverMenuAnchor,
-            '.sub-menu-content': styles.subMenu,
-            '.menu-label': styles.menuLabel
-          } as CSSObject)
-        }
+        menuItemStyles={{
+          button: ({ active }) => {
+            return {
+              fontSize: '14px',
+              height: 'auto',
+              minHeight: '35px',
+              backgroundColor: 'inherit',
+              fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)'
+            };
+          }
+        }}
       >
         {renderMenu(sidebarData)}
       </Menu>

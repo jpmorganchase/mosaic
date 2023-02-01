@@ -9,16 +9,6 @@ import {
 
 export default {
   sidebarLeftDrawer: style([{ zIndex: '-1' }]),
-  menuAnchor: {
-    height: 'auto',
-    minHeight: '35px',
-    backgroundColor: 'inherit',
-    fontWeight: 'var(--fontWeight-regular)'
-  },
-  menuLabel: {
-    fontSize: '12px',
-    whiteSpace: 'normal'
-  },
   toggleButton: style([
     {
       flexShrink: 0,
