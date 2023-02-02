@@ -9,16 +9,15 @@ Publish a site to AWS using S3 snapshots.
 
 ```
 > yarn global add @jpmorganchase/mosaic-create-site
-> mkdir mosaic-sample-site
-> cd mosaic-sample-site
-> mosaic-create-site create -f .
+> mosaic-create-site create -o my-sample-site
+> cd my-sample-site
 ```
 
 ## Step 2: Create the Github repository
 
 ```
 > git init
-> git remote add origin git@github.com:username/my-next-app.git
+> git remote add origin git@github.com:username/my-sample-site.git
 > git add .
 > git commit -m "initial commit"
 > git push origin main
