@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Transition } from 'react-transition-group';
 
 const transitionStyles = {
@@ -19,19 +19,12 @@ type FadeProps = {
 
 export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp }) => {
   const nodeRef = useRef(null);
-  const [hasExited, setHasExited] = useState<boolean>(false);
   const defaultStyle = {
     transition: `opacity ${duration?.enter}ms ease-in-out`,
     opacity: 0
   };
-  const handleExit = () => {
-    setHasExited(true);
-  };
-  if (hasExited) {
-    return children;
-  }
   return (
-    <Transition nodeRef={nodeRef} in={inProp} timeout={duration} onExit={handleExit} unmountOnExit>
+    <Transition nodeRef={nodeRef} in={inProp} timeout={duration} unmountOnExit>
       {state => (
         <div
           ref={nodeRef}
