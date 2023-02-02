@@ -1,5 +1,27 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.18
+
+### Patch Changes
+
+- 066efed: Update docs with quick-start guide
+
+  Sample docs now include a 'quick-start' guide to onboarding to AWS.
+
+  Also
+
+  - generator default directory is the current directory
+  - after generating a site, it will run `yarn` in the created directory. This simplifies the generator call to just `yarn mosaic-create-site`
+
+- Updated dependencies [066efed]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.18
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.18
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.18
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.18
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.18
+  - @jpmorganchase/mosaic-store@0.1.0-beta.18
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.18
+
 ## 0.1.0-beta.17
 
 ### Patch Changes

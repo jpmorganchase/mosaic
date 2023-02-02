@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.18
+
+### Patch Changes
+
+- 066efed: Update docs with quick-start guide
+
+  Sample docs now include a 'quick-start' guide to onboarding to AWS.
+
+  Also
+
+  - generator default directory is the current directory
+  - after generating a site, it will run `yarn` in the created directory. This simplifies the generator call to just `yarn mosaic-create-site`
+
 ## 0.1.0-beta.17
 
 ### Patch Changes
