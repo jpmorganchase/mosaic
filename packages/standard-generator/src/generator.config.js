@@ -105,7 +105,7 @@ module.exports = {
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'local', // each site has it's own namespace, think of this as your content's uid
       options: {
-        rootDir: '../docs', // relative path to content
+        rootDir: './docs', // relative path to content
         prefixDir: 'local', // root path used for namespace
         extensions: ['.mdx'] // extensions of content which should be pulled
       }
