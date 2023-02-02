@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.19
+
+### Patch Changes
+
+- ad06d4c: ensure spinner is removed after page has loaded
+- Updated dependencies [ad06d4c]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.19
+
 ## 0.1.0-beta.18
 
 ### Patch Changes

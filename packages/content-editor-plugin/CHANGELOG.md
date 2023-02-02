@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.19
+
+### Patch Changes
+
+- ad06d4c: ensure spinner is removed after page has loaded
+- Updated dependencies [ad06d4c]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.19
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.19
+
 ## 0.1.0-beta.18
 
 ### Patch Changes

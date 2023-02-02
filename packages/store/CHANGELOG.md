@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.19
+
+### Patch Changes
+
+- ad06d4c: ensure spinner is removed after page has loaded
+
 ## 0.1.0-beta.18
 
 ### Patch Changes
