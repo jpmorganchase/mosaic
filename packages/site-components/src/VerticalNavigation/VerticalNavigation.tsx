@@ -16,6 +16,8 @@ export type SidebarItem = {
     /** The link of the item */
     link: string;
   };
+  /** The depth of the menu item from the sidebar root */
+  depth: number;
   /** Child nodes */
   childNodes: SidebarItem[];
   /** Whether the item is hidden */
