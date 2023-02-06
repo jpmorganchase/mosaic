@@ -67,27 +67,15 @@ createGlobalTheme('.saltSwitch', switchVars, {
   height: '16px'
 });
 
-export const buttonVars = createGlobalThemeContract({
-  regular: {
-    fontWeight: '--saltButton-fontWeight'
-  }
-});
-
-createGlobalTheme('.saltButton-regular', buttonVars, {
-  regular: {
-    fontWeight: fontWeightVars.regular
-  }
-});
-
 export const menuButtonTriggerVars = createGlobalThemeContract({
   open: {
-    color: '--saltMenuButton-trigger-open-color'
+    fontWeight: '--saltButton-fontWeight'
   }
 });
 
 createGlobalTheme('.saltMenuButtonTrigger', menuButtonTriggerVars, {
   open: {
-    color: 'currentColor'
+    fontWeight: fontWeightVars.regular
   }
 });
 

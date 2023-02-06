@@ -10,9 +10,7 @@ import {
 export default {
   button: style([
     responsiveSprinkles({
-      marginRight: 'auto',
-      marginTop: 'auto',
-      marginBottom: ['x6', 'x6', 'none', 'none']
+      marginTop: ['x6', 'x6', 'x6', 'x6']
     })
   ]),
   content: style([responsiveSprinkles({ marginRight: ['x4', 'x4', 'x4', 'x4'] })]),
