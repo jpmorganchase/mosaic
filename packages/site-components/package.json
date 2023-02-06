@@ -50,6 +50,7 @@
     "acorn-jsx": "^5.0.0",
     "classnames": "^2.2.6",
     "deepmerge": "^4.2.2",
+    "fuse.js": "^6.6.2",
     "https-proxy-agent": "^5.0.1",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",

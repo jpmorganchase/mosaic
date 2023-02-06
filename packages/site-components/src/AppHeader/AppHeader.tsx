@@ -3,6 +3,7 @@ import { Logo } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';
+import type { SearchIndex } from '@jpmorganchase/mosaic-store';
 
 import type { HeaderControlsProps } from '../AppHeaderControls';
 import { AppHeaderControls } from '../AppHeaderControls';
@@ -16,6 +17,7 @@ export type AppHeaderProps = {
   logo?: string;
   menu?: TabsMenu;
   title?: string;
+  searchIndex?: SearchIndex;
 };
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -39,7 +41,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   homeLink,
   logo,
   menu = [],
-  title
+  title,
+  searchIndex
 }) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const breakpoint = useBreakpoint();
@@ -59,7 +62,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </Link>
         )}
         {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
-        <AppHeaderControls {...AppHeaderControlsProps} />
+        <AppHeaderControls {...AppHeaderControlsProps} searchIndex={searchIndex} />
       </div>
     </>
   );
