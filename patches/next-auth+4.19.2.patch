@@ -1,0 +1,48 @@
+diff --git a/node_modules/next-auth/core/lib/oauth/client.js b/node_modules/next-auth/core/lib/oauth/client.js
+index 7943303..4bf9335 100644
+--- a/node_modules/next-auth/core/lib/oauth/client.js
++++ b/node_modules/next-auth/core/lib/oauth/client.js
+@@ -6,10 +6,18 @@ Object.defineProperty(exports, "__esModule", {
+ exports.openidClient = openidClient;
+ 
+ var _openidClient = require("openid-client");
++var HttpsProxyAgent = require("https-proxy-agent");
+ 
+ async function openidClient(options) {
+   const provider = options.provider;
+-  if (provider.httpOptions) _openidClient.custom.setHttpOptionsDefaults(provider.httpOptions);
++  let httpOptions = {};
++  if (provider.httpOptions) httpOptions = { ...provider.httpOptions };
++  if (process.env.http_proxy) {
++    let agent = new HttpsProxyAgent(process.env.http_proxy);
++    httpOptions.agent = agent;
++  }
++  _openidClient.custom.setHttpOptionsDefaults(httpOptions);
++
+   let issuer;
+ 
+   if (provider.wellKnown) {
+diff --git a/node_modules/next-auth/providers/github.js b/node_modules/next-auth/providers/github.js
+index d9a68e0..9d39fe0 100644
+--- a/node_modules/next-auth/providers/github.js
++++ b/node_modules/next-auth/providers/github.js
+@@ -1,5 +1,7 @@
+ "use strict";
+ 
++var HttpsProxyAgent = require("https-proxy-agent");
++
+ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+@@ -29,8 +31,9 @@ function Github(options) {
+         if (!profile.email) {
+           const res = await fetch("https://api.github.com/user/emails", {
+             headers: {
+-              Authorization: `token ${tokens.access_token}`
+-            }
++              Authorization: `token ${tokens.access_token}`, 
++            },
++            agent: process.env.http_proxy !== undefined ? new HttpsProxyAgent(process.env.http_proxy): undefined,
+           });
+ 
+           if (res.ok) {
