@@ -2,8 +2,8 @@ import React from 'react';
 import { MDXRemote } from 'next-mdx-remote';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useContentEditor, Editor } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { useSession } from 'next-auth/react';
 
-import { useSession } from './SessionProvider';
 import { createMDXScope } from './utils/createMDXScope';
 import { Page500 } from './500';
 import { Page404 } from './404';
@@ -24,7 +24,7 @@ function MDXRemoteWithErrorBoundary({ components, source, meta }) {
 
 export function Body({ components = {}, type, ...props }) {
   const { pageState } = useContentEditor();
-  const session = useSession();
+  const { data: session } = useSession();
 
   if (props.show404) {
     return <Page404 />;
@@ -33,10 +33,10 @@ export function Body({ components = {}, type, ...props }) {
     return <Page500 />;
   }
 
-  if (pageState !== 'VIEW' && session.isLoggedIn && type === 'mdx') {
+  if (pageState !== 'VIEW' && session !== null && type === 'mdx') {
     return (
       <Editor
-        user={session.user}
+        user={session?.user}
         content={props.raw}
         source={props.source}
         components={components}

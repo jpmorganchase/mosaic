@@ -1,8 +1,7 @@
 import React, { ElementType } from 'react';
 import { useMeta } from '@jpmorganchase/mosaic-store';
 import type { MetaSlice } from '@jpmorganchase/mosaic-store';
-
-import { useSession } from './SessionProvider';
+import { useSession } from 'next-auth/react';
 
 export interface HTMLMeta extends MetaSlice {}
 
@@ -12,12 +11,12 @@ export type MetadataProps = {
 
 export const Metadata: React.FC<MetadataProps> = ({ Component = 'head' }) => {
   const { meta } = useMeta();
-  const session = useSession();
+  const { data: session } = useSession();
   return (
     <Component>
       {meta.title && <title>{meta.title}</title>}
       {meta.description && <meta name="description" content={meta.description} />}
-      {session?.user?.avatarUrl && <link as="image" href={session.user.avatarUrl} rel="preload" />}
+      {session?.user?.image && <link as="image" href={session.user.image} rel="preload" />}
       {meta.breadcrumbs && <meta content={JSON.stringify(meta.breadcrumbs)} name="breadcrumbs" />}
     </Component>
   );
