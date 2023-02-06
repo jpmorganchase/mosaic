@@ -12,7 +12,7 @@ const pkg = require('@jpmorganchase/mosaic-create-site/package.json');
  * @returns {string|*}
  */
 function normalizeRelativePath(filePath) {
-  if (filePath && /^[^\\/]/.test(filePath)) {
+  if (filePath && !path.isAbsolute(filePath)) {
     return path.resolve(path.join(process.cwd(), filePath));
   }
   return filePath;
