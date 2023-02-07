@@ -1,5 +1,5 @@
 diff --git a/node_modules/next-auth/core/lib/oauth/client.js b/node_modules/next-auth/core/lib/oauth/client.js
-index 7943303..4bf9335 100644
+index 7943303..d100e23 100644
 --- a/node_modules/next-auth/core/lib/oauth/client.js
 +++ b/node_modules/next-auth/core/lib/oauth/client.js
 @@ -6,10 +6,18 @@ Object.defineProperty(exports, "__esModule", {
@@ -13,8 +13,8 @@ index 7943303..4bf9335 100644
 -  if (provider.httpOptions) _openidClient.custom.setHttpOptionsDefaults(provider.httpOptions);
 +  let httpOptions = {};
 +  if (provider.httpOptions) httpOptions = { ...provider.httpOptions };
-+  if (process.env.http_proxy) {
-+    let agent = new HttpsProxyAgent(process.env.http_proxy);
++  if (process.env.HTTP_PROXY) {
++    let agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
 +    httpOptions.agent = agent;
 +  }
 +  _openidClient.custom.setHttpOptionsDefaults(httpOptions);
@@ -23,7 +23,7 @@ index 7943303..4bf9335 100644
  
    if (provider.wellKnown) {
 diff --git a/node_modules/next-auth/providers/github.js b/node_modules/next-auth/providers/github.js
-index d9a68e0..9d39fe0 100644
+index d9a68e0..9ecd030 100644
 --- a/node_modules/next-auth/providers/github.js
 +++ b/node_modules/next-auth/providers/github.js
 @@ -1,5 +1,7 @@
@@ -42,7 +42,7 @@ index d9a68e0..9d39fe0 100644
 -            }
 +              Authorization: `token ${tokens.access_token}`, 
 +            },
-+            agent: process.env.http_proxy !== undefined ? new HttpsProxyAgent(process.env.http_proxy): undefined,
++            agent: process.env.HTTP_PROXY !== undefined ? new HttpsProxyAgent(process.env.HTTP_PROXY): undefined,
            });
  
            if (res.ok) {
