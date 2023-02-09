@@ -2,7 +2,6 @@ import type { Redirect } from 'next';
 import { SharedConfigSlice } from '@jpmorganchase/mosaic-store';
 import type { ContentProps } from '@jpmorganchase/mosaic-types';
 
-import { withSession, type SessionProps, type SessionOptions } from './withSession.js';
 import { withSharedConfig } from './withSharedConfig.js';
 import { withMDXContent } from './withMDXContent.js';
 import { MosaicMiddleware, MosaicMiddlewareWithConfig } from './createMiddlewareRunner.js';
@@ -36,18 +35,10 @@ export type MosaicAppProps<T> = {
 export type GetMosaicServerSidePropsResult<T> = MosaicAppProps<T>;
 
 /** MiddlewarePresets props */
-export type MiddlewarePresetsProps = MosaicModeProps &
-  ContentProps &
-  SessionProps &
-  SharedConfigSlice;
+export type MiddlewarePresetsProps = MosaicModeProps & ContentProps & SharedConfigSlice;
 
 /** A collection of preset [[`Middleware`]] plugins that will compose together the page props */
 export const middlewarePresets: Array<
   | MosaicMiddleware<MiddlewarePresetsProps>
-  | MosaicMiddlewareWithConfig<MiddlewarePresetsProps, SessionOptions>
-> = [
-  [withSession, { loginRequired: process.env.DISABLE_GLOBAL_AUTH !== 'true' }],
-  withMosaicMode,
-  withSharedConfig,
-  withMDXContent
-];
+  | MosaicMiddlewareWithConfig<MiddlewarePresetsProps, unknown>
+> = [withMosaicMode, withSharedConfig, withMDXContent];
