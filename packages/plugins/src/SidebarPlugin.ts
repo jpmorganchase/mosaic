@@ -3,6 +3,9 @@ import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { sidebarDataLayoutSchema } from '@jpmorganchase/mosaic-schemas';
 import { cloneDeep } from 'lodash-es';
 
+// What level the sidebar.json files are created
+const UserJourneyRootLevel = 2;
+
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
     return patterns.map(pattern => createFileGlob(pattern, pageExtensions));
@@ -27,14 +30,14 @@ function sortPagesByPriority(pageA, pageB, dirName) {
     (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
   );
 }
-function getPageDepth(page) {
+function getPageLevel(page) {
   return page.route.split('/').length - 2;
 }
 
-function sortByPathDepth(pathA, pathB) {
-  const pathADepth = pathA.split('/').length;
-  const pathBDepth = pathB.split('/').length;
-  return pathBDepth - pathADepth;
+function sortByPathLevel(pathA, pathB) {
+  const pathALevel = pathA.split('/').length;
+  const pathBLevel = pathB.split('/').length;
+  return pathBLevel - pathALevel;
 }
 
 function filterPages(page) {
@@ -105,8 +108,8 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const id = page.route;
           const isGroup = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
-          const depth = getPageDepth(page);
-          const newChildNode = { id, name, data: { depth, link: page.route }, childNodes: [] };
+          const level = getPageLevel(page);
+          const newChildNode = { id, name, data: { level, link: page.route }, childNodes: [] };
           if (isGroup) {
             result[groupPath] = {
               ...newChildNode,
@@ -132,7 +135,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
        */
       function linkGroupMap(groupMap, dirName) {
         const linkedGroupMap = cloneDeep(groupMap);
-        const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathDepth);
+        const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathLevel);
         sortedGroupMapKeys.forEach(groupPath => {
           let parentGroupPath = path.posix.dirname(groupPath);
           if (linkedGroupMap[parentGroupPath] === undefined) {
@@ -150,13 +153,15 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
        * Link each page to a sidebar.json file via ref
        * @param pages - sidebar pages
        * @param dirName - root path of sidebar
+       * @param maxLevel - max level
        */
-      function addSidebarDataToFrontmatter(pages, dirName) {
-        const rootDepth = dirName.split('/').length - 1;
+      function addSidebarDataToFrontmatter(pages, dirName, maxLevel = Infinity) {
         pages.forEach(page => {
-          const pageDepth = getPageDepth(page);
-          // set Ref for pages below root and not above root
-          if (rootDepth >= pageDepth) {
+          const pageLevel = getPageLevel(page);
+          // A page can only have one sidebar but different levels  have different sidebars
+          // this enables us to support a root index that contains all pages
+          if (pageLevel <= maxLevel) {
+            // set Ref for pages below root and not above root
             config.setRef(
               String(page.fullPath),
               ['sidebarData', '$ref'],
@@ -169,7 +174,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       const rootUserJourneys = await mutableFilesystem.promises.glob('**', {
         onlyDirectories: true,
         cwd: '/',
-        deep: 2
+        deep: UserJourneyRootLevel
       });
 
       rootUserJourneys.forEach(async dirName => {
@@ -181,7 +186,16 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           sidebarFilePath,
           JSON.stringify({ pages: sidebarData })
         );
-        addSidebarDataToFrontmatter(pages, dirName);
+        const dirNameLevel = dirName.split('/').length - 1;
+        let maxLevel;
+        // Add the sidebar frontmatter to each page, via ref
+        // e.g /mosaic/docs/sidebar.json -> /mosaic/docs/index.mdx
+        // The root directory contains it's own sidebar.json with everything inside it
+        // /mosaic/sidebar.json > /mosaic/index.mdx
+        if (dirNameLevel < UserJourneyRootLevel) {
+          maxLevel = UserJourneyRootLevel - 1;
+        }
+        addSidebarDataToFrontmatter(pages, dirName, maxLevel);
       });
     }
   };

@@ -6,8 +6,7 @@ import {
   Image,
   Link,
   Metadata,
-  SessionProvider,
-  SidebarProvider
+  SessionProvider
 } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
@@ -35,11 +34,9 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>
-                <SidebarProvider>
-                  <LayoutProvider layoutComponents={layoutComponents}>
-                    <Component components={components} {...pageProps} />
-                  </LayoutProvider>
-                </SidebarProvider>
+                <LayoutProvider layoutComponents={layoutComponents}>
+                  <Component components={components} {...pageProps} />
+                </LayoutProvider>
               </LinkProvider>
             </ImageProvider>
           </BaseUrlProvider>

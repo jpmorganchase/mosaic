@@ -10,12 +10,14 @@ export default {
       flexWrap: 'wrap',
       justifyContent: 'space-between'
     },
-    caption({ variant: 'caption6' }),
-    responsiveSprinkles({
-      paddingX: ['x4', 'x4', 'x6', 'x6']
-    })
+    caption({ variant: 'caption6' })
   ]),
-  logoContainer: style({
-    selectors: { ['a&']: { alignItems: 'center', display: 'flex', height: '100%' } }
-  })
+  logoContainer: style([
+    {
+      selectors: { ['a&']: { alignItems: 'center', display: 'flex', height: '100%' } }
+    },
+    responsiveSprinkles({
+      paddingLeft: ['x3', 'x3', 'x6', 'x6']
+    })
+  ])
 };

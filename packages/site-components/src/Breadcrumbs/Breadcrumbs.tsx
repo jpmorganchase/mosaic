@@ -25,7 +25,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
       {breadcrumbs.map(
         (value, index) =>
           value && (
-            <Breadcrumb href={value.path} key={`${value.id}-${index}`} overflowLabel={value.label}>
+            <Breadcrumb href={value.path} key={`${value.id}-${index}`}>
               {value.label}
             </Breadcrumb>
           )

@@ -8,6 +8,8 @@ export type SidebarItem = {
     /** The link of the item */
     link: string;
   };
+  /** The level of the menu item from the sidebar root */
+  level: number;
   /** Child nodes */
   childNodes: SidebarItem[];
   /** Whether the item is hidden */

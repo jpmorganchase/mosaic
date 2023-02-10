@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Logo } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
+import { useRoute } from '@jpmorganchase/mosaic-store';
 
 import type { HeaderControlsProps } from '../AppHeaderControls';
 import { AppHeaderControls } from '../AppHeaderControls';
@@ -20,6 +20,20 @@ export type AppHeaderProps = {
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
+const createDrawerMenu = menu =>
+  menu.reduce((result, item) => {
+    const parsedItem = {
+      id: item.link,
+      name: item.title,
+      data: { link: item.link }
+    };
+    if (item?.links?.length) {
+      const childNodes = createDrawerMenu(item.links);
+      return [...result, { ...parsedItem, childNodes }];
+    }
+    return [...result, parsedItem];
+  }, []);
+
 export const AppHeader: React.FC<AppHeaderProps> = ({
   HeaderControlsProps: AppHeaderControlsProps = {},
   homeLink,
@@ -27,26 +41,24 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   menu = [],
   title
 }) => {
-  const [condensedNavigation, setCondensedNavigation] = useState(true);
+  const [showDrawer, setShowDrawer] = useState(false);
   const breakpoint = useBreakpoint();
-  const router = useRouter();
+  const { route } = useRoute();
 
   useIsomorphicLayoutEffect(() => {
-    setCondensedNavigation(
-      breakpoint === 'mobile' || breakpoint === 'tablet' || breakpoint === 'web'
-    );
+    setShowDrawer(breakpoint === 'mobile' || breakpoint === 'tablet');
   }, [breakpoint]);
 
   return (
     <>
-      {condensedNavigation && <AppHeaderDrawer menu={menu} />}
+      {showDrawer && <AppHeaderDrawer menu={createDrawerMenu(menu)} />}
       <div className={styles.root}>
         {homeLink && (
           <Link className={styles.logoContainer} href={homeLink} variant="component">
             {logo && <Logo appTitle={title} src={logo} />}
           </Link>
         )}
-        {!condensedNavigation && <AppHeaderTabs key={router.asPath} menu={menu} />}
+        {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
         <AppHeaderControls {...AppHeaderControlsProps} />
       </div>
     </>

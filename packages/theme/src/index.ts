@@ -12,6 +12,7 @@ import { shadow } from './shadow';
 import { vars } from './vars.css';
 
 export { themeClassName, vars } from './vars.css';
+export * from './animation';
 export * from './blockquote';
 export * from './button';
 export * from './border';
@@ -27,6 +28,7 @@ export * from './link';
 export * from './list';
 export * from './responsive';
 export * from './shadow';
+export * from './sidebar';
 export * from './story';
 export * from './table';
 export * from './tag';
