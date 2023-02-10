@@ -1,25 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
-import type { SearchIndex } from '@jpmorganchase/mosaic-store';
+import { useSearchIndex } from '@jpmorganchase/mosaic-store';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
 
-type SearchInputProps = {
-  index: SearchIndex;
-};
-
-export const fuseOptions = {
-  includeScore: true,
-  includeMatches: true,
-  maxPatternLength: 240,
-  threshold: 0.2,
-  keys: ['title', 'content']
-};
-
-export function SearchInput({ index }: SearchInputProps) {
+export function SearchInput() {
+  const { searchIndex } = useSearchIndex();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -37,7 +26,7 @@ export function SearchInput({ index }: SearchInputProps) {
 
   useEffect(() => {
     const keys = ['title', 'content'];
-    const results = performSearch(index, searchTerm, keys);
+    const results = performSearch(searchIndex, searchTerm, keys);
     setListVisibility(true);
     setSearchResults(results);
   }, [searchTerm]);

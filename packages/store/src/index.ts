@@ -6,6 +6,7 @@ export * from './useLayout';
 export * from './useMeta';
 export * from './useNextPrev';
 export * from './useRoute';
+export * from './useSearchIndex';
 export * from './useSidebar';
 export * from './useTableOfContents';
 export * from './useFooter';

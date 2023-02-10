@@ -3,9 +3,8 @@ import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { useColorMode, useStoreActions } from '@jpmorganchase/mosaic-store';
+import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession, signIn } from 'next-auth/react';
-import type { SearchIndex } from '@jpmorganchase/mosaic-store';
 
 import { UserProfile } from '../UserProfile';
 import { SearchInput } from '../SearchInput';
@@ -17,16 +16,11 @@ type ActionMenuItem = {
   title: string;
 };
 
-export type HeaderControlsProps = {
-  searchEndpoint?: string;
-  searchIndex?: SearchIndex;
-};
-
 function toUpperFirst(str) {
   return `${str.substr(0, 1).toUpperCase()}${str.toLowerCase().substr(1)}`;
 }
 
-export const AppHeaderControls: React.FC<HeaderControlsProps> = ({ searchIndex }) => {
+export const AppHeaderControls: React.FC = () => {
   const router = useRouter();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
@@ -36,6 +30,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = ({ searchIndex }
   console.log(isLoginEnabled);
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
+  const { searchEnabled } = useSearchIndex();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -80,7 +75,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = ({ searchIndex }
 
   return (
     <div className={styles.root}>
-      {searchIndex && searchIndex.length > 0 && <SearchInput index={searchIndex} />}
+      {searchEnabled && <SearchInput />}
       {isLoginEnabled && (
         <>
           <EditorControls isLoggedIn={isLoggedIn} />
