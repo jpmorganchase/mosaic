@@ -43,6 +43,7 @@
     "github-slugger": "^1.4.0",
     "lodash-es": "^4.17.21",
     "memfs": "^3.4.12",
+    "react-pro-sidebar": "^1.0.0",
     "reading-time": "^1.5.0",
     "remark-mdx": "^2.1.5",
     "remark-parse": "^10.0.1",

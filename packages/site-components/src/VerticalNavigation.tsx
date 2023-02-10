@@ -1,0 +1,62 @@
+import React from 'react';
+import { Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import { Icon, Link } from '@jpmorganchase/mosaic-components';
+import { SidebarItem } from '@jpmorganchase/mosaic-store';
+export { ProSidebarProvider as SidebarProvider } from 'react-pro-sidebar';
+export { useProSidebar as useSidebar } from 'react-pro-sidebar';
+
+export type VerticalNavigationProps = {
+  /** Set<String> of IDs to display as expanded */
+  expandedNodeIds?: Set<string>;
+  /** String ID of the selected item */
+  selectedNodeId?: string;
+  /** Navigation item data */
+  menu: SidebarItem[];
+};
+
+const MenuIcon = ({ open }) => <Icon name={open ? 'chevronDown' : 'chevronRight'} />;
+
+const menuItemStyles = {
+  button: ({ active }) => {
+    return {
+      fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)'
+    };
+  }
+};
+
+const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
+  menu.reduce((result, item) => {
+    const menuItem = item.childNodes?.length ? (
+      <SubMenu
+        active={selectedNodeId === item.id}
+        open={true}
+        component={<Link href={item.data.link} variant={'selectable'} />}
+        key={item.id}
+        label={item.name}
+      >
+        {renderMenu(item.childNodes, expandedNodeIds, selectedNodeId)}
+      </SubMenu>
+    ) : (
+      <MenuItem
+        active={selectedNodeId === item.id}
+        component={<Link href={item.data.link} variant={'selectable'} />}
+        key={item.id}
+      >
+        {item.name}
+      </MenuItem>
+    );
+    return [...result, menuItem];
+  }, []);
+
+export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
+  menu,
+  expandedNodeIds,
+  selectedNodeId,
+  ...rest
+}) => (
+  <SidebarPro backgroundColor="inherit" {...rest}>
+    <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
+      {renderMenu(menu, expandedNodeIds, selectedNodeId)}
+    </Menu>
+  </SidebarPro>
+);

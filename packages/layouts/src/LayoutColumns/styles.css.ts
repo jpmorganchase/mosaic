@@ -58,6 +58,26 @@ const styles = {
     style({
       flexGrow: 1
     })
+  ]),
+
+  toggleButton: style([
+    {
+      selectors: {
+        ['button.&']: {
+          display: 'block',
+          position: 'fixed',
+          zIndex: 5,
+          padding: '0px',
+          boxSizing: 'content-box',
+          width: `${config.appHeader.height}px`,
+          height: `${config.appHeader.height}px`
+        }
+      }
+    },
+    responsiveSprinkles({
+      bottom: ['x6', 'x6', 'x6', 'x6'],
+      right: ['x6', 'x6', 'x6', 'x6']
+    })
   ])
 };
 

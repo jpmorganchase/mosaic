@@ -17,7 +17,13 @@ export default {
     marginRight: ['x3', 'x3', 'x3', 'x3']
   }),
   menuButton: style({
-    height: `${config.appHeader.height}px`
+    selectors: {
+      ['button.&']: {
+        boxSizing: 'content-box',
+        width: `${config.appHeader.height}px`,
+        height: `${config.appHeader.height}px`
+      }
+    }
   }),
   userInfo: responsiveSprinkles({
     display: ['none', 'flex', 'flex', 'flex']
