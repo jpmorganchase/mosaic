@@ -10,17 +10,10 @@ const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.c
  */
 module.exports = deepmerge(mosaicConfig, {
   pageExtensions: ['.html'],
-  serialisers: [
-    {
-      modulePath: '@jpmorganchase/mosaic-serialisers/html',
-      filter: /\.html$/,
-      options: {}
-    }
-  ],
   sources: [
     {
       modulePath: '@jpmorganchase/mosaic-source-typedoc',
-      namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
+      namespace: 'typedocs', // each site has it's own namespace, think of this as your content's uid
       options: {
         // To run locally, enter your credentials to access the Git repo
         // e.g create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
@@ -29,7 +22,7 @@ module.exports = deepmerge(mosaicConfig, {
         // If running locally: create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
         // export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
         credentials: process.env.BITBUCKET_CLONE_CREDENTIALS,
-        prefixDir: 'mosaic', // root path used for namespace
+        prefixDir: 'typedocs', // root path used for namespace
         cache: true,
         subfolder: 'packages/components-next/html-docs', // subfolder within your branch containing the docs, typically 'docs'
         repo: 'bitbucketdc.jpmchase.net/scm/devconsole/digital-platform-docs.git', // repo url without any protocol
@@ -37,6 +30,19 @@ module.exports = deepmerge(mosaicConfig, {
         extensions: ['.html'], // extensions of content which should be pulled
         remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
       }
+    }
+  ],
+  serialisers: [
+    {
+      modulePath: '@jpmorganchase/mosaic-serialisers/html',
+      filter: /\.html$/,
+      options: {}
+    }
+  ],
+  plugins: [
+    {
+      modulePath: '@jpmorganchase/mosaic-serialisers/html',
+      options: {}
     }
   ]
 });

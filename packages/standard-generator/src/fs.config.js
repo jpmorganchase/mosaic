@@ -15,7 +15,7 @@ const { generatorName } = require('./generator');
 module.exports = {
   /** Generator name */
   generatorName,
-  pageExtensions: ['.mdx', '.json'],
+  pageExtensions: ['.mdx', '.json', '.html'],
   ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
   serialisers: [
     {
@@ -30,6 +30,9 @@ module.exports = {
     }
   ],
   plugins: [
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/TypeDocsPlugin/index'
+    },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
       options: {}

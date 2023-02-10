@@ -6,6 +6,7 @@ import path from 'path';
 import { TDataOut } from 'memfs';
 
 function createPageTest(ignorePages, pageExtensions) {
+  console.log('***************lazyPagePlugin');
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
   const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
   return file =>

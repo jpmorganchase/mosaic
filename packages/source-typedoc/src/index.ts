@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Observable, of, switchMap } from 'rxjs';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
@@ -13,7 +14,11 @@ const TypeDocSource: Source<TypeDocSourceOptions> = {
 
     return watchRepo$.pipe(
       switchMap(pages => {
-        console.log('PAGES from typedoc', pages);
+        // {
+        //   content: HTML,
+        //   fullPath: '/typedocs/modules/ViewStack.html',
+        //   lastModified: 1649330233000
+        // }
         return of(pages);
       })
     );

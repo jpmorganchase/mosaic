@@ -4,6 +4,7 @@ import type { Serialiser } from '@jpmorganchase/mosaic-types';
 
 const Serialisers: Serialiser = {
   async serialise(_fullPath, { content = '', ...meta }) {
+    console.log('*********************mdx');
     return Buffer.from(matter.stringify(content, meta));
   },
 

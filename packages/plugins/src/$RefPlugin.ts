@@ -142,34 +142,34 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
         );
       }
 
-      const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
-      const refParser = new $RefParser();
+      // const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
+      // const refParser = new $RefParser();
 
-      // Second pass of refs, resolves the refs
-      for (const fullPath in normalisedRefs) {
-        const page = normalisedRefs[fullPath];
-        try {
-          const resolved = await refParser.dereference(String(fullPath), page, {
-            resolve,
-            dereference: { circular: false }
-          });
-          normalisedRefs[fullPath] = { ...page, ...resolved };
-        } catch (e) {
-          console.warn(
-            `Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${
-              e.source
-            }'`
-          );
-          throw e;
-        }
-      }
-      // Third pass, write out the files
-      for (const fullPath in normalisedRefs) {
-        await mutableFilesystem.promises.writeFile(
-          fullPath,
-          await serialiser.serialise(fullPath, normalisedRefs[fullPath])
-        );
-      }
+      // // Second pass of refs, resolves the refs
+      // for (const fullPath in normalisedRefs) {
+      //   const page = normalisedRefs[fullPath];
+      //   try {
+      //     const resolved = await refParser.dereference(String(fullPath), page, {
+      //       resolve,
+      //       dereference: { circular: false }
+      //     });
+      //     normalisedRefs[fullPath] = { ...page, ...resolved };
+      //   } catch (e) {
+      //     console.warn(
+      //       `Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${
+      //         e.source
+      //       }'`
+      //     );
+      //     throw e;
+      //   }
+      // }
+      // // Third pass, write out the files
+      // for (const fullPath in normalisedRefs) {
+      //   await mutableFilesystem.promises.writeFile(
+      //     fullPath,
+      //     await serialiser.serialise(fullPath, normalisedRefs[fullPath])
+      //   );
+      // }
     }
   },
   async $afterSource(pages, { config, ignorePages, pageExtensions }) {
