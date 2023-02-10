@@ -1510,7 +1510,7 @@
     core-js-pure "^3.25.1"
     regenerator-runtime "^0.13.11"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.15.4", "@babel/runtime@^7.3.1", "@babel/runtime@^7.6.2", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.15.4", "@babel/runtime@^7.3.1", "@babel/runtime@^7.8.7", "@babel/runtime@^7.9.2":
   version "7.20.6"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.20.6.tgz#facf4879bfed9b5326326273a64220f099b0fce3"
   integrity sha512-Q+8MqP7TiHMWzSfwiJwXCjyf4GYA4Dgw3emg/7xmwsdLJOZUp+nMqcOwOzzYheuM1rhDu8FSj2l0aoMygEuXuA==
@@ -1930,11 +1930,11 @@
   integrity sha512-QPcGmICAPbGLGb6F/yNf/KzKqvFx8z5qx3D1yFqVAjoFmXK35EgyW+cJ57Te3CNsmzblwtzakLGFqHPqrfb4Tw==
 
 "@internationalized/date@^3.0.0":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.0.1.tgz#66332e9ca8f59b7be010ca65d946bca430ba4b66"
-  integrity sha512-E/3lASs4mAeJ2Z2ye6ab7eUD0bPUfTeNVTAv6IS+ne9UtMu9Uepb9A1U2Ae0hDr6WAlBuvUtrakaxEdYB9TV6Q==
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.0.2.tgz#1566a0bcbd82dce4dd54a5b26456bb701068cb89"
+  integrity sha512-9V1IxesP6ASZj/hYyOXOC4yPJvidbbStyWQKLCQSqhhKACMOXoo+BddXZJy47ju9mqOMpWdrJ2rTx4yTxK9oag==
   dependencies:
-    "@babel/runtime" "^7.6.2"
+    "@swc/helpers" "^0.4.14"
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -2625,35 +2625,35 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz#8be36a1f66f3265389e90b5f9c9962146758f728"
   integrity sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==
 
-"@salt-ds/core@1.0.0", "@salt-ds/core@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.0.0.tgz#a52fda944bf8a50f20899ac26472a704047c5c2b"
-  integrity sha512-Xng/b97Npif4hFgxBYUVKoRX+NdbLrUcWRKva1ytO3Nv9GNp5kfBuNmAq75HG1MvwCjiQ/h4aGQaFfMmqaNIyw==
+"@salt-ds/core@1.1.0", "@salt-ds/core@^1.0.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.1.0.tgz#22a7e9ca186c4baba4a63378fe422841af6bc7a4"
+  integrity sha512-SpPPKwGyeGOuL8S6b8ar8ZKAu8YNMt9n9v3KpOJYMqaLL23zGLoSDtYgqjkjIZlm9Fm3M0PGs+p+14dmIVEIXw==
   dependencies:
-    "@salt-ds/icons" "1.0.0"
-    classnames "^2.2.6"
+    "@salt-ds/icons" "1.1.0"
+    clsx "^1.2.1"
 
-"@salt-ds/icons@1.0.0", "@salt-ds/icons@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.0.0.tgz#ce874c4c2da375b37951376bdad1255822ae9d75"
-  integrity sha512-l/ro5ci+5BUhttJ20GJUCfIVifOvT61XgCDjgNmqaPIK3qkVGETkwsNEmiPXdiH3H7mDgMQTI/TXLlhE1O2bVQ==
+"@salt-ds/icons@1.1.0", "@salt-ds/icons@^1.0.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.1.0.tgz#3c5766e626ebc9aaff502034e1de0a3e496c2170"
+  integrity sha512-IHvVV+/x8d9ua6y1ooqLuZmckE8UidbkKE5UOKeteS+3CcmrIlMjnN/hF4kpFZtEIkgB3yfvtW1pkZaFpOs5nA==
   dependencies:
-    classnames "^2.2.6"
+    clsx "^1.2.1"
 
 "@salt-ds/lab@^1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.0.tgz#a8e55299f58ea2bd3aae28fbd575c797536d8909"
-  integrity sha512-BG3u2a0zHgoT1XjXtbHrKQ7t/JBQ3mArwO9AyEjvLmeNCLNSj2yA0XKYW6hS+Sg4P6en5RZBQ7P4nsOsJC6kLg==
+  version "1.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.1.tgz#97a4c52deeca1922e8bd4cdb83b6276da9bd88c8"
+  integrity sha512-yucQa1+tNSPUw/0rnq/LVoKSUepMCmCRWW7FHnwX0lcPvfJDg4YOZp5ssQlUDzPG3UPT8LQs9JXbmjotb4nkcw==
   dependencies:
     "@floating-ui/react-dom-interactions" "^0.5.0"
     "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "1.0.0"
-    "@salt-ds/icons" "1.0.0"
+    "@salt-ds/core" "1.1.0"
+    "@salt-ds/icons" "1.1.0"
     aria-hidden "^1.1.1"
     attr-accept "^2.0.0"
-    classnames "^2.2.6"
     clipboard-copy "^4.0.1"
-    compute-scroll-into-view "^1.0.16"
+    clsx "^1.2.1"
+    compute-scroll-into-view "^2.0.0"
     deepmerge "^4.2.2"
     no-scroll "^2.1.1"
     react-color "^2.19.3"
@@ -2779,7 +2779,7 @@
     "@swc/core-win32-ia32-msvc" "1.3.20"
     "@swc/core-win32-x64-msvc" "1.3.20"
 
-"@swc/helpers@0.4.14":
+"@swc/helpers@0.4.14", "@swc/helpers@^0.4.14":
   version "0.4.14"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.4.14.tgz#1352ac6d95e3617ccb7c1498ff019654f1e12a74"
   integrity sha512-4C7nX/dvpzB7za4Ql9K81xK3HPxCpHMgwTZVyf+9JQ6VUbn9jjZVN7/Nkdz/Ugzs2CSjqnL/UPXroiVBVHUWUw==
@@ -4383,7 +4383,7 @@ clone@^1.0.2:
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.4.tgz#da309cc263df15994c688ca902179ca3c7cd7c7e"
   integrity sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==
 
-clsx@^1.0.4:
+clsx@^1.0.4, clsx@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.2.1.tgz#0ddc4a20a549b59c93a4116bb26f5294ca17dc12"
   integrity sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==
@@ -4459,10 +4459,10 @@ component-xor@0.0.4:
   resolved "https://registry.yarnpkg.com/component-xor/-/component-xor-0.0.4.tgz#c55d83ccc1b94cd5089a4e93fa7891c7263e59aa"
   integrity sha512-ZIt6sla8gfo+AFVRZoZOertcnD5LJaY2T9CKE2j13NJxQt/mUafD69Bl7/Y4AnpI2LGjiXH7cOfJDx/n2G9edA==
 
-compute-scroll-into-view@^1.0.16:
-  version "1.0.20"
-  resolved "https://registry.yarnpkg.com/compute-scroll-into-view/-/compute-scroll-into-view-1.0.20.tgz#1768b5522d1172754f5d0c9b02de3af6be506a43"
-  integrity sha512-UCB0ioiyj8CRjtrvaceBLqqhZCVP+1B8+NWQhmdsm0VXOJtobBCf1dBQmebCCo34qZmUwZfIH2MZLqNHazrfjg==
+compute-scroll-into-view@^2.0.0:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/compute-scroll-into-view/-/compute-scroll-into-view-2.0.4.tgz#2b444b2b9e4724819d2531efacb7ac094155fdf6"
+  integrity sha512-y/ZA3BGnxoM/QHHQ2Uy49CLtnWPbt4tTPpEEZiEmmiWBFKjej7nEyH8Ryz54jH0MLXflUYA3Er2zUxPSJu5R+g==
 
 concat-map@0.0.1:
   version "0.0.1"
