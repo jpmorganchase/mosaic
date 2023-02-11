@@ -1,6 +1,7 @@
 export * from './Detail';
 export * from './App';
 export * from './Edit';
+export * from './FullSize';
 export * from './FullWidth';
 export * from './Landing';
 export * from './Newsletter';
