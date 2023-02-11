@@ -1,0 +1,44 @@
+{
+  "name": "@jpmorganchase/mosaic-rapidoc-component",
+  "license": "Apache-2.0",
+  "description": "Mosaic - Rapidoc Component",
+  "version": "0.1.0-beta.19",
+  "author": "",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:bundle": "node ../../scripts/bundle.js",
+    "build:types": "tsc",
+    "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "dev": "node ../../scripts/bundle.js watch"
+  },
+  "devDependencies": {
+    "del-cli": "^4.0.1",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.19",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.19",
+    "@vanilla-extract/css": "^1.6.0",
+    "classnames": "^2.2.6",
+    "rapidoc": "^9.3.4"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.0.26",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

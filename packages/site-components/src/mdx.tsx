@@ -4,6 +4,7 @@ import type { PreProps } from '@jpmorganchase/mosaic-components';
 import { getLabMarkdownComponents } from '@jpmorganchase/mosaic-labs-components';
 import { OpenAPI } from '@jpmorganchase/mosaic-open-api-component';
 import type { OpenAPIProps } from '@jpmorganchase/mosaic-open-api-component';
+import { Rapidoc } from '@jpmorganchase/mosaic-rapidoc-component';
 import type {} from '@salt-ds/lab';
 
 import { Home } from './Home';
@@ -16,7 +17,8 @@ const components = {
   Home,
   img: withMarkdownSpacing<ImageProps>(Image),
   pre: withMarkdownSpacing<PreProps>(props => <Pre {...props} CodeBlockProps={{ components }} />),
-  OpenAPI: withMarkdownSpacing<OpenAPIProps>(OpenAPI)
+  OpenAPI: withMarkdownSpacing<OpenAPIProps>(OpenAPI),
+  Rapidoc
 };
 
 export default components;
