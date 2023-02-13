@@ -1,12 +1,7 @@
 // eslint-disable import/no-duplicates
 import { AppProps } from 'next/app';
 import Head from 'next/head';
-import {
-  BaseUrlProvider,
-  Image,
-  Link,
-  Metadata
-} from '@jpmorganchase/mosaic-site-components';
+import { BaseUrlProvider, Image, Link, Metadata } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';

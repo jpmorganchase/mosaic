@@ -7,4 +7,3 @@ export const sidebarDataLayoutSchema = z.union([
   z.literal('NewsLetter'),
   z.string().endsWith('Doc')
 ]);
-
