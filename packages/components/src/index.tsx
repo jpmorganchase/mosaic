@@ -53,5 +53,6 @@ export * from './utils';
 export * from './canUseDOM';
 export * from './useBreakpoint';
 export * from './useLockBodyScroll';
+export * from './useOutsideClick';
 export * from './useSize';
 export * from './useSpacing';

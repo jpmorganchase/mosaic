@@ -1,6 +1,10 @@
 import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { sidebarDataLayoutSchema } from '@jpmorganchase/mosaic-schemas';
+import { cloneDeep } from 'lodash-es';
+
+// What level the sidebar.json files are created
+const UserJourneyRootLevel = 2;
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
@@ -11,13 +15,9 @@ function createFileGlob(patterns, pageExtensions) {
   }
   return `${patterns}{${pageExtensions.join(',')}}`;
 }
-function isSubfolderIndex(page, dirName) {
-  return page.fullPath.split('/').length === String(dirName).split('/').length + 2;
-}
 
-function sortFn(pageA, pageB, dirName) {
+function sortPagesByPriority(pageA, pageB, dirName) {
   // Always pin /index to the front
-
   const route = `${dirName}/index`;
   if (pageA.route === route) {
     return -1;
@@ -30,8 +30,17 @@ function sortFn(pageA, pageB, dirName) {
     (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
   );
 }
+function getPageLevel(page) {
+  return page.route.split('/').length - 2;
+}
 
-function filterFn(page) {
+function sortByPathLevel(pathA, pathB) {
+  const pathALevel = pathA.split('/').length;
+  const pathBLevel = pathB.split('/').length;
+  return pathBLevel - pathALevel;
+}
+
+function filterPages(page) {
   return (
     !(page.sidebar && page.sidebar.exclude) &&
     sidebarDataLayoutSchema.safeParse(page.layout).success
@@ -64,112 +73,130 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       { config, serialiser, ignorePages, pageExtensions },
       options
     ) {
-      function setPageRefs(sidebarFilePath: string, page: SidebarPluginPage, i: number) {
-        config.setRef(sidebarFilePath, ['pages', `${i}`, 'id', '$ref'], `${page.fullPath}#/route`);
-
-        const label =
-          page.sidebar && page.sidebar.label
-            ? `${page.fullPath}#/sidebar/label`
-            : `${page.fullPath}#/title`;
-
-        config.setRef(sidebarFilePath, ['pages', `${i}`, 'name', '$ref'], label);
-
-        config.setRef(
-          sidebarFilePath,
-          ['pages', `${i}`, 'data', 'link', '$ref'],
-          `${page.fullPath}#/route`
-        );
-      }
-
-      async function setChildPageRefs(page, dirName, i, sidebarFilePath) {
-        if (isSubfolderIndex(page, dirName)) {
-          const childDirName = path.posix.dirname(page.fullPath);
-          const childNodeSidebarPath = path.posix.join(childDirName, options.filename);
-          const childPages = (
-            await Promise.all(
-              (
-                (await mutableFilesystem.promises.glob(
-                  createFileGlob(['*', '*/index'], pageExtensions),
-                  {
-                    onlyFiles: true,
-                    cwd: String(childDirName),
-                    ignore: ignorePages.map(ignore => `**/${ignore}`)
-                  }
-                )) as string[]
-              ).map(async pagePath => {
-                const deserialisedPage = await serialiser.deserialise(
-                  pagePath,
-                  await mutableFilesystem.promises.readFile(pagePath)
-                );
-                return deserialisedPage;
-              })
-            )
-          ).filter(filterPage => filterFn(filterPage));
-          if (childPages.length > 1) {
-            for (let j = 1; j < childPages.length; j++) {
-              config.setRef(
-                sidebarFilePath,
-                ['pages', `${i}`, 'childNodes', `${j - 1}`, '$ref'],
-                `${childNodeSidebarPath}#/pages/${j}`
-              );
-            }
-          }
-        }
-      }
-
-      function addSidebarDataToFrontmatter(page, dirName) {
-        const dirNameLevels = String(dirName)
-          .split('/')
-          .filter(level => level);
-        const sidebarRootDir = path.posix.join(
-          '/',
-          ...dirNameLevels.slice(0, dirNameLevels.length < 3 ? dirNameLevels.length : 3),
-          '/'
-        );
-
-        config.setRef(
-          String(page.fullPath),
-          ['sidebarData', '$ref'],
-          path.posix.join(String(sidebarRootDir), options.filename, '#', 'pages')
-        );
-      }
-
-      const dirs = await mutableFilesystem.promises.glob('**', {
-        onlyDirectories: true,
-        cwd: '/'
-      });
-      for (const dirName of dirs) {
-        const sidebarFilePath = path.posix.join(String(dirName), options.filename);
-        const pages = (
-          await Promise.all(
-            (
-              (await mutableFilesystem.promises.glob(
-                createFileGlob(['*', '*/index'], pageExtensions),
-                {
-                  onlyFiles: true,
-                  cwd: String(dirName),
-                  ignore: ignorePages.map(ignore => `**/${ignore}`)
-                }
-              )) as string[]
-            ).map(async pagePath => {
-              const deserialisedPage = await serialiser.deserialise(
+      /**
+       * Create a list of pages that should be used to build a sidebar.json
+       * @param dirName - root path of sidebar
+       */
+      async function createPageList(dirName) {
+        let pageList = await Promise.all(
+          (
+            (await mutableFilesystem.promises.glob(createFileGlob(['**'], pageExtensions), {
+              cwd: String(dirName),
+              ignore: ignorePages.map(ignore => `**/${ignore}`)
+            })) as string[]
+          ).map(
+            async pagePath =>
+              await serialiser.deserialise(
                 pagePath,
                 await mutableFilesystem.promises.readFile(pagePath)
-              );
-              return deserialisedPage;
-            })
+              )
           )
-        )
-          .filter(page => filterFn(page))
-          .sort((pageA, pageB) => sortFn(pageA, pageB, dirName));
-
-        for (let i = 0; i < pages.length; i++) {
-          setPageRefs(sidebarFilePath, pages[i], i);
-          setChildPageRefs(pages[i], dirName, i, sidebarFilePath);
-          addSidebarDataToFrontmatter(pages[i], dirName);
-        }
-        await mutableFilesystem.promises.writeFile(sidebarFilePath, '[]');
+        );
+        pageList = pageList
+          .filter(page => filterPages(page))
+          .sort((pageA, pageB) => sortPagesByPriority(pageA, pageB, dirName));
+        return pageList;
       }
+
+      /**
+       * Group the pages into parent/child hierachy
+       * @param pages - sidebar pages
+       */
+      function createGroupMap(pages) {
+        return pages.reduce((result, page) => {
+          const name = page.sidebar?.label || page.title;
+          const id = page.route;
+          const isGroup = /\/index$/.test(page.route);
+          const groupPath = path.posix.dirname(page.fullPath);
+          const level = getPageLevel(page);
+          const newChildNode = { id, name, data: { level, link: page.route }, childNodes: [] };
+          if (isGroup) {
+            result[groupPath] = {
+              ...newChildNode,
+              ...result[groupPath]
+            };
+          } else {
+            const childNodes = Object.prototype.hasOwnProperty.call(result, groupPath)
+              ? result[groupPath].childNodes
+              : [];
+            result[groupPath] = {
+              ...result[groupPath],
+              childNodes: [...childNodes, newChildNode]
+            };
+          }
+          return result;
+        }, {});
+      }
+
+      /**
+       * Link the group map to their parents
+       * @param groupMap - unlinked groups of pages
+       * @param dirName - root path of sidebar
+       */
+      function linkGroupMap(groupMap, dirName) {
+        const linkedGroupMap = cloneDeep(groupMap);
+        const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathLevel);
+        sortedGroupMapKeys.forEach(groupPath => {
+          let parentGroupPath = path.posix.dirname(groupPath);
+          if (linkedGroupMap[parentGroupPath] === undefined) {
+            return;
+          }
+          linkedGroupMap[parentGroupPath].childNodes = [
+            ...linkedGroupMap[parentGroupPath].childNodes,
+            linkedGroupMap[groupPath]
+          ];
+        });
+        return [linkedGroupMap[dirName]];
+      }
+
+      /**
+       * Link each page to a sidebar.json file via ref
+       * @param pages - sidebar pages
+       * @param dirName - root path of sidebar
+       * @param maxLevel - max level
+       */
+      function addSidebarDataToFrontmatter(pages, dirName, maxLevel = Infinity) {
+        pages.forEach(page => {
+          const pageLevel = getPageLevel(page);
+          // A page can only have one sidebar but different levels  have different sidebars
+          // this enables us to support a root index that contains all pages
+          if (pageLevel <= maxLevel) {
+            // set Ref for pages below root and not above root
+            config.setRef(
+              String(page.fullPath),
+              ['sidebarData', '$ref'],
+              path.posix.join(dirName, options.filename, '#', 'pages')
+            );
+          }
+        });
+      }
+
+      const rootUserJourneys = await mutableFilesystem.promises.glob('**', {
+        onlyDirectories: true,
+        cwd: '/',
+        deep: UserJourneyRootLevel
+      });
+
+      rootUserJourneys.forEach(async dirName => {
+        const sidebarFilePath = path.posix.join(String(dirName), options.filename);
+        const pages = await createPageList(dirName);
+        const groupMap = createGroupMap(pages);
+        const sidebarData = linkGroupMap(groupMap, dirName);
+        await mutableFilesystem.promises.writeFile(
+          sidebarFilePath,
+          JSON.stringify({ pages: sidebarData })
+        );
+        const dirNameLevel = dirName.split('/').length - 1;
+        let maxLevel;
+        // Add the sidebar frontmatter to each page, via ref
+        // e.g /mosaic/docs/sidebar.json -> /mosaic/docs/index.mdx
+        // The root directory contains it's own sidebar.json with everything inside it
+        // /mosaic/sidebar.json > /mosaic/index.mdx
+        if (dirNameLevel < UserJourneyRootLevel) {
+          maxLevel = UserJourneyRootLevel - 1;
+        }
+        addSidebarDataToFrontmatter(pages, dirName, maxLevel);
+      });
     }
   };
 export default SidebarPlugin;

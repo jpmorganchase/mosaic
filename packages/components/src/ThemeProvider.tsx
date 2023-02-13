@@ -18,7 +18,10 @@ export function ThemeProvider({ children }: { children?: ReactNode }) {
 
   return (
     <SaltProvider applyClassesTo="child" mode={hasHydrated ? colorMode : 'light'}>
-      <div>{children}</div>
+      <div>
+        {children}
+        <div data-mosaic-id="portal-root" />
+      </div>
     </SaltProvider>
   );
 }

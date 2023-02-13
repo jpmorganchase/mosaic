@@ -8,7 +8,7 @@ import {
   DocPaginator,
   Footer,
   TableOfContents,
-  VerticalNavigation
+  PageNavigation
 } from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutBase } from '../../LayoutBase';
@@ -49,7 +49,7 @@ export const PythonDoc: React.FC<LayoutProps> = ({
           <BackLink {...BackLinkProps} />
         </header>
       )}
-      <VerticalNavigation />
+      <PageNavigation />
       {SidebarProps?.helpLinks && <HelpLinks subTitle="Need help?" {...SidebarProps.helpLinks} />}
     </>
   );

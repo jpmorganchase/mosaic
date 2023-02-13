@@ -4,11 +4,11 @@ import { useRoute } from './useRoute';
 import type { Breadcrumb } from './types';
 
 export function useSidebar() {
-  const sidebarData = useStore(state => state.sidebarData) || [];
+  const menu = useStore(state => state.sidebarData) || [];
   const { route } = useRoute();
   const { breadcrumbs } = useBreadcrumbs();
   return {
-    sidebarData,
+    menu,
     selectedNodeId: route,
     expandedNodeIds: getIds(breadcrumbs)
   };
