@@ -1,0 +1,77 @@
+---
+title: Modes of operation
+layout: DetailTechnical
+lastModified: 1675330424000
+fullPath: /mosaic/docs/modes/index.mdx
+route: /mosaic/docs/modes/index
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/docs/index.mdx
+    id: /mosaic/docs/index.mdx
+  - label: Modes of operation
+    path: /mosaic/docs/modes/index.mdx
+    id: /mosaic/docs/modes/index.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.485
+  time: 29100
+  words: 97
+navigation:
+  next:
+    title: Active mode
+    fullPath: /mosaic/docs/modes/active
+sidebarData:
+  - id: /mosaic/docs/modes/index
+    name: Modes of operation
+    data:
+      link: /mosaic/docs/modes/index
+  - id: /mosaic/docs/modes/active
+    name: Active mode
+    data:
+      link: /mosaic/docs/modes/active
+  - id: /mosaic/docs/modes/snapshot-file
+    name: Snapshot file mode
+    data:
+      link: /mosaic/docs/modes/snapshot-file
+  - id: /mosaic/docs/modes/snapshot-s3
+    name: Snapshot AWS/S3 mode
+    data:
+      link: /mosaic/docs/modes/snapshot-s3
+---
+
+# {meta.title}
+
+Mosaic can operate in 3 different modes
+
+- `active`
+- `snapshot-file`
+- `snapshot-s3`
+
+## Active updates
+
+In _active_ mode, content updates in real-time.
+
+_active_ mode content is pulled at configured intervals in real-time, as defined by `mosaic.config.js`.
+
+Read the [active](./active) configuration docs.
+
+## Static content
+
+Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
+
+In a snapshot mode, the snapshot does update itself.
+
+### File based snapshots
+
+In `snapshot-file` mode, immutable snapshots of content are loaded at startup from the local file-system.
+
+Read the [snapshot-file](./snapshot-file) configuration docs.
+
+### S3 based snapshots
+
+In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
+
+Read the [snapshot-s3](./snapshot-s3) configuration docs.

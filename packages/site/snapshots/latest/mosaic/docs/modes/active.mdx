@@ -1,0 +1,86 @@
+---
+title: Active mode
+layout: DetailTechnical
+lastModified: 1675330424000
+fullPath: /mosaic/docs/modes/active.mdx
+route: /mosaic/docs/modes/active
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/docs/index.mdx
+    id: /mosaic/docs/index.mdx
+  - label: Modes of operation
+    path: /mosaic/docs/modes/index.mdx
+    id: /mosaic/docs/modes/index.mdx
+  - label: Active mode
+    path: /mosaic/docs/modes/active.mdx
+    id: /mosaic/docs/modes/active.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.98
+  time: 58800
+  words: 196
+navigation:
+  prev:
+    title: Modes of operation
+    fullPath: /mosaic/docs/modes/index
+  next:
+    title: Snapshot file mode
+    fullPath: /mosaic/docs/modes/snapshot-file
+sidebarData:
+  - id: /mosaic/docs/modes/index
+    name: Modes of operation
+    data:
+      link: /mosaic/docs/modes/index
+  - id: /mosaic/docs/modes/active
+    name: Active mode
+    data:
+      link: /mosaic/docs/modes/active
+  - id: /mosaic/docs/modes/snapshot-file
+    name: Snapshot file mode
+    data:
+      link: /mosaic/docs/modes/snapshot-file
+  - id: /mosaic/docs/modes/snapshot-s3
+    name: Snapshot AWS/S3 mode
+    data:
+      link: /mosaic/docs/modes/snapshot-s3
+---
+
+# Active Mode
+
+In `active` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
+As your content changes, the site will _re-pull_ the content and update your site in real-time.
+
+The standard generated site comes with 2 sources to demonstrate, how 'active' mode work.
+
+- a local source, which loads content from `./docs`
+- a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
+
+## Configuring Your Content Sources
+
+All content is composed together within a _namespace_.
+
+A _namespace_ is the scope for aggregated content, represented by the root path.
+e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
+
+Mosaic doc sources are defined by a file called `mosaic.config.js`
+
+Here is how that might look for a standard site.
+
+## Pull Your Local Content
+
+To tryout local content creation, add a file called`./docs/index.mdx`
+
+The load `http://localhost:3000/local`
+
+Each directory should contain an `index.mdx` which is the default page, when a page is loaded without a path
+
+Now create other pages and subdirectories and explore how Mosaic, builds your user-journeys from your fileset.
+
+## Pull Your Remote Content
+
+To tryout remote content creation, your standard site comes pre-configured to load our Mosaic sample docs.
+
+Edit the `mosaic.config.js` and change your `repoUrl` and `branch` to pull content from other repos.

@@ -1,51 +1,51 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  	<url>
-		<loc>/mosaic/index.mdx</loc>
+		<loc>/local/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/index.mdx</loc>
+		<loc>/local/docs/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/publish-site-to-aws.mdx</loc>
+		<loc>/local/docs/publish-site-to-aws.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/publish-site-to-vercel.mdx</loc>
+		<loc>/local/docs/publish-site-to-vercel.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/quick-start/index.mdx</loc>
+		<loc>/local/quick-start/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/quick-start/publish-site-to-aws.mdx</loc>
+		<loc>/local/quick-start/publish-site-to-aws.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/active.mdx</loc>
+		<loc>/local/docs/modes/active.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/index.mdx</loc>
+		<loc>/local/docs/modes/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/snapshot-file.mdx</loc>
+		<loc>/local/docs/modes/snapshot-file.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/snapshot-s3.mdx</loc>
+		<loc>/local/docs/modes/snapshot-s3.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

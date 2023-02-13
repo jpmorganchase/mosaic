@@ -1,0 +1,98 @@
+---
+title: Getting started
+layout: DetailTechnical
+lastModified: 1675330424000
+fullPath: /mosaic/docs/index.mdx
+route: /mosaic/docs/index
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/docs/index.mdx
+    id: /mosaic/docs/index.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.765
+  time: 45900
+  words: 153
+navigation:
+  next:
+    title: Publish a site to AWS
+    fullPath: /mosaic/docs/publish-site-to-aws
+sidebarData:
+  - id: /mosaic/docs/index
+    name: Getting started
+    data:
+      link: /mosaic/docs/index
+  - id: /mosaic/docs/publish-site-to-aws
+    name: Publish a site to AWS
+    data:
+      link: /mosaic/docs/publish-site-to-aws
+  - id: /mosaic/docs/publish-site-to-vercel
+    name: Publish a site to Vercel
+    data:
+      link: /mosaic/docs/publish-site-to-vercel
+  - id: /mosaic/docs/modes/index
+    name: Modes of operation
+    data:
+      link: /mosaic/docs/modes/index
+    childNodes:
+      - id: /mosaic/docs/modes/active
+        name: Active mode
+        data:
+          link: /mosaic/docs/modes/active
+      - id: /mosaic/docs/modes/snapshot-file
+        name: Snapshot file mode
+        data:
+          link: /mosaic/docs/modes/snapshot-file
+      - id: /mosaic/docs/modes/snapshot-s3
+        name: Snapshot AWS/S3 mode
+        data:
+          link: /mosaic/docs/modes/snapshot-s3
+---
+
+# Create your first site
+
+To create your first Mosaic site, we have created a command line generator that scaffolds a _standard_ site.
+
+A _standard_ site offers
+
+- an out the box, working site, which showcases local and remote content sources
+- a minimal set of files that can be configured with your own components, themes, layouts, sources and plugins
+- an update path that enables you to update Mosaic, independently of your own configuration
+
+Let's get started:
+
+Install the Mosaic create site script.
+
+```
+> yarn global add @jpmorganchase/mosaic-create-site
+```
+
+Create a directory for your site and run the `mosaic-create-site` script.
+
+```
+> mkdir mosaic-sample-site
+> cd mosaic-sample-site
+> mosaic-create-site -f .
+```
+
+Define the environment variable, which enables us to access your remote repo.
+
+```
+> export MOSAIC_DOCS_CLONE_CREDENTIALS="<your GIT username:PAT Token>"
+```
+
+The `MOSAIC_DOCS_CLONE_CREDENTIALS` environment variable is composed of your git username and your PAT token.
+Follow these [docs](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to see how to create your own PAT token.
+
+Your site is ready to run.
+
+```
+> yarn serve
+```
+
+In your browser load `http://localhost:3000`
+
+Congratulations, you have created your first Mosaic site.

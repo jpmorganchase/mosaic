@@ -1,0 +1,69 @@
+---
+title: Snapshot file mode
+layout: DetailTechnical
+lastModified: 1675330424000
+fullPath: /mosaic/docs/modes/snapshot-file.mdx
+route: /mosaic/docs/modes/snapshot-file
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/docs/index.mdx
+    id: /mosaic/docs/index.mdx
+  - label: Modes of operation
+    path: /mosaic/docs/modes/index.mdx
+    id: /mosaic/docs/modes/index.mdx
+  - label: Snapshot file mode
+    path: /mosaic/docs/modes/snapshot-file.mdx
+    id: /mosaic/docs/modes/snapshot-file.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.315
+  time: 18900
+  words: 63
+navigation:
+  prev:
+    title: Active mode
+    fullPath: /mosaic/docs/modes/active
+  next:
+    title: Snapshot AWS/S3 mode
+    fullPath: /mosaic/docs/modes/snapshot-s3
+sidebarData:
+  - id: /mosaic/docs/modes/index
+    name: Modes of operation
+    data:
+      link: /mosaic/docs/modes/index
+  - id: /mosaic/docs/modes/active
+    name: Active mode
+    data:
+      link: /mosaic/docs/modes/active
+  - id: /mosaic/docs/modes/snapshot-file
+    name: Snapshot file mode
+    data:
+      link: /mosaic/docs/modes/snapshot-file
+  - id: /mosaic/docs/modes/snapshot-s3
+    name: Snapshot AWS/S3 mode
+    data:
+      link: /mosaic/docs/modes/snapshot-s3
+---
+
+In `snapshot-file` mode a local immutable snapshot can be loaded by the site. Typically, the snapshot and the site are
+deployed together and upon startup the site can load the snapshot from the local file-system.
+
+To use `snapshot-file` mode
+
+```
+export MOSAIC_MODE="snapshot-file"
+export MOSAIC_SNAPSHOT_DIR="./snapshot/latest"
+```
+
+## Generating snapshot
+
+To generate a snapshot, run
+
+```
+yarn gen:snapshot
+```
+
+Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
