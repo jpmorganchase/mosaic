@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-create-site",
-  "version": "0.1.0-beta.19",
+  "version": "0.1.0-beta.20",
   "license": "Apache-2.0",
   "description": "Mosaic - Create Site CLI",
   "main": "./dist/index.js",
