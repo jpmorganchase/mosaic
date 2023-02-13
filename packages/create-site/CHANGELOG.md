@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.20
+
+### Patch Changes
+
+- deaf2a3: Fix `mosaic-create-site` not working on Windows
+
 ## 0.1.0-beta.19
 
 ### Patch Changes
