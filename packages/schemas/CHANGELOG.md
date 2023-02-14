@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-schemas
 
+## 0.1.0-beta.20
+
+### Patch Changes
+
+- 9c7b8ff: pip to beta.20
+
 ## 0.1.0-beta.19
 
 ### Patch Changes

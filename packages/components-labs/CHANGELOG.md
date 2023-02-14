@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.20
+
+### Patch Changes
+
+- 9c7b8ff: pip to beta.20
+- Updated dependencies [9c7b8ff]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.20
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.20
+
 ## 0.1.0-beta.19
 
 ### Patch Changes
