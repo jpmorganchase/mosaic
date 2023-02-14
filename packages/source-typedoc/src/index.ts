@@ -1,8 +1,10 @@
 // @ts-nocheck
-import { Observable, of, switchMap } from 'rxjs';
+import path from 'path';
+import { Observable, of, switchMap, from } from 'rxjs';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import GitRepoSource, { schema } from '@jpmorganchase/mosaic-source-git-repo';
+import createContent from './createContent.js';
 
 export type TypeDocSourceOptions = z.infer<typeof schema>;
 
@@ -14,12 +16,26 @@ const TypeDocSource: Source<TypeDocSourceOptions> = {
 
     return watchRepo$.pipe(
       switchMap(pages => {
+        console.log('typedocSource');
+
         // {
-        //   content: HTML,
+        //   content: HTMLDOC,
         //   fullPath: '/typedocs/modules/ViewStack.html',
         //   lastModified: 1649330233000
         // }
-        return of(pages);
+
+        const sourcePages = pages.map(async page => {
+          // const content = await createContent(page.content)
+          // const pageContent = content.toString()
+
+          return {
+            content: '',
+            fullPath: page.route,
+            lastModified: page.lastModified
+          };
+        });
+
+        return of(sourcePages);
       })
     );
   }

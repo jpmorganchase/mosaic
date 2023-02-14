@@ -1,12 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import { createElement, Fragment } from 'react';
+import { createElement } from 'react';
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 import rehypeReact from 'rehype-react';
 import reactElementToJSXStringEntry from 'react-element-to-jsx-string';
 import removeUnusedElements from './removeUnusedElements.js';
-import preprocessTree from './preprocessTree.js';
+// import preprocessTree from './preprocessTree.js';
 
 const createLinkElement = (name, { href, ...rest }, children) => {
   // Keep anchors for local anchors on current page
@@ -55,11 +55,10 @@ const options = {
 };
 
 const createContent = async (data: string) => {
-  console.log('createContent');
   const sourcePage = data.toString();
   const content = await unified()
     .use(rehypeParse)
-    // .use(preprocessTree, { className, contentRoot, pagePath })
+    // // .use(preprocessTree, { className, contentRoot, pagePath })
     .use(rehypeReact, options)
     .use(removeUnusedElements)
     .process(sourcePage);

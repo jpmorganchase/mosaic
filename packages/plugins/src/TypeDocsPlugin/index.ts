@@ -1,13 +1,7 @@
 // import path from 'path';
 // import { escapeRegExp } from 'lodash-es';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-
-// function createPageTest(ignorePages, pageExtensions) {
-//   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-//   const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-//   return file =>
-//     !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-// }
+// import createContent from './createContent.js'
 
 interface AliasPluginPage extends Page {
   aliases?: string[];
@@ -19,13 +13,19 @@ interface AliasPluginPage extends Page {
  */
 const TypeDocsPlugin: PluginType<AliasPluginPage> = {
   async $afterSource(pages) {
-    //{ config, ignorePages, pageExtensions }
-    console.log('***************typedocsPlugin');
-    console.log(pages);
+    const sourcePages = pages.map(page => {
+      // console.log('typedocSource')
+      // console.log(page.content)
+      // let content = createContent(page.content)
 
-    // Group together all aliases defined in the frontmatter and store them in the alias config object
+      return {
+        content: page.content,
+        fullPath: page.fullPath,
+        lastModified: page.lastModified
+      };
+    });
 
-    return pages;
+    return sourcePages;
   }
 };
 

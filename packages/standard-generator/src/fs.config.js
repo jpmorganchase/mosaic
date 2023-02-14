@@ -31,9 +31,6 @@ module.exports = {
   ],
   plugins: [
     {
-      modulePath: '@jpmorganchase/mosaic-plugins/TypeDocsPlugin/index'
-    },
-    {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
       options: {}
     },
