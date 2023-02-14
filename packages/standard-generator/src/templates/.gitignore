@@ -1,0 +1,42 @@
+node_modules
+
+**/.tmp/
+**/dist/
+**/build/
+**/.next/
+
+# Dependencies
+**/node_modules
+
+# Production
+**/dist-labs/
+**/.tmp/**
+tsconfig.tsbuildinfo
+
+# Deployment
+packages/rig
+
+# Test Results
+coverage
+sonar-reports
+test-report.xml
+junit.xml
+test-results.json
+
+# Misc
+.DS_Store
+.idea
+.vscode
+.db
+*.iml
+thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Turbo Repo
+.turbo
+
+
