@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-source-http
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- f75fd5e: fix sidebar which was generated after `beforeSend` had completed
+- Updated dependencies [f75fd5e]
+  - @jpmorganchase/mosaic-from-http-request@0.1.0-beta.21
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.21
+  - @jpmorganchase/mosaic-types@0.1.0-beta.21
+
 ## 0.1.0-beta.20
 
 ### Patch Changes

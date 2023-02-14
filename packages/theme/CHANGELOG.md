@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- f75fd5e: fix sidebar which was generated after `beforeSend` had completed
+
 ## 0.1.0-beta.20
 
 ### Patch Changes

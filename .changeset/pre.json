@@ -28,6 +28,7 @@
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14"
   },
   "changesets": [
+    "cool-moose-design",
     "curly-mayflies-smash",
     "eighty-rings-marry",
     "fifty-chairs-happen",
