@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- f75fd5e: fix sidebar which was generated after `beforeSend` had completed
+- Updated dependencies [f75fd5e]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.21
+
 ## 0.1.0-beta.20
 
 ### Patch Changes

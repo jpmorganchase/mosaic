@@ -1,5 +1,28 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.20
+
+### Patch Changes
+
+- f75fd5e: fix sidebar which was generated after `beforeSend` had completed
+- Updated dependencies [f75fd5e]
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.21
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.21
+  - @jpmorganchase/mosaic-components@0.1.0-beta.21
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.21
+  - @jpmorganchase/mosaic-core@0.1.0-beta.21
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.21
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.21
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.21
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.21
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.21
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.21
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.21
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.21
+  - @jpmorganchase/mosaic-store@0.1.0-beta.21
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.21
+  - @jpmorganchase/mosaic-types@0.1.0-beta.21
+
 ## 0.1.0-beta.19
 
 ### Patch Changes

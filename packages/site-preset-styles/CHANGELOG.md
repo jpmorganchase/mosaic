@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.21
+
+### Patch Changes
+
+- f75fd5e: fix sidebar which was generated after `beforeSend` had completed
+- Updated dependencies [f75fd5e]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.21
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.21
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.21
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.21
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.21
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.21
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.21
+
 ## 0.1.0-beta.20
 
 ### Patch Changes
