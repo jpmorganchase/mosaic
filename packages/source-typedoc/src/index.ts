@@ -25,12 +25,12 @@ const TypeDocSource: Source<TypeDocSourceOptions> = {
         // }
 
         const sourcePages = pages.map(async page => {
-          // const content = await createContent(page.content)
+          const content = await createContent(page.content);
           // const pageContent = content.toString()
 
           return {
-            content: '',
-            fullPath: page.route,
+            content: 'Need to Add Page Content Here',
+            fullPath: page.fullPath,
             lastModified: page.lastModified
           };
         });

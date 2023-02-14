@@ -56,7 +56,6 @@ const options = {
 };
 
 const createContent = async (data: string) => {
-  console.log('html');
   const sourcePage = data.toString();
   const content = await unified()
     .use(rehypeParse)
@@ -83,7 +82,8 @@ const Serialisers: Serialiser = {
   },
 
   async deserialise(fullPath, data) {
-    const content = data.toString();
+    console.log('html');
+    const content = await data.toString();
     // await createContent(data)
     return { content, fullPath };
   }

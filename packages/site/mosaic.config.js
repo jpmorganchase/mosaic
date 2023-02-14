@@ -34,7 +34,7 @@ module.exports = deepmerge(mosaicConfig, {
   ],
   serialisers: [
     {
-      modulePath: '@jpmorganchase/mosaic-serialisers/mdx',
+      modulePath: '@jpmorganchase/mosaic-serialisers/html',
       filter: /\.html$/,
       options: {}
     }
