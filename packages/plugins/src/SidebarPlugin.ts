@@ -177,26 +177,28 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: UserJourneyRootLevel
       });
 
-      rootUserJourneys.forEach(async dirName => {
-        const sidebarFilePath = path.posix.join(String(dirName), options.filename);
-        const pages = await createPageList(dirName);
-        const groupMap = createGroupMap(pages);
-        const sidebarData = linkGroupMap(groupMap, dirName);
-        await mutableFilesystem.promises.writeFile(
-          sidebarFilePath,
-          JSON.stringify({ pages: sidebarData })
-        );
-        const dirNameLevel = dirName.split('/').length - 1;
-        let maxLevel;
-        // Add the sidebar frontmatter to each page, via ref
-        // e.g /mosaic/docs/sidebar.json -> /mosaic/docs/index.mdx
-        // The root directory contains it's own sidebar.json with everything inside it
-        // /mosaic/sidebar.json > /mosaic/index.mdx
-        if (dirNameLevel < UserJourneyRootLevel) {
-          maxLevel = UserJourneyRootLevel - 1;
-        }
-        addSidebarDataToFrontmatter(pages, dirName, maxLevel);
-      });
+      await Promise.all(
+        rootUserJourneys.map(async dirName => {
+          const sidebarFilePath = path.posix.join(String(dirName), options.filename);
+          const pages = await createPageList(dirName);
+          const groupMap = createGroupMap(pages);
+          const sidebarData = linkGroupMap(groupMap, dirName);
+          await mutableFilesystem.promises.writeFile(
+            sidebarFilePath,
+            JSON.stringify({ pages: sidebarData })
+          );
+          const dirNameLevel = dirName.split('/').length - 1;
+          let maxLevel;
+          // Add the sidebar frontmatter to each page, via ref
+          // e.g /mosaic/docs/sidebar.json -> /mosaic/docs/index.mdx
+          // The root directory contains it's own sidebar.json with everything inside it
+          // /mosaic/sidebar.json > /mosaic/index.mdx
+          if (dirNameLevel < UserJourneyRootLevel) {
+            maxLevel = UserJourneyRootLevel - 1;
+          }
+          addSidebarDataToFrontmatter(pages, dirName, maxLevel);
+        })
+      );
     }
   };
 export default SidebarPlugin;
