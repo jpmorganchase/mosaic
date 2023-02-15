@@ -21,6 +21,7 @@ import { Card } from '../Card';
 import type { CardProps } from '../Card';
 import { Cards } from '../Cards';
 import type { CardsProps } from '../Cards';
+import { Carousel, CarouselProps, CarouselSlide, CarouselSlideProps } from '@salt-ds/lab';
 import { ComponentExample } from '../ComponentExample';
 import type { ComponentExampleProps } from '../ComponentExample';
 import { DataTable } from '../DataTable';
@@ -114,6 +115,8 @@ export const getMarkdownComponents = () => ({
   Callout: withMarkdownSpacing<CalloutProps>(Callout),
   Card: withMarkdownSpacing<CardProps>(Card),
   Cards: withMarkdownSpacing<CardsProps>(Cards),
+  Carousel: withMarkdownSpacing<CarouselProps>(Carousel),
+  CarouselSlide: withMarkdownSpacing<CarouselSlideProps>(CarouselSlide),
   ComponentExample: withMarkdownSpacing<ComponentExampleProps>(ComponentExample),
   DataTable: withMarkdownSpacing<DataTableProps<any> & { ref?: Ref<HTMLTableElement> }>(DataTable),
   EditionFilterView,
