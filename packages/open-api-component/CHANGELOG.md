@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-open-api-component
 
+## 0.1.0-beta.22
+
+### Patch Changes
+
+- be89e4f: fix markdown tables and update generator's Salt patches
+
+  - Salt patches in generator were out of sync with Mosaic repo
+  - Markdown now support github flavoured markdown, such as Tables
+
+- Updated dependencies [be89e4f]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.22
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.22
+
 ## 0.1.0-beta.21
 
 ### Patch Changes
