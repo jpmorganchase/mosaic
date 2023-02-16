@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles, action } from '@jpmorganchase/mosaic-theme';
+import { responsiveSprinkles, action, unorderedListItem } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -7,5 +7,6 @@ export default {
     responsiveSprinkles({
       paddingBottom: ['x4', 'x4', 'x4', 'x4']
     })
-  ])
+  ]),
+  wrapper: unorderedListItem({ variant: 'blank', size: 'small' })
 };
