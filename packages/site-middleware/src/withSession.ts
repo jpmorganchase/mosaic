@@ -61,7 +61,7 @@ export const withSession: MosaicMiddleware<SessionProps, SessionOptions> = async
   context,
   options
 ) => {
-  if (process.env.ENABLE_LOGIN !== 'true') {
+  if (process.env.NEXT_PUBLIC_ENABLE_LOGIN !== 'true') {
     return {};
   }
   if (!process.env.COOKIE_SECRET) {
