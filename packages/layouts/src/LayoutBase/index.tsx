@@ -1,6 +1,5 @@
 import React from 'react';
 import { Spinner } from '@salt-ds/lab';
-import { useRouter } from 'next/router';
 import classnames from 'classnames';
 import { SidebarProvider } from '@jpmorganchase/mosaic-site-components';
 
@@ -30,7 +29,7 @@ export const LayoutBase = ({
               <Spinner size="large" />
             </div>
           </Fade>
-          <React.Fragment key={useRouter().asPath.replace(/#.*$/, '')}>{children}</React.Fragment>
+          <React.Fragment>{children}</React.Fragment>
         </main>
       </div>
     </SidebarProvider>
