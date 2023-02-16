@@ -11,7 +11,7 @@ export const sidebarProperties = defineProperties({
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
     display: ['block', 'none'],
-    width: { none: '0px', wide: 'auto', narrow: '23%', drawer: 'auto' }
+    width: { none: '0px', wide: '40%', narrow: '23%', drawer: 'auto' }
   }
 });
 
@@ -36,17 +36,13 @@ export const sidebar = recipe({
     }),
     sidebarSprinkles({
       display: ['block', 'block', 'block', 'block'],
-      width: ['wide', 'wide', 'narrow', 'wide']
+      width: ['drawer', 'drawer', 'wide', 'wide']
     })
   ]),
   variants: {
     side: {
-      left: {
-        width: `${config.sidebarLeft.width}px`
-      },
-      right: {
-        width: `${config.sidebarRight.width}px`
-      }
+      left: {},
+      right: {}
     }
   },
   defaultVariants: {
