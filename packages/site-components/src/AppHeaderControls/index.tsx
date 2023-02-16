@@ -29,6 +29,8 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   const { setColorMode } = useStoreActions();
 
   const { data: session } = useSession();
+  const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
+  console.log(isLoginEnabled);
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
 
@@ -52,7 +54,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
       }
     });
   }
-  if (isLoggedIn) {
+  if (isLoginEnabled && isLoggedIn) {
     actionMenuOptions = [...actionMenuOptions, { title: 'Logout', link: '/api/auth/signout' }];
   }
   function handleMenuSelect(selectedMenuItem) {
@@ -75,21 +77,25 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
 
   return (
     <div className={styles.root}>
-      <EditorControls isLoggedIn={isLoggedIn} />
-      <div className={styles.userInfo}>
-        {isLoggedIn ? (
-          <UserProfile
-            avatarUrl={session?.user?.image || ''}
-            firstName={toUpperFirst(session?.user?.name)}
-            prefixText="Welcome, "
-          />
-        ) : (
-          // eslint-disable-next-line react/jsx-no-bind
-          <Link onClick={handleLogin} variant="component">
-            Login
-          </Link>
-        )}
-      </div>
+      {isLoginEnabled && (
+        <>
+          <EditorControls isLoggedIn={isLoggedIn} />
+          <div className={styles.userInfo}>
+            {isLoggedIn ? (
+              <UserProfile
+                avatarUrl={session?.user?.image || ''}
+                firstName={toUpperFirst(session?.user?.name)}
+                prefixText="Welcome, "
+              />
+            ) : (
+              // eslint-disable-next-line react/jsx-no-bind
+              <Link onClick={handleLogin} variant="component">
+                Login
+              </Link>
+            )}
+          </div>
+        </>
+      )}
 
       <MenuButton
         CascadingMenuProps={{
