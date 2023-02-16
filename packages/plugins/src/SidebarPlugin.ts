@@ -4,7 +4,7 @@ import { sidebarDataLayoutSchema } from '@jpmorganchase/mosaic-schemas';
 import { cloneDeep } from 'lodash-es';
 
 // What level the sidebar.json files are created
-const UserJourneyRootLevel = 2;
+const UserJourneyRootLevel = 1;
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
