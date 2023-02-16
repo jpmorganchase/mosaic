@@ -24,13 +24,20 @@ const menuItemStyles = {
   }
 };
 
+const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
+  if (href === selectedNodeId) {
+    return <div {...rest} />;
+  }
+  return <Link href={href} variant={'selectable'} {...rest} />;
+};
+
 const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
   menu.reduce((result, item) => {
     const menuItem = item.childNodes?.length ? (
       <SubMenu
         active={selectedNodeId === item.id}
-        open={true}
-        component={<Link href={item.data.link} variant={'selectable'} />}
+        component={<SubMenuLink href={item.data.link} selectedNodeId={selectedNodeId} />}
+        defaultOpen
         key={item.id}
         label={item.name}
       >
@@ -54,7 +61,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   selectedNodeId,
   ...rest
 }) => (
-  <SidebarPro backgroundColor="inherit" {...rest}>
+  <SidebarPro backgroundColor="inherit" width="auto" {...rest}>
     <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
       {renderMenu(menu, expandedNodeIds, selectedNodeId)}
     </Menu>
