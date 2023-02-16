@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { action, animation, backgroundColor, config } from '@jpmorganchase/mosaic-theme';
+import { animation, backgroundColor, config, paragraph } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -7,8 +7,8 @@ export default {
       position: 'absolute',
       zIndex: 20000
     },
-    action({ variant: 'action1' }),
-    backgroundColor({ variant: 'regular' })
+    backgroundColor({ variant: 'regular' }),
+    paragraph({ variant: 'paragraph2' })
   ]),
   layerLayout: style({
     background: 'inherit !important',
