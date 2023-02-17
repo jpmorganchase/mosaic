@@ -2,7 +2,7 @@ import { style } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { config } from '../config';
+// import { config } from '../config';
 import { responsiveConditions, responsiveSprinkles } from '../responsive/responsive.css';
 
 export const sidebarProperties = defineProperties({
@@ -24,8 +24,9 @@ export const sidebar = recipe({
       bottom: 0,
       overflowY: 'scroll',
       position: 'relative',
-      top: `${config.appHeader.height}px`,
-      height: `calc(100% - ${config.appHeader.height}px)`
+      top: '-20px'
+      // top: `${config.appHeader.height}px`,
+      // height: `calc(100% - ${config.appHeader.height}px)`
     },
     responsiveSprinkles({
       marginRight: ['none', 'none', 'none', 'none'],

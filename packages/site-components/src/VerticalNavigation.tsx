@@ -17,11 +17,19 @@ export type VerticalNavigationProps = {
 const MenuIcon = ({ open }) => <Icon name={open ? 'chevronDown' : 'chevronRight'} />;
 
 const menuItemStyles = {
-  button: ({ active }) => {
-    return {
-      fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)'
-    };
-  }
+  root: {
+    fontSize: '13px'
+  },
+  subMenuContent: {
+    backgroundColor: 'inherit'
+  },
+  button: ({ active }) => ({
+    fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)',
+    '&:hover': {
+      opacity: 0.5,
+      backgroundColor: 'inherit'
+    }
+  })
 };
 
 const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
@@ -61,7 +69,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   selectedNodeId,
   ...rest
 }) => (
-  <SidebarPro backgroundColor="inherit" width="auto" {...rest}>
+  <SidebarPro style={{ height: '100%' }} backgroundColor="inherit" width="auto" {...rest}>
     <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
       {renderMenu(menu, expandedNodeIds, selectedNodeId)}
     </Menu>
