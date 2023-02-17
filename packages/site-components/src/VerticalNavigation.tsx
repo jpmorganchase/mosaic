@@ -32,7 +32,7 @@ const menuItemStyles = {
   })
 };
 
-const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
+const SubMenuTab = ({ href, selectedNodeId, ...rest }) => {
   if (href === selectedNodeId) {
     return <div {...rest} />;
   }
@@ -51,7 +51,7 @@ const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
     const menuItem = item.childNodes?.length ? (
       <SubMenu
         active={selectedNodeId === item.id}
-        component={<SubMenuLink href={item.data.link} selectedNodeId={selectedNodeId} />}
+        component={<SubMenuTab href={item.data.link} selectedNodeId={selectedNodeId} />}
         defaultOpen
         key={item.id}
         label={item.name}
