@@ -25,9 +25,11 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
       {breadcrumbs.map(
         (value, index) =>
           value && (
-            <Breadcrumb href={value.path} key={`${value.id}-${index}`}>
-              {value.label}
-            </Breadcrumb>
+            <li className={styles.wrapper}>
+              <Breadcrumb href={value.path} key={`${value.id}-${index}`}>
+                {value.label}
+              </Breadcrumb>
+            </li>
           )
       )}
     </SaltBreadcrumbs>

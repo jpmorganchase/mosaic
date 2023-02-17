@@ -39,6 +39,13 @@ const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
   return <Link href={href} variant={'selectable'} {...rest} />;
 };
 
+const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
+  if (href === selectedNodeId) {
+    return <div {...rest} />;
+  }
+  return <Link href={href} variant={'selectable'} {...rest} />;
+};
+
 const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
   menu.reduce((result, item) => {
     const menuItem = item.childNodes?.length ? (
