@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { config, responsiveSprinkles, caption } from '@jpmorganchase/mosaic-theme';
+import { config, responsiveSprinkles, caption, link } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -16,15 +16,18 @@ export default {
     display: ['none', 'none', 'flex', 'flex'],
     marginRight: ['x3', 'x3', 'x3', 'x3']
   }),
-  menuButton: style({
-    selectors: {
-      ['button.&']: {
-        boxSizing: 'content-box',
-        width: `${config.appHeader.height}px`,
-        height: `${config.appHeader.height}px`
+  menuButton: style([
+    {
+      selectors: {
+        ['button.&']: {
+          boxSizing: 'content-box',
+          width: `${config.appHeader.height}px`,
+          height: `${config.appHeader.height}px`
+        }
       }
-    }
-  }),
+    },
+    link({ variant: 'selectable' })
+  ]),
   userInfo: responsiveSprinkles({
     display: ['none', 'flex', 'flex', 'flex']
   })
