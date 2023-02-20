@@ -1,8 +1,9 @@
 import { style } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
+// import { globalStyle } from '@vanilla-extract/css';
 
-import { config } from '../config';
+// import { config } from '../config';
 import { responsiveConditions, responsiveSprinkles } from '../responsive/responsive.css';
 
 export const sidebarProperties = defineProperties({
@@ -25,8 +26,9 @@ export const sidebar = recipe({
       display: 'flex',
       overflowY: 'scroll',
       position: 'relative',
-      top: `${config.appHeader.height}px`,
-      height: 'auto'
+      top: '-20px',
+      // top: `${config.appHeader.height}px`,
+      height: '100%'
     },
     responsiveSprinkles({
       marginRight: ['none', 'none', 'none', 'none'],

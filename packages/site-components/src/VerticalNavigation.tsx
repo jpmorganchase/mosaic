@@ -54,7 +54,8 @@ const createMenuItemStyles = colorMode => ({
 });
 
 const rootStyles = {
-  borderRightWidth: '0px'
+  borderRightWidth: '1px',
+  height: '100vh'
 };
 
 const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
@@ -66,6 +67,8 @@ const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
 
 const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
   menu.reduce((result, item) => {
+    console.log(result);
+    console.log(item);
     const menuItem = item?.childNodes?.length ? (
       <SubMenu
         active={selectedNodeId === item.id}
@@ -98,7 +101,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   const colorMode = useColorMode();
   const menuItemStyles = createMenuItemStyles(colorMode);
   return (
-    <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="auto" {...rest}>
+    <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="100%" {...rest}>
       <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
         {renderMenu(menu, expandedNodeIds, selectedNodeId)}
       </Menu>
