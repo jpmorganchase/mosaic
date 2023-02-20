@@ -54,8 +54,7 @@ const createMenuItemStyles = colorMode => ({
 });
 
 const rootStyles = {
-  borderRightWidth: '1px',
-  height: '100vh'
+  borderRightWidth: '0px'
 };
 
 const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
