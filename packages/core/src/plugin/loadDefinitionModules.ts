@@ -6,7 +6,10 @@ import type {
   Serialiser,
   SerialiserModuleDefinition
 } from '@jpmorganchase/mosaic-types';
+import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
 
+const require = createRequire(import.meta.url);
 const loadedPluginsAndSerialisers: { [key: string]: LoadedPlugin | LoadedSerialiser } = {};
 
 function createInvoker(plugin, api) {
@@ -44,7 +47,7 @@ export default async function loadDefinitionModules(
             | Partial<Plugin | Serialiser>
             | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
           // eslint-disable-next-line no-await-in-loop
-        } = await import(modulePath);
+        } = await import(pathToFileURL(require.resolve(modulePath)).toString());
         const pluginApi: Partial<Plugin | Serialiser> =
           '__esModule' in definitionExports && 'default' in definitionExports
             ? definitionExports.default

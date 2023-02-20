@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { program } from 'commander';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import serve from './serve.js';
 import uploadS3Snapshot from './upload-s3-snapshot.js';
@@ -23,7 +24,9 @@ if (program.args[0] === 'upload') {
   uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot));
 } else if (program.args[0] === 'build') {
   if (options.config !== undefined) {
-    const config = await import(path.resolve(process.cwd(), options.config));
+    const config = await import(
+      pathToFileURL(path.resolve(process.cwd(), options.config)).toString()
+    );
     if (!config) {
       throw new Error(
         `Could not find config file at ${path.resolve(process.cwd(), options.config)}.`
@@ -33,7 +36,9 @@ if (program.args[0] === 'upload') {
   }
 } else if (program.args[0] === 'serve') {
   if (options.config !== undefined) {
-    const config = await import(path.resolve(process.cwd(), options.config));
+    const config = await import(
+      pathToFileURL(path.resolve(process.cwd(), options.config)).toString()
+    );
     if (!config) {
       throw new Error(
         `Could not find config file at ${path.resolve(process.cwd(), options.config)}.`
