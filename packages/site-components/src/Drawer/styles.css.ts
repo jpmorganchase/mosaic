@@ -13,8 +13,7 @@ export default {
   layerLayout: style({
     background: 'inherit !important',
     padding: '0px',
-    margin: '0px',
-    width: 'auto !important'
+    margin: '0px'
   }),
   left: style({
     left: '0px',
