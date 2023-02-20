@@ -1,10 +1,9 @@
 import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
-import { sidebarDataLayoutSchema } from '@jpmorganchase/mosaic-schemas';
 import { cloneDeep } from 'lodash-es';
 
-// What level the sidebar.json files are created
-const UserJourneyRootLevel = 1;
+// Which level does sidebar creation start
+const sidebarRootLevel = 1;
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
@@ -40,12 +39,7 @@ function sortByPathLevel(pathA, pathB) {
   return pathBLevel - pathALevel;
 }
 
-function filterPages(page) {
-  return (
-    !(page.sidebar && page.sidebar.exclude) &&
-    sidebarDataLayoutSchema.safeParse(page.layout).success
-  );
-}
+const filterPages = page => !(page.sidebar && page.sidebar.exclude);
 
 interface SidebarPluginConfigData {
   dirs: string[];
@@ -153,28 +147,21 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
        * Link each page to a sidebar.json file via ref
        * @param pages - sidebar pages
        * @param dirName - root path of sidebar
-       * @param maxLevel - max level
        */
-      function addSidebarDataToFrontmatter(pages, dirName, maxLevel = Infinity) {
+      function addSidebarDataToFrontmatter(pages, dirName) {
         pages.forEach(page => {
-          const pageLevel = getPageLevel(page);
-          // A page can only have one sidebar but different levels  have different sidebars
-          // this enables us to support a root index that contains all pages
-          if (pageLevel <= maxLevel) {
-            // set Ref for pages below root and not above root
-            config.setRef(
-              String(page.fullPath),
-              ['sidebarData', '$ref'],
-              path.posix.join(dirName, options.filename, '#', 'pages')
-            );
-          }
+          config.setRef(
+            String(page.fullPath),
+            ['sidebarData', '$ref'],
+            path.posix.join(dirName, options.filename, '#', 'pages')
+          );
         });
       }
 
       const rootUserJourneys = await mutableFilesystem.promises.glob('**', {
         onlyDirectories: true,
         cwd: '/',
-        deep: UserJourneyRootLevel
+        deep: sidebarRootLevel
       });
 
       await Promise.all(
@@ -187,16 +174,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             sidebarFilePath,
             JSON.stringify({ pages: sidebarData })
           );
-          const dirNameLevel = dirName.split('/').length - 1;
-          let maxLevel;
-          // Add the sidebar frontmatter to each page, via ref
-          // e.g /mosaic/docs/sidebar.json -> /mosaic/docs/index.mdx
-          // The root directory contains it's own sidebar.json with everything inside it
-          // /mosaic/sidebar.json > /mosaic/index.mdx
-          if (dirNameLevel < UserJourneyRootLevel) {
-            maxLevel = UserJourneyRootLevel - 1;
-          }
-          addSidebarDataToFrontmatter(pages, dirName, maxLevel);
+          addSidebarDataToFrontmatter(pages, dirName);
         })
       );
     }
