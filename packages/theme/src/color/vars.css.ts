@@ -1,4 +1,4 @@
-import { colorVars as color } from '../salt';
+import { colorVars as color } from '../salt/color.css';
 
 export var RESERVED_HOT_PINK = '#FF69b4';
 
