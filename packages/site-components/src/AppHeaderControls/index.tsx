@@ -30,7 +30,6 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
 
   const { data: session } = useSession();
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
-  console.log(isLoginEnabled);
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
 
