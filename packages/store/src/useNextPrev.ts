@@ -15,15 +15,18 @@ export function useNextPrev() {
   };
 }
 
-const flatten = (nodes: SidebarItem[]) => {
-  let flattenedNodes: NextPrevItem[] = [];
-  nodes.forEach(node => {
-    flattenedNodes.push({ link: node.data.link, text: node.name });
-    if (node.childNodes) {
-      flattenedNodes = flattenedNodes.concat(flatten(node.childNodes));
+const flatten = (nodes: SidebarItem[]): NextPrevItem[] => {
+  const flattenedNode = nodes.reduce<NextPrevItem[]>((result, node) => {
+    if (!node) {
+      return result;
     }
-  });
-  return flattenedNodes;
+    let nextResult = [...result, { link: node.data.link, text: node.name }];
+    if (node.childNodes) {
+      nextResult = [...result, ...flatten(node.childNodes)];
+    }
+    return nextResult;
+  }, []);
+  return flattenedNode;
 };
 
 const nextExists = (index: number, length: number) => index >= 0 && index < length - 1;
