@@ -17,6 +17,16 @@ interface TableOfContentsPluginOptions {
   maxRank: Rank;
 }
 
+const getValue = (path, obj) => path.split('.').reduce((acc, c) => acc && acc[c], obj);
+const parsePageHeading = (page, heading) => {
+  let parsedHeading = heading.trim();
+  if (parsedHeading.indexOf('{meta') === 0) {
+    const metaPath = parsedHeading.replace(/^{meta\./, '').replace(/\}$/, '');
+    parsedHeading = getValue(metaPath, page).trim();
+  }
+  return parsedHeading;
+};
+
 /**
  * Calculates table of contents from page headings
  */
@@ -31,7 +41,7 @@ const TableOfContentsPlugin: PluginType<TableOfContentsPluginPage, TableOfConten
         const items: TOCItem[] = headings
           .filter(heading => heading.depth >= minRank && heading.depth <= maxRank)
           .map(validHeading => {
-            const text = validHeading.value.trim();
+            const text = parsePageHeading(page, validHeading.value);
             return {
               level: validHeading.depth,
               id: slugger.slug(text),
