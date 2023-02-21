@@ -16,7 +16,7 @@ export interface AppHeaderDrawerProps extends VerticalNavigationProps {}
 export function AppHeaderDrawer(props: AppHeaderDrawerProps) {
   return (
     <Drawer side="left" TriggerElement={TriggerElement}>
-      <Sidebar side="left">
+      <Sidebar>
         <VerticalNavigation {...props} />
       </Sidebar>
     </Drawer>

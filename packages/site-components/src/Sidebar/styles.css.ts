@@ -5,11 +5,9 @@ export default {
   root: style([
     {
       zIndex: 3
-    }
+    },
+    sidebar.container
   ]),
-  left: sidebar({ side: 'left' }),
-  right: sidebar({ side: 'right' }),
-  sticky: style({
-    position: 'sticky'
-  })
+  scrollable: sidebar.scrollable,
+  sticky: sidebar.sticky
 };

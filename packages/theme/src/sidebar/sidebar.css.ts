@@ -1,6 +1,5 @@
-import { style } from '@vanilla-extract/css';
+import { styleVariants } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
-import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { config } from '../config';
 import { responsiveConditions, responsiveSprinkles } from '../responsive/responsive.css';
@@ -18,14 +17,11 @@ export const sidebarProperties = defineProperties({
 export const sidebarSprinkles = createSprinkles(sidebarProperties);
 export type SidebarSprinkles = Parameters<typeof sidebarSprinkles>[0];
 
-export const sidebar = recipe({
-  base: style([
+export const sidebar = styleVariants({
+  container: [
     {
       bottom: 0,
-      display: 'flex',
-      overflowY: 'scroll',
       position: 'relative',
-      top: `${config.appHeader.height}px`,
       height: 'auto'
     },
     responsiveSprinkles({
@@ -38,16 +34,14 @@ export const sidebar = recipe({
     sidebarSprinkles({
       width: ['drawer', 'drawer', 'wide', 'wide']
     })
-  ]),
-  variants: {
-    side: {
-      left: {},
-      right: {}
-    }
+  ],
+  scrollable: {
+    display: 'flex',
+    overflowY: 'scroll',
+    top: `${config.appHeader.height}px`
   },
-  defaultVariants: {
-    side: 'left'
+  sticky: {
+    top: `${config.appHeader.height}px`,
+    position: 'sticky'
   }
 });
-
-export type SidebarVariants = RecipeVariants<typeof sidebar>;
