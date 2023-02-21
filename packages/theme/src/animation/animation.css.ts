@@ -12,7 +12,7 @@ export const animation = recipe({
       leftSlideOut: style({
         animation: 'var(--salt-animation-slide-out-left) !important',
         animationDuration: '0.3s !important',
-        animationFillMode: 'backwards !important',
+        animationFillMode: 'forwards !important',
         opacity: '1 !important'
       }),
       rightSlideIn: style({
@@ -24,7 +24,7 @@ export const animation = recipe({
       rightSlideOut: style({
         animation: 'var(--salt-animation-slide-out-right) !important',
         animationDuration: '0.3s !important',
-        animationFillMode: 'backwards !important',
+        animationFillMode: 'forwards !important',
         opacity: '1 !important'
       })
     }

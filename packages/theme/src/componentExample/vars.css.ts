@@ -1,4 +1,4 @@
-import { colorVars } from '../salt';
+import { colorVars } from '../salt/color.css';
 
 const defaultComponentExampleVars = {
   light: {
