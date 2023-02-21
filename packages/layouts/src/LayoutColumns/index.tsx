@@ -47,7 +47,6 @@ export const LayoutColumns = ({
             <main className={styles.contentBody}>{children}</main>
             {Footer && Footer}
           </div>
-
           {SecondarySidebar && !showDrawer ? <Sidebar sticky>{SecondarySidebar}</Sidebar> : null}
         </div>
       </div>
