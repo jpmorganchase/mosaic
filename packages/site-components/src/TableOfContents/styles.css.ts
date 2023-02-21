@@ -2,9 +2,6 @@ import { style } from '@vanilla-extract/css';
 import { link, navigableBorder, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 export default {
-  root: style({
-    position: 'sticky'
-  }),
   list: style([
     style({
       listStyle: 'none'

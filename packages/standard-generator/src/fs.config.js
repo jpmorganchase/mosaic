@@ -82,6 +82,13 @@ module.exports = {
         filename: 'shared-config.json'
       },
       priority: 3
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      options: {
+        minRank: 1,
+        maxRank: 3
+      }
     }
   ],
   sources: []

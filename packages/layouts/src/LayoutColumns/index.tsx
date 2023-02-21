@@ -37,22 +37,17 @@ export const LayoutColumns = ({
     >
       {showDrawer && PrimarySidebar && (
         <Drawer side="left" TriggerElement={TriggerElement}>
-          <Sidebar side="left">{PrimarySidebar}</Sidebar>
+          <Sidebar>{PrimarySidebar}</Sidebar>
         </Drawer>
       )}
-      {!showDrawer && PrimarySidebar && <Sidebar side="left">{PrimarySidebar}</Sidebar>}
+      {!showDrawer && PrimarySidebar && <Sidebar>{PrimarySidebar}</Sidebar>}
       <div className={styles.mainWrapper}>
         <div className={styles.columnWrapper}>
           <div className={styles.contentColumn}>
             <main className={styles.contentBody}>{children}</main>
             {Footer && Footer}
           </div>
-
-          {SecondarySidebar && (
-            <Sidebar side="right" sticky>
-              {SecondarySidebar}
-            </Sidebar>
-          )}
+          {SecondarySidebar && !showDrawer ? <Sidebar sticky>{SecondarySidebar}</Sidebar> : null}
         </div>
       </div>
     </div>

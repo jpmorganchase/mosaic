@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import { ElementStyles, Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { link } from '@jpmorganchase/mosaic-theme';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { SidebarItem, useColorMode } from '@jpmorganchase/mosaic-store';
@@ -22,8 +22,18 @@ const createMenuItemStyles = colorMode => ({
     backgroundColor: 'inherit',
     color: 'inherit'
   },
-  button: ({ active }) => {
+  button: ({ active, level }) => {
+    let buttonStyle: ElementStyles = {
+      paddingRight: 'var(--space-horizontal-x6)'
+    };
+    if (level === 0) {
+      buttonStyle = {
+        ...buttonStyle,
+        paddingLeft: 'var(--space-horizontal-x6)'
+      };
+    }
     return {
+      ...buttonStyle,
       ':active': {
         backgroundColor: 'unset',
         color:
@@ -54,6 +64,7 @@ const createMenuItemStyles = colorMode => ({
 });
 
 const rootStyles = {
+  width: '100vw',
   borderRightWidth: '0px'
 };
 
