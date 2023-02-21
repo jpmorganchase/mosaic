@@ -61,7 +61,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   selectedNodeId,
   ...rest
 }) => (
-  <SidebarPro backgroundColor="inherit" width="auto" {...rest}>
+  <SidebarPro backgroundColor="inherit" width="100%" {...rest}>
     <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
       {renderMenu(menu, expandedNodeIds, selectedNodeId)}
     </Menu>
