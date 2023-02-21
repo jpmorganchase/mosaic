@@ -41,7 +41,7 @@ export const sidebar = styleVariants({
     top: `${config.appHeader.height}px`
   },
   sticky: {
-    top: `${config.appHeader.height}px`,
+    top: `calc(${config.appHeader.height}px + var(--space-vertical-x20))`,
     position: 'sticky'
   }
 });
