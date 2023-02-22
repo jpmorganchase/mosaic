@@ -182,16 +182,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const pages = await createPageList(dirName);
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
-
-          //for each element in the sidebarData Array
-          //Take the array of childNode node objects
-          //Sort the child nodes according the their priority
-
-          console.log(sidebarData);
-
           const sidebarDataOrdered = sortSidebarGroups(sidebarData[0]);
-
-          console.log({ sidebarDataOrdered });
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
             JSON.stringify({ pages: sidebarDataOrdered })
