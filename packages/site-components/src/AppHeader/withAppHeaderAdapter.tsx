@@ -40,21 +40,7 @@ function createTabsMenu(menu: AppHeaderMenu): TabsMenu {
 
 export const withAppHeaderAdapter = Component => () => {
   const headerConfig = useAppHeader();
-  const {
-    HeaderControlsProps = {},
-    homeLink,
-    logo,
-    menu: menuItems = [],
-    title
-  } = headerConfig || {};
+  const { homeLink, logo, menu: menuItems = [], title } = headerConfig || {};
   const tabsMenu = createTabsMenu(menuItems);
-  return (
-    <Component
-      {...HeaderControlsProps}
-      homeLink={homeLink}
-      logo={logo}
-      menu={tabsMenu}
-      title={title}
-    />
-  );
+  return <Component homeLink={homeLink} logo={logo} menu={tabsMenu} title={title} />;
 };

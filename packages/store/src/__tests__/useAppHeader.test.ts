@@ -137,31 +137,6 @@ describe('GIVEN the `useAppHeader` hook', () => {
       expect(result.current?.menu[3].type).toEqual('menu');
     });
 
-    describe('AND WHEN a search namespace is *NOT* provided', () => {
-      test('THEN the namespace endpoint env variable is used', () => {
-        const { result } = renderHook(() => useAppHeader(), {
-          wrapper: createWrapper({ ...state })
-        });
-        expect(result.current?.HeaderControlsProps?.searchEndpoint).toEqual(undefined);
-      });
-    });
-
-    describe('AND WHEN a search namespace is provided', () => {
-      beforeAll(() => {
-        header.searchNamespace = 'namespace';
-        process.env[`SEARCH_ENDPOINT_${header.searchNamespace}`] = 'namespace-endpoint';
-      });
-      afterAll(() => {
-        process.env[`SEARCH_ENDPOINT_${header.searchNamespace}`] = undefined;
-      });
-      test('THEN the SEARCH_ENDPOINT env variable is used', () => {
-        const { result } = renderHook(() => useAppHeader(), {
-          wrapper: createWrapper({ ...state })
-        });
-        expect(result.current?.HeaderControlsProps?.searchEndpoint).toEqual('namespace-endpoint');
-      });
-    });
-
     describe('AND WHEN invalid menu items are provided', () => {
       let consoleError;
       beforeAll(() => {

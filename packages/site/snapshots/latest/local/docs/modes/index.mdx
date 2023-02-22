@@ -1,0 +1,103 @@
+---
+title: Modes of operation
+layout: DetailTechnical
+lastModified: 1676020767389
+fullPath: /local/docs/modes/index.mdx
+route: /local/docs/modes/index
+breadcrumbs:
+  - label: Mosaic
+    path: /local/index.mdx
+    id: /local/index.mdx
+  - label: Getting started
+    path: /local/docs/index.mdx
+    id: /local/docs/index.mdx
+  - label: Modes of operation
+    path: /local/docs/modes/index.mdx
+    id: /local/docs/modes/index.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.485
+  time: 29100
+  words: 97
+navigation:
+  next:
+    title: Active mode
+    fullPath: /local/docs/modes/active
+sidebarData:
+  - id: /local/docs/index
+    name: Getting started
+    data:
+      level: 2
+      link: /local/docs/index
+    childNodes:
+      - id: /local/docs/publish-site-to-aws
+        name: Publish a site to AWS
+        data:
+          level: 2
+          link: /local/docs/publish-site-to-aws
+        childNodes: []
+      - id: /local/docs/publish-site-to-vercel
+        name: Publish a site to Vercel
+        data:
+          level: 2
+          link: /local/docs/publish-site-to-vercel
+        childNodes: []
+      - id: /local/docs/modes/index
+        name: Modes of operation
+        data:
+          level: 3
+          link: /local/docs/modes/index
+        childNodes:
+          - id: /local/docs/modes/active
+            name: Active mode
+            data:
+              level: 3
+              link: /local/docs/modes/active
+            childNodes: []
+          - id: /local/docs/modes/snapshot-file
+            name: Snapshot file mode
+            data:
+              level: 3
+              link: /local/docs/modes/snapshot-file
+            childNodes: []
+          - id: /local/docs/modes/snapshot-s3
+            name: Snapshot AWS/S3 mode
+            data:
+              level: 3
+              link: /local/docs/modes/snapshot-s3
+            childNodes: []
+---
+
+# {meta.title}
+
+Mosaic can operate in 3 different modes
+
+- `active`
+- `snapshot-file`
+- `snapshot-s3`
+
+## Active updates
+
+In _active_ mode, content updates in real-time.
+
+_active_ mode content is pulled at configured intervals in real-time, as defined by `mosaic.config.js`.
+
+Read the [active](./active) configuration docs.
+
+## Static content
+
+Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
+
+In a snapshot mode, the snapshot does update itself.
+
+### File based snapshots
+
+In `snapshot-file` mode, immutable snapshots of content are loaded at startup from the local file-system.
+
+Read the [snapshot-file](./snapshot-file) configuration docs.
+
+### S3 based snapshots
+
+In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
+
+Read the [snapshot-s3](./snapshot-s3) configuration docs.

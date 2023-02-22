@@ -3,10 +3,11 @@ import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { useColorMode, useStoreActions } from '@jpmorganchase/mosaic-store';
+import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession, signIn } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
+import { SearchInput } from '../SearchInput';
 import styles from './styles.css';
 
 type ActionMenuItem = {
@@ -15,15 +16,11 @@ type ActionMenuItem = {
   title: string;
 };
 
-export type HeaderControlsProps = {
-  searchEndpoint?: string;
-};
-
 function toUpperFirst(str) {
   return `${str.substr(0, 1).toUpperCase()}${str.toLowerCase().substr(1)}`;
 }
 
-export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
+export const AppHeaderControls: React.FC = () => {
   const router = useRouter();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
@@ -32,6 +29,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
+  const { searchEnabled } = useSearchIndex();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -76,6 +74,7 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
 
   return (
     <div className={styles.root}>
+      {searchEnabled && <SearchInput />}
       {isLoginEnabled && (
         <>
           <EditorControls isLoggedIn={isLoggedIn} />
@@ -95,7 +94,6 @@ export const AppHeaderControls: React.FC<HeaderControlsProps> = () => {
           </div>
         </>
       )}
-
       <MenuButton
         CascadingMenuProps={{
           initialSource,

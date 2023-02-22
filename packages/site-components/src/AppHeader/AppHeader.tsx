@@ -4,14 +4,12 @@ import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';
 
-import type { HeaderControlsProps } from '../AppHeaderControls';
 import { AppHeaderControls } from '../AppHeaderControls';
 import { AppHeaderDrawer } from '../AppHeaderDrawer';
 import { AppHeaderTabs } from '../AppHeaderTabs';
 import styles from './styles.css';
 
 export type AppHeaderProps = {
-  HeaderControlsProps?: HeaderControlsProps;
   homeLink?: string;
   logo?: string;
   menu?: TabsMenu;
@@ -34,13 +32,7 @@ const createDrawerMenu = menu =>
     return [...result, parsedItem];
   }, []);
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-  HeaderControlsProps: AppHeaderControlsProps = {},
-  homeLink,
-  logo,
-  menu = [],
-  title
-}) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const breakpoint = useBreakpoint();
   const { route } = useRoute();
@@ -59,7 +51,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </Link>
         )}
         {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
-        <AppHeaderControls {...AppHeaderControlsProps} />
+        <AppHeaderControls />
       </div>
     </>
   );

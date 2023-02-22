@@ -3,6 +3,7 @@ import { createStore, StoreApi, useStore as useZustandStore } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 import type { BreadcrumbsSlice } from './types/breadcrumbs';
+import type { SearchIndexSlice } from './types/searchIndex';
 import type { SharedConfigSlice } from './types/sharedConfig';
 import type { LayoutSlice } from './types/layout';
 import type { SidebarSlice } from './types/sidebar';
@@ -15,6 +16,7 @@ export type SiteState = BreadcrumbsSlice &
   LayoutSlice &
   SidebarSlice &
   TableOfContentsSlice &
+  SearchIndexSlice &
   SharedConfigSlice & {
     /** Page metadata description, used by search */
     description?: string;
@@ -36,6 +38,7 @@ function getDefaultInitialState(): DefaultSiteState {
     breadcrumbs: [],
     sidebarData: [],
     tableOfContents: [],
+    searchIndex: [],
     sharedConfig: {},
     description: undefined,
     layout: undefined,
