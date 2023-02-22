@@ -12,7 +12,6 @@
     "build": "next build",
     "dev": "next dev",
     "debug": "yarn mosaic serve -c ./mosaic.config.js -p 8080",
-    "postinstall": "patch-package",
     "start": "next start",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE='snapshot-file' concurrently --kill-others 'yarn dev'",
@@ -47,7 +46,6 @@
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "eslint-config-next": "^12.3.1",
-    "patch-package": "^6.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
