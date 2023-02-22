@@ -25,8 +25,8 @@ function sortPagesByPriority(pageA, pageB, dirName) {
     return 1;
   }
   return (
-    (pageB.sidebar && pageB.sidebar.priority ? pageB.sidebar.priority : -1) -
-    (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
+    (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1) -
+    (pageB.sidebar && pageB.sidebar.priority ? pageB.sidebar.priority : -1)
   );
 }
 function getPageLevel(page) {
@@ -172,8 +172,8 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       });
 
       function sortSidebarGroups(sidebarData) {
-        const data = sidebarData.childNodes.sort((a, b) => a.priority - b.priority);
-        return data;
+        const pages = sidebarData.childNodes.sort((a, b) => a.priority - b.priority);
+        return { ...sidebarData, childNodes: pages };
       }
 
       await Promise.all(
@@ -182,10 +182,12 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const pages = await createPageList(dirName);
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
+          console.log({ sidebarData });
           const sidebarDataOrdered = sortSidebarGroups(sidebarData[0]);
+          console.log({ sidebarDataOrdered });
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: sidebarDataOrdered })
+            JSON.stringify({ pages: [sidebarDataOrdered] })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
