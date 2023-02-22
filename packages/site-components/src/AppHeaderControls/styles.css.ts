@@ -12,10 +12,6 @@ export default {
       marginLeft: ['x2', 'x2', 'x2', 'x2']
     })
   ]),
-  searchInput: responsiveSprinkles({
-    display: ['none', 'none', 'flex', 'flex'],
-    marginRight: ['x3', 'x3', 'x3', 'x3']
-  }),
   menuButton: style([
     {
       selectors: {
