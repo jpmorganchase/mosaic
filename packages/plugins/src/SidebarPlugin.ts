@@ -172,8 +172,15 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       });
 
       function sortSidebarGroups(sidebarData) {
-        const pages = sidebarData.childNodes.sort((a, b) => a.priority - b.priority);
-        return { ...sidebarData, childNodes: pages };
+        const sortedGroupedPages = sidebarData.map(pageDir => {
+          if (pageDir.childNodes) {
+            const sortedPages = pageDir.childNodes.sort((a, b) => a.priority - b.priority);
+            return { ...pageDir, childNodes: sortedPages };
+          } else {
+            pageDir;
+          }
+        });
+        return sortedGroupedPages;
       }
 
       await Promise.all(
@@ -182,12 +189,14 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const pages = await createPageList(dirName);
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
-          console.log({ sidebarData });
-          const sidebarDataOrdered = sortSidebarGroups(sidebarData[0]);
-          console.log({ sidebarDataOrdered });
+          const sidebarDataOrdered = sortSidebarGroups(sidebarData);
+
+          console.log(sidebarDataOrdered);
+          console.log(typeof sidebarDataOrdered);
+
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: [sidebarDataOrdered] })
+            JSON.stringify({ pages: sidebarDataOrdered })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
