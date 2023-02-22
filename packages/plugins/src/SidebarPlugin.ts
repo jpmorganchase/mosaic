@@ -152,6 +152,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: sidebarRootLevel
       });
 
+      //Map into Sidebar Groups and sort children according to priority, priority = 1 has the highest priority
       function sortSidebarGroups(sidebarData) {
         const sortedGroupedPages = sidebarData.map(page => {
           if (page.childNodes) {
@@ -172,10 +173,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
           const sidebarDataOrdered = sortSidebarGroups(sidebarData);
-
-          console.log(sidebarDataOrdered);
-          console.log(typeof sidebarDataOrdered);
-
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
             JSON.stringify({ pages: sidebarDataOrdered })
