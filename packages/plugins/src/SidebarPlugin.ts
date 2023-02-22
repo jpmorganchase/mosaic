@@ -15,6 +15,21 @@ function createFileGlob(patterns, pageExtensions) {
   return `${patterns}{${pageExtensions.join(',')}}`;
 }
 
+function sortPagesByPriority(pageA, pageB, dirName) {
+  // Always pin /index to the front
+  const route = `${dirName}/index`;
+  if (pageA.route === route) {
+    return -1;
+  }
+  if (pageB.route === route) {
+    return 1;
+  }
+  return (
+    (pageB.sidebar && pageB.sidebar.priority ? pageB.sidebar.priority : -1) -
+    (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
+  );
+}
+
 function getPageLevel(page) {
   return page.route.split('/').length - 2;
 }
@@ -24,6 +39,8 @@ function sortByPathLevel(pathA, pathB) {
   const pathBLevel = pathB.split('/').length;
   return pathBLevel - pathALevel;
 }
+
+const filterPages = page => !(page.sidebar && page.sidebar.exclude);
 
 interface SidebarPluginConfigData {
   dirs: string[];
@@ -70,6 +87,9 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
               )
           )
         );
+        pageList = pageList
+          .filter(page => filterPages(page))
+          .sort((pageA, pageB) => sortPagesByPriority(pageA, pageB, dirName));
         return pageList;
       }
 
