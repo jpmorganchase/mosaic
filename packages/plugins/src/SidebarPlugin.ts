@@ -99,11 +99,18 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       function createGroupMap(pages) {
         return pages.reduce((result, page) => {
           const name = page.sidebar?.label || page.title;
+          const priority = page.sidebar?.priority;
           const id = page.route;
           const isGroup = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
           const level = getPageLevel(page);
-          const newChildNode = { id, name, data: { level, link: page.route }, childNodes: [] };
+          const newChildNode = {
+            id,
+            name,
+            priority,
+            data: { level, link: page.route },
+            childNodes: []
+          };
           if (isGroup) {
             result[groupPath] = {
               ...newChildNode,
@@ -164,15 +171,30 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: sidebarRootLevel
       });
 
+      function sortSidebarGroups(sidebarData) {
+        const data = sidebarData.childNodes.sort((a, b) => a.priority - b.priority);
+        return data;
+      }
+
       await Promise.all(
         rootUserJourneys.map(async dirName => {
           const sidebarFilePath = path.posix.join(String(dirName), options.filename);
           const pages = await createPageList(dirName);
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
+
+          //for each element in the sidebarData Array
+          //Take the array of childNode node objects
+          //Sort the child nodes according the their priority
+
+          console.log(sidebarData);
+
+          const sidebarDataOrdered = sortSidebarGroups(sidebarData[0]);
+
+          console.log({ sidebarDataOrdered });
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: sidebarData })
+            JSON.stringify({ pages: sidebarDataOrdered })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
