@@ -5,15 +5,21 @@ import {
   neutralBorder,
   shadow,
   foregroundColor,
+  responsiveSprinkles,
   selectableBorder
 } from '@jpmorganchase/mosaic-theme';
 
 export const POPPER_Z_INDEX = 10;
 
 export default {
-  root: style({
-    position: 'relative'
-  }),
+  root: style([
+    style({
+      position: 'relative'
+    }),
+    responsiveSprinkles({
+      display: ['none', 'none', 'flex', 'flex']
+    })
+  ]),
   popper: style([
     style({
       zIndex: POPPER_Z_INDEX,
