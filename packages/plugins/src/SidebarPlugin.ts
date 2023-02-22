@@ -176,7 +176,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       function sortSidebarGroups(sidebarData) {
         const sortedGroupedPages = sidebarData.map(page => {
           if (page.childNodes) {
-            const sortedPages = page.childNodes.sort((a, b) => a.priority - b.priority);
+            const sortedPages = page.childNodes.sort((a, b) => b.priority - a.priority);
             return { ...page, childNodes: sortedPages };
           } else {
             page;
