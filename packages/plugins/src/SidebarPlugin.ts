@@ -29,6 +29,7 @@ function sortPagesByPriority(pageA, pageB, dirName) {
     (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
   );
 }
+
 function getPageLevel(page) {
   return page.route.split('/').length - 2;
 }
@@ -99,11 +100,18 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       function createGroupMap(pages) {
         return pages.reduce((result, page) => {
           const name = page.sidebar?.label || page.title;
+          const priority = page.sidebar?.priority;
           const id = page.route;
           const isGroup = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
           const level = getPageLevel(page);
-          const newChildNode = { id, name, data: { level, link: page.route }, childNodes: [] };
+          const newChildNode = {
+            id,
+            name,
+            priority,
+            data: { level, link: page.route },
+            childNodes: []
+          };
           if (isGroup) {
             result[groupPath] = {
               ...newChildNode,
@@ -164,15 +172,29 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: sidebarRootLevel
       });
 
+      //Map into Sidebar Groups and sort children according to priority, priority = 1 has the highest priority
+      function sortSidebarGroups(sidebarData) {
+        const sortedGroupedPages = sidebarData.map(page => {
+          if (page.childNodes) {
+            const sortedPages = page.childNodes.sort((a, b) => b.priority - a.priority);
+            return { ...page, childNodes: sortedPages };
+          } else {
+            page;
+          }
+        });
+        return sortedGroupedPages;
+      }
+
       await Promise.all(
         rootUserJourneys.map(async dirName => {
           const sidebarFilePath = path.posix.join(String(dirName), options.filename);
           const pages = await createPageList(dirName);
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
+          const sidebarDataOrdered = sortSidebarGroups(sidebarData);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: sidebarData })
+            JSON.stringify({ pages: sidebarDataOrdered })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
