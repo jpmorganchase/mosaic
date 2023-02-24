@@ -97,6 +97,7 @@
     "turbo": "latest"
   },
   "resolutions": {
+    "@salt-ds/lab": "1.0.0-alpha.1",
     "@braintree/sanitize-url": "^6.0.0",
     "@types/react": "^18.0.26",
     "commander": "^9.4.0",
