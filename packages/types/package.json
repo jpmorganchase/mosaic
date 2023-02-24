@@ -16,7 +16,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/types"
   },
   "files": [
     "dist"

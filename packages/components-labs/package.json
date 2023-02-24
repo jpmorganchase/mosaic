@@ -3,6 +3,11 @@
   "version": "0.1.0-beta.23",
   "license": "Apache-2.0",
   "description": "Mosaic - Labs components",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/components-labs"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",

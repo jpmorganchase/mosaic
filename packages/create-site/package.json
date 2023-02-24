@@ -3,6 +3,11 @@
   "version": "0.1.0-beta.23",
   "license": "Apache-2.0",
   "description": "Mosaic - Create Site CLI",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/create-site"
+  },
   "main": "./dist/index.js",
   "scripts": {
     "build": "npm-run-all --parallel build:*",

@@ -4,6 +4,11 @@
   "description": "Mosaic - Open API Component",
   "version": "0.1.0-beta.23",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/open-api-component"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

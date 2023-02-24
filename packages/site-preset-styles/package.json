@@ -4,6 +4,11 @@
   "license": "Apache-2.0",
   "description": "Mosaic - Preset styles",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/site-preset-styles"
+  },
   "main": "./dist/index.js",
   "style": "./dist/index.css",
   "exports": {

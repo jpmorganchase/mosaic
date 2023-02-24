@@ -4,6 +4,11 @@
   "author": "",
   "license": "Apache-2.0",
   "description": "Mosaic - Standard site generator used by Mosaic's create command",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/standard-generator"
+  },
   "main": "./dist/index.js",
   "scripts": {
     "build": "node ./scripts/bundle.js",
