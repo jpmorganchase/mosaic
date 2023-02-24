@@ -47,7 +47,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [],
       <div className={styles.root}>
         {homeLink && (
           <Link className={styles.logoContainer} href={homeLink} variant="component">
-            {logo && <Logo appTitle={title} src={logo} />}
+            {logo && <Logo appTitle={title} src={logo} ImageProps={{ className: styles.logo }} />}
           </Link>
         )}
         {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}

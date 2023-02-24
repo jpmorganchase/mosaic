@@ -6,7 +6,8 @@ import {
   shadow,
   foregroundColor,
   responsiveSprinkles,
-  selectableBorder
+  selectableBorder,
+  vars
 } from '@jpmorganchase/mosaic-theme';
 
 export const POPPER_Z_INDEX = 10;
@@ -20,6 +21,9 @@ export default {
       display: ['none', 'none', 'flex', 'flex']
     })
   ]),
+  icon: style({
+    height: vars.space.vertical.x5
+  }),
   popper: style([
     style({
       zIndex: POPPER_Z_INDEX,

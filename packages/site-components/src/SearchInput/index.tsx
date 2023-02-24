@@ -1,11 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
 import { useSearchIndex } from '@jpmorganchase/mosaic-store';
+import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
+
+const SearchIcon = () => (
+  <Icon aria-label="search the site's content" name="search" className={styles.icon} />
+);
 
 export function SearchInput() {
   const { searchIndex } = useSearchIndex();
@@ -65,6 +70,7 @@ export function SearchInput() {
           onChange={handleSearch}
           onClear={handleClear}
           onFocus={handleInputFocus}
+          IconComponent={SearchIcon}
         />
       </FormField>
       {searchTerm.length > 0 && listVisibility && (

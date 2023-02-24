@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { caption, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
+import { caption, responsiveSprinkles, vars } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -19,5 +19,6 @@ export default {
     responsiveSprinkles({
       paddingLeft: ['x3', 'x3', 'x6', 'x6']
     })
-  ])
+  ]),
+  logo: style({ height: vars.space.vertical.x5 })
 };
