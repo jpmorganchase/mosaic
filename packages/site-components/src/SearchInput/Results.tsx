@@ -25,6 +25,8 @@ interface ResultListItemProps {
   onSelect: (result) => void;
 }
 
+const MAX_RESULTS = 10;
+
 function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -96,6 +98,9 @@ function ResultListItemEmpty() {
     </article>
   );
 }
+function ResultListItemOverflow({ overflow }: { overflow: number }) {
+  return <P6 className={styles.itemOverflow}>Plus {overflow} more...</P6>;
+}
 
 export function ResultsList({ searchResults, query, handleClear }: SearchResultsListProps) {
   const router = useRouter();
@@ -109,14 +114,19 @@ export function ResultsList({ searchResults, query, handleClear }: SearchResults
     <div className={styles.popper} role="tooltip">
       <div className={styles.resultsList}>
         {searchResults.length > 0 ? (
-          searchResults.map(result => (
-            <ResultListItem
-              key={`result-item-${result.route}`}
-              result={result}
-              query={query}
-              onSelect={handleSelect}
-            />
-          ))
+          <>
+            {searchResults.slice(0, MAX_RESULTS).map(result => (
+              <ResultListItem
+                key={`result-item-${result.route}`}
+                result={result}
+                query={query}
+                onSelect={handleSelect}
+              />
+            ))}
+            {searchResults.length > MAX_RESULTS && (
+              <ResultListItemOverflow overflow={searchResults.length - MAX_RESULTS} />
+            )}
+          </>
         ) : (
           <ResultListItemEmpty />
         )}

@@ -27,8 +27,8 @@ export function SearchInput() {
   useEffect(() => {
     const keys = ['title', 'content'];
     const results = performSearch(searchIndex, searchTerm, keys);
-    setListVisibility(true);
     setSearchResults(results);
+    setListVisibility(true);
   }, [searchTerm]);
 
   const handleInputFocus = () => {

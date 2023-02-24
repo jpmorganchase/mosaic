@@ -35,8 +35,10 @@ export default {
   resultsList: style([style({ width: '500px' })]),
   item: style([
     foregroundColor({ variant: 'mid' }),
+    responsiveSprinkles({
+      padding: ['x2', 'x2', 'x2', 'x2']
+    }),
     style({
-      padding: '9px 8px',
       height: '100%',
       cursor: 'pointer',
       boxSizing: 'border-box',
@@ -60,5 +62,17 @@ export default {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
-  })
+  }),
+  itemOverflow: style([
+    responsiveSprinkles({
+      padding: ['x2', 'x2', 'x2', 'x2']
+    }),
+    style({
+      textAlign: 'center',
+      display: 'block',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap'
+    })
+  ])
 };
