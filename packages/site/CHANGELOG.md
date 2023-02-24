@@ -1,5 +1,27 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.22
+
+### Patch Changes
+
+- 513d45f: Sidebar behavior and styling changes.
+  Add Client-side search feature.
+  Relax node engine requirements.
+  Removal of patches from the site package.
+  Update site generator templates.
+- Updated dependencies [513d45f]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.23
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.23
+  - @jpmorganchase/mosaic-components@0.1.0-beta.23
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.23
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.23
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.23
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.23
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.23
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.23
+  - @jpmorganchase/mosaic-store@0.1.0-beta.23
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.23
+
 ## 0.1.0-beta.21
 
 ### Patch Changes
