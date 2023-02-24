@@ -41,13 +41,8 @@ module.exports = {
     { package: '@jpmorganchase/mosaic-theme', version: `^${version}` },
     /* Mosaic core filesystem dependencies */
     { package: '@jpmorganchase/mosaic-cli', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-core', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-plugins', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-schemas', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-serialisers', version: `^${version}` },
     { package: '@jpmorganchase/mosaic-source-git-repo', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-source-local-folder', version: `^${version}` },
-    { package: '@jpmorganchase/mosaic-types', version: `^${version}` }
+    { package: '@jpmorganchase/mosaic-source-local-folder', version: `^${version}` }
   ],
   /**
    * Extended imports used in site's _app.tsx
