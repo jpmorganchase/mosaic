@@ -42,7 +42,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/serialisers"
   },
   "devDependencies": {
     "rxjs": "^7.5.5"

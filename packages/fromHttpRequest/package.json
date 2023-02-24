@@ -27,7 +27,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/fromHttpRequest"
   },
   "dependencies": {
     "event-target-polyfill": "^0.0.3",

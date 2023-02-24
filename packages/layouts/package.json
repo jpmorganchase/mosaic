@@ -5,6 +5,11 @@
   "version": "0.1.0-beta.23",
   "author": "",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/layouts"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",

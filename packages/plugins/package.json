@@ -25,7 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/plugins"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13"

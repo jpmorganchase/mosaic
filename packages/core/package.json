@@ -28,7 +28,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/core"
   },
   "devDependencies": {
     "express": "^4.17.1",
