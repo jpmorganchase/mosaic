@@ -37,7 +37,9 @@
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
+    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.22",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.22",
+    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.22",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.22",
     "md5": "*",
     "unionfs": "^4.4.0",
