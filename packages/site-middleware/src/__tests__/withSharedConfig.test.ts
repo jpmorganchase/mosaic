@@ -1,15 +1,26 @@
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { mockClient } from 'aws-sdk-client-mock';
+import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@aws-sdk/util-stream-node';
 import { Readable } from 'stream';
 import { default as fetchMock, disableFetchMocks, enableFetchMocks } from 'jest-fetch-mock';
 const mockFs = require('mock-fs');
 
 import { withSharedConfig } from '../withSharedConfig';
+
+declare var process: {
+  env: {
+    MOSAIC_S3_BUCKET?: string;
+    MOSAIC_S3_REGION?: string;
+    MOSAIC_S3_ACCESS_KEY_ID?: string;
+    MOSAIC_S3_SECRET_ACCESS_KEY?: string;
+    MOSAIC_SNAPSHOT_DIR?: string;
+  };
+};
+
 describe('GIVEN withSharedConfig', () => {
   describe('WHEN snapshot-s3 Mosaic mode is set', () => {
     let savedEnv = process.env;
-    let s3ClientMock;
+    let s3ClientMock: AwsStub<{}, { $metadata: {} }>;
     beforeAll(() => {
       process.env = {
         ...process.env,
@@ -23,7 +34,24 @@ describe('GIVEN withSharedConfig', () => {
       stream.push('{"config": { "someValue": true }}');
       stream.push(null); // end of stream
       const contentStream = sdkStreamMixin(stream);
-      s3ClientMock.on(GetObjectCommand).resolves({ Body: contentStream });
+      s3ClientMock
+        .on(GetObjectCommand, {
+          Bucket: 'some-bucket',
+          Key: 'mynamespace/shared-config.json'
+        })
+        .resolves({ Body: contentStream });
+      s3ClientMock
+        .on(HeadObjectCommand, {
+          Bucket: 'some-bucket',
+          Key: 'mynamespace/shared-config.json'
+        })
+        .resolves({ $metadata: { httpStatusCode: 200 } });
+      s3ClientMock
+        .on(HeadObjectCommand, {
+          Bucket: 'some-bucket',
+          Key: 'non-existent/shared-config.json'
+        })
+        .resolves({ $metadata: { httpStatusCode: 404 } });
     });
     afterAll(() => {
       process.env = savedEnv;
@@ -33,16 +61,29 @@ describe('GIVEN withSharedConfig', () => {
       // arrange
       const content = await withSharedConfig({
         resolvedUrl: '/mynamespace/mypage.mdx',
-        res: { getHeader: () => 'snapshot-s3' }
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'snapshot-s3')
+        }
       });
       // assert
       expect(content).toEqual({ props: { sharedConfig: { someValue: true } } });
+    });
+    test('THEN does not throw for a non-existent shared-config', async () => {
+      // arrange
+      const content = await withSharedConfig({
+        resolvedUrl: '/non-existent/mypage.mdx',
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'snapshot-s3')
+        }
+      });
+      // assert
+      expect(content).toEqual({ props: {} });
     });
   });
 
   describe('WHEN snapshot-file Mosaic mode is set', () => {
     let savedEnv = process.env;
-    beforeAll(() => {
+    beforeEach(() => {
       process.env = { MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
       mockFs({
         'some/snapshots/mynamespace/mydir': {
@@ -50,26 +91,40 @@ describe('GIVEN withSharedConfig', () => {
         }
       });
     });
-    afterAll(() => {
+    afterEach(() => {
       mockFs.restore();
       process.env = savedEnv;
     });
 
     test('THEN reads shared-config from a local file', async () => {
       // arrange
-      process.env = { MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
       const content = await withSharedConfig({
         resolvedUrl: '/mynamespace/mydir/mypage.mdx',
-        res: { getHeader: () => 'snapshot-file' }
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'snapshot-file')
+        }
       });
       expect(content).toEqual({ props: { sharedConfig: { someValue: true } } });
     });
+    test('THEN does not throw for a non-existent shared-config', async () => {
+      // arrange
+      const content = await withSharedConfig({
+        resolvedUrl: '/mynamespace/non-existent/mypage.mdx',
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'snapshot-file')
+        }
+      });
+      expect(content).toEqual({ props: {} });
+    });
   });
 
-  describe('WHEN dynamic Mosaic mode is set', () => {
+  describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
       enableFetchMocks();
-      fetchMock.mockOnce('{"config": { "someValue": true }}');
+      fetchMock.mockResponses(
+        [JSON.stringify({ config: { someValue: true } }), { status: 200 }],
+        ['', { status: 404 }]
+      );
     });
     afterAll(() => {
       disableFetchMocks();
@@ -78,10 +133,19 @@ describe('GIVEN withSharedConfig', () => {
       // arrange
       const content = await withSharedConfig({
         resolvedUrl: '/mynamespace/mypage.mdx',
-        res: { getHeader: () => '/dynamic' }
+        res: { getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'active') }
       });
       // assert
       expect(content).toEqual({ props: { sharedConfig: { someValue: true } } });
+    });
+    test('THEN does not throw for a non-existent shared-config', async () => {
+      // arrange
+      const content = await withSharedConfig({
+        resolvedUrl: '/mynamespace/non-existent/mypage.mdx',
+        res: { getHeader: name => (name === 'X-Mosaic-Content-Url' ? 'http://mydomain' : 'active') }
+      });
+      // assert
+      expect(content).toEqual({ props: {} });
     });
   });
 });
