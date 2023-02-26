@@ -1,9 +1,4 @@
-import fs from 'fs';
-
-export * from './loadS3File.js';
-
-export const loadLocalFile = async (filePath: string): Promise<string> => {
-  const realPath = await fs.promises.realpath(filePath);
-  const data = await fs.promises.readFile(realPath, 'utf-8');
-  return data.toString();
-};
+export * from './loadLocalFile.js';
+export * from './createS3Loader.js';
+export * from './getSnapshotS3Config';
+export * from './getSnapshotFileConfig.js';
