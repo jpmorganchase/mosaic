@@ -17,9 +17,9 @@ export type MosaicMiddleware<TProps = unknown, TOptions = MosaicMiddlewareOption
   /** Context provides information on the current page */
   context: GetServerSidePropsContext,
   /** Middleware specific options */
-  options: TOptions,
+  options?: TOptions,
   /** Previous result created by plugins */
-  lastState: Record<string, unknown>
+  lastState?: Record<string, unknown>
 ) => Promise<MiddlewareResult<TProps>>;
 
 /** Middleware with a configuration object specifying options */
@@ -94,9 +94,7 @@ export function createMiddlewareRunner<TProps>(
 
     if (show500) {
       console.error('An un-expected error(s) was thrown which caused the 500 page to appear');
-      errors.forEach(error => {
-        console.error(error.message);
-      });
+      errors.forEach(console.error);
     }
 
     if (show404 || show500) {
