@@ -10,7 +10,7 @@ export const sidebarProperties = defineProperties({
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
     display: ['block', 'none'],
-    width: { none: '0px', wide: '40%', narrow: '23%', drawer: '100vw' }
+    width: { none: '0px', wide: '30%', drawer: '100vw' }
   }
 });
 
