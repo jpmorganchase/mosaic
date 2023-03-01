@@ -37,13 +37,13 @@ describe('GIVEN withSearchIndex', () => {
       s3ClientMock
         .on(GetObjectCommand, {
           Bucket: 'some-bucket',
-          Key: 'mynamespace/search-data.json'
+          Key: 'search-data.json'
         })
         .resolves({ Body: contentStream });
       s3ClientMock
         .on(HeadObjectCommand, {
           Bucket: 'some-bucket',
-          Key: 'mynamespace/search-data.json'
+          Key: 'search-data.json'
         })
         .resolves({ $metadata: { httpStatusCode: 200 } });
       s3ClientMock
@@ -68,25 +68,13 @@ describe('GIVEN withSearchIndex', () => {
       // assert
       expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
     });
-    test('THEN does not throw for a non-existent search-index', async () => {
-      // arrange
-      const content = await withSearchIndex({
-        resolvedUrl: '/non-existent/mypage.mdx',
-        res: {
-          getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mynamespace' : 'snapshot-s3')
-        }
-      });
-      // assert
-      expect(content).toEqual({ props: {} });
-    });
   });
-
   describe('WHEN snapshot-file Mosaic mode is set', () => {
     let savedEnv = process.env;
     beforeEach(() => {
       process.env = { MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
       mockFs({
-        'some/snapshots/mynamespace/mydir': {
+        'some/snapshots/': {
           'search-data.json': '{ "someValue": true }'
         }
       });
@@ -105,18 +93,7 @@ describe('GIVEN withSearchIndex', () => {
       });
       expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
     });
-    test('THEN does not throw for a non-existent search-index', async () => {
-      // arrange
-      const content = await withSearchIndex({
-        resolvedUrl: '/mynamespace/non-existent/mypage.mdx',
-        res: {
-          getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'snapshot-file')
-        }
-      });
-      expect(content).toEqual({ props: {} });
-    });
   });
-
   describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
       enableFetchMocks();
