@@ -7,10 +7,10 @@ const defaultButtonVars = {
     height: '44px'
   },
   web: {
-    height: '28px'
+    height: '44px'
   },
   desktop: {
-    height: '28px'
+    height: '44px'
   }
 };
 

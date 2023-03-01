@@ -2,12 +2,26 @@ import { style } from '@vanilla-extract/css';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
-import { responsiveConditions, responsiveSprinkles } from '../responsive';
+import { breakpoint, responsiveSprinkles } from '../responsive';
 import { vars } from '../vars.css';
 import { ctaColorSprinkles, primaryColorSprinkles, secondaryColorSprinkles } from '../color';
 
 export const buttonSizeProperties = defineProperties({
-  conditions: responsiveConditions,
+  conditions: {
+    mobile: {
+      '@media': `screen and (min-width: ${breakpoint.mobile}px)`,
+      selector: '.saltButton&'
+    },
+    tablet: {
+      '@media': `screen and (min-width: ${breakpoint.tablet}px)`,
+      selector: '.saltButton&'
+    },
+    web: { '@media': `screen and (min-width: ${breakpoint.web}px)`, selector: '.saltButton&' },
+    desktop: {
+      '@media': `screen and (min-width: ${breakpoint.desktop}px)`,
+      selector: '.saltButton &'
+    }
+  },
   defaultCondition: 'mobile',
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
@@ -32,12 +46,7 @@ export type ButtonSizeSprinkles = Parameters<typeof buttonSizeSprinkles>[0];
 export const button = recipe({
   base: style([
     {
-      boxSizing: 'content-box',
-      textTransform: 'var(--saltButton-textTransform, var(--salt-actionable-textTransform))',
-      fontFamily: 'var(--saltButton-fontFamily, var(--salt-text-fontFamily))',
-      fontWeight: 'var(--salt-actionable-primary-fontWeight)',
-      padding: 'var(--saltButton-padding, var(--salt-size-unit))',
-      fontSize: 'var(--saltButton-fontSize, var(--salt-text-fontSize))'
+      boxSizing: 'content-box'
     },
     responsiveSprinkles({ paddingX: ['x2', 'x2', 'x2', 'x4'] })
   ]),
@@ -102,23 +111,22 @@ export const button = recipe({
       square: style([
         {
           borderRadius: vars.component.button.borderRadius,
-          paddingRight: '0 !important',
-          paddingLeft: '0 !important'
+          boxSizing: 'border-box'
         },
         buttonSizeSprinkles({
           height: ['mobile', 'tablet', 'web', 'desktop'],
           width: ['mobile', 'tablet', 'web', 'desktop']
         }),
-        primaryColorSprinkles({
+        secondaryColorSprinkles({
           backgroundColor: {
-            lightMode: vars.color.light.actionable.primary.regular,
-            lightModeHover: vars.color.light.actionable.primary.hover,
-            lightModeActive: vars.color.light.actionable.primary.active,
-            lightModeDisabled: vars.color.light.actionable.primary.disabled,
-            darkMode: vars.color.dark.actionable.primary.regular,
-            darkModeHover: vars.color.dark.actionable.primary.hover,
-            darkModeActive: vars.color.dark.actionable.primary.active,
-            darkModeDisabled: vars.color.dark.actionable.primary.disabled
+            lightMode: vars.color.light.actionable.secondary.regular,
+            lightModeHover: vars.color.light.actionable.secondary.hover,
+            lightModeActive: vars.color.light.actionable.secondary.active,
+            lightModeDisabled: vars.color.light.actionable.secondary.disabled,
+            darkMode: vars.color.dark.actionable.secondary.regular,
+            darkModeHover: vars.color.dark.actionable.secondary.hover,
+            darkModeActive: vars.color.dark.actionable.secondary.active,
+            darkModeDisabled: vars.color.dark.actionable.secondary.disabled
           },
           color: {
             lightMode: vars.color.light.actionable.label.dark,

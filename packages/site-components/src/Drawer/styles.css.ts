@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { animation, backgroundColor, config, paragraph } from '@jpmorganchase/mosaic-theme';
+import { animation, backgroundColor, button, paragraph } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -23,15 +23,16 @@ export default {
     left: 'unset',
     right: '0px'
   }),
-  closeButton: style({
-    selectors: {
-      ['button.&']: {
-        position: 'absolute',
-        width: `${config.appHeader.height}px`,
-        height: `${config.appHeader.height}px`
+  closeButton: style([
+    {
+      selectors: {
+        ['.saltButton.&']: {
+          position: 'absolute'
+        }
       }
-    }
-  }),
+    },
+    button({ variant: 'square' })
+  ]),
   leftCloseButton: style({
     right: '0px'
   }),

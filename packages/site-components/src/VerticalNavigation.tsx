@@ -24,12 +24,12 @@ const createMenuItemStyles = colorMode => ({
   },
   button: ({ active, level }) => {
     let buttonStyle: ElementStyles = {
-      paddingRight: 'var(--space-horizontal-x6)'
+      paddingRight: 'var(--space-horizontal-x4)'
     };
     if (level === 0) {
       buttonStyle = {
         ...buttonStyle,
-        paddingLeft: 'var(--space-horizontal-x6)'
+        paddingLeft: 'var(--space-horizontal-x4)'
       };
     }
     return {

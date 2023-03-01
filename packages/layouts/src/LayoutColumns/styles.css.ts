@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { config, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
+import { button, config, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 const styles = {
   fullWidth: style([
@@ -63,17 +63,14 @@ const styles = {
   toggleButton: style([
     {
       selectors: {
-        ['button.&']: {
+        ['.saltButton.&']: {
           display: 'block',
           position: 'fixed',
-          zIndex: 5,
-          padding: '0px',
-          boxSizing: 'content-box',
-          width: `${config.appHeader.height}px`,
-          height: `${config.appHeader.height}px`
+          zIndex: 5
         }
       }
     },
+    button({ variant: 'square' }),
     responsiveSprinkles({
       bottom: ['x6', 'x6', 'x6', 'x6'],
       right: ['x6', 'x6', 'x6', 'x6']
