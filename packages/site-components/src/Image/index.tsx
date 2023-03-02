@@ -13,7 +13,7 @@ export type ImageProps = Omit<NextImageProps, 'src'> & {
   /**
    * class name to apply to the inner Next Image component
    */
-  nextImageClassName: string;
+  nextImageClassName?: string;
 };
 
 export const Image: FC<ImageProps> = forwardRef(
