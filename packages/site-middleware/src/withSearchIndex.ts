@@ -15,6 +15,7 @@ if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
 }
 
+const searchDataFile = 'search-data.json';
 /**
  * Adds the [[`searchIndex`]] props to the page props
  * @param _context
@@ -34,7 +35,7 @@ export const withSearchIndex: MosaicMiddleware<SearchIndexSlice> = async (
     let searchIndex;
     if (isSnapshotFile) {
       const { snapshotDir } = getSnapshotFileConfig(urlPath);
-      const filePath = path.join(process.cwd(), snapshotDir, 'search-data.json');
+      const filePath = path.join(process.cwd(), snapshotDir, searchDataFile);
       let fileExists = false;
       try {
         await fs.promises.stat(filePath);
@@ -46,17 +47,16 @@ export const withSearchIndex: MosaicMiddleware<SearchIndexSlice> = async (
         searchIndex = JSON.parse(rawSearchIndex);
       }
     } else if (isSnapshotS3) {
-      const s3Key = `/search-data.json`.replace(/^\//, '');
-      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(s3Key);
+      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(searchDataFile);
       const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-      const s3KeyExists = await keyExists(bucket, s3Key);
+      const s3KeyExists = await keyExists(bucket, searchDataFile);
       if (s3KeyExists) {
-        const rawSearchIndex = await loadKey(bucket, s3Key);
+        const rawSearchIndex = await loadKey(bucket, searchDataFile);
         searchIndex = JSON.parse(rawSearchIndex);
       }
     } else {
       const mosaicUrl = res.getHeader('X-Mosaic-Content-Url');
-      const response = await fetch(`${mosaicUrl}/search-data.json`, {
+      const response = await fetch(`${mosaicUrl}/${searchDataFile}`, {
         headers: {
           'Content-Type': 'application/json'
         }

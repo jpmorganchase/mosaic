@@ -45,12 +45,7 @@ describe('GIVEN withSearchIndex', () => {
           Bucket: 'some-bucket',
           Key: 'search-data.json'
         })
-        .resolves({ $metadata: { httpStatusCode: 200 } });
-      s3ClientMock
-        .on(HeadObjectCommand, {
-          Bucket: 'some-bucket',
-          Key: 'non-existent.json'
-        })
+        .resolvesOnce({ $metadata: { httpStatusCode: 200 } })
         .resolves({ $metadata: { httpStatusCode: 404 } });
     });
     afterAll(() => {
@@ -68,23 +63,34 @@ describe('GIVEN withSearchIndex', () => {
       // assert
       expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
     });
+    test('THEN does not throw for a non-existent search-index', async () => {
+      // arrange
+      const content = await withSearchIndex({
+        resolvedUrl: '/non-existent/mypage.mdx',
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mynamespace' : 'snapshot-s3')
+        }
+      });
+      // assert
+      expect(content).toEqual({ props: {} });
+    });
   });
+
   describe('WHEN snapshot-file Mosaic mode is set', () => {
     let savedEnv = process.env;
     beforeEach(() => {
       process.env = { MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
+    });
+    afterEach(() => {
+      process.env = savedEnv;
+    });
+    test('THEN reads search-index from a local file', async () => {
+      // arrange
       mockFs({
         'some/snapshots/': {
           'search-data.json': '{ "someValue": true }'
         }
       });
-    });
-    afterEach(() => {
-      mockFs.restore();
-      process.env = savedEnv;
-    });
-    test('THEN reads search-index from a local file', async () => {
-      // arrange
       const content = await withSearchIndex({
         resolvedUrl: '/mynamespace/mydir/mypage.mdx',
         res: {
@@ -92,8 +98,20 @@ describe('GIVEN withSearchIndex', () => {
         }
       });
       expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
+      mockFs.restore();
+    });
+    test('THEN does not throw for a non-existent search-index', async () => {
+      // arrange
+      const content = await withSearchIndex({
+        resolvedUrl: '/mynamespace/non-existent/mypage.mdx',
+        res: {
+          getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'snapshot-file')
+        }
+      });
+      expect(content).toEqual({ props: {} });
     });
   });
+
   describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
       enableFetchMocks();
