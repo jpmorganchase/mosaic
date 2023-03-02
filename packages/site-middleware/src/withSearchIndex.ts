@@ -1,55 +1,23 @@
+import fs from 'fs';
 import path from 'path';
 import { GetServerSidePropsContext } from 'next';
-import type { SearchIndex, SearchIndexSlice } from '@jpmorganchase/mosaic-store';
-import { fileLoaderProcessEnvSchema } from '@jpmorganchase/mosaic-schemas';
+import type { SearchIndexSlice } from '@jpmorganchase/mosaic-store';
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
-import { loadLocalFile, loadS3File } from './loaders';
+import {
+  createS3Loader,
+  getSnapshotFileConfig,
+  getSnapshotS3Config,
+  loadLocalFile
+} from './loaders';
 
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
 }
 
-export { SearchIndex };
-
+const searchDataFile = 'search-data.json';
 /**
- * Fetch search-data.json
- *
- * @param url the search data file URL
- * @returns search data JSON
- */
-export async function fetchSearchData(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  return response;
-}
-
-/**
- * Get environment vars
- *
- * @param urlPath the path for the page being loaded
- * @returns environment vars
- */
-export const getEnv = urlPath => {
-  const env = fileLoaderProcessEnvSchema.safeParse(process.env);
-  if (!env.success) {
-    env.error.issues.forEach(issue => {
-      console.error(
-        `Missing process.env.${issue.path.join()} environment variable required to load shared-config for ${urlPath}`
-      );
-    });
-    throw new Error(
-      `Environment variables missing for loading of shared-config required by ${urlPath}`
-    );
-  }
-  return env;
-};
-
-/**
- * Adds the [[`SearchIndex`]] props to the page props
+ * Adds the [[`searchIndex`]] props to the page props
  * @param _context
  * @returns site props object
  */
@@ -63,47 +31,52 @@ export const withSearchIndex: MosaicMiddleware<SearchIndexSlice> = async (
   const matches = resolvedUrl.match(/(.*)[!/]/);
   const urlPath = matches?.length ? matches[1] : '';
 
-  const mosaicUrl = isSnapshotS3 || isSnapshotFile ? '' : res.getHeader('X-Mosaic-Content-Url');
-  const searchDataUrl = `${mosaicUrl}/search-data.json`;
-
   try {
-    let searchIndexData;
+    let searchIndex;
     if (isSnapshotFile) {
-      const env = getEnv(urlPath);
-      const { MOSAIC_SNAPSHOT_DIR: mosaicSnapshotDir } = env.data;
-      const filePath = path.join(process.cwd(), mosaicSnapshotDir, 'search-data.json');
-      const rawSearchIndexData = await loadLocalFile(filePath);
-      searchIndexData = JSON.parse(rawSearchIndexData);
+      const { snapshotDir } = getSnapshotFileConfig(urlPath);
+      const filePath = path.join(process.cwd(), snapshotDir, searchDataFile);
+      let fileExists = false;
+      try {
+        await fs.promises.stat(filePath);
+        fileExists = true;
+      } catch {}
+
+      if (fileExists) {
+        const rawSearchIndex = await loadLocalFile(filePath);
+        searchIndex = JSON.parse(rawSearchIndex);
+      }
     } else if (isSnapshotS3) {
-      const s3Key = `/search-data.json`.replace(/^\//, '');
-      const rawSearchIndexData = await loadS3File(s3Key);
-      searchIndexData = JSON.parse(rawSearchIndexData);
+      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(searchDataFile);
+      const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
+      const s3KeyExists = await keyExists(bucket, searchDataFile);
+      if (s3KeyExists) {
+        const rawSearchIndex = await loadKey(bucket, searchDataFile);
+        searchIndex = JSON.parse(rawSearchIndex);
+      }
     } else {
-      const response = await fetchSearchData(searchDataUrl);
-      if (response.ok && response.status !== 204) {
-        searchIndexData = await response.json();
-      } else {
-        const show500 = response.status !== 404 && response.status !== 204;
-        const show404 = response.status === 404;
-        let errorMessage = `Could not find any search data defined for ${searchDataUrl}`;
-        if (show500) {
-          errorMessage = `An un-expected error occurred reading ${searchDataUrl}`;
+      const mosaicUrl = res.getHeader('X-Mosaic-Content-Url');
+      const response = await fetch(`${mosaicUrl}/${searchDataFile}`, {
+        headers: {
+          'Content-Type': 'application/json'
         }
-        throw new MiddlewareError(response.status, searchDataUrl, [errorMessage], {
-          show404,
-          show500
-        });
+      });
+      if (response.ok) {
+        searchIndex = await response.json();
+      } else if (response.status !== 404) {
+        throw Error(`${response.status} - ${response.statusText}`);
       }
     }
-
-    return { props: { searchIndex: searchIndexData } };
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      throw new MiddlewareError(500, searchDataUrl, [error.message], { show500: true });
-    } else {
-      console.error('unexpected error');
-      throw new MiddlewareError(500, searchDataUrl, ['unexpected error'], { show500: true });
+    if (searchIndex) {
+      return { props: { searchIndex } };
     }
+    return { props: {} };
+  } catch (error) {
+    console.error(error);
+    let errorMessage = `Could not load any search index for ${resolvedUrl}`;
+    throw new MiddlewareError(500, resolvedUrl, [errorMessage], {
+      show404: false,
+      show500: true
+    });
   }
 };

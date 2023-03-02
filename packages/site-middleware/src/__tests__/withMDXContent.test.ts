@@ -1,5 +1,5 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { mockClient } from 'aws-sdk-client-mock';
+import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@aws-sdk/util-stream-node';
 import { Readable } from 'stream';
 import { default as fetchMock, disableFetchMocks, enableFetchMocks } from 'jest-fetch-mock';
@@ -9,13 +9,23 @@ const mockFs = require('mock-fs');
 import { withMDXContent } from '../withMDXContent';
 
 jest.mock('../compileMdx.js', () => ({
-  compileMDX: async value => Promise.resolve(value)
+  compileMDX: async (value: string) => Promise.resolve(value)
 }));
+
+declare var process: {
+  env: {
+    MOSAIC_S3_BUCKET?: string;
+    MOSAIC_S3_REGION?: string;
+    MOSAIC_S3_ACCESS_KEY_ID?: string;
+    MOSAIC_S3_SECRET_ACCESS_KEY?: string;
+    MOSAIC_SNAPSHOT_DIR?: string;
+  };
+};
 
 describe('GIVEN withMDXContent', () => {
   describe('WHEN snapshot-s3 Mosaic mode is set', () => {
     let savedEnv = process.env;
-    let s3ClientMock;
+    let s3ClientMock: AwsStub<{}, { $metadata: {} }>;
     beforeAll(() => {
       process.env = {
         ...process.env,

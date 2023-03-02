@@ -1,7 +1,7 @@
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 
-import { fromHttpRequest, isErrorResponse } from '../fromHttpRequest';
+import { fromHttpRequest, isErrorResponse } from '../fromHttpRequest.js';
 
 const testUrl = 'http://host.test.com';
 
@@ -10,15 +10,15 @@ interface Data {
   sid: string;
 }
 
-const successfulRequestHandler = rest.get(testUrl, (req, res, ctx) => {
-  return res(ctx.status(200), ctx.json({ name: 'David', sid: 'v693674' }));
+const successfulRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
+  return res(ctx.status(200), ctx.json({ name: 'David', sid: 'some id' }));
 });
 
-const notOKHandler = rest.get(testUrl, (req, res, ctx) => {
+const notOKHandler = rest.get(testUrl, (_req, res, ctx) => {
   return res(ctx.status(404));
 });
 
-const errorHandler = rest.get(testUrl, (req, res, ctx) => {
+const errorHandler = rest.get(testUrl, (_req, _res, _ctx) => {
   throw new Error('Bad stuff happened');
 });
 
@@ -41,7 +41,7 @@ describe('GIVEN a fromHttpRequest helper ', () => {
 
       fromHttpRequest$.subscribe({
         next: response => {
-          expect(response).toEqual({ name: 'David', sid: 'v693674' });
+          expect(response).toEqual({ name: 'David', sid: 'some id' });
         },
         complete: () => done()
       });
@@ -57,7 +57,6 @@ describe('GIVEN a fromHttpRequest helper ', () => {
 
       fromHttpRequest$.subscribe({
         next: response => {
-          console.log(response);
           expect(response).toEqual({ error: true, message: 'Error 404' });
         },
         complete: () => done()
