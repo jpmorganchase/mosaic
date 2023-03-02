@@ -156,10 +156,11 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       function sortSidebarGroups(sidebarData) {
         let sortedGroupedPages = sidebarData.map(page => {
           if (page.childNodes.length > 1) {
-            const sortedPages = page.childNodes.sort((a, b) => b.priority - a.priority);
-            console.log(page.childNodes);
+            const sortedPages = page.childNodes.sort(
+              (pageA, pageB) =>
+                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
+            );
             sortSidebarGroups(page.childNodes);
-            console.log({ sortedPages });
             return { ...page, childNodes: sortedPages };
           } else {
             return page;
