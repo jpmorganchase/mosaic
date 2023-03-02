@@ -154,7 +154,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       //Map into Sidebar Groups and sort children according to priority
       function sortSidebarGroups(sidebarData) {
-        let sortedGroupedPages = sidebarData.map(page => {
+        const sortedGroupedPages = sidebarData.map(page => {
           if (page.childNodes.length > 1) {
             const sortedPages = page.childNodes.sort(
               (pageA, pageB) =>
