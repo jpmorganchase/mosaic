@@ -116,6 +116,10 @@ globalStyle(`${darkMode} .saltMenuItem-menuItemHover:hover`, {
   background: mosaicColorVars.dark.selectable.hover
 });
 
+globalStyle(`${darkMode} .saltLogo-logo`, {
+  filter: 'invert(0.5)'
+});
+
 export const interactPalette = createGlobalThemeContract({
   backgroundColor: '--salt-palette-interact-background',
   backgroundColorBlurSelected: '--salt-palette-interact-background-blurSelected',
