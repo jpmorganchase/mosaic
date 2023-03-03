@@ -73,13 +73,18 @@ const optimizeContentForSearch = async ({
 };
 
 /**
- * Creates a search-data.json file that contains all the information from a page that is required
- * to generate a search index
+ * Creates a search-data.json file that contains all the information
+ * from each page that is required to generate a search index.
  */
 const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
-  async afterUpdate(
+  /**
+   * For each source, parse the data we want to add to the search index and
+   * save it to the global config (to be saved to the filesystem later when
+   * all sources have been loaded).
+   */
+  async $beforeSend(
     mutableFilesystem,
-    { sharedFilesystem, serialiser, ignorePages },
+    { config, serialiser, ignorePages },
     { maxLineLength, maxLineCount, keys }
   ) {
     const pages = await Promise.all(
@@ -106,20 +111,46 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
           maxLineLength,
           maxLineCount
         });
-        const defaultResults = {
-          title: page.title,
-          content,
-          route: page.route
-        };
+        const required = { title: page.title, route: page.route };
 
         if (keys && keys.length > 0) {
           const extendedResults = keys.reduce((acc, key) => ({ ...acc, [key]: page[key] }), {});
-          return { ...defaultResults, ...extendedResults };
+          return { ...required, ...extendedResults };
         }
 
-        return defaultResults;
+        return { ...required, content };
       })
     );
+
+    /**
+     * Convert the searchData into an object where each page has a unique key (the
+     * route) so that the "merge" in `config.setData()` will correctly combine all
+     * the results from multiple sources.
+     */
+    const searchDataKeyedByRoute = searchData.reduce(
+      (acc, curr) => ({
+        ...acc,
+        [curr.route]: curr
+      }),
+      {}
+    );
+    config.setData({
+      searchIndices: searchDataKeyedByRoute
+    });
+  },
+
+  /**
+   * Once we have all the sources' search data added to `globalConfig`, convert it
+   * to JSON and save it to the filesystem.
+   */
+  async afterUpdate(_, { sharedFilesystem, globalConfig }, pluginOptions) {
+    console.log({ pluginOptions });
+    if (Object.keys(globalConfig.data.searchIndices).length < 1) {
+      return;
+    }
+    const globalSearchIndices = globalConfig.data.searchIndices;
+
+    const searchData = Object.values(globalSearchIndices);
 
     await sharedFilesystem.promises.writeFile('/search-data.json', JSON.stringify(searchData));
   }
