@@ -13,6 +13,7 @@ interface SearchIndexPluginOptions {
   maxLineLength?: number;
   maxLineCount?: number;
   keys?: string[];
+  disabled?: boolean;
 }
 
 interface Optimization {
@@ -143,11 +144,9 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
    * Once we have all the sources' search data added to `globalConfig`, convert it
    * to JSON and save it to the filesystem.
    */
-  async afterUpdate(_, { sharedFilesystem, globalConfig }, pluginOptions) {
-    console.log({ pluginOptions });
-    if (Object.keys(globalConfig.data.searchIndices).length < 1) {
-      return;
-    }
+  async afterUpdate(_, { sharedFilesystem, globalConfig }) {
+    if (!globalConfig.data.searchIndices) return;
+
     const globalSearchIndices = globalConfig.data.searchIndices;
 
     const searchData = Object.values(globalSearchIndices);

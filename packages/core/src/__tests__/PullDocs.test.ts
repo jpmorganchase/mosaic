@@ -44,6 +44,10 @@ describe('GIVEN PullDocs', () => {
           {
             modulePath: 'unique_plugin',
             options: { two: 'HAS_BEEN_REPLACED', three: 'HAS_BEEN_ADDED' }
+          },
+          {
+            modulePath: 'disabled_plugin',
+            disabled: true
           }
         ]
       });
