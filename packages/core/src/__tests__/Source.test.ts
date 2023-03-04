@@ -5,6 +5,7 @@ import Source from '../Source';
 
 jest.mock('../WorkerSubscription');
 jest.mock('plugin', () => ({}), { virtual: true });
+jest.mock('../plugin/createPluginAPI.js');
 
 const utf8Encoder = new TextEncoder();
 

@@ -1,6 +1,11 @@
 import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types';
+import path from 'node:path';
 
 import PluginError from '../PluginError.js';
+
+const isPathWithExtension = (filePath: string) => {
+  return typeof filePath === 'string' && path.extname(filePath).length > 1;
+};
 
 export default async function serialiserRunner(
   {
@@ -10,7 +15,7 @@ export default async function serialiserRunner(
   fullPath: string,
   ...args
 ) {
-  if (typeof fullPath !== 'string' || !/\/[^/]+\.\w{1,4}$/.test(fullPath)) {
+  if (!isPathWithExtension(fullPath)) {
     throw new Error(
       `Invalid serialiser input. '${fullPath}' provided but a path string (with a valid file extension) was expected.`
     );
