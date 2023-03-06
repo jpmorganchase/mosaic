@@ -152,33 +152,35 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: sidebarRootLevel
       });
 
-      //Map into Sidebar Groups and sort children according to priority
-      function sortSidebarGroups(sidebarData) {
-        const sortedGroupedPages = sidebarData.map(page => {
+      const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
+
+      function sortPagesByPriority(sidebarData) {
+        const pagesByPriority = sidebarData.map(page => {
           if (page.childNodes.length > 1) {
-            const sortedPages = page.childNodes.sort(
+            const pagesByPriority = page.childNodes.sort(
               (pageA, pageB) =>
                 (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
             );
-            sortSidebarGroups(page.childNodes);
-            return { ...page, childNodes: sortedPages };
+            sortPagesByPriority(page.childNodes);
+            return { ...page, childNodes: pagesByPriority };
           } else {
             return page;
           }
         });
-        return sortedGroupedPages;
+        return pagesByPriority;
       }
 
       await Promise.all(
         rootUserJourneys.map(async dirName => {
           const sidebarFilePath = path.posix.join(String(dirName), options.filename);
-          const pages = await createPageList(dirName);
+          let pages = await createPageList(dirName);
+          pages = pages.filter(page => removeExcludedPages(page));
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
-          const sidebarDataOrdered = sortSidebarGroups(sidebarData);
+          const pagesByPriority = sortPagesByPriority(sidebarData);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: sidebarDataOrdered })
+            JSON.stringify({ pages: pagesByPriority })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
