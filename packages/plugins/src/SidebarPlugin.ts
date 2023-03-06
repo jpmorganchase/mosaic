@@ -15,21 +15,6 @@ function createFileGlob(patterns, pageExtensions) {
   return `${patterns}{${pageExtensions.join(',')}}`;
 }
 
-function sortPagesByPriority(pageA, pageB, dirName) {
-  // Always pin /index to the front
-  const route = `${dirName}/index`;
-  if (pageA.route === route) {
-    return -1;
-  }
-  if (pageB.route === route) {
-    return 1;
-  }
-  return (
-    (pageB.sidebar && pageB.sidebar.priority ? pageB.sidebar.priority : -1) -
-    (pageA.sidebar && pageA.sidebar.priority ? pageA.sidebar.priority : -1)
-  );
-}
-
 function getPageLevel(page) {
   return page.route.split('/').length - 2;
 }
@@ -39,8 +24,6 @@ function sortByPathLevel(pathA, pathB) {
   const pathBLevel = pathB.split('/').length;
   return pathBLevel - pathALevel;
 }
-
-const filterPages = page => !(page.sidebar && page.sidebar.exclude);
 
 interface SidebarPluginConfigData {
   dirs: string[];
@@ -87,9 +70,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
               )
           )
         );
-        pageList = pageList
-          .filter(page => filterPages(page))
-          .sort((pageA, pageB) => sortPagesByPriority(pageA, pageB, dirName));
         return pageList;
       }
 
@@ -172,29 +152,35 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         deep: sidebarRootLevel
       });
 
-      //Map into Sidebar Groups and sort children according to priority, priority = 1 has the highest priority
-      function sortSidebarGroups(sidebarData) {
-        const sortedGroupedPages = sidebarData.map(page => {
-          if (page.childNodes) {
-            const sortedPages = page.childNodes.sort((a, b) => b.priority - a.priority);
-            return { ...page, childNodes: sortedPages };
+      const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
+
+      function sortPagesByPriority(sidebarData) {
+        const pagesByPriority = sidebarData.map(page => {
+          if (page.childNodes.length > 1) {
+            const pagesByPriority = page.childNodes.sort(
+              (pageA, pageB) =>
+                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
+            );
+            sortPagesByPriority(page.childNodes);
+            return { ...page, childNodes: pagesByPriority };
           } else {
-            page;
+            return page;
           }
         });
-        return sortedGroupedPages;
+        return pagesByPriority;
       }
 
       await Promise.all(
         rootUserJourneys.map(async dirName => {
           const sidebarFilePath = path.posix.join(String(dirName), options.filename);
-          const pages = await createPageList(dirName);
+          let pages = await createPageList(dirName);
+          pages = pages.filter(page => removeExcludedPages(page));
           const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, dirName);
-          const sidebarDataOrdered = sortSidebarGroups(sidebarData);
+          const pagesByPriority = sortPagesByPriority(sidebarData);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: sidebarDataOrdered })
+            JSON.stringify({ pages: pagesByPriority })
           );
           addSidebarDataToFrontmatter(pages, dirName);
         })
