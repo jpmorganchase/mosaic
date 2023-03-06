@@ -46,7 +46,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
         config.setRef(sharedConfigFile, ['config', '$ref'], `${String(pagePath)}#/sharedConfig`);
         await mutableFilesystem.promises.writeFile(sharedConfigFile, '{}');
       } else {
-        const baseDir = path.resolve(path.dirname(String(pagePath)), '../');
+        const baseDir = path.posix.resolve(path.dirname(String(pagePath)), '../');
 
         config.setAliases(path.join(baseDir, options.filename), [sharedConfigFile]);
       }

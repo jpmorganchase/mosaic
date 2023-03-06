@@ -59,7 +59,9 @@ describe('GIVEN PullDocs', () => {
         expect.any(MutableVolume),
         [
           {
-            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$CodeModPlugin.js/),
+            modulePath: expect.stringMatching(
+              /[\/\\]packages[\/\\]plugins[\/\\]dist[\/\\]\$CodeModPlugin.js/
+            ),
             options: {},
             priority: Infinity
           },
@@ -72,16 +74,22 @@ describe('GIVEN PullDocs', () => {
             options: { one: 'ALWAYS_PRESENT', two: 'HAS_BEEN_REPLACED', three: 'HAS_BEEN_ADDED' }
           },
           {
-            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$TagPlugin.js/),
+            modulePath: expect.stringMatching(
+              /[\/\\]packages[\/\\]plugins[\/\\]dist[\/\\]\$TagPlugin.js/
+            ),
             options: {}
           },
           {
-            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$AliasPlugin.js/),
+            modulePath: expect.stringMatching(
+              /[\/\\]packages[\/\\]plugins[\/\\]dist[\/\\]\$AliasPlugin.js/
+            ),
             options: {},
             priority: -1
           },
           {
-            modulePath: expect.stringMatching(/\/packages\/plugins\/dist\/\$RefPlugin.js/),
+            modulePath: expect.stringMatching(
+              /[\/\\]packages[\/\\]plugins[\/\\]dist[\/\\]\$RefPlugin.js/
+            ),
             options: {},
             priority: -1
           }
@@ -89,7 +97,9 @@ describe('GIVEN PullDocs', () => {
         [
           {
             filter: /\.json$/,
-            modulePath: expect.stringMatching(/\/packages\/serialisers\/dist\/json.js/)
+            modulePath: expect.stringMatching(
+              /[\/\\]packages[\/\\]serialisers[\/\\]dist[\/\\]json.js/
+            )
           }
         ],
         ['.mdx'],

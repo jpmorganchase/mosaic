@@ -46,7 +46,7 @@ const $AliasPlugin: PluginType<AliasPluginPage> = {
     }
     for (const fullPath in config.data.aliases) {
       for (const alias of config.data.aliases[fullPath]) {
-        const aliasPath = path.resolve(path.dirname(fullPath), alias).toLowerCase();
+        const aliasPath = path.posix.resolve(path.dirname(fullPath), alias).toLowerCase();
         const aliasDir = path.dirname(aliasPath);
         if (!(await mutableFilesystem.promises.exists(aliasDir))) {
           await mutableFilesystem.promises.mkdir(aliasDir, {
