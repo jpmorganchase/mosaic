@@ -35,7 +35,21 @@ describe('GIVEN PullDocs', () => {
 
       pullDocs = new PullDocs({
         ...mockConfig,
-        plugins: [{ modulePath: 'plugin', filter: /[a-z]$/ }]
+        plugins: [
+          { modulePath: 'plugin', filter: /[a-z]$/ },
+          {
+            modulePath: 'unique_plugin',
+            options: { one: 'ALWAYS_PRESENT', two: 'WILL_BE_REPLACED' }
+          },
+          {
+            modulePath: 'unique_plugin',
+            options: { two: 'HAS_BEEN_REPLACED', three: 'HAS_BEEN_ADDED' }
+          },
+          {
+            modulePath: 'disabled_plugin',
+            disabled: true
+          }
+        ]
       });
     });
 
@@ -54,6 +68,10 @@ describe('GIVEN PullDocs', () => {
           {
             filter: /[a-z]$/,
             modulePath: 'plugin'
+          },
+          {
+            modulePath: 'unique_plugin',
+            options: { one: 'ALWAYS_PRESENT', two: 'HAS_BEEN_REPLACED', three: 'HAS_BEEN_ADDED' }
           },
           {
             modulePath: expect.stringMatching(

@@ -36,7 +36,7 @@ module.exports = {
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
-      options: { maxLineLength: 240, maxLineCount: 240, keys: ['description'] }
+      options: { maxLineLength: 240, maxLineCount: 240 }
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',

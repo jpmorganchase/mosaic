@@ -2,7 +2,11 @@ import { createRequire } from 'node:module';
 import type { IUnionFs } from 'unionfs';
 import { Union } from 'unionfs';
 import { Volume } from 'memfs';
-import { MosaicConfig, SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
+import {
+  MosaicConfig,
+  SourceModuleDefinition,
+  PluginModuleDefinition
+} from '@jpmorganchase/mosaic-types';
 import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
 // TODO:
@@ -12,6 +16,7 @@ import MutableVolume from './filesystems/MutableVolume.js';
 import UnionFileAccess from './filesystems/UnionFileAccess.js';
 import UnionVolume from './filesystems/UnionVolume.js';
 import SourceManager from './SourceManager.js';
+import parsePluginModuleDefinitions from './helpers/parsePluginModuleDefinitions.js';
 
 const require = createRequire(import.meta.url);
 
@@ -48,7 +53,8 @@ export default class PullDocs {
       this.#vfs,
       sharedFilesystem,
       // Refs and aliases should be applied after all other plugins, so we add them manually with a negative priority
-      plugins
+      parsePluginModuleDefinitions(plugins)
+        .filter((plugin: PluginModuleDefinition) => !plugin.disabled)
         .concat(
           {
             modulePath: require.resolve('@jpmorganchase/mosaic-plugins/$TagPlugin'),

@@ -9,6 +9,10 @@ export const pluginModuleSchema = z.object({
   /**
    * Options to pass to the plugin lifecycle methods.
    */
+  disabled: z.boolean().optional(),
+  /**
+   * Options to pass to the plugin lifecycle methods.
+   */
   options: z.unknown().optional(),
   /**
    * Exclude this plugin when running `mosaic build`
