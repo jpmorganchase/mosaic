@@ -9,13 +9,15 @@
     "url": "git@github.com:jpmorganchase/mosaic.git",
     "directory": "packages/theme"
   },
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
     "./baseline.css": "./dist/baseline/index.css",
     "./salt.css": "./dist/salt/index.css",
     ".": {
-      "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
+      "style": "./dist/index.css",
       "import": "./dist/index.js",
       "node": "./dist/index.js"
     }
