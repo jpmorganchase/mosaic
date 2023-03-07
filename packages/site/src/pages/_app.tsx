@@ -7,6 +7,7 @@ import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 import { components as mosaicComponents } from '@jpmorganchase/mosaic-site-components';
 import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
+import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import { SessionProvider } from 'next-auth/react';
 
@@ -24,7 +25,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
     <SessionProvider>
       <StoreProvider value={createStore()}>
         <Metadata Component={Head} />
-        <ThemeProvider>
+        <ThemeProvider className={themeClassName}>
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>
