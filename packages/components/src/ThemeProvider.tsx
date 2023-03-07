@@ -12,13 +12,18 @@ const useHasHydrated = () => {
   return hasHydrated;
 };
 
-export function ThemeProvider({ children }: { children?: ReactNode }) {
+interface ThemeProviderProps {
+  className?: string;
+  children?: ReactNode;
+}
+
+export function ThemeProvider({ className, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
   return (
     <SaltProvider applyClassesTo="child" mode={hasHydrated ? colorMode : 'light'}>
-      <div>
+      <div className={className}>
         {children}
         <div data-mosaic-id="portal-root" />
       </div>
