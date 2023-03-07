@@ -4,7 +4,7 @@
     "target": "es2022",
     "lib": ["es2022", "DOM", "DOM.iterable"],
     "esModuleInterop": true,
-    "moduleResolution": "Node16",
+    "moduleResolution": "Node",
     "isolatedModules": true,
     "sourceMap": true,
     "declaration": true,
