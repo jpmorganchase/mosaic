@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.24
+
+### Patch Changes
+
+- 049d9af: 1. Pip Salt version 2. Issues 155, make 500 error more specific 3. button and sidebar styles 4. search opt-out
+
 ## 0.1.0-beta.23
 
 ### Patch Changes

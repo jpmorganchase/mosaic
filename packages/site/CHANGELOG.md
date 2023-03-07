@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.23
+
+### Patch Changes
+
+- 049d9af: 1. Pip Salt version 2. Issues 155, make 500 error more specific 3. button and sidebar styles 4. search opt-out
+- Updated dependencies [049d9af]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.24
+  - @jpmorganchase/mosaic-components@0.1.0-beta.24
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.24
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.24
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.24
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.24
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.24
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.24
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.24
+  - @jpmorganchase/mosaic-store@0.1.0-beta.24
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.24
+
 ## 0.1.0-beta.22
 
 ### Patch Changes
