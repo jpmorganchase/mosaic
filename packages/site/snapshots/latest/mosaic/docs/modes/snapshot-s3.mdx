@@ -1,7 +1,7 @@
 ---
 title: Snapshot AWS/S3 mode
 layout: DetailTechnical
-lastModified: 1675330424000
+lastModified: 1676998129000
 fullPath: /mosaic/docs/modes/snapshot-s3.mdx
 route: /mosaic/docs/modes/snapshot-s3
 breadcrumbs:
@@ -19,57 +19,87 @@ breadcrumbs:
     id: /mosaic/docs/modes/snapshot-s3.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.33
-  time: 19800
-  words: 66
+  minutes: 0.335
+  time: 20100
+  words: 67
+tableOfContents:
+  - level: 1
+    id: snapshot-awss3-mode
+    text: Snapshot AWS/S3 mode
+  - level: 2
+    id: generating-a-snapshot
+    text: Generating a snapshot
+  - level: 2
+    id: uploading-a-snapshot-to-s3
+    text: Uploading a snapshot to S3
 navigation:
   prev:
     title: Snapshot file mode
-    fullPath: /mosaic/docs/modes/snapshot-file
+    route: /mosaic/docs/modes/snapshot-file
 sidebarData:
-  - id: /mosaic/docs/index
-    name: Getting started
+  - id: /mosaic/index
+    name: Mosaic
     data:
-      level: 2
-      link: /mosaic/docs/index
+      level: 1
+      link: /mosaic/index
     childNodes:
-      - id: /mosaic/docs/publish-site-to-aws
-        name: Publish a site to AWS
+      - id: /mosaic/docs/index
+        name: Getting started
         data:
           level: 2
-          link: /mosaic/docs/publish-site-to-aws
-        childNodes: []
-      - id: /mosaic/docs/publish-site-to-vercel
-        name: Publish a site to Vercel
-        data:
-          level: 2
-          link: /mosaic/docs/publish-site-to-vercel
-        childNodes: []
-      - id: /mosaic/docs/modes/index
-        name: Modes of operation
-        data:
-          level: 3
-          link: /mosaic/docs/modes/index
+          link: /mosaic/docs/index
         childNodes:
-          - id: /mosaic/docs/modes/active
-            name: Active mode
+          - id: /mosaic/docs/publish-site-to-aws
+            name: Publish a site to AWS
             data:
-              level: 3
-              link: /mosaic/docs/modes/active
+              level: 2
+              link: /mosaic/docs/publish-site-to-aws
             childNodes: []
-          - id: /mosaic/docs/modes/snapshot-file
-            name: Snapshot file mode
+          - id: /mosaic/docs/publish-site-to-vercel
+            name: Publish a site to Vercel
             data:
-              level: 3
-              link: /mosaic/docs/modes/snapshot-file
+              level: 2
+              link: /mosaic/docs/publish-site-to-vercel
             childNodes: []
-          - id: /mosaic/docs/modes/snapshot-s3
-            name: Snapshot AWS/S3 mode
+          - id: /mosaic/docs/modes/index
+            name: Modes of operation
             data:
               level: 3
-              link: /mosaic/docs/modes/snapshot-s3
+              link: /mosaic/docs/modes/index
+            childNodes:
+              - id: /mosaic/docs/modes/active
+                name: Active mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/active
+                childNodes: []
+              - id: /mosaic/docs/modes/snapshot-file
+                name: Snapshot file mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/snapshot-file
+                childNodes: []
+              - id: /mosaic/docs/modes/snapshot-s3
+                name: Snapshot AWS/S3 mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/snapshot-s3
+                childNodes: []
+      - id: /mosaic/quick-start/index
+        name: Quick start guides
+        data:
+          level: 2
+          link: /mosaic/quick-start/index
+        childNodes:
+          - id: /mosaic/quick-start/publish-site-to-aws
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /mosaic/quick-start/publish-site-to-aws
             childNodes: []
 ---
+
+# {meta.title}
 
 In `snapshot-s3` mode a snapshot can be loaded from a pre-configured AWS S3 bucket.
 
@@ -83,7 +113,7 @@ To use `snapshot-s3` mode
 > MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret access key>"
 ```
 
-## Generating snapshot
+## Generating a snapshot
 
 To generate a snapshot, run
 
