@@ -9,18 +9,70 @@ type LeafNode = Node & {
   value: string;
 };
 
+interface IndexItem {
+  title: string;
+  route: string;
+  content?: string[];
+  [key: string]: string | string[];
+}
+
+interface SearchRelevancy {
+  includeScore?: boolean;
+  includeMatches?: boolean;
+  maxPatternLength?: number;
+  ignoreLocation?: boolean;
+  threshold?: number;
+  keys: string[] | { name: string; weight: number }[];
+}
 interface SearchIndexPluginOptions {
   maxLineLength?: number;
   maxLineCount?: number;
   keys?: string[];
-  disabled?: boolean;
+  relevancy?: SearchRelevancy;
 }
 
 interface Optimization {
   content: string;
   title: string;
-  maxLineCount: number;
-  maxLineLength: number;
+  maxLineCount?: number;
+  maxLineLength?: number;
+}
+
+const defaultRelevancyOptions = {
+  includeScore: true,
+  includeMatches: true,
+  maxPatternLength: 240,
+  ignoreLocation: true,
+  threshold: 0.3
+};
+
+/**
+ * We need these keys to *always* be included in the search index.
+ * Without the title, there would be no way to display the search results.
+ * Without the route, there would be no way to navigate to the page.
+ */
+const requiredKeys = ['title', 'route'];
+
+/**
+ * If there are no keys specified in the plugin options, we'll use these
+ */
+const fallbackKeys = [...requiredKeys, 'content'];
+
+/**
+ * There are three scenarios for the "keys":
+ *
+ * 1. No keys are specified in the plugin options. In this case, we'll use the fallback keys.
+ * 2. The keys are specified as an array of strings. In this case, we'll add the required keys to the array.
+ * 3. The keys are specified as an array of objects. In this case, we can assume "weighting" is being applied
+ *    so we'll only return the keys that have been specified in the options.
+ *
+ * @param optionKeys array of keys specified in the plugin options
+ * @returns array of keys to be used in the search index
+ */
+export function parseKeys(optionKeys = []) {
+  if (optionKeys.length < 1) return fallbackKeys;
+  if (typeof optionKeys[0] === 'string') return [...requiredKeys, ...optionKeys];
+  return optionKeys;
 }
 
 /**
@@ -36,7 +88,7 @@ interface Optimization {
  * each page. Pages with more lines than this value will be truncated.
  * @returns array of sentence strings
  */
-const optimizeContentForSearch = async ({
+export const optimizeContentForSearch = async ({
   content,
   title,
   maxLineLength,
@@ -55,19 +107,24 @@ const optimizeContentForSearch = async ({
 
   const sentences: string[] = [];
 
+  const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
+
   visit(
     tree,
     (node: Node) => node.type === 'text' || node.type === 'code',
     (node: LeafNode) => {
-      if (maxLineLength) {
-        sentences.push(node.value.slice(0, maxLineLength));
-      } else {
-        sentences.push(node.value);
-      }
+      const segments = [...segmenter.segment(node.value)].map(segment => segment.segment);
+      segments.forEach(segment => {
+        if (maxLineLength) {
+          sentences.push(segment.slice(0, maxLineLength));
+        } else {
+          sentences.push(segment);
+        }
+      });
     }
   );
 
-  if (maxLineLength) {
+  if (maxLineCount) {
     return sentences.slice(0, maxLineCount);
   }
   return sentences;
@@ -86,7 +143,7 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
   async $beforeSend(
     mutableFilesystem,
     { config, serialiser, ignorePages },
-    { maxLineLength, maxLineCount, keys }
+    { maxLineLength, maxLineCount, keys: optionKeys }
   ) {
     const pages = await Promise.all(
       (
@@ -103,7 +160,6 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
         return deserialisedPage;
       })
     );
-
     const searchData = await Promise.all(
       pages.map(async page => {
         const content = await optimizeContentForSearch({
@@ -112,24 +168,25 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
           maxLineLength,
           maxLineCount
         });
-        const required = { title: page.title, route: page.route };
-
-        if (keys && keys.length > 0) {
-          const extendedResults = keys.reduce((acc, key) => ({ ...acc, [key]: page[key] }), {});
-          return { ...required, ...extendedResults };
-        }
-
-        return { ...required, content };
+        const keys = parseKeys(optionKeys);
+        /**
+         * If the "content" key is specified, we want to include the result of
+         * the optimizeContentForSearch() function. Otherwise, we include the
+         * key value directly from the page data.
+         */
+        return keys.reduce(
+          (acc, key) => ({ ...acc, [key]: key === 'content' ? content : page[key] }),
+          {}
+        );
       })
     );
-
     /**
      * Convert the searchData into an object where each page has a unique key (the
      * route) so that the "merge" in `config.setData()` will correctly combine all
      * the results from multiple sources.
      */
     const searchDataKeyedByRoute = searchData.reduce(
-      (acc, curr) => ({
+      (acc, curr: IndexItem) => ({
         ...acc,
         [curr.route]: curr
       }),
@@ -139,18 +196,21 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
       searchIndices: searchDataKeyedByRoute
     });
   },
-
   /**
    * Once we have all the sources' search data added to `globalConfig`, convert it
    * to JSON and save it to the filesystem.
    */
-  async afterUpdate(_, { sharedFilesystem, globalConfig }) {
+  async afterUpdate(_, { sharedFilesystem, globalConfig }, { keys: optionKeys, relevancy }) {
     if (!globalConfig.data.searchIndices) return;
-
     const globalSearchIndices = globalConfig.data.searchIndices;
-
     const searchData = Object.values(globalSearchIndices);
-
+    const keys = parseKeys(optionKeys);
+    const searchConfig = {
+      ...defaultRelevancyOptions,
+      ...relevancy,
+      keys
+    };
+    await sharedFilesystem.promises.writeFile('/search-config.json', JSON.stringify(searchConfig));
     await sharedFilesystem.promises.writeFile('/search-data.json', JSON.stringify(searchData));
   }
 };
