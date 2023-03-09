@@ -8,7 +8,7 @@ import { LinkProvider } from '@jpmorganchase/mosaic-components';
 
 import { DocPaginator } from '../DocPaginator';
 
-describe.only('GIVEN a DocPaginator', () => {
+describe('GIVEN a DocPaginator', () => {
   const wrapper: PropsWithChildren<LinkProvider> = ({ children }) => (
     <LinkProvider value={NextLink}>
       <MemoryRouterProvider>{children}</MemoryRouterProvider>
