@@ -18,6 +18,7 @@
     "dev": "next dev",
     "debug": "yarn mosaic serve -c ./mosaic.config.js -p 8080",
     "e2e": "npx playwright test",
+    "e2e:codegen": "npx playwright codegen localhost:3000",
     "start": "next start",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE='snapshot-file' concurrently --kill-others 'yarn dev'",

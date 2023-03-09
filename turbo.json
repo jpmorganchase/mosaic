@@ -31,6 +31,9 @@
     "e2e": {
       "cache": false
     },
+    "e2e:codegen": {
+      "cache": false
+    },
     "//#create:site": {
       "cache": false
     },
