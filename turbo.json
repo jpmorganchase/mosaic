@@ -28,6 +28,9 @@
     "dev": {
       "cache": false
     },
+    "e2e": {
+      "cache": false
+    },
     "//#create:site": {
       "cache": false
     },
