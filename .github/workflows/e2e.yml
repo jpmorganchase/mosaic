@@ -1,0 +1,46 @@
+name: Playwright Tests
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  site_preview:
+    name: Site Preview
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.waitForVercelPreviewDeployment.outputs.url }}
+    steps:
+      - name: Wait for Vercel preview deployment to be ready
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.1
+        id: waitForVercelPreviewDeployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 500
+          check_interval: 60
+  test_e2e:
+    needs: site_preview
+    name: Playwright tests
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare testing env
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3.3.0
+        with:
+          node-version: '16.10.0'
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: yarn run e2e
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ needs.site_preview.outputs.preview_url }}
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
