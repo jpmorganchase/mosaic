@@ -6,3 +6,15 @@ test('should navigate to the homepage', async ({ page }) => {
   // The new page should contain an h1 with "About Page"
   await expect(page.locator('h1')).toContainText('Mosaic');
 });
+
+test('should have a "Docs" link in the app header', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Docs' }).click();
+  await expect(page.locator('h1')).toContainText('Create your first site');
+});
+
+test('should have a "Quick Start" link in the app header', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Quick Start' }).click();
+  await expect(page.locator('h1')).toContainText('Quick start guides');
+});
