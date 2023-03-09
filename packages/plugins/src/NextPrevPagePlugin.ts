@@ -67,7 +67,7 @@ const NextPrevPlugin: PluginType<NextPrevPluginPage, NextPrevPluginOptions> = {
           );
           config.setRef(
             pages[i],
-            ['navigation', 'prev', 'fullPath', '$ref'],
+            ['navigation', 'prev', 'route', '$ref'],
             `${pages[i - 1]}#/route`
           );
         }
@@ -79,7 +79,7 @@ const NextPrevPlugin: PluginType<NextPrevPluginPage, NextPrevPluginOptions> = {
           );
           config.setRef(
             pages[i],
-            ['navigation', 'next', 'fullPath', '$ref'],
+            ['navigation', 'next', 'route', '$ref'],
             `${pages[i + 1]}#/route`
           );
         }

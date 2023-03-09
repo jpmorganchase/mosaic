@@ -1,9 +1,9 @@
 import React from 'react';
-import { useNextPrev } from '@jpmorganchase/mosaic-store';
+import { useNavigation } from '@jpmorganchase/mosaic-store';
 
-export const withNextPrevAdapter =
+export const withNavigationAdapter =
   Component =>
   ({ linkSuffix = 'Page' }) => {
-    const { next, prev } = useNextPrev();
+    const { next, prev } = useNavigation();
     return <Component linkSuffix={linkSuffix} next={next} prev={prev} />;
   };

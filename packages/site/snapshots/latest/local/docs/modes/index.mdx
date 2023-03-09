@@ -1,7 +1,7 @@
 ---
 title: Modes of operation
 layout: DetailTechnical
-lastModified: 1676020767389
+lastModified: 1676296383573
 fullPath: /local/docs/modes/index.mdx
 route: /local/docs/modes/index
 breadcrumbs:
@@ -19,52 +19,86 @@ readingTime:
   minutes: 0.485
   time: 29100
   words: 97
+tableOfContents:
+  - level: 1
+    id: modes-of-operation
+    text: Modes of operation
+  - level: 2
+    id: active-updates
+    text: Active updates
+  - level: 2
+    id: static-content
+    text: Static content
+  - level: 3
+    id: file-based-snapshots
+    text: File based snapshots
+  - level: 3
+    id: s3-based-snapshots
+    text: S3 based snapshots
 navigation:
   next:
     title: Active mode
-    fullPath: /local/docs/modes/active
+    route: /local/docs/modes/active
 sidebarData:
-  - id: /local/docs/index
-    name: Getting started
+  - id: /local/index
+    name: Mosaic
     data:
-      level: 2
-      link: /local/docs/index
+      level: 1
+      link: /local/index
     childNodes:
-      - id: /local/docs/publish-site-to-aws
-        name: Publish a site to AWS
+      - id: /local/docs/index
+        name: Getting started
         data:
           level: 2
-          link: /local/docs/publish-site-to-aws
-        childNodes: []
-      - id: /local/docs/publish-site-to-vercel
-        name: Publish a site to Vercel
-        data:
-          level: 2
-          link: /local/docs/publish-site-to-vercel
-        childNodes: []
-      - id: /local/docs/modes/index
-        name: Modes of operation
-        data:
-          level: 3
-          link: /local/docs/modes/index
+          link: /local/docs/index
         childNodes:
-          - id: /local/docs/modes/active
-            name: Active mode
+          - id: /local/docs/publish-site-to-aws
+            name: Publish a site to AWS
             data:
-              level: 3
-              link: /local/docs/modes/active
+              level: 2
+              link: /local/docs/publish-site-to-aws
             childNodes: []
-          - id: /local/docs/modes/snapshot-file
-            name: Snapshot file mode
+          - id: /local/docs/publish-site-to-vercel
+            name: Publish a site to Vercel
             data:
-              level: 3
-              link: /local/docs/modes/snapshot-file
+              level: 2
+              link: /local/docs/publish-site-to-vercel
             childNodes: []
-          - id: /local/docs/modes/snapshot-s3
-            name: Snapshot AWS/S3 mode
+          - id: /local/docs/modes/index
+            name: Modes of operation
             data:
               level: 3
-              link: /local/docs/modes/snapshot-s3
+              link: /local/docs/modes/index
+            childNodes:
+              - id: /local/docs/modes/active
+                name: Active mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/active
+                childNodes: []
+              - id: /local/docs/modes/snapshot-file
+                name: Snapshot file mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/snapshot-file
+                childNodes: []
+              - id: /local/docs/modes/snapshot-s3
+                name: Snapshot AWS/S3 mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/snapshot-s3
+                childNodes: []
+      - id: /local/quick-start/index
+        name: Quick start guides
+        data:
+          level: 2
+          link: /local/quick-start/index
+        childNodes:
+          - id: /local/quick-start/publish-site-to-aws
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /local/quick-start/publish-site-to-aws
             childNodes: []
 ---
 

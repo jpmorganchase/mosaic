@@ -4,7 +4,7 @@ export * from './useBreadcrumbs';
 export * from './useColorMode';
 export * from './useLayout';
 export * from './useMeta';
-export * from './useNextPrev';
+export * from './useNavigation';
 export * from './useRoute';
 export * from './useSearchIndex';
 export * from './useSidebar';

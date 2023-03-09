@@ -4,12 +4,16 @@ import classnames from 'classnames';
 import { useRouter } from 'next/router';
 
 import styles from './styles.css';
-import type { LinkType } from '../Link';
+
+import { NavigationLink } from '@jpmorganchase/mosaic-store';
 
 export interface DocPaginatorProps {
+  /** Link label suffix */
   linkSuffix: string;
-  next?: LinkType;
-  prev?: LinkType;
+  /** Next page */
+  next?: NavigationLink;
+  /** Previous page */
+  prev?: NavigationLink;
 }
 
 export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, prev }) => {
@@ -41,11 +45,11 @@ export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, pr
       <div className={styles.left}>
         {prev && (
           <TileBase border className={styles.tile}>
-            <Link className={styles.link} href={prev.link} endIcon="none">
+            <Link className={styles.link} href={prev.route} endIcon="none">
               <>
                 <P6>Previous {linkSuffix}</P6>
                 <Icon className={classnames(styles.icon, styles.iconPrev)} name="chevronLeft" />
-                <P3 className={classnames(styles.linkText)}>{prev.text}</P3>
+                <P3 className={classnames(styles.linkText)}>{prev.title}</P3>
               </>
             </Link>
           </TileBase>
@@ -54,11 +58,11 @@ export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, pr
       <div className={styles.right}>
         {next && (
           <TileBase border className={classnames(styles.tile, styles.nextLink)}>
-            <Link className={styles.link} href={next.link} endIcon="none">
+            <Link className={styles.link} href={next.route} endIcon="none">
               <>
                 <P6>Next {linkSuffix}</P6>
                 <Icon className={classnames(styles.icon, styles.iconNext)} name="chevronRight" />
-                <P3 className={classnames(styles.linkText)}>{next.text}</P3>
+                <P3 className={classnames(styles.linkText)}>{next.title}</P3>
               </>
             </Link>
           </TileBase>

@@ -4,6 +4,7 @@ export * from './footer';
 export * from './helpLinks';
 export * from './layout';
 export * from './meta';
+export * from './navigation';
 export * from './route';
 export * from './searchIndex';
 export * from './sharedConfig';

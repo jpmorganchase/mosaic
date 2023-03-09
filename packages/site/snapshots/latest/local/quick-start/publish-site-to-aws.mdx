@@ -1,7 +1,7 @@
 ---
 title: Publish a site to AWS
 layout: DetailTechnical
-lastModified: 1676020767390
+lastModified: 1678122865811
 fullPath: /local/quick-start/publish-site-to-aws.mdx
 route: /local/quick-start/publish-site-to-aws
 breadcrumbs:
@@ -19,24 +19,99 @@ readingTime:
   minutes: 1.065
   time: 63900
   words: 213
+tableOfContents:
+  - level: 1
+    id: publish-a-site-to-aws
+    text: Publish a site to AWS
+  - level: 2
+    id: step-1-generate-a-mosaic-site
+    text: 'Step 1: Generate a Mosaic site'
+  - level: 2
+    id: step-2-create-the-github-repository
+    text: 'Step 2: Create the Github repository'
+  - level: 2
+    id: step-3-generate-a-snapshot-of-content
+    text: 'Step 3: Generate a snapshot of content'
+  - level: 2
+    id: step-4-configure-environment-for-s3
+    text: 'Step 4: Configure environment for S3'
+  - level: 2
+    id: step-5-setup-aws
+    text: 'Step 5: Setup AWS'
+  - level: 2
+    id: step-7-configure-your-aws-app
+    text: 'Step 7: Configure your AWS app'
+  - level: 2
+    id: step-8-upload-your-snapshot
+    text: 'Step 8: Upload your snapshot'
 navigation:
   prev:
     title: Quick start guides
-    fullPath: /local/quick-start/index
+    route: /local/quick-start/index
 sidebarData:
-  - id: /local/quick-start/index
-    name: Quick start guides
+  - id: /local/index
+    name: Mosaic
     data:
-      level: 2
-      link: /local/quick-start/index
+      level: 1
+      link: /local/index
     childNodes:
-      - id: /local/quick-start/publish-site-to-aws
-        name: Publish a site to AWS
+      - id: /local/docs/index
+        name: Getting started
         data:
           level: 2
-          link: /local/quick-start/publish-site-to-aws
-        childNodes: []
+          link: /local/docs/index
+        childNodes:
+          - id: /local/docs/publish-site-to-aws
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /local/docs/publish-site-to-aws
+            childNodes: []
+          - id: /local/docs/publish-site-to-vercel
+            name: Publish a site to Vercel
+            data:
+              level: 2
+              link: /local/docs/publish-site-to-vercel
+            childNodes: []
+          - id: /local/docs/modes/index
+            name: Modes of operation
+            data:
+              level: 3
+              link: /local/docs/modes/index
+            childNodes:
+              - id: /local/docs/modes/active
+                name: Active mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/active
+                childNodes: []
+              - id: /local/docs/modes/snapshot-file
+                name: Snapshot file mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/snapshot-file
+                childNodes: []
+              - id: /local/docs/modes/snapshot-s3
+                name: Snapshot AWS/S3 mode
+                data:
+                  level: 3
+                  link: /local/docs/modes/snapshot-s3
+                childNodes: []
+      - id: /local/quick-start/index
+        name: Quick start guides
+        data:
+          level: 2
+          link: /local/quick-start/index
+        childNodes:
+          - id: /local/quick-start/publish-site-to-aws
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /local/quick-start/publish-site-to-aws
+            childNodes: []
 ---
+
+# {meta.title}
 
 Publish a site to AWS using S3 snapshots.
 
@@ -81,7 +156,7 @@ Switch to the [AWS Amplify](https://aws.amazon.com/amplify/hosting/) console and
 
 Setup an S3 bucket as per the [AWS S3 docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html).
 
-## Step 7: Configure Your AWS App
+## Step 7: Configure your AWS app
 
 Add the environment vars to the hosted app via your console
 

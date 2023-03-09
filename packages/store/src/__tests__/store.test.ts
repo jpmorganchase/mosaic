@@ -14,6 +14,7 @@ describe('GIVEN the store initializer', () => {
       const storeApi = initializeStore();
       expect(getStateToVerify(storeApi.getState())).toEqual({
         breadcrumbs: [],
+        navigation: {},
         sidebarData: [],
         tableOfContents: [],
         searchIndex: [],
@@ -39,6 +40,7 @@ describe('GIVEN the store initializer', () => {
       const storeApi = initializeStore(state);
       expect(getStateToVerify(storeApi.getState())).toEqual({
         breadcrumbs: [],
+        navigation: {},
         searchIndex: [],
         sidebarData: [],
         tableOfContents: [],
@@ -60,6 +62,7 @@ describe('GIVEN the `useCreateStore` hook', () => {
 
       expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
+        navigation: {},
         searchIndex: [],
         sidebarData: [],
         tableOfContents: [],
@@ -78,6 +81,7 @@ describe('GIVEN the `useCreateStore` hook', () => {
       currentState = result.current().getState();
       expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
+        navigation: {},
         sidebarData: [],
         searchIndex: [],
         tableOfContents: [],
@@ -99,6 +103,7 @@ describe('GIVEN the `useCreateStore` hook', () => {
 
       expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
+        navigation: {},
         searchIndex: [],
         sidebarData: [],
         tableOfContents: [],
@@ -118,6 +123,7 @@ describe('GIVEN the `useCreateStore` hook', () => {
 
       expect(getStateToVerify(currentState)).toEqual({
         breadcrumbs: [],
+        navigation: {},
         sidebarData: [],
         searchIndex: [],
         tableOfContents: [],

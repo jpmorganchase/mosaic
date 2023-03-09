@@ -1,5 +1,5 @@
-import { withNextPrevAdapter } from './withNextPrevAdapter';
+import { withNavigationAdapter } from './withNavigationAdapter';
 import { DocPaginator as OriginalDocPaginator } from './DocPaginator';
 
-export { withNextPrevAdapter } from './withNextPrevAdapter';
-export const DocPaginator = withNextPrevAdapter(OriginalDocPaginator);
+export { withNavigationAdapter } from './withNavigationAdapter';
+export const DocPaginator = withNavigationAdapter(OriginalDocPaginator);

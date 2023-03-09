@@ -6,6 +6,7 @@ import type { BreadcrumbsSlice } from './types/breadcrumbs';
 import type { SearchIndexSlice } from './types/searchIndex';
 import type { SharedConfigSlice } from './types/sharedConfig';
 import type { LayoutSlice } from './types/layout';
+import type { NavigationSlice } from './types/navigation';
 import type { SidebarSlice } from './types/sidebar';
 import type { TableOfContentsSlice } from './types/tableOfContents';
 import type { ColorMode } from './types/colorMode';
@@ -16,6 +17,7 @@ export type SiteState = BreadcrumbsSlice &
   LayoutSlice &
   SidebarSlice &
   TableOfContentsSlice &
+  NavigationSlice &
   SearchIndexSlice &
   SharedConfigSlice & {
     /** Page metadata description, used by search */
@@ -38,6 +40,7 @@ function getDefaultInitialState(): DefaultSiteState {
     breadcrumbs: [],
     sidebarData: [],
     tableOfContents: [],
+    navigation: {},
     searchIndex: [],
     sharedConfig: {},
     description: undefined,

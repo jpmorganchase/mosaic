@@ -19,52 +19,86 @@ readingTime:
   minutes: 0.485
   time: 29100
   words: 97
+tableOfContents:
+  - level: 1
+    id: modes-of-operation
+    text: Modes of operation
+  - level: 2
+    id: active-updates
+    text: Active updates
+  - level: 2
+    id: static-content
+    text: Static content
+  - level: 3
+    id: file-based-snapshots
+    text: File based snapshots
+  - level: 3
+    id: s3-based-snapshots
+    text: S3 based snapshots
 navigation:
   next:
     title: Active mode
-    fullPath: /mosaic/docs/modes/active
+    route: /mosaic/docs/modes/active
 sidebarData:
-  - id: /mosaic/docs/index
-    name: Getting started
+  - id: /mosaic/index
+    name: Mosaic
     data:
-      level: 2
-      link: /mosaic/docs/index
+      level: 1
+      link: /mosaic/index
     childNodes:
-      - id: /mosaic/docs/publish-site-to-aws
-        name: Publish a site to AWS
+      - id: /mosaic/docs/index
+        name: Getting started
         data:
           level: 2
-          link: /mosaic/docs/publish-site-to-aws
-        childNodes: []
-      - id: /mosaic/docs/publish-site-to-vercel
-        name: Publish a site to Vercel
-        data:
-          level: 2
-          link: /mosaic/docs/publish-site-to-vercel
-        childNodes: []
-      - id: /mosaic/docs/modes/index
-        name: Modes of operation
-        data:
-          level: 3
-          link: /mosaic/docs/modes/index
+          link: /mosaic/docs/index
         childNodes:
-          - id: /mosaic/docs/modes/active
-            name: Active mode
+          - id: /mosaic/docs/publish-site-to-aws
+            name: Publish a site to AWS
             data:
-              level: 3
-              link: /mosaic/docs/modes/active
+              level: 2
+              link: /mosaic/docs/publish-site-to-aws
             childNodes: []
-          - id: /mosaic/docs/modes/snapshot-file
-            name: Snapshot file mode
+          - id: /mosaic/docs/publish-site-to-vercel
+            name: Publish a site to Vercel
             data:
-              level: 3
-              link: /mosaic/docs/modes/snapshot-file
+              level: 2
+              link: /mosaic/docs/publish-site-to-vercel
             childNodes: []
-          - id: /mosaic/docs/modes/snapshot-s3
-            name: Snapshot AWS/S3 mode
+          - id: /mosaic/docs/modes/index
+            name: Modes of operation
             data:
               level: 3
-              link: /mosaic/docs/modes/snapshot-s3
+              link: /mosaic/docs/modes/index
+            childNodes:
+              - id: /mosaic/docs/modes/active
+                name: Active mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/active
+                childNodes: []
+              - id: /mosaic/docs/modes/snapshot-file
+                name: Snapshot file mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/snapshot-file
+                childNodes: []
+              - id: /mosaic/docs/modes/snapshot-s3
+                name: Snapshot AWS/S3 mode
+                data:
+                  level: 3
+                  link: /mosaic/docs/modes/snapshot-s3
+                childNodes: []
+      - id: /mosaic/quick-start/index
+        name: Quick start guides
+        data:
+          level: 2
+          link: /mosaic/quick-start/index
+        childNodes:
+          - id: /mosaic/quick-start/publish-site-to-aws
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /mosaic/quick-start/publish-site-to-aws
             childNodes: []
 ---
 
