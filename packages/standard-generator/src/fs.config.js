@@ -55,16 +55,6 @@ module.exports = {
         cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
       }
     },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/NextPrevPagePlugin',
-      options: {
-        // Make sure the index is always the first item in the next/prev queue
-        indexFirst: true,
-        // Sort alphabetically
-        sortBy: 'a-z'
-      },
-      priority: 2
-    },
     // TODO: Remove this plugin once the docs add file extensions in refs
     {
       modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
