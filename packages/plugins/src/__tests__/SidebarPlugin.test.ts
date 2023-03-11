@@ -122,7 +122,7 @@ const folderBSidebarContents = {
   ]
 };
 
-describe.only('GIVEN the SidebarPlugin', () => {
+describe('GIVEN the SidebarPlugin', () => {
   test('THEN it should use the `$beforeSend` lifecycle event', async () => {
     // arrange
     let setRefMock = jest.fn();
