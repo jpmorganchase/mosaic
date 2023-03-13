@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.25
+
+### Minor Changes
+
+- 93e9b07: The theme contract provided by the `@jpmorganchase/mosaic-theme` package now uses locally scoped variable names via a Vanilla Extract [Theme Contract](https://vanilla-extract.style/documentation/api/create-theme-contract/). Previously the theme variables were globally scoped resulting in conflicts with other design systems.
+
+### Patch Changes
+
+- a36219c: - Next/Prev page buttons were not appearing at the bottom of a page sequence
+  - Removed redundant snapshot page api
+- Updated dependencies [a36219c]
+- Updated dependencies [93e9b07]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.25
+  - @jpmorganchase/mosaic-store@0.1.0-beta.25
+  - @jpmorganchase/mosaic-components@0.1.0-beta.25
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.25
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.25
+
 ## 0.1.0-beta.24
 
 ### Patch Changes
