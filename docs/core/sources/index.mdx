@@ -1,0 +1,89 @@
+---
+title: Mosaic Sources
+layout: DetailTechnical
+---
+
+# {meta.title}
+
+Sources are what Mosaic uses to pull content from disparte locations and merge into a single virtual filesystem that can be used by a Mosaic Site.
+
+Depending on the [mode](../../docs/modes/index) used, sources can update periodically ensuring that new content is made available automatically.
+
+## Source Definitions
+
+Source Definitions are specified in the `sources` collection of a mosaic config file.
+
+Each source uses a [zod schema](https://zod.dev/?id=introduction) to validate the provided JSON to ensure that all required information for the source to pull content has been provided.
+
+A source definition at a minimum needs to provide the module path of the source and the [namespace](#source-namespace) that it will use. A namespace is not unique across sources though it is common that each source has a different namespace.
+
+Lastly, the options field can be used as a bucket for configuration values needed to configure the source e.g. credentials.
+
+<Callout variant="warning">
+  Users are free to add any property as a source option but please read the [gotchas](#gotchas)
+  first regarding the allowed *values*.
+</Callout>
+
+### Example Local Folder Source Definition
+
+```
+ /**
+     * Demonstrates a local file-system source, in this case a relative path to where the
+     * site was generated.
+     * Access from your browser as http://localhost:3000/local
+     */
+    {
+      modulePath: '@jpmorganchase/mosaic-source-local-folder',
+      namespace: 'local', // each site has it's own namespace, think of this as your content's uid
+      options: {
+        rootDir: '../../docs', // relative path to content
+        prefixDir: 'local', // root path used for namespace
+        extensions: ['.mdx'] // extensions of content which should be pulled
+      }
+    }
+```
+
+## Source Namespace
+
+A Source Namespace is a scoping mechanism for Mosaic sources used to filter the content loaded by Mosaic. By default all sources specified in the mosaic config file are loaded.
+
+```
+sources: [
+  {
+    namespace: 'my-namespace',
+    modulePath: '@jpmorganchase/mosaic-source-local-folder'
+  }
+];
+```
+
+The following command will ensure mosaic only loads sources with the `local` scope.
+
+```
+yarn mosaic serve -c ''./mosaic.config.js' -p 8080 --scope "local"
+```
+
+## Source Types
+
+Out of the box, Mosaic provides 3 source "types":
+
+- [Local Folder](./local-folder-source)
+- [Git Repo Source](./git-repo-source)
+- [HTTP Source](./http-source)
+
+Sources must expose an observable interface so it is possible to compose sources together e.g. the Git Repo source uses the Local Folder source internally to watch the cloned folder for changes.
+
+## Watching for Updates
+
+When running in [active mode](../../docs/modes/active), Mosaic will watch for any changes to the source content and if a change is detected, will initiate a pull of that new content.
+
+How often to check for updates and how updates are triggered are a matter for the source to handle. Mosaic simply responds when a source emits new content.
+
+## Source Worker Thread
+
+Sources are executed inside their own worker thread to ensure that the main thread is not overloaded. It is here that a local virtual filesystem for the source is created and where several of the [Plugin Lifecycle](../plugins/index#Plugin-lifecycle) events are triggered.
+
+### Gotchas
+
+A service worker thread uses [postMessage](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorker/postMessage) to communicate with the main thread and vice-versa.
+
+This is important because it limits what values can be provided in the source definition to those that can be processed by the [Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm).

@@ -1,0 +1,62 @@
+---
+title: Git Repo Source
+layout: DetailTechnical
+sidebar:
+  priority: 2
+---
+
+# {meta.title}
+
+The Git Repo Source is used to pull content from a remote git repository e.g. github.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-git-repo`
+
+## Credentials and Access tokens
+
+To successfully clone the git repo, the source definition must include credentials that have sufficient permissions to clone the repository.
+
+We recommend storing a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in an environment variable and using the environment variable in the source definition.
+
+This keeps credentials out of code where they may be accidentally exposed to third parties.
+
+### Example
+
+```
+export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
+```
+
+## Configuration
+
+| Property            | Description                                                                      | Required |
+| ------------------- | -------------------------------------------------------------------------------- | -------- |
+| modulePath          | The path to the installed module (@jpmorganchase/mosaic-source-git-repo)         | Yes      |
+| namspace            | The scope for this source.                                                       | Yes      |
+| options.credentials | Collection of URLS to make requests                                              | Yes      |
+| options.prefixDir   | The root path used in the content URL                                            | Yes      |
+| options.subfolder   | The name of the folder within the cloned repo containing the docs                | Yes      |
+| options.repo        | The repo URL                                                                     | Yes      |
+| options.branch      | The branch or tag to clone                                                       | Yes      |
+| options.extensions  | Collection of file extensions that the source will look for inside the subfolder | Yes      |
+| options.remote      | The name of the git remote to use. Defaults to origin.                           | Yes      |
+
+### Example Git Repo Source Definition
+
+```
+
+ {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'mosaic',
+      options: {
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        prefixDir: 'mosaic',
+        subfolder: 'docs',
+        repo: 'https://github.com/jpmorganchase/mosaic.git',
+        branch: 'main',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    }
+
+```
