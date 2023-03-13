@@ -1,0 +1,45 @@
+---
+title: HTTP Source
+layout: DetailTechnical
+sidebar:
+  priority: 3
+---
+
+# {meta.title}
+
+The HTTP Source is used to pull content over HTTP.
+
+Multiple endpoints can be specified and the source will combine and transform the response from each into a single collection of pages.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-http`
+
+## Configuration
+
+| Property                                   | Description                                                                   | Required |
+| ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
+| modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
+| namspace                                   | The scope for this source.                                                    | Yes      |
+| options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
+| options.prefixDir                          | The root path used in the content URL                                         | Yes      |
+| options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages | Yes      |
+| options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes             | No       |
+| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000.  | No       |
+
+### Example HTTP Source Definition
+
+```
+ {
+      modulePath: '@jpmorganchase/mosaic-source-http',
+      namespace: 'my-namespace',
+      options: {
+        prefixDir: 'docs',
+        endpoints: [
+          'https://api.data.com/blah',
+          'https://api.data.com/hello'
+        ],
+        transformResponseToPagesModulePath: '@scope/transformer-package'
+      }
+    }
+```
