@@ -5,6 +5,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>/mosaic/core/index.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>/mosaic/docs/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -26,6 +31,31 @@
 	</url>
 	<url>
 		<loc>/mosaic/quick-start/publish-site-to-aws.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/core/plugins/index.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/core/sources/git-repo-source.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/core/sources/http-source.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/core/sources/index.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/core/sources/local-folder-source.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

@@ -1,50 +1,49 @@
 ---
-title: Publish a site to Vercel
+title: Local Folder Source
 layout: DetailTechnical
-lastModified: 1679929748217
-fullPath: /mosaic/docs/publish-site-to-vercel.mdx
-route: /mosaic/docs/publish-site-to-vercel
+sidebar:
+  priority: 1
+lastModified: 1679929748624
+fullPath: /mosaic/core/sources/local-folder-source.mdx
+route: /mosaic/core/sources/local-folder-source
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Getting started
-    path: /mosaic/docs/index.mdx
-    id: /mosaic/docs/index.mdx
-  - label: Publish a site to Vercel
-    path: /mosaic/docs/publish-site-to-vercel.mdx
-    id: /mosaic/docs/publish-site-to-vercel.mdx
+  - label: Mosaic Core
+    path: /mosaic/core/index.mdx
+    id: /mosaic/core/index.mdx
+  - label: Mosaic Sources
+    path: /mosaic/core/sources/index.mdx
+    id: /mosaic/core/sources/index.mdx
+  - label: Local Folder Source
+    path: /mosaic/core/sources/local-folder-source.mdx
+    id: /mosaic/core/sources/local-folder-source.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.99
-  time: 59400
-  words: 198
+  text: 2 min read
+  minutes: 1.105
+  time: 66300
+  words: 221
 tableOfContents:
   - level: 1
-    id: publish-a-site-to-vercel
-    text: Publish a site to Vercel
+    id: local-folder-source
+    text: Local Folder Source
   - level: 2
-    id: deployment
-    text: Deployment
-  - level: 3
-    id: 1-update-config-file
-    text: 1. Update Config File
-  - level: 3
-    id: 2-set-environment-variables
-    text: 2. Set Environment Variables
-  - level: 3
-    id: 3-run-build-and-deploy
-    text: 3. Run Build and Deploy
+    id: installation
+    text: Installation
   - level: 2
-    id: output-file-tracing
-    text: Output File Tracing
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-local-folder-source-definition
+    text: Example Local Folder Source Definition
 navigation:
   prev:
-    title: Publish a site to AWS
-    route: /mosaic/docs/publish-site-to-aws
+    title: Git Repo Source
+    route: /mosaic/core/sources/git-repo-source
   next:
-    title: Modes of operation
-    route: /mosaic/docs/modes/index
+    title: Getting started
+    route: /mosaic/docs/index
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -165,48 +164,38 @@ sidebarData:
 
 # {meta.title}
 
-A Mosaic site is a [Next.Js](https://nextjs.org/) app.
+The Local Folder Source is used to pull content from a folder located on the same machine as Mosaic is running.
 
-To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.org/learn/basics/deploying-nextjs-app/deploy).
+It is common to use this source when running mosaic locally.
 
-## Deployment
+## Installation
 
-As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](./modes/active).
+`yarn add @jpmorganchase/mosaic-source-local-folder`
 
-### 1. Update Config File
+## Configuration
 
-Add the following to the mosaic config file used by your site:
+| Property           | Description                                                                    | Required |
+| ------------------ | ------------------------------------------------------------------------------ | -------- |
+| modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
+| namspace           | The scope for this source.                                                     | Yes      |
+| options.rootDir    | The top level directory content will be pulled from                            | Yes      |
+| options.prefixDir  | The root path used in the content URL                                          | Yes      |
+| options.extensions | Collection of file extensions that the source will look for inside the rootDir | Yes      |
 
-```
- deployment: { mode: 'snapshot-file', platform: 'vercel' }
-```
-
-### 2. Set Environment Variables
-
-Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
-
-| Variable Name       | Value             |
-| ------------------- | ----------------- |
-| MOSAIC_MODE         | snapshot-file     |
-| MOSAIC_SNAPSHOT_DIR | snapshots/latest. |
-
-### 3. Run Build and Deploy
-
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
-
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
-
-Example:
+### Example Local Folder Source Definition
 
 ```
-yarn build && yarn deploy
+{
+    modulePath: '@jpmorganchase/mosaic-source-local-folder',
+    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
+    options: {
+    rootDir: '../../docs', // relative path to content
+    prefixDir: 'local', // root path used for namespace
+    extensions: ['.mdx'] // extensions of content which should be pulled
+    }
+}
 ```
 
-## Output File Tracing
+This source will look for content with the ".mdx" extension in a "docs" directory 2 levels up from the Mosaic working directory. That content is included in the "local" namespace and available from a route that is prefixed with "local".
 
-[Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
-to determine what files are needed to deploy a production version of an application.
-
-Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
-
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
+So if you had a file, `docs/app/index.mdx` then you would be able to view it at `http://localhost:3000/local/app/index`.

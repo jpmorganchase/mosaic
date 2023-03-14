@@ -1,50 +1,55 @@
 ---
-title: Publish a site to Vercel
+title: Git Repo Source
 layout: DetailTechnical
-lastModified: 1679929748217
-fullPath: /mosaic/docs/publish-site-to-vercel.mdx
-route: /mosaic/docs/publish-site-to-vercel
+sidebar:
+  priority: 2
+lastModified: 1679929748622
+fullPath: /mosaic/core/sources/git-repo-source.mdx
+route: /mosaic/core/sources/git-repo-source
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Getting started
-    path: /mosaic/docs/index.mdx
-    id: /mosaic/docs/index.mdx
-  - label: Publish a site to Vercel
-    path: /mosaic/docs/publish-site-to-vercel.mdx
-    id: /mosaic/docs/publish-site-to-vercel.mdx
+  - label: Mosaic Core
+    path: /mosaic/core/index.mdx
+    id: /mosaic/core/index.mdx
+  - label: Mosaic Sources
+    path: /mosaic/core/sources/index.mdx
+    id: /mosaic/core/sources/index.mdx
+  - label: Git Repo Source
+    path: /mosaic/core/sources/git-repo-source.mdx
+    id: /mosaic/core/sources/git-repo-source.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.99
-  time: 59400
-  words: 198
+  text: 2 min read
+  minutes: 1.235
+  time: 74100
+  words: 247
 tableOfContents:
   - level: 1
-    id: publish-a-site-to-vercel
-    text: Publish a site to Vercel
+    id: git-repo-source
+    text: Git Repo Source
   - level: 2
-    id: deployment
-    text: Deployment
-  - level: 3
-    id: 1-update-config-file
-    text: 1. Update Config File
-  - level: 3
-    id: 2-set-environment-variables
-    text: 2. Set Environment Variables
-  - level: 3
-    id: 3-run-build-and-deploy
-    text: 3. Run Build and Deploy
+    id: installation
+    text: Installation
   - level: 2
-    id: output-file-tracing
-    text: Output File Tracing
+    id: credentials-and-access-tokens
+    text: Credentials and Access tokens
+  - level: 3
+    id: example
+    text: Example
+  - level: 2
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-git-repo-source-definition
+    text: Example Git Repo Source Definition
 navigation:
   prev:
-    title: Publish a site to AWS
-    route: /mosaic/docs/publish-site-to-aws
+    title: HTTP Source
+    route: /mosaic/core/sources/http-source
   next:
-    title: Modes of operation
-    route: /mosaic/docs/modes/index
+    title: Local Folder Source
+    route: /mosaic/core/sources/local-folder-source
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -165,48 +170,56 @@ sidebarData:
 
 # {meta.title}
 
-A Mosaic site is a [Next.Js](https://nextjs.org/) app.
+The Git Repo Source is used to pull content from a remote git repository e.g. github.
 
-To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.org/learn/basics/deploying-nextjs-app/deploy).
+## Installation
 
-## Deployment
+`yarn add @jpmorganchase/mosaic-source-git-repo`
 
-As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](./modes/active).
+## Credentials and Access tokens
 
-### 1. Update Config File
+To successfully clone the git repo, the source definition must include credentials that have sufficient permissions to clone the repository.
 
-Add the following to the mosaic config file used by your site:
+We recommend storing a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in an environment variable and using the environment variable in the source definition.
 
-```
- deployment: { mode: 'snapshot-file', platform: 'vercel' }
-```
+This keeps credentials out of code where they may be accidentally exposed to third parties.
 
-### 2. Set Environment Variables
-
-Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
-
-| Variable Name       | Value             |
-| ------------------- | ----------------- |
-| MOSAIC_MODE         | snapshot-file     |
-| MOSAIC_SNAPSHOT_DIR | snapshots/latest. |
-
-### 3. Run Build and Deploy
-
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
-
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
-
-Example:
+### Example
 
 ```
-yarn build && yarn deploy
+export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
 ```
 
-## Output File Tracing
+## Configuration
 
-[Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
-to determine what files are needed to deploy a production version of an application.
+| Property            | Description                                                                      | Required |
+| ------------------- | -------------------------------------------------------------------------------- | -------- |
+| modulePath          | The path to the installed module (@jpmorganchase/mosaic-source-git-repo)         | Yes      |
+| namspace            | The scope for this source.                                                       | Yes      |
+| options.credentials | Collection of URLS to make requests                                              | Yes      |
+| options.prefixDir   | The root path used in the content URL                                            | Yes      |
+| options.subfolder   | The name of the folder within the cloned repo containing the docs                | Yes      |
+| options.repo        | The repo URL                                                                     | Yes      |
+| options.branch      | The branch or tag to clone                                                       | Yes      |
+| options.extensions  | Collection of file extensions that the source will look for inside the subfolder | Yes      |
+| options.remote      | The name of the git remote to use. Defaults to origin.                           | Yes      |
 
-Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
+### Example Git Repo Source Definition
 
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
+```
+
+ {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'mosaic',
+      options: {
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        prefixDir: 'mosaic',
+        subfolder: 'docs',
+        repo: 'https://github.com/jpmorganchase/mosaic.git',
+        branch: 'main',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    }
+
+```
