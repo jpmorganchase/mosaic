@@ -33,7 +33,7 @@ navigation:
   next:
     title: Next Page
     route: /mosaic/docs/modes/snapshot-file
-lastModified: 1679907767185
+lastModified: 1679929748220
 fullPath: /mosaic/test/layouts/detail-overview.mdx
 route: /mosaic/test/layouts/detail-overview
 sharedConfig: *ref_0
@@ -66,6 +66,51 @@ sidebarData:
       level: 1
       link: /mosaic/index
     childNodes:
+      - id: /mosaic/core/index
+        fullPath: /mosaic/core/index.mdx
+        name: Mosaic Core
+        data:
+          level: 2
+          link: /mosaic/core/index
+        childNodes:
+          - id: /mosaic/core/plugins/index
+            fullPath: /mosaic/core/plugins/index.mdx
+            name: Mosaic Plugins
+            data:
+              level: 3
+              link: /mosaic/core/plugins/index
+            childNodes: []
+          - id: /mosaic/core/sources/index
+            fullPath: /mosaic/core/sources/index.mdx
+            name: Mosaic Sources
+            data:
+              level: 3
+              link: /mosaic/core/sources/index
+            childNodes:
+              - id: /mosaic/core/sources/http-source
+                fullPath: /mosaic/core/sources/http-source.mdx
+                name: HTTP Source
+                priority: 3
+                data:
+                  level: 3
+                  link: /mosaic/core/sources/http-source
+                childNodes: []
+              - id: /mosaic/core/sources/git-repo-source
+                fullPath: /mosaic/core/sources/git-repo-source.mdx
+                name: Git Repo Source
+                priority: 2
+                data:
+                  level: 3
+                  link: /mosaic/core/sources/git-repo-source
+                childNodes: []
+              - id: /mosaic/core/sources/local-folder-source
+                fullPath: /mosaic/core/sources/local-folder-source.mdx
+                name: Local Folder Source
+                priority: 1
+                data:
+                  level: 3
+                  link: /mosaic/core/sources/local-folder-source
+                childNodes: []
       - id: /mosaic/docs/index
         fullPath: /mosaic/docs/index.mdx
         name: Getting started

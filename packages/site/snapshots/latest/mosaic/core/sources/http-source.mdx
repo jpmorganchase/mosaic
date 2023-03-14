@@ -1,50 +1,49 @@
 ---
-title: Publish a site to Vercel
+title: HTTP Source
 layout: DetailTechnical
-lastModified: 1679929748217
-fullPath: /mosaic/docs/publish-site-to-vercel.mdx
-route: /mosaic/docs/publish-site-to-vercel
+sidebar:
+  priority: 3
+lastModified: 1679929748623
+fullPath: /mosaic/core/sources/http-source.mdx
+route: /mosaic/core/sources/http-source
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Getting started
-    path: /mosaic/docs/index.mdx
-    id: /mosaic/docs/index.mdx
-  - label: Publish a site to Vercel
-    path: /mosaic/docs/publish-site-to-vercel.mdx
-    id: /mosaic/docs/publish-site-to-vercel.mdx
+  - label: Mosaic Core
+    path: /mosaic/core/index.mdx
+    id: /mosaic/core/index.mdx
+  - label: Mosaic Sources
+    path: /mosaic/core/sources/index.mdx
+    id: /mosaic/core/sources/index.mdx
+  - label: HTTP Source
+    path: /mosaic/core/sources/http-source.mdx
+    id: /mosaic/core/sources/http-source.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.99
-  time: 59400
-  words: 198
+  minutes: 0.845
+  time: 50700
+  words: 169
 tableOfContents:
   - level: 1
-    id: publish-a-site-to-vercel
-    text: Publish a site to Vercel
+    id: http-source
+    text: HTTP Source
   - level: 2
-    id: deployment
-    text: Deployment
-  - level: 3
-    id: 1-update-config-file
-    text: 1. Update Config File
-  - level: 3
-    id: 2-set-environment-variables
-    text: 2. Set Environment Variables
-  - level: 3
-    id: 3-run-build-and-deploy
-    text: 3. Run Build and Deploy
+    id: installation
+    text: Installation
   - level: 2
-    id: output-file-tracing
-    text: Output File Tracing
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-http-source-definition
+    text: Example HTTP Source Definition
 navigation:
   prev:
-    title: Publish a site to AWS
-    route: /mosaic/docs/publish-site-to-aws
+    title: Mosaic Sources
+    route: /mosaic/core/sources/index
   next:
-    title: Modes of operation
-    route: /mosaic/docs/modes/index
+    title: Git Repo Source
+    route: /mosaic/core/sources/git-repo-source
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -165,48 +164,39 @@ sidebarData:
 
 # {meta.title}
 
-A Mosaic site is a [Next.Js](https://nextjs.org/) app.
+The HTTP Source is used to pull content over HTTP.
 
-To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.org/learn/basics/deploying-nextjs-app/deploy).
+Multiple endpoints can be specified and the source will combine and transform the response from each into a single collection of pages.
 
-## Deployment
+## Installation
 
-As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](./modes/active).
+`yarn add @jpmorganchase/mosaic-source-http`
 
-### 1. Update Config File
+## Configuration
 
-Add the following to the mosaic config file used by your site:
+| Property                                   | Description                                                                   | Required |
+| ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
+| modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
+| namspace                                   | The scope for this source.                                                    | Yes      |
+| options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
+| options.prefixDir                          | The root path used in the content URL                                         | Yes      |
+| options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages | Yes      |
+| options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes             | No       |
+| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000.  | No       |
 
-```
- deployment: { mode: 'snapshot-file', platform: 'vercel' }
-```
-
-### 2. Set Environment Variables
-
-Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
-
-| Variable Name       | Value             |
-| ------------------- | ----------------- |
-| MOSAIC_MODE         | snapshot-file     |
-| MOSAIC_SNAPSHOT_DIR | snapshots/latest. |
-
-### 3. Run Build and Deploy
-
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
-
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
-
-Example:
+### Example HTTP Source Definition
 
 ```
-yarn build && yarn deploy
+ {
+      modulePath: '@jpmorganchase/mosaic-source-http',
+      namespace: 'my-namespace',
+      options: {
+        prefixDir: 'docs',
+        endpoints: [
+          'https://api.data.com/blah',
+          'https://api.data.com/hello'
+        ],
+        transformResponseToPagesModulePath: '@scope/transformer-package'
+      }
+    }
 ```
-
-## Output File Tracing
-
-[Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
-to determine what files are needed to deploy a production version of an application.
-
-Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
-
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
