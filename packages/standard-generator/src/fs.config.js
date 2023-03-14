@@ -62,9 +62,7 @@ module.exports = {
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
-      options: {
-        filename: 'sidebar.json'
-      }
+      options: {}
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
