@@ -1,5 +1,5 @@
 import React, { forwardRef, ReactNode, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './styles.css';
 import { Size } from '../common/types';

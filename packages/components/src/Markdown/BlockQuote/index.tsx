@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { P2 } from '../../Typography';
 import styles from './index.css';

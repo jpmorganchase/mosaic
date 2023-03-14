@@ -1,5 +1,5 @@
 import React, { forwardRef, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { LinkBase, LinkBaseProps } from '../LinkBase';
 import { LinkText, LinkTextProps } from '../LinkText';

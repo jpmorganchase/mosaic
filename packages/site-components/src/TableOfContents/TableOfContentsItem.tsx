@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Caption2, Caption3 } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';

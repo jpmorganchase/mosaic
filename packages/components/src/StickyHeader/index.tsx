@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, FC } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './styles.css';
 

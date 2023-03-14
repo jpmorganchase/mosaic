@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Avatar } from '@salt-ds/lab';
 
 import styles from './styles.css';

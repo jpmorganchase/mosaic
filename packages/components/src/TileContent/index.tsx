@@ -1,5 +1,5 @@
 import React, { FC, forwardRef, ReactNode, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { useTileState } from '../TileBase';
 import styles, {

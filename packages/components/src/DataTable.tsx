@@ -1,6 +1,6 @@
 import React, { ReactElement, Ref } from 'react';
 import type { Column, PluginHook } from 'react-table';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import {
   table as tableRecipe,
   tbody as tbodyRecipe,

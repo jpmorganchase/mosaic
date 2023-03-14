@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Caption6, P4, P6 } from '@jpmorganchase/mosaic-components';
 import { Highlighter } from '@salt-ds/lab';
 

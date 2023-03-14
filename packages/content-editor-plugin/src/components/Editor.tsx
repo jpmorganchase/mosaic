@@ -1,5 +1,5 @@
 import React, { ComponentType, FC, useRef, useState } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import matter from 'gray-matter';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
