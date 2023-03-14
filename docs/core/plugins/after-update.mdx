@@ -1,0 +1,14 @@
+---
+title: afterUpdate
+layout: DetailOverview
+sidebar:
+  label: Lifecycle - afterUpdate
+---
+
+# {meta.title}
+
+Calls after the filesystem and symlinks have been reconstructed due to a change to the current source. This happens in the main thread.
+
+Pages will **not** be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect. This method is safe to use with lazy loading, as the filesystem should return the full page when read.
+
+## Todo

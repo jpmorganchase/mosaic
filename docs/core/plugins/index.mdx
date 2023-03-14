@@ -7,6 +7,97 @@ layout: DetailTechnical
 
 Mosaic Plugins are lifecycle-based hooks that are called on _every_ source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
 
+Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features in a plugin
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-plugins`
+
+## Configuration
+
+Plugins are added to the `plugins` collection of the mosaic config file. Like [sources](../sources/index), plugins have an options property that can be used to provide plugin specific configuration.
+
+| Property    | Description                                                                 | Required |
+| ----------- | --------------------------------------------------------------------------- | -------- |
+| modulePath  | The path to the installed plugin module                                     | Yes      |
+| disabled    | Exclude this plugin completely. Defaults to false                           | No       |
+| runtimeOnly | Exclude this plugin when generating a snapshot. Defaults to false           | No       |
+| priority    | The importance of this plugin. This highest number plugin will be run first | No       |
+| options     | Collection of other configuration values                                    | No       |
+
 ## Plugin lifecycle
 
-There
+The plugin lifecycle is triggered when a source emits content.
+Whether the execution happens on the main thread or the source worker thread depends on which lifecycle event is called. There are 4 lifecycle events:
+
+1. [$afterSource](./lifecycle/after-source)
+2. [$beforeSend](./lifecycle/before-send)
+3. [afterUpdate](./lifecycle/after-update)
+4. [shouldClearCache](./lifecycle/should-clear-cache)
+
+<Callout variant="caution">
+  Plugin methods that trigger inside the main thread should be async and highly optimised to avoid
+  holding up the main thread.
+</Callout>
+
+## Mosaic Plugins
+
+Mosaic ships with many plugins, most of which are enabled when using the standard generator.
+
+```
+plugins: [
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
+      options: { maxLineLength: 240, maxLineCount: 240 }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
+      options: {
+        indexPageName: 'index.mdx'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
+      // This plugin must be the very last to run, so it can strip off metadata and content after the other
+      // plugins are done with them
+      priority: -2,
+      // Exclude this plugin in builds
+      runTimeOnly: true,
+      options: {
+        cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+      options: {
+        filename: 'sidebar.json'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SharedConfigPlugin',
+      options: {
+        filename: 'shared-config.json'
+      },
+      priority: 3
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      options: {
+        minRank: 1,
+        maxRank: 3
+      }
+    }
+  ]
+```
