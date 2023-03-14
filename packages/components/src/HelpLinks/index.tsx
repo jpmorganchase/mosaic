@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Icon } from '../Icon';
 import { Caption1 } from '../Typography';
 

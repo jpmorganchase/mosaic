@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { TabsBase, TabsButtonItem, TabMenuItemType } from '../TabsBase';
 import { ViewStack } from '../ViewStack';

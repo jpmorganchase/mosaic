@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import findLastIndex from 'lodash/findLastIndex';
 import { config } from '@jpmorganchase/mosaic-theme';
 

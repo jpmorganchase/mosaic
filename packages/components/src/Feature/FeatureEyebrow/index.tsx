@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import classNames from 'classnames';
+import classNames from 'clsx';
 
 import { Eyebrow } from '../../Typography';
 import styles from './styles.css';

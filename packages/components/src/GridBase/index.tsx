@@ -1,5 +1,5 @@
 import React, { forwardRef, ReactElement, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 import type { SpaceVars } from '@jpmorganchase/mosaic-theme';
 

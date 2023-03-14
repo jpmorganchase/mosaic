@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { LinkButton } from '../LinkButton';
 
 import styles from './styles.css';

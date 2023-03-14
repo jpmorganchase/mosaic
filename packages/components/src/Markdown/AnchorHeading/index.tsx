@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Icon } from '../../Icon';
 
 import { Link, LinkProps } from '../../Link';

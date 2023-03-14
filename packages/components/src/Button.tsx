@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Button as SaltButton, ButtonProps as SaltButtonProps } from '@salt-ds/core';
 import { button as buttonStyles } from '@jpmorganchase/mosaic-theme';
 

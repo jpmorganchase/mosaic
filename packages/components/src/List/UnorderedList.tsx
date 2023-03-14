@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { unorderedList, unorderedListItem } from '@jpmorganchase/mosaic-theme';
 
 import { Size } from '../common/types';

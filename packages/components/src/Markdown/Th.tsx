@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { th } from '@jpmorganchase/mosaic-theme';
 
 export interface ThProps extends React.HTMLProps<HTMLTableCellElement> {}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import Highlight, { defaultProps as defaultPrismProps } from 'prism-react-renderer';
 import type { Language } from 'prism-react-renderer';
 import { Icon } from '../../Icon';

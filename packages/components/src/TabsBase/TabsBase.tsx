@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, FC, forwardRef, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { TabsButton, TabsButtonItem } from './TabsButton';
 import { TabsLink, TabsLinkItem } from './TabsLink';

@@ -1,5 +1,5 @@
 import React, { FC, ReactNode } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import styles from './styles.css';
 
 export interface SidebarProps {

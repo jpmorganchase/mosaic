@@ -1,6 +1,6 @@
 import React from 'react';
 import { Spinner } from '@salt-ds/lab';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { SidebarProvider } from '@jpmorganchase/mosaic-site-components';
 
 import { useIsLoading } from '../hooks/useIsLoading';

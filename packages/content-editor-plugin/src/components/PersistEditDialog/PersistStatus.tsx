@@ -1,5 +1,5 @@
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { P2 } from '@jpmorganchase/mosaic-components';
 
 import styles from './PersistStatus.css';

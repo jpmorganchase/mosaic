@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { useFilterViewState } from '../useResultCount';
 import styles from './styles.css';

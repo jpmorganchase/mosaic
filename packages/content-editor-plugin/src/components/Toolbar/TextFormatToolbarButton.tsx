@@ -1,5 +1,5 @@
 import React, { forwardRef, Ref } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { ToolbarButton, ToolbarButtonProps } from '@salt-ds/lab';
 
 import styles from './TextFormatToolbarButton.css';

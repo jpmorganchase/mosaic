@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pill } from '@salt-ds/lab';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';
 import styles from './styles.css';

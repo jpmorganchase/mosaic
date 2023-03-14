@@ -1,6 +1,6 @@
 import React, { FC, KeyboardEvent, MouseEvent } from 'react';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './tabsMenuButton.css';
 import { TabsLinkItem } from './TabsLink';

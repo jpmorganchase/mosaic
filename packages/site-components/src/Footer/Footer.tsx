@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { HelpLinks, LinkButton, H6, P2 } from '@jpmorganchase/mosaic-components';
 import type { LinkIconProps } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';

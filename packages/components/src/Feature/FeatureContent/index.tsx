@@ -1,5 +1,5 @@
 import React, { cloneElement, Children, ReactNode } from 'react';
-import classNames from 'classnames';
+import classNames from 'clsx';
 
 import styles from './styles.css';
 

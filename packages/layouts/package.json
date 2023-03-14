@@ -44,7 +44,7 @@
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.25",
     "@salt-ds/lab": "^1.0.0-alpha.0",
     "@vanilla-extract/css": "^1.6.0",
-    "classnames": "^2.2.6",
+    "clsx": "^1.2.1",
     "lodash": "^4.17.21",
     "next": "^13.1.1",
     "react-transition-group": "^4.4.5"

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import classNames from 'classnames';
+import classNames from 'clsx';
 import { useRoute } from '@jpmorganchase/mosaic-store';
 import { LayerLayout } from '@salt-ds/lab';
 import styles from './styles.css';

@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { button as buttonStyles } from '@jpmorganchase/mosaic-theme';
 
 export interface LinkButtonProps {

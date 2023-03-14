@@ -1,5 +1,5 @@
 import React, { Ref, forwardRef } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './ScrollableSection.css';
 

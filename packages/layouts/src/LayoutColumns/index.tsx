@@ -1,5 +1,5 @@
 import React from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './styles.css';
 import { Drawer, Sidebar, TriggerElementProps } from '@jpmorganchase/mosaic-site-components';

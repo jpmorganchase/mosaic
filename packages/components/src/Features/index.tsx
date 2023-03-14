@@ -1,5 +1,5 @@
 import React, { Children, cloneElement, ReactElement } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 
 import styles from './styles.css';
 import { FeatureProps } from '../Feature';
