@@ -10,15 +10,20 @@ const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.c
  */
 module.exports = deepmerge(mosaicConfig, {
   sources: [
-    /**
-     * Demonstrates a local file-system source, in this case a relative path to where the
-     * site was generated.
-     * Access from your browser as http://localhost:3000/local
-     */
-    /**
-     * Demonstrates a remote source, in this case the Mosaic site
-     * Access from your browser as http://localhost:3000/mosaic
-     */
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'salt',
+      options: {
+        prefixDir: 'salt',
+        cache: true,
+        subfolder: 'mosaic-site/docs',
+        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+        repo: 'https://github.com/jpmorganchase/salt-ds.git',
+        branch: 'main',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    },
     {
       modulePath: '@jpmorganchase/mosaic-source-git-repo',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
