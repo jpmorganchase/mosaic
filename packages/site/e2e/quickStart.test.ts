@@ -11,8 +11,9 @@ test('the sidebar links to AWS Publishing Quick Start', async ({ page }) => {
   await page
     .getByTestId('ps-submenu-content-test-id')
     .getByTestId('ps-menu-button-test-id')
+    .first()
     .click();
 
-  const element = await page.getByText('Publish a site to AWS using S3 snapshots');
+  const element = await page.getByText('Publish a site to AWS');
   await expect(element !== undefined).toBeTruthy();
 });
