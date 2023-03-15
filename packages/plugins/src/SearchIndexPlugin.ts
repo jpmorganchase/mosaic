@@ -22,7 +22,7 @@ interface SearchRelevancy {
   maxPatternLength?: number;
   ignoreLocation?: boolean;
   threshold?: number;
-  keys: string[] | { name: string; weight: number }[];
+  keys?: string[] | { name: string; weight: number }[];
 }
 interface SearchIndexPluginOptions {
   maxLineLength?: number;

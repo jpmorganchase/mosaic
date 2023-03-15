@@ -42,6 +42,7 @@ function getDefaultInitialState(): DefaultSiteState {
     tableOfContents: [],
     navigation: {},
     searchIndex: [],
+    searchConfig: {},
     sharedConfig: {},
     description: undefined,
     layout: undefined,
