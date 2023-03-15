@@ -20,14 +20,14 @@ export type DiffResult = Array<{
 }>;
 
 function getProjectNameAndRepoName(repoUrl: string) {
-  const [, projectNameAndRepoName] = path
-    .normalize(repoUrl)
-    .match(/([^/]+\/[^/]+)\.git$/) as RegExpMatchArray;
-  const parts = projectNameAndRepoName.split('/');
+  const [, projectNameAndRepoName] = new URL(repoUrl).pathname.match(
+    /([^/]+\/[^/]+)\.git$/
+  ) as RegExpMatchArray;
+  const [projectName, repoName] = projectNameAndRepoName.split('/');
   return {
     projectNameAndRepoName,
-    projectName: parts[0],
-    repoName: parts[1]
+    projectName,
+    repoName
   };
 }
 
