@@ -10,7 +10,7 @@ test('should navigate to the homepage', async ({ page }) => {
 test('should have a "Docs" link in the app header', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Docs' }).click();
-  await expect(page.locator('h1')).toContainText('Create your first site');
+  await expect(page.locator('h1')).toContainText('Getting started');
 });
 
 test('should have a "Quick Start" link in the app header', async ({ page }) => {
