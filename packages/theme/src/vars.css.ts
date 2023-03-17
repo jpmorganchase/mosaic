@@ -1,4 +1,4 @@
-import { createTheme, createThemeContract } from '@vanilla-extract/css';
+import { createTheme, createGlobalThemeContract } from '@vanilla-extract/css';
 
 import { borderVars } from './border/vars.css';
 import { colorVars } from './color/vars.css';
@@ -14,24 +14,29 @@ import { shadowVars } from './shadow/vars.css';
 import { spaceVars } from './responsive/vars.css';
 import { tableVars } from './table/vars.css';
 
-const vars = createThemeContract({
-  border: borderVars,
-  color: colorVars,
-  component: {
-    button: buttonVars,
-    componentExample: componentExampleVars,
-    grid: gridVars,
-    hero: heroVars,
-    impact: impactVars,
-    list: listVars,
-    table: tableVars
+const MOSAIC_THEME_PREFIX = 'mosaic';
+
+const vars = createGlobalThemeContract(
+  {
+    border: borderVars,
+    color: colorVars,
+    component: {
+      button: buttonVars,
+      componentExample: componentExampleVars,
+      grid: gridVars,
+      hero: heroVars,
+      impact: impactVars,
+      list: listVars,
+      table: tableVars
+    },
+    fontSize: fontSizeVars,
+    fontWeight: fontWeightVars,
+    opacity: opacityVars,
+    shadow: shadowVars,
+    space: spaceVars
   },
-  fontSize: fontSizeVars,
-  fontWeight: fontWeightVars,
-  opacity: opacityVars,
-  shadow: shadowVars,
-  space: spaceVars
-});
+  (_, path) => `${MOSAIC_THEME_PREFIX}-${path.join('-')}`
+);
 
 const themeClassName = createTheme(vars, {
   border: borderVars,
@@ -52,4 +57,4 @@ const themeClassName = createTheme(vars, {
   space: spaceVars
 });
 
-export { themeClassName, vars };
+export { themeClassName, vars, MOSAIC_THEME_PREFIX };
