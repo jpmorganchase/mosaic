@@ -40,8 +40,8 @@ interface SidebarPluginOptions {
   filename: string;
   /**
    * Glob pattern for matching directories which should be the root of the sidebar
-   * ** creates a root level sidebar containing all pages
-   * *\/* creates a sidebar under each of the root directories
+   * * creates a root level sidebar containing all pages underneath root
+   * *\/* creates a separate sidebar under each of the root directories
    */
   rootDirGlob: string;
 }
@@ -60,7 +60,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
     async $beforeSend(
       mutableFilesystem,
       { config, serialiser, ignorePages, pageExtensions },
-      { filename = 'sidebar.json', rootDirGlob = '**' }
+      { filename = 'sidebar.json', rootDirGlob = '*' }
     ) {
       /**
        * Create a list of pages that should be used to build a sidebar.json
@@ -214,6 +214,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         extglob: true,
         cwd: '/'
       });
+      console.log('rootUserJourneys', rootUserJourneys);
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
