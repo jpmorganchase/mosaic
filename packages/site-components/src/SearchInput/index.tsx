@@ -8,7 +8,7 @@ import type { SearchResults } from './Results';
 import styles from './styles.css';
 
 export function SearchInput() {
-  const { searchIndex } = useSearchIndex();
+  const { searchIndex, searchConfig } = useSearchIndex();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -25,8 +25,7 @@ export function SearchInput() {
   }, [searchTerm, searchResults]);
 
   useEffect(() => {
-    const keys = ['title', 'content'];
-    const results = performSearch(searchIndex, searchTerm, keys);
+    const results = performSearch(searchIndex, searchTerm, searchConfig);
     setSearchResults(results);
     setListVisibility(true);
   }, [searchTerm]);

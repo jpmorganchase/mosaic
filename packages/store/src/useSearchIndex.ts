@@ -4,11 +4,14 @@ export type { SearchIndexSlice } from './types';
 
 export function useSearchIndex() {
   const searchIndex = useStore(state => state.searchIndex);
+  const searchConfig = useStore(state => state.searchConfig);
 
-  const searchEnabled = searchIndex !== undefined && searchIndex.length > 0;
+  const searchEnabled =
+    searchConfig !== undefined && searchIndex !== undefined && searchIndex.length > 0;
 
   return {
     searchEnabled,
-    searchIndex: searchEnabled ? searchIndex : []
+    searchIndex: searchEnabled ? searchIndex : [],
+    searchConfig: searchEnabled ? searchConfig : {}
   };
 }

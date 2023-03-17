@@ -30,20 +30,37 @@ describe('GIVEN withSearchIndex', () => {
         MOSAIC_S3_SECRET_ACCESS_KEY: 'some-secret-key'
       };
       s3ClientMock = mockClient(S3Client);
-      const stream = new Readable();
-      stream.push('{ "someValue": true }');
-      stream.push(null); // end of stream
-      const contentStream = sdkStreamMixin(stream);
+      const indexStream = new Readable();
+      indexStream.push('{ "someValue": true }');
+      indexStream.push(null); // end of stream
+      const indexContentStream = sdkStreamMixin(indexStream);
       s3ClientMock
         .on(GetObjectCommand, {
           Bucket: 'some-bucket',
           Key: 'search-data.json'
         })
-        .resolves({ Body: contentStream });
+        .resolves({ Body: indexContentStream });
       s3ClientMock
         .on(HeadObjectCommand, {
           Bucket: 'some-bucket',
           Key: 'search-data.json'
+        })
+        .resolvesOnce({ $metadata: { httpStatusCode: 200 } })
+        .resolves({ $metadata: { httpStatusCode: 404 } });
+      const configStream = new Readable();
+      configStream.push('{ "someConfigValue": true }');
+      configStream.push(null); // end of stream
+      const configContentStream = sdkStreamMixin(configStream);
+      s3ClientMock
+        .on(GetObjectCommand, {
+          Bucket: 'some-bucket',
+          Key: 'search-config.json'
+        })
+        .resolves({ Body: configContentStream });
+      s3ClientMock
+        .on(HeadObjectCommand, {
+          Bucket: 'some-bucket',
+          Key: 'search-config.json'
         })
         .resolvesOnce({ $metadata: { httpStatusCode: 200 } })
         .resolves({ $metadata: { httpStatusCode: 404 } });
@@ -61,7 +78,9 @@ describe('GIVEN withSearchIndex', () => {
         }
       });
       // assert
-      expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
+      expect(content).toEqual({
+        props: { searchConfig: { someConfigValue: true }, searchIndex: { someValue: true } }
+      });
     });
     test('THEN does not throw for a non-existent search-index', async () => {
       // arrange
@@ -88,7 +107,8 @@ describe('GIVEN withSearchIndex', () => {
       // arrange
       mockFs({
         'some/snapshots/': {
-          'search-data.json': '{ "someValue": true }'
+          'search-data.json': '{ "someValue": true }',
+          'search-config.json': '{ "someConfigValue": true }'
         }
       });
       const content = await withSearchIndex({
@@ -97,7 +117,9 @@ describe('GIVEN withSearchIndex', () => {
           getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'snapshot-file')
         }
       });
-      expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
+      expect(content).toEqual({
+        props: { searchConfig: { someConfigValue: true }, searchIndex: { someValue: true } }
+      });
       mockFs.restore();
     });
     test('THEN does not throw for a non-existent search-index', async () => {
@@ -108,6 +130,7 @@ describe('GIVEN withSearchIndex', () => {
           getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'snapshot-file')
         }
       });
+      console.log({ content });
       expect(content).toEqual({ props: {} });
     });
   });
@@ -117,6 +140,8 @@ describe('GIVEN withSearchIndex', () => {
       enableFetchMocks();
       fetchMock.mockResponses(
         [JSON.stringify({ someValue: true }), { status: 200 }],
+        [JSON.stringify({ someConfigValue: true }), { status: 200 }],
+        ['', { status: 404 }],
         ['', { status: 404 }]
       );
     });
@@ -130,7 +155,9 @@ describe('GIVEN withSearchIndex', () => {
         res: { getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'active') }
       });
       // assert
-      expect(content).toEqual({ props: { searchIndex: { someValue: true } } });
+      expect(content).toEqual({
+        props: { searchConfig: { someConfigValue: true }, searchIndex: { someValue: true } }
+      });
     });
     test('THEN does not throw for a non-existent search-index', async () => {
       // arrange

@@ -1,14 +1,5 @@
 import Fuse from 'fuse.js';
 
-const fuseOptions = {
-  includeScore: true,
-  includeMatches: true,
-  maxPatternLength: 240,
-  ignoreLocation: true,
-  threshold: 0.3,
-  keys: ['title', 'content']
-};
-
 const calculateBestIndex = rawIndices => {
   const sorted = rawIndices
     .sort((a, b) => {
@@ -54,10 +45,8 @@ export const parseSearchResults = results =>
     };
   });
 
-export const performSearch = (index, term, keys) => {
-  const options = { ...fuseOptions, keys };
-  const fuse = new Fuse(index, options);
-
+export const performSearch = (index, term, config) => {
+  const fuse = new Fuse(index, config);
   const results = fuse.search(term);
 
   const parsedResults = parseSearchResults(results);

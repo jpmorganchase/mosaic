@@ -17,9 +17,9 @@ const components = mosaicComponents;
 const layoutComponents = mosaicLayouts;
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
-  const { searchIndex, sharedConfig, source } = pageProps;
+  const { searchIndex, searchConfig, sharedConfig, source } = pageProps;
   const frontmatter = source?.frontmatter || {};
-  const storeProps = { sharedConfig, searchIndex, ...frontmatter };
+  const storeProps = { sharedConfig, searchIndex, searchConfig, ...frontmatter };
   const createStore = useCreateStore(storeProps);
   return (
     <SessionProvider>

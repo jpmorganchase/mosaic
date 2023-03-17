@@ -20,11 +20,21 @@ const index: SiteState['searchIndex'] = [
   }
 ];
 
-const state: Partial<SiteState> = {
-  searchIndex: index
+const config: SiteState['searchConfig'] = {
+  includeScore: false,
+  includeMatches: true,
+  maxPatternLength: 240,
+  ignoreLocation: true,
+  threshold: 0.3,
+  keys: ['title', 'content']
 };
 
-describe('GIVEN the `useSearchIndex` hook', () => {
+const state: Partial<SiteState> = {
+  searchIndex: index,
+  searchConfig: config
+};
+
+describe('GIVEN the useSearchIndex hook', () => {
   describe('WHEN there is no search index in the store', () => {
     test('THEN searchEnabled is set to false', () => {
       const { result } = renderHook(() => useSearchIndex(), {
@@ -38,6 +48,13 @@ describe('GIVEN the `useSearchIndex` hook', () => {
       });
       expect(Array.isArray(result.current.searchIndex)).toBe(true);
       expect(result.current.searchIndex.length).toBe(0);
+    });
+    test('AND searchConfig is set to an empty object', () => {
+      const { result } = renderHook(() => useSearchIndex(), {
+        wrapper: createWrapper()
+      });
+      expect(typeof result.current.searchConfig).toBe('object');
+      expect(Object.keys(result.current.searchConfig).length).toBe(0);
     });
   });
 
@@ -54,6 +71,16 @@ describe('GIVEN the `useSearchIndex` hook', () => {
       });
       expect(Array.isArray(result.current.searchIndex)).toBe(true);
       expect(result.current.searchIndex.length).toBe(index.length);
+    });
+    test('AND searchIndex contains the search config', () => {
+      const { result } = renderHook(() => useSearchIndex(), {
+        wrapper: createWrapper({ ...state })
+      });
+      expect(typeof result.current.searchConfig).toBe('object');
+      expect(Object.keys(result.current.searchConfig).length).toBe(Object.keys(config).length);
+      expect(result.current.searchConfig.ignoreLocation).toBe(true);
+      expect(result.current.searchConfig.maxPatternLength).toBe(240);
+      expect(result.current.searchConfig.keys).toEqual(['title', 'content']);
     });
   });
 });

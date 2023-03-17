@@ -16,6 +16,50 @@ if (typeof window !== 'undefined') {
 }
 
 const searchDataFile = 'search-data.json';
+const searchConfigFile = 'search-config.json';
+
+const getSnapshotFile = async (urlPath, targetPath) => {
+  const { snapshotDir } = getSnapshotFileConfig(urlPath);
+  const filePath = path.join(process.cwd(), snapshotDir, targetPath);
+  try {
+    await fs.promises.stat(filePath);
+    const rawSearchIndex = await loadLocalFile(filePath);
+    return JSON.parse(rawSearchIndex);
+  } catch {
+    console.warn(`Could not load data from ${urlPath}/${targetPath}`);
+    return false;
+  }
+};
+
+const getSnapshotS3File = async (urlPath, targetPath) => {
+  const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(targetPath);
+  const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
+  const s3KeyExists = await keyExists(bucket, targetPath);
+  if (s3KeyExists) {
+    const rawSearchIndex = await loadKey(bucket, targetPath);
+    return JSON.parse(rawSearchIndex);
+  } else {
+    console.warn(`Could not load data from ${urlPath}/${targetPath}`);
+    return false;
+  }
+};
+
+const getFechedFile = async (mosaicUrl, targetPath) => {
+  const response = await fetch(`${mosaicUrl}/${targetPath}`, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (response.ok) {
+    return await response.json();
+  } else if (response.status !== 404) {
+    throw Error(`${response.status} - ${response.statusText}`);
+  } else {
+    console.warn(`Could not load data from ${mosaicUrl}/${targetPath}`);
+    return false;
+  }
+};
+
 /**
  * Adds the [[`searchIndex`]] props to the page props
  * @param _context
@@ -33,42 +77,20 @@ export const withSearchIndex: MosaicMiddleware<SearchIndexSlice> = async (
 
   try {
     let searchIndex;
+    let searchConfig;
     if (isSnapshotFile) {
-      const { snapshotDir } = getSnapshotFileConfig(urlPath);
-      const filePath = path.join(process.cwd(), snapshotDir, searchDataFile);
-      let fileExists = false;
-      try {
-        await fs.promises.stat(filePath);
-        fileExists = true;
-      } catch {}
-
-      if (fileExists) {
-        const rawSearchIndex = await loadLocalFile(filePath);
-        searchIndex = JSON.parse(rawSearchIndex);
-      }
+      searchIndex = await getSnapshotFile(urlPath, searchDataFile);
+      searchConfig = await getSnapshotFile(urlPath, searchConfigFile);
     } else if (isSnapshotS3) {
-      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(searchDataFile);
-      const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-      const s3KeyExists = await keyExists(bucket, searchDataFile);
-      if (s3KeyExists) {
-        const rawSearchIndex = await loadKey(bucket, searchDataFile);
-        searchIndex = JSON.parse(rawSearchIndex);
-      }
+      searchIndex = await getSnapshotS3File(urlPath, searchDataFile);
+      searchConfig = await getSnapshotS3File(urlPath, searchConfigFile);
     } else {
       const mosaicUrl = res.getHeader('X-Mosaic-Content-Url');
-      const response = await fetch(`${mosaicUrl}/${searchDataFile}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.ok) {
-        searchIndex = await response.json();
-      } else if (response.status !== 404) {
-        throw Error(`${response.status} - ${response.statusText}`);
-      }
+      searchIndex = await getFechedFile(mosaicUrl, searchDataFile);
+      searchConfig = await getFechedFile(mosaicUrl, searchConfigFile);
     }
-    if (searchIndex) {
-      return { props: { searchIndex } };
+    if (searchIndex && searchConfig) {
+      return { props: { searchConfig, searchIndex } };
     }
     return { props: {} };
   } catch (error) {
