@@ -2,9 +2,6 @@ import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { cloneDeep } from 'lodash-es';
 
-// Which level does sidebar creation start
-const sidebarRootLevel = 1;
-
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
     return patterns.map(pattern => createFileGlob(pattern, pageExtensions));
@@ -37,11 +34,20 @@ interface SidebarPluginPage extends Page {
 }
 
 interface SidebarPluginOptions {
+  /**
+   * filename of the sidebar json, linked to each related page via ref
+   */
   filename: string;
+  /**
+   * Glob pattern for matching directories which should be the root of the sidebar
+   * * creates a root level sidebar containing all pages underneath root
+   * *\/* creates a separate sidebar under each of the root directories
+   */
+  rootDirGlob: string;
 }
 
 /**
- * Sorts the pages in a folder by priority and then exports a JSON file (name: `options.filename`) with the
+ * Sorts the pages in a folder by priority and then exports a JSON file with the
  * sidebar tree from that directory downwards and adds sidebar data into frontmatter for each page.
  *
  * Additionally, add to frontmatter
@@ -54,26 +60,31 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
     async $beforeSend(
       mutableFilesystem,
       { config, serialiser, ignorePages, pageExtensions },
-      options
+      { filename = 'sidebar.json', rootDirGlob = '*' }
     ) {
       /**
        * Create a list of pages that should be used to build a sidebar.json
        * @param dirName - root path of sidebar
        */
-      async function createPageList(dirName) {
-        let pageList = await Promise.all(
-          (
-            (await mutableFilesystem.promises.glob(createFileGlob(['**'], pageExtensions), {
-              cwd: String(dirName),
-              ignore: ignorePages.map(ignore => `**/${ignore}`)
-            })) as string[]
-          ).map(
-            async pagePath =>
-              await serialiser.deserialise(
-                pagePath,
-                await mutableFilesystem.promises.readFile(pagePath)
-              )
-          )
+      async function createPageList(rootDir) {
+        const isChildOfRootDir = pagePath => {
+          const pageDir = path.dirname(pagePath);
+          return pageDir.indexOf(rootDir) === 0;
+        };
+        const pagePaths = (await mutableFilesystem.promises.glob(
+          createFileGlob(['**'], pageExtensions),
+          {
+            cwd: String(rootDir),
+            ignore: ignorePages.map(ignore => `**/${ignore}`)
+          }
+        )) as string[];
+        const filteredPagePaths = pagePaths.filter(isChildOfRootDir);
+        const pageList = await Promise.all(
+          filteredPagePaths.map(async pagePath => {
+            return mutableFilesystem.promises.readFile(pagePath).then(serializedContent => {
+              return serialiser.deserialise(pagePath, serializedContent);
+            });
+          })
         );
         return pageList;
       }
@@ -147,7 +158,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           config.setRef(
             String(page.fullPath),
             ['sidebarData', '$ref'],
-            path.posix.join(dirName, options.filename, '#', 'pages')
+            path.posix.join(dirName, filename, '#', 'pages')
           );
         });
       }
@@ -198,11 +209,12 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         recursiveAddNavigation(pages);
       }
 
-      const rootUserJourneys = await mutableFilesystem.promises.glob('**', {
+      const rootUserJourneys = await mutableFilesystem.promises.glob(rootDirGlob, {
         onlyDirectories: true,
-        cwd: '/',
-        deep: sidebarRootLevel
+        extglob: true,
+        cwd: '/'
       });
+      console.log('rootUserJourneys', rootUserJourneys);
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
@@ -223,19 +235,19 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       }
 
       await Promise.all(
-        rootUserJourneys.map(async dirName => {
-          const sidebarFilePath = path.posix.join(String(dirName), options.filename);
-          let pages = await createPageList(dirName);
+        rootUserJourneys.map(async rootDir => {
+          const sidebarFilePath = path.posix.join(String(rootDir), filename);
+          let pages = await createPageList(rootDir);
           pages = pages.filter(page => removeExcludedPages(page));
           const groupMap = createGroupMap(pages);
-          const sidebarData = linkGroupMap(groupMap, dirName);
+          const sidebarData = linkGroupMap(groupMap, rootDir);
           const pagesByPriority = sortPagesByPriority(sidebarData);
           addNavigationToFrontmatter(pagesByPriority);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
             JSON.stringify({ pages: pagesByPriority })
           );
-          addSidebarDataToFrontmatter(pages, dirName);
+          addSidebarDataToFrontmatter(pages, rootDir);
         })
       );
     }

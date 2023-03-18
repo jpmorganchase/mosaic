@@ -1,98 +1,57 @@
+import path from 'path';
 import SidebarPlugin, { SidebarPluginPage } from '../SidebarPlugin';
 
-const folderAPages: SidebarPluginPage[] = [
-  {
-    fullPath: '/folderA/index.mdx',
-    route: 'route/folderA/index',
-    title: 'Folder A Index',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderA/pageA.mdx',
-    route: 'route/folderA/pageA',
-    title: 'Folder A Page A',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderA/pageB.mdx',
-    route: 'route/folderA/pageB',
-    title: 'Folder A Page B',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderA/SubfolderA/index.mdx',
-    route: 'route/folderA/subfolderA/index',
-    title: 'Subfolder A Index',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderA/SubfolderA/PageA.mdx',
-    route: 'route/folderA/subfolderA/pageA',
-    title: 'Subfolder A Page A',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderA/SubfolderA/PageB.mdx',
-    route: 'route/folderA/subfolderA/pageB',
-    title: 'Subfolder A Page B',
-    layout: 'DetailOverview'
-  }
+const folderAPages: string[] = [
+  '/folderA/index.mdx',
+  '/folderA/pageA.mdx',
+  '/folderA/pageB.mdx',
+  '/folderA/SubfolderA/index.mdx',
+  '/folderA/SubfolderA/PageA.mdx',
+  '/folderA/SubfolderA/PageB.mdx'
 ];
-const folderBPages: SidebarPluginPage[] = [
-  {
-    fullPath: '/folderB/index.mdx',
-    route: 'route/folderB/index',
-    title: 'Folder B Index',
-    layout: 'DetailOverview'
-  },
-  {
-    fullPath: '/folderB/pageA.mdx',
-    route: 'route/folderA/pageA',
-    title: 'Folder B Page A',
-    layout: 'DetailOverview'
-  }
-];
+
+const folderBPages: string[] = ['/folderB/index.mdx', '/folderB/pageA.mdx'];
 
 const folderASidebarContents = {
   pages: [
     {
       id: 'route/folderA/index',
       fullPath: '/folderA/index.mdx',
-      name: 'Folder A Index',
+      name: ' folderA index',
       data: { level: 1, link: 'route/folderA/index' },
       childNodes: [
         {
           id: 'route/folderA/pageA',
           fullPath: '/folderA/pageA.mdx',
-          name: 'Folder A Page A',
+          name: ' folderA pageA',
           data: { level: 1, link: 'route/folderA/pageA' },
           childNodes: []
         },
         {
           id: 'route/folderA/pageB',
           fullPath: '/folderA/pageB.mdx',
-          name: 'Folder A Page B',
+          name: ' folderA pageB',
           data: { level: 1, link: 'route/folderA/pageB' },
           childNodes: []
         },
         {
-          id: 'route/folderA/subfolderA/index',
+          id: 'route/folderA/SubfolderA/index',
           fullPath: '/folderA/SubfolderA/index.mdx',
-          name: 'Subfolder A Index',
-          data: { level: 2, link: 'route/folderA/subfolderA/index' },
+          name: ' folderA SubfolderA index',
+          data: { level: 2, link: 'route/folderA/SubfolderA/index' },
           childNodes: [
             {
-              id: 'route/folderA/subfolderA/pageA',
+              id: 'route/folderA/SubfolderA/PageA',
               fullPath: '/folderA/SubfolderA/PageA.mdx',
-              name: 'Subfolder A Page A',
-              data: { level: 2, link: 'route/folderA/subfolderA/pageA' },
+              name: ' folderA SubfolderA PageA',
+              data: { level: 2, link: 'route/folderA/SubfolderA/PageA' },
               childNodes: []
             },
             {
-              id: 'route/folderA/subfolderA/pageB',
+              id: 'route/folderA/SubfolderA/PageB',
               fullPath: '/folderA/SubfolderA/PageB.mdx',
-              name: 'Subfolder A Page B',
-              data: { level: 2, link: 'route/folderA/subfolderA/pageB' },
+              name: ' folderA SubfolderA PageB',
+              data: { level: 2, link: 'route/folderA/SubfolderA/PageB' },
               childNodes: []
             }
           ]
@@ -107,14 +66,14 @@ const folderBSidebarContents = {
     {
       id: 'route/folderB/index',
       fullPath: '/folderB/index.mdx',
-      name: 'Folder B Index',
+      name: ' folderB index',
       data: { level: 1, link: 'route/folderB/index' },
       childNodes: [
         {
-          id: 'route/folderA/pageA',
+          id: 'route/folderB/pageA',
           fullPath: '/folderB/pageA.mdx',
-          name: 'Folder B Page A',
-          data: { level: 1, link: 'route/folderA/pageA' },
+          name: ' folderB pageA',
+          data: { level: 1, link: 'route/folderB/pageA' },
           childNodes: []
         }
       ]
@@ -137,7 +96,17 @@ describe('GIVEN the SidebarPlugin', () => {
           .mockResolvedValueOnce(folderBPages),
         mkdir: jest.fn(),
         readdir: jest.fn(),
-        readFile: jest.fn(),
+        readFile: jest.fn(value =>
+          Promise.resolve({
+            fullPath: value,
+            route: `route${value.replace(/\..*$/, '')}`,
+            title: value
+              .split('/')
+              .map(pathname => path.basename(pathname, '.mdx'))
+              .join(' '),
+            layout: 'some layout'
+          })
+        ),
         realpath: jest.fn(),
         stat: jest.fn(),
         symlink: jest.fn(),
@@ -155,7 +124,7 @@ describe('GIVEN the SidebarPlugin', () => {
           setRef: setRefMock
         },
         serialiser: {
-          deserialise: jest.fn().mockImplementation(value => Promise.resolve(value))
+          deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
         },
         ignorePages: [],
         pageExtensions: []
