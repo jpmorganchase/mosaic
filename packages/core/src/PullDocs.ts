@@ -47,7 +47,7 @@ export default class PullDocs {
       serialisers = [],
       pageExtensions = ['.mdx']
     } = config;
-    this.#sourceDefinitions = sources;
+    this.#sourceDefinitions = sources.filter((source: SourceModuleDefinition) => !source.disabled);
     this.#vfs = new UnionVolume(new UnionFileAccess(this.#ufs), '*');
     this.#sourceManager = new SourceManager(
       this.#vfs,
