@@ -1,15 +1,34 @@
 import PullDocs from '../PullDocs';
-import SourceManager from '../SourceManager';
 import UnionVolume from '../filesystems/UnionVolume';
 import MutableVolume from '../filesystems/MutableVolume';
 import { MosaicConfig } from '@jpmorganchase/mosaic-schemas';
 
-jest.mock('../SourceManager');
+const sourceManagerConstructorMock = jest.fn();
+const addSourceMock = jest.fn();
+const onSourceUpdateMock = jest.fn();
+jest.mock('../SourceManager', () => {
+  return class MockedSourceManager {
+    constructor(...args) {
+      sourceManagerConstructorMock(...args);
+    }
+    async addSource(...args) {
+      addSourceMock(...args);
+    }
+    onSourceUpdate(...args) {
+      onSourceUpdateMock(...args);
+    }
+  };
+});
 
 const mockConfig: MosaicConfig = {
   sources: [
     {
       modulePath: 'source-module',
+      namespace: 'namespace'
+    },
+    {
+      disabled: true,
+      modulePath: 'disabled-source-module',
       namespace: 'namespace'
     }
   ],
@@ -19,6 +38,12 @@ const mockConfig: MosaicConfig = {
 };
 
 describe('GIVEN PullDocs', () => {
+  beforeEach(() => {
+    sourceManagerConstructorMock.mockReset();
+    addSourceMock.mockReset();
+    onSourceUpdateMock.mockReset();
+  });
+
   test('THEN it should instantiate correctly', () => {
     expect(new PullDocs(mockConfig)).toBeDefined();
   });
@@ -31,8 +56,6 @@ describe('GIVEN PullDocs', () => {
     let pullDocs;
 
     beforeEach(() => {
-      (SourceManager as jest.Mock<SourceManager>).mockReset();
-
       pullDocs = new PullDocs({
         ...mockConfig,
         plugins: [
@@ -54,7 +77,7 @@ describe('GIVEN PullDocs', () => {
     });
 
     test('THEN the SourceManager should be passed the plugins', () => {
-      expect(SourceManager).toHaveBeenCalledWith(
+      expect(sourceManagerConstructorMock).toHaveBeenCalledWith(
         expect.any(UnionVolume),
         expect.any(MutableVolume),
         [
@@ -109,21 +132,24 @@ describe('GIVEN PullDocs', () => {
 
     describe('WITH sources specified', () => {
       let pullDocs: PullDocs;
-
       beforeEach(() => {
         pullDocs = new PullDocs(mockConfig);
+        pullDocs.start();
+      });
+
+      test('THEN only enabled sources are added', () => {
+        expect(addSourceMock).toHaveBeenCalledTimes(1);
+        expect(addSourceMock).toHaveBeenCalledWith(
+          { modulePath: 'source-module', namespace: 'namespace' },
+          {}
+        );
       });
 
       describe('AND a source changes', () => {
         test('THEN onSourceUpdate should be called', () => {
-          const onSourceUpdateSpy = jest.fn();
-          pullDocs.onSourceUpdate(onSourceUpdateSpy);
-
-          const onSourceUpdateCallback = (
-            SourceManager.prototype.onSourceUpdate as jest.MockedFunction<any>
-          ).mock.calls[0][0];
-          onSourceUpdateCallback();
-          expect(onSourceUpdateSpy).toHaveBeenCalled();
+          const updateMock = jest.fn();
+          pullDocs.onSourceUpdate(updateMock);
+          expect(onSourceUpdateMock).toHaveBeenCalledWith(updateMock);
         });
       });
     });
