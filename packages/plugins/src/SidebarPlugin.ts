@@ -214,7 +214,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         extglob: true,
         cwd: '/'
       });
-      console.log('rootUserJourneys', rootUserJourneys);
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
