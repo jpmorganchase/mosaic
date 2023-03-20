@@ -3,22 +3,13 @@ import UnionVolume from '../filesystems/UnionVolume';
 import MutableVolume from '../filesystems/MutableVolume';
 import { MosaicConfig } from '@jpmorganchase/mosaic-schemas';
 
-const sourceManagerConstructorMock = jest.fn();
-const addSourceMock = jest.fn();
-const onSourceUpdateMock = jest.fn();
-jest.mock('../SourceManager', () => {
-  return class MockedSourceManager {
-    constructor(...args) {
-      sourceManagerConstructorMock(...args);
-    }
-    async addSource(...args) {
-      addSourceMock(...args);
-    }
-    onSourceUpdate(...args) {
-      onSourceUpdateMock(...args);
-    }
-  };
-});
+import SourceManager from '../SourceManager';
+
+jest.mock('../SourceManager', () => ({
+  ...jest.requireActual('../SourceManager'),
+  __esModule: true,
+  default: jest.fn()
+}));
 
 const mockConfig: MosaicConfig = {
   sources: [
@@ -38,10 +29,14 @@ const mockConfig: MosaicConfig = {
 };
 
 describe('GIVEN PullDocs', () => {
-  beforeEach(() => {
-    sourceManagerConstructorMock.mockReset();
-    addSourceMock.mockReset();
-    onSourceUpdateMock.mockReset();
+  const addSourceMock = jest.fn();
+  const onSourceUpdateMock = jest.fn();
+
+  beforeAll(() => {
+    jest.mocked(SourceManager).mockReturnValue({
+      addSource: addSourceMock,
+      onSourceUpdate: onSourceUpdateMock
+    });
   });
 
   test('THEN it should instantiate correctly', () => {
@@ -77,7 +72,7 @@ describe('GIVEN PullDocs', () => {
     });
 
     test('THEN the SourceManager should be passed the plugins', () => {
-      expect(sourceManagerConstructorMock).toHaveBeenCalledWith(
+      expect(SourceManager).toHaveBeenCalledWith(
         expect.any(UnionVolume),
         expect.any(MutableVolume),
         [
