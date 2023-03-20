@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^14.18.0 || >=16.10.0 || >=18.0.0"
+    "node": ">=16.10.0 || >=18.0.0"
   },
   "bin": {
     "mosaic": "yarn workspace @jpmorganchase/mosaic-cli"
