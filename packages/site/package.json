@@ -13,6 +13,7 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
+    "mosaic": "node ../cli/dist/index.js",
     "clean": "rm -fr public/.tmp .next",
     "build": "next build",
     "dev": "next dev",
