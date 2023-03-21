@@ -8,3 +8,45 @@ layout: DetailTechnical
 A Mosaic site is a [Next.Js](https://nextjs.org/) app.
 
 To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.org/learn/basics/deploying-nextjs-app/deploy).
+
+## Deployment
+
+As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](./modes/active).
+
+### 1. Update Config File
+
+Add the following to the mosaic config file used by your site:
+
+```
+ deployment: { mode: 'snapshot-file', platform: 'vercel' }
+```
+
+### 2. Set Environment Variables
+
+Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
+
+| Variable Name       | Value             |
+| ------------------- | ----------------- |
+| MOSAIC_MODE         | snapshot-file     |
+| MOSAIC_SNAPSHOT_DIR | snapshots/latest. |
+
+### 3. Run Build and Deploy
+
+The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
+
+The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
+
+Example:
+
+```
+yarn build && yarn deploy
+```
+
+## Output File Tracing
+
+[Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
+to determine what files are needed to deploy a production version of an application.
+
+Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
+
+If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
