@@ -87,7 +87,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
         }
         process.chdir(pwd);
         console.log(
-          `Filesystem for ${
+          `[Mosaic] filesystem for ${
             Array.isArray(scope) ? scope.length : config.sources.length
           } source(s) written to disk at '${pathDir}'`
         );

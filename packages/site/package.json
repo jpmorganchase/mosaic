@@ -17,6 +17,7 @@
     "build": "next build",
     "dev": "next dev",
     "debug": "yarn mosaic serve -c ./mosaic.config.js -p 8080",
+    "deploy": "yarn mosaic deploy --out snapshots --name latest --config mosaic.config.js",
     "e2e": "npx playwright test",
     "e2e:codegen": "npx playwright codegen localhost:3000",
     "start": "next start",
