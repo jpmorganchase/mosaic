@@ -3491,7 +3491,7 @@
   dependencies:
     clsx "^1.2.1"
 
-"@salt-ds/lab@1.0.0-alpha.1", "@salt-ds/lab@^1.0.0-alpha.0":
+"@salt-ds/lab@1.0.0-alpha.1":
   version "1.0.0-alpha.1"
   resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.1.tgz#97a4c52deeca1922e8bd4cdb83b6276da9bd88c8"
   integrity sha512-yucQa1+tNSPUw/0rnq/LVoKSUepMCmCRWW7FHnwX0lcPvfJDg4YOZp5ssQlUDzPG3UPT8LQs9JXbmjotb4nkcw==

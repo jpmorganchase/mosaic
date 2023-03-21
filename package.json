@@ -18,7 +18,7 @@
     "mosaic": "node ./packages/cli/dist/index.js",
     "dev": "turbo run dev",
     "e2e": "turbo run e2e --filter=@jpmorganchase/mosaic-site",
-    "e2e:codegen": "turbo run e2e:codegen --filter=@jpmorganchase/mosaic-site",  
+    "e2e:codegen": "turbo run e2e:codegen --filter=@jpmorganchase/mosaic-site",
     "e2e:setup": "npx playwright install",
     "test": "npm-run-all --parallel test:*",
     "test:client": "jest --config ./jest.config.client.js --coverage",
@@ -100,7 +100,6 @@
     "turbo": "latest"
   },
   "resolutions": {
-    "@salt-ds/lab": "1.0.0-alpha.1",
     "@braintree/sanitize-url": "^6.0.0",
     "@types/react": "^18.0.26",
     "commander": "^9.4.0",
