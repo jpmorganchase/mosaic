@@ -28,6 +28,9 @@
     "dev": {
       "cache": false
     },
+    "deploy": {
+      "cache": false
+    },
     "e2e": {
       "cache": false
     },
