@@ -44,5 +44,5 @@ if (program.args[0] === 'upload') {
   uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot));
 }
 if (program.args[0] === 'deploy') {
-  updateTraceFile(config.default, path.resolve(process.cwd(), options.out), options);
+  updateTraceFile(config.default, options);
 }
