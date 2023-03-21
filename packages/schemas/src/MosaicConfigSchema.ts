@@ -6,7 +6,7 @@ import { serialiserModuleSchema } from './SerialiserModuleSchema.js';
 import { sourceModuleSchema } from './SourceModuleSchema.js';
 
 export const mosaicConfigSchema = z.object({
-  deployment: z.object({ mode: modeSchema, platform: z.string() }),
+  deployment: z.object({ mode: modeSchema, platform: z.string() }).optional(),
   /**
    * A collection of file extensions that can be served
    * e.g. [".mdx", ".json"]
