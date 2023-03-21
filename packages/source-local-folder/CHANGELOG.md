@@ -1,5 +1,44 @@
 # @jpmorganchase/mosaic-source-local-folder
 
+## 0.1.0-beta.26
+
+### Minor Changes
+
+- 531c87a: ## Mosaic Theme
+
+  The theme variables are now globally scoped and prefixed with `mosaic`.
+
+  ## BrokenLinksPlugin
+
+  The `BrokenLinksPlugin` uses a running instance of mosaic to verify that all links in the source pages are alive.
+
+  If mosaic is running behind a corporate proxy, the `proxyEndpoint` option is required to fetch external URLs.
+
+  Configuration:
+
+  ```json
+   {
+        modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
+        priority: -1,
+        // Exclude this plugin in builds
+        runTimeOnly: true,
+        options: {
+          baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080',
+          proxyEndpoint: 'http://some-proxy-url'
+        }
+      }
+  ```
+
+  ## Next/Prev button
+
+  The next and prev buttons are visible again on pages that have a layout that uses these buttons.
+
+### Patch Changes
+
+- Updated dependencies [531c87a]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.26
+  - @jpmorganchase/mosaic-types@0.1.0-beta.26
+
 ## 0.1.0-beta.25
 
 ### Minor Changes
