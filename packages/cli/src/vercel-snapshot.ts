@@ -10,10 +10,8 @@ import fsExtra from 'fs-extra';
  *
  * This script adds an entry into the [...route].js.nft.json file for each file in the provided snapshot ensuring that the snapshot files are deployed.
  *
- * @param {the directory containing the nextjs site build output (usually a .next directory)} baseDir
- * @param {the directory the snapshot has been written to} snapshotDir
  */
-export async function updateTraceFile(config, targetDir, options) {
+export async function updateTraceFile(config, options) {
   const { mode, platform } = config.deployment;
 
   if (mode === 'snapshot-file' && platform === 'vercel') {
@@ -23,7 +21,8 @@ export async function updateTraceFile(config, targetDir, options) {
 
     const projectBase = process.cwd();
     const buildDir = path.posix.join(projectBase, '.next');
-    const snapshotOutDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
+    const snapshotDir = options.out;
+    const snapshotName = options.name ?? new Date().toISOString();
 
     if (!fsExtra.existsSync(buildDir)) {
       console.warn(
@@ -33,8 +32,8 @@ export async function updateTraceFile(config, targetDir, options) {
     const nftFilePath = path.posix.join(buildDir, 'server', 'pages', '[...route].js.nft.json');
 
     // Find all snapshot files
-    const paths = await globby('**', {
-      cwd: snapshotOutDir,
+    const paths = await globby(`**/${snapshotDir}/${snapshotName}/**`, {
+      cwd: projectBase,
       onlyFiles: true
     });
 
