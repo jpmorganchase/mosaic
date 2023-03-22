@@ -1,10 +1,12 @@
 import { style, globalStyle } from '@vanilla-extract/css';
+import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import {
   backgroundColor,
   config,
   foregroundColor,
   neutralBorder,
   paragraph,
+  responsiveConditions,
   shadow
 } from '@jpmorganchase/mosaic-theme';
 
@@ -12,10 +14,25 @@ globalStyle('#__next', {
   height: '100%'
 });
 
+const headerGridProperties = defineProperties({
+  conditions: responsiveConditions,
+  defaultCondition: 'mobile',
+  responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
+  properties: {
+    gridTemplateColumns: ['44px auto', '10% auto', 'auto']
+  }
+});
+
+const headerGridSprinkles = createSprinkles(headerGridProperties);
+
 export default {
   root: style([
     {
-      minHeight: '100vh'
+      display: 'grid',
+      gridTemplateColumns: '1fr',
+      gridTemplateAreas: `
+      "base-layout-header"
+      "base-layout-main"`
     },
     paragraph({ variant: 'paragraph2' }),
     backgroundColor({ variant: 'regular' }),
@@ -23,18 +40,17 @@ export default {
   ]),
 
   main: style({
-    width: '100%',
-    zIndex: 1,
-    position: 'relative'
+    gridArea: 'base-layout-main',
+    display: 'flex',
+    justifyContent: 'center',
+    zIndex: 1
   }),
 
   header: style([
     {
-      display: 'flex',
-      justifyContent: 'stretch',
-      alignItems: 'center',
+      display: 'grid',
       height: `${config.appHeader.height}px`,
-      width: '100%',
+      gridArea: 'base-layout-header',
       position: 'sticky',
       top: 0,
       // This is high so that the header can overlay the Salt component for mobile
@@ -44,7 +60,8 @@ export default {
     },
     backgroundColor({ variant: 'regular' }),
     neutralBorder({ variant: 'low', borderBottomWidth: 'thin' }),
-    shadow({ variant: 'elevation2' })
+    shadow({ variant: 'elevation2' }),
+    headerGridSprinkles({ gridTemplateColumns: ['44px auto', '44px auto', 'auto', 'auto'] })
   ]),
 
   overlayRoot: style([
