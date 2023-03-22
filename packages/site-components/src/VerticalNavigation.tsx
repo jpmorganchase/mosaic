@@ -19,47 +19,44 @@ const MenuIcon = ({ open }) => <Icon name={open ? 'chevronDown' : 'chevronRight'
 
 const createMenuItemStyles = colorMode => ({
   subMenuContent: {
-    backgroundColor: 'inherit',
-    color: 'inherit'
+    backgroundColor: 'inherit'
   },
-  button: ({ active, level }) => {
+  button: ({ active }) => {
     let buttonStyle: ElementStyles = {
-      paddingRight: 'var(--space-horizontal-x4)'
+      paddingRight: 'var(--mosaic-space-horizontal-x4)'
     };
-    if (level === 0) {
-      buttonStyle = {
-        ...buttonStyle,
-        paddingLeft: 'var(--space-horizontal-x4)'
-      };
-    }
     return {
       ...buttonStyle,
-      ':active': {
-        backgroundColor: 'unset',
-        color:
-          colorMode === 'light'
-            ? 'var(--color-light-navigable-selectableLink-selectedLabel)'
-            : 'var(--color-dark-navigable-selectableLink-selectedLabel)'
-      },
       ':disabled': {
         backgroundColor: 'unset',
         color:
           colorMode === 'light'
-            ? 'var(--color-light-navigable-selectableLink-unselectedLabel)'
-            : 'var(--color-dark-navigable-selectableLink-unselectedLabel)'
+            ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
+            : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
       },
       ':hover': {
         backgroundColor:
           colorMode === 'light'
-            ? 'var(--color-light-neutral-background-emphasis)'
-            : 'var(--color-dark-neutral-background-emphasis)',
-        color:
-          colorMode === 'light'
-            ? 'var(--color-light-navigable-selectableLink-unselectedLabel)'
-            : 'var(--color-dark-navigable-selectableLink-unselectedLabel)'
+            ? 'var(--mosaic-color-light-neutral-background-emphasis)'
+            : 'var(--mosaic-color-dark-neutral-background-emphasis)'
       },
-      fontWeight: active ? 'var(--fontWeight-bold)' : 'var(--fontWeight-regular)'
+      fontWeight: active ? 'var(--mosaic-fontWeight-semibold)' : 'var(--mosaic-fontWeight-regular)',
+      borderLeft: active
+        ? colorMode === 'light'
+          ? '4px solid var(--mosaic-color-light-navigable-selectableLink-selected)'
+          : '4px solid var(--mosaic-color-dark-navigable-selectableLink-selected)'
+        : '4px solid transparent',
+      color: active
+        ? colorMode === 'light'
+          ? 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
+          : 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
+        : colorMode === 'light'
+        ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
+        : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
     };
+  },
+  label: {
+    marginRight: 'var(--mosaic-space-horizontal-x4)'
   }
 });
 
