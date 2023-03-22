@@ -1,5 +1,4 @@
 export * from './Detail';
-export * from './App';
 export * from './Edit';
 export * from './FullWidth';
 export * from './Landing';
