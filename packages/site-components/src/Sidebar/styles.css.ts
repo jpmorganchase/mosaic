@@ -8,6 +8,5 @@ export default {
     },
     sidebar.container
   ]),
-  scrollable: sidebar.scrollable,
-  sticky: sidebar.sticky
+  scrollable: sidebar.scrollable
 };
