@@ -55,6 +55,7 @@ const styles = {
     justifyContent: 'center',
     flexDirection: 'column',
     display: 'flex',
+    width: '100%',
     marginRight: 'auto',
     marginLeft: 'auto'
   }),
