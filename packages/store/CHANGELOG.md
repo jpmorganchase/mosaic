@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.27
+
+### Patch Changes
+
+- b465413: Improvements to vercel deployments
+
 ## 0.1.0-beta.26
 
 ### Minor Changes
