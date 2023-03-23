@@ -1,9 +1,9 @@
 import React from 'react';
-import classnames from 'clsx';
 
-import styles from './styles.css';
 import { Drawer, Sidebar, TriggerElementProps } from '@jpmorganchase/mosaic-site-components';
 import { Button, Icon, useBreakpoint } from '@jpmorganchase/mosaic-components';
+
+import styles from './styles.css';
 
 const TriggerElement: React.FC<TriggerElementProps> = ({ open, onClick: handleClick }) => (
   <Button className={styles.toggleButton} variant="secondary" onClick={handleClick}>
@@ -29,26 +29,21 @@ export const LayoutColumns = ({
   const breakpoint = useBreakpoint();
   const showDrawer = breakpoint === 'mobile' || breakpoint == 'tablet';
   return (
-    <div
-      className={classnames({
-        [styles.fullWidth]: !PrimarySidebar,
-        [styles.withSidebar]: PrimarySidebar
-      })}
-    >
-      {showDrawer && PrimarySidebar && (
-        <Drawer side="left" TriggerElement={TriggerElement}>
-          <Sidebar>{PrimarySidebar}</Sidebar>
-        </Drawer>
-      )}
-      {!showDrawer && PrimarySidebar && <Sidebar>{PrimarySidebar}</Sidebar>}
-      <div className={styles.mainWrapper}>
-        <div className={styles.columnWrapper}>
-          <div className={styles.contentColumn}>
-            <main className={styles.contentBody}>{children}</main>
-            {Footer && Footer}
-          </div>
-          {SecondarySidebar && !showDrawer ? <Sidebar sticky>{SecondarySidebar}</Sidebar> : null}
-        </div>
+    <div className={styles.root}>
+      <div className={styles.sidebar}>
+        {showDrawer && PrimarySidebar && (
+          <Drawer side="left" TriggerElement={TriggerElement}>
+            <Sidebar>{PrimarySidebar}</Sidebar>
+          </Drawer>
+        )}
+        {!showDrawer && PrimarySidebar && <Sidebar>{PrimarySidebar}</Sidebar>}
+      </div>
+      <main className={styles.main}>
+        {children}
+        {Footer && Footer}
+      </main>
+      <div className={styles.toc}>
+        {SecondarySidebar && !showDrawer ? <Sidebar sticky>{SecondarySidebar}</Sidebar> : null}
       </div>
     </div>
   );

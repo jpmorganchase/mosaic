@@ -16,16 +16,6 @@ export const Sidebar: FC<SidebarProps> = ({ children, sticky = false }) => (
       }
     ])}
   >
-    {!sticky ? (
-      children
-    ) : (
-      <div
-        className={classnames({
-          [styles.sticky]: sticky
-        })}
-      >
-        {children}
-      </div>
-    )}
+    {children}
   </aside>
 );
