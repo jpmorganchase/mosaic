@@ -16,12 +16,12 @@ jobs:
         id: waitForVercelPreviewDeployment
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 600
-          check_interval: 60
+          max_timeout: 1500
+          check_interval: 10
   test_e2e:
     needs: site_preview
     name: Playwright tests
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Prepare testing env
