@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.26
+
+### Patch Changes
+
+- b465413: Improvements to vercel deployments
+- Updated dependencies [0a672d4]
+- Updated dependencies [b465413]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.27
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.27
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.27
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.27
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.27
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.27
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.27
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.27
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.27
+  - @jpmorganchase/mosaic-store@0.1.0-beta.27
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.27
+
 ## 0.1.0-beta.25
 
 ### Minor Changes

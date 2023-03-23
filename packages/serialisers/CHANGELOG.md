@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-serialisers
 
+## 0.1.0-beta.27
+
+### Patch Changes
+
+- b465413: Improvements to vercel deployments
+- Updated dependencies [b465413]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.27
+
 ## 0.1.0-beta.26
 
 ### Minor Changes

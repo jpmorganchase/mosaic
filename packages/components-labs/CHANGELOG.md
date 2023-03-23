@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.27
+
+### Patch Changes
+
+- 0a672d4: Pin @salt-ds/lab to 1.0.0-alpha.1
+- b465413: Improvements to vercel deployments
+- Updated dependencies [0a672d4]
+- Updated dependencies [b465413]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.27
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.27
+
 ## 0.1.0-beta.26
 
 ### Minor Changes
