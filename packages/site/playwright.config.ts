@@ -23,7 +23,7 @@ const config: PlaywrightTestConfig = {
     // More information: https://playwright.dev/docs/api/class-testoptions#test-options-base-url
     baseURL,
     headless: true,
-    viewport: { width: 1280, height: 720 },
+    viewport: { width: 2048, height: 720 },
 
     // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
     // More information: https://playwright.dev/docs/trace-viewer
