@@ -10,13 +10,16 @@ const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://localhost:${PORT
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
   // Timeout per test
-  timeout: 10 * 1000,
+  timeout: 30 * 1000,
   // Test directory
-  testDir: path.join(__dirname, 'e2e'),
+  testDir: path.posix.join(__dirname, 'e2e'),
   // If a test fails, retry it additional 2 times
   retries: 2,
   // Artifacts folder where screenshots, videos, and traces are stored.
-  outputDir: 'test-results/',
+  outputDir: path.join(__dirname, 'e2e', 'test-results'),
+  expect: {
+    toHaveScreenshot: { maxDiffPixels: 100 }
+  },
 
   use: {
     // Use baseURL so to make navigations relative.

@@ -1,7 +1,10 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test('take a screenshot', async ({ page }) => {
   await page.goto('/mosaic/test/layouts/detail-overview');
   await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: './e2e/screenshots/layout.detailOverview.png', fullPage: true });
+  await page.waitForFunction(() => document.fonts.check('18px Open Sans'));
+  await expect(page).toHaveScreenshot('DetailOverview Layout.png', {
+    fullPage: true
+  });
 });
