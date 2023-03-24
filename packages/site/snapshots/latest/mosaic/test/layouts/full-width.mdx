@@ -1,47 +1,51 @@
 ---
-title: Active mode
-layout: DetailTechnical
-lastModified: 1679662441926
-fullPath: /mosaic/docs/modes/active.mdx
-route: /mosaic/docs/modes/active
+title: Full Width Layout
+layout: FullWidth
+frameOverrides: &ref_0
+  header:
+    homeLink: /mosaic/index
+    title: Mosaic (BETA)
+    logo: /img/favicon.png
+    searchNamespace: mosaic
+    menu:
+      - title: Docs
+        link: /mosaic/docs/index
+      - title: Quick Start
+        link: /mosaic/quick-start/index
+  footer:
+    description: Footer Content
+    title: Detail Technical Layout Footer
+    href: /mosaic
 breadcrumbs:
-  - label: Mosaic
+  - label: Breadcrumb 1
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Getting started
-    path: /mosaic/docs/index.mdx
-    id: /mosaic/docs/index.mdx
-  - label: Modes of operation
-    path: /mosaic/docs/modes/index.mdx
-    id: /mosaic/docs/modes/index.mdx
-  - label: Active mode
-    path: /mosaic/docs/modes/active.mdx
-    id: /mosaic/docs/modes/active.mdx
-readingTime:
-  text: 1 min read
-  minutes: 0.975
-  time: 58500
-  words: 195
-tableOfContents:
-  - level: 1
-    id: active-mode
-    text: Active mode
-  - level: 2
-    id: configuring-your-content-sources
-    text: Configuring your content sources
-  - level: 2
-    id: pull-your-local-content
-    text: Pull your local content
-  - level: 2
-    id: pull-your-remote-content
-    text: Pull your remote content
+  - label: Breadcrumb 2
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Breadcrumb 3
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
 navigation:
   prev:
-    title: Modes of operation
+    title: Previous Page
     route: /mosaic/docs/modes/index
   next:
-    title: Snapshot file mode
+    title: Next Page
     route: /mosaic/docs/modes/snapshot-file
+lastModified: 1679668402591
+fullPath: /mosaic/test/layouts/full-width.mdx
+route: /mosaic/test/layouts/full-width
+sharedConfig: *ref_0
+readingTime:
+  text: 1 min read
+  minutes: 0.345
+  time: 20700
+  words: 69
+tableOfContents:
+  - level: 2
+    id: full-width-layout
+    text: Full Width Layout
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -115,39 +119,9 @@ sidebarData:
             childNodes: []
 ---
 
-# {meta.title}
+## {meta.title}
 
-In `active` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
-As your content changes, the site will _re-pull_ the content and update your site in real-time.
-
-The standard generated site comes with 2 sources to demonstrate, how 'active' mode work.
-
-- a local source, which loads content from `./docs`
-- a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
-
-## Configuring your content sources
-
-All content is composed together within a _namespace_.
-
-A _namespace_ is the scope for aggregated content, represented by the root path.
-e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
-
-Mosaic doc sources are defined by a file called `mosaic.config.js`
-
-Here is how that might look for a standard site.
-
-## Pull your local content
-
-To tryout local content creation, add a file called`./docs/index.mdx`
-
-The load `http://localhost:3000/local`
-
-Each directory should contain an `index.mdx` which is the default page, when a page is loaded without a path
-
-Now create other pages and subdirectories and explore how Mosaic, builds your user-journeys from your fileset.
-
-## Pull your remote content
-
-To tryout remote content creation, your standard site comes pre-configured to load our Mosaic sample docs.
-
-Edit the `mosaic.config.js` and change your `repoUrl` and `branch` to pull content from other repos.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum

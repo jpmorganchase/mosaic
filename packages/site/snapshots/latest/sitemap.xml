@@ -49,5 +49,50 @@
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
+	<url>
+		<loc>/mosaic/test/layouts/detail-highlight.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/detail-overview.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/detail-technical.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/edit.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/full-width.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/landing.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/newsletter.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/product-discover.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/test/layouts/product-preview.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
 
 </urlset>
