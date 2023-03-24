@@ -22,6 +22,7 @@ sonar-reports
 test-report.xml
 junit.xml
 test-results.json
+trace.zip
 
 # Misc
 .DS_Store
