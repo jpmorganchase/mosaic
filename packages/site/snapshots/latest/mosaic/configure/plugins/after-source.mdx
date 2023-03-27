@@ -1,50 +1,46 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: $afterSource
+layout: DetailOverview
+sidebar:
+  label: Lifecycle - $afterSource
+lastModified: 1679929919033
+fullPath: /mosaic/configure/plugins/after-source.mdx
+route: /mosaic/configure/plugins/after-source
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Configure
+    path: /mosaic/configure/index.mdx
+    id: /mosaic/configure/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index.mdx
+    id: /mosaic/configure/plugins/index.mdx
+  - label: $afterSource
+    path: /mosaic/configure/plugins/after-source.mdx
+    id: /mosaic/configure/plugins/after-source.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  text: 1 min read
+  minutes: 0.91
+  time: 54600
+  words: 182
 tableOfContents:
+  - level: 1
+    id: aftersource
+    text: $afterSource
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
+    id: helpers
+    text: Helpers
   - level: 2
-    id: heading-1
-    text: Heading 1
-  - level: 2
-    id: heading-2
-    text: Heading 2
-  - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+    id: example---log-out-all-page-routes
+    text: Example - Log out all page routes
+navigation:
+  prev:
+    title: Plugins
+    route: /mosaic/configure/plugins/index
+  next:
+    title: afterUpdate
+    route: /mosaic/configure/plugins/after-update
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +194,36 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The first lifecycle hook to trigger after receiving pages from a source.
+The pages can safely be mutated and will be reflected in the final filesystem that gets generated.
+It **must** return a collection of pages.
 
-## Heading 1
+The `$afterSource` lifecycle event is called with:
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+- pages - the collection of pages emitted by the source
+- helpers - an object with useful methods
+- options - the options specified for the plugin in the mosaic config file
 
-## Heading 2
+## Helpers
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The helpers provided with this lifecycle event are listed in the table below
 
-### Heading 3
+| Property       | Description                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| serialiser     | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                         |
+| config         | A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin |
+| pageExtensions | A collection of pageExtensions the source is using                                                                                         |
+| ignorePages    | A collection of page globs that are to be ignored                                                                                          |
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Example - Log out all page routes
 
-## Heading 4
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+```
+async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
+  for (const page of pages) {
+    console.log(page.route);
+  }
+  return pages;
+}
+```

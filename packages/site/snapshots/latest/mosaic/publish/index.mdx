@@ -1,50 +1,35 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: Getting started
+layout: DetailTechnical
+lastModified: 1679927959059
+fullPath: /mosaic/publish/index.mdx
+route: /mosaic/publish/index
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/publish/index.mdx
+    id: /mosaic/publish/index.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  text: 1 min read
+  minutes: 0.755
+  time: 45300
+  words: 151
 tableOfContents:
+  - level: 1
+    id: getting-started
+    text: Getting started
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
-  - level: 2
-    id: heading-1
-    text: Heading 1
-  - level: 2
-    id: heading-2
-    text: Heading 2
-  - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+    id: create-your-first-site
+    text: Create your first site
+navigation:
+  prev:
+    title: Local Folder Source
+    route: /mosaic/configure/sources/local-folder-source
+  next:
+    title: Publish a site to AWS
+    route: /mosaic/publish/publish-site-to-aws
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +183,47 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+To create your first Mosaic site, we have created a command line generator that scaffolds a _standard_ site.
 
-## Heading 1
+A _standard_ site offers
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+- an out the box, working site, which showcases local and remote content sources
+- a minimal set of files that can be configured with your own components, themes, layouts, sources and plugins
+- an update path that enables you to update Mosaic, independently of your own configuration
 
-## Heading 2
+## Create your first site
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Install the Mosaic create site script.
 
-### Heading 3
+```
+> yarn global add @jpmorganchase/mosaic-create-site
+```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Create a directory for your site and run the `mosaic-create-site` script.
 
-## Heading 4
+```
+> mkdir mosaic-sample-site
+> cd mosaic-sample-site
+> mosaic-create-site -f .
+```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Define the environment variable, which enables us to access your remote repo.
+
+```
+> export MOSAIC_DOCS_CLONE_CREDENTIALS="<your GIT username:PAT Token>"
+```
+
+The `MOSAIC_DOCS_CLONE_CREDENTIALS` environment variable is composed of your git username and your PAT token.
+Follow these [docs](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to see how to create your own PAT token.
+
+Your site is ready to run.
+
+```
+> yarn serve
+```
+
+In your browser load `http://localhost:3000`
+
+Congratulations, you have created your first Mosaic site.

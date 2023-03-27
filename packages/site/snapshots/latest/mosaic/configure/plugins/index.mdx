@@ -1,50 +1,47 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: Plugins
+layout: DetailTechnical
+lastModified: 1679932626640
+fullPath: /mosaic/configure/plugins/index.mdx
+route: /mosaic/configure/plugins/index
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Configure
+    path: /mosaic/configure/index.mdx
+    id: /mosaic/configure/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index.mdx
+    id: /mosaic/configure/plugins/index.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  minutes: 1.635
+  time: 98100
+  words: 327
 tableOfContents:
+  - level: 1
+    id: plugins
+    text: Plugins
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
+    id: installation
+    text: Installation
   - level: 2
-    id: heading-1
-    text: Heading 1
+    id: configuration
+    text: Configuration
   - level: 2
-    id: heading-2
-    text: Heading 2
-  - level: 3
-    id: heading-3
-    text: Heading 3
+    id: plugin-lifecycle
+    text: Plugin lifecycle
   - level: 2
-    id: heading-4
-    text: Heading 4
+    id: mosaic-plugins
+    text: Mosaic Plugins
+navigation:
+  prev:
+    title: Snapshot AWS/S3 mode
+    route: /mosaic/configure/modes/snapshot-s3
+  next:
+    title: $afterSource
+    route: /mosaic/configure/plugins/after-source
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +195,101 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Mosaic Plugins are lifecycle-based hooks that are called on _every_ source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
 
-## Heading 1
+Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features in a plugin
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Installation
 
-## Heading 2
+`yarn add @jpmorganchase/mosaic-plugins`
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Configuration
 
-### Heading 3
+Plugins are added to the `plugins` collection of the mosaic config file. Like [sources](../sources/index), plugins have an options property that can be used to provide plugin specific configuration.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+| Property    | Description                                                                 | Required |
+| ----------- | --------------------------------------------------------------------------- | -------- |
+| modulePath  | The path to the installed plugin module                                     | Yes      |
+| disabled    | Exclude this plugin completely. Defaults to false                           | No       |
+| runtimeOnly | Exclude this plugin when generating a snapshot. Defaults to false           | No       |
+| priority    | The importance of this plugin. This highest number plugin will be run first | No       |
+| options     | Collection of other configuration values                                    | No       |
 
-## Heading 4
+## Plugin lifecycle
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The plugin lifecycle is triggered when a source emits content.
+Whether the execution happens on the main thread or the source worker thread depends on which lifecycle event is called. There are 4 lifecycle events:
+
+1. [$afterSource](./lifecycle/after-source)
+2. [$beforeSend](./lifecycle/before-send)
+3. [afterUpdate](./lifecycle/after-update)
+4. [shouldClearCache](./lifecycle/should-clear-cache)
+
+<Callout variant="caution">
+  Plugin methods that trigger inside the main thread should be async and highly optimised to avoid
+  holding up the main thread.
+</Callout>
+
+## Mosaic Plugins
+
+Mosaic ships with many plugins, most of which are enabled when using the standard generator.
+
+```
+plugins: [
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
+      options: { maxLineLength: 240, maxLineCount: 240 }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
+      options: {
+        indexPageName: 'index.mdx'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
+      // This plugin must be the very last to run, so it can strip off metadata and content after the other
+      // plugins are done with them
+      priority: -2,
+      // Exclude this plugin in builds
+      runTimeOnly: true,
+      options: {
+        cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+      options: {
+        filename: 'sidebar.json'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SharedConfigPlugin',
+      options: {
+        filename: 'shared-config.json'
+      },
+      priority: 3
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      options: {
+        minRank: 1,
+        maxRank: 3
+      }
+    }
+  ]
+```
