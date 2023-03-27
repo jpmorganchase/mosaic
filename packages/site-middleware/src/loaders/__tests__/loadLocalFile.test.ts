@@ -4,7 +4,8 @@ import { loadLocalFile } from '../index.js';
 describe('GIVEN loadLocalFile', () => {
   beforeEach(() => {
     mockFs({
-      'some/snapshots/mynamespace/mydir': 'some-content'
+      'some/snapshots/mynamespace/mydir': 'some-content',
+      'some/snapshots/mynamespace/dir/index': 'directory index content'
     });
   });
   afterEach(() => {
@@ -22,5 +23,11 @@ describe('GIVEN loadLocalFile', () => {
     await expect(loadLocalFile('some/non-existent/mynamespace/mydir')).rejects.toThrow(
       /ENOENT, no such file or directory 'some\/non-existent\/mynamespace\/mydir'/
     );
+  });
+  test('THEN it loads the index file if a directory is requested', async () => {
+    // arrange
+    const content = await loadLocalFile('some/snapshots/mynamespace/dir');
+    // assert
+    expect(content).toEqual('directory index content');
   });
 });
