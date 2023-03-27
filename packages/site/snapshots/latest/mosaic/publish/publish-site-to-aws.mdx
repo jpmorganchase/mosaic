@@ -1,50 +1,35 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: Publish a site to AWS
+layout: DetailTechnical
+lastModified: 1679920843785
+fullPath: /mosaic/publish/publish-site-to-aws.mdx
+route: /mosaic/publish/publish-site-to-aws
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Getting started
+    path: /mosaic/publish/index.mdx
+    id: /mosaic/publish/index.mdx
+  - label: Publish a site to AWS
+    path: /mosaic/publish/publish-site-to-aws.mdx
+    id: /mosaic/publish/publish-site-to-aws.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  text: 1 min read
+  minutes: 0.52
+  time: 31200
+  words: 104
 tableOfContents:
-  - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
-  - level: 2
-    id: heading-1
-    text: Heading 1
-  - level: 2
-    id: heading-2
-    text: Heading 2
-  - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+  - level: 1
+    id: publish-a-site-to-aws
+    text: Publish a site to AWS
+navigation:
+  prev:
+    title: Getting started
+    route: /mosaic/publish/index
+  next:
+    title: Publish a site to Vercel
+    route: /mosaic/publish/publish-site-to-vercel
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +183,44 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+A Mosaic site is a [Next.Js](https://nextjs.org/) app.
 
-## Heading 1
+To publish a Next.Js App to AWS, deploy your app as a SSR application by following the [AWS docs](https://docs.amplify.aws/guides/hosting/nextjs/q/platform/js/).
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Once the basic app has been configured, add the Mosaic specifics.
 
-## Heading 2
+Add the environment vars to the hosted app via the Amplify console
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+```
+MOSAIC_MODE="snapshot-s3"
+MOSAIC_S3_BUCKET="<your S3 bucket id>"
+MOSAIC_S3_REGION="<your S3 region>"
+MOSAIC_S3_ACCESS_KEY_ID=""<your S3 access key>"
+MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret access key>"
+```
 
-### Heading 3
+Add the following build settings
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+```
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - yarn install
+        - env | grep -e MOSAIC >> .env.production
+    build:
+      commands:
+        - yarn run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+```
 
-## Heading 4
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Ensure the Node is set to 16

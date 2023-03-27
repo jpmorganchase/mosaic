@@ -5,22 +5,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/index.mdx</loc>
+		<loc>/mosaic/author/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/index.mdx</loc>
+		<loc>/mosaic/configure/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/publish-site-to-aws.mdx</loc>
+		<loc>/mosaic/publish/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/publish-site-to-vercel.mdx</loc>
+		<loc>/mosaic/publish/publish-site-to-aws.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/publish/publish-site-to-vercel.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -35,47 +40,67 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/plugins/index.mdx</loc>
+		<loc>/mosaic/configure/modes/active.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/sources/git-repo-source.mdx</loc>
+		<loc>/mosaic/configure/modes/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/sources/http-source.mdx</loc>
+		<loc>/mosaic/configure/modes/snapshot-file.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/sources/index.mdx</loc>
+		<loc>/mosaic/configure/modes/snapshot-s3.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/core/sources/local-folder-source.mdx</loc>
+		<loc>/mosaic/configure/plugins/after-source.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/active.mdx</loc>
+		<loc>/mosaic/configure/plugins/after-update.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/index.mdx</loc>
+		<loc>/mosaic/configure/plugins/before-send.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/snapshot-file.mdx</loc>
+		<loc>/mosaic/configure/plugins/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/docs/modes/snapshot-s3.mdx</loc>
+		<loc>/mosaic/configure/plugins/should-clear-cache.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/configure/sources/git-repo-source.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/configure/sources/http-source.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/configure/sources/index.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/configure/sources/local-folder-source.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

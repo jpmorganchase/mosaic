@@ -1,50 +1,49 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: Local Folder Source
+layout: DetailTechnical
+sidebar:
+  priority: 1
+lastModified: 1679929748624
+fullPath: /mosaic/configure/sources/local-folder-source.mdx
+route: /mosaic/configure/sources/local-folder-source
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Configure
+    path: /mosaic/configure/index.mdx
+    id: /mosaic/configure/index.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index.mdx
+    id: /mosaic/configure/sources/index.mdx
+  - label: Local Folder Source
+    path: /mosaic/configure/sources/local-folder-source.mdx
+    id: /mosaic/configure/sources/local-folder-source.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  minutes: 1.105
+  time: 66300
+  words: 221
 tableOfContents:
+  - level: 1
+    id: local-folder-source
+    text: Local Folder Source
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
+    id: installation
+    text: Installation
   - level: 2
-    id: heading-1
-    text: Heading 1
-  - level: 2
-    id: heading-2
-    text: Heading 2
+    id: configuration
+    text: Configuration
   - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+    id: example-local-folder-source-definition
+    text: Example Local Folder Source Definition
+navigation:
+  prev:
+    title: Git Repo Source
+    route: /mosaic/configure/sources/git-repo-source
+  next:
+    title: Sources
+    route: /mosaic/configure/sources/index
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +197,40 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The Local Folder Source is used to pull content from a folder located on the same machine as Mosaic is running.
 
-## Heading 1
+It is common to use this source when running mosaic locally.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Installation
 
-## Heading 2
+`yarn add @jpmorganchase/mosaic-source-local-folder`
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Configuration
 
-### Heading 3
+| Property           | Description                                                                    | Required |
+| ------------------ | ------------------------------------------------------------------------------ | -------- |
+| modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
+| namspace           | The scope for this source.                                                     | Yes      |
+| options.rootDir    | The top level directory content will be pulled from                            | Yes      |
+| options.prefixDir  | The root path used in the content URL                                          | Yes      |
+| options.extensions | Collection of file extensions that the source will look for inside the rootDir | Yes      |
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+### Example Local Folder Source Definition
 
-## Heading 4
+```
+{
+    modulePath: '@jpmorganchase/mosaic-source-local-folder',
+    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
+    options: {
+    rootDir: '../../docs', // relative path to content
+    prefixDir: 'local', // root path used for namespace
+    extensions: ['.mdx'] // extensions of content which should be pulled
+    }
+}
+```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+This source will look for content with the ".mdx" extension in a "docs" directory 2 levels up from the Mosaic working directory. That content is included in the "local" namespace and available from a route that is prefixed with "local".
+
+So if you had a file, `docs/app/index.mdx` then you would be able to view it at `http://localhost:3000/local/app/index`.

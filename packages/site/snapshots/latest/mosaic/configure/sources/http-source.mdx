@@ -1,50 +1,49 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: HTTP Source
+layout: DetailTechnical
+sidebar:
+  priority: 3
+lastModified: 1679929748623
+fullPath: /mosaic/configure/sources/http-source.mdx
+route: /mosaic/configure/sources/http-source
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Configure
+    path: /mosaic/configure/index.mdx
+    id: /mosaic/configure/index.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index.mdx
+    id: /mosaic/configure/sources/index.mdx
+  - label: HTTP Source
+    path: /mosaic/configure/sources/http-source.mdx
+    id: /mosaic/configure/sources/http-source.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  text: 1 min read
+  minutes: 0.845
+  time: 50700
+  words: 169
 tableOfContents:
+  - level: 1
+    id: http-source
+    text: HTTP Source
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
+    id: installation
+    text: Installation
   - level: 2
-    id: heading-1
-    text: Heading 1
-  - level: 2
-    id: heading-2
-    text: Heading 2
+    id: configuration
+    text: Configuration
   - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+    id: example-http-source-definition
+    text: Example HTTP Source Definition
+navigation:
+  prev:
+    title: Sources
+    route: /mosaic/configure/sources/index
+  next:
+    title: Git Repo Source
+    route: /mosaic/configure/sources/git-repo-source
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +197,41 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The HTTP Source is used to pull content over HTTP.
 
-## Heading 1
+Multiple endpoints can be specified and the source will combine and transform the response from each into a single collection of pages.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Installation
 
-## Heading 2
+`yarn add @jpmorganchase/mosaic-source-http`
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Configuration
 
-### Heading 3
+| Property                                   | Description                                                                   | Required |
+| ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
+| modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
+| namspace                                   | The scope for this source.                                                    | Yes      |
+| options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
+| options.prefixDir                          | The root path used in the content URL                                         | Yes      |
+| options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages | Yes      |
+| options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes             | No       |
+| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000.  | No       |
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+### Example HTTP Source Definition
 
-## Heading 4
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+```
+ {
+      modulePath: '@jpmorganchase/mosaic-source-http',
+      namespace: 'my-namespace',
+      options: {
+        prefixDir: 'docs',
+        endpoints: [
+          'https://api.data.com/blah',
+          'https://api.data.com/hello'
+        ],
+        transformResponseToPagesModulePath: '@scope/transformer-package'
+      }
+    }
+```

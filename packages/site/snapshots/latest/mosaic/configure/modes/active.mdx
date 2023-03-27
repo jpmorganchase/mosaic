@@ -1,50 +1,47 @@
 ---
-title: Product Preview Test Page
-layout: ProductDiscover
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Product Preview Layout Footer
-    href: /mosaic
-lastModified: 1679929748229
-fullPath: /mosaic/test/layouts/product-preview.mdx
-route: /mosaic/test/layouts/product-preview
-sharedConfig: *ref_0
+title: Active mode
+layout: DetailTechnical
+lastModified: 1679662441926
+fullPath: /mosaic/configure/modes/active.mdx
+route: /mosaic/configure/modes/active
 breadcrumbs:
-  - label: Product Preview Test Page
-    path: /mosaic/test/layouts/product-preview.mdx
-    id: /mosaic/test/layouts/product-preview.mdx
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Configure
+    path: /mosaic/configure/index.mdx
+    id: /mosaic/configure/index.mdx
+  - label: Modes of operation
+    path: /mosaic/configure/modes/index.mdx
+    id: /mosaic/configure/modes/index.mdx
+  - label: Active mode
+    path: /mosaic/configure/modes/active.mdx
+    id: /mosaic/configure/modes/active.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.725
-  time: 103500
-  words: 345
+  text: 1 min read
+  minutes: 0.975
+  time: 58500
+  words: 195
 tableOfContents:
+  - level: 1
+    id: active-mode
+    text: Active mode
   - level: 2
-    id: product-preview-test-page
-    text: Product Preview Test Page
+    id: configuring-your-content-sources
+    text: Configuring your content sources
   - level: 2
-    id: heading-1
-    text: Heading 1
+    id: pull-your-local-content
+    text: Pull your local content
   - level: 2
-    id: heading-2
-    text: Heading 2
-  - level: 3
-    id: heading-3
-    text: Heading 3
-  - level: 2
-    id: heading-4
-    text: Heading 4
+    id: pull-your-remote-content
+    text: Pull your remote content
+navigation:
+  prev:
+    title: Modes of operation
+    route: /mosaic/configure/modes/index
+  next:
+    title: Snapshot file mode
+    route: /mosaic/configure/modes/snapshot-file
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -198,37 +195,39 @@ sidebarData:
             childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+In `active` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
+As your content changes, the site will _re-pull_ the content and update your site in real-time.
 
-## Heading 1
+The standard generated site comes with 2 sources to demonstrate, how 'active' mode work.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+- a local source, which loads content from `./docs`
+- a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
 
-## Heading 2
+## Configuring your content sources
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+All content is composed together within a _namespace_.
 
-### Heading 3
+A _namespace_ is the scope for aggregated content, represented by the root path.
+e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Mosaic doc sources are defined by a file called `mosaic.config.js`
 
-## Heading 4
+Here is how that might look for a standard site.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+## Pull your local content
+
+To tryout local content creation, add a file called`./docs/index.mdx`
+
+The load `http://localhost:3000/local`
+
+Each directory should contain an `index.mdx` which is the default page, when a page is loaded without a path
+
+Now create other pages and subdirectories and explore how Mosaic, builds your user-journeys from your fileset.
+
+## Pull your remote content
+
+To tryout remote content creation, your standard site comes pre-configured to load our Mosaic sample docs.
+
+Edit the `mosaic.config.js` and change your `repoUrl` and `branch` to pull content from other repos.
