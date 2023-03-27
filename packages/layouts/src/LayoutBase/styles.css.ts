@@ -19,7 +19,7 @@ const headerGridProperties = defineProperties({
   defaultCondition: 'mobile',
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
-    gridTemplateColumns: ['44px auto', '10% auto', 'auto']
+    gridTemplateColumns: [`${config.appHeader.height}px auto`, '10% auto', 'auto']
   }
 });
 
@@ -61,7 +61,14 @@ export default {
     backgroundColor({ variant: 'regular' }),
     neutralBorder({ variant: 'low', borderBottomWidth: 'thin' }),
     shadow({ variant: 'elevation2' }),
-    headerGridSprinkles({ gridTemplateColumns: ['44px auto', '44px auto', 'auto', 'auto'] })
+    headerGridSprinkles({
+      gridTemplateColumns: [
+        `${config.appHeader.height}px auto`,
+        `${config.appHeader.height}px auto`,
+        'auto',
+        'auto'
+      ]
+    })
   ]),
 
   overlayRoot: style([
