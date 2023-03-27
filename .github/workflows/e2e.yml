@@ -22,7 +22,7 @@ jobs:
     needs: site_preview
     name: Playwright tests
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Prepare testing env
         uses: actions/checkout@v3
