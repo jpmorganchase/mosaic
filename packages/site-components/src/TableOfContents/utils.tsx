@@ -6,14 +6,14 @@ export const mostRecentScrollPoint = (scrollPosition, allPositions) => {
   // If there are no valid target positions, don't return a target.
   if (validPositions.length <= 0) return null;
 
-  // Nearest will always be the *highest* postion that has been scrolled past.
-  const nearest = validPositions.reduce((acc, position, i) => {
+  // Nearest will be the *highest* position that has not been scrolled past.
+  const nearest = validPositions.reduceRight((acc, position, i) => {
     if (typeof position !== 'number') {
       return acc;
     }
     const scrolledPast = scrollPosition >= position;
-    return scrolledPast ? i : acc;
-  }, 0);
+    return scrolledPast ? acc : i;
+  }, validPositions.length - 1);
   return nearest;
 };
 
