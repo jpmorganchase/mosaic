@@ -5,7 +5,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>/mosaic/author/frontmatter.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>/mosaic/author/index.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/author/markdown-syntax.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/author/page-templates.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/author/ui-components.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -36,6 +56,11 @@
 	</url>
 	<url>
 		<loc>/mosaic/quick-start/publish-site-to-aws.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>/mosaic/configure/layouts/index.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
