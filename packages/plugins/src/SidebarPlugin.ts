@@ -178,11 +178,16 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         let prevParentPage, nextParentPage;
 
         const getLastPage = pages => {
-          if (pages[pages.length - 1].childNodes?.length) {
-            return getLastPage(pages[pages.length - 1].childNodes);
+          if (pages.length === 0) {
+            return null;
           }
-          return pages[pages.length - 1];
+          const lastPage = pages[pages.length - 1];
+          if (lastPage.childNodes?.length) {
+            return getLastPage(lastPage.childNodes);
+          }
+          return lastPage;
         };
+
         const lastPage = getLastPage(pages);
         const isFirstPage = page => page === pages[0];
         const isLastPage = page => page === lastPage;
@@ -218,18 +223,20 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
       function sortPagesByPriority(sidebarData) {
-        const pagesByPriority = sidebarData.map(page => {
-          if (page.childNodes.length > 1) {
-            const pagesByPriority = page.childNodes.sort(
-              (pageA, pageB) =>
-                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
-            );
-            sortPagesByPriority(page.childNodes);
-            return { ...page, childNodes: pagesByPriority };
-          } else {
-            return page;
-          }
-        });
+        const pagesByPriority = sidebarData
+          .filter(page => !!page) // filter out null or undefined values
+          .map(page => {
+            if (page.childNodes && page.childNodes.length > 1) {
+              const pagesByPriority = page.childNodes.sort(
+                (pageA, pageB) =>
+                  (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
+              );
+              sortPagesByPriority(page.childNodes);
+              return { ...page, childNodes: pagesByPriority };
+            } else {
+              return page;
+            }
+          });
         return pagesByPriority;
       }
 
