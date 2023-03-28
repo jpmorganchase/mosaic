@@ -1,49 +1,37 @@
 ---
-title: Local Folder Source
+title: Page Templates
 layout: DetailTechnical
 sidebar:
-  priority: 3
-lastModified: 1679990869420
-fullPath: /mosaic/configure/sources/local-folder-source.mdx
-route: /mosaic/configure/sources/local-folder-source
+  priority: 1
+lastModified: 1679991941319
+fullPath: /mosaic/author/page-templates.mdx
+route: /mosaic/author/page-templates
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Configure
-    path: /mosaic/configure/index.mdx
-    id: /mosaic/configure/index.mdx
-  - label: Sources
-    path: /mosaic/configure/sources/index.mdx
-    id: /mosaic/configure/sources/index.mdx
-  - label: Local Folder Source
-    path: /mosaic/configure/sources/local-folder-source.mdx
-    id: /mosaic/configure/sources/local-folder-source.mdx
+  - label: Author
+    path: /mosaic/author/index.mdx
+    id: /mosaic/author/index.mdx
+  - label: Page Templates
+    path: /mosaic/author/page-templates.mdx
+    id: /mosaic/author/page-templates.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.18
-  time: 70800
-  words: 236
+  text: 1 min read
+  minutes: 0.005
+  time: 300
+  words: 1
 tableOfContents:
   - level: 1
-    id: local-folder-source
-    text: Local Folder Source
-  - level: 2
-    id: installation
-    text: Installation
-  - level: 2
-    id: configuration
-    text: Configuration
-  - level: 3
-    id: example-local-folder-source-definition
-    text: Example Local Folder Source Definition
+    id: page-templates
+    text: Page Templates
 navigation:
   prev:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: UI Components
+    route: /mosaic/author/ui-components
   next:
-    title: Git Repo Source
-    route: /mosaic/configure/sources/git-repo-source
+    title: Publish
+    route: /mosaic/publish/index
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -246,39 +234,4 @@ sidebarData:
 
 # {meta.title}
 
-The Local Folder Source is used to pull content from a folder located on the same machine as Mosaic is running.
-
-It is common to use this source when running mosaic locally.
-
-## Installation
-
-`yarn add @jpmorganchase/mosaic-source-local-folder`
-
-## Configuration
-
-| Property           | Description                                                                    | Required |
-| ------------------ | ------------------------------------------------------------------------------ | -------- |
-| modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
-| namspace           | The scope for this source                                                      | Yes      |
-| disabled           | When true, content from this source is not used                                | No       |
-| options.rootDir    | The top level directory content will be pulled from                            | Yes      |
-| options.prefixDir  | The root path used in the content URL                                          | Yes      |
-| options.extensions | Collection of file extensions that the source will look for inside the rootDir | Yes      |
-
-### Example Local Folder Source Definition
-
-```
-{
-    modulePath: '@jpmorganchase/mosaic-source-local-folder',
-    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-    options: {
-    rootDir: '../../docs', // relative path to content
-    prefixDir: 'local', // root path used for namespace
-    extensions: ['.mdx'] // extensions of content which should be pulled
-    }
-}
-```
-
-This source will look for content with the ".mdx" extension in a "docs" directory 2 levels up from the Mosaic working directory. That content is included in the "local" namespace and available from a route that is prefixed with "local".
-
-So if you had a file, `docs/app/index.mdx` then you would be able to view it at `http://localhost:3000/local/app/index`.
+Todo...

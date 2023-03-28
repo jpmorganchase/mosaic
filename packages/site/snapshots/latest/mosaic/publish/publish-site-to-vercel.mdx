@@ -8,7 +8,7 @@ breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Getting started
+  - label: Publish
     path: /mosaic/publish/index.mdx
     id: /mosaic/publish/index.mdx
   - label: Publish a site to Vercel
@@ -42,9 +42,6 @@ navigation:
   prev:
     title: Publish a site to AWS
     route: /mosaic/publish/publish-site-to-aws
-  next:
-    title: Quick start guides
-    route: /mosaic/quick-start/index
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -53,16 +50,25 @@ sidebarData:
       level: 1
       link: /mosaic/index
     childNodes:
-      - id: /mosaic/author/index
-        fullPath: /mosaic/author/index.mdx
-        name: Author
+      - id: /mosaic/quick-start/index
+        fullPath: /mosaic/quick-start/index.mdx
+        name: Quick start guides
+        priority: 5
         data:
           level: 2
-          link: /mosaic/author/index
-        childNodes: []
+          link: /mosaic/quick-start/index
+        childNodes:
+          - id: /mosaic/quick-start/publish-site-to-aws
+            fullPath: /mosaic/quick-start/publish-site-to-aws.mdx
+            name: Publish a site to AWS
+            data:
+              level: 2
+              link: /mosaic/quick-start/publish-site-to-aws
+            childNodes: []
       - id: /mosaic/configure/index
         fullPath: /mosaic/configure/index.mdx
         name: Configure
+        priority: 4
         data:
           level: 2
           link: /mosaic/configure/index
@@ -70,6 +76,7 @@ sidebarData:
           - id: /mosaic/configure/modes/index
             fullPath: /mosaic/configure/modes/index.mdx
             name: Modes of operation
+            priority: 4
             data:
               level: 3
               link: /mosaic/configure/modes/index
@@ -95,9 +102,50 @@ sidebarData:
                   level: 3
                   link: /mosaic/configure/modes/snapshot-s3
                 childNodes: []
+          - id: /mosaic/configure/sources/index
+            fullPath: /mosaic/configure/sources/index.mdx
+            name: Sources
+            priority: 3
+            data:
+              level: 3
+              link: /mosaic/configure/sources/index
+            childNodes:
+              - id: /mosaic/configure/sources/local-folder-source
+                fullPath: /mosaic/configure/sources/local-folder-source.mdx
+                name: Local Folder Source
+                priority: 3
+                data:
+                  level: 3
+                  link: /mosaic/configure/sources/local-folder-source
+                childNodes: []
+              - id: /mosaic/configure/sources/git-repo-source
+                fullPath: /mosaic/configure/sources/git-repo-source.mdx
+                name: Git Repo Source
+                priority: 2
+                data:
+                  level: 3
+                  link: /mosaic/configure/sources/git-repo-source
+                childNodes: []
+              - id: /mosaic/configure/sources/http-source
+                fullPath: /mosaic/configure/sources/http-source.mdx
+                name: HTTP Source
+                priority: 1
+                data:
+                  level: 3
+                  link: /mosaic/configure/sources/http-source
+                childNodes: []
+          - id: /mosaic/configure/layouts/index
+            fullPath: /mosaic/configure/layouts/index.mdx
+            name: Layouts
+            priority: 2
+            data:
+              level: 3
+              link: /mosaic/configure/layouts/index
+            childNodes: []
           - id: /mosaic/configure/plugins/index
             fullPath: /mosaic/configure/plugins/index.mdx
             name: Plugins
+            priority: 1
             data:
               level: 3
               link: /mosaic/configure/plugins/index
@@ -130,40 +178,50 @@ sidebarData:
                   level: 3
                   link: /mosaic/configure/plugins/should-clear-cache
                 childNodes: []
-          - id: /mosaic/configure/sources/index
-            fullPath: /mosaic/configure/sources/index.mdx
-            name: Sources
+      - id: /mosaic/author/index
+        fullPath: /mosaic/author/index.mdx
+        name: Author
+        priority: 3
+        data:
+          level: 2
+          link: /mosaic/author/index
+        childNodes:
+          - id: /mosaic/author/frontmatter
+            fullPath: /mosaic/author/frontmatter.mdx
+            name: Frontmatter
+            priority: 4
             data:
-              level: 3
-              link: /mosaic/configure/sources/index
-            childNodes:
-              - id: /mosaic/configure/sources/http-source
-                fullPath: /mosaic/configure/sources/http-source.mdx
-                name: HTTP Source
-                priority: 3
-                data:
-                  level: 3
-                  link: /mosaic/configure/sources/http-source
-                childNodes: []
-              - id: /mosaic/configure/sources/git-repo-source
-                fullPath: /mosaic/configure/sources/git-repo-source.mdx
-                name: Git Repo Source
-                priority: 2
-                data:
-                  level: 3
-                  link: /mosaic/configure/sources/git-repo-source
-                childNodes: []
-              - id: /mosaic/configure/sources/local-folder-source
-                fullPath: /mosaic/configure/sources/local-folder-source.mdx
-                name: Local Folder Source
-                priority: 1
-                data:
-                  level: 3
-                  link: /mosaic/configure/sources/local-folder-source
-                childNodes: []
+              level: 2
+              link: /mosaic/author/frontmatter
+            childNodes: []
+          - id: /mosaic/author/markdown-syntax
+            fullPath: /mosaic/author/markdown-syntax.mdx
+            name: Markdown Syntax
+            priority: 3
+            data:
+              level: 2
+              link: /mosaic/author/markdown-syntax
+            childNodes: []
+          - id: /mosaic/author/ui-components
+            fullPath: /mosaic/author/ui-components.mdx
+            name: UI Components
+            priority: 2
+            data:
+              level: 2
+              link: /mosaic/author/ui-components
+            childNodes: []
+          - id: /mosaic/author/page-templates
+            fullPath: /mosaic/author/page-templates.mdx
+            name: Page Templates
+            priority: 1
+            data:
+              level: 2
+              link: /mosaic/author/page-templates
+            childNodes: []
       - id: /mosaic/publish/index
         fullPath: /mosaic/publish/index.mdx
-        name: Getting started
+        name: Publish
+        priority: 2
         data:
           level: 2
           link: /mosaic/publish/index
@@ -181,20 +239,6 @@ sidebarData:
             data:
               level: 2
               link: /mosaic/publish/publish-site-to-vercel
-            childNodes: []
-      - id: /mosaic/quick-start/index
-        fullPath: /mosaic/quick-start/index.mdx
-        name: Quick start guides
-        data:
-          level: 2
-          link: /mosaic/quick-start/index
-        childNodes:
-          - id: /mosaic/quick-start/publish-site-to-aws
-            fullPath: /mosaic/quick-start/publish-site-to-aws.mdx
-            name: Publish a site to AWS
-            data:
-              level: 2
-              link: /mosaic/quick-start/publish-site-to-aws
             childNodes: []
 ---
 
