@@ -1,13 +1,15 @@
 ---
 title: Sources
 layout: DetailTechnical
+sidebar:
+  priority: 3
 ---
 
 # {meta.title}
 
 Sources are what Mosaic uses to pull content from disparte locations and merge into a single virtual filesystem that can be used by a Mosaic Site.
 
-Depending on the [mode](../../docs/modes/index) used, sources can update periodically ensuring that new content is made available automatically.
+Depending on the [mode](../modes/index) used, sources can update periodically ensuring that new content is made available automatically.
 
 ## Source Definitions
 
@@ -15,7 +17,7 @@ Source Definitions are specified in the `sources` collection of a mosaic config 
 
 Each source uses a [zod schema](https://zod.dev/?id=introduction) to validate the provided JSON to ensure that all required information for the source to pull content has been provided.
 
-A source definition at a minimum needs to provide the module path of the source and the [namespace](#source-namespace) that it will use. A namespace is not unique across sources though it is common that each source has a different namespace.
+A source definition at a minimum needs to provide the module path of the source and the [namespace](./#source-namespace) that it will use. A namespace is not unique across sources though it is common that each source has a different namespace.
 
 Lastly, the options field can be used as a bucket for configuration values needed to configure the source e.g. credentials.
 
@@ -74,7 +76,7 @@ Sources must expose an observable interface so it is possible to compose sources
 
 ## Watching for Updates
 
-When running in [active mode](../../docs/modes/active), Mosaic will watch for any changes to the source content and if a change is detected, will initiate a pull of that new content.
+When running in [active mode](../modes/active), Mosaic will watch for any changes to the source content and if a change is detected, will initiate a pull of that new content.
 
 How often to check for updates and how updates are triggered are a matter for the source to handle. Mosaic simply responds when a source emits new content.
 
