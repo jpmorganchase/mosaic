@@ -8,14 +8,21 @@ import proxyAgentPkg from 'https-proxy-agent';
 
 const { HttpsProxyAgent } = proxyAgentPkg;
 
-async function checkPageLinks(ast: unknown, options: BrokenLinksPluginOptions, fullPath: string) {
+async function checkPageLinks(
+  ast: unknown,
+  options: BrokenLinksPluginOptions,
+  fullPath: string,
+  headings
+) {
   const urlToNodes = {};
 
   const aggregate = node => {
     const { url: urlFromNode } = node;
     if (!urlFromNode) return;
 
-    const url = /^(https?:\/\/)/.test(urlFromNode)
+    const isExternalUrl = /^(https?:\/\/)/.test(urlFromNode);
+
+    const url = isExternalUrl
       ? // full urls including internal and external
         new URL(urlFromNode)
       : // handles relative links
@@ -23,6 +30,19 @@ async function checkPageLinks(ast: unknown, options: BrokenLinksPluginOptions, f
           `${path.posix.resolve(path.posix.dirname(fullPath), urlFromNode)}`,
           options.baseUrl
         );
+
+    if (!isExternalUrl && url.hash !== '') {
+      const isValidHeadingLink =
+        headings.findIndex(
+          heading =>
+            heading.replace(/\W+/g, '-').toLowerCase() === url.hash.substring(1).toLowerCase()
+        ) !== -1;
+
+      if (isValidHeadingLink) {
+        // link points to a heading on the page
+        return;
+      }
+    }
 
     if (
       options.skipUrlPatterns &&
@@ -40,7 +60,6 @@ async function checkPageLinks(ast: unknown, options: BrokenLinksPluginOptions, f
 
   visit(ast, ['link', 'image', 'definition'], aggregate);
   const links = Object.keys(urlToNodes);
-
   const checkLinksOptions = options.proxyEndpoint
     ? {
         agent: {
@@ -68,6 +87,15 @@ async function checkPageLinks(ast: unknown, options: BrokenLinksPluginOptions, f
   });
 }
 
+async function findPageHeadings(ast) {
+  const headings = [];
+  visit(ast, ['heading'], node => {
+    headings.push(node.children[0]?.value);
+  });
+
+  return headings;
+}
+
 const processor = remark().use(remarkMdx);
 
 interface BrokenLinksPluginPage extends Page {}
@@ -82,7 +110,8 @@ const BrokenLinksPlugin: PluginType<BrokenLinksPluginPage, BrokenLinksPluginOpti
   async $afterSource(pages, _, options) {
     pages.forEach(async page => {
       const ast = await processor.parse(page.content);
-      await checkPageLinks(ast, options, page.fullPath);
+      const headings = await findPageHeadings(ast);
+      await checkPageLinks(ast, options, page.fullPath, headings);
     });
 
     return pages;
