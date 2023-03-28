@@ -20,12 +20,13 @@ Multiple endpoints can be specified and the source will combine and transform th
 | Property                                   | Description                                                                   | Required |
 | ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
 | modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
-| namspace                                   | The scope for this source.                                                    | Yes      |
+| namspace                                   | The scope for this source                                                     | Yes      |
+| disabled                                   | When true, content from this source is not used                               | No       |
 | options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
 | options.prefixDir                          | The root path used in the content URL                                         | Yes      |
 | options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages | Yes      |
 | options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes             | No       |
-| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000.  | No       |
+| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000   | No       |
 
 ### Example HTTP Source Definition
 

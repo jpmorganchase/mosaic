@@ -30,10 +30,10 @@ Plugins are added to the `plugins` collection of the mosaic config file. Like [s
 The plugin lifecycle is triggered when a source emits content.
 Whether the execution happens on the main thread or the source worker thread depends on which lifecycle event is called. There are 4 lifecycle events:
 
-1. [$afterSource](./lifecycle/after-source)
-2. [$beforeSend](./lifecycle/before-send)
-3. [afterUpdate](./lifecycle/after-update)
-4. [shouldClearCache](./lifecycle/should-clear-cache)
+1. [$afterSource](./after-source)
+2. [$beforeSend](./before-send)
+3. [afterUpdate](./after-update)
+4. [shouldClearCache](./should-clear-cache)
 
 <Callout variant="caution">
   Plugin methods that trigger inside the main thread should be async and highly optimised to avoid
