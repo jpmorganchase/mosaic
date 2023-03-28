@@ -3,7 +3,7 @@ title: Frontmatter
 layout: DetailTechnical
 sidebar:
   priority: 4
-lastModified: 1679991929260
+lastModified: 1680014369956
 fullPath: /mosaic/author/frontmatter.mdx
 route: /mosaic/author/frontmatter
 breadcrumbs:
@@ -17,21 +17,36 @@ breadcrumbs:
     path: /mosaic/author/frontmatter.mdx
     id: /mosaic/author/frontmatter.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.005
-  time: 300
-  words: 1
+  text: 2 min read
+  minutes: 1.275
+  time: 76500
+  words: 255
 tableOfContents:
   - level: 1
     id: frontmatter
     text: Frontmatter
+  - level: 2
+    id: example-page-yaml
+    text: Example page yaml
+  - level: 2
+    id: accessing-frontmatter-in-content
+    text: Accessing Frontmatter in content
+  - level: 2
+    id: plugins--frontmatter
+    text: Plugins & Frontmatter
+  - level: 3
+    id: adding-a-property-to-the-page
+    text: Adding a property to the page
+  - level: 3
+    id: file-output-and-ref
+    text: File Output and Ref
 navigation:
   prev:
-    title: Author
-    route: /mosaic/author/index
-  next:
     title: Markdown Syntax
     route: /mosaic/author/markdown-syntax
+  next:
+    title: Aliases
+    route: /mosaic/author/aliases
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -176,6 +191,14 @@ sidebarData:
           level: 2
           link: /mosaic/author/index
         childNodes:
+          - id: /mosaic/author/markdown-syntax
+            fullPath: /mosaic/author/markdown-syntax.mdx
+            name: Markdown Syntax
+            priority: 5
+            data:
+              level: 2
+              link: /mosaic/author/markdown-syntax
+            childNodes: []
           - id: /mosaic/author/frontmatter
             fullPath: /mosaic/author/frontmatter.mdx
             name: Frontmatter
@@ -184,13 +207,13 @@ sidebarData:
               level: 2
               link: /mosaic/author/frontmatter
             childNodes: []
-          - id: /mosaic/author/markdown-syntax
-            fullPath: /mosaic/author/markdown-syntax.mdx
-            name: Markdown Syntax
+          - id: /mosaic/author/aliases
+            fullPath: /mosaic/author/aliases.mdx
+            name: Aliases
             priority: 3
             data:
               level: 2
-              link: /mosaic/author/markdown-syntax
+              link: /mosaic/author/aliases
             childNodes: []
           - id: /mosaic/author/ui-components
             fullPath: /mosaic/author/ui-components.mdx
@@ -234,4 +257,71 @@ sidebarData:
 
 # {meta.title}
 
-Todo...
+[Frontmatter](https://mdxjs.com/guides/frontmatter/), also known as page metadata, is a powerful feature that allows easy configuration of a page and Mosaic site components e.g. the sidebar.
+
+Frontmatter is written in yaml syntax and is found at the top of a page between 2 sets of 3 dashes: `---`.
+
+## Example page yaml
+
+```
+---
+title: Page Title
+layout: DetailTechnical
+sidebar:
+  priority: 4
+---
+
+// frontmatter is closed and now comes page content
+# Page Title
+
+This is some content.
+
+```
+
+## Accessing Frontmatter in content
+
+With the syntax below it is possible to directly reference frontmatter inside content using curly brackets and the `meta` object.
+
+You can think of `meta` as a JSON object that holds all the frontmatter of a page and when the Mosaic `RefPlugin` encounters the curly brackets then the value in the frontmatter will be resolved.
+
+```
+{meta.title}
+{meta.description}
+{meta.someValueYouHaveAddedToTheFrontmatter}
+```
+
+This is very common to see Mosaic pages that reference the title as shown below:
+
+```
+---
+title: Title
+---
+
+# {meta.title}
+```
+
+## Plugins & Frontmatter
+
+Mosaic plugins can also embed their output into page frontmatter. They can do this in a couple of ways:
+
+- a property is directly added to the page in a lifecycle event
+- a file is generated and a ref is added to the frontmatter that will be resolved by the `RefPlugin`
+
+### Adding a property to the page
+
+A plugin can add a property to a page simply by extending the page object it receives in the `$afterSource` lifecycle event:
+
+```
+async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
+  for (const page of pages) {
+    page.newProperty = 'Hello'
+  }
+  return pages;
+}
+```
+
+You could use this property in the page content using `{meta.newProperty}`
+
+### File Output and Ref
+
+Todo

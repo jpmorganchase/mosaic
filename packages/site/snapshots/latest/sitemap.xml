@@ -5,6 +5,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>/mosaic/author/aliases.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>/mosaic/author/frontmatter.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>

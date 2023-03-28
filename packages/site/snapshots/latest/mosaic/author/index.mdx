@@ -3,7 +3,7 @@ title: Author
 layout: DetailTechnical
 sidebar:
   priority: 3
-lastModified: 1679990693634
+lastModified: 1680013851931
 fullPath: /mosaic/author/index.mdx
 route: /mosaic/author/index
 breadcrumbs:
@@ -15,9 +15,9 @@ breadcrumbs:
     id: /mosaic/author/index.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.005
-  time: 300
-  words: 1
+  minutes: 0.2
+  time: 12000
+  words: 40
 tableOfContents:
   - level: 1
     id: author
@@ -27,8 +27,8 @@ navigation:
     title: shouldClearCache
     route: /mosaic/configure/plugins/should-clear-cache
   next:
-    title: Frontmatter
-    route: /mosaic/author/frontmatter
+    title: Markdown Syntax
+    route: /mosaic/author/markdown-syntax
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -173,6 +173,14 @@ sidebarData:
           level: 2
           link: /mosaic/author/index
         childNodes:
+          - id: /mosaic/author/markdown-syntax
+            fullPath: /mosaic/author/markdown-syntax.mdx
+            name: Markdown Syntax
+            priority: 5
+            data:
+              level: 2
+              link: /mosaic/author/markdown-syntax
+            childNodes: []
           - id: /mosaic/author/frontmatter
             fullPath: /mosaic/author/frontmatter.mdx
             name: Frontmatter
@@ -181,13 +189,13 @@ sidebarData:
               level: 2
               link: /mosaic/author/frontmatter
             childNodes: []
-          - id: /mosaic/author/markdown-syntax
-            fullPath: /mosaic/author/markdown-syntax.mdx
-            name: Markdown Syntax
+          - id: /mosaic/author/aliases
+            fullPath: /mosaic/author/aliases.mdx
+            name: Aliases
             priority: 3
             data:
               level: 2
-              link: /mosaic/author/markdown-syntax
+              link: /mosaic/author/aliases
             childNodes: []
           - id: /mosaic/author/ui-components
             fullPath: /mosaic/author/ui-components.mdx
@@ -231,4 +239,9 @@ sidebarData:
 
 # {meta.title}
 
-Todo...
+Out of the box, Mosaic supports documents written in [MDX](https://mdxjs.com/) which allows React components to be embedded within regular markdown syntax.
+
+In addition to this, the MDX processor has been configured to support additional markdown syntax and features:
+
+- [GitHub flavored markdown (gfm)](https://mdxjs.com/guides/gfm/)
+- [Frontmatter](./frontmatter)

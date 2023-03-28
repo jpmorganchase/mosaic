@@ -1,47 +1,43 @@
 ---
-title: Publish a site to Vercel
+title: Aliases
 layout: DetailTechnical
-lastModified: 1679998244453
-fullPath: /mosaic/publish/publish-site-to-vercel.mdx
-route: /mosaic/publish/publish-site-to-vercel
+sidebar:
+  priority: 3
+lastModified: 1680013889185
+fullPath: /mosaic/author/aliases.mdx
+route: /mosaic/author/aliases
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Publish
-    path: /mosaic/publish/index.mdx
-    id: /mosaic/publish/index.mdx
-  - label: Publish a site to Vercel
-    path: /mosaic/publish/publish-site-to-vercel.mdx
-    id: /mosaic/publish/publish-site-to-vercel.mdx
+  - label: Author
+    path: /mosaic/author/index.mdx
+    id: /mosaic/author/index.mdx
+  - label: Aliases
+    path: /mosaic/author/aliases.mdx
+    id: /mosaic/author/aliases.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.99
-  time: 59400
-  words: 198
+  minutes: 0.525
+  time: 31500
+  words: 105
 tableOfContents:
   - level: 1
-    id: publish-a-site-to-vercel
-    text: Publish a site to Vercel
+    id: aliases
+    text: Aliases
   - level: 2
-    id: deployment
-    text: Deployment
-  - level: 3
-    id: 1-update-config-file
-    text: 1. Update Config File
-  - level: 3
-    id: 2-set-environment-variables
-    text: 2. Set Environment Variables
-  - level: 3
-    id: 3-run-build-and-deploy
-    text: 3. Run Build and Deploy
+    id: use-cases
+    text: Use Cases
   - level: 2
-    id: output-file-tracing
-    text: Output File Tracing
+    id: example
+    text: Example
 navigation:
   prev:
-    title: Publish a site to AWS
-    route: /mosaic/publish/publish-site-to-aws
+    title: Frontmatter
+    route: /mosaic/author/frontmatter
+  next:
+    title: UI Components
+    route: /mosaic/author/ui-components
 sidebarData:
   - id: /mosaic/index
     fullPath: /mosaic/index.mdx
@@ -252,48 +248,26 @@ sidebarData:
 
 # {meta.title}
 
-A Mosaic site is a [Next.Js](https://nextjs.org/) app.
+Aliases are virtual 'symlinks' of pages, allowing one page to take on one or more other routes.
+This is not the same as copying the page, it is a primitive filesystem link which is resolved by Mosaic.
 
-To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.org/learn/basics/deploying-nextjs-app/deploy).
+## Use Cases
 
-## Deployment
+Aliases are great for linking to an old route if you've moved a page to a new place.
+They can also be used to create short hand links to pages or to 'clone' a copy of a page into
+another section of the site where it may be relevant.
 
-As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](../configure/modes/active).
+## Example
 
-### 1. Update Config File
-
-Add the following to the mosaic config file used by your site:
-
-```
- deployment: { mode: 'snapshot-file', platform: 'vercel' }
-```
-
-### 2. Set Environment Variables
-
-Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
-
-| Variable Name       | Value             |
-| ------------------- | ----------------- |
-| MOSAIC_MODE         | snapshot-file     |
-| MOSAIC_SNAPSHOT_DIR | snapshots/latest. |
-
-### 3. Run Build and Deploy
-
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
-
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
-
-Example:
+This is the frontmatter for this page:
 
 ```
-yarn build && yarn deploy
+---
+title: Aliases
+layout: DetailTechnical
+aliases:
+  - /mosaic/example/aliases
+---
 ```
 
-## Output File Tracing
-
-[Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
-to determine what files are needed to deploy a production version of an application.
-
-Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
-
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
+Try accessing this page from [/mosaic/example/aliases](/mosaic/example/aliases)
