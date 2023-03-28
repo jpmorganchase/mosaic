@@ -36,15 +36,15 @@ describe('GIVEN a Table Of Contents (TOC)', () => {
   });
 
   describe('WHEN checking scroll position', () => {
-    test('THEN the closest anchor index is returned', () => {
+    test('THEN the next (or last) anchor index is returned', () => {
       const positions = [10, 12, 20, 40, 60, 90];
       const zeroth = mostRecentScrollPoint(5, positions);
       const first = mostRecentScrollPoint(19, positions);
       const second = mostRecentScrollPoint(23, positions);
       const last = mostRecentScrollPoint(9999, positions);
       expect(zeroth).toBe(0);
-      expect(first).toBe(1);
-      expect(second).toBe(2);
+      expect(first).toBe(2);
+      expect(second).toBe(3);
       expect(last).toBe(5);
     });
     test('THEN null is returned if there are no valid points', () => {

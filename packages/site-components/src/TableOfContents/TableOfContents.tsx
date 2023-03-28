@@ -52,7 +52,9 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     ) {
       matchHeadingsToDOM();
     } else {
-      const scrollPosition = window.scrollY;
+      const headerElement = document.querySelector('header');
+      const headerHeight = headerElement ? headerElement.getBoundingClientRect().height : 0;
+      const scrollPosition = window.scrollY + headerHeight;
       const newCurrent = mostRecentScrollPoint(scrollPosition, headingPositions.current);
 
       // Only update the current item if we have a valid item (the
