@@ -8,12 +8,7 @@ const siteConfig = {
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
       options: { rootDirGlob: '*/*' }
-    }
-  ]
-};
-
-module.exports = deepmerge(siteConfig, {
-  plugins: [
+    },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
       priority: -1,
@@ -23,7 +18,11 @@ module.exports = deepmerge(siteConfig, {
         baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
       }
     }
-  ],
+  ]
+};
+
+module.exports = deepmerge(siteConfig, {
+  deployment: { mode: 'snapshot-file', platform: 'vercel' },
   sources: [
     /**
      * Demonstrates a local file-system source, in this case a relative path to where the
@@ -31,7 +30,7 @@ module.exports = deepmerge(siteConfig, {
      * Access from your browser as http://localhost:3000/mosaic
      */
     {
-      disabled: process.env.NODE_ENV !== 'development',
+      // disabled: process.env.NODE_ENV !== 'development',
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
