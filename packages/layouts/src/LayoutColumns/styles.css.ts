@@ -9,7 +9,7 @@ import {
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 const gridTemplates = {
-  columns: `minmax(250px, 1fr) minmax(min-content, ${config.main.wideWidth}px) minmax(150px, 1fr)`,
+  columns: `minmax(300px, 1fr) minmax(min-content, ${config.main.wideWidth}px) minmax(282px, 1fr)`,
   fullWidthContent: '1fr'
 };
 
