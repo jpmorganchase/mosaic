@@ -202,7 +202,9 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             } else {
               nextPage = isLastPage(page) ? undefined : nextParentPage;
             }
-            createNavigationRefs(currPage, prevPage, nextPage);
+            if (currPage !== undefined) {
+              createNavigationRefs(currPage, prevPage, nextPage);
+            }
             recursiveAddNavigation(page.childNodes);
           });
         }
