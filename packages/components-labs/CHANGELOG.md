@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.28
+
+### Patch Changes
+
+- 27ac914: 1. Layout improvements. 2. Fix: if a user hits a url that lands on a directory, the index file within that directory is resolved as the content. 3. Fix: improve Table of Contents component highlighting.
+- Updated dependencies [27ac914]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.28
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.28
+
 ## 0.1.0-beta.27
 
 ### Patch Changes
