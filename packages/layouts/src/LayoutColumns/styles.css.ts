@@ -9,8 +9,8 @@ import {
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 const gridTemplates = {
-  wide: `minmax(${vars.space.none}, 500px) minmax(auto, ${config.main.wideWidth}px) minmax(${vars.space.none}, 500px)`,
-  small: '1fr'
+  columns: `minmax(250px, 1fr) minmax(min-content, ${config.main.wideWidth}px) minmax(150px, 1fr)`,
+  fullWidthContent: '1fr'
 };
 
 const rootGridProperties = defineProperties({
@@ -18,7 +18,7 @@ const rootGridProperties = defineProperties({
   defaultCondition: 'mobile',
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
-    gridTemplateColumns: [gridTemplates.small, gridTemplates.wide],
+    gridTemplateColumns: [gridTemplates.fullWidthContent, gridTemplates.columns],
     gridGap: vars.space.horizontal
   }
 });
@@ -30,7 +30,6 @@ const styles = {
     style({
       display: 'grid',
       alignItems: 'start',
-      gridTemplateColumns: `minmax(${vars.space.none}, 500px) minmax(auto, ${config.main.wideWidth}px) minmax(${vars.space.none}, 500px)`,
       gridTemplateAreas: `
       "layout-column-sidebar layout-column-main layout-column-toc"`
     }),
@@ -40,12 +39,12 @@ const styles = {
       paddingRight: ['x4', 'x6', 'x6', 'x6']
     }),
     rootGridSprinkles({
-      gridTemplateColumns: [
-        gridTemplates.small,
-        gridTemplates.small,
-        gridTemplates.small,
-        gridTemplates.wide
-      ],
+      gridTemplateColumns: {
+        mobile: gridTemplates.fullWidthContent,
+        tablet: gridTemplates.fullWidthContent,
+        desktop: gridTemplates.columns,
+        web: gridTemplates.columns
+      },
       gridGap: ['none', 'none', 'x8', 'x8']
     })
   ]),
@@ -62,12 +61,14 @@ const styles = {
   sidebar: style({
     gridArea: 'layout-column-sidebar',
     position: 'sticky',
-    top: `${config.appHeader.height}px`
+    top: `${config.appHeader.height}px`,
+    maxWidth: '500px'
   }),
   toc: style({
     gridArea: 'layout-column-toc',
     position: 'sticky',
-    top: `${config.appHeader.height}px`
+    top: `${config.appHeader.height}px`,
+    maxWidth: '500px'
   }),
 
   toggleButton: style([
