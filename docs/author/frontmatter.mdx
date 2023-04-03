@@ -80,8 +80,8 @@ The purpose of this plugin is to crawl the page hierarchy to find the closest `s
 
 - Finds all index pages among the source docs
 - Deserialises those pages so it can read the frontmatter and content of the page
-- If a property called `sharedConfig` in the page frontmatter a new files named shared-config.json is created
-- Sets a ref
+- If a property called `sharedConfig` in the page frontmatter is found a new file named shared-config.json is created
+- Adds a ref named `config` to the shared config file that points to the shared config of the index page
 
 ```
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
