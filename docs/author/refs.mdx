@@ -15,12 +15,17 @@ data:
 # {meta.title}
 
 Refs are a very powerful feature of Mosaic documents that use [JSON References](https://json-spec.readthedocs.io/reference.html) to reference
-a property from the page frontmatter or frontmatter of other pages. For the purposes of the JSON references, the frontmatter of a page can be thought of as the schema.
+a property from the page frontmatter or frontmatter of other pages.
 
 The key concept is that of a JSON pointer which takes the form **A**#**B** where:
 
 - **A** is the relative path from the current schema to a target schema. If A is empty, the reference is to a type or property in the same schema, an in-schema reference. Otherwise, the reference is to a different schema, a cross-schema reference.
 - **B** is the complete path from the root of the schema to a type or property in the schema. If # in not included or B is empty, the reference is to an entire schema.
+
+To translate this for our purposes:
+
+- **A** is the relative path to a file in the filesystem.
+- **B** is the path to a property in the frontmatter of the file.
 
 It's probably better explained with examples...
 
@@ -51,7 +56,7 @@ The value of `data.sidebarPriority` comes from `sidebar.priority` in the frontma
 
 ## Remote Refs (Cross-schema reference)
 
-It is possible to reference frontmatter of other pages. Again this helps avoid duplication but the real power is using refs to build the data model. See [advanced](./advanced) for more information.
+It is possible to reference frontmatter of other pages. Again this helps avoid duplication but the real power is using refs to build the data model. See [advanced](#advanced) for more information.
 
 The [index](./index) page of the Author section has this frontmatter:
 
@@ -117,7 +122,7 @@ data:
 ---
 ```
 
-The ref here is essentially using a wildcard to grab the title property from the frontmatter of every page in the modes folder.
+The ref here is essentially using a wildcard (the \*) to grab the title property from the frontmatter of every page in the modes folder.
 
 We can reference that data just like before:
 
@@ -133,9 +138,9 @@ data:
 ---
 ```
 
-### Output as Markdown
+### Output
 
-With a little code, the referenced data can be embedded in a page.
+With the code below, the referenced data can be embedded in a page.
 
 ```
 <ul>
@@ -147,7 +152,7 @@ With a little code, the referenced data can be embedded in a page.
 
 ### Output with Mosaic Components
 
-You can use Mosaic components with referenced data as well.
+You can use Mosaic components with referenced data as well. Below we are using the `Tiles` and `TileContent` components.
 
 <Tiles>
   {meta.data.modes.map(mode => (
@@ -170,3 +175,43 @@ You can use Mosaic components with referenced data as well.
   ))}
 </Tiles>
 ```
+
+## Setting Refs using Plugins
+
+Mosaic plugins can create new refs, create new _global_ refs and see existing refs created by the page or other plugins. This is achieved using a special `config` property available in the plugin helpers.
+
+### Create new refs
+
+Use the `config.setRef` function from the helpers provided to plugin lifecycle events. You need to provide
+
+- The file/fullpath to write the ref to
+- The path to the ptoperty where the ref will be applied
+- The value of the ref, which can use wildcards
+
+For example, the following would add a property to pages named `titles`. The value is the title of all pages in the **same** directory as the current page
+
+```
+  async $afterSource(pages, { config }) {
+    for (const page of pages) {
+      config.setRef(page.fullPath, ['titles', '$ref'], `**#/title`);
+    }
+    return pages;
+  }
+```
+
+<Callout variant="warning">
+  When setting the property path the last string must be `$ref` otherwise you're not creating a ref
+  that will be resolved by the RefPlugin.
+</Callout>
+
+### Existing refs
+
+To view refs that already exist you can use `config.data.refs`. For example to see all refs for a page:
+
+```
+ config.data.refs[fullPathToPage]
+```
+
+### Create global refs
+
+Global refs are similar to regular refs except they do not pre-resolve. This means they are resolved when the referenced file is read and the global mosaic filesystem, made up of multiple sources, is used rather than the filesystem of a single source.
