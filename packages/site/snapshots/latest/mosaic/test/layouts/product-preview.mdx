@@ -21,6 +21,15 @@ fullPath: /mosaic/test/layouts/product-preview.mdx
 route: /mosaic/test/layouts/product-preview
 sharedConfig: *ref_0
 breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Test
+    path: /mosaic/test/index.mdx
+    id: /mosaic/test/index.mdx
+  - label: Layouts
+    path: /mosaic/test/layouts/index.mdx
+    id: /mosaic/test/layouts/index.mdx
   - label: Product Preview Test Page
     path: /mosaic/test/layouts/product-preview.mdx
     id: /mosaic/test/layouts/product-preview.mdx
@@ -58,7 +67,14 @@ sidebarData:
       level: 2
       link: /mosaic/test/index
     childNodes:
-      - childNodes:
+      - id: /mosaic/test/layouts/index
+        fullPath: /mosaic/test/layouts/index.mdx
+        name: Layouts
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/test/layouts/index
+        childNodes:
           - id: /mosaic/test/layouts/detail-highlight
             fullPath: /mosaic/test/layouts/detail-highlight.mdx
             name: Detail Highlight Test Page
