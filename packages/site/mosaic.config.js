@@ -1,9 +1,14 @@
 const deepmerge = require('deepmerge');
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
 
-module.exports = deepmerge(mosaicConfig, {
-  deployment: { mode: 'snapshot-file', platform: 'vercel' },
+const siteConfig = {
+  ...mosaicConfig,
   plugins: [
+    ...mosaicConfig.plugins,
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+      options: { rootDirGlob: '*/*' }
+    },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
       priority: -1,
@@ -21,7 +26,11 @@ module.exports = deepmerge(mosaicConfig, {
         assets: ['sitemap.xml']
       }
     }
-  ],
+  ]
+};
+
+module.exports = deepmerge(siteConfig, {
+  deployment: { mode: 'snapshot-file', platform: 'vercel' },
   sources: [
     /**
      * Demonstrates a local file-system source, in this case a relative path to where the
