@@ -235,6 +235,14 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         return pagesByPriority;
       }
 
+      function moveRootPageDown(pagesByPriority) {
+        const rootPage = pagesByPriority[0];
+        const pagesWithRootMovedDown = rootPage.childNodes;
+        pagesWithRootMovedDown.unshift(rootPage);
+        rootPage.childNodes = [];
+        return pagesWithRootMovedDown;
+      }
+
       await Promise.all(
         rootUserJourneys.map(async rootDir => {
           const sidebarFilePath = path.posix.join(String(rootDir), filename);
@@ -244,9 +252,10 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const sidebarData = linkGroupMap(groupMap, rootDir);
           const pagesByPriority = sortPagesByPriority(sidebarData);
           addNavigationToFrontmatter(pagesByPriority);
+          const pagesWithRootMovedDown = moveRootPageDown(pagesByPriority);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
-            JSON.stringify({ pages: pagesByPriority })
+            JSON.stringify({ pages: pagesWithRootMovedDown })
           );
           addSidebarDataToFrontmatter(pages, rootDir);
         })
