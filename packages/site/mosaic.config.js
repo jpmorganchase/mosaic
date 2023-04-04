@@ -12,6 +12,14 @@ module.exports = deepmerge(mosaicConfig, {
       options: {
         baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
       }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
+      priority: -1,
+      options: {
+        outputDir: './public',
+        assets: ['sitemap.xml']
+      }
     }
   ],
   sources: [
