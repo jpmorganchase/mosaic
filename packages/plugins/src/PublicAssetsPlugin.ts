@@ -24,19 +24,26 @@ const PublicAssetsPlugin: PluginType<Page, PublicAssetsPluginOptions> = {
     if (assets.length > 0) {
       await fsExtra.ensureDir(outputDir);
 
-      assets.forEach(async asset => {
-        const allFiles = await sharedFilesystem.promises.glob(`**/${asset}`, {
-          cwd: '/',
-          onlyFiles: true
-        });
-
-        if (allFiles?.length > 0) {
-          allFiles.forEach(async file => {
-            const data = await sharedFilesystem.promises.readFile(file);
-            await fs.promises.writeFile(path.posix.join(path.posix.resolve(outputDir), file), data);
+      await Promise.all(
+        assets.map(async asset => {
+          const allFiles = await sharedFilesystem.promises.glob(`**/${asset}`, {
+            cwd: '/',
+            onlyFiles: true
           });
-        }
-      });
+
+          if (allFiles?.length > 0) {
+            await Promise.all(
+              allFiles.map(async file => {
+                const data = await sharedFilesystem.promises.readFile(file);
+                await fs.promises.writeFile(
+                  path.posix.join(path.posix.resolve(outputDir), file),
+                  data
+                );
+              })
+            );
+          }
+        })
+      );
     }
   }
 };
