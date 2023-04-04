@@ -17,3 +17,4 @@ LICENSE
 .next
 **/.env*
 **/snapshots
+**/public
