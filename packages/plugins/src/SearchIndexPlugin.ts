@@ -204,6 +204,7 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
     if (!globalConfig.data.searchIndices) return;
     const globalSearchIndices = globalConfig.data.searchIndices;
     const searchData = Object.values(globalSearchIndices);
+    const condensedSearchData = searchData.map(page => ({ title: page.title, route: page.route }));
     const keys = parseKeys(optionKeys);
     const searchConfig = {
       ...defaultRelevancyOptions,
@@ -212,6 +213,10 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
     };
     await sharedFilesystem.promises.writeFile('/search-config.json', JSON.stringify(searchConfig));
     await sharedFilesystem.promises.writeFile('/search-data.json', JSON.stringify(searchData));
+    await sharedFilesystem.promises.writeFile(
+      '/search-data-condensed.json',
+      JSON.stringify(condensedSearchData)
+    );
   }
 };
 
