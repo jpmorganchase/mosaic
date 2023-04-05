@@ -1,13 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
 import { useSearchIndex } from '@jpmorganchase/mosaic-store';
+import useSWR from 'swr';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
 
+const fetcher = url => fetch(url).then(res => res.json());
+
 export function SearchInput() {
+  const {
+    data: fullSearchData,
+    error: fullSearchDataError,
+    isLoading: fullSearchDataIsLoading
+  } = useSWR('/search-data.json', fetcher);
+
   const { searchIndex, searchConfig } = useSearchIndex();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
@@ -25,7 +34,9 @@ export function SearchInput() {
   }, [searchTerm, searchResults]);
 
   useEffect(() => {
-    const results = performSearch(searchIndex, searchTerm, searchConfig);
+    const searchData =
+      fullSearchDataIsLoading || fullSearchDataError ? searchIndex : fullSearchData;
+    const results = performSearch(searchData, searchTerm, searchConfig);
     setSearchResults(results);
     setListVisibility(true);
   }, [searchTerm]);
