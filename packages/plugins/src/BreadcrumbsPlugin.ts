@@ -23,16 +23,14 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
         const breadcrumbs: Array<Breadcrumb> = [];
         let currentPage = page;
         let parentDir = path.posix.normalize(path.posix.dirname(currentPage.fullPath));
+        const maxBreadcrumbCount = page.fullPath.split('/').length;
 
-        while (currentPage !== undefined) {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          if (breadcrumbs.findIndex(breadcrumb => breadcrumb.id === currentPage.fullPath) === -1) {
-            breadcrumbs.unshift({
-              label: currentPage.title,
-              path: currentPage.route,
-              id: currentPage.fullPath
-            });
-          }
+        while (currentPage !== undefined && breadcrumbs.length < maxBreadcrumbCount) {
+          breadcrumbs.unshift({
+            label: currentPage.title,
+            path: currentPage.route,
+            id: currentPage.fullPath
+          });
 
           currentPage = pages.find(
             // eslint-disable-next-line @typescript-eslint/no-loop-func
@@ -44,7 +42,9 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
         }
 
         if (!page.breadcrumbs) {
-          page.breadcrumbs = breadcrumbs;
+          // filter out any duplicate breadcrumbs
+          const map = new Map(breadcrumbs.map(crumb => [crumb.id, crumb]));
+          page.breadcrumbs = [...map.values()];
         }
       }
     }

@@ -33,7 +33,7 @@ export const schema = z.object({
   /**
    * Add to use a folder prefix
    */
-  prefixDir: z.string({ required_error: 'Please provide a prefix directory name' }),
+  prefixDir: z.string().optional(),
   /**
    * The root directory containing docs
    */
