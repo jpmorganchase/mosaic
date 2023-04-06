@@ -30,6 +30,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>/mosaic/author/refs.mdx</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>/mosaic/author/ui-components.mdx</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
