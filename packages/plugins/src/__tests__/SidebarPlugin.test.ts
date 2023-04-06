@@ -19,42 +19,41 @@ const folderASidebarContents = {
       fullPath: '/folderA/index.mdx',
       name: ' folderA index',
       data: { level: 1, link: 'route/folderA/index' },
+      childNodes: []
+    },
+    {
+      id: 'route/folderA/pageA',
+      fullPath: '/folderA/pageA.mdx',
+      name: ' folderA pageA',
+      data: { level: 1, link: 'route/folderA/pageA' },
+      childNodes: []
+    },
+    {
+      id: 'route/folderA/pageB',
+      fullPath: '/folderA/pageB.mdx',
+      name: ' folderA pageB',
+      data: { level: 1, link: 'route/folderA/pageB' },
+      childNodes: []
+    },
+    {
+      id: 'route/folderA/SubfolderA/index',
+      fullPath: '/folderA/SubfolderA/index.mdx',
+      name: ' folderA SubfolderA index',
+      data: { level: 2, link: 'route/folderA/SubfolderA/index' },
       childNodes: [
         {
-          id: 'route/folderA/pageA',
-          fullPath: '/folderA/pageA.mdx',
-          name: ' folderA pageA',
-          data: { level: 1, link: 'route/folderA/pageA' },
+          id: 'route/folderA/SubfolderA/PageA',
+          fullPath: '/folderA/SubfolderA/PageA.mdx',
+          name: ' folderA SubfolderA PageA',
+          data: { level: 2, link: 'route/folderA/SubfolderA/PageA' },
           childNodes: []
         },
         {
-          id: 'route/folderA/pageB',
-          fullPath: '/folderA/pageB.mdx',
-          name: ' folderA pageB',
-          data: { level: 1, link: 'route/folderA/pageB' },
+          id: 'route/folderA/SubfolderA/PageB',
+          fullPath: '/folderA/SubfolderA/PageB.mdx',
+          name: ' folderA SubfolderA PageB',
+          data: { level: 2, link: 'route/folderA/SubfolderA/PageB' },
           childNodes: []
-        },
-        {
-          id: 'route/folderA/SubfolderA/index',
-          fullPath: '/folderA/SubfolderA/index.mdx',
-          name: ' folderA SubfolderA index',
-          data: { level: 2, link: 'route/folderA/SubfolderA/index' },
-          childNodes: [
-            {
-              id: 'route/folderA/SubfolderA/PageA',
-              fullPath: '/folderA/SubfolderA/PageA.mdx',
-              name: ' folderA SubfolderA PageA',
-              data: { level: 2, link: 'route/folderA/SubfolderA/PageA' },
-              childNodes: []
-            },
-            {
-              id: 'route/folderA/SubfolderA/PageB',
-              fullPath: '/folderA/SubfolderA/PageB.mdx',
-              name: ' folderA SubfolderA PageB',
-              data: { level: 2, link: 'route/folderA/SubfolderA/PageB' },
-              childNodes: []
-            }
-          ]
         }
       ]
     }
@@ -68,15 +67,14 @@ const folderBSidebarContents = {
       fullPath: '/folderB/index.mdx',
       name: ' folderB index',
       data: { level: 1, link: 'route/folderB/index' },
-      childNodes: [
-        {
-          id: 'route/folderB/pageA',
-          fullPath: '/folderB/pageA.mdx',
-          name: ' folderB pageA',
-          data: { level: 1, link: 'route/folderB/pageA' },
-          childNodes: []
-        }
-      ]
+      childNodes: []
+    },
+    {
+      id: 'route/folderB/pageA',
+      fullPath: '/folderB/pageA.mdx',
+      name: ' folderB pageA',
+      data: { level: 1, link: 'route/folderB/pageA' },
+      childNodes: []
     }
   ]
 };
