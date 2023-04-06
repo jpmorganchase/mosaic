@@ -3,7 +3,7 @@ title: Frontmatter
 layout: DetailTechnical
 sidebar:
   priority: 4
-lastModified: 1680534781744
+lastModified: 1680768724997
 fullPath: /mosaic/author/frontmatter.mdx
 route: /mosaic/author/frontmatter
 breadcrumbs:
@@ -17,10 +17,10 @@ breadcrumbs:
     path: /mosaic/author/frontmatter.mdx
     id: /mosaic/author/frontmatter.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.275
-  time: 76500
-  words: 255
+  text: 3 min read
+  minutes: 2.215
+  time: 132900
+  words: 443
 tableOfContents:
   - level: 1
     id: frontmatter
@@ -38,8 +38,8 @@ tableOfContents:
     id: adding-a-property-to-the-page
     text: Adding a property to the page
   - level: 3
-    id: file-output-and-ref
-    text: File Output and Ref
+    id: json-file
+    text: JSON File
 navigation:
   prev:
     title: Markdown Syntax
@@ -79,6 +79,14 @@ sidebarData:
         data:
           level: 2
           link: /mosaic/author/aliases
+        childNodes: []
+      - id: /mosaic/author/refs
+        fullPath: /mosaic/author/refs.mdx
+        name: Refs
+        priority: 3
+        data:
+          level: 2
+          link: /mosaic/author/refs
         childNodes: []
       - id: /mosaic/author/ui-components
         fullPath: /mosaic/author/ui-components.mdx
@@ -145,17 +153,17 @@ title: Title
 
 ## Plugins & Frontmatter
 
-Mosaic plugins can also embed their output into page frontmatter. They can do this in a couple of ways:
+Mosaic plugins can also embed their output into page frontmatter in 2 different ways:
 
-- a property is directly added to the page in a lifecycle event
-- a file is generated and a ref is added to the frontmatter that will be resolved by the `RefPlugin`
+- a property is directly added to the page object
+- a JSON file is generated and referenced using a [ref](./refs)
 
 ### Adding a property to the page
 
 A plugin can add a property to a page simply by extending the page object it receives in the `$afterSource` lifecycle event:
 
 ```
-async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
+async function $afterSource(pages) {
   for (const page of pages) {
     page.newProperty = 'Hello'
   }
@@ -165,6 +173,70 @@ async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
 
 You could use this property in the page content using `{meta.newProperty}`
 
-### File Output and Ref
+### JSON File
 
-Todo
+Let's take a look at the `SharedConfigPlugin`.
+
+The purpose of this plugin is to crawl the page hierarchy to find the closest `sharedConfig` found in any parent page's frontmatter.
+
+- Finds all index pages among the source docs
+- Deserialises those pages so it can read the frontmatter and content of the page
+- If a property called `sharedConfig` in the page frontmatter is found a new file named shared-config.json is created
+- Adds a ref named `config` to the shared config file that points to the shared config of the index page
+
+```
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import { flatten } from 'lodash-es';
+import path from 'path';
+
+function createFileGlob(url, pageExtensions) {
+if (pageExtensions.length === 1) {
+return `${url}${pageExtensions[0]}`;
+}
+return `${url}{${pageExtensions.join(',')}}`;
+}
+
+interface SharedConfigPluginPage extends Page {
+sharedConfig?: string;
+}
+
+interface SharedConfigPluginOptions {
+filename: string;
+}
+
+const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginOptions> = {
+async $beforeSend(
+    mutableFilesystem,
+    { config, serialiser, ignorePages, pageExtensions },
+    options
+  ) {
+    const pagePaths = await mutableFilesystem.promises.glob(
+      createFileGlob('**/index', pageExtensions),
+      {
+        ignore: [options.filename, ...flatten(ignorePages.map(ignore => [ignore, `**/${ignore}`]))],
+cwd: '/'
+}
+);
+
+    for (const pagePath of pagePaths) {
+      const sharedConfigFile = path.join(path.dirname(String(pagePath)), options.filename);
+
+      const page = await serialiser.deserialise(
+        String(pagePath),
+        await mutableFilesystem.promises.readFile(String(pagePath))
+      );
+      if (page.sharedConfig) {
+        config.setRef(sharedConfigFile, ['config', '$ref'], `${String(pagePath)}#/sharedConfig`);
+        await mutableFilesystem.promises.writeFile(sharedConfigFile, '{}');
+      } else {
+        const baseDir = path.posix.resolve(path.dirname(String(pagePath)), '../');
+        config.setAliases(path.join(baseDir, options.filename), [sharedConfigFile]);
+      }
+    }
+
+}
+};
+
+export default SharedConfigPlugin;
+
+```
