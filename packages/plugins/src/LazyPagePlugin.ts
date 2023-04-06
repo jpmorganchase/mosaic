@@ -37,7 +37,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
         // If this is a 'page' - read the original file from disk and try to inject anything that's missing.
         if (isNonHiddenPage(pagePath)) {
           const currentPage = await serialiser.deserialise(pagePath, fileData);
-          if (config.data.hddPaths[pagePath]) {
+          if (config.data.hddPaths?.[pagePath]) {
             const page = await serialiser.deserialise(
               pagePath,
               await fs.promises.readFile(config.data.hddPaths[pagePath])
@@ -66,6 +66,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
       cwd: '/',
       onlyFiles: true
     });
+
     const baseDir = path.join(process.cwd(), options.cacheDir || '.mosaic-lazy-page-plugin-cache');
     await fsExtra.ensureDir(baseDir);
     for (const filePath of allPages) {
