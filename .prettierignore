@@ -18,3 +18,5 @@ LICENSE
 **/.env*
 **/snapshots
 **/public
+.dockerignore
+Dockerfile
