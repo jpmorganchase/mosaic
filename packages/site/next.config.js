@@ -2,6 +2,7 @@ const webpack = require('webpack');
 
 module.exports = {
   reactStrictMode: true,
+  output: 'standalone',
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
