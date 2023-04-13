@@ -224,12 +224,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
-      console.warn(
-        'white',
-        `*****************   THIS PAGE DIR DOES NOT CONTAIN AN INDEX PAGE ************************`,
-        '\x1b[31m'
-      );
-
       function sortPagesByPriority(sidebarData) {
         const pagesByPriority = sidebarData.map(page => {
           if (page.childNodes.length > 1) {
