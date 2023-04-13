@@ -205,6 +205,12 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             if (currPage !== undefined) {
               createNavigationRefs(currPage, prevPage, nextPage);
             }
+            if (currPage === undefined) {
+              console.warn(
+                '\x1b[31m',
+                `*** PAGE RETURNING UNDEFINED -  PLEASE CHECK ALL YOUR DIR'S CONTAIN INDEX PAGES. THIS MAY CAUSE ISSUES WITH SIDEBAR AND NAVIGATION ***`
+              );
+            }
             recursiveAddNavigation(page.childNodes);
           });
         }
