@@ -207,7 +207,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             } else if (currPage === undefined) {
               console.warn(
                 '\x1b[31m',
-                `*** PAGE RETURNING UNDEFINED -  PLEASE CHECK ALL YOUR DIR'S CONTAIN INDEX PAGES. THIS MAY CAUSE ISSUES WITH SIDEBAR AND NAVIGATION ***`
+                `** PAGE RETURNING UNDEFINED -  PLEASE CHECK THAT ALL YOUR DIR'S CONTAIN INDEX PAGES. THIS CAUSES ISSUES WITH SIDEBAR AND NAVIGATION **`
               );
             }
             recursiveAddNavigation(page.childNodes);
