@@ -5,3 +5,5 @@ npm-debug.log
 README.md
 .git
 .next
+.tmp
+.turbo
