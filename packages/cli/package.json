@@ -4,27 +4,31 @@
   "author": "",
   "description": "Mosaic command line scripts",
   "license": "Apache-2.0",
-  "main": "./dist/index.js",
+  "main": "./dist/index.mjs",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "node": "./dist/index.js"
+      "import": "./dist/index.mjs",
+      "node": "./dist/index.mjs"
     }
   },
   "engines": {
     "node": ">=16.10.0 || >=18.0.0"
   },
   "bin": {
-    "mosaic": "./dist/index.js"
+    "mosaic": "./dist/index.mjs"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm-run-all --parallel build:*",
+    "build:types": "tsc",
+    "build:cli": "node ./scripts/bundle.js",
     "clean": "rm -fr dist",
+    "docker:build": "docker build . --tag mosaic-fs:latest",
+    "docker:start" :"docker run -it --rm --ipc=host -p 8080:8080 --mount source=docs,destination=/app/docs --network mosaic-net --name mosaic-fs mosaic-fs:latest",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\""
   },
   "repository": {
@@ -33,13 +37,20 @@
     "directory": "packages/cli"
   },
   "devDependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.30"
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.30",
+    "esbuild": "0.14.35",
+    "esbuild-node-externals": "^1.0.2",
+    "fast-glob": "^3.2.7"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-core": "^0.1.0-beta.30",
+    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.30",
+    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.30",
+    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.30",
     "@aws-sdk/client-s3": "^3.278.0",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
+    "deepmerge": "^4.2.2",
     "express": "^4.18.2",
     "fs-extra": "^10.1.0",
     "globby": "^13.1.3",
