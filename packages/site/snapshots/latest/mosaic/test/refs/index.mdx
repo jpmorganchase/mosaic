@@ -1,41 +1,30 @@
 ---
-title: Landing Layout Test Page
-layout: Landing
-frameOverrides: &ref_0
-  header:
-    homeLink: /mosaic/index
-    title: Mosaic (BETA)
-    logo: /img/favicon.png
-    searchNamespace: mosaic
-    menu:
-      - title: Docs
-        link: /mosaic/docs/index
-      - title: Quick Start
-        link: /mosaic/quick-start/index
-  footer:
-    description: Footer Content
-    title: Landing Layout Footer
-    href: /mosaic
-lastModified: 1680531710826
-fullPath: /mosaic/test/layouts/landing.mdx
-route: /mosaic/test/layouts/landing
-sharedConfig: *ref_0
+title: Refs Test
+layout: FullWidth
+sidebar:
+  priority: 3
+data:
+  other: 100
+  sidebarPriority: 3
+lastModified: 1681214467356
+fullPath: /mosaic/test/refs/index.mdx
+route: /mosaic/test/refs/index
 readingTime:
-  text: 2 min read
-  minutes: 1.705
-  time: 102300
-  words: 341
+  text: 1 min read
+  minutes: 0.05
+  time: 3000
+  words: 10
 tableOfContents:
-  - level: 2
-    id: landing-layout-test-page
-    text: Landing Layout Test Page
+  - level: 1
+    id: refs-test
+    text: Refs Test
 navigation:
   prev:
-    title: Full Width Layout
-    route: /mosaic/test/layouts/full-width
+    title: Product Preview Test Page
+    route: /mosaic/test/layouts/product-preview
   next:
-    title: Newsletter Test Page
-    route: /mosaic/test/layouts/newsletter
+    title: Refs Data
+    route: /mosaic/test/refs/data
 sidebarData:
   - id: /mosaic/test/index
     fullPath: /mosaic/test/index.mdx
@@ -44,18 +33,11 @@ sidebarData:
     data:
       level: 2
       link: /mosaic/test/index
-    childNodes: []
-  - id: /mosaic/test/layouts/index
-    fullPath: /mosaic/test/layouts/index.mdx
-    name: Layouts
-    priority: 3
-    data:
-      level: 3
-      link: /mosaic/test/layouts/index
     childNodes:
-      - id: /mosaic/test/layouts/detail-highlight
-        fullPath: /mosaic/test/layouts/detail-highlight.mdx
-        name: Detail Highlight Test Page
+      - id: /mosaic/test/layouts/index
+        fullPath: /mosaic/test/layouts/index.mdx
+        name: Layouts
+        priority: 3
         data:
           level: 3
           link: /mosaic/test/layouts/index
@@ -147,29 +129,8 @@ sidebarData:
         childNodes: []
 ---
 
-## {meta.title}
+# {meta.title}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The sidebar priority is {meta.data.sidebarPriority}.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+The other page data is {meta.data.other}.

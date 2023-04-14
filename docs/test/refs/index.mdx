@@ -1,0 +1,17 @@
+---
+title: Refs Test
+layout: FullWidth
+sidebar:
+  priority: 3
+data:
+  other:
+    $ref: ./data#/data/randomValue
+  sidebarPriority:
+    $ref: '#/sidebar/priority'
+---
+
+# {meta.title}
+
+The sidebar priority is {meta.data.sidebarPriority}.
+
+The other page data is {meta.data.other}.
