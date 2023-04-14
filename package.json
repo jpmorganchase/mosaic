@@ -44,7 +44,9 @@
     "start": "turbo run start --filter=@jpmorganchase/mosaic-site",
     "test:client": "jest --config ./jest.config.client.js --coverage",
     "test:server": "jest  --config ./jest.config.server.js --coverage",
-    "test": "npm-run-all --parallel test:*"
+    "test": "npm-run-all --parallel test:*",
+    "docker:volume": "docker container create --name docs-copy -v docs:/docs mosaic-fs && docker cp ./docs docs-copy:/ && docker rm docs-copy",
+    "docker:network": "docker network create mosaic-net"
   },
   "repository": {
     "type": "git",

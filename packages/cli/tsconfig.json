@@ -3,7 +3,8 @@
   "compilerOptions": {
     "strict": false,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "emitDeclarationOnly": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "src/**/__tests__/**/*", "src/__tests__/**/*", "**/dist/**/*"]
