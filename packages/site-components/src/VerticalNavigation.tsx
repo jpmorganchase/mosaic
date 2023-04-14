@@ -78,7 +78,7 @@ const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
       <SubMenu
         active={selectedNodeId === item.id}
         component={<SubMenuLink href={item.data.link} selectedNodeId={selectedNodeId} />}
-        defaultOpen
+        defaultOpen={expandedNodeIds.has(item.id)}
         key={item.id}
         label={item.name}
       >
