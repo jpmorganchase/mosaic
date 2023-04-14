@@ -1,23 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
-import { useSearchIndex } from '@jpmorganchase/mosaic-store';
-import useSWR from 'swr';
+import { useSearchData } from './useSearchData';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
 
-const fetcher = url => fetch(url).then(res => res.json());
-
 export function SearchInput() {
-  const {
-    data: fullSearchData,
-    error: fullSearchDataError,
-    isLoading: fullSearchDataIsLoading
-  } = useSWR('/search-data.json', fetcher);
-
-  const { searchIndex, searchConfig } = useSearchIndex();
+  const { searchIndex, searchConfig } = useSearchData();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -26,20 +17,15 @@ export function SearchInput() {
 
   const handleSearch = e => {
     setSearchTerm(e.target.value);
+    const results = performSearch(searchIndex, searchTerm, searchConfig);
+    setSearchResults(results);
+    setListVisibility(true);
   };
 
   const handleClear = useCallback(() => {
     setSearchTerm('');
     setSearchResults([]);
   }, [searchTerm, searchResults]);
-
-  useEffect(() => {
-    const searchData =
-      fullSearchDataIsLoading || fullSearchDataError ? searchIndex : fullSearchData;
-    const results = performSearch(searchData, searchTerm, searchConfig);
-    setSearchResults(results);
-    setListVisibility(true);
-  }, [searchTerm]);
 
   const handleInputFocus = () => {
     setListVisibility(true);
