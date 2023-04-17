@@ -1,19 +1,36 @@
 import Fuse from 'fuse.js';
 
-const calculateBestIndex = rawIndices => {
-  const sorted = rawIndices
+export type Index = [number, number];
+type BestIndex = {
+  index: Index;
+  delta: number;
+};
+export type Match = {
+  indices: Index[];
+  key: string;
+  value: string;
+};
+
+export type SearchResult = {
+  title: string;
+  route: string;
+  content: string;
+};
+
+export const calculateBestIndex = (indices: Index[]): BestIndex => {
+  const sorted = indices
     .sort((a, b) => {
       const aSize = Math.abs(a[0] - a[1]);
       const bSize = Math.abs(b[0] - b[1]);
       return aSize - bSize;
     })
     .reverse();
-  const indices = sorted[0];
-  const delta = Math.abs(indices[0] - indices[1]);
-  return { indices, delta };
+  const index = sorted[0];
+  const delta = Math.abs(index[0] - index[1]);
+  return { index, delta };
 };
 
-export const getBestMatch = matches => {
+export const getBestMatch = (matches: Match[]) => {
   const matchesWithIndex = matches
     .map(match => ({
       ...match,
@@ -21,26 +38,15 @@ export const getBestMatch = matches => {
     }))
     .sort((a, b) => a.bestIndex.delta - b.bestIndex.delta)
     .reverse();
-  return matchesWithIndex[0];
+  return matchesWithIndex[0].value;
 };
 
-export const highlightMatch = match => {
-  const { indices } = match.bestIndex;
-  const parts = [
-    match.value.substring(0, indices[0]),
-    match.value.substring(indices[0], indices[1] + 1),
-    match.value.substring(indices[1] + 1)
-  ];
-  return `${parts[0]}<strong>${parts[1]}</strong>${parts[2]}`;
-};
-
-export const parseSearchResults = results =>
+export const parseSearchResults = (results): SearchResult[] =>
   results.map(result => {
     const bestMatch = getBestMatch(result.matches);
-    const highlight = highlightMatch(bestMatch);
     return {
       title: result.item.title,
-      content: highlight,
+      content: bestMatch,
       route: result.item.route
     };
   });
