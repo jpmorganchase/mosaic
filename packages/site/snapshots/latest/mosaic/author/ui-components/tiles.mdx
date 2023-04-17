@@ -4,7 +4,7 @@ description: Replace this with a page description
 layout: DetailOverview
 sidebar:
   priority: 3
-lastModified: 1681740157671
+lastModified: 1681741912386
 fullPath: /mosaic/author/ui-components/tiles.mdx
 route: /mosaic/author/ui-components/tiles
 breadcrumbs:
@@ -22,9 +22,9 @@ breadcrumbs:
     id: /mosaic/author/ui-components/tiles.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.05
-  time: 123000
-  words: 410
+  minutes: 2.045
+  time: 122700
+  words: 409
 tableOfContents:
   - level: 1
     id: tiles
@@ -487,7 +487,6 @@ As content authors, you can use and customize tiles in multiple ways for differe
   />
 </Tiles>
 
-
 </Tab>
     <Tab id="Usage">
   ## Usage
@@ -503,11 +502,11 @@ As content authors, you can use and customize tiles in multiple ways for differe
 
 #### Type variant
 
-| Tile variant | Usage |
-|----|----|
-| Tile base | The TileBase component is used as a base component to create other Tile components. It is the simplest form of Tile, sharing a common API across all the Tile components, through composition. We typically do not use TileBase directly. Instead, it is a technical component used to create other tiles. |
-| Tile content (default) | It is used to create create consistent UI for Tile components. The TileContent component is used to create create consistent UI for Tile components. Considered a technical component it enables us to re-use the same composition of image/text across multiple tile components.  | 
-| Tile link | It is used to create a rich link to navigate between content pages. The TileLink component is used to create a rich Link, to navigate between content pages. If upon selection, you require to change the application state, you should use a TileButton.|
+| Tile variant           | Usage                                                                                                                                                                                                                                                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tile base              | The TileBase component is used as a base component to create other Tile components. It is the simplest form of Tile, sharing a common API across all the Tile components, through composition. We typically do not use TileBase directly. Instead, it is a technical component used to create other tiles. |
+| Tile content (default) | It is used to create create consistent UI for Tile components. The TileContent component is used to create create consistent UI for Tile components. Considered a technical component it enables us to re-use the same composition of image/text across multiple tile components.                          |
+| Tile link              | It is used to create a rich link to navigate between content pages. The TileLink component is used to create a rich Link, to navigate between content pages. If upon selection, you require to change the application state, you should use a TileButton.                                                  |
 
 #### Size variants
 
@@ -530,9 +529,9 @@ If you want to add other content, you can pass any children to tile base.
 The available sizes are `small`, `medium`, and `large`.
 
 ```jsx live
-  <TileBase link="#" size="small">
-    <p>Tile content</p>
-  </TileBase>
+<TileBase link="#" size="small">
+  <p>Tile content</p>
+</TileBase>
 ```
 
 ### Tile content
@@ -542,32 +541,30 @@ The available sizes are `small`, `medium`, and `large`.
 The available sizes are `small`, `medium`, and `large`.
 
 ```jsx live
-  <TileContent
-    action={<Link href="#">Link text</Link>}
-    description="Description"
-    image="/img/author/placeholder-icon-tiles-80x80.png"
-    size="small"
-    title="TileContent"
-  />
+<TileContent
+  action={<Link href="#">Link text</Link>}
+  description="Description"
+  image="/img/author/placeholder-icon-tiles-80x80.png"
+  size="small"
+  title="TileContent"
+/>
 ```
+
 #### Tile content label
 
 In addition to the default text renderer for `description`, we can compose with a `TileContentLabel` to render a list of items with a tooltip.
 
- ```jsx live
-  <TileContent
-    action={<Link href="#">Link text</Link>}
-    caption={
-        <TileContentLabel
-          labelItems={['Label 1', 'Label 2', 'Label 3']}
-          labelName="Label name"
-        />
-    }
-    description="Description."
-    image="/img/author/placeholder-icon-tiles-80x80.png"
-    title="TileContent"
-  />
-  ```
+```jsx live
+<TileContent
+  action={<Link href="#">Link text</Link>}
+  caption={
+    <TileContentLabel labelItems={['Label 1', 'Label 2', 'Label 3']} labelName="Label name" />
+  }
+  description="Description."
+  image="/img/author/placeholder-icon-tiles-80x80.png"
+  title="TileContent"
+/>
+```
 
 ### Tile link
 
@@ -578,47 +575,49 @@ The available sizes are `small`, `medium`, `large` and `fullWidth`.
 #### Image placement top
 
 ```jsx live
-  <TileLink
-    action="Link text"
-    description="Description"
-    eyebrow="Small text"
-    link="#"
-    image="/img/author/placeholder-icon-tiles-80x80.png"
-    imagePlacement="top"
-    size="medium"
-    title="TileLink"
-  />
+<TileLink
+  action="Link text"
+  description="Description"
+  eyebrow="Small text"
+  link="#"
+  image="/img/author/placeholder-icon-tiles-80x80.png"
+  imagePlacement="top"
+  size="medium"
+  title="TileLink"
+/>
 ```
 
 #### Image placement left
+
 ```jsx live
-  <TileLink
-    action="Link text"
-    description="Description"
-    eyebrow="Small text"
-    link="#"
-    image="/img/author/placeholder-icon-tiles-80x80.png"
-    imagePlacement="left"
-    size="medium"
-    title="TileLink"
-  />
+<TileLink
+  action="Link text"
+  description="Description"
+  eyebrow="Small text"
+  link="#"
+  image="/img/author/placeholder-icon-tiles-80x80.png"
+  imagePlacement="left"
+  size="medium"
+  title="TileLink"
+/>
 ```
 
 #### Image placement full width
 
 ```jsx live
-  <TileLink
-    action="Link text"
-    description="Description"
-    eyebrow="Small text"
-    link="#"
-    image="/img/author/placeholder-icon-tiles-296x162.png"
-    imagePlacement="fullWidth"
-    size="medium"
-    title="TileLink"
-  />
+<TileLink
+  action="Link text"
+  description="Description"
+  eyebrow="Small text"
+  link="#"
+  image="/img/author/placeholder-icon-tiles-296x162.png"
+  imagePlacement="fullWidth"
+  size="medium"
+  title="TileLink"
+/>
 ```
-***
+
+---
 
 </Tab>
 </Tabs>

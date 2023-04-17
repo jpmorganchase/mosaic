@@ -4,7 +4,7 @@ description: Replace this with a page description
 layout: DetailOverview
 sidebar:
   priority: 24
-lastModified: 1681740157632
+lastModified: 1681741912057
 fullPath: /mosaic/author/ui-components/audio-player.mdx
 route: /mosaic/author/ui-components/audio-player
 breadcrumbs:
@@ -430,8 +430,9 @@ sidebarData:
           link: /mosaic/author/ui-components/video-player
         childNodes: []
 ---
+
 # {meta.title}
- 
+
 <Tabs>
 <Tab id="Overview" defaultView>
     
@@ -439,11 +440,7 @@ sidebarData:
 
 The audio player component enables users to play back an audio file.
 
-<AudioPlayer
-  src='#'
-  title='Title'
-  skipDuration={15}
-/>
+<AudioPlayer src="#" title="Title" skipDuration={15} />
 
 </Tab>
 
@@ -457,7 +454,7 @@ It has a play button that allows users to play and pause the audio file.
 
 Skip button defaults to skip the content for 15 seconds backward and forward (available in 5s, 10s, 15s, and 30s) depending on the content types.
 
-It indicates content title, status of player (Playing, Pause, Download, Error and etc). It also has download button that allows users to download the content. 
+It indicates content title, status of player (Playing, Pause, Download, Error and etc). It also has download button that allows users to download the content.
 
 Users can change the sound on or mute through the volume button. The slider element lets user explore the content.
 
@@ -467,12 +464,8 @@ Users can change the sound on or mute through the volume button. The slider elem
 ## Code sample
 
 ```jsx live
-<AudioPlayer
-  src='#'
-  title='Title'
-  skipDuration={15}
- />
- ```
+<AudioPlayer src="#" title="Title" skipDuration={15} />
+```
 
 </Tab>
 </Tabs>

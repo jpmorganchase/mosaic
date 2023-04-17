@@ -4,7 +4,7 @@ description: Replace this with a page description
 layout: DetailOverview
 sidebar:
   priority: 11
-lastModified: 1681740157662
+lastModified: 1681741912308
 fullPath: /mosaic/author/ui-components/link.mdx
 route: /mosaic/author/ui-components/link
 breadcrumbs:
@@ -22,9 +22,9 @@ breadcrumbs:
     id: /mosaic/author/ui-components/link.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.705
-  time: 162300
-  words: 541
+  minutes: 2.665
+  time: 159900
+  words: 533
 tableOfContents:
   - level: 1
     id: link
@@ -444,23 +444,24 @@ sidebarData:
 ---
 
 # {meta.title}
+
 <Tabs>
     <Tab id="Overview" defaultView>
      
 ## Overview
 
-Links are used as navigational elements and you can use them as standalone elements or inline within bodies of text. 
+Links are used as navigational elements and you can use them as standalone elements or inline within bodies of text.
 
 A Link is a fundamental navigation element. When clicked, it takes the user to a new page.
 
-<br/>
-<br/>
+<br />
+<br />
 <Link link="#">Jump to top</Link>
 
 </Tab>
 <Tab id="Usage">
 
- ## Usage
+## Usage
 
 - **Link text character count**: 30
 
@@ -474,10 +475,10 @@ The component supports an API that decorates the text with icons.
 The text style is inherited,
 | Variant | Usage | Example |
 |----|----|----|
-| Internal Link or Anchor | Used on a link to an internal location or anchor | <Link link="#">Jump to top</Link> | 
+| Internal Link or Anchor | Used on a link to an internal location or anchor | <Link link="#">Jump to top</Link> |
 | External Link | Used on a link to external location | <Link link="#">Link text</Link> |
-| With Start/Contextual Icon | A link with icon in the start|   <Link link="#" startIcon="message">Send email</Link> |
-| With End/Action Icon | A link with icon in the end |   <Link link="#" endIcon="message">Send email</Link> |
+| With Start/Contextual Icon | A link with icon in the start| <Link link="#" startIcon="message">Send email</Link> |
+| With End/Action Icon | A link with icon in the end | <Link link="#" endIcon="message">Send email</Link> |
 | Without End/Action Icon | A link without icon in the end | <Link link="#" endIcon="none" startIcon="message">Send email</Link> |
 | With Styled Typography | Used with stylized typography | <Link link="#" startIcon="message"><H6>Link text</H6></Link> |
 
@@ -487,29 +488,30 @@ A document Link is used to create text-based links within documents, typically M
 
 The text style is inherited and an external icon is added for any external links.
 
-
 #### Component
 
-The `component` variant can wrap any element to make it navigate to a new page, when selected. 
+The `component` variant can wrap any element to make it navigate to a new page, when selected.
 
-Unlike the `regular` variant, it does not add any icons or text decorations.  
+Unlike the `regular` variant, it does not add any icons or text decorations.
 
 Typically this is a technical component to build other UI components, such as [Tile base](./tiles).
 
-| Variants | Usage |
-|----|----|
+| Variants                | Usage                                  |
+| ----------------------- | -------------------------------------- |
 | With a Custom Component | You can add custom component with link |
 
 #### Selectable
 
 The `selectable` variant is used when the link supports a selected state.  
 Typically this is a technical component to build other UI components, such as Tabs or other navigation components.
+
 </Tab>
 
 <Tab id="Code sample">
 ## Code sample
 
 ### LinkBase
+
 The LinkBase component is used as a base component to create other link components.
 Considered a technical component it enables us to wire a React router to our link components.
 
@@ -517,19 +519,19 @@ We typically do not use LinkBase directly, instead it is a technical component u
 
 ```jsx live
 <LinkBase link="#" size="medium">
-    <div
-      style={{
-        alignItems: 'center',
-        background: 'red',
-        display: 'flex',
-        justifyContent: 'center',
-        width: '100px',
-        height: '100px'
-      }}
-    >
-      Link
-    </div>
-  </LinkBase>
+  <div
+    style={{
+      alignItems: 'center',
+      background: 'red',
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100px',
+      height: '100px'
+    }}
+  >
+    Link
+  </div>
+</LinkBase>
 ```
 
 ### LinkText
@@ -545,17 +547,19 @@ Considered a technical component, it enables us to compose the UI of the typogra
 If you are looking to create a text Link, use the Standalone link instead.
 
 #### Regular
+
 ```jsx live
- <LinkText startIcon="message" link="#">
-    <H3>Link text</H3>
-  </LinkText>
+<LinkText startIcon="message" link="#">
+  <H3>Link text</H3>
+</LinkText>
 ```
 
 #### Document
+
 ```jsx live
-  <LinkText link="#" variant="document">
-    Link text
-  </LinkText>
+<LinkText link="#" variant="document">
+  Link text
+</LinkText>
 ```
 
 ### Inline Links
@@ -569,53 +573,53 @@ Inline links inherit the parent style and you can create it using the `[Link tex
 ###### An Internal Link or Anchor
 
 ```jsx live
-  <Link link="#">Jump to top</Link>
+<Link link="#">Jump to top</Link>
 ```
 
 ###### An External Link
 
 ```jsx live
-  <Link link="#">Link text</Link>
+<Link link="#">Link text</Link>
 ```
 
 ###### With Start/Contextual Icon
 
 ```jsx live
-  <Link link="#" startIcon="message">
-    Send email
-  </Link>
+<Link link="#" startIcon="message">
+  Send email
+</Link>
 ```
 
 ###### With End/Action Icon
 
 ```jsx live
-  <Link link="#" endIcon="message">
-    Send email
-  </Link>
+<Link link="#" endIcon="message">
+  Send email
+</Link>
 ```
 
 ###### Without End/Action Icon
 
 ```jsx live
-  <Link link="#" endIcon="none" startIcon="message">
-    Send email
-  </Link>
+<Link link="#" endIcon="none" startIcon="message">
+  Send email
+</Link>
 ```
 
 ###### With Styled Typography
 
 ```jsx live
-  <Link link="#" startIcon="message">
-    <H4>Link text</H4>
-  </Link>
+<Link link="#" startIcon="message">
+  <H4>Link text</H4>
+</Link>
 ```
 
 #### Document
 
 ```jsx live
-  <Link link="#" variant="document">
-    Link text
-  </Link>
+<Link link="#" variant="document">
+  Link text
+</Link>
 ```
 
 #### Component
@@ -623,28 +627,28 @@ Inline links inherit the parent style and you can create it using the `[Link tex
 ###### With A Custom Component
 
 ```jsx live
-  <Link variant="component" link="#">
-    <div
-      style={{
-        alignItems: 'center',
-        background: 'red',
-        display: 'flex',
-        justifyContent: 'center',
-        width: '100px',
-        height: '100px'
-      }}
-    >
-      Link
-    </div>
-  </Link>
+<Link variant="component" link="#">
+  <div
+    style={{
+      alignItems: 'center',
+      background: 'red',
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100px',
+      height: '100px'
+    }}
+  >
+    Link
+  </div>
+</Link>
 ```
 
 #### Selectable
 
 ```jsx live
-  <Link link="#" variant="selectable">
-    Link text
-  </Link>
+<Link link="#" variant="selectable">
+  Link text
+</Link>
 ```
 
 </Tab>

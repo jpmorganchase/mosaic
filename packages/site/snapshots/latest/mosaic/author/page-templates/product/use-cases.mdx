@@ -2,7 +2,7 @@
 title: Use Cases
 description: Replace this with a page description
 layout: ProductDiscover
-lastModified: 1681740157630
+lastModified: 1681741912010
 fullPath: /mosaic/author/page-templates/product/use-cases.mdx
 route: /mosaic/author/page-templates/product/use-cases
 breadcrumbs:
@@ -23,9 +23,9 @@ breadcrumbs:
     id: /mosaic/author/page-templates/product/use-cases.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.095
-  time: 65700
-  words: 219
+  minutes: 1.1
+  time: 66000
+  words: 220
 tableOfContents:
   - level: 2
     id: use-cases
@@ -446,22 +446,22 @@ sidebarData:
 <SecondaryNavbar
   items={[
     {
-        "label": "Product Overview",
-        "link": "../product"
+      label: 'Product Overview',
+      link: '../product'
     },
     {
-        "label": "Features & Benefits",
-        "link": "../product/features"
+      label: 'Features & Benefits',
+      link: '../product/features'
     },
     {
-        "label": "Use Cases",
-        "link": "../product/use-cases"
+      label: 'Use Cases',
+      link: '../product/use-cases'
     },
     {
-        "label": "Resources",
-        "link": "../product/resources"
+      label: 'Resources',
+      link: '../product/resources'
     }
-]}
+  ]}
   supportLink="mailto:"
 />
 
@@ -477,19 +477,22 @@ sidebarData:
 - Ensure that each case study is limited to **185** words.
 
 **Suggested UI component**:
+
 - [Accordion](../components/accordion)
 
 ### Example
 
-<Accordion panels={[
+<Accordion
+  panels={[
     {
       expanded: false,
       summary: 'Title: Use Case 1',
       content: (
-          <Feature variant="regular" image="./img/author/placeholder-product-hero-feature-552x414.png">
-            <FeatureContent>
-              The description of the use case.
-            </FeatureContent>
+        <Feature
+          variant="regular"
+          image="./img/author/placeholder-product-hero-feature-552x414.png"
+        >
+          <FeatureContent>The description of the use case.</FeatureContent>
         </Feature>
       )
     },
@@ -497,53 +500,49 @@ sidebarData:
       expanded: false,
       summary: 'Title: Use Case 2',
       content: (
-          <Feature variant="regular" image="./img/author/placeholder-product-hero-feature-552x414.png">
-            <FeatureContent>
-              The description of the use case.
-            </FeatureContent>
+        <Feature
+          variant="regular"
+          image="./img/author/placeholder-product-hero-feature-552x414.png"
+        >
+          <FeatureContent>The description of the use case.</FeatureContent>
         </Feature>
       )
-    },
-  ]}/>
+    }
+  ]}
+/>
 
 ## Metrics
 
 **Instruction**: Include behavioral data or usage patterns for the product as currently implemented to showcase the value of the product. For example:
+
 - LOBs using the software
 - Monthly active users
 - Applications supported
 
 **Suggested UI component**:
+
 - [Impact](../components/impact)
 
-### Example 
+### Example
 
 <Impacts>
   <Impact
-    image={
-        './img/author/placeholder-icon-impact-40x40.png'
-      }
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
     label="User behavior 1"
     title="Data"
   />
   <Impact
-    image={
-        './img/author/placeholder-icon-impact-40x40.png'
-      }
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
     label="User behavior 1"
     title="Data"
   />
   <Impact
-    image={
-        './img/author/placeholder-icon-impact-40x40.png'
-      }
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
     label="Application metric 1"
     title="Data"
   />
   <Impact
-    image={
-        './img/author/placeholder-icon-impact-40x40.png'
-      }
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
     label="Application metric 2"
     title="Data"
   />
@@ -551,34 +550,48 @@ sidebarData:
 
 ## Stories
 
-**Instruction**: Include one or more client success stories: 
+**Instruction**: Include one or more client success stories:
+
 - Who piloted this product or is currently using it?
 - What were their results?
-- Why would they recommend it? 
+- Why would they recommend it?
 - Customer quote (optional but desired).
 
 **Suggested UI component**:
+
 - [Feature](../components/feature)
 
 ### Example
 
 <Features>
-  <Feature image={"./img/author/placeholder-product-hero-feature-552x414.png"}>
+  <Feature image={'./img/author/placeholder-product-hero-feature-552x414.png'}>
     <FeatureTitle>Title: Story 1</FeatureTitle>
     <FeatureContent>
-      <P1 component="span"><b>Challenge</b>: </P1>The description of the challenge.
+      <P1 component="span">
+        <b>Challenge</b>:{' '}
+      </P1>
+      The description of the challenge.
     </FeatureContent>
     <FeatureContent>
-      <P1 component="span"><b>Solution</b>: </P1>The description of the solution and business results.
+      <P1 component="span">
+        <b>Solution</b>:{' '}
+      </P1>
+      The description of the solution and business results.
     </FeatureContent>
   </Feature>
-  <Feature image={"./img/author/placeholder-product-hero-feature-552x414.png"}>
+  <Feature image={'./img/author/placeholder-product-hero-feature-552x414.png'}>
     <FeatureTitle>Title: Story 2</FeatureTitle>
     <FeatureContent>
-      <P1 component="span"><b>Challenge</b>: </P1>The description of the challenge.
+      <P1 component="span">
+        <b>Challenge</b>:{' '}
+      </P1>
+      The description of the challenge.
     </FeatureContent>
     <FeatureContent>
-      <P1 component="span"><b>Solution</b>: </P1>The description of the solution and business results.
+      <P1 component="span">
+        <b>Solution</b>:{' '}
+      </P1>
+      The description of the solution and business results.
     </FeatureContent>
-  </Feature> 
+  </Feature>
 </Features>

@@ -4,7 +4,7 @@ description: Replace this with a page description
 layout: DetailOverview
 sidebar:
   priority: 19
-lastModified: 1681740157652
+lastModified: 1681741912186
 fullPath: /mosaic/author/ui-components/feature.mdx
 route: /mosaic/author/ui-components/feature
 breadcrumbs:
@@ -22,9 +22,9 @@ breadcrumbs:
     id: /mosaic/author/ui-components/feature.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.68
-  time: 100800
-  words: 336
+  minutes: 1.57
+  time: 94200
+  words: 314
 tableOfContents:
   - level: 1
     id: feature
@@ -451,6 +451,7 @@ sidebarData:
           link: /mosaic/author/ui-components/video-player
         childNodes: []
 ---
+
 # {meta.title}
 
 <Tabs>
@@ -460,21 +461,20 @@ sidebarData:
 
 A feature component is used to show a title, content, action elements, and support it with a large image.
 
-As content authors, you can use the component as a group. When you use it as a group, image placement that starts on the right is alternated for each subsequent feature. 
+As content authors, you can use the component as a group. When you use it as a group, image placement that starts on the right is alternated for each subsequent feature.
 
 ### Feature
 
 <Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
-<FeatureTitle>Feature title</FeatureTitle>
-  <FeatureContent>
-  Feature content.
-  </FeatureContent>
+  <FeatureTitle>Feature title</FeatureTitle>
+  <FeatureContent>Feature content.</FeatureContent>
   <FeatureActions>
     <Button link="mailto:#">Button text</Button>
   </FeatureActions>
-  </Feature>
+</Feature>
 
 ### Features
+
 <Features>
   <Feature
     image="/img/author/placeholder-product-hero-feature-552x414.png"
@@ -526,14 +526,15 @@ As content authors, you can use the component as a group. When you use it as a g
 **Maximum character count for Action: Button**: 14
 
 ### Feature variants
- The layout of the text and image can be varied, left or right, with the 'imagePlacement' prop. Features can be used to group multiple Feature components.
 
-| Feature variant | Prop |
-|----|----|
-| Basic primary |  |
-| Left image placement | `imagePlacement="left"` |
-| Multiple content children and no actions | `<FeatureContent>` |
-| Secondary | `variant="secondary"` |
+The layout of the text and image can be varied, left or right, with the 'imagePlacement' prop. Features can be used to group multiple Feature components.
+
+| Feature variant                          | Prop                    |
+| ---------------------------------------- | ----------------------- |
+| Basic primary                            |                         |
+| Left image placement                     | `imagePlacement="left"` |
+| Multiple content children and no actions | `<FeatureContent>`      |
+| Secondary                                | `variant="secondary"`   |
 
 </Tab>
 
@@ -543,19 +544,13 @@ As content authors, you can use the component as a group. When you use it as a g
 ### Basic primary feature
 
 ```jsx live
-  <Feature
-    image="/img/author/placeholder-product-hero-feature-552x414.png"
-  >
-<FeatureTitle>Feature title 1</FeatureTitle>
-  <FeatureContent>
-  Feature content for title 1
-  </FeatureContent>
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+  <FeatureTitle>Feature title 1</FeatureTitle>
+  <FeatureContent>Feature content for title 1</FeatureContent>
   <FeatureActions>
-    <Button link="mailto:#">
-      Button text
-    </Button>
+    <Button link="mailto:#">Button text</Button>
   </FeatureActions>
-  </Feature>
+</Feature>
 ```
 
 ### Left image placement
@@ -563,38 +558,24 @@ As content authors, you can use the component as a group. When you use it as a g
 Set `imagePlacement="left"` to render the image on the left.
 
 ```jsx live
-  <Feature
-    image="/img/author/placeholder-product-hero-feature-552x414.png"
-    imagePlacement="left"
-  >
-<FeatureTitle>Feature title 1</FeatureTitle>
-  <FeatureContent>
-    Feature content for title 2
-  </FeatureContent>
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
+  <FeatureTitle>Feature title 1</FeatureTitle>
+  <FeatureContent>Feature content for title 2</FeatureContent>
   <FeatureActions>
-    <Button link="mailto:#">
-      Button text
-    </Button>
+    <Button link="mailto:#">Button text</Button>
   </FeatureActions>
-  </Feature>
+</Feature>
 ```
 
-### Multiple content children and no actions 
+### Multiple content children and no actions
 
 Use `<FeatureContent>` again to create separation between text areas.
 
 ```jsx live
-<Feature 
- image="/img/author/placeholder-product-hero-feature-552x414.png"
- imagePlacement="left"
->
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
   <FeatureTitle>Feature title</FeatureTitle>
-  <FeatureContent>
-  Paragraph one for feature content.
-  </FeatureContent>
-  <FeatureContent>
-  Paragraph two for feature content.
-   </FeatureContent>
+  <FeatureContent>Paragraph one for feature content.</FeatureContent>
+  <FeatureContent>Paragraph two for feature content.</FeatureContent>
 </Feature>
 ```
 
@@ -603,60 +584,46 @@ Use `<FeatureContent>` again to create separation between text areas.
 Use `variant="secondary"` to render a secondary feature. This variant has no highlight bar, and text is vertically centered.
 
 ```jsx live
-  <Feature
-  image="/img/author/placeholder-product-hero-feature-552x414.png"
-  variant="secondary"
->
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" variant="secondary">
   <FeatureEyebrow>Feature eyebrow</FeatureEyebrow>
   <FeatureTitle>Feature title</FeatureTitle>
-  <FeatureContent>
-    Featurer content
-  </FeatureContent>
+  <FeatureContent>Featurer content</FeatureContent>
   <FeatureActions>
     <Label>Product used: </Label>
-    <Link variant="document" link="#">Link text</Link>
+    <Link variant="document" link="#">
+      Link text
+    </Link>
   </FeatureActions>
   <FeatureActions>
     <Button link="/support">Contact</Button>
-    <Link variant="regular" link="#">Link text</Link>
+    <Link variant="regular" link="#">
+      Link text
+    </Link>
   </FeatureActions>
 </Feature>
 ```
 
 ### Features
+
 ```jsx live
 <Features>
-  <Feature
-    image="/img/author/placeholder-product-hero-feature-552x414.png"
-  >
-<FeatureTitle>Feature title 1</FeatureTitle>
-  <FeatureContent>
-    Feature content for title 1.
-  </FeatureContent>
-  <FeatureActions>
-    <Button link="mailto:#">Button text</Button>
-  </FeatureActions>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+    <FeatureTitle>Feature title 1</FeatureTitle>
+    <FeatureContent>Feature content for title 1.</FeatureContent>
+    <FeatureActions>
+      <Button link="mailto:#">Button text</Button>
+    </FeatureActions>
   </Feature>
-  <Feature 
- image="/img/author/placeholder-product-hero-feature-552x414.png"
- imagePlacement="left"
->
-  <FeatureTitle>Feature title 2</FeatureTitle>
-  <FeatureContent>
-    Feature content for title 2.
-  </FeatureContent>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
+    <FeatureTitle>Feature title 2</FeatureTitle>
+    <FeatureContent>Feature content for title 2.</FeatureContent>
   </Feature>
-  <Feature
-    image="/img/author/placeholder-product-hero-feature-552x414.png"
-  >
-<FeatureTitle>Feature title 3</FeatureTitle>
-  <FeatureContent>
-  Feature content for title 3.
-  </FeatureContent>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+    <FeatureTitle>Feature title 3</FeatureTitle>
+    <FeatureContent>Feature content for title 3.</FeatureContent>
   </Feature>
-  </Features>
-  ```
+</Features>
+```
 
 </Tab>
 </Tabs>
-

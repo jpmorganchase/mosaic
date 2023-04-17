@@ -4,7 +4,7 @@ description: Replace this with a page description
 layout: DetailOverview
 sidebar:
   priority: 14
-lastModified: 1681740157653
+lastModified: 1681741912217
 fullPath: /mosaic/author/ui-components/hero.mdx
 route: /mosaic/author/ui-components/hero
 breadcrumbs:
@@ -22,9 +22,9 @@ breadcrumbs:
     id: /mosaic/author/ui-components/hero.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.02
-  time: 121200
-  words: 404
+  minutes: 2.04
+  time: 122400
+  words: 408
 tableOfContents:
   - level: 1
     id: hero
@@ -486,19 +486,19 @@ The component consists of a product name, one or two lines of body copy, and an 
 
 ### Variants
 
-| Hero variant | Usage |
-|----|----|
+| Hero variant      | Usage                                                                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Regular (default) | Used to introduce a group of products or services where more explanation is needed in the copy. You can also use this variant where the left and right navigations are required. |
-| Full width | Used on product marketing content, which can include an optional Primary button. |
+| Full width        | Used on product marketing content, which can include an optional Primary button.                                                                                                 |
 
 ### Additions
 
-| Additions | Usage |
-|----|----|
-| Links | You can provide additional navigation links for the hero image. |
-| Eyebrow | You can provide an additional eyebrow Hero. |
-| Datestamp | You can provide a datestamp. |
-| Without Image | You can remove the image for use with "full bleeds". |
+| Additions     | Usage                                                           |
+| ------------- | --------------------------------------------------------------- |
+| Links         | You can provide additional navigation links for the hero image. |
+| Eyebrow       | You can provide an additional eyebrow Hero.                     |
+| Datestamp     | You can provide a datestamp.                                    |
+| Without Image | You can remove the image for use with "full bleeds".            |
 
 </Tab>
 <Tab id="Code sample">
@@ -511,12 +511,8 @@ You can define the variant using the `variant` property. The default value is `r
 
 ```jsx live
 <Hero
-  description={
-    'Provide a description to give users a quick glimpse of the content on the page.'
-  }
-  image={
-    '/img/author/placeholder-details-hero-360x271.png'
-  }
+  description={'Provide a description to give users a quick glimpse of the content on the page.'}
+  image={'/img/author/placeholder-details-hero-360x271.png'}
   style={{ margin: '0px' }}
   title="Hero title"
   variant="regular"
@@ -526,6 +522,7 @@ You can define the variant using the `variant` property. The default value is `r
 ### Variant - Full width
 
 A fullwidth variant can be defined by the `variant` prop.
+
 ```jsx live
 <Hero
   description="Provide a description to give users a quick glimpse of the content on the page."

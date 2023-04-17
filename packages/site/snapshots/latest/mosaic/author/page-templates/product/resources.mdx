@@ -2,7 +2,7 @@
 title: Resources
 description: Replace this with a page description
 layout: ProductDiscover
-lastModified: 1681740157629
+lastModified: 1681741911986
 fullPath: /mosaic/author/page-templates/product/resources.mdx
 route: /mosaic/author/page-templates/product/resources
 breadcrumbs:
@@ -23,9 +23,9 @@ breadcrumbs:
     id: /mosaic/author/page-templates/product/resources.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.745
-  time: 44700
-  words: 149
+  minutes: 0.75
+  time: 45000
+  words: 150
 tableOfContents:
   - level: 2
     id: documentation
@@ -437,32 +437,33 @@ sidebarData:
 <SecondaryNavbar
   items={[
     {
-        "label": "Product Overview",
-        "link": "../product"
+      label: 'Product Overview',
+      link: '../product'
     },
     {
-        "label": "Features & Benefits",
-        "link": "../product/features"
+      label: 'Features & Benefits',
+      link: '../product/features'
     },
     {
-        "label": "Use Cases",
-        "link": "../product/use-cases"
+      label: 'Use Cases',
+      link: '../product/use-cases'
     },
     {
-        "label": "Resources",
-        "link": "../product/resources"
+      label: 'Resources',
+      link: '../product/resources'
     }
-]}
+  ]}
   supportLink="mailto:"
 />
 
 ## Documentation
 
-**Instruction**: Include a link to all related technical documentation for the product. 
-Include the product’s default summary text within this tab to provide signposting to users. 
+**Instruction**: Include a link to all related technical documentation for the product.
+Include the product’s default summary text within this tab to provide signposting to users.
 If you prefer alternative text, limit your content to **25** words.
 
 **Suggested UI component**:
+
 - [Tiles](../components/tiles)
 
 ### Example
@@ -471,32 +472,32 @@ The link to the landing page of the product technical documentation and specific
 
 <Tiles>
   <TileLink
-    action={"Learn more"}
-    description={"Plan and meet technical prerequisites"}
-    image={"./img/author/placeholder-icon-tiles-80x80.png"}
-    link={"#"}
-    title={"Get started"}
+    action={'Learn more'}
+    description={'Plan and meet technical prerequisites'}
+    image={'./img/author/placeholder-icon-tiles-80x80.png'}
+    link={'#'}
+    title={'Get started'}
   />
   <TileLink
-    action={"Learn more"}
-    description={"Learn how to onboard to <product_name>"}
-    image={"./img/author/placeholder-icon-tiles-80x80.png"}
-    link={"#"}
-    title={"Tutorial"}
+    action={'Learn more'}
+    description={'Learn how to onboard to <product_name>'}
+    image={'./img/author/placeholder-icon-tiles-80x80.png'}
+    link={'#'}
+    title={'Tutorial'}
   />
   <TileLink
-    action={"Learn more"}
-    description={"Understand technical architecture and product workflow"}
-    image={"./img/author/placeholder-icon-tiles-80x80.png"}
-    link={"#"}
-    title={"Technical overview"}
+    action={'Learn more'}
+    description={'Understand technical architecture and product workflow'}
+    image={'./img/author/placeholder-icon-tiles-80x80.png'}
+    link={'#'}
+    title={'Technical overview'}
   />
   <TileLink
-    action={"Learn more"}
-    description={"Read the API documentation"}
-    image={"./img/author/placeholder-icon-tiles-80x80.png"}
-    link={"#"}
-    title={"API reference"}
+    action={'Learn more'}
+    description={'Read the API documentation'}
+    image={'./img/author/placeholder-icon-tiles-80x80.png'}
+    link={'#'}
+    title={'API reference'}
   />
 </Tiles>
 
@@ -505,17 +506,19 @@ The link to the landing page of the product technical documentation and specific
 **Instruction**: Include important/commonly asked questions about the product, its usage, and value statement.
 
 **Suggested UI component**:
+
 - [Accordion](../components/accordion)
 
-<Accordion panels={[
+<Accordion
+  panels={[
     {
       expanded: false,
       summary: 'Question 1',
       content: (
-          <Feature variant="regular">
-            <FeatureContent>
-              <P1 component="span">Answer: </P1>The answer to the question.
-            </FeatureContent>
+        <Feature variant="regular">
+          <FeatureContent>
+            <P1 component="span">Answer: </P1>The answer to the question.
+          </FeatureContent>
         </Feature>
       )
     },
@@ -523,10 +526,10 @@ The link to the landing page of the product technical documentation and specific
       expanded: false,
       summary: 'Question 2',
       content: (
-          <Feature variant="regular">
-            <FeatureContent>
-              <P1 component="span">Answer: </P1>The answer to the question.
-            </FeatureContent>
+        <Feature variant="regular">
+          <FeatureContent>
+            <P1 component="span">Answer: </P1>The answer to the question.
+          </FeatureContent>
         </Feature>
       )
     },
@@ -534,11 +537,12 @@ The link to the landing page of the product technical documentation and specific
       expanded: false,
       summary: 'Question 3',
       content: (
-          <Feature variant="regular">
-            <FeatureContent>
-              <P1 component="span">Answer: </P1>The answer to the question.
-            </FeatureContent>
+        <Feature variant="regular">
+          <FeatureContent>
+            <P1 component="span">Answer: </P1>The answer to the question.
+          </FeatureContent>
         </Feature>
       )
     }
-  ]}/>
+  ]}
+/>
