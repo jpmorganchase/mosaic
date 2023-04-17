@@ -19,6 +19,7 @@ export type ImageProps = Omit<NextImageProps, 'src'> & {
 export const Image: FC<ImageProps> = forwardRef(
   (
     {
+      alt,
       className,
       nextImageClassName,
       src,
@@ -35,6 +36,7 @@ export const Image: FC<ImageProps> = forwardRef(
       <div className={classnames(styles.root, className)} ref={ref}>
         {fill || (width && height) ? (
           <NextImage
+            alt={alt}
             className={classnames(styles.nextImage, nextImageClassName)}
             {...rest}
             height={height}
@@ -45,6 +47,7 @@ export const Image: FC<ImageProps> = forwardRef(
           />
         ) : (
           <img
+            alt={alt}
             className={styles.img}
             src={src.match(/^(http[s]?:)?\/{1,2}/) === null ? resolvedSrc : src}
           />
