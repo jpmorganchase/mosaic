@@ -1,0 +1,114 @@
+---
+title: Cards
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 21
+---
+
+# {meta.title}
+
+<Tabs>
+<Tab id="Overview" defaultView>
+     
+## Overview
+
+As content authors, when you describe a product, you can use the card components to
+
+- Show high-level steps.
+- Display product features.
+
+### High-level steps
+
+You can use the card components to create a list of steps.
+
+<Cards>
+  <Card step="01" title="Step 1">
+    Description for Step 1.
+  </Card>
+  <Card step="02" title="Step 2">
+    Description for Step 2.
+  </Card>
+  <Card step="03" title="Step 3">
+    Description for Step 3.
+  </Card>
+  <Card step="04" title="Step 4">
+    Description for Step 4.
+  </Card>
+  <Card step="05" title="Step 5">
+    Description for Step 5.
+  </Card>
+  <Card step="06" title="Step 6">
+    Description for Step 6.
+  </Card>
+</Cards>
+
+### Product features
+
+You can use the card components to display product features without numbers.
+
+<Cards>
+  <Card title="Feature 1">
+  Description for feature 1.
+  </Card>
+  <Card title="Feature 2">
+  Description for feature 2.
+  </Card>
+  <Card title="Feature 3">
+  Description for feature 3.
+  </Card>
+  <Card title="Feature 4">
+  Description for feature 4.
+  </Card>
+  <Card title="Feature 5">
+  Description for feature 5.
+  </Card>
+  <Card title="Feature 6">
+  Description for feature 6.
+  </Card>
+</Cards>
+</Tab>
+
+<Tab id="Usage">
+
+## Usage
+
+- **Numeric character count**: 2
+- **Maximum title character count**: 20-40
+- **Maximum description character count**: 75-100
+- **Multiple cards usage**: When you use multiple card components, recommend using a set of
+  multiples of 3 (for example, 3, 6, 9) to achieve a better visual result.
+
+</Tab>
+
+<Tab id="Code sample">
+
+## Code sample
+
+### Cards
+
+```jsx live
+<Cards direction="row" justifyContent>
+  <Card step="01" title="Title for card 1">
+    The first Card's content.
+  </Card>
+  <Card step="02" title="Title for card 2">
+    The second Card's content.
+  </Card>
+  <Card step="03" title="Title for card 3">
+    The third Card's content.
+  </Card>
+</Cards>
+```
+
+```jsx live
+<Cards direction="row" justifyContent>
+  <Card title="Title for card 1">The first Card's content.</Card>
+  <Card title="Title for card 2">The second Card's content.</Card>
+  <Card title="Title for card 3">The third Card's content.</Card>
+</Cards>
+```
+
+</Tab>
+
+</Tabs>

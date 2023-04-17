@@ -1,0 +1,91 @@
+---
+title: Accordion
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 25
+---
+
+# {meta.title}
+
+<Tabs>
+
+<Tab id="Overview" defaultView>
+
+## Overview
+
+As content authors, you can use an accordion component to invite users to:
+
+- **Discover more information about a product**. Usually, there are a series of panes that contain
+  summary content with an image to give the product appeal. Users can click to show or hide content.
+- **Show a list of FAQs**. In this way, users locate the relevant question first, and then expand to
+  check the answer.
+
+<Accordion
+  panels={[
+    {
+      expanded: true,
+      summary: 'Summary for accordion 1',
+      content: (
+        <Feature variant="regular" image="/img/author/placeholder-product-hero-feature-552x414.png">
+          <FeatureContent>
+            <P1 component="span">
+              <b>Challenge:</b>
+            </P1>{' '}
+            Description for the challenge.
+          </FeatureContent>
+          <FeatureContent>
+            <P1 component="span">
+              <b>Solution:</b>
+            </P1>{' '}
+            Details about the solution.
+          </FeatureContent>
+        </Feature>
+      )
+    },
+    {
+      summary: 'Summary for accordion 2',
+      content: (
+        <Feature
+          variant="regular"
+          image="/img/author/placeholder-product-hero-feature-552x414.png"
+        >
+          <FeatureContent>
+            <P1 component="span">
+              <b>Challenge:</b>
+            </P1>{' '}
+            Description for the challenge.
+          </FeatureContent>
+          <FeatureContent>
+            <P1 component="span">
+              <b>Solution:</b>
+            </P1>{' '}
+            Details about the solution.
+          </FeatureContent>
+        </Feature>
+      )
+    }
+  ]}
+/>
+</Tab>
+
+<Tab id="Code sample">
+## Code sample
+
+```jsx live
+<Accordion
+  panels={[
+    {
+      summary: 'Summary for accordion 1',
+      content: 'Your content will appear in its own expanded panel.'
+    },
+    {
+      summary: 'Summary for accordion 2',
+      content: 'Your content will appear in its own expanded panel,'
+    }
+  ]}
+/>
+```
+
+</Tab>
+</Tabs>

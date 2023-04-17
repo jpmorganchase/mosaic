@@ -1,0 +1,139 @@
+---
+title: Product Marketing
+description: Replace this with a page description
+layout: ProductDiscover
+data:
+  name:
+    $ref: '#/title'
+  action: Templates Overview
+  description: Author product marketing content based on the templates.
+  image: /img/author/placeholder-icon-impact-40x40.png
+  link: ./product
+---
+
+<Hero
+  description="A short description of what the product does"
+  image="./img/author/placeholder-product-hero-feature-552x414.png"
+  title="Product marketing content"
+/>
+<SecondaryNavbar
+  items={[
+    {
+      label: 'Product Overview',
+      link: '../product'
+    },
+    {
+      label: 'Features & Benefits',
+      link: '../product/features'
+    },
+    {
+      label: 'Use Cases',
+      link: '../product/use-cases'
+    },
+    {
+      label: 'Resources',
+      link: '../product/resources'
+    }
+  ]}
+  supportLink="mailto:"
+/>
+
+## Overview
+
+**Instruction**: The overview is the first paragraph on the Product Overview landing page that users read, so it’s critical that the content quickly and clearly describes what your product does.
+
+This segment should convey your product’s technical value proposition (elevator pitch), higher-level benefits to LoBs and other readers, highlight a selection of your product’s technical features and engage readers.
+
+The overview should include **1-2** opening paragraphs that total a **maximum of 150 words**.
+
+**Suggested UI component**:
+
+- [Cards](../components/card)
+
+## How it works
+
+**Instruction**: This section explains your product’s functionality, how it helps users achieve desired outcomes, the processes and interactions involved, key implementation information, etc.
+
+We recommend that you include a functional diagram such as a flow chart or another visual aid here to better illustrate your product’s workflows and processes.
+
+In lieu of a visual, use bulleted or numbered lists to break up your content and make it more scannable. Limit any text in this section to **150** words.
+
+**Suggested content**:
+
+- Text
+- Image
+
+## Get started
+
+**Instruction**: This call-to-action (CTA) section explains the initial steps the user must take to explore and begin using your product.
+
+Depending on the maturity and complexity of your product, you have two options:
+
+- Point the CTA to your technical documentation.
+  1. Verify that your technical documentation is available on the website, and ensure the Resources tab is populated with the relevant product tiles.
+  2. Update the CTA button text to “GO TO DOCUMENTATION” and ensure the hyperlink is points to the product’s corresponding Resources tab.
+  3. You may add additional text within this section encouraging users to review your technical documentation. Limit your text to **35** words.
+- Point your CTA to your support channel.
+  1. Verify that you have a support channel through which the reader can contact your team.
+  2. Update the CTA button text to “GET IN TOUCH” and ensure the hyperlink includes a 'mailto' designation.
+  3. You may add additional text within this section encouraging users to get in touch. Limit your text to **50** words.
+
+**Suggested UI components**:
+
+- [Feature](../components/feature)
+- [Button](../components/button)
+
+### Example
+
+<Feature image={'./img/author/placeholder-product-hero-feature-552x414.png'}>
+  <FeatureTitle>Get started</FeatureTitle>
+  <FeatureContent>
+    <P2>
+      State the product readiness at the beginning so that users know the state of the product: - If
+      the product is **Ready for co-development** or **Ready for consultation**, provide team
+      contact and/or support information. - If the product is **Ready to use**, list the link to the
+      technical documentation for implementation. You can also provide the link to the console.
+    </P2>
+  </FeatureContent>
+  <FeatureActions>
+    <Button href={'/starter/author/page-templates/product/resources'}>Go to documentation</Button>
+  </FeatureActions>
+</Feature>
+
+## Related products
+
+**Instruction**: Provide links to any related products that are featured on the website.
+Ensure you use the latest product names and descriptions.
+
+**Suggested UI component**:
+
+- [Tiles](../components/tiles)
+
+### Example
+
+<Tiles>
+  <TileLink
+    action={'Product Overview'}
+    description={'The short description of related Product A.'}
+    disabled={false}
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
+    link={'#'}
+    title={'Product A'}
+  />
+  <TileLink
+    action={'Product Overview'}
+    description={'The short description of related Product B.'}
+    disabled={false}
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
+    link={'#'}
+    title={'Product B'}
+  />
+  <TileLink
+    action={'Product Overview'}
+    description={'The short description of related Product C.'}
+    disabled={false}
+    image={'./img/author/placeholder-icon-impact-40x40.png'}
+    link={'#'}
+    title={'Product C'}
+  />
+</Tiles>

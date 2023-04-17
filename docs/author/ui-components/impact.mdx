@@ -1,0 +1,90 @@
+---
+title: Impact
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 13
+---
+
+# {meta.title}
+
+<Tabs>
+    <Tab id="Overview" defaultView>
+
+## Overview
+
+You can use one or multiple impact components to present the numeral value of a specific statistic through the large typography and card-like style.
+
+### Impact
+
+Impact is used to display key information.
+
+<Impacts>
+  <Impact
+    image={'/img/author/placeholder-icon-impact-40x40.png'}
+    title="Number"
+    label="Metric name"
+  />
+</Impacts>
+
+### Impacts
+
+A group for impact components.
+
+<Impacts>
+  <Impact
+    image={'/img/author/placeholder-icon-impact-40x40.png'}
+    title="Number"
+    label="Metric name"
+  />
+  <Impact
+    image={'/img/author/placeholder-icon-impact-40x40.png'}
+    title="Number"
+    label="Metric name"
+  />
+</Impacts>
+
+</Tab>
+    <Tab id="Usage">
+  ## Usage
+
+- **Maximum matric number character count**: 9
+- **Maximum description text character count**: 36
+
+Component iconography should reflect category meaning and can be reusable with similar topic
+metrics.
+
+</Tab>
+<Tab id="Code sample">
+
+## Code sample
+
+### Single impact component
+
+```jsx live
+<Impact
+  image={'/img/author/placeholder-icon-impact-40x40.png'}
+  title="Number"
+  label="Metric name"
+/>
+```
+
+### Multiple impact components
+
+```jsx live
+<Impacts>
+  <Impact
+    image={'/img/author/placeholder-icon-impact-40x40.png'}
+    title="Number"
+    label="Metric name"
+  />
+  <Impact
+    image={'/img/author/placeholder-icon-impact-40x40.png'}
+    title="Number"
+    label="Metric name"
+  />
+</Impacts>
+```
+
+</Tab>
+</Tabs>

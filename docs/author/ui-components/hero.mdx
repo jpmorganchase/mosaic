@@ -1,0 +1,139 @@
+---
+title: Hero
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 14
+---
+
+# {meta.title}
+
+<Tabs>
+<Tab id="Overview" defaultView>
+     
+## Overview
+
+As content authors, you can use the hero component to give users a quick glimpse of the content on the page and deliver
+the most important content front and center.
+
+The component consists of a product name, one or two lines of body copy, and an image. Text content should be kept to a minimum so that users can scan through it quickly. <br/><br/>
+
+<Hero
+    description="Provide a description to give users a quick glimpse of the content on the page."
+    image="/img/author/placeholder-details-hero-360x271.png"
+    title="Hero title"
+    variant="regular"
+  />
+</Tab>
+
+<Tab id="Usage">
+
+## Usage
+
+- **Maximum title character count**: 32
+- **Maximum description character count**: 165
+- **Maximum eyebrow character count**: 36
+- **Maximum datestamp character count**: 88
+
+### Variants
+
+| Hero variant      | Usage                                                                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Regular (default) | Used to introduce a group of products or services where more explanation is needed in the copy. You can also use this variant where the left and right navigations are required. |
+| Full width        | Used on product marketing content, which can include an optional Primary button.                                                                                                 |
+
+### Additions
+
+| Additions     | Usage                                                           |
+| ------------- | --------------------------------------------------------------- |
+| Links         | You can provide additional navigation links for the hero image. |
+| Eyebrow       | You can provide an additional eyebrow Hero.                     |
+| Datestamp     | You can provide a datestamp.                                    |
+| Without Image | You can remove the image for use with "full bleeds".            |
+
+</Tab>
+<Tab id="Code sample">
+
+## Code sample
+
+### Variant - Regular
+
+You can define the variant using the `variant` property. The default value is `regular`.
+
+```jsx live
+<Hero
+  description={'Provide a description to give users a quick glimpse of the content on the page.'}
+  image={'/img/author/placeholder-details-hero-360x271.png'}
+  style={{ margin: '0px' }}
+  title="Hero title"
+  variant="regular"
+/>
+```
+
+### Variant - Full width
+
+A fullwidth variant can be defined by the `variant` prop.
+
+```jsx live
+<Hero
+  description="Provide a description to give users a quick glimpse of the content on the page."
+  image="/img/author/placeholder-details-hero-360x271.png"
+  title="Hero title"
+  variant="fullWidth"
+/>
+```
+
+### Additions - With links
+
+Additional navigation links can be provided by the `links` prop.
+
+```jsx live
+<Hero
+  description="Provide a description to give users a quick glimpse of the content on the page."
+  image="/img/author/placeholder-details-hero-360x271.png"
+  links={[
+    { label: 'Link 1', link: '#' },
+    { label: 'Link 2', link: '#' }
+  ]}
+  title="Hero title"
+/>
+```
+
+### Additions - With eyebrow
+
+An additional eyebrow Hero can be provided by the `eyebrow` prop.
+
+```jsx live
+<Hero
+  description="Provide a description to give users a quick glimpse of the content on the page."
+  eyebrow="Additional Eyebrow"
+  image="/img/author/placeholder-details-hero-360x271.png"
+  title="Hero title"
+/>
+```
+
+### Additions - With datestamp
+
+A datestamp can be provided by the `datestamp` prop.
+
+```jsx live
+<Hero
+  description="Provide a description to give users a quick glimpse of the content on the page."
+  image="/img/author/placeholder-details-hero-360x271.png"
+  title="Hero title"
+/>
+```
+
+### Additions - With images
+
+The image can be removed for use with 'full bleeds'.
+
+```jsx live
+<Hero
+  description="Provide a description to give users a quick glimpse of the content on the page."
+  title="Hero title"
+/>
+```
+
+</Tab>
+</Tabs>

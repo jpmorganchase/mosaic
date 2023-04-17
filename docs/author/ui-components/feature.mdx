@@ -1,0 +1,183 @@
+---
+title: Feature
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 19
+---
+
+# {meta.title}
+
+<Tabs>
+<Tab id="Overview" defaultView>
+     
+## Overview
+
+A feature component is used to show a title, content, action elements, and support it with a large image.
+
+As content authors, you can use the component as a group. When you use it as a group, image placement that starts on the right is alternated for each subsequent feature.
+
+### Feature
+
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+  <FeatureTitle>Feature title</FeatureTitle>
+  <FeatureContent>Feature content.</FeatureContent>
+  <FeatureActions>
+    <Button link="mailto:#">Button text</Button>
+  </FeatureActions>
+</Feature>
+
+### Features
+
+<Features>
+  <Feature
+    image="/img/author/placeholder-product-hero-feature-552x414.png"
+  >
+<FeatureTitle>Feature title 1</FeatureTitle>
+  <FeatureContent>
+  Feature content for title 1.
+  </FeatureContent>
+  <FeatureActions>
+    <Button link="mailto:#">Button text</Button>
+  </FeatureActions>
+  </Feature>
+  
+  <Feature 
+  image="/img/author/placeholder-product-hero-feature-552x414.png"
+  imagePlacement="left">
+  <FeatureTitle>Feature title 2</FeatureTitle>
+  <FeatureContent>
+  Feature content for title 2.
+  </FeatureContent>
+</Feature>
+
+<Feature
+    image="/img/author/placeholder-product-hero-feature-552x414.png"
+  >
+<FeatureTitle>Feature title 3</FeatureTitle>
+  <FeatureContent>
+  Feature content for title 3.
+  </FeatureContent>
+  </Feature>
+  </Features>
+
+</Tab>
+
+<Tab id="Usage">
+  
+## Usage
+
+**Maximum character count for Eyebrow**: 28
+
+**Maximum character count for Title**: 40
+
+**Maximum character count for Description**: 200
+
+**Maximum character count for Sub Text**: 16
+
+**Maximum character count for Link**: 40
+
+**Maximum character count for Action: Button**: 14
+
+### Feature variants
+
+The layout of the text and image can be varied, left or right, with the 'imagePlacement' prop. Features can be used to group multiple Feature components.
+
+| Feature variant                          | Prop                    |
+| ---------------------------------------- | ----------------------- |
+| Basic primary                            |                         |
+| Left image placement                     | `imagePlacement="left"` |
+| Multiple content children and no actions | `<FeatureContent>`      |
+| Secondary                                | `variant="secondary"`   |
+
+</Tab>
+
+<Tab id="Code sample">
+  ## Code sample
+
+### Basic primary feature
+
+```jsx live
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+  <FeatureTitle>Feature title 1</FeatureTitle>
+  <FeatureContent>Feature content for title 1</FeatureContent>
+  <FeatureActions>
+    <Button link="mailto:#">Button text</Button>
+  </FeatureActions>
+</Feature>
+```
+
+### Left image placement
+
+Set `imagePlacement="left"` to render the image on the left.
+
+```jsx live
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
+  <FeatureTitle>Feature title 1</FeatureTitle>
+  <FeatureContent>Feature content for title 2</FeatureContent>
+  <FeatureActions>
+    <Button link="mailto:#">Button text</Button>
+  </FeatureActions>
+</Feature>
+```
+
+### Multiple content children and no actions
+
+Use `<FeatureContent>` again to create separation between text areas.
+
+```jsx live
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
+  <FeatureTitle>Feature title</FeatureTitle>
+  <FeatureContent>Paragraph one for feature content.</FeatureContent>
+  <FeatureContent>Paragraph two for feature content.</FeatureContent>
+</Feature>
+```
+
+### Secondary
+
+Use `variant="secondary"` to render a secondary feature. This variant has no highlight bar, and text is vertically centered.
+
+```jsx live
+<Feature image="/img/author/placeholder-product-hero-feature-552x414.png" variant="secondary">
+  <FeatureEyebrow>Feature eyebrow</FeatureEyebrow>
+  <FeatureTitle>Feature title</FeatureTitle>
+  <FeatureContent>Featurer content</FeatureContent>
+  <FeatureActions>
+    <Label>Product used: </Label>
+    <Link variant="document" link="#">
+      Link text
+    </Link>
+  </FeatureActions>
+  <FeatureActions>
+    <Button link="/support">Contact</Button>
+    <Link variant="regular" link="#">
+      Link text
+    </Link>
+  </FeatureActions>
+</Feature>
+```
+
+### Features
+
+```jsx live
+<Features>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+    <FeatureTitle>Feature title 1</FeatureTitle>
+    <FeatureContent>Feature content for title 1.</FeatureContent>
+    <FeatureActions>
+      <Button link="mailto:#">Button text</Button>
+    </FeatureActions>
+  </Feature>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png" imagePlacement="left">
+    <FeatureTitle>Feature title 2</FeatureTitle>
+    <FeatureContent>Feature content for title 2.</FeatureContent>
+  </Feature>
+  <Feature image="/img/author/placeholder-product-hero-feature-552x414.png">
+    <FeatureTitle>Feature title 3</FeatureTitle>
+    <FeatureContent>Feature content for title 3.</FeatureContent>
+  </Feature>
+</Features>
+```
+
+</Tab>
+</Tabs>

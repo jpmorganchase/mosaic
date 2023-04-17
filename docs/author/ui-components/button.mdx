@@ -1,0 +1,84 @@
+---
+title: Button
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 23
+---
+
+# {meta.title}
+
+ <Tabs>
+    <Tab id="Overview" defaultView>
+     
+## Overview
+
+Buttons are interactive elements that users can click to trigger actions on a page.
+
+<br />
+<br />
+<br />
+
+<Button variant="regular">Regular</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="cta">Call-to-action</Button>
+
+</Tab>
+<Tab id="Usage">
+
+## Usage
+
+Each button can have a label and icon to express the action to occur.
+
+As content authors, when you use buttons, bear in
+mind the following notes:
+
+- Don't use buttons as navigation elements. Use
+  [links](./link) instead.
+- Start a button label with an active verb, and keep the label **within only one or two words** in
+  length though the maximum character count for a button label is 16.
+- Icons can be used in place of or to accompany a button label. However, ensure that the icon has a
+  strong visual link to the action or is a commonly recognized visual reference.
+
+### Button variants
+
+- **Call-to-action (CTA) buttons**
+  - CTA buttons are used to initiate the most important action on a screen. They should appear only
+    once per screen (excluding modals/dialogs or app headers).
+- **Regular (primary) buttons**
+  - Regular buttons are used independently for lower priority or actions that do not require
+    immediate attention. They can appear multiple times on a screen or page.
+- **Secondary buttons**
+  - Secondary buttons are used to provide an alternative or opposite action to the CTA button. They
+    should only be used in conjunction with a CTA button as part of a pair.
+
+</Tab>
+<Tab id="Code sample">
+  ## Code sample
+
+### Regular button
+
+```jsx live
+<Button variant="regular" href="#" target="_blank">
+  Regular
+</Button>
+```
+
+### Secondary button
+
+```jsx live
+<Button variant="secondary" href="#" target="_blank">
+  Secondary
+</Button>
+```
+
+### CTA button
+
+```jsx live
+<Button variant="cta" href="#" target="_blank">
+  CTA
+</Button>
+```
+
+</Tab>
+</Tabs>
