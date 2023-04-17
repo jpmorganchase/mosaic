@@ -1,0 +1,624 @@
+---
+title: Tiles
+description: Replace this with a page description
+layout: DetailOverview
+sidebar:
+  priority: 3
+lastModified: 1681740157671
+fullPath: /mosaic/author/ui-components/tiles.mdx
+route: /mosaic/author/ui-components/tiles
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index.mdx
+    id: /mosaic/index.mdx
+  - label: Author
+    path: /mosaic/author/index.mdx
+    id: /mosaic/author/index.mdx
+  - label: UI Components
+    path: /mosaic/author/ui-components/index.mdx
+    id: /mosaic/author/ui-components/index.mdx
+  - label: Tiles
+    path: /mosaic/author/ui-components/tiles.mdx
+    id: /mosaic/author/ui-components/tiles.mdx
+readingTime:
+  text: 3 min read
+  minutes: 2.05
+  time: 123000
+  words: 410
+tableOfContents:
+  - level: 1
+    id: tiles
+    text: Tiles
+  - level: 2
+    id: overview
+    text: Overview
+  - level: 3
+    id: tile-variants
+    text: Tile variants
+  - level: 2
+    id: code-sample
+    text: Code sample
+  - level: 3
+    id: tile-base
+    text: Tile base
+  - level: 3
+    id: tile-content
+    text: Tile content
+  - level: 3
+    id: tile-link
+    text: Tile link
+navigation:
+  prev:
+    title: Tabs
+    route: /mosaic/author/ui-components/tabs
+  next:
+    title: Video player
+    route: /mosaic/author/ui-components/video-player
+sidebarData:
+  - id: /mosaic/author/index
+    fullPath: /mosaic/author/index.mdx
+    name: Author
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/index
+    childNodes: []
+  - id: /mosaic/author/markdown-syntax
+    fullPath: /mosaic/author/markdown-syntax.mdx
+    name: Markdown Syntax
+    priority: 5
+    data:
+      level: 2
+      link: /mosaic/author/markdown-syntax
+    childNodes: []
+  - id: /mosaic/author/frontmatter
+    fullPath: /mosaic/author/frontmatter.mdx
+    name: Frontmatter
+    priority: 4
+    data:
+      level: 2
+      link: /mosaic/author/frontmatter
+    childNodes: []
+  - id: /mosaic/author/aliases
+    fullPath: /mosaic/author/aliases.mdx
+    name: Aliases
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/aliases
+    childNodes: []
+  - id: /mosaic/author/refs
+    fullPath: /mosaic/author/refs.mdx
+    name: Refs
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/refs
+    childNodes: []
+  - id: /mosaic/author/page-templates/index
+    fullPath: /mosaic/author/page-templates/index.mdx
+    name: Page Templates
+    priority: 3
+    data:
+      level: 3
+      link: /mosaic/author/page-templates/index
+    childNodes:
+      - id: /mosaic/author/page-templates/docs/index
+        fullPath: /mosaic/author/page-templates/docs/index.mdx
+        name: Technical Documentation
+        priority: 8
+        data:
+          level: 4
+          link: /mosaic/author/page-templates/docs/index
+        childNodes:
+          - id: /mosaic/author/page-templates/docs/get-started/index
+            fullPath: /mosaic/author/page-templates/docs/get-started/index.mdx
+            name: Get started
+            priority: 7
+            data:
+              level: 5
+              link: /mosaic/author/page-templates/docs/get-started/index
+            childNodes:
+              - id: /mosaic/author/page-templates/docs/get-started/task-1
+                fullPath: /mosaic/author/page-templates/docs/get-started/task-1.mdx
+                name: 1. Task 1
+                priority: 2
+                data:
+                  level: 5
+                  link: /mosaic/author/page-templates/docs/get-started/task-1
+                childNodes: []
+              - id: /mosaic/author/page-templates/docs/get-started/task-2
+                fullPath: /mosaic/author/page-templates/docs/get-started/task-2.mdx
+                name: 2. Task 2
+                priority: 2
+                data:
+                  level: 5
+                  link: /mosaic/author/page-templates/docs/get-started/task-2
+                childNodes: []
+          - id: /mosaic/author/page-templates/docs/tutorials/index
+            fullPath: /mosaic/author/page-templates/docs/tutorials/index.mdx
+            name: Tutorials
+            priority: 6
+            data:
+              level: 5
+              link: /mosaic/author/page-templates/docs/tutorials/index
+            childNodes:
+              - id: /mosaic/author/page-templates/docs/tutorials/tutorial-1
+                fullPath: /mosaic/author/page-templates/docs/tutorials/tutorial-1.mdx
+                name: Tutorial 1
+                priority: 2
+                data:
+                  level: 5
+                  link: /mosaic/author/page-templates/docs/tutorials/tutorial-1
+                childNodes: []
+              - id: /mosaic/author/page-templates/docs/tutorials/tutorial-2/index
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/tutorials/tutorial-2/index.mdx
+                name: Tutorial 2
+                priority: 1
+                data:
+                  level: 6
+                  link: >-
+                    /mosaic/author/page-templates/docs/tutorials/tutorial-2/index
+                childNodes:
+                  - id: >-
+                      /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-1
+                    fullPath: >-
+                      /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-1.mdx
+                    name: 1. Task 1
+                    data:
+                      level: 6
+                      link: >-
+                        /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-1
+                    childNodes: []
+                  - id: >-
+                      /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-2
+                    fullPath: >-
+                      /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-2.mdx
+                    name: 2. Task 2
+                    data:
+                      level: 6
+                      link: >-
+                        /mosaic/author/page-templates/docs/tutorials/tutorial-2/task-2
+                    childNodes: []
+          - id: /mosaic/author/page-templates/docs/how-tos/index
+            fullPath: /mosaic/author/page-templates/docs/how-tos/index.mdx
+            name: How-tos
+            priority: 5
+            data:
+              level: 5
+              link: /mosaic/author/page-templates/docs/how-tos/index
+            childNodes:
+              - id: /mosaic/author/page-templates/docs/how-tos/task-a
+                fullPath: /mosaic/author/page-templates/docs/how-tos/task-a.mdx
+                name: Task A
+                priority: 2
+                data:
+                  level: 5
+                  link: /mosaic/author/page-templates/docs/how-tos/task-a
+                childNodes: []
+          - id: /mosaic/author/page-templates/docs/concepts-and-terminology/index
+            fullPath: >-
+              /mosaic/author/page-templates/docs/concepts-and-terminology/index.mdx
+            name: Concepts and terminology
+            priority: 4
+            data:
+              level: 5
+              link: >-
+                /mosaic/author/page-templates/docs/concepts-and-terminology/index
+            childNodes:
+              - id: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/technical-overview
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/technical-overview.mdx
+                name: Technical overview
+                priority: 3
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/concepts-and-terminology/technical-overview
+                childNodes: []
+              - id: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/concepts
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/concepts.mdx
+                name: Concepts
+                priority: 2
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/concepts-and-terminology/concepts
+                childNodes: []
+              - id: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/glossary
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/concepts-and-terminology/glossary.mdx
+                name: Glossary
+                priority: 1
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/concepts-and-terminology/glossary
+                childNodes: []
+          - id: /mosaic/author/page-templates/docs/api-reference
+            fullPath: /mosaic/author/page-templates/docs/api-reference.mdx
+            name: API reference
+            priority: 3
+            data:
+              level: 4
+              link: /mosaic/author/page-templates/docs/api-reference
+            childNodes: []
+          - id: /mosaic/author/page-templates/docs/references/index
+            fullPath: /mosaic/author/page-templates/docs/references/index.mdx
+            name: References
+            priority: 2
+            data:
+              level: 5
+              link: /mosaic/author/page-templates/docs/references/index
+            childNodes:
+              - id: /mosaic/author/page-templates/docs/references/system-entities
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/references/system-entities.mdx
+                name: System entities
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/references/system-entities
+                childNodes: []
+          - id: >-
+              /mosaic/author/page-templates/docs/troubleshooting-and-support/index
+            fullPath: >-
+              /mosaic/author/page-templates/docs/troubleshooting-and-support/index.mdx
+            name: Troubleshooting and support
+            priority: 1
+            data:
+              level: 5
+              link: >-
+                /mosaic/author/page-templates/docs/troubleshooting-and-support/index
+            childNodes:
+              - id: >-
+                  /mosaic/author/page-templates/docs/troubleshooting-and-support/faqs
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/troubleshooting-and-support/faqs.mdx
+                name: FAQs
+                priority: 2
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/troubleshooting-and-support/faqs
+                childNodes: []
+              - id: >-
+                  /mosaic/author/page-templates/docs/troubleshooting-and-support/support
+                fullPath: >-
+                  /mosaic/author/page-templates/docs/troubleshooting-and-support/support.mdx
+                name: Support
+                priority: 1
+                data:
+                  level: 5
+                  link: >-
+                    /mosaic/author/page-templates/docs/troubleshooting-and-support/support
+                childNodes: []
+      - id: /mosaic/author/page-templates/product/index
+        fullPath: /mosaic/author/page-templates/product/index.mdx
+        name: Product Marketing
+        data:
+          level: 4
+          link: /mosaic/author/page-templates/product/index
+        childNodes:
+          - id: /mosaic/author/page-templates/product/features
+            fullPath: /mosaic/author/page-templates/product/features.mdx
+            name: Features & Benefits
+            data:
+              level: 4
+              link: /mosaic/author/page-templates/product/features
+            childNodes: []
+          - id: /mosaic/author/page-templates/product/resources
+            fullPath: /mosaic/author/page-templates/product/resources.mdx
+            name: Resources
+            data:
+              level: 4
+              link: /mosaic/author/page-templates/product/resources
+            childNodes: []
+          - id: /mosaic/author/page-templates/product/use-cases
+            fullPath: /mosaic/author/page-templates/product/use-cases.mdx
+            name: Use Cases
+            data:
+              level: 4
+              link: /mosaic/author/page-templates/product/use-cases
+            childNodes: []
+  - id: /mosaic/author/ui-components/index
+    fullPath: /mosaic/author/ui-components/index.mdx
+    name: UI Components
+    priority: 2
+    data:
+      level: 3
+      link: /mosaic/author/ui-components/index
+    childNodes:
+      - id: /mosaic/author/ui-components/accordion
+        fullPath: /mosaic/author/ui-components/accordion.mdx
+        name: Accordion
+        priority: 25
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/accordion
+        childNodes: []
+      - id: /mosaic/author/ui-components/audio-player
+        fullPath: /mosaic/author/ui-components/audio-player.mdx
+        name: Audio player
+        priority: 24
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/audio-player
+        childNodes: []
+      - id: /mosaic/author/ui-components/button
+        fullPath: /mosaic/author/ui-components/button.mdx
+        name: Button
+        priority: 23
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/button
+        childNodes: []
+      - id: /mosaic/author/ui-components/callout
+        fullPath: /mosaic/author/ui-components/callout.mdx
+        name: Callout
+        priority: 22
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/callout
+        childNodes: []
+      - id: /mosaic/author/ui-components/card
+        fullPath: /mosaic/author/ui-components/card.mdx
+        name: Cards
+        priority: 21
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/card
+        childNodes: []
+      - id: /mosaic/author/ui-components/feature
+        fullPath: /mosaic/author/ui-components/feature.mdx
+        name: Feature
+        priority: 19
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/feature
+        childNodes: []
+      - id: /mosaic/author/ui-components/hero
+        fullPath: /mosaic/author/ui-components/hero.mdx
+        name: Hero
+        priority: 14
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/hero
+        childNodes: []
+      - id: /mosaic/author/ui-components/impact
+        fullPath: /mosaic/author/ui-components/impact.mdx
+        name: Impact
+        priority: 13
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/impact
+        childNodes: []
+      - id: /mosaic/author/ui-components/link
+        fullPath: /mosaic/author/ui-components/link.mdx
+        name: Link
+        priority: 11
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/link
+        childNodes: []
+      - id: /mosaic/author/ui-components/lists
+        fullPath: /mosaic/author/ui-components/lists.mdx
+        name: Lists
+        priority: 10
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/lists
+        childNodes: []
+      - id: /mosaic/author/ui-components/tabs
+        fullPath: /mosaic/author/ui-components/tabs.mdx
+        name: Tabs
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/tabs
+        childNodes: []
+      - id: /mosaic/author/ui-components/tiles
+        fullPath: /mosaic/author/ui-components/tiles.mdx
+        name: Tiles
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/tiles
+        childNodes: []
+      - id: /mosaic/author/ui-components/video-player
+        fullPath: /mosaic/author/ui-components/video-player.mdx
+        name: Video player
+        priority: 1
+        data:
+          level: 3
+          link: /mosaic/author/ui-components/video-player
+        childNodes: []
+---
+
+# {meta.title}
+
+<Tabs>
+
+<Tab id="Overview" defaultView>
+     
+## Overview
+
+Tile is a card-like component, which allows users to consume summary content and click for shortcuts to targeted pages.
+
+A tile component provides an area for an image, title text, description, action elements and more.
+
+As content authors, you can use and customize tiles in multiple ways for different purposes:
+
+- You can use tiles to change the page state when a user interacts with the component.
+- You can use tiles as a navigational page element to guide viewers to their potential page by
+  teasing an image and title with more content elements.
+
+<Tiles>
+  <TileContent
+    action="Small text"
+    description="Description"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    title="TileContent"
+  />
+  <TileLink
+    action="Link text"
+    description="Description"
+    eyebrow="Small text"
+    link="#"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    imagePlacement="top"
+    size="medium"
+    title="TileLink"
+  />
+  <TileButton
+    action="Button label"
+    description="Description"
+    eyebrow="Small text"
+    link="#"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    imagePlacement="top"
+    size="medium"
+    title="TileButton"
+  />
+</Tiles>
+
+
+</Tab>
+    <Tab id="Usage">
+  ## Usage
+
+- **Title character count**: 60
+- **Description character count**: 120
+- **Small text-italic character count**: 14
+- **Sub-text character count**: 30
+- **Links character count**: 36
+- **Buttons character count**: 36
+
+### Tile variants
+
+#### Type variant
+
+| Tile variant | Usage |
+|----|----|
+| Tile base | The TileBase component is used as a base component to create other Tile components. It is the simplest form of Tile, sharing a common API across all the Tile components, through composition. We typically do not use TileBase directly. Instead, it is a technical component used to create other tiles. |
+| Tile content (default) | It is used to create create consistent UI for Tile components. The TileContent component is used to create create consistent UI for Tile components. Considered a technical component it enables us to re-use the same composition of image/text across multiple tile components.  | 
+| Tile link | It is used to create a rich link to navigate between content pages. The TileLink component is used to create a rich Link, to navigate between content pages. If upon selection, you require to change the application state, you should use a TileButton.|
+
+#### Size variants
+
+- Small
+- Medium
+- Large
+- Full-width
+
+</Tab>
+<Tab id="Code sample">
+ 
+## Code sample
+
+### Tile base
+
+If you want to add other content, you can pass any children to tile base.
+
+#### Tile size
+
+The available sizes are `small`, `medium`, and `large`.
+
+```jsx live
+  <TileBase link="#" size="small">
+    <p>Tile content</p>
+  </TileBase>
+```
+
+### Tile content
+
+#### Tile size
+
+The available sizes are `small`, `medium`, and `large`.
+
+```jsx live
+  <TileContent
+    action={<Link href="#">Link text</Link>}
+    description="Description"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    size="small"
+    title="TileContent"
+  />
+```
+#### Tile content label
+
+In addition to the default text renderer for `description`, we can compose with a `TileContentLabel` to render a list of items with a tooltip.
+
+ ```jsx live
+  <TileContent
+    action={<Link href="#">Link text</Link>}
+    caption={
+        <TileContentLabel
+          labelItems={['Label 1', 'Label 2', 'Label 3']}
+          labelName="Label name"
+        />
+    }
+    description="Description."
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    title="TileContent"
+  />
+  ```
+
+### Tile link
+
+#### Tile size
+
+The available sizes are `small`, `medium`, `large` and `fullWidth`.
+
+#### Image placement top
+
+```jsx live
+  <TileLink
+    action="Link text"
+    description="Description"
+    eyebrow="Small text"
+    link="#"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    imagePlacement="top"
+    size="medium"
+    title="TileLink"
+  />
+```
+
+#### Image placement left
+```jsx live
+  <TileLink
+    action="Link text"
+    description="Description"
+    eyebrow="Small text"
+    link="#"
+    image="/img/author/placeholder-icon-tiles-80x80.png"
+    imagePlacement="left"
+    size="medium"
+    title="TileLink"
+  />
+```
+
+#### Image placement full width
+
+```jsx live
+  <TileLink
+    action="Link text"
+    description="Description"
+    eyebrow="Small text"
+    link="#"
+    image="/img/author/placeholder-icon-tiles-296x162.png"
+    imagePlacement="fullWidth"
+    size="medium"
+    title="TileLink"
+  />
+```
+***
+
+</Tab>
+</Tabs>
