@@ -20,7 +20,7 @@ interface ResultListItemProps {
   onSelect: (result) => void;
 }
 
-const MAX_RESULTS = 10;
+const MAX_RESULTS = 6;
 
 function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
   const [hovered, setHovered] = useState(false);
