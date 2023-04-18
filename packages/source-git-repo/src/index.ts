@@ -20,9 +20,12 @@ export const schema = z.object({
   /**
    * The git repository URL without any protocol
    */
-  repo: z.string({
-    required_error: 'Please provide a git repository URL (without any protocol)'
-  }),
+  repo: z
+    .string({
+      required_error: ' The repo URL is required.  Include the protocol and `.git` suffix'
+    })
+    .url()
+    .endsWith('.git'),
   /**
    * Credentials used to read/write from the Repository
    * Must be in the form username:password or username:token
