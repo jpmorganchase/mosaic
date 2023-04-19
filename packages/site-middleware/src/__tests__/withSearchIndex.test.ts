@@ -37,13 +37,13 @@ describe('GIVEN withSearchIndex', () => {
       s3ClientMock
         .on(GetObjectCommand, {
           Bucket: 'some-bucket',
-          Key: 'search-data.json'
+          Key: 'search-data-condensed.json'
         })
         .resolves({ Body: indexContentStream });
       s3ClientMock
         .on(HeadObjectCommand, {
           Bucket: 'some-bucket',
-          Key: 'search-data.json'
+          Key: 'search-data-condensed.json'
         })
         .resolvesOnce({ $metadata: { httpStatusCode: 200 } })
         .resolves({ $metadata: { httpStatusCode: 404 } });
@@ -107,7 +107,7 @@ describe('GIVEN withSearchIndex', () => {
       // arrange
       mockFs({
         'some/snapshots/': {
-          'search-data.json': '{ "someValue": true }',
+          'search-data-condensed.json': '{ "someValue": true }',
           'search-config.json': '{ "someConfigValue": true }'
         }
       });

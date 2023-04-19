@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
 }
 
-const searchDataFile = 'search-data.json';
+const searchDataFile = 'search-data-condensed.json';
 const searchConfigFile = 'search-config.json';
 
 const getSnapshotFile = async (urlPath, targetPath) => {
