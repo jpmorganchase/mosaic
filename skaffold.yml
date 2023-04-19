@@ -1,0 +1,19 @@
+apiVersion: skaffold/v2beta10
+kind: Config
+metadata:
+  name: mosaic-site
+profiles:
+  - name: local
+build:
+  artifacts:
+    - image: mosaic-site
+      context: ./packages/site
+    - image: mosaic-fs
+      context: ./packages/cli
+  local:
+    useDockerCLI: false
+    useBuildkit: false
+deploy:
+  kubectl:
+    manifests:
+      - k8s/*.yml
