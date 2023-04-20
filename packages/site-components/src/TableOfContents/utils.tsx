@@ -1,4 +1,4 @@
-import type { CurrentItem, Item } from './TableOfContents';
+import type { CurrentItem } from './TableOfContents';
 
 export const mostRecentScrollPoint = (scrollPosition, allPositions) => {
   const validPositions = allPositions.filter(i => typeof i === 'number');
@@ -19,7 +19,14 @@ export const mostRecentScrollPoint = (scrollPosition, allPositions) => {
 
 export const stripMarkdownLinks = text => text.replace(/\[([^[\]]*)\]\((.*?)\)/gm, '$1');
 
-export const setupHeadingState: (items?: Item[]) => CurrentItem[] = (items = []) =>
-  items.map(item => ({ ...item, current: false }));
+export const setupHeadingState = (): CurrentItem[] => {
+  const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+  return headingElements.map((element, index) => ({
+    id: element.id || `toc-heading-${index}`,
+    level: Number(element.tagName.slice(1)),
+    text: element.textContent || '',
+    current: false
+  }));
+};
 
 export const setupSelectedHeadingState = headings => (headings.length > 0 ? headings[0].slug : '');

@@ -21,7 +21,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     throw new Error('No `items` specified for Table of Contents.');
   }
 
-  const headingsRef = useRef<CurrentItem[]>(setupHeadingState(items));
+  const headingsRef = useRef<CurrentItem[]>(setupHeadingState());
   const [selectedHeading, setSelectedHeading] = useState(() =>
     setupSelectedHeadingState(headingsRef.current)
   );
@@ -85,7 +85,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
   }, [size.width, size.height]);
 
   useEffect(() => {
-    const newHeadings = setupHeadingState(items);
+    const newHeadings = setupHeadingState();
     headingsRef.current = newHeadings;
     if (headingPositions.current.length !== items.length) {
       matchHeadingsToDOM();
