@@ -34,4 +34,4 @@ EXPOSE 8080
 
 ENV PORT=8080
 
-CMD ["node", "index.mjs", "serve", "-c", "./mosaic.config.mjs", "-p", "8080"]
+CMD ["sh", "-c", "node index.mjs serve -c ./mosaic.config.mjs --port ${PORT}"]
