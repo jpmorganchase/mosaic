@@ -78,7 +78,7 @@ module.exports = {
     {
       modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
       options: {
-        minRank: 1,
+        minRank: 2,
         maxRank: 3
       }
     }
