@@ -24,9 +24,33 @@ describe('GIVEN a Table Of Contents (TOC)', () => {
 
   describe('WHEN loading a new page', () => {
     test('THEN the initial TOC heading state is created', () => {
-      expect(setupHeadingState([{ item: 1 }, { item: 2 }])).toEqual([
-        { item: 1, current: false },
-        { item: 2, current: false }
+      document.body.innerHTML = `
+            <h1 id="heading-1">Heading 1</h1>
+            <h2 id="heading-2">Heading 2</h2>
+            <h3 id="heading-3">Heading 3</h3>
+          `;
+
+      const result = setupHeadingState();
+
+      expect(result).toEqual([
+        {
+          id: 'heading-1',
+          level: 1,
+          text: 'Heading 1',
+          current: false
+        },
+        {
+          id: 'heading-2',
+          level: 2,
+          text: 'Heading 2',
+          current: false
+        },
+        {
+          id: 'heading-3',
+          level: 3,
+          text: 'Heading 3',
+          current: false
+        }
       ]);
     });
     test('THEN the initial TOC selected state is created', () => {

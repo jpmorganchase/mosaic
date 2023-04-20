@@ -32,10 +32,21 @@ export default {
     }),
     link({ variant: 'selectable' }),
     responsiveSprinkles({
-      paddingTop: ['x2', 'x2', 'x2', 'x2'],
+      paddingTop: ['x1', 'x1', 'x1', 'x1'],
       paddingRight: ['x4', 'x4', 'x4', 'x4'],
-      paddingBottom: ['x2', 'x2', 'x2', 'x2'],
-      paddingLeft: ['x4', 'x4', 'x4', 'x4']
+      paddingBottom: ['x1', 'x1', 'x1', 'x1']
     })
-  ])
+  ]),
+  level1: responsiveSprinkles({
+    paddingLeft: ['x2', 'x2', 'x2', 'x2']
+  }),
+  level2: responsiveSprinkles({
+    paddingLeft: ['x4', 'x4', 'x4', 'x4']
+  }),
+  level3: responsiveSprinkles({
+    paddingLeft: ['x6', 'x6', 'x6', 'x6']
+  }),
+  level4: responsiveSprinkles({
+    paddingLeft: ['x8', 'x8', 'x8', 'x8']
+  })
 };

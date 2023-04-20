@@ -31,7 +31,7 @@ export function TableOfContentsItem({ item, current }) {
       aria-checked={selected}
       aria-label={item.text}
       aria-level={1}
-      className={classnames(styles.item)}
+      className={classnames(styles.item, styles[`level${item.level}`])}
       data-selected={!!selected}
       onClick={handleItemClick}
       tabIndex={-1}
