@@ -32,7 +32,7 @@ module.exports = {
   plugins: [
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
-      options: {}
+      options: { siteUrl: process.env.SITE_URL || 'http://localhost:3000' }
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
