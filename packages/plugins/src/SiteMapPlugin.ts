@@ -6,7 +6,7 @@ interface SiteMapPluginConfigData {
 
 const SiteMapPlugin: PluginType<Page, unknown, SiteMapPluginConfigData, SiteMapPluginConfigData> = {
   // Merge together all of the individual sitemaps from each source
-  async afterUpdate(_, { sharedFilesystem, globalConfig }) {
+  async afterUpdate(_, { sharedFilesystem, globalConfig }, { siteUrl }) {
     if (!Array.isArray(globalConfig.data.sitemaps)) {
       return;
     }
@@ -15,9 +15,9 @@ const SiteMapPlugin: PluginType<Page, unknown, SiteMapPluginConfigData, SiteMapP
       items
         .map(
           item =>
-            `\t<url>\n\t\t<loc>${String(
-              item
-            )}</loc>\n\t\t<changefreq>weekly</changefreq>\n\t\t<priority>0.5</priority>\n\t</url>`
+            `\t<url>\n\t\t<loc>${
+              siteUrl + String(item).slice(0, String(item).lastIndexOf('.'))
+            }</loc>\n\t\t<changefreq>weekly</changefreq>\n\t\t<priority>0.5</priority>\n\t</url>`
         )
         .join('\n')
     );
