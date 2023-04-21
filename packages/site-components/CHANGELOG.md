@@ -1,5 +1,26 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.29
+
+### Minor Changes
+
+- c78deb4: Flatten Sidebar
+  Search Optimisation
+  Public Assets Plugin
+  TOC Indentation
+
+### Patch Changes
+
+- 41799f3: Pass alt to Image if fill or width and height are not defined
+- Updated dependencies [c78deb4]
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.29
+  - @jpmorganchase/mosaic-components@0.1.0-beta.29
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.29
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.29
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.29
+  - @jpmorganchase/mosaic-store@0.1.0-beta.29
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.29
+
 ## 0.1.0-beta.28
 
 ### Patch Changes

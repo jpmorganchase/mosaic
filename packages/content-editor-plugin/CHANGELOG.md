@@ -1,5 +1,20 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.29
+
+### Minor Changes
+
+- c78deb4: Flatten Sidebar
+  Search Optimisation
+  Public Assets Plugin
+  TOC Indentation
+
+### Patch Changes
+
+- Updated dependencies [c78deb4]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.29
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.29
+
 ## 0.1.0-beta.28
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.29
+
+### Minor Changes
+
+- c78deb4: Flatten Sidebar
+  Search Optimisation
+  Public Assets Plugin
+  TOC Indentation
+
+### Patch Changes
+
+- Updated dependencies [c78deb4]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.29
+  - @jpmorganchase/mosaic-store@0.1.0-beta.29
+  - @jpmorganchase/mosaic-types@0.1.0-beta.29
+
 ## 0.1.0-beta.28
 
 ### Patch Changes
