@@ -5,12 +5,7 @@ import { Caption6, P4, P6 } from '@jpmorganchase/mosaic-components';
 import { Highlighter } from '@salt-ds/lab';
 
 import styles from './styles.css';
-
-interface SearchResult {
-  title: string;
-  route: string;
-  content: string;
-}
+import type { SearchResult } from './searchUtils';
 
 export type SearchResults = SearchResult[];
 type SearchResultsListProps = {
@@ -25,7 +20,7 @@ interface ResultListItemProps {
   onSelect: (result) => void;
 }
 
-const MAX_RESULTS = 10;
+const MAX_RESULTS = 6;
 
 function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
   const [hovered, setHovered] = useState(false);
