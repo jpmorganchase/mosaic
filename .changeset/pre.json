@@ -28,6 +28,7 @@
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14"
   },
   "changesets": [
+    "angry-mails-ring",
     "breezy-carrots-tie",
     "cold-buses-check",
     "cool-moose-design",
@@ -40,6 +41,7 @@
     "grumpy-knives-nail",
     "happy-actors-cover",
     "large-avocados-know",
+    "little-mugs-scream",
     "many-peas-laugh",
     "mighty-tips-attend",
     "neat-cherries-remain",

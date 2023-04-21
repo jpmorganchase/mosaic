@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.29
+
+### Minor Changes
+
+- c78deb4: Flatten Sidebar
+  Search Optimisation
+  Public Assets Plugin
+  TOC Indentation
+
 ## 0.1.0-beta.28
 
 ### Patch Changes
