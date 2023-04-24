@@ -1,5 +1,8 @@
 const deepmerge = require('deepmerge');
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
+const dotenv = require('dotenv');
+const envPath = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';
+dotenv.config({ path: envPath });
 
 const siteConfig = {
   ...mosaicConfig,
@@ -38,7 +41,7 @@ module.exports = deepmerge(siteConfig, {
      * Access from your browser as http://localhost:3000/mosaic
      */
     {
-      disabled: process.env.NODE_ENV !== 'development',
+      // disabled: process.env.NODE_ENV !== 'development',
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
