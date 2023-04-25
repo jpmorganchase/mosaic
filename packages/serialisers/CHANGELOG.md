@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-serialisers
 
+## 0.1.0-beta.30
+
+### Patch Changes
+
+- 18ef436: The git repo source no longer generates a double slash between the repo host and repo path.
+- Updated dependencies [18ef436]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.30
+
 ## 0.1.0-beta.29
 
 ### Minor Changes
