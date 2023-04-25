@@ -23,9 +23,9 @@
     "e2e:codegen": "npx playwright codegen localhost:3000",
     "start": "next start",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
-    "serve:snapshot:file": "yarn cross-env MOSAIC_MODE='snapshot-file' concurrently --kill-others 'yarn dev'",
-    "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE='snapshot-s3' concurrently --kill-others 'yarn dev'",
-    "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080"
+    "serve:snapshot:file": "yarn cross-env MOSAIC_MODE='snapshot-file' NODE_ENV='local' concurrently --kill-others 'yarn dev'",
+    "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE='snapshot-s3' NODE_ENV='local' concurrently --kill-others 'yarn dev'",
+    "serve": "yarn cross-env NODE_ENV='local' concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-cli": "^0.1.0-beta.29",
