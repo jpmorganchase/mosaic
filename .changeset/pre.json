@@ -28,6 +28,7 @@
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14"
   },
   "changesets": [
+    "angry-carrots-destroy",
     "angry-mails-ring",
     "breezy-carrots-tie",
     "cold-buses-check",
@@ -55,6 +56,7 @@
     "small-elephants-fly",
     "small-hotels-retire",
     "smart-hounds-cheat",
+    "strong-buttons-shave",
     "sweet-eggs-dress",
     "tall-pots-rule",
     "tasty-pillows-tickle",
