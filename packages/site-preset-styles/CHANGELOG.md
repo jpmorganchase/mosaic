@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.30
+
+### Patch Changes
+
+- 18ef436: The git repo source no longer generates a double slash between the repo host and repo path.
+- Updated dependencies [18ef436]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.30
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.30
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.30
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.30
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.30
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.30
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.30
+
 ## 0.1.0-beta.29
 
 ### Minor Changes
