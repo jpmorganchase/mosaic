@@ -1,5 +1,7 @@
 const deepmerge = require('deepmerge');
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
+const dotenvLoad = require('dotenv-load');
+dotenvLoad();
 
 const siteConfig = {
   ...mosaicConfig,
