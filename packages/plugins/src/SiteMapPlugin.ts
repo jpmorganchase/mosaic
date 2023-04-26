@@ -1,4 +1,5 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import path from 'path';
 
 interface SiteMapPluginConfigData {
   sitemaps: Array<string[]>;
@@ -15,9 +16,13 @@ const SiteMapPlugin: PluginType<Page, unknown, SiteMapPluginConfigData, SiteMapP
       items
         .map(
           item =>
-            `\t<url>\n\t\t<loc>${
-              siteUrl + String(item).slice(0, String(item).lastIndexOf('.'))
-            }</loc>\n\t\t<changefreq>weekly</changefreq>\n\t\t<priority>0.5</priority>\n\t</url>`
+            `\t<url>\n\t\t<loc>${new URL(
+              path.posix.join(
+                path.posix.dirname(item),
+                path.posix.basename(item, path.posix.extname(item))
+              ),
+              siteUrl
+            )}</loc>\n\t\t<changefreq>weekly</changefreq>\n\t\t<priority>0.5</priority>\n\t</url>`
         )
         .join('\n')
     );
