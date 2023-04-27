@@ -5,7 +5,16 @@ interface SiteMapPluginConfigData {
   sitemaps: Array<string[]>;
 }
 
-const SiteMapPlugin: PluginType<Page, unknown, SiteMapPluginConfigData, SiteMapPluginConfigData> = {
+interface SiteMapPluginOptions {
+  siteUrl: string;
+}
+
+const SiteMapPlugin: PluginType<
+  Page,
+  SiteMapPluginOptions,
+  SiteMapPluginConfigData,
+  SiteMapPluginConfigData
+> = {
   // Merge together all of the individual sitemaps from each source
   async afterUpdate(_, { sharedFilesystem, globalConfig }, { siteUrl }) {
     if (!Array.isArray(globalConfig.data.sitemaps)) {
