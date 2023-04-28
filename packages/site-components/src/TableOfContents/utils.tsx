@@ -20,13 +20,17 @@ export const mostRecentScrollPoint = (scrollPosition, allPositions) => {
 export const stripMarkdownLinks = text => text.replace(/\[([^[\]]*)\]\((.*?)\)/gm, '$1');
 
 export const setupHeadingState = (): CurrentItem[] => {
-  const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-  return headingElements.map((element, index) => ({
-    id: element.id || `toc-heading-${index}`,
-    level: Number(element.tagName.slice(1)),
-    text: element.textContent || '',
-    current: false
-  }));
+  if (typeof window !== 'undefined') {
+    const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+    return headingElements.map((element, index) => ({
+      id: element.id || `toc-heading-${index}`,
+      level: Number(element.tagName.slice(1)),
+      text: element.textContent || '',
+      current: false
+    }));
+  }
+
+  return [];
 };
 
 export const setupSelectedHeadingState = headings => (headings.length > 0 ? headings[0].slug : '');
