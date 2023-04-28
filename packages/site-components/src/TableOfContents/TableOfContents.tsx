@@ -1,16 +1,14 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import throttle from 'lodash/throttle';
-import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
+import React, { useEffect, useRef, useState } from 'react';
+import { Caption1 } from '@jpmorganchase/mosaic-components';
 
 import { TableOfContentsItem } from './TableOfContentsItem';
-import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';
 import styles from './styles.css';
 
 export type Item = { level: number; id: string; text: string };
+
 export interface CurrentItem extends Item {
   current: boolean;
 }
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export type TableOfContentsProps = {
   items?: Item[];
@@ -21,87 +19,91 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     throw new Error('No `items` specified for Table of Contents.');
   }
 
-  const headingsRef = useRef<CurrentItem[]>(setupHeadingState());
-  const [selectedHeading, setSelectedHeading] = useState(() =>
-    setupSelectedHeadingState(headingsRef.current)
-  );
+  const [active, setActive] = useState('');
+  const isNavigating = useRef(false);
+  const scrollEndTimer = useRef<number | null>(null);
 
-  const headingPositions = useRef<(number | null)[]>([]);
-
-  const size = useSize();
-
-  const matchHeadingsToDOM = () => {
-    const { offsetHeight: headerHeight = 0 } = document.querySelector('header') || {};
-    const updatedHeadingPositions = headingsRef.current
-      .map(heading => {
-        const headingNode = document.getElementById(heading.id);
-        return headingNode ? headingNode.offsetTop - headerHeight : null;
-      })
-      .filter(heading => heading);
-    if (updatedHeadingPositions.length > 0) {
-      headingPositions.current = updatedHeadingPositions;
-      handleScroll(true);
-    }
-  };
-
-  const handleScroll = (skipCheck = false) => {
-    if (
-      !skipCheck &&
-      (headingPositions.current.length < 1 ||
-        headingPositions.current.length !== headingsRef.current.length)
-    ) {
-      matchHeadingsToDOM();
-    } else {
-      const headerElement = document.querySelector('header');
-      const headerHeight = headerElement ? headerElement.getBoundingClientRect().height : 0;
-      const scrollPosition = window.scrollY + headerHeight;
-      const newCurrent = mostRecentScrollPoint(scrollPosition, headingPositions.current);
-
-      // Only update the current item if we have a valid item (the
-      // falsy `0` is a valid option here, hence checking type)
-      if (typeof newCurrent === 'number') {
-        const currentHeading = headingsRef.current[newCurrent];
-        if (currentHeading) {
-          setSelectedHeading(currentHeading.id);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (isNavigating.current) {
+          return;
         }
+
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+            return;
+          }
+        }
+      },
+      {
+        rootMargin: '-10% 0px -90% 0%'
       }
-    }
-  };
+    );
 
-  useEffect(() => {
-    const throttledHandleScroll = throttle(() => handleScroll(false), 60);
+    items
+      .map(({ id }) => document.getElementById(id))
+      .forEach(heading => {
+        if (heading) {
+          observer.observe(heading);
+        }
+      });
 
-    document.addEventListener('scroll', throttledHandleScroll);
     return () => {
-      document.removeEventListener('scroll', throttledHandleScroll);
+      observer.disconnect();
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useIsomorphicLayoutEffect(() => {
-    if (typeof window === 'undefined') return;
-    matchHeadingsToDOM();
-  }, [size.width, size.height]);
-
-  useEffect(() => {
-    const newHeadings = setupHeadingState();
-    headingsRef.current = newHeadings;
-    if (headingPositions.current.length !== items.length) {
-      matchHeadingsToDOM();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
+
+  useEffect(
+    () => () => {
+      if (scrollEndTimer.current) {
+        window.clearTimeout(scrollEndTimer.current);
+      }
+    },
+    []
+  );
 
   return items.length ? (
     <nav>
       <Caption1>On this page</Caption1>
-      <ul aria-label="Table of contents" className={styles.list} role="tree">
-        {items.map((item, i) => (
+      <ul aria-label="Table of Contents" className={styles.list} role="tree">
+        {items.map(item => (
           <TableOfContentsItem
-            current={selectedHeading}
+            selected={active === item.id}
             item={item}
-            key={`TableOfContentsItem_${i}`}
+            key={item.id}
+            onClick={event => {
+              isNavigating.current = true;
+              setActive(item.id);
+              event.preventDefault();
+              const target = document.getElementById(item.id);
+              const { offsetHeight: headerHeight = 0 } = document.querySelector('header') || {};
+              const hash = `#${item.id}`;
+              const { offsetTop = 0 } = target || {};
+              window.scrollTo({
+                top: offsetTop - headerHeight,
+                behavior: 'smooth'
+              });
+              if (window.history.pushState) {
+                window.history.pushState(null, '', hash);
+              } else {
+                window.location.hash = hash;
+              }
+
+              const handleScroll = () => {
+                if (scrollEndTimer.current) {
+                  window.clearTimeout(scrollEndTimer.current);
+                }
+
+                scrollEndTimer.current = window.setTimeout(() => {
+                  isNavigating.current = false;
+                  window.removeEventListener('scroll', handleScroll);
+                }, 100);
+              };
+
+              window.addEventListener('scroll', handleScroll);
+            }}
           />
         ))}
       </ul>
