@@ -267,7 +267,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    return spawn('git', ['reset', `${this.#branch}`, '--hard'], this.#dir);
+    return spawn('git', ['reset', `${this.#remote}/${this.#branch}`, '--hard'], this.#dir);
   }
 
   async hasLatestChanges() {
@@ -294,7 +294,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    const result = await spawn('git', ['rev-parse', `${this.#branch}`], this.#dir);
+    const result = await spawn('git', ['rev-parse', `${this.#remote}/${this.#branch}`], this.#dir);
 
     if (!result) {
       console.warn(`[Mosaic] No revision found for tag ${this.#branch}`);
