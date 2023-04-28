@@ -5,9 +5,7 @@ import { Caption2, Caption3 } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
 import { stripMarkdownLinks } from './utils';
 
-export function TableOfContentsItem({ item, current }) {
-  const selected = item.id === current;
-
+export function TableOfContentsItem({ item, selected }) {
   const handleItemClick = e => {
     e.preventDefault();
     const target = document.getElementById(item.id);
