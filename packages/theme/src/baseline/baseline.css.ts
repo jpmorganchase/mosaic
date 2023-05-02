@@ -1,4 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css';
+import { ssrClassName } from '../index';
 
 globalStyle('html, body', {
   fontFamily: 'Open Sans',
@@ -42,4 +43,8 @@ globalStyle('h1, h2, h3, h4, h5, h6', {
 
 globalStyle('li > p', {
   display: 'inline'
+});
+
+globalStyle(`.${ssrClassName} svg, .${ssrClassName} img`, {
+  display: 'none'
 });
