@@ -11,6 +11,8 @@
  *
  */
 const { generatorName } = require('./generator');
+const dotenvLoad = require('dotenv-load');
+dotenvLoad();
 
 module.exports = {
   /** Generator name */
