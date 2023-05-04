@@ -1,5 +1,37 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.31
+
+### Minor Changes
+
+- 0f702ad: Enable reading of environment variables in config files
+
+### Patch Changes
+
+- b609fd0: Added support for containerization of the site and cli as well as providing config for kubernetes development (skaffold)
+
+  ## @jpmorganchase/mosaic-cli
+
+  The cli package has been updated to support containerization.
+
+- d04fb1e: Fix: hide `img` and `svg` in SSR content to prevent massive images caused by lack of Salt styles
+- Updated dependencies [b609fd0]
+- Updated dependencies [d04fb1e]
+- Updated dependencies [a73fb9f]
+- Updated dependencies [5a3a170]
+- Updated dependencies [0f702ad]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.31
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.31
+  - @jpmorganchase/mosaic-components@0.1.0-beta.31
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.31
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.31
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.31
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.31
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.31
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.31
+  - @jpmorganchase/mosaic-store@0.1.0-beta.31
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.31
+
 ## 0.1.0-beta.29
 
 ### Patch Changes
