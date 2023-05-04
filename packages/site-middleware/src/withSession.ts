@@ -1,7 +1,5 @@
-import { GetServerSidePropsContext } from 'next';
+import { type NextAuthOptions, getServerSession } from 'next-auth';
 import type { Session } from '@jpmorganchase/mosaic-types';
-
-import { getSessionFromToken, getToken, getIsCypressSession } from './session.js';
 import { MosaicMiddleware } from './createMiddlewareRunner.js';
 import MiddlewareError from './MiddlewareError.js';
 
@@ -12,8 +10,8 @@ if (typeof window !== 'undefined') {
 /**
  *  [[`SessionProps`]] specifies session object containing user profile of logged in user
  */
-export interface SessionProps {
-  session?: Session;
+export interface SessionProps<TUserProfile> {
+  session?: Session<TUserProfile>;
 }
 
 /**
@@ -22,34 +20,7 @@ export interface SessionProps {
 export interface SessionOptions {
   /** is login required for the environment */
   loginRequired: boolean;
-}
-
-const getRedirectOptions = (context: GetServerSidePropsContext) => {
-  const url = new URL(
-    `${process.env.HOSTNAME?.replace(/\/$/, '')}/${context.resolvedUrl.replace(/^\//, '')}`
-  );
-
-  if (url.search.includes('code=')) {
-    throw new Error(
-      'Authorisation loop detected. `code` should never appear in the client query string.'
-    );
-  }
-  url.searchParams.delete('namespace');
-  url.searchParams.delete('slug');
-  return {
-    redirect: {
-      destination: `/api/auth/login?referrer=${encodeURIComponent(`${url.pathname}${url.search}`)}`,
-      permanent: false
-    }
-  };
-};
-
-async function resolveSession(accessToken) {
-  return (
-    accessToken &&
-    process.env.DISABLE_IDA_SERVICE_AUTH_TOKEN_VERIFICATION === 'true' &&
-    (getSessionFromToken(accessToken) as Session)
-  );
+  authOptions: NextAuthOptions;
 }
 
 /**
@@ -57,47 +28,35 @@ async function resolveSession(accessToken) {
  * @param context
  * @param options
  */
-export const withSession: MosaicMiddleware<SessionProps, SessionOptions> = async (
+export const withSession: MosaicMiddleware<SessionProps<unknown>, SessionOptions> = async (
   context,
   options
 ) => {
   if (process.env.NEXT_PUBLIC_ENABLE_LOGIN !== 'true') {
     return {};
   }
-  if (!process.env.COOKIE_SECRET) {
-    const errorMessage = '`process.env.COOKIE_SECRET` must be set in environment variables.';
+  if (!process.env.NEXTAUTH_SECRET) {
+    const errorMessage = '`process.env.NEXTAUTH_SECRET` must be set in environment variables.';
     throw new MiddlewareError(500, context.resolvedUrl, [errorMessage], {
       show500: true
     });
   }
-  const accessToken = getToken(context.req);
-  const isCypressSession = getIsCypressSession(context.req);
-  const session = await resolveSession(accessToken);
-  // Do the middleware options have `loginRequired` true?
-  const isRedirectEnabled = options?.loginRequired;
-  const isLoggedIn = !!(
-    accessToken &&
-    session &&
-    // If session remaining time is <15m we'll request a re-login
-    isSessionRemainingMoreThan(session, 900000 /* 15 mins */)
-  );
-  if (isRedirectEnabled && !isLoggedIn) {
-    return getRedirectOptions(context);
+
+  if (!options?.authOptions) {
+    const errorMessage = '`authOptions` must be provided.';
+    throw new MiddlewareError(500, context.resolvedUrl, [errorMessage], {
+      show500: true
+    });
   }
+
+  const session = await getServerSession(context.req, context.res, options.authOptions);
 
   return {
     props: {
       session: {
         ...session,
-        isLoggedIn,
-        accessToken,
-        isCypressSession
+        isLoggedIn: session !== null
       }
     }
   };
 };
-
-function isSessionRemainingMoreThan(session: Session, minRemainingTime = 1800000 /* 30 mins */) {
-  const { expires = 0 } = session;
-  return expires >= Date.now() + minRemainingTime;
-}

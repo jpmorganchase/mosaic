@@ -17,24 +17,7 @@ export type JWT = {
   LocationCode?: string;
 };
 
-export type Session = {
+export type Session<TUserProfile> = {
   isLoggedIn: boolean;
-  accessToken?: string;
-  isCypressSession?: boolean;
-  expires?: number;
-  user?: {
-    avatarUrl: string;
-    sid: string;
-    country?: string;
-    countryCode?: string;
-    costCenter?: string;
-    department?: string;
-    displayName?: string;
-    email?: string;
-    employeeType?: string;
-    firstName?: string;
-    lastName?: string;
-    lob?: string;
-    locationCode?: string;
-  };
+  user?: TUserProfile;
 };

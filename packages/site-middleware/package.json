@@ -51,5 +51,8 @@
     "unified": "^10.0.0",
     "unist-util-visit": "^2.0.0",
     "warning": "^3.0.0"
+  },
+  "peerDependencies": {
+    "next-auth": "^4.22.1"
   }
 }
