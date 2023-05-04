@@ -1,211 +1,211 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  	<url>
-		<loc>/mosaic/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/aliases.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/aliases</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/frontmatter.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/frontmatter</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/markdown-syntax.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/markdown-syntax</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/page-templates.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/page-templates</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/refs.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/refs</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/author/ui-components.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/ui-components</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/publish/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/publish/publish-site-to-aws.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/publish-site-to-aws</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/publish/publish-site-to-vercel.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/publish-site-to-vercel</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/quick-start/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/quick-start/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/quick-start/publish-site-to-aws.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/quick-start/publish-site-to-aws</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/layouts/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/modes/active.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/active</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/modes/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/modes/snapshot-file.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/snapshot-file</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/modes/snapshot-s3.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/snapshot-s3</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/plugins/after-source.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/after-source</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/plugins/after-update.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/after-update</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/plugins/before-send.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/before-send</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/plugins/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/plugins/should-clear-cache.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/should-clear-cache</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/sources/git-repo-source.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/git-repo-source</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/sources/http-source.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/http-source</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/sources/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/configure/sources/local-folder-source.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/local-folder-source</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/aliases/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/aliases/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/detail-highlight.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/detail-highlight</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/detail-overview.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/detail-overview</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/detail-technical.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/detail-technical</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/edit.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/edit</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/full-width.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/full-width</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/landing.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/landing</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/newsletter.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/newsletter</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/product-discover.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/product-discover</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/layouts/product-preview.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/layouts/product-preview</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/refs/data.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/refs/data</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>/mosaic/test/refs/index.mdx</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/refs/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
