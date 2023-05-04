@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.31
+
+### Patch Changes
+
+- b609fd0: Added support for containerization of the site and cli as well as providing config for kubernetes development (skaffold)
+
+  ## @jpmorganchase/mosaic-cli
+
+  The cli package has been updated to support containerization.
+
+- d04fb1e: Fix: hide `img` and `svg` in SSR content to prevent massive images caused by lack of Salt styles
+
 ## 0.1.0-beta.30
 
 ### Patch Changes
