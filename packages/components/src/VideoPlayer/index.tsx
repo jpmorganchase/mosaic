@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ButtonBar, OrderedButton, Spinner, Slider } from '@salt-ds/lab';
+import { Spinner } from '@salt-ds/core';
+import { ButtonBar, OrderedButton, Slider } from '@salt-ds/lab';
 import { Icon } from '../Icon';
 import { Caption6 } from '../Typography';
 import styles from './styles.css';

@@ -3,8 +3,8 @@ import { Icon } from '@jpmorganchase/mosaic-components';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { INSERT_TABLE_COMMAND } from '@lexical/table';
 
-import { useFloatingUI } from '@salt-ds/lab';
-import { useDismiss, useInteractions } from '@floating-ui/react-dom-interactions';
+import { useFloatingUI } from '@salt-ds/core';
+import { useDismiss, useInteractions } from '@floating-ui/react';
 import { Popper } from '../Popper/Popper';
 import { TextFormatToolbarButton } from './TextFormatToolbarButton';
 import styles from './InsertTable.css';

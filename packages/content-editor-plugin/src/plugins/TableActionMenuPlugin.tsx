@@ -14,8 +14,8 @@ import {
   $removeTableRowAtIndex,
   TableCellNode
 } from '@lexical/table';
-import { useFloatingUI } from '@salt-ds/lab';
-import { useDismiss, useInteractions } from '@floating-ui/react-dom-interactions';
+import { useFloatingUI } from '@salt-ds/core';
+import { useDismiss, useInteractions } from '@floating-ui/react';
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
