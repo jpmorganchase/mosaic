@@ -1,5 +1,5 @@
 import React from 'react';
-import { Spinner } from '@salt-ds/lab';
+import { Spinner } from '@salt-ds/core';
 import classnames from 'clsx';
 import { SidebarProvider } from '@jpmorganchase/mosaic-site-components';
 

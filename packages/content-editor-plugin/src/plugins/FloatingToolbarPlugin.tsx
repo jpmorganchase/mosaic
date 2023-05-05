@@ -8,9 +8,9 @@ import {
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
 import { Toolbar as SaltToolbar, Tooltray as SaltTooltray } from '@salt-ds/lab';
-import { flip, inline } from '@floating-ui/react-dom';
-import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/lab';
-import { useInteractions, useDismiss } from '@floating-ui/react-dom-interactions';
+import { flip, inline } from '@floating-ui/react';
+import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/core';
+import { useInteractions, useDismiss } from '@floating-ui/react';
 import { Popper } from '../components/Popper/Popper';
 import { TextFormatTooltray } from '../components/Toolbar/TextFormatTooltray';
 import { InsertLinkButton } from '../components/Toolbar/InsertLink';

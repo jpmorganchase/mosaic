@@ -1,6 +1,7 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Dropdown, DropdownButton, SelectionChangeHandler, Spinner } from '@salt-ds/lab';
+import { Spinner } from '@salt-ds/core';
+import { Dropdown, DropdownButton, SelectionChangeHandler } from '@salt-ds/lab';
 import warning from 'warning';
 import { Icon, Caption2 } from '@jpmorganchase/mosaic-components';
 

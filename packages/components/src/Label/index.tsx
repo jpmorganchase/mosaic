@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTooltip, Tooltip, TooltipProps as SaltTooltipProps } from '@salt-ds/lab';
+import { Tooltip, TooltipProps as SaltTooltipProps } from '@salt-ds/core';
 
 import styles from './styles.css';
 
@@ -13,7 +13,7 @@ export interface LabelProps {
   /* Tooltip ClassName */
   tooltipClass?: string;
   /* Additional Tooltip Props */
-  TooltipProps?: SaltTooltipProps;
+  TooltipProps?: SaltTooltipProps | { title?: string };
 }
 
 export const Label: React.FC<LabelProps> = ({
@@ -21,32 +21,22 @@ export const Label: React.FC<LabelProps> = ({
   className,
   tooltip,
   tooltipClass,
-  TooltipProps = { children: <>null</>, classes: {}, title: undefined },
+  TooltipProps = {},
   ...rest
 }) => {
-  const { getTriggerProps, getTooltipProps } = useTooltip();
-  const labelProps = tooltip ? getTriggerProps<'span'>(rest) : undefined;
-  const tooltipProps = getTooltipProps({
-    ...TooltipProps,
-    status: 'info'
-  });
-
   return (
-    <>
-      <span {...labelProps}>{children}</span>
-      {tooltip ? (
-        <Tooltip
-          {...tooltipProps}
-          render={() => (
-            <div className={styles.tooltip}>
-              {TooltipProps.title && (
-                <span className={styles.tooltipTitle}>{TooltipProps.title}</span>
-              )}
-              <span className={styles.tooltipContent}>{tooltip}</span>
-            </div>
-          )}
-        />
-      ) : null}
-    </>
+    <Tooltip
+      disabled={!tooltip}
+      {...TooltipProps}
+      content={
+        <div className={styles.tooltip}>
+          {TooltipProps.title && <span className={styles.tooltipTitle}>{TooltipProps.title}</span>}
+          <span className={styles.tooltipContent}>{tooltip}</span>
+        </div>
+      }
+      status="info"
+    >
+      <span {...rest}>{children}</span>
+    </Tooltip>
   );
 };

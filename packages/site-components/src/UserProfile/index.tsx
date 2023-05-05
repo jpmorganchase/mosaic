@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import classnames from 'clsx';
-import { Avatar } from '@salt-ds/lab';
+import { Avatar } from '@salt-ds/core';
 
 import styles from './styles.css';
 
@@ -21,7 +21,7 @@ export function UserProfile({
 }): ReactElement {
   return (
     <div className={classnames(styles.root, className)}>
-      <Avatar className={styles.avatar} size="medium" src={avatarUrl} />
+      <Avatar className={styles.avatar} size={2} src={avatarUrl} />
       <span className={styles.firstName}>{`${prefixText}${toUpperFirst(firstName)}`}</span>
     </div>
   );
