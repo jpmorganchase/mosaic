@@ -35,15 +35,17 @@ export default class FileAccess implements IFileAccess {
     this.#rawReadonlyFs = this.#rawReadonlyFs || createFsFromVolume(this.#adapter as any);
     const paths = Array.from(
       new Set(
-        await Promise.all(
-          (
-            await glob(pattern, {
-              ...options,
-              absolute: true,
-              fs: this.#rawReadonlyFs
-            })
-          ).map(filepath => this.#resolvePath(filepath))
-        )
+        (
+          await Promise.all(
+            (
+              await glob(pattern, {
+                ...options,
+                absolute: true,
+                fs: this.#rawReadonlyFs
+              })
+            ).map(filepath => this.#resolvePath(filepath))
+          )
+        ).sort((a, b) => a.localeCompare(b, 'en'))
       )
     );
 
