@@ -173,11 +173,19 @@ export default class FileAccess implements IFileAccess {
     //   } catch {}
     // }
     if (!stat.isFile()) {
-      return file;
+      return this.#normalizePath(file);
       // throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
     }
-    return realPath;
+    return this.#normalizePath(String(realPath));
   }
+
+  /**
+   ** This is a bit of a hack to get around a bug in fast-glob where when onlyDirectories is true the Drive letter is included in the path.
+   **/
+  #normalizePath = (file: string) => {
+    const root = path.parse(file).root;
+    return path.posix.normalize(file).replace(root, '/');
+  };
 
   async #getFileFromCache(file) {
     const stat = await this.#adapter.promises.stat(file, { throwIfNoEntry: true });
