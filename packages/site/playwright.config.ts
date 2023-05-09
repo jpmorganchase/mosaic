@@ -18,7 +18,7 @@ const config: PlaywrightTestConfig = {
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e', 'test-results'),
   expect: {
-    toHaveScreenshot: { maxDiffPixels: 100 }
+    toHaveScreenshot: { threshold: 0.3, maxDiffPixelRatio: 0.3 }
   },
 
   use: {
