@@ -10,6 +10,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/fragments</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/frontmatter</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -25,12 +30,27 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/md-fragment</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/page-templates</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/refs</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/tile-a</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/tile-b</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
