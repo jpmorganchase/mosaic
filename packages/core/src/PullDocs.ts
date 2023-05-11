@@ -97,7 +97,7 @@ export default class PullDocs {
   }
 
   async start() {
-    return Promise.all(this.#sourceDefinitions.map(source => this.#addSource(source)));
+    return Promise.all(this.#sourceDefinitions.map(source => this.addSource(source)));
   }
 
   async stop() {
@@ -108,10 +108,12 @@ export default class PullDocs {
     return this.#sourceManager.triggerWorkflow(name, filePath, data);
   }
 
-  async #addSource(sourceDefinition) {
+  async addSource(sourceDefinition) {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {
-      console.error(new Error(`Source '${source.id.description}' threw an exception. See below:`));
+      console.error(
+        new Error(`[Mosaic] Source '${source.id.description}' threw an exception. See below:`)
+      );
       console.error(error);
     });
     source.onExit(() => {
