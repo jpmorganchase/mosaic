@@ -73,4 +73,22 @@ export default async function serve(config, port, scope) {
       res.status(500).send(e.message).end();
     }
   });
+
+  app.post('/sources/add', async (req, res) => {
+    try {
+      const { definition } = req.body;
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('Sources cannot be added in production.');
+      }
+
+      if (!definition) {
+        throw new Error('Source definition is required');
+      }
+      const source = await mosaic.addSource(definition);
+      res.send(source !== undefined);
+    } catch (e) {
+      console.error(e);
+      res.status(500).send(e.message).end();
+    }
+  });
 }
