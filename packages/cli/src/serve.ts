@@ -5,6 +5,8 @@ import MosaicCore from '@jpmorganchase/mosaic-core';
 
 const app = express();
 
+const addedSources = new Set<{ name: string; id: symbol }>();
+
 export default async function serve(config, port, scope) {
   app.listen(port, () => {
     console.log(
@@ -76,14 +78,20 @@ export default async function serve(config, port, scope) {
 
   app.post('/sources/add', async (req, res) => {
     try {
-      const { definition, isPreview = true } = req.body;
-
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error('Sources cannot be added in production.');
-      }
+      const { definition, name, isPreview = true } = req.body;
 
       if (!definition) {
         throw new Error('Source definition is required');
+      }
+
+      if (!name) {
+        throw new Error('A name is required');
+      } else {
+        addedSources.forEach(addedSource => {
+          if (addedSource.name === name) {
+            mosaic.stopSource(addedSource.id);
+          }
+        });
       }
 
       if (isPreview) {
@@ -92,6 +100,7 @@ export default async function serve(config, port, scope) {
       }
 
       const source = await mosaic.addSource(definition);
+      addedSources.add({ name, id: source.id });
       res.send(source !== undefined ? definition.namespace : 'Unable to add source');
     } catch (e) {
       console.error(e);

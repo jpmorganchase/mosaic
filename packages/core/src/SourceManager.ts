@@ -76,6 +76,11 @@ export default class SourceManager {
     this.#sources.forEach(source => source.stop());
   }
 
+  destroySource(id: symbol) {
+    const source = this.getSource(id);
+    source.stop();
+  }
+
   addSource(
     sourceDefinition: SourceModuleDefinition,
     options: Record<string, unknown>

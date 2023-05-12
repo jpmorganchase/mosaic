@@ -128,4 +128,8 @@ export default class PullDocs {
 
     return source;
   }
+
+  async stopSource(id: symbol) {
+    return this.#sourceManager.destroySource(id);
+  }
 }
