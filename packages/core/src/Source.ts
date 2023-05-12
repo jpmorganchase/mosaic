@@ -128,7 +128,12 @@ export default class Source {
     plugins: PluginModuleDefinition[] = [],
     serialisers: SerialiserModuleDefinition[] = []
   ) {
-    this.#plugins.push(...plugins);
+    if (this.namespace.startsWith('preview-')) {
+      console.log('[Mosaic] Preview source detected, filtering plugins to use.');
+      this.#plugins.push(...plugins.filter(plugin => !plugin.previewDisabled));
+    } else {
+      this.#plugins.push(...plugins);
+    }
     this.#serialisers.push(...serialisers);
   }
 

@@ -34,10 +34,12 @@ module.exports = {
   plugins: [
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+      previewDisabled: true,
       options: { siteUrl: process.env.SITE_URL || 'http://localhost:3000' }
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
+      previewDisabled: true,
       options: { maxLineLength: 240, maxLineCount: 240 }
     },
     {
