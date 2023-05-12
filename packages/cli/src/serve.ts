@@ -80,6 +80,10 @@ export default async function serve(config, port, scope) {
     try {
       const { definition, name, isPreview = true } = req.body;
 
+      if (process.env.MOSAIC_ENABLE_SOURCE_PUSH !== 'true') {
+        throw new Error('Source push is disabled.');
+      }
+
       if (!definition) {
         throw new Error('Source definition is required');
       }
