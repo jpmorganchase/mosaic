@@ -76,7 +76,8 @@ export default async function serve(config, port, scope) {
 
   app.post('/sources/add', async (req, res) => {
     try {
-      const { definition } = req.body;
+      const { definition, isPreview = true } = req.body;
+
       if (process.env.NODE_ENV === 'production') {
         throw new Error('Sources cannot be added in production.');
       }
@@ -84,8 +85,14 @@ export default async function serve(config, port, scope) {
       if (!definition) {
         throw new Error('Source definition is required');
       }
+
+      if (isPreview) {
+        const namespace = `preview-${definition.namespace}`;
+        definition.namespace = namespace;
+      }
+
       const source = await mosaic.addSource(definition);
-      res.send(source !== undefined);
+      res.send(source !== undefined ? definition.namespace : 'Unable to add source');
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message).end();
