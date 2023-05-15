@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.32
+
+### Patch Changes
+
+- 6265b19: Upgrade to latest Salt libraries
+- Updated dependencies [6265b19]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.32
+  - @jpmorganchase/mosaic-store@0.1.0-beta.32
+
 ## 0.1.0-beta.31
 
 ### Patch Changes
