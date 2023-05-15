@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.32
+
+### Patch Changes
+
+- 7ed1ee7: Upgrade to latest version of NextJs (v13.4.1)
+- 6265b19: Upgrade to latest Salt libraries
+- 8c854fd: - Upgrade `next-auth` version
+  - Update `withSession` mosaic middleware to use `next-auth`
+- Updated dependencies [7ed1ee7]
+- Updated dependencies [6265b19]
+- Updated dependencies [8c854fd]
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.32
+  - @jpmorganchase/mosaic-components@0.1.0-beta.32
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.32
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.32
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.32
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.32
+  - @jpmorganchase/mosaic-store@0.1.0-beta.32
+
 ## 0.1.0-beta.31
 
 ### Minor Changes

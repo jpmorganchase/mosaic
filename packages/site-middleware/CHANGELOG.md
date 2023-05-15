@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.32
+
+### Patch Changes
+
+- 7ed1ee7: Upgrade to latest version of NextJs (v13.4.1)
+- 8c854fd: - Upgrade `next-auth` version
+  - Update `withSession` mosaic middleware to use `next-auth`
+- Updated dependencies [a56eadb]
+- Updated dependencies [8c854fd]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.32
+  - @jpmorganchase/mosaic-types@0.1.0-beta.32
+  - @jpmorganchase/mosaic-store@0.1.0-beta.32
+
 ## 0.1.0-beta.31
 
 ### Patch Changes
