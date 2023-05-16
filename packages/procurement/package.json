@@ -1,0 +1,42 @@
+{
+  "name": "@jpmorganchase/mosaic-procurement",
+  "version": "0.1.0-beta.32",
+  "author": "",
+  "description": "Utility package to aid the procurement of all other mosaic packages",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=16.10.0 || >=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/procurement"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-cli": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-core": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-create-site": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-labs-components": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-layouts": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-site-middleware": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-site-preset-styles": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-site": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.32",
+    "@jpmorganchase/mosaic-workflows": "^0.1.0-beta.32"
+  }
+}
