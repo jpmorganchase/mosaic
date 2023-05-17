@@ -1,6 +1,8 @@
 // eslint-disable import/no-duplicates
 import { AppProps } from 'next/app';
 import Head from 'next/head';
+import { PT_Mono, Open_Sans } from 'next/font/google';
+import classnames from 'clsx';
 import {
   BaseUrlProvider,
   Image,
@@ -17,6 +19,18 @@ import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 
 import { MyAppProps } from '../types/mosaic';
 
+const ptMono = PT_Mono({
+  weight: '400',
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--salt-typography-fontFamily:'
+});
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  variable: '--salt-typography-fontFamily-code',
+  display: 'swap'
+});
+
 const components = {{{ printComponentIdentifiers imports }}};
 const layoutComponents = {{{ printLayoutIdentifiers imports }}};
 
@@ -29,7 +43,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
     <SessionProvider>
       <StoreProvider value={createStore()}>
         <Metadata Component={Head} />
-        <ThemeProvider className={themeClassName}>
+        <ThemeProvider className={classnames(themeClassName, ptMono.variable, openSans.variable)}>
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>
