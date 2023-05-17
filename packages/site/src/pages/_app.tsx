@@ -1,17 +1,34 @@
-// eslint-disable import/no-duplicates
 import { AppProps } from 'next/app';
 import Head from 'next/head';
-import { BaseUrlProvider, Image, Link, Metadata } from '@jpmorganchase/mosaic-site-components';
+import { PT_Mono, Open_Sans } from 'next/font/google';
+import {
+  BaseUrlProvider,
+  Image,
+  Link,
+  Metadata,
+  components as mosaicComponents
+} from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
-import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
-import { components as mosaicComponents } from '@jpmorganchase/mosaic-site-components';
-import { layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
+import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import { SessionProvider } from 'next-auth/react';
+import classnames from 'clsx';
 
 import { MyAppProps } from '../types/mosaic';
+
+const ptMono = PT_Mono({
+  weight: '400',
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--salt-typography-fontFamily:'
+});
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  variable: '--salt-typography-fontFamily-code',
+  display: 'swap'
+});
 
 const components = mosaicComponents;
 const layoutComponents = mosaicLayouts;
@@ -25,7 +42,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
     <SessionProvider>
       <StoreProvider value={createStore()}>
         <Metadata Component={Head} />
-        <ThemeProvider className={themeClassName}>
+        <ThemeProvider className={classnames(themeClassName, ptMono.variable, openSans.variable)}>
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>
