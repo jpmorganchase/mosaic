@@ -1,6 +1,9 @@
 import path from 'path';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash-es';
+import { remark } from 'remark';
+import remarkDirective from 'remark-directive';
+import { visitParents } from 'unist-util-visit-parents';
 
 interface FragmentPluginPage {
   fullPath: string;
@@ -30,6 +33,50 @@ function getFullPath(fullPath: string, relativePath: string): string {
   return pathSegments.join('/');
 }
 
+async function processTree(tree, serialiser, mutableFilesystem, fullPath, isNonHiddenPage) {
+  const nodesToProcess = [];
+
+  visitParents(tree, 'textDirective', (node, ancestors) => {
+    const match = node.name === 'fragment' && node.attributes.src;
+    if (match) {
+      console.log('match!');
+      console.log({ node });
+      const parent = ancestors[ancestors.length - 1];
+      const index = parent.children.indexOf(node);
+      nodesToProcess.push({ node, parent, index });
+    }
+  });
+
+  for (const { node, parent, index } of nodesToProcess) {
+    const fragmentFullPath = getFullPath(fullPath, node.attributes.src);
+    if (!isNonHiddenPage(fragmentFullPath)) {
+      console.warn(`Invalid file reference: '${node.attributes.src}'. Skipping.`);
+    } else {
+      const fragmentPage = await serialiser.deserialise(
+        fragmentFullPath,
+        await mutableFilesystem.promises.readFile(fragmentFullPath)
+      );
+      console.log({ fragmentPage });
+
+      // Create a new node with the content from fragmentPage.content
+      const newNode = {
+        type: 'html',
+        value: fragmentPage.content
+      };
+
+      console.log('newNode after processing');
+      console.log({ newNode });
+
+      // Replace the original node with the newNode in the tree
+      parent.children.splice(index, 1, newNode);
+    }
+  }
+  if (nodesToProcess.length > 0) {
+    console.log(remark().use(remarkDirective).stringify(tree));
+  }
+  return tree;
+}
+
 const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
   async $beforeSend(mutableFilesystem, { serialiser, ignorePages, pageExtensions }) {
     const pages = await Promise.all(
@@ -56,34 +103,16 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
         continue;
       }
 
-      page.content = await (async () => {
-        const contentParts = page.content.split(/(\[\[\s*\.\/[a-zA-Z0-9-_]+\.mdx\s*\]\])/);
-        for (let i = 0; i < contentParts.length; i++) {
-          const part = contentParts[i];
-          const match = part.match(/\[\[\s*\.\/([a-zA-Z0-9-_]+)\.mdx\s*\]\]/);
-          if (match) {
-            const fragmentFileName = match[1];
-            console.log({ match });
-            console.log({ fragmentFileName });
-            console.log({ fullPath });
-            const fragmentFullPath = getFullPath(fullPath, fragmentFileName + '.mdx');
-            console.log({ fragmentFullPath });
-            if (!isNonHiddenPage(fragmentFullPath)) {
-              console.warn(`Invalid file reference: '${fragmentFileName}'. Skipping.`);
-            } else {
-              const fragmentPage = await serialiser.deserialise(
-                fragmentFullPath,
-                await mutableFilesystem.promises.readFile(fragmentFullPath)
-              );
-              contentParts[i] = fragmentPage.content;
-            }
-          }
-        }
-        return contentParts.join('');
-      })();
-
+      const tree = remark().use(remarkDirective).parse(page.content);
+      const processedTree = await processTree(
+        tree,
+        serialiser,
+        mutableFilesystem,
+        fullPath,
+        isNonHiddenPage
+      );
+      page.content = remark().use(remarkDirective).stringify(processedTree);
       const updatedFileData = await serialiser.serialise(fullPath, page);
-
       await mutableFilesystem.promises.writeFile(fullPath, updatedFileData);
     }
   }
