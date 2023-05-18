@@ -76,11 +76,9 @@ Example output:
 Here is another example, where the fragment files each contain a `<Tile>` component.
 
 ```
-<Tiles>:fragment{src="../fragments/tile-a.mdx"} :fragment{src="../fragments/tile-b.mdx"}</Tiles>
+:fragment{src="../fragments/tile-a.mdx"} :fragment{src="../fragments/tile-b.mdx"}
 ```
 
-The above code will render the content from tile-a.mdx and tile-b.mdx files within the `<Tiles>` component, demonstrated below:
+The above code will render the content from tile-a.mdx and tile-b.mdx files, demonstrated below:
 
-<Tiles>
-  :fragment{(src = '../fragments/tile-a.mdx')} :fragment{(src = '../fragments/tile-b.mdx')}
-</Tiles>
+:fragment{src="../fragments/tile-a.mdx"} :fragment{src="../fragments/tile-b.mdx"}
