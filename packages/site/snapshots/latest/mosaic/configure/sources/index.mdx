@@ -165,7 +165,6 @@ sidebarData:
           link: /mosaic/configure/plugins/should-clear-cache
         childNodes: []
 ---
-
 # {meta.title}
 
 Sources are what Mosaic uses to pull content from disparte locations and merge into a single virtual filesystem that can be used by a Mosaic Site.
@@ -229,9 +228,9 @@ yarn mosaic serve -c ''./mosaic.config.js' -p 8080 --scope "local"
 
 Out of the box, Mosaic provides 3 source "types":
 
-- [Local Folder](./local-folder-source)
-- [Git Repo Source](./git-repo-source)
-- [HTTP Source](./http-source)
+*   [Local Folder](./local-folder-source)
+*   [Git Repo Source](./git-repo-source)
+*   [HTTP Source](./http-source)
 
 Sources must expose an observable interface so it is possible to compose sources together e.g. the Git Repo source uses the Local Folder source internally to watch the cloned folder for changes.
 

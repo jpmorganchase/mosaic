@@ -1,7 +1,9 @@
 ---
 title: Fragments
 layout: DetailTechnical
-lastModified: 1683728702325
+sidebar:
+  priority: 2
+lastModified: 1684420333906
 fullPath: /mosaic/author/fragments.mdx
 route: /mosaic/author/fragments
 breadcrumbs:
@@ -15,15 +17,30 @@ breadcrumbs:
     path: /mosaic/author/fragments.mdx
     id: /mosaic/author/fragments.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.045
-  time: 2700
-  words: 9
-tableOfContents: []
+  text: 2 min read
+  minutes: 1.855
+  time: 111300
+  words: 371
+tableOfContents:
+  - level: 2
+    id: use-cases
+    text: Use Cases
+  - level: 2
+    id: usage
+    text: Usage
+  - level: 3
+    id: markdown-content-example
+    text: Markdown Content Example
+  - level: 3
+    id: component-example
+    text: Component Example
 navigation:
   prev:
-    title: Page Templates
-    route: /mosaic/author/page-templates
+    title: Refs
+    route: /mosaic/author/refs
+  next:
+    title: UI Components
+    route: /mosaic/author/ui-components
 sidebarData:
   - id: /mosaic/author/index
     fullPath: /mosaic/author/index.mdx
@@ -65,6 +82,14 @@ sidebarData:
       level: 2
       link: /mosaic/author/refs
     childNodes: []
+  - id: /mosaic/author/fragments
+    fullPath: /mosaic/author/fragments.mdx
+    name: Fragments
+    priority: 2
+    data:
+      level: 2
+      link: /mosaic/author/fragments
+    childNodes: []
   - id: /mosaic/author/ui-components
     fullPath: /mosaic/author/ui-components.mdx
     name: UI Components
@@ -81,27 +106,87 @@ sidebarData:
       level: 2
       link: /mosaic/author/page-templates
     childNodes: []
-  - id: /mosaic/author/fragments
-    fullPath: /mosaic/author/fragments.mdx
-    name: Fragments
-    data:
-      level: 2
-      link: /mosaic/author/fragments
-    childNodes: []
 ---
-
 # {meta.title}
 
-The content below is pulled from content fragments.
+Fragments, also known as content fragments, are powerful tools that allow you to incorporate content from other pages into your documentation. By creating an MDX file and using the [generic directives](https://talk.commonmark.org/t/generic-directives-plugins-syntax/444) syntax `:fragment{src="path-to-fragment"}`, you can easily render the fragment in another file, providing modularity and reusability to your content.
+
+## Use Cases
+
+Fragments offer various use cases, such as:
+
+**Consistent Content**: Use fragments to maintain consistent content across multiple pages. For instance, if you have a table or a tile that appears on multiple pages, you can create a fragment for it and include it in all relevant files. This ensures that any updates made to the fragment automatically reflect across the entire documentation.
+
+**Reusable Components**: Fragments enable the creation of reusable components or sections. You can define a complex or commonly used section once and then include it in multiple pages as needed. This approach saves time and effort, as you only need to update the fragment file to propagate changes throughout your documentation.
+
+**Modular Documentation**: With fragments, you can break down your documentation into smaller, manageable pieces. Each fragment represents a specific topic or section, allowing you to organize and structure your content more efficiently. This modular approach simplifies maintenance and makes it easier to navigate and update your documentation.
+
+## Usage
+
+Firstly, enable the Fragment Plugin by adding the following to your plugins in `mosaic.config.js`.
+
+```
+{
+    modulePath: '@jpmorganchase/mosaic-plugins/FragmentPlugin',
+    options: {}
+}
+```
+
+To include a fragment in your content, follow these steps:
+
+Create an MDX file for the fragment you want to reuse. Remember to set the sidebar property of your fragment's frontmatter to exclude: true if you don't want the fragment to appear in the vertical navigation menu.
+
+```
+---
+title: Fragment Title
+sidebar:
+  exclude: true
+---
+```
+
+In the target file where you want to include the fragment, use the remark directive syntax `:fragment{src="path-to-fragment"}`.
+
+### Markdown Content Example
+
+This is the contents of a fragment located at `../fragments/content-fragment.mdx`:
+
+```
+---
+title: Content Fragment
+sidebar:
+  exclude: true
+---
+
+#### Fragment Title
+
+This is an example fragment of markdown content, being pulled from `../fragments/content-fragment.mdx`.
+
+```
+
+The below code snippet will render the content from the content-fragment.mdx file in your target file:
+
+```
+:fragment{src="../fragments/content-fragment.mdx"}
+```
+
+Example output:
+
+
+#### Fragment Title
+
+This is an example fragment of markdown content, being pulled from `../fragments/content-fragment.mdx`.
+
+
+### Component Example
+
+Here is another example, where the fragment files each contain a `<Tile>` component.
+
+```
+<Tiles>:fragment{src="../fragments/tile-a.mdx"} :fragment{src="../fragments/tile-b.mdx"}</Tiles>
+```
+
+The above code will render the content from tile-a.mdx and tile-b.mdx files within the `<Tiles>` component, demonstrated below:
 
 <Tiles>
-<TileContent title="Tile A" description="Tile A description" eyebrow="Eyebrow" />
- 
-<TileContent title="Tile B" description="Tile B description" eyebrow="Eyebrow" />
+  :fragment{(src = '../fragments/tile-a.mdx')} :fragment{(src = '../fragments/tile-b.mdx')}
 </Tiles>
-
-
-### Heading
-
-This is an example fragment of markdown content, being pulled from `md-fragment.mdx`.
-

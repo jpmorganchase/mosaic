@@ -10,7 +10,7 @@ data:
     - Snapshot file mode
     - Snapshot AWS/S3 mode
   sidebarPriority: 3
-lastModified: 1681297655934
+lastModified: 1684335432975
 fullPath: /mosaic/author/refs.mdx
 route: /mosaic/author/refs
 breadcrumbs:
@@ -61,8 +61,8 @@ navigation:
     title: Aliases
     route: /mosaic/author/aliases
   next:
-    title: UI Components
-    route: /mosaic/author/ui-components
+    title: Fragments
+    route: /mosaic/author/fragments
 sidebarData:
   - id: /mosaic/author/index
     fullPath: /mosaic/author/index.mdx
@@ -104,6 +104,14 @@ sidebarData:
       level: 2
       link: /mosaic/author/refs
     childNodes: []
+  - id: /mosaic/author/fragments
+    fullPath: /mosaic/author/fragments.mdx
+    name: Fragments
+    priority: 2
+    data:
+      level: 2
+      link: /mosaic/author/fragments
+    childNodes: []
   - id: /mosaic/author/ui-components
     fullPath: /mosaic/author/ui-components.mdx
     name: UI Components
@@ -120,15 +128,7 @@ sidebarData:
       level: 2
       link: /mosaic/author/page-templates
     childNodes: []
-  - id: /mosaic/author/fragments
-    fullPath: /mosaic/author/fragments.mdx
-    name: Fragments
-    data:
-      level: 2
-      link: /mosaic/author/fragments
-    childNodes: []
 ---
-
 # {meta.title}
 
 Refs are a very powerful feature of Mosaic documents that use [JSON References](https://json-spec.readthedocs.io/reference.html) to reference
@@ -136,13 +136,13 @@ a property from the page frontmatter or frontmatter of other pages.
 
 The key concept is that of a JSON pointer which takes the form **A**#**B** where:
 
-- **A** is the relative path from the current schema to a target schema. If A is empty, the reference is to a type or property in the same schema, an in-schema reference. Otherwise, the reference is to a different schema, a cross-schema reference.
-- **B** is the complete path from the root of the schema to a type or property in the schema. If # in not included or B is empty, the reference is to an entire schema.
+*   **A** is the relative path from the current schema to a target schema. If A is empty, the reference is to a type or property in the same schema, an in-schema reference. Otherwise, the reference is to a different schema, a cross-schema reference.
+*   **B** is the complete path from the root of the schema to a type or property in the schema. If # in not included or B is empty, the reference is to an entire schema.
 
 To translate this for our purposes:
 
-- **A** is the relative path to a file in the filesystem.
-- **B** is the path to a property in the frontmatter of the file.
+*   **A** is the relative path to a file in the filesystem.
+*   **B** is the path to a property in the frontmatter of the file.
 
 It's probably better explained with examples...
 
@@ -295,15 +295,15 @@ You can use Mosaic components with referenced data as well. Below we are using t
 
 ## Setting Refs using Plugins
 
-Mosaic plugins can create new refs, create new _global_ refs and see existing refs created by the page or other plugins. This is achieved using a special `config` property available in the plugin helpers.
+Mosaic plugins can create new refs, create new *global* refs and see existing refs created by the page or other plugins. This is achieved using a special `config` property available in the plugin helpers.
 
 ### Create new refs
 
 Use the `config.setRef` function from the helpers provided to plugin lifecycle events. You need to provide
 
-- The file/fullpath to write the ref to
-- The path to the ptoperty where the ref will be applied
-- The value of the ref, which can use wildcards
+*   The file/fullpath to write the ref to
+*   The path to the ptoperty where the ref will be applied
+*   The value of the ref, which can use wildcards
 
 For example, the following would add a property to pages named `titles`. The value is the title of all pages in the **same** directory as the current page
 
