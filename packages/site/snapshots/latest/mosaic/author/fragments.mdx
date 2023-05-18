@@ -3,7 +3,7 @@ title: Fragments
 layout: DetailTechnical
 sidebar:
   priority: 2
-lastModified: 1684420333906
+lastModified: 1684420754764
 fullPath: /mosaic/author/fragments.mdx
 route: /mosaic/author/fragments
 breadcrumbs:
@@ -18,9 +18,9 @@ breadcrumbs:
     id: /mosaic/author/fragments.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.855
-  time: 111300
-  words: 371
+  minutes: 1.88
+  time: 112800
+  words: 376
 tableOfContents:
   - level: 2
     id: use-cases
@@ -188,5 +188,6 @@ Here is another example, where the fragment files each contain a `<Tile>` compon
 The above code will render the content from tile-a.mdx and tile-b.mdx files within the `<Tiles>` component, demonstrated below:
 
 <Tiles>
-  :fragment{(src = '../fragments/tile-a.mdx')} :fragment{(src = '../fragments/tile-b.mdx')}
-</Tiles>
+<TileContent title="Tile A" description="Tile A description" eyebrow="Eyebrow" />
+&#x20;
+<TileContent title="Tile B" description="Tile B description" eyebrow="Eyebrow" /> </Tiles>
