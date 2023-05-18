@@ -36,11 +36,13 @@ function getFullPath(fullPath: string, relativePath: string): string {
 async function processTree(tree, serialiser, mutableFilesystem, fullPath, isNonHiddenPage) {
   const nodesToProcess = [];
 
-  visitParents(tree, 'textDirective', (node, ancestors) => {
+  visitParents(tree, (node, ancestors) => {
+    if (node.type === 'code') {
+      return;
+    }
+
     const match = node.name === 'fragment' && node.attributes.src;
     if (match) {
-      console.log('match!');
-      console.log({ node });
       const parent = ancestors[ancestors.length - 1];
       const index = parent.children.indexOf(node);
       nodesToProcess.push({ node, parent, index });
@@ -56,7 +58,6 @@ async function processTree(tree, serialiser, mutableFilesystem, fullPath, isNonH
         fragmentFullPath,
         await mutableFilesystem.promises.readFile(fragmentFullPath)
       );
-      console.log({ fragmentPage });
 
       // Create a new node with the content from fragmentPage.content
       const newNode = {
@@ -64,15 +65,9 @@ async function processTree(tree, serialiser, mutableFilesystem, fullPath, isNonH
         value: fragmentPage.content
       };
 
-      console.log('newNode after processing');
-      console.log({ newNode });
-
       // Replace the original node with the newNode in the tree
       parent.children.splice(index, 1, newNode);
     }
-  }
-  if (nodesToProcess.length > 0) {
-    console.log(remark().use(remarkDirective).stringify(tree));
   }
   return tree;
 }
@@ -111,7 +106,12 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
         fullPath,
         isNonHiddenPage
       );
-      page.content = remark().use(remarkDirective).stringify(processedTree);
+
+      page.content = remark()
+        .data('settings', { fences: true })
+        .use(remarkDirective)
+        .stringify(processedTree);
+
       const updatedFileData = await serialiser.serialise(fullPath, page);
       await mutableFilesystem.promises.writeFile(fullPath, updatedFileData);
     }
