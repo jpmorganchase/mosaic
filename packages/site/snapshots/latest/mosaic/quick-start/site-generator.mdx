@@ -1,9 +1,9 @@
 ---
-title: Publish a site to AWS
+title: Generate a site
 layout: DetailTechnical
-lastModified: 1678976868215
-fullPath: /mosaic/quick-start/publish-site-to-aws.mdx
-route: /mosaic/quick-start/publish-site-to-aws
+lastModified: 1683803039977
+fullPath: /mosaic/quick-start/site-generator.mdx
+route: /mosaic/quick-start/site-generator
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
@@ -11,15 +11,18 @@ breadcrumbs:
   - label: Quick start guides
     path: /mosaic/quick-start/index.mdx
     id: /mosaic/quick-start/index.mdx
-  - label: Publish a site to AWS
-    path: /mosaic/quick-start/publish-site-to-aws.mdx
-    id: /mosaic/quick-start/publish-site-to-aws.mdx
+  - label: Generate a site
+    path: /mosaic/quick-start/site-generator.mdx
+    id: /mosaic/quick-start/site-generator.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.065
-  time: 63900
-  words: 213
+  minutes: 1.3
+  time: 78000
+  words: 260
 tableOfContents:
+  - level: 2
+    id: prerequisites
+    text: Prerequisites
   - level: 2
     id: step-1-generate-a-mosaic-site
     text: 'Step 1: Generate a Mosaic site'
@@ -42,9 +45,9 @@ tableOfContents:
     id: step-8-upload-your-snapshot
     text: 'Step 8: Upload your snapshot'
 navigation:
-  next:
-    title: Generate a site
-    route: /mosaic/quick-start/site-generator
+  prev:
+    title: Publish a site to AWS
+    route: /mosaic/quick-start/publish-site-to-aws
 sidebarData:
   - id: /mosaic/quick-start/index
     fullPath: /mosaic/quick-start/index.mdx
@@ -69,17 +72,28 @@ sidebarData:
       link: /mosaic/quick-start/site-generator
     childNodes: []
 ---
+
 # {meta.title}
 
-Publish a site to AWS using S3 snapshots.
+Use the Mosaic Site generator to generate a site and add an example source.
+
+## Prerequisites
+
+- yarn v1 installed
+- node 18+ installed
 
 ## Step 1: Generate a Mosaic site
 
+The site generator expects to be run in a monorepo. If you are trying to set up a site in an empty directory, you will first need to run `yarn init` to create a `package.json` file.
+
 ```
-> yarn global add @jpmorganchase/mosaic-create-site
-> mosaic-create-site create -o my-sample-site
+> yarn add @jpmorganchase/mosaic-create-site -W
+> yarn mosaic-create-site init
+> yarn mosaic-create-site create -o my-sample-site
 > cd my-sample-site
 ```
+
+fdfdfdsfddss
 
 ## Step 2: Create the Github repository
 

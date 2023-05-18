@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.32
+
+### Patch Changes
+
+- 6265b19: Upgrade to latest Salt libraries
+- Updated dependencies [7ed1ee7]
+- Updated dependencies [6265b19]
+- Updated dependencies [8c854fd]
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.32
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.32
+  - @jpmorganchase/mosaic-components@0.1.0-beta.32
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.32
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.32
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.32
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.32
+
 ## 0.1.0-beta.31
 
 ### Patch Changes

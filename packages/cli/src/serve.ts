@@ -5,6 +5,8 @@ import MosaicCore from '@jpmorganchase/mosaic-core';
 
 const app = express();
 
+const addedSources = new Set<{ name: string; id: symbol }>();
+
 export default async function serve(config, port, scope) {
   app.listen(port, () => {
     console.log(
@@ -68,6 +70,42 @@ export default async function serve(config, port, scope) {
         res.contentType('application/json');
         res.send(result);
       }
+    } catch (e) {
+      console.error(e);
+      res.status(500).send(e.message).end();
+    }
+  });
+
+  app.post('/sources/add', async (req, res) => {
+    try {
+      const { definition, name, isPreview = true } = req.body;
+
+      if (process.env.MOSAIC_ENABLE_SOURCE_PUSH !== 'true') {
+        throw new Error('Source push is disabled.');
+      }
+
+      if (!definition) {
+        throw new Error('Source definition is required');
+      }
+
+      if (!name) {
+        throw new Error('A name is required');
+      } else {
+        addedSources.forEach(addedSource => {
+          if (addedSource.name === name) {
+            mosaic.stopSource(addedSource.id);
+          }
+        });
+      }
+
+      if (isPreview) {
+        const namespace = `preview-${definition.namespace}`;
+        definition.namespace = namespace;
+      }
+
+      const source = await mosaic.addSource(definition);
+      addedSources.add({ name, id: source.id });
+      res.send(source !== undefined ? definition.namespace : 'Unable to add source');
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message).end();

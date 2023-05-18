@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.32
+
 ## 0.1.0-beta.31
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.32
+
+### Patch Changes
+
+- 8c854fd: - Upgrade `next-auth` version
+  - Update `withSession` mosaic middleware to use `next-auth`
+
 ## 0.1.0-beta.31
 
 ### Patch Changes

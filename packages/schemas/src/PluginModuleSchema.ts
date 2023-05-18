@@ -7,7 +7,7 @@ export const pluginModuleSchema = z.object({
    */
   modulePath: z.string({ required_error: 'A path to the plugin module is required.' }),
   /**
-   * Options to pass to the plugin lifecycle methods.
+   * Set to true to prevent the plugin from running
    */
   disabled: z.boolean().optional(),
   /**
@@ -21,7 +21,11 @@ export const pluginModuleSchema = z.object({
   /**
    * The importance of this plugin. This highest number plugin will be run first
    */
-  priority: z.number().optional()
+  priority: z.number().optional(),
+  /**
+   * Set to true to prevent the plugin from running when a source has a "preview" namespace
+   */
+  previewDisabled: z.boolean().optional()
 });
 
 export type PluginModuleDefinition = z.infer<typeof pluginModuleSchema>;

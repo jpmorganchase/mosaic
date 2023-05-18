@@ -6,9 +6,9 @@ sidebar:
 data:
   authorRef: Hello from Author page
   modes:
-    - Active mode
-    - Snapshot file mode
-    - Snapshot AWS/S3 mode
+    - active
+    - snapshot-file
+    - snapshot-s3
   sidebarPriority: 3
 lastModified: 1684335432975
 fullPath: /mosaic/author/refs.mdx
@@ -25,9 +25,9 @@ breadcrumbs:
     id: /mosaic/author/refs.mdx
 readingTime:
   text: 4 min read
-  minutes: 3.08
-  time: 184800
-  words: 616
+  minutes: 3.075
+  time: 184500
+  words: 615
 tableOfContents:
   - level: 2
     id: local-refs-in-schema-reference
@@ -239,7 +239,7 @@ data:
 ---
 ```
 
-The ref here is essentially using a wildcard (the \*) to grab the title property from the frontmatter of every page in the modes folder.
+The ref here is essentially using a wildcard (the \*) to grab the `mode` property from the frontmatter of every page in the modes folder.
 
 We can reference that data just like before:
 
