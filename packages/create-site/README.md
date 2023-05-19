@@ -2,13 +2,9 @@
 
 `@jpmorganchase/mosaic-create-site` is a CLI script which scaffolds your very own Mosaic site from pre-defined generators.
 
-## Installation
-
-`yarn add -g @jpmorganchase/mosaic-create-site`
-
 ## Basic Commands
 
-### `yarn mosaic-create-site init`
+### `npx @jpmorganchase/mosaic-create-site init`
 
 Running `init` will create a basic `mosaic.generators.js` in your current directory, this is an optional file, which enables
 you to add configurations to generators.
@@ -54,14 +50,14 @@ This particular config would create a package called `@jpmorganchase/mosaic-demo
     ]
 ```
 
-### `yarn mosaic-create-site create`
+### `npx @jpmorganchase/mosaic-create-site create`
 
 Once you have created your `mosaic.generators.js`, we can think about configuring your first Mosaic site.
 
 Running `create` will generate a Mosaic site from the configured templates.
 Lets see what this looks like by running the script with the `--interactive (-i)` and the `--output (-o)` flags.
 
-`yarn mosaic-create-site create --interactive --ouput <path to your output directory>`
+`npx @jpmorganchase/mosaic-create-site  --interactive --ouput <path to your output directory>`
 
 You should see a menu appear giving you a list of the available Mosaic templates.
 
@@ -264,7 +260,7 @@ Occasionally you might want to re-generate your site or switch templates.
 For this, you will need to pip the version of `@jpmorganchase/mosaic-create-site` to the latest version and re-run
 `create` with a `--force (-f)` flag to overwrite the existing site.
 
-`yarn mosaic create <-o path to your output directory> -g <generator name> -f`
+`npx @jpmorganchase/mosaic-create-site <-o path to your output directory> -g <generator name> -f`
 
 Aside from updating the standard config, the under-lying Mosaic dependencies for components, theme and layouts will also be updated.
 
