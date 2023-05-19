@@ -31,7 +31,7 @@ async function init({ silent = false } = {}) {
       '1. Edit your `mosaic.generators.js`, if you want to configure your site`s components, layouts or theme'
     );
     console.log(
-      '2. Run `yarn mosaic-create-site create -i` to generate your Mosaic site (use -f to overwrite existing files)'
+      '2. Run `npx @jpmorganchase/mosaic-create-site -i` to generate your Mosaic site (use -f to overwrite existing files)'
     );
   });
 }
@@ -43,6 +43,10 @@ async function readMosaicConfig(mosaicConfigPath) {
     await init({ silent: true });
   }
   try {
+    const nodeModulesPathRegexp = /(.*\/node_modules\/)/;
+    const nodeModulesPathMatches = __filename.match(nodeModulesPathRegexp);
+    process.env.NODE_PATH = `${process.env.NODE_PATH}${path.delimiter}${nodeModulesPathMatches[1]}`;
+    require('module').Module._initPaths();
     mosaicConfig = await require(normalizeRelativePath(
       mosaicConfigPath || defaultMosaicConfigPath
     ));
