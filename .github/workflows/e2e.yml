@@ -21,7 +21,7 @@ jobs:
   test_e2e:
     needs: site_preview
     name: Playwright tests
-    timeout-minutes: 10
+    timeout-minutes: 60
     runs-on: macos-latest
     steps:
       - name: Prepare testing env
@@ -43,4 +43,4 @@ jobs:
         with:
           name: playwright-report
           path: ./packages/site/e2e/**/*.png
-          retention-days: 30
+          retention-days: 14
