@@ -12,6 +12,10 @@ const siteConfig = {
       options: { rootDirGlob: '*/*' }
     },
     {
+      modulePath: '@jpmorganchase/mosaic-plugins/FragmentPlugin',
+      options: {}
+    },
+    {
       modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
       priority: -1,
       // Exclude this plugin in builds

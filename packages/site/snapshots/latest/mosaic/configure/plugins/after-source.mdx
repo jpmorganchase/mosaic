@@ -153,7 +153,6 @@ sidebarData:
           link: /mosaic/configure/plugins/should-clear-cache
         childNodes: []
 ---
-
 # {meta.title}
 
 The first lifecycle hook to trigger after receiving pages from a source.
@@ -162,9 +161,9 @@ It **must** return a collection of pages.
 
 The `$afterSource` lifecycle event is called with:
 
-- pages - the collection of pages emitted by the source
-- helpers - an object with useful methods
-- options - the options specified for the plugin in the mosaic config file
+*   pages - the collection of pages emitted by the source
+*   helpers - an object with useful methods
+*   options - the options specified for the plugin in the mosaic config file
 
 ## Helpers
 

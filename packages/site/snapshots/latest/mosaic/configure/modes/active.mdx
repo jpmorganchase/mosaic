@@ -2,7 +2,7 @@
 title: Active mode
 mode: active
 layout: DetailTechnical
-lastModified: 1683802371668
+lastModified: 1684335432977
 fullPath: /mosaic/configure/modes/active.mdx
 route: /mosaic/configure/modes/active
 breadcrumbs:
@@ -155,23 +155,22 @@ sidebarData:
           link: /mosaic/configure/plugins/should-clear-cache
         childNodes: []
 ---
-
 # {meta.title}
 
-In `active` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
-As your content changes, the site will _re-pull_ the content and update your site in real-time.
+In `active` mode content can be *pulled* from heterogeneous data sources and normalized via plugins, to the configured components/theme.
+As your content changes, the site will *re-pull* the content and update your site in real-time.
 
 The standard generated site comes with 2 sources to demonstrate, how 'active' mode work.
 
-- a local source, which loads content from `./docs`
-- a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
+*   a local source, which loads content from `./docs`
+*   a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
 
 ## Configuring your content sources
 
-All content is composed together within a _namespace_.
+All content is composed together within a *namespace*.
 
-A _namespace_ is the scope for aggregated content, represented by the root path.
-e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
+A *namespace* is the scope for aggregated content, represented by the root path.
+e.g Our sample docs are aggregated into a *namespace* called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
 
 Mosaic doc sources are defined by a file called `mosaic.config.js`
 
