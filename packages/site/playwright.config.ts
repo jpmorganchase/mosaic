@@ -43,7 +43,11 @@ const config: PlaywrightTestConfig = {
     {
       name: 'Desktop Chrome',
       use: {
-        ...devices['Desktop Chrome']
+        ...devices['Desktop Chrome'],
+        bypassCSP: true,
+        launchOptions: {
+          args: ['--disable-web-security']
+        }
       }
     }
   ]
