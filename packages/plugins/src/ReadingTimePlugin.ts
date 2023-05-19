@@ -20,7 +20,7 @@ const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
   async $afterSource(pages) {
     const processor = unified().use(markdown);
     for (const page of pages) {
-      const tree: any = await processor.parse(page.content);
+      const tree: Node = await processor.parse(page.content);
       let textContent = '';
 
       visit(
