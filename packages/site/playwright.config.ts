@@ -9,12 +9,13 @@ const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://localhost:${PORT
 
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
+  workers: process.env.CI ? 2 : undefined,
   // Timeout per test
   timeout: 30 * 1000,
   // Test directory
   testDir: path.posix.join(__dirname, 'e2e'),
   // If a test fails, retry it additional 2 times
-  retries: 2,
+  retries: process.env.CI ? 2 : 0,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e', 'test-results'),
   expect: {
