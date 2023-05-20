@@ -57,7 +57,7 @@ Once you have created your `mosaic.generators.js`, we can think about configurin
 Running `create` will generate a Mosaic site from the configured templates.
 Lets see what this looks like by running the script with the `--interactive (-i)` and the `--output (-o)` flags.
 
-`npx @jpmorganchase/mosaic-create-site  --interactive --ouput <path to your output directory>`
+`npx @jpmorganchase/mosaic-create-site --interactive --ouput <path to your output directory>`
 
 You should see a menu appear giving you a list of the available Mosaic templates.
 
