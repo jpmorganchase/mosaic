@@ -8935,8 +8935,8 @@ json-stable-stringify-without-jsonify@^1.0.1:
 
 json5@^1.0.1, json5@^1.0.2, json5@^2.2.1:
   version "1.0.2"
-  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.2.tgz#63d98d60f21b313b77c4d6da18bfa69d80e1d593"
-  integrity sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/json5/-/json5-1.0.2.tgz#63d98d60f21b313b77c4d6da18bfa69d80e1d593"
+  integrity sha1-Y9mNYPIbMTt3xNbaGL+mnYDh1ZM=
   dependencies:
     minimist "^1.2.0"
 
@@ -11286,6 +11286,11 @@ react-debounce-input@=3.3.0:
     lodash.debounce "^4"
     prop-types "^15.8.1"
 
+react-docgen-typescript@^2.2.2:
+  version "2.2.2"
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz#4611055e569edc071204aadb20e1c93e1ab1659c"
+  integrity sha1-RhEFXlae3AcSBKrbIOHJPhqxZZw=
+
 react-dom@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.2.0.tgz#22aaf38708db2674ed9ada224ca4aa708d821e3d"
@@ -11679,10 +11684,10 @@ remark-directive@^2.0.1:
     micromark-extension-directive "^2.0.0"
     unified "^10.0.0"
 
-remark-gfm@3.0.1:
+remark-gfm@3.0.1, remark-gfm@^3.0.1:
   version "3.0.1"
-  resolved "https://registry.yarnpkg.com/remark-gfm/-/remark-gfm-3.0.1.tgz#0b180f095e3036545e9dddac0e8df3fa5cfee54f"
-  integrity sha512-lEFDoi2PICJyNrACFOfDD3JlLkuSbOa5Wd8EPt06HUdptv8Gn0bxYTdbU/XXQ3swAPkEaGxxPN9cbnMHvVu1Ig==
+  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/remark-gfm/-/remark-gfm-3.0.1.tgz#0b180f095e3036545e9dddac0e8df3fa5cfee54f"
+  integrity sha1-CxgPCV4wNlRend2sDo3z+lz+5U8=
   dependencies:
     "@types/mdast" "^3.0.0"
     mdast-util-gfm "^2.0.0"
