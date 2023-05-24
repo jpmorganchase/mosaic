@@ -20,5 +20,7 @@
     "dist",
     "src"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "dotenv-load": "^2.0.1"
+  }
 }
