@@ -1,31 +1,23 @@
 ---
-title: Generate a site
+title: Publish a site to AWS
 layout: DetailTechnical
 ---
 
 # {meta.title}
 
-Use the Mosaic Site generator to generate a site and add an example source.
-
-## Prerequisites
-
-- yarn v1 installed
-- node 18+ installed
+Publish a site to AWS using S3 snapshots.
 
 ## Step 1: Generate a Mosaic site
 
-The site generator expects to be run in a monorepo. If you are trying to set up a site in an empty directory, you will first need to run `yarn init` to create a `package.json` file.
+If you have already created your Mosaic site, skip ahead to step 2.
 
 ```
-> yarn add @jpmorganchase/mosaic-create-site -W
-> yarn mosaic-create-site init
-> yarn mosaic-create-site create -o my-sample-site
+> yarn global add @jpmorganchase/mosaic-create-site
+> mosaic-create-site create -o my-sample-site
 > cd my-sample-site
 ```
 
-fdfdfdsfddss
-
-## Step 2: Create the Github repository
+## Step 2: Create a Github repository
 
 ```
 > git init
@@ -36,6 +28,8 @@ fdfdfdsfddss
 ```
 
 ## Step 3: Generate a snapshot of content
+
+Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
 
 ```
 > yarn gen:snapshot
