@@ -1,34 +1,31 @@
 ---
-title: Generate a site
+title: Publish a site to AWS
 layout: DetailTechnical
-lastModified: 1683803039977
-fullPath: /mosaic/quick-start/site-generator.mdx
-route: /mosaic/quick-start/site-generator
+lastModified: 1684941632295
+fullPath: /mosaic/getting-started/publish-site-to-aws.mdx
+route: /mosaic/getting-started/publish-site-to-aws
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
     id: /mosaic/index.mdx
-  - label: Quick start guides
-    path: /mosaic/quick-start/index.mdx
-    id: /mosaic/quick-start/index.mdx
-  - label: Generate a site
-    path: /mosaic/quick-start/site-generator.mdx
-    id: /mosaic/quick-start/site-generator.mdx
+  - label: Getting Started
+    path: /mosaic/getting-started/index.mdx
+    id: /mosaic/getting-started/index.mdx
+  - label: Publish a site to AWS
+    path: /mosaic/getting-started/publish-site-to-aws.mdx
+    id: /mosaic/getting-started/publish-site-to-aws.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.3
-  time: 78000
-  words: 260
+  minutes: 1.22
+  time: 73200
+  words: 244
 tableOfContents:
-  - level: 2
-    id: prerequisites
-    text: Prerequisites
   - level: 2
     id: step-1-generate-a-mosaic-site
     text: 'Step 1: Generate a Mosaic site'
   - level: 2
-    id: step-2-create-the-github-repository
-    text: 'Step 2: Create the Github repository'
+    id: step-2-create-a-github-repository
+    text: 'Step 2: Create a Github repository'
   - level: 2
     id: step-3-generate-a-snapshot-of-content
     text: 'Step 3: Generate a snapshot of content'
@@ -46,56 +43,48 @@ tableOfContents:
     text: 'Step 8: Upload your snapshot'
 navigation:
   prev:
-    title: Publish a site to AWS
-    route: /mosaic/quick-start/publish-site-to-aws
+    title: Create a Site
+    route: /mosaic/getting-started/create-a-site
 sidebarData:
-  - id: /mosaic/quick-start/index
-    fullPath: /mosaic/quick-start/index.mdx
-    name: Quick start guides
-    priority: 5
+  - id: /mosaic/getting-started/index
+    fullPath: /mosaic/getting-started/index.mdx
+    name: Getting Started
+    priority: 10
     data:
       level: 2
-      link: /mosaic/quick-start/index
+      link: /mosaic/getting-started/index
     childNodes: []
-  - id: /mosaic/quick-start/publish-site-to-aws
-    fullPath: /mosaic/quick-start/publish-site-to-aws.mdx
+  - id: /mosaic/getting-started/create-a-site
+    fullPath: /mosaic/getting-started/create-a-site.mdx
+    name: Create a Site
+    priority: 8
+    data:
+      level: 2
+      link: /mosaic/getting-started/create-a-site
+    childNodes: []
+  - id: /mosaic/getting-started/publish-site-to-aws
+    fullPath: /mosaic/getting-started/publish-site-to-aws.mdx
     name: Publish a site to AWS
     data:
       level: 2
-      link: /mosaic/quick-start/publish-site-to-aws
-    childNodes: []
-  - id: /mosaic/quick-start/site-generator
-    fullPath: /mosaic/quick-start/site-generator.mdx
-    name: Generate a site
-    data:
-      level: 2
-      link: /mosaic/quick-start/site-generator
+      link: /mosaic/getting-started/publish-site-to-aws
     childNodes: []
 ---
-
 # {meta.title}
 
-Use the Mosaic Site generator to generate a site and add an example source.
-
-## Prerequisites
-
-- yarn v1 installed
-- node 18+ installed
+Publish a site to AWS using S3 snapshots.
 
 ## Step 1: Generate a Mosaic site
 
-The site generator expects to be run in a monorepo. If you are trying to set up a site in an empty directory, you will first need to run `yarn init` to create a `package.json` file.
+If you have already created your Mosaic site, skip ahead to step 2.
 
 ```
-> yarn add @jpmorganchase/mosaic-create-site -W
-> yarn mosaic-create-site init
-> yarn mosaic-create-site create -o my-sample-site
+> yarn global add @jpmorganchase/mosaic-create-site
+> mosaic-create-site create -o my-sample-site
 > cd my-sample-site
 ```
 
-fdfdfdsfddss
-
-## Step 2: Create the Github repository
+## Step 2: Create a Github repository
 
 ```
 > git init
@@ -106,6 +95,8 @@ fdfdfdsfddss
 ```
 
 ## Step 3: Generate a snapshot of content
+
+Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
 
 ```
 > yarn gen:snapshot
