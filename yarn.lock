@@ -8935,8 +8935,8 @@ json-stable-stringify-without-jsonify@^1.0.1:
 
 json5@^1.0.1, json5@^1.0.2, json5@^2.2.1:
   version "1.0.2"
-  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/json5/-/json5-1.0.2.tgz#63d98d60f21b313b77c4d6da18bfa69d80e1d593"
-  integrity sha1-Y9mNYPIbMTt3xNbaGL+mnYDh1ZM=
+  resolved "https://registry.yarnpkg.com/json5/-/json5-1.0.2.tgz#63d98d60f21b313b77c4d6da18bfa69d80e1d593"
+  integrity sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==
   dependencies:
     minimist "^1.2.0"
 
@@ -11288,8 +11288,8 @@ react-debounce-input@=3.3.0:
 
 react-docgen-typescript@^2.2.2:
   version "2.2.2"
-  resolved "https://artifacts-read.gkp.jpmchase.net/artifactory/api/npm/npm/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz#4611055e569edc071204aadb20e1c93e1ab1659c"
-  integrity sha1-RhEFXlae3AcSBKrbIOHJPhqxZZw=
+  resolved "https://registry.yarnpkg.com/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz#4611055e569edc071204aadb20e1c93e1ab1659c"
+  integrity sha512-tvg2ZtOpOi6QDwsb3GZhOjDkkX0h8Z2gipvTg6OVMUyoYoURhEiRNePT8NZItTVCDh39JJHnLdfCOkzoLbFnTg==
 
 react-dom@^18.2.0:
   version "18.2.0"
