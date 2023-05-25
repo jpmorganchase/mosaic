@@ -70,6 +70,21 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/create-a-site</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/index</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/publish-site-to-aws</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -81,21 +96,6 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/publish-site-to-vercel</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/quick-start/index</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/quick-start/publish-site-to-aws</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/quick-start/site-generator</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

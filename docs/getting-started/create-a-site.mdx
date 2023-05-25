@@ -1,0 +1,86 @@
+---
+title: Create a Site
+layout: DetailTechnical
+sidebar:
+  priority: 8
+---
+
+# {meta.title}
+
+In this guide you will learn how to generate and serve a Mosaic site.
+
+## Prerequisites
+
+To begin setting up a Mosaic site, you need to have the following software installed:
+
+1. Yarn v1
+2. Node.js v18 or higher
+
+## Step 1: Generate a Mosaic site
+
+If you are setting up a site in an empty directory, run the following command to create a package.json file:
+
+```bash
+yarn init
+```
+
+Run the following command to generate a new Mosaic site:
+
+```bash
+npx @jpmorganchase/mosaic-create-site create -o my-sample-site
+```
+
+This command creates a new Mosaic site in the my-sample-site directory.
+
+Next, navigate to the site directory:
+
+```bash
+cd my-sample-site
+```
+
+## Step 2: Serve the site
+
+The example site you have generated comes preconfigured with two [sources](../configure/sources/index): a remote repository and a local docs folder. Sources are used by Mosaic to pull content from disparate locations and merge them into a single virtual filesystem that can be used by a Mosaic site.
+
+### Set up Git credentials
+
+If you want the site to read from remote repositories, you need to set up an environment variable to store your Git credentials. Follow these steps:
+
+1. Open a terminal or command prompt.
+
+2. Replace `<repo_username>` and `<personal_access_token>` in the following commands with your actual Git username and personal access token.
+
+On Unix:
+
+```bash
+export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo_username>:<personal_access_token>"
+```
+
+On Windows:
+
+```bash
+set MOSAIC_DOCS_CLONE_CREDENTIALS="<repo_username>:<personal_access_token>"
+```
+
+This sets the MOSAIC_DOCS_CLONE_CREDENTIALS environment variable with your Git credentials.
+
+### Serve command
+
+Now you can serve your Mosaic site by running the following command:
+
+```bash
+yarn serve
+```
+
+Access your Mosaic site from a browser using the following URLs:
+
+- To browse the content from your local source: http://localhost:3000/local
+- To browse the content from the Mosaic Git repo source: http://localhost:3000/mosaic
+
+That's it! Your Mosaic site is now up and running.
+
+## Next Steps:
+
+1. [Deploy your Mosaic site to AWS or Vercel for production use.](../publish/index)
+2. [Create more pages to expand your site's content.](../author/index)
+3. [Configure your own sources in the mosaic.config.js file to pull content from different locations.](../configure/sources/index)
