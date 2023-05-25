@@ -34,7 +34,7 @@ const siteConfig = {
       }
     },
     {
-      modulePath: '@jpmorganchase/mosaic-plugins/PropsTable',
+      modulePath: '@jpmorganchase/mosaic-plugins/PropsTablePlugin',
       priority: -1,
       options: {}
     }
