@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import classnames from 'clsx';
-import Highlight, { defaultProps as defaultPrismProps } from 'prism-react-renderer';
-import type { Language } from 'prism-react-renderer';
-import { Icon } from '../../Icon';
+import { getHighlighter } from 'shiki';
 
+import { Icon } from '../../Icon';
 import { Button } from '../../Button';
 import { Link } from '../../Link';
 import { ReactLive } from '../../ReactLive';
@@ -16,7 +15,7 @@ export type CodeBlockPropsType = {
 export type CodeBlockMeta = {
   code?: string;
   filename?: string;
-  language?: Language;
+  language?: string;
   live?: boolean;
 };
 
@@ -58,12 +57,12 @@ export const Pre: React.FC<React.PropsWithChildren<PreProps>> = ({
   };
 
   let code: string | undefined = codeProp.replace(/<br>/g, '\n');
-  let language: Language | undefined = languageProp;
+  let language: string | undefined = languageProp;
   if (children) {
     const codeBlock = (children as React.ReactElement<{ className?: string; children: string }>)
       .props;
     code = codeBlock.children;
-    language = codeBlock.className?.replace('language-', '') as Language;
+    language = codeBlock.className?.replace('language-', '');
   }
 
   if (typeof code !== 'string') {
@@ -110,46 +109,31 @@ export const Pre: React.FC<React.PropsWithChildren<PreProps>> = ({
 const CodeBlock = React.memo(
   React.forwardRef<
     HTMLPreElement | null,
-    { isLive?: boolean; code: string; components?: Record<string, unknown>; language?: Language }
-  >(({ code, components, isLive = false, language = '' }, ref) =>
-    isLive ? (
-      <ReactLive className={`language-${language}`} scope={components}>
-        {code}
-      </ReactLive>
-    ) : (
-      <pre className={classnames(styles.pre, `language-${language}`)} ref={ref}>
-        <CodeHighlight code={code} language={language as Language} />
-      </pre>
-    )
-  )
-);
+    { isLive?: boolean; code: string; components?: Record<string, unknown>; language?: string }
+  >(({ code, components, isLive = false, language = '' }, ref) => {
+    const [highlightedCode, setHighlightedCode] = useState('');
 
-const CodeHighlight: React.FC<React.PropsWithChildren<{ code: string; language: Language }>> =
-  function CodeHighlight({ code, language }) {
-    const [isClient, setIsClient] = useState(false);
     useEffect(() => {
-      setIsClient(true);
-    }, []);
+      const highlightCode = async () => {
+        const highlighter = await getHighlighter({ theme: 'nord' });
+        const result = await highlighter.codeToHtml(code, language);
+        setHighlightedCode(result);
+      };
+      highlightCode();
+    }, [code, language]);
 
-    if (!isClient) {
-      return null;
+    if (isLive) {
+      return (
+        <ReactLive className={`language-${language}`} scope={components}>
+          {code}
+        </ReactLive>
+      );
     }
-    let trimmedCode = code.replace(/\n+$/, '');
+
     return (
-      <Highlight {...defaultPrismProps} code={trimmedCode} language={language}>
-        {({ tokens, getLineProps, getTokenProps }) => (
-          <>
-            {tokens.map((line, i) => (
-              // eslint-disable-next-line react/jsx-key
-              <div {...getLineProps({ line, key: i })} style={{}}>
-                {line.map((token, key) => (
-                  // eslint-disable-next-line react/jsx-key
-                  <span {...getTokenProps({ token, key })} style={{}} />
-                ))}
-              </div>
-            ))}
-          </>
-        )}
-      </Highlight>
+      <pre className={classnames(styles.pre, `language-${language}`)} ref={ref}>
+        <code dangerouslySetInnerHTML={{ __html: highlightedCode }} />
+      </pre>
     );
-  };
+  })
+);
