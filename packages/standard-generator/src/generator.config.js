@@ -74,6 +74,7 @@ module.exports = {
        */
       modulePath: '@jpmorganchase/mosaic-source-git-repo',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
+      disabled: !process.env.MOSAIC_DOCS_CLONE_CREDENTIALS, // use a boolean to enable/disable the source
       options: {
         // To run locally, enter your credentials to access the Git repo
         // e.g create the environment variable MOSAIC_DOCS_CLONE_CREDENTIALS
