@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-open-api-component
 
+## 0.1.0-beta.33
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.33
+- @jpmorganchase/mosaic-theme@0.1.0-beta.33
+
 ## 0.1.0-beta.32
 
 ### Patch Changes

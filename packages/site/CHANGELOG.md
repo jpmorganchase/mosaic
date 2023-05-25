@@ -1,5 +1,28 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.33
+
+### Minor Changes
+
+- e6d9594: Adds a a plugin that generates a component props table given a file path e.g. :propsTable{src="../../packages/core/src/button/Button.tsx"}
+
+  It will allow users to embed the table within their mdx pages.
+
+### Patch Changes
+
+- Updated dependencies [cb18c31]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.33
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.33
+  - @jpmorganchase/mosaic-components@0.1.0-beta.33
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.33
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.33
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.33
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.33
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.33
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.33
+  - @jpmorganchase/mosaic-store@0.1.0-beta.33
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.33
+
 ## 0.1.0-beta.32
 
 ### Patch Changes

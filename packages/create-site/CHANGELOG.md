@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.33
+
+### Patch Changes
+
+- cb18c31: Mosaic site creators no longer needs to install `@jpmorganchase/mosaic-create-site` globally
+
+  To generate a site, use `npx`
+  `npx @jpmorganchase/mosaic-create-site create -o my-sample-site`
+
+- Updated dependencies [cb18c31]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.33
+
 ## 0.1.0-beta.32
 
 ### Patch Changes
