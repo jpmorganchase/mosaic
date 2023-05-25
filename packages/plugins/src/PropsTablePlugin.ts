@@ -22,6 +22,7 @@ interface PropsTablePluginPage extends Page {
 }
 
 const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
+  // TODO: add support for active mode
   async $afterSource(pages) {
     const processor = remark().use(remarkDirective).use(remarkGfm);
     for (const page of pages) {

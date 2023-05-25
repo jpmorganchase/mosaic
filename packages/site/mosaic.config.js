@@ -32,11 +32,6 @@ const siteConfig = {
         outputDir: './public',
         assets: ['sitemap.xml', 'search-data.json']
       }
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/PropsTablePlugin',
-      priority: -1,
-      options: {}
     }
   ]
 };
