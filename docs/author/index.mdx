@@ -9,4 +9,37 @@ data:
 
 # {meta.title}
 
-Here you will learn how to author documentation using markdown, Mosaic components and page templates
+Welcome to the Author documentation! Here, you will learn how to create engaging and informative content using MDX, Mosaic components, and page templates.
+
+## Adding a New Page
+
+Adding a new page to your Mosaic site is easy! Simply follow these steps:
+
+Create a new .mdx file in the folder that your source is pointing at. You can also create pages in a new folder inside the source folder, but remember that each folder must have an index.mdx file.
+
+Add frontmatter to the top of the file, like this:
+
+```markdown
+---
+title: My New Page
+layout: DetailTechnical
+sidebar:
+  priority: 2
+---
+
+# My New Page
+
+This is my new page!
+```
+
+Save the file and your new page will be added to your Mosaic site. If you are working with a remote source, then you will have to commit and push the file first.
+
+## Customizing Your pages
+
+Mosaic allows you to customize your pages using a variety of tools, including:
+
+- [Frontmatter](./frontmatter): Configure your pages using metadata.
+- [Page Templates](./page-templates): Apply a consistent layout to your pages.
+- [Aliases](./aliases): Create custom URLs for your pages.
+- [Refs](./refs): Reference metadata from other pages in your page.
+- [Fragments](./fragments): Reuse content across multiple pages.
