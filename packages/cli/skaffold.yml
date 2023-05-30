@@ -1,0 +1,28 @@
+apiVersion: skaffold/v1
+kind: Config
+build:
+  artifacts:
+    - image: jetae-publish.prod.aws.jpmchase.net/container-sandbox/dpmosaic/mosaic
+      kaniko:
+        buildContext:
+          localDir: {}
+  tagPolicy:
+    sha256: {}
+  cluster:
+    namespace: 110627-skaffoldkaniko-dev
+    resources:
+      limits:
+        ephemeralStorage: '4Gi'
+      requests:
+        ephemeralStorage: '4Gi'
+profiles:
+  - name: local
+    patches:
+      - op: add
+        path: /build/cluster/dockerConfig
+        value: { secretName: 'kaniko-secret3' }
+  - name: jules-sandbox
+  - name: jules-release
+    build:
+      artifacts:
+        - image: jetae-publish.prod.aws.jpmchase.net/container-sandbox/dpmosaic/mosaic
