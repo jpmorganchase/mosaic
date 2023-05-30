@@ -3455,31 +3455,31 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz#8be36a1f66f3265389e90b5f9c9962146758f728"
   integrity sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==
 
-"@salt-ds/core@1.7.0", "@salt-ds/core@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.7.0.tgz#d493d6ff314938db1d481ce12fb10eff26a46463"
-  integrity sha512-q38XpRQj714xCnNumhKhplI+dPmeee9jJMlun+t9qjkaPNSMiwbm+cRXpu4ktDVjFhk6HeOQkLmR4cqYcNAuWg==
+"@salt-ds/core@^1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.7.1.tgz#60889cf8e139fa2a7d8ed4eaa61dfb744e77c26c"
+  integrity sha512-TgoBWsYearmP4+L9xdT525l4coAy2cCiKroQLo0QT1azEsqkhON0Ncjww33wccrC7jyCpYXLAqGCgPbZ8Cnr9w==
   dependencies:
     "@floating-ui/react" "^0.23.0"
-    "@salt-ds/icons" "1.3.0"
+    "@salt-ds/icons" "^1.3.1"
     clsx "^1.2.1"
 
-"@salt-ds/icons@1.3.0", "@salt-ds/icons@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.3.0.tgz#ca4a9318818e010504ff872f0ffed5850d3fa686"
-  integrity sha512-j+qnncuCM8Eu+FFscIgRpn0X+yxgf5XzLJDSbgryKd6SjGzgHjdyFO09mCvJRtmIdF4bnmc0Pku/Ol89PPmxOQ==
+"@salt-ds/icons@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.3.1.tgz#14d1ab35c0a2711b942f9425e914b860ee6ac5cf"
+  integrity sha512-Afn8n3cgVf5j98GGDWMC2x3bC1RbZ77Wc9zOVwYFQkOujslGCYNG2WP6cDpMw8YQ8lzL7N7qb1/mF7xGcrXE8A==
   dependencies:
     clsx "^1.2.1"
 
-"@salt-ds/lab@1.0.0-alpha.7":
-  version "1.0.0-alpha.7"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.7.tgz#96a47bf7cabf5e36827dcb19d4afff399e6b8345"
-  integrity sha512-cF+rqVnm9ECKE07LmE6wfwPpIcTFS7gJRkAfTTBT4q77WfinZrcnxz4oXIz7gzGt3fFwiXWp+z82jqV1u4kNWA==
+"@salt-ds/lab@1.0.0-alpha.9":
+  version "1.0.0-alpha.9"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.9.tgz#4af7b4da5a860758bad77e5a8d84ab4f53818f8a"
+  integrity sha512-saF2SbN8snl22LV8RBSSpgbtHx6mkUkUbgFrCihqspJDDgMOr+QfDG+zFmbQ9M439RDvOymi56fWMKmGT/BPBw==
   dependencies:
     "@floating-ui/react" "^0.23.0"
     "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "1.7.0"
-    "@salt-ds/icons" "1.3.0"
+    "@salt-ds/core" "^1.7.1"
+    "@salt-ds/icons" "^1.3.1"
     aria-hidden "^1.1.1"
     attr-accept "^2.0.0"
     clipboard-copy "^4.0.1"
@@ -3492,10 +3492,10 @@
     rifm "^0.12.0"
     tinycolor2 "^1.4.2"
 
-"@salt-ds/theme@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.4.0.tgz#168d8844fe7919f85f3455751067495641823eeb"
-  integrity sha512-0iYbpXoX+sXC8Wf7TGFZYj7uX72zHJ/F0vpaYxFymFE1KFAMk10P9EC64CrlvNrjXiiQnee0TsECUa49FB9Dgg==
+"@salt-ds/theme@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.5.0.tgz#5495681d4d003c7ddfe8faaf4e0f0b463116d2c9"
+  integrity sha512-42TPVFDVf4qZEsbe5nf5BhgsBy/citY+tgOZWnFK7WhcjXhkR6p4gPIeoQgZHfTqWjXzCM5yejvxPYzflOr1DQ==
 
 "@sinclair/typebox@^0.24.1":
   version "0.24.44"
