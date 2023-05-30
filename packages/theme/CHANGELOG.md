@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.34
+
+### Patch Changes
+
+- 3d117d3: Upgrade to latest Salt libraries
+
 ## 0.1.0-beta.33
 
 ## 0.1.0-beta.32

@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.34
+
 ## 0.1.0-beta.33
 
 ### Patch Changes
