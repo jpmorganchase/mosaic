@@ -1,11 +1,11 @@
 ---
-title: Local Folder Source
+title: Theming Your Site
 layout: DetailTechnical
 sidebar:
-  priority: 3
-lastModified: 1680534781755
-fullPath: /mosaic/configure/sources/local-folder-source.mdx
-route: /mosaic/configure/sources/local-folder-source
+  priority: 4
+lastModified: 1685544478781
+fullPath: /mosaic/configure/theme/index.mdx
+route: /mosaic/configure/theme/index
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
@@ -13,34 +13,28 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index.mdx
     id: /mosaic/configure/index.mdx
-  - label: Sources
-    path: /mosaic/configure/sources/index.mdx
-    id: /mosaic/configure/sources/index.mdx
-  - label: Local Folder Source
-    path: /mosaic/configure/sources/local-folder-source.mdx
-    id: /mosaic/configure/sources/local-folder-source.mdx
+  - label: Theming Your Site
+    path: /mosaic/configure/theme/index.mdx
+    id: /mosaic/configure/theme/index.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.18
-  time: 70800
-  words: 236
+  text: 1 min read
+  minutes: 0.42
+  time: 25200
+  words: 84
 tableOfContents:
   - level: 2
-    id: installation
-    text: Installation
+    id: customize-the-css
+    text: Customize the CSS
   - level: 2
-    id: configuration
-    text: Configuration
-  - level: 3
-    id: example-local-folder-source-definition
-    text: Example Local Folder Source Definition
+    id: import-custom-components
+    text: Import Custom Components
 navigation:
   prev:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: Snapshot AWS/S3 mode
+    route: /mosaic/configure/modes/snapshot-s3
   next:
-    title: Git Repo Source
-    route: /mosaic/configure/sources/git-repo-source
+    title: Custom CSS
+    route: /mosaic/configure/theme/custom-css
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -182,39 +176,16 @@ sidebarData:
 ---
 # {meta.title}
 
-The Local Folder Source is used to pull content from a folder located on the same machine as Mosaic is running.
+Create a unique look and feel for your Mosaic site by customizing the CSS theme and integrating your own UI components.
 
-It is common to use this source when running mosaic locally.
+## Customize the CSS
 
-## Installation
+Adapt various design elements of your Mosaic site to create a cohesive visual theme. Refer to our guide to learn more about crafting a custom CSS theme:
 
-`yarn add @jpmorganchase/mosaic-source-local-folder`
+*   [CSS Theme Guide](./custom-css)
 
-## Configuration
+## Import Custom Components
 
-| Property           | Description                                                                    | Required |
-| ------------------ | ------------------------------------------------------------------------------ | -------- |
-| modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
-| namspace           | The scope for this source                                                      | Yes      |
-| disabled           | When true, content from this source is not used                                | No       |
-| options.rootDir    | The top level directory content will be pulled from                            | Yes      |
-| options.prefixDir  | The root path used in the content URL                                          | Yes      |
-| options.extensions | Collection of file extensions that the source will look for inside the rootDir | Yes      |
+Incorporate your own UI components, to tailor the look and functionality of your content. This tutorial will walk you through the process of adding custom components to your site:
 
-### Example Local Folder Source Definition
-
-```
-{
-    modulePath: '@jpmorganchase/mosaic-source-local-folder',
-    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-    options: {
-    rootDir: '../../docs', // relative path to content
-    prefixDir: 'local', // root path used for namespace
-    extensions: ['.mdx'] // extensions of content which should be pulled
-    }
-}
-```
-
-This source will look for content with the ".mdx" extension in a "docs" directory 2 levels up from the Mosaic working directory. That content is included in the "local" namespace and available from a route that is prefixed with "local".
-
-So if you had a file, `docs/app/index.mdx` then you would be able to view it at `http://localhost:3000/local/app/index`.
+*   [Adding Custom Components Tutorial](./custom-components)
