@@ -108,13 +108,6 @@ globalStyle('.saltMenuButtonTrigger > .saltButton-label', {
 globalStyle('.saltCascadingMenuList-popper', {
   zIndex: '1'
 });
-// TODO Salt has not used it's own theme and has a hardcoded hex value, so we need a global style
-globalStyle(`${lightMode} .saltMenuItem-menuItemHover:hover`, {
-  background: mosaicColorVars.light.selectable.hover
-});
-globalStyle(`${darkMode} .saltMenuItem-menuItemHover:hover`, {
-  background: mosaicColorVars.dark.selectable.hover
-});
 
 export const interactPalette = createGlobalThemeContract({
   backgroundColor: '--salt-palette-interact-background',
