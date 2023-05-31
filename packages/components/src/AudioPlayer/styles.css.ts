@@ -52,7 +52,7 @@ export default {
   ]),
   buttonBar: style({
     position: 'relative',
-    justifyContent: 'center',
+    justifyContent: 'center !important',
     alignItems: 'center',
     flexDirection: 'row'
   }),
