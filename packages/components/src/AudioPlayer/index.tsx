@@ -132,12 +132,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
         <Caption6>{durationString}</Caption6>
       </div>
 
-      <ButtonBar
-        className={styles.buttonBar}
-        stackAtBreakpoint={0}
-        // alignLeft={false}
-        disableAutoAlignment={true}
-      >
+      <ButtonBar className={styles.buttonBar} stackAtBreakpoint={0} disableAutoAlignment={true}>
         <div>
           <a href={src} download target="_blank" rel="noreferrer">
             <OrderedButton variant="secondary" className={styles.button}>
