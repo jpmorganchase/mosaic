@@ -1,0 +1,141 @@
+---
+title: Custom Components
+layout: DetailTechnical
+sidebar:
+  priority: 2
+---
+
+# {meta.title}
+
+Learn how to add your own custom components to your Mosaic site.
+
+## Create Components Folder
+
+To start, create a `components` folder under `src` where you'll store your custom components.
+
+```
+src/
+└── components/
+```
+
+In this tutorial, we will create a custom `Card` component.
+
+## Create Card Component
+
+Inside the `components` folder, create a `card` folder, which will contain your React `Card` component. The `card` folder should include `index.tsx` and `card.module.css` files as shown in the structure below:
+
+```
+├── src/
+│   ├── components/
+│   │   └── card/
+│   │       ├── index.tsx
+│   │       └── card.module.css
+```
+
+### Card Component: index.tsx
+
+Create your `Card` component within the `index.tsx` file:
+
+```tsx
+import React from 'react';
+import styles from './card.module.css';
+
+type CardProps = {
+  title: string;
+  content: string;
+};
+
+export const Card: React.FC<CardProps> = ({ title, content }) => {
+  return (
+    <div className={styles.card}>
+      <h2>{title}</h2>
+      <p>{content}</p>
+    </div>
+  );
+};
+```
+
+### Card Component: card.module.css
+
+Define your component styles in the `card.module.css` file:
+
+```css
+.card {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+}
+```
+
+In this example, we use a CSS file, but you can use whichever styling approach you prefer, such as [vanilla extract](https://vanilla-extract.style/).
+
+To export your `Card` component, create an `index.ts` file in the `components` folder:
+
+```ts
+export * from './card';
+```
+
+Your final folder structure should look like this:
+
+```
+├── src/
+│   ├── components/
+│   │   ├── card/
+│   │   │   ├── index.tsx
+│   │   │   └── card.module.css
+│   │   ├── index.ts
+```
+
+## Import Custom Card Component
+
+To use your custom `Card` component, import it into your site's `_app.tsx` file. Add the following line to your imports:
+
+```tsx
+import * as myComponents from '../components';
+```
+
+Replace this line:
+
+```tsx
+const components = mosaicComponents;
+```
+
+with:
+
+```tsx
+const components = {
+  ...mosaicComponents,
+  ...myComponents
+};
+```
+
+This will add your custom components to the site, and any custom components in `myComponents` will override the corresponding ones in `mosaicComponents`. The spread operator (`...`) merges both `mosaicComponents` and `myComponents` objects, giving priority to `myComponents` when there is a naming conflict.
+
+## Use Your Custom Card Component
+
+Now you're ready to use your custom `Card` component. Build and run your site, and add the `Card` component to an MDX file in your `docs` folder or another source:
+
+```mdx
+<Card title="My Card" content="This is the content of my card." />
+```
+
+You can create and add more custom components to your Mosaic site by following the same process.

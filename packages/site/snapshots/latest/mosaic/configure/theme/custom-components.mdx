@@ -1,11 +1,11 @@
 ---
-title: Local Folder Source
+title: Custom Components
 layout: DetailTechnical
 sidebar:
-  priority: 3
-lastModified: 1680534781755
-fullPath: /mosaic/configure/sources/local-folder-source.mdx
-route: /mosaic/configure/sources/local-folder-source
+  priority: 2
+lastModified: 1685544478780
+fullPath: /mosaic/configure/theme/custom-components.mdx
+route: /mosaic/configure/theme/custom-components
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
@@ -13,34 +13,43 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index.mdx
     id: /mosaic/configure/index.mdx
-  - label: Sources
-    path: /mosaic/configure/sources/index.mdx
-    id: /mosaic/configure/sources/index.mdx
-  - label: Local Folder Source
-    path: /mosaic/configure/sources/local-folder-source.mdx
-    id: /mosaic/configure/sources/local-folder-source.mdx
+  - label: Theming Your Site
+    path: /mosaic/configure/theme/index.mdx
+    id: /mosaic/configure/theme/index.mdx
+  - label: Custom Components
+    path: /mosaic/configure/theme/custom-components.mdx
+    id: /mosaic/configure/theme/custom-components.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.18
-  time: 70800
-  words: 236
+  minutes: 1.86
+  time: 111600
+  words: 372
 tableOfContents:
   - level: 2
-    id: installation
-    text: Installation
+    id: create-components-folder
+    text: Create Components Folder
   - level: 2
-    id: configuration
-    text: Configuration
+    id: create-card-component
+    text: Create Card Component
   - level: 3
-    id: example-local-folder-source-definition
-    text: Example Local Folder Source Definition
+    id: card-component-indextsx
+    text: 'Card Component: index.tsx'
+  - level: 3
+    id: card-component-cardmodulecss
+    text: 'Card Component: card.module.css'
+  - level: 2
+    id: import-custom-card-component
+    text: Import Custom Card Component
+  - level: 2
+    id: use-your-custom-card-component
+    text: Use Your Custom Card Component
 navigation:
   prev:
+    title: Custom CSS
+    route: /mosaic/configure/theme/custom-css
+  next:
     title: Sources
     route: /mosaic/configure/sources/index
-  next:
-    title: Git Repo Source
-    route: /mosaic/configure/sources/git-repo-source
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -182,39 +191,135 @@ sidebarData:
 ---
 # {meta.title}
 
-The Local Folder Source is used to pull content from a folder located on the same machine as Mosaic is running.
+Learn how to add your own custom components to your Mosaic site.
 
-It is common to use this source when running mosaic locally.
+## Create Components Folder
 
-## Installation
-
-`yarn add @jpmorganchase/mosaic-source-local-folder`
-
-## Configuration
-
-| Property           | Description                                                                    | Required |
-| ------------------ | ------------------------------------------------------------------------------ | -------- |
-| modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
-| namspace           | The scope for this source                                                      | Yes      |
-| disabled           | When true, content from this source is not used                                | No       |
-| options.rootDir    | The top level directory content will be pulled from                            | Yes      |
-| options.prefixDir  | The root path used in the content URL                                          | Yes      |
-| options.extensions | Collection of file extensions that the source will look for inside the rootDir | Yes      |
-
-### Example Local Folder Source Definition
+To start, create a `components` folder under `src` where you'll store your custom components.
 
 ```
-{
-    modulePath: '@jpmorganchase/mosaic-source-local-folder',
-    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-    options: {
-    rootDir: '../../docs', // relative path to content
-    prefixDir: 'local', // root path used for namespace
-    extensions: ['.mdx'] // extensions of content which should be pulled
-    }
+src/
+└── components/
+```
+
+In this tutorial, we will create a custom `Card` component.
+
+## Create Card Component
+
+Inside the `components` folder, create a `card` folder, which will contain your React `Card` component. The `card` folder should include `index.tsx` and `card.module.css` files as shown in the structure below:
+
+```
+├── src/
+│   ├── components/
+│   │   └── card/
+│   │       ├── index.tsx
+│   │       └── card.module.css
+```
+
+### Card Component: index.tsx
+
+Create your `Card` component within the `index.tsx` file:
+
+```tsx
+import React from 'react';
+import styles from './card.module.css';
+
+type CardProps = {
+  title: string;
+  content: string;
+};
+
+export const Card: React.FC<CardProps> = ({ title, content }) => {
+  return (
+    <div className={styles.card}>
+      <h2>{title}</h2>
+      <p>{content}</p>
+    </div>
+  );
+};
+```
+
+### Card Component: card.module.css
+
+Define your component styles in the `card.module.css` file:
+
+```css
+.card {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
 }
 ```
 
-This source will look for content with the ".mdx" extension in a "docs" directory 2 levels up from the Mosaic working directory. That content is included in the "local" namespace and available from a route that is prefixed with "local".
+In this example, we use a CSS file, but you can use whichever styling approach you prefer, such as [vanilla extract](https://vanilla-extract.style/).
 
-So if you had a file, `docs/app/index.mdx` then you would be able to view it at `http://localhost:3000/local/app/index`.
+To export your `Card` component, create an `index.ts` file in the `components` folder:
+
+```ts
+export * from './card';
+```
+
+Your final folder structure should look like this:
+
+```
+├── src/
+│   ├── components/
+│   │   ├── card/
+│   │   │   ├── index.tsx
+│   │   │   └── card.module.css
+│   │   ├── index.ts
+```
+
+## Import Custom Card Component
+
+To use your custom `Card` component, import it into your site's `_app.tsx` file. Add the following line to your imports:
+
+```tsx
+import * as myComponents from '../components';
+```
+
+Replace this line:
+
+```tsx
+const components = mosaicComponents;
+```
+
+with:
+
+```tsx
+const components = {
+  ...mosaicComponents,
+  ...myComponents
+};
+```
+
+This will add your custom components to the site, and any custom components in `myComponents` will override the corresponding ones in `mosaicComponents`. The spread operator (`...`) merges both `mosaicComponents` and `myComponents` objects, giving priority to `myComponents` when there is a naming conflict.
+
+## Use Your Custom Card Component
+
+Now you're ready to use your custom `Card` component. Build and run your site, and add the `Card` component to an MDX file in your `docs` folder or another source:
+
+```mdx
+<Card title="My Card" content="This is the content of my card." />
+```
+
+You can create and add more custom components to your Mosaic site by following the same process.
