@@ -40,7 +40,7 @@ module.exports = deepmerge(siteConfig, {
      * Access from your browser as http://localhost:3000/mosaic
      */
     {
-      disabled: process.env.NODE_ENV !== 'development',
+      disabled: false,
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {

@@ -1,3 +1,4 @@
+'use client';
 import React, { FC, forwardRef, ReactElement, Ref } from 'react';
 
 import { TileBaseProps } from './TileBase';

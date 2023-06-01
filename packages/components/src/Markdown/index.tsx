@@ -1,3 +1,4 @@
+'use client';
 import type { Ref } from 'react';
 import {
   action,
@@ -203,6 +204,6 @@ export const getMarkdownComponents = () => ({
   Eyebrow: withStyledTypography(eyebrow({ context: 'markdown' })),
   Watermark: withStyledTypography(watermark({ context: 'markdown' })),
   Emphasis: markdownElements.em,
-  Strong: markdownElements.strong,
-  ...markdownElements
+  Strong: markdownElements.strong
+  // ...markdownElements
 });

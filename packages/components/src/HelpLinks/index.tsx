@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import classnames from 'clsx';
 import { Icon } from '../Icon';

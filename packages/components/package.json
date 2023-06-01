@@ -15,6 +15,7 @@
   "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
+    "./Hero": "./dist/Hero/index.js",
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
@@ -25,11 +26,11 @@
   "scripts": {
     "build": "npm-run-all --parallel build:*",
     "build:types": "tsc",
-    "build:components": "node  ../../scripts/bundle.js",
+    "build:components": "node  ../../scripts/bundle.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "doc": "node ../../scripts/updateDocs.js",
-    "dev": "node ../../scripts/bundle.js watch"
+    "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

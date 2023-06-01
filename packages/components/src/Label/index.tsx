@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useTooltip, Tooltip, TooltipProps as SaltTooltipProps } from '@salt-ds/lab';
 

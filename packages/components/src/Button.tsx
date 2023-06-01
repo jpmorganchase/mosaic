@@ -1,3 +1,4 @@
+'use client';
 import React, { FC } from 'react';
 import classnames from 'clsx';
 import { Button as SaltButton, ButtonProps as SaltButtonProps } from '@salt-ds/core';

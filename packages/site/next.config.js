@@ -1,13 +1,18 @@
 const webpack = require('webpack');
+// const withMDX = require('@next/mdx')();
 
-module.exports = {
+const nextConfig = {
+  experimental: {
+    appDir: true,
+    mdxRs: true
+  },
   reactStrictMode: true,
   output: 'standalone',
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
     '@jpmorganchase/mosaic-content-editor-plugin',
-    '@jpmorganchase/mosaic-labs-components',
+    //'@jpmorganchase/mosaic-labs-components',
     '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-open-api-component',
     '@jpmorganchase/mosaic-site-components',
@@ -44,6 +49,7 @@ module.exports = {
     } else {
       config.resolve.fallback = { fs: false };
     }
+    config.experiments.topLevelAwait = true;
     return config;
   },
   env: {},
@@ -67,3 +73,5 @@ module.exports = {
     ];
   }
 };
+
+module.exports = nextConfig;

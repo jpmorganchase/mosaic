@@ -1,3 +1,4 @@
+'use client';
 import React, { FC } from 'react';
 import classnames from 'clsx';
 import { button as buttonStyles } from '@jpmorganchase/mosaic-theme';

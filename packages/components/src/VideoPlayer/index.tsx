@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { ButtonBar, OrderedButton, Spinner, Slider } from '@salt-ds/lab';
 import { Icon } from '../Icon';
