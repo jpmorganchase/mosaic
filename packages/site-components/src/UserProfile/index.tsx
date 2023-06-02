@@ -21,7 +21,7 @@ export function UserProfile({
 }): ReactElement {
   return (
     <div className={classnames(styles.root, className)}>
-      <Avatar className={styles.avatar} size={2} src={avatarUrl} />
+      <Avatar className={styles.avatar} size={1} src={avatarUrl} />
       <span className={styles.firstName}>{`${prefixText}${toUpperFirst(firstName)}`}</span>
     </div>
   );
