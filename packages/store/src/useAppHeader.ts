@@ -22,7 +22,7 @@ export interface AppHeader extends Omit<AppHeaderSlice, 'menu'> {
 }
 
 export function useAppHeader(): AppHeader | undefined {
-  const appHeader = useStore(state => state.sharedConfig?.header);
+  const appHeader = useStore.getState().sharedConfig?.header;
   if (!appHeader) {
     return undefined;
   }

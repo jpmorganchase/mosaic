@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 

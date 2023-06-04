@@ -1,18 +1,16 @@
+import { useStore } from '@jpmorganchase/mosaic-store';
 import { compileMDX } from 'next-mdx-remote/rsc';
-import nodeFetch from 'node-fetch';
+import { Card, Cards, Hero } from '@jpmorganchase/mosaic-components';
 
-const mosaicComponents = await import('@jpmorganchase/mosaic-components');
-
-export default async function Home(props) {
-  const { params } = props;
-  const url = `http://localhost:8080/${params.slug.join('/')}`;
-  const res = await nodeFetch(url);
-  const source = await res.text();
-
+export default async function Page() {
+  const { source, ...frontmatter } = useStore.getState();
+  if (!source) {
+    return null;
+  }
   const { content } = await compileMDX({
     source,
-    components: mosaicComponents,
-    options: { parseFrontmatter: true }
+    components: { Card, Cards, Hero },
+    options: { scope: { meta: frontmatter }, parseFrontmatter: true }
   });
   return content;
 }

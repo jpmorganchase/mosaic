@@ -8,5 +8,6 @@ export * from './navigation';
 export * from './route';
 export * from './searchIndex';
 export * from './sharedConfig';
+export * from './source';
 export * from './sidebar';
 export * from './tableOfContents';

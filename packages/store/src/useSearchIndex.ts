@@ -3,8 +3,8 @@ import { useStore } from './store';
 export type { SearchIndexSlice } from './types';
 
 export function useSearchIndex() {
-  const searchIndex = useStore(state => state.searchIndex);
-  const searchConfig = useStore(state => state.searchConfig);
+  const searchIndex = useStore.getState().searchIndex;
+  const searchConfig = useStore.getState().searchConfig;
 
   const searchEnabled =
     searchConfig !== undefined && searchIndex !== undefined && searchIndex.length > 0;

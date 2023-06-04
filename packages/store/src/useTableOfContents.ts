@@ -1,7 +1,7 @@
 import { useStore } from './store';
 
 export function useTableOfContents() {
-  const tableOfContents = useStore(state => state.tableOfContents) || [];
+  const tableOfContents = useStore.getState().tableOfContents || [];
   return {
     tableOfContents
   };

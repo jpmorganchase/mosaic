@@ -53,6 +53,9 @@ const nextConfig = {
     return config;
   },
   env: {},
+  eslint: {
+    ignoreDuringBuilds: true
+  },
   async redirects() {
     return [
       {

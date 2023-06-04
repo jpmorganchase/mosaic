@@ -1,3 +1,4 @@
+'use client';
 export * from './AppHeader';
 export * from './AppHeaderControls';
 export * from './AppHeaderDrawer';

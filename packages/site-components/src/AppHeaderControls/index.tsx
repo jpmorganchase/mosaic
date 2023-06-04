@@ -1,9 +1,11 @@
+'use client';
+
 import React from 'react';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
+import { useColorMode, useSearchIndex } from '@jpmorganchase/mosaic-store';
 import { useSession, signIn } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
@@ -23,7 +25,7 @@ function toUpperFirst(str) {
 export const AppHeaderControls: React.FC = () => {
   const router = useRouter();
   const colorMode = useColorMode();
-  const { setColorMode } = useStoreActions();
+  //const { setColorMode } = useStoreActions();
 
   const { data: session } = useSession();
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
@@ -31,13 +33,14 @@ export const AppHeaderControls: React.FC = () => {
   const { pageState, startEditing, stopEditing } = useContentEditor();
   const { searchEnabled } = useSearchIndex();
 
-  const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
-  let actionMenuOptions: ActionMenuItem[] = [
-    {
-      title: `Select ${toUpperFirst(inverseColorMode)} Theme`,
-      onSelect: () => setColorMode(inverseColorMode)
-    }
-  ];
+  // const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
+  // let actionMenuOptions: ActionMenuItem[] = [
+  //   {
+  //     title: `Select ${toUpperFirst(inverseColorMode)} Theme`,
+  //     onSelect: () => setColorMode(inverseColorMode)
+  //   }
+  // ];
+  let actionMenuOptions: ActionMenuItem[] = [];
 
   if (isLoggedIn) {
     actionMenuOptions.push({

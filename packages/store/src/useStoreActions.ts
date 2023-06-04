@@ -1,2 +1,2 @@
 import { useStore } from './store';
-export const useStoreActions = () => useStore(state => state.actions);
+export const useStoreActions = () => useStore.getState().actions;

@@ -6,12 +6,12 @@ export type Meta = {
 };
 
 export function useMeta(): Meta {
-  const meta = useStore(state => ({
-    description: state.description,
-    breadcrumbs: state.breadcrumbs,
-    title: state.title
-  }));
+  const state = useStore.getState();
   return {
-    meta
+    meta: {
+      description: state.description,
+      breadcrumbs: state.breadcrumbs,
+      title: state.title
+    }
   };
 }

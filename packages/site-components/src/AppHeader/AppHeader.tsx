@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { Logo } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';

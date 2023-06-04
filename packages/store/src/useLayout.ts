@@ -4,6 +4,6 @@ import type { LayoutSlice } from './types';
 type Layout = LayoutSlice;
 
 export function useLayout(): Layout {
-  const layout = useStore(state => state.layout);
+  const layout = useStore.getState().layout;
   return { layout };
 }

@@ -4,7 +4,7 @@ import { useRoute } from './useRoute';
 import type { Breadcrumb } from './types';
 
 export function useSidebar() {
-  const menu = useStore(state => state.sidebarData) || [];
+  const menu = useStore.getState().sidebarData || [];
   const { route } = useRoute();
   const { breadcrumbs } = useBreadcrumbs();
   return {
