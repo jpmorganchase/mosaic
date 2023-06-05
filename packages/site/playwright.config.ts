@@ -15,7 +15,7 @@ const config: PlaywrightTestConfig = {
   // Test directory
   testDir: path.posix.join(__dirname, 'e2e'),
   // If a test fails, retry it additional 2 times
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 0 : 2,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e', 'test-results'),
   expect: {
