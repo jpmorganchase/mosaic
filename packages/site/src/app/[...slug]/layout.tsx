@@ -1,19 +1,17 @@
+import { headers } from 'next/headers';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
-import { SiteState } from '@jpmorganchase/mosaic-store';
-import '@jpmorganchase/mosaic-site-preset-styles/index.css';
+import { useStore, SiteState } from '@jpmorganchase/mosaic-store';
+import { AppHeader } from '@jpmorganchase/mosaic-site-components';
 
 import StoreInitializer from '../../components/StoreInitializer';
 import { SessionProvider } from '../../components/SessionProvider';
-import TestComponent from '../../components/TestComponent';
-
 import { getPage } from '../../utils/getPage';
-import { headers } from 'next/headers';
 
 const layouts = {
   default: ({ children }) => <div>FULLWIDTH{children}</div>,
   Landing: ({ children }) => (
     <div>
-      <TestComponent />
+      <AppHeader />
       {children}
     </div>
   ),
@@ -25,13 +23,15 @@ export default async function Layout({ children }) {
   if (!pathname) {
     return null;
   }
-  const { source, frontmatter } = await getPage(pathname);
-  const clientState = { ...frontmatter, source } as SiteState;
+
+  const { frontmatter } = await getPage(pathname);
+  const state = frontmatter as SiteState;
+  useStore.setState(state);
 
   const LayoutComponent = layouts['Landing'];
   return (
     <>
-      <StoreInitializer state={clientState} />
+      <StoreInitializer state={state} />
       <section className={themeClassName}>
         <SessionProvider>
           <LayoutComponent>{children}</LayoutComponent>

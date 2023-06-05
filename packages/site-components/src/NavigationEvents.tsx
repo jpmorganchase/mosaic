@@ -9,7 +9,6 @@ export function NavigationEvents({ onRouteChange }) {
 
   useEffect(() => {
     const url = pathname + searchParams.toString();
-    console.log(url);
     onRouteChange(url);
   }, [onRouteChange, pathname, searchParams]);
 

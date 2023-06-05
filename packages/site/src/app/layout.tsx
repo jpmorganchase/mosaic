@@ -2,7 +2,7 @@ import Head from 'next/head';
 
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <Head>
