@@ -1,6 +1,7 @@
 import { globalStyle } from '@vanilla-extract/css';
 import { lightMode, darkMode } from '../color/lightMode';
 import { vars } from '../vars.css';
+import { colorVars as saltVars } from '../salt/color.css';
 
 globalStyle('pre > code', {
   display: 'grid',
@@ -40,4 +41,34 @@ globalStyle(`${lightMode} code[data-theme="light"]`, {
 
 globalStyle(`${darkMode} code[data-theme="dark"]`, {
   backgroundColor: vars.color.dark.neutral.background.emphasis
+});
+
+/** highlighted lines and words */
+
+globalStyle(`code > .line > .word`, {
+  borderRadius: '.25rem',
+  fontWeight: vars.fontWeight.extrabold,
+  boxShadow: vars.shadow.light.elevation3
+});
+
+globalStyle(`code > .line.highlighted`, {
+  boxShadow: vars.shadow.light.elevation1
+});
+
+globalStyle(`code[data-theme="light"] > .line.highlighted `, {
+  backgroundColor: saltVars.grey40
+});
+
+globalStyle(`code[data-theme="light"] > .line > .word `, {
+  backgroundColor: saltVars.blue700,
+  color: `${saltVars.blue50}!important`
+});
+
+globalStyle(`code[data-theme="dark"] > .line.highlighted `, {
+  backgroundColor: saltVars.blue700
+});
+
+globalStyle(`code[data-theme="dark"] > .line > .word `, {
+  backgroundColor: saltVars.blue50,
+  color: `${saltVars.blue700}!important`
 });
