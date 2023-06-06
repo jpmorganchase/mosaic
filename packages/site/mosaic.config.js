@@ -16,15 +16,19 @@ const siteConfig = {
       options: {}
     },
     {
-      modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
-      priority: -1,
-      // Exclude this plugin in builds
-      runTimeOnly: true,
-      disabled: process.env.NODE_ENV !== 'development',
-      options: {
-        baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
-      }
+      modulePath: '@jpmorganchase/mosaic-plugins/PropsTablePlugin',
+      options: {}
     },
+    // {
+    //   modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
+    //   priority: -1,
+    //   // Exclude this plugin in builds
+    //   runTimeOnly: true,
+    //   disabled: process.env.NODE_ENV !== 'development',
+    //   options: {
+    //     baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
+    //   }
+    // },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
       priority: -1,
