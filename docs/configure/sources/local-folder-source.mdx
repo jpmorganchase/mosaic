@@ -13,14 +13,14 @@ It is common to use this source when running mosaic locally.
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-local-folder`
+`yarn add @jpmorganchase/mosaic-source-local-folder{:bat}`
 
 ## Configuration
 
 | Property           | Description                                                                    | Required |
 | ------------------ | ------------------------------------------------------------------------------ | -------- |
 | modulePath         | The path to the installed module (@jpmorganchase/mosaic-source-local-folder)   | Yes      |
-| namspace           | The scope for this source                                                      | Yes      |
+| namespace          | The scope for this source                                                      | Yes      |
 | disabled           | When true, content from this source is not used                                | No       |
 | options.rootDir    | The top level directory content will be pulled from                            | Yes      |
 | options.prefixDir  | The root path used in the content URL                                          | Yes      |
@@ -28,15 +28,15 @@ It is common to use this source when running mosaic locally.
 
 ### Example Local Folder Source Definition
 
-```
+```js
 {
-    modulePath: '@jpmorganchase/mosaic-source-local-folder',
-    namespace: 'local', // each site has it's own namespace, think of this as your content's uid
-    options: {
-    rootDir: '../../docs', // relative path to content
-    prefixDir: 'local', // root path used for namespace
-    extensions: ['.mdx'] // extensions of content which should be pulled
-    }
+  modulePath: "@jpmorganchase/mosaic-source-local-folder",
+  namespace: "local", // each site has it's own namespace, think of this as your content's uid
+  options: {
+    rootDir: "../../docs", // relative path to content
+    prefixDir: "local", // root path used for namespace
+    extensions: [".mdx"] // extensions of content which should be pulled
+  }
 }
 ```
 

@@ -13,14 +13,14 @@ Multiple endpoints can be specified and the source will combine and transform th
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-http`
+`yarn add @jpmorganchase/mosaic-source-http{:bat}`
 
 ## Configuration
 
 | Property                                   | Description                                                                   | Required |
 | ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
 | modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
-| namspace                                   | The scope for this source                                                     | Yes      |
+| namespace                                  | The scope for this source                                                     | Yes      |
 | disabled                                   | When true, content from this source is not used                               | No       |
 | options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
 | options.prefixDir                          | The root path used in the content URL                                         | Yes      |
@@ -30,7 +30,7 @@ Multiple endpoints can be specified and the source will combine and transform th
 
 ### Example HTTP Source Definition
 
-```
+```js
  {
       modulePath: '@jpmorganchase/mosaic-source-http',
       namespace: 'my-namespace',

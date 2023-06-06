@@ -6,12 +6,12 @@ layout: DetailTechnical
 
 # {meta.title}
 
-In `active` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
+In `active{:bat}` mode content can be _pulled_ from heterogeneous data sources and normalized via plugins, to the configured components/theme.
 As your content changes, the site will _re-pull_ the content and update your site in real-time.
 
 The standard generated site comes with 2 sources to demonstrate, how 'active' mode work.
 
-- a local source, which loads content from `./docs`
+- a local source, which loads content from `./docs{:bat}`
 - a remote source, which loads content from a [sample Github repository](https://github.com/jpmorganchase/mosaic/tree/main/docs)
 
 ## Configuring your content sources
@@ -19,17 +19,17 @@ The standard generated site comes with 2 sources to demonstrate, how 'active' mo
 All content is composed together within a _namespace_.
 
 A _namespace_ is the scope for aggregated content, represented by the root path.
-e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic`
+e.g Our sample docs are aggregated into a _namespace_ called `mosaic` and served by the user journey `http://localhost:3000/mosaic{:bat}`
 
-Mosaic doc sources are defined by a file called `mosaic.config.js`
+Mosaic doc sources are defined by a file called `mosaic.config.js{:bat}`
 
 Here is how that might look for a standard site.
 
 ## Pull your local content
 
-To tryout local content creation, add a file called`./docs/index.mdx`
+To tryout local content creation, add a file called `./docs/index.mdx{:bat}`
 
-The load `http://localhost:3000/local`
+The load `http://localhost:3000/local{:bat}`
 
 Each directory should contain an `index.mdx` which is the default page, when a page is loaded without a path
 
@@ -39,4 +39,4 @@ Now create other pages and subdirectories and explore how Mosaic, builds your us
 
 To tryout remote content creation, your standard site comes pre-configured to load our Mosaic sample docs.
 
-Edit the `mosaic.config.js` and change your `repoUrl` and `branch` to pull content from other repos.
+Edit the `mosaic.config.js{:bat}` and change your `repoUrl{:bat}` and `branch{:bat}` to pull content from other repos.
