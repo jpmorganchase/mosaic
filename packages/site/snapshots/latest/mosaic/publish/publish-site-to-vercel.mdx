@@ -1,7 +1,7 @@
 ---
 title: Publish a site to Vercel
 layout: DetailTechnical
-lastModified: 1680253492000
+lastModified: 1686065101689
 fullPath: /mosaic/publish/publish-site-to-vercel.mdx
 route: /mosaic/publish/publish-site-to-vercel
 breadcrumbs:
@@ -77,7 +77,7 @@ As the [vercel platform](https://vercel.com/) hosts static content you will need
 
 Add the following to the mosaic config file used by your site:
 
-```
+```js
  deployment: { mode: 'snapshot-file', platform: 'vercel' }
 ```
 
@@ -92,13 +92,13 @@ Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/envir
 
 ### 3. Run Build and Deploy
 
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
+The `build{:bat}` command used by vercel must run `yarn build{:bat}` followed by `yarn deploy{:bat}`
 
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
+The `deploy{:bat}` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
 
 Example:
 
-```
+```bat
 yarn build && yarn deploy
 ```
 
@@ -107,6 +107,6 @@ yarn build && yarn deploy
 [Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
 to determine what files are needed to deploy a production version of an application.
 
-Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
+Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by Vercel.
 
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
+If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy{:bat}` command that will update the nextjs output trace to include the snapshot files.

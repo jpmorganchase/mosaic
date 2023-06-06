@@ -10,7 +10,7 @@ data:
     - snapshot-file
     - snapshot-s3
   sidebarPriority: 3
-lastModified: 1685628061462
+lastModified: 1686065101681
 fullPath: /mosaic/author/refs.mdx
 route: /mosaic/author/refs
 breadcrumbs:
@@ -25,9 +25,9 @@ breadcrumbs:
     id: /mosaic/author/refs.mdx
 readingTime:
   text: 4 min read
-  minutes: 3.075
-  time: 184500
-  words: 615
+  minutes: 3.07
+  time: 184200
+  words: 614
 tableOfContents:
   - level: 2
     id: local-refs-in-schema-reference
@@ -150,7 +150,7 @@ It's probably better explained with examples...
 
 It is possible to reference a page's own frontmatter to avoid duplication:
 
-```
+```yaml
 ---
 title: Refs
 layout: DetailTechnical
@@ -158,13 +158,13 @@ sidebar:
   priority: 3
 data:
   sidebarPriority:
-     $ref: '#/sidebar/priority'
+    $ref: '#/sidebar/priority'
 ---
 ```
 
 This page you are reading right now has a sidebar priority of **{meta.data.sidebarPriority}**.
 
-The value of `data.sidebarPriority` comes from `sidebar.priority` in the frontmatter.
+The value of `data.sidebarPriority{:json}` comes from `sidebar.priority{:json}` in the frontmatter.
 
 <Callout>
   Notice that because we don't specify a path before the `#` in the ref we need to put the whole
@@ -177,7 +177,7 @@ It is possible to reference frontmatter of other pages. Again this helps avoid d
 
 The [index](./index) page of the Author section has this frontmatter:
 
-```
+```yaml
 ---
 title: Author
 layout: DetailTechnical
@@ -190,7 +190,7 @@ data:
 
 This page you are currently looking at is referencing the `data.exampleRefData` in it's frontmatter like this:
 
-```
+```yaml
 ---
 title: Refs
 layout: DetailTechnical
@@ -204,7 +204,7 @@ data:
 
 I can then use the data and embed it in this page like this:
 
-```
+```mdx
 {meta.data.authorRef}
 ```
 
@@ -227,7 +227,7 @@ You have had a taste of the power and want to know more? OK, lets reference and 
 
 The Modes [index](../configure/modes/index) page has this frontmatter:
 
-```
+```yaml
 ---
 title: Modes of operation
 layout: DetailTechnical
@@ -243,7 +243,7 @@ The ref here is essentially using a wildcard (the \*) to grab the `mode` propert
 
 We can reference that data just like before:
 
-```
+```yaml
 ---
 title: Refs
 layout: DetailTechnical
@@ -259,7 +259,7 @@ data:
 
 With the code below, the referenced data can be embedded in a page.
 
-```
+```jsx
 <ul>
   {meta.data.modes.map(mode => (
     <li key={mode}>{mode}</li>
@@ -281,7 +281,7 @@ You can use Mosaic components with referenced data as well. Below we are using t
   ))}
 </Tiles>
 
-```
+```jsx
 <Tiles>
   {meta.data.modes.map(mode => (
     <TileContent
@@ -307,7 +307,7 @@ Use the `config.setRef` function from the helpers provided to plugin lifecycle e
 
 For example, the following would add a property to pages named `titles`. The value is the title of all pages in the **same** directory as the current page
 
-```
+```js
   async $afterSource(pages, { config }) {
     for (const page of pages) {
       config.setRef(page.fullPath, ['titles', '$ref'], `**#/title`);
@@ -323,10 +323,10 @@ For example, the following would add a property to pages named `titles`. The val
 
 ### Existing refs
 
-To view refs that already exist you can use `config.data.refs`. For example to see all refs for a page:
+To view refs that already exist you can use `config.data.refs{:json}`. For example to see all refs for a page:
 
-```
- config.data.refs[fullPathToPage]
+```js
+config.data.refs[fullPathToPage];
 ```
 
 ### Create global refs

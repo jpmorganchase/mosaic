@@ -2,7 +2,7 @@
 title: Snapshot file mode
 mode: snapshot-file
 layout: DetailTechnical
-lastModified: 1685628061465
+lastModified: 1686065101683
 fullPath: /mosaic/configure/modes/snapshot-file.mdx
 route: /mosaic/configure/modes/snapshot-file
 breadcrumbs:
@@ -175,12 +175,12 @@ sidebarData:
 ---
 # {meta.title}
 
-In `snapshot-file` mode a local immutable snapshot can be loaded by the site. Typically, the snapshot and the site are
+In `snapshot-file{:bat}` mode a local immutable snapshot can be loaded by the site. Typically, the snapshot and the site are
 deployed together and upon startup the site can load the snapshot from the local file-system.
 
-To use `snapshot-file` mode
+To use `snapshot-file{:bat}` mode
 
-```
+```bat
 export MOSAIC_MODE="snapshot-file"
 export MOSAIC_SNAPSHOT_DIR="./snapshot/latest"
 ```
@@ -189,7 +189,7 @@ export MOSAIC_SNAPSHOT_DIR="./snapshot/latest"
 
 To generate a snapshot, run
 
-```
+```bat
 yarn gen:snapshot
 ```
 

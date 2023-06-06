@@ -3,7 +3,7 @@ title: Publish
 layout: DetailTechnical
 sidebar:
   priority: 2
-lastModified: 1680253492000
+lastModified: 1686065101687
 fullPath: /mosaic/publish/index.mdx
 route: /mosaic/publish/index
 breadcrumbs:
@@ -64,13 +64,13 @@ A *standard* site offers
 
 Install the Mosaic create site script.
 
-```
+```bat
 > yarn global add @jpmorganchase/mosaic-create-site
 ```
 
 Create a directory for your site and run the `mosaic-create-site` script.
 
-```
+```bat
 > mkdir mosaic-sample-site
 > cd mosaic-sample-site
 > mosaic-create-site -f .
@@ -78,19 +78,19 @@ Create a directory for your site and run the `mosaic-create-site` script.
 
 Define the environment variable, which enables us to access your remote repo.
 
-```
+```bat
 > export MOSAIC_DOCS_CLONE_CREDENTIALS="<your GIT username:PAT Token>"
 ```
 
-The `MOSAIC_DOCS_CLONE_CREDENTIALS` environment variable is composed of your git username and your PAT token.
+The `MOSAIC_DOCS_CLONE_CREDENTIALS{:bat}` environment variable is composed of your git username and your PAT token.
 Follow these [docs](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to see how to create your own PAT token.
 
 Your site is ready to run.
 
-```
+```bat
 > yarn serve
 ```
 
-In your browser load `http://localhost:3000`
+In your browser load `http://localhost:3000{:bat}`
 
 Congratulations, you have created your first Mosaic site.

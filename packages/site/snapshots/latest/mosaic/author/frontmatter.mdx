@@ -3,7 +3,7 @@ title: Frontmatter
 layout: DetailTechnical
 sidebar:
   priority: 4
-lastModified: 1681205908000
+lastModified: 1686065101680
 fullPath: /mosaic/author/frontmatter.mdx
 route: /mosaic/author/frontmatter
 breadcrumbs:
@@ -18,9 +18,9 @@ breadcrumbs:
     id: /mosaic/author/frontmatter.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.215
-  time: 132900
-  words: 443
+  minutes: 2.165
+  time: 129900
+  words: 433
 tableOfContents:
   - level: 2
     id: example-page-yaml
@@ -114,11 +114,11 @@ sidebarData:
 
 [Frontmatter](https://mdxjs.com/guides/frontmatter/), also known as page metadata, is a powerful feature that allows easy configuration of a page and Mosaic site components e.g. the sidebar.
 
-Frontmatter is written in yaml syntax and is found at the top of a page between 2 sets of 3 dashes: `---`.
+Frontmatter is written in yaml syntax and is found at the top of a page between 2 sets of 3 dashes: `---{:yaml}`.
 
 ## Example page yaml
 
-```
+```mdx
 ---
 title: Page Title
 layout: DetailTechnical
@@ -126,11 +126,9 @@ sidebar:
   priority: 4
 ---
 
-// frontmatter is closed and now comes page content
 # Page Title
 
 This is some content.
-
 ```
 
 ## Accessing Frontmatter in content
@@ -139,7 +137,7 @@ With the syntax below it is possible to directly reference frontmatter inside co
 
 You can think of `meta` as a JSON object that holds all the frontmatter of a page and when the Mosaic `RefPlugin` encounters the curly brackets then the value in the frontmatter will be resolved.
 
-```
+```mdx
 {meta.title}
 {meta.description}
 {meta.someValueYouHaveAddedToTheFrontmatter}
@@ -147,7 +145,7 @@ You can think of `meta` as a JSON object that holds all the frontmatter of a pag
 
 This is very common to see Mosaic pages that reference the title as shown below:
 
-```
+```mdx /title/
 ---
 title: Title
 ---
@@ -166,10 +164,10 @@ Mosaic plugins can also embed their output into page frontmatter in 2 different 
 
 A plugin can add a property to a page simply by extending the page object it receives in the `$afterSource` lifecycle event:
 
-```
+```js {3}
 async function $afterSource(pages) {
   for (const page of pages) {
-    page.newProperty = 'Hello'
+    page.newProperty = 'Hello';
   }
   return pages;
 }
@@ -188,28 +186,28 @@ The purpose of this plugin is to crawl the page hierarchy to find the closest `s
 *   If a property called `sharedConfig` in the page frontmatter is found a new file named shared-config.json is created
 *   Adds a ref named `config` to the shared config file that points to the shared config of the index page
 
-```
+```js
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { flatten } from 'lodash-es';
 import path from 'path';
 
 function createFileGlob(url, pageExtensions) {
-if (pageExtensions.length === 1) {
-return `${url}${pageExtensions[0]}`;
-}
-return `${url}{${pageExtensions.join(',')}}`;
+  if (pageExtensions.length === 1) {
+    return `${url}${pageExtensions[0]}`;
+  }
+  return `${url}{${pageExtensions.join(',')}}`;
 }
 
 interface SharedConfigPluginPage extends Page {
-sharedConfig?: string;
+  sharedConfig?: string;
 }
 
 interface SharedConfigPluginOptions {
-filename: string;
+  filename: string;
 }
 
 const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginOptions> = {
-async $beforeSend(
+  async $beforeSend(
     mutableFilesystem,
     { config, serialiser, ignorePages, pageExtensions },
     options
@@ -218,9 +216,9 @@ async $beforeSend(
       createFileGlob('**/index', pageExtensions),
       {
         ignore: [options.filename, ...flatten(ignorePages.map(ignore => [ignore, `**/${ignore}`]))],
-cwd: '/'
-}
-);
+        cwd: '/'
+      }
+    );
 
     for (const pagePath of pagePaths) {
       const sharedConfigFile = path.join(path.dirname(String(pagePath)), options.filename);
@@ -237,10 +235,8 @@ cwd: '/'
         config.setAliases(path.join(baseDir, options.filename), [sharedConfigFile]);
       }
     }
-
-}
+  }
 };
 
 export default SharedConfigPlugin;
-
 ```

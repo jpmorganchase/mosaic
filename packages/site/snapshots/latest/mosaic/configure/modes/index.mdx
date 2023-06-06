@@ -8,7 +8,7 @@ data:
     - active
     - snapshot-file
     - snapshot-s3
-lastModified: 1685628061464
+lastModified: 1686065101682
 fullPath: /mosaic/configure/modes/index.mdx
 route: /mosaic/configure/modes/index
 breadcrumbs:
@@ -186,15 +186,15 @@ sidebarData:
 
 Mosaic can operate in 3 different modes
 
-*   `active`
-*   `snapshot-file`
-*   `snapshot-s3`
+*   `active{:bat}`
+*   `snapshot-file{:bat}`
+*   `snapshot-s3{:bat}`
 
 ## Active updates
 
 In *active* mode, content updates in real-time.
 
-*active* mode content is pulled at configured intervals in real-time, as defined by `mosaic.config.js`.
+*active* mode content is pulled at configured intervals in real-time, as defined by `mosaic.config.js{:bat}`.
 
 Read the [active](./active) configuration docs.
 
@@ -206,12 +206,12 @@ In a snapshot mode, the snapshot does update itself.
 
 ### File based snapshots
 
-In `snapshot-file` mode, immutable snapshots of content are loaded at startup from the local file-system.
+In `snapshot-file{:bat}` mode, immutable snapshots of content are loaded at startup from the local file-system.
 
 Read the [snapshot-file](./snapshot-file) configuration docs.
 
 ### S3 based snapshots
 
-In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
+In `snapshot-s3{:bat}` mode, snapshots of content are loaded at startup from a remote S3 bucket.
 
 Read the [snapshot-s3](./snapshot-s3) configuration docs.

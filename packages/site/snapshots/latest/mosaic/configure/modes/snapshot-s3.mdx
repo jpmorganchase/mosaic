@@ -2,7 +2,7 @@
 title: Snapshot AWS/S3 mode
 mode: snapshot-s3
 layout: DetailTechnical
-lastModified: 1685628061465
+lastModified: 1686065101684
 fullPath: /mosaic/configure/modes/snapshot-s3.mdx
 route: /mosaic/configure/modes/snapshot-s3
 breadcrumbs:
@@ -178,11 +178,11 @@ sidebarData:
 ---
 # {meta.title}
 
-In `snapshot-s3` mode a snapshot can be loaded from a pre-configured AWS S3 bucket.
+In `snapshot-s3{:bat}` mode a snapshot can be loaded from a pre-configured AWS S3 bucket.
 
-To use `snapshot-s3` mode
+To use `snapshot-s3{:bat}` mode
 
-```
+```bat
 > export MOSAIC_MODE="snapshot-s3"
 > MOSAIC_S3_BUCKET="<your S3 bucket id>"
 > MOSAIC_S3_REGION="<your S3 region>"
@@ -194,7 +194,7 @@ To use `snapshot-s3` mode
 
 To generate a snapshot, run
 
-```
+```bat
 yarn gen:snapshot
 ```
 
@@ -202,6 +202,6 @@ yarn gen:snapshot
 
 To upload a snapshot to S3, define the required environment variables and run
 
-```
+```bat
 yarn mosaic upload -S <path to snapshot file>
 ```

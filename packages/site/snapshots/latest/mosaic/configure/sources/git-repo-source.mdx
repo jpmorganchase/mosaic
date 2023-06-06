@@ -3,7 +3,7 @@ title: Git Repo Source
 layout: DetailTechnical
 sidebar:
   priority: 2
-lastModified: 1680253492000
+lastModified: 1686065101684
 fullPath: /mosaic/configure/sources/git-repo-source.mdx
 route: /mosaic/configure/sources/git-repo-source
 breadcrumbs:
@@ -192,7 +192,7 @@ The Git Repo Source is used to pull content from a remote git repository e.g. gi
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-git-repo`
+`yarn add @jpmorganchase/mosaic-source-git-repo{:bat}`
 
 ## Credentials and Access tokens
 
@@ -204,7 +204,7 @@ This keeps credentials out of code where they may be accidentally exposed to thi
 
 ### Example
 
-```
+```bat
 export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PAT) provided by your Repo OR password>",
 ```
 
@@ -213,7 +213,7 @@ export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PA
 | Property            | Description                                                                      | Required |
 | ------------------- | -------------------------------------------------------------------------------- | -------- |
 | modulePath          | The path to the installed module (@jpmorganchase/mosaic-source-git-repo)         | Yes      |
-| namspace            | The scope for this source.                                                       | Yes      |
+| namespace           | The scope for this source.                                                       | Yes      |
 | disabled            | When true, content from this source is not used                                  | No       |
 | options.credentials | Collection of URLS to make requests                                              | Yes      |
 | options.prefixDir   | The root path used in the content URL                                            | Yes      |
@@ -225,20 +225,19 @@ export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PA
 
 ### Example Git Repo Source Definition
 
-```
-
+```js
  {
-      modulePath: '@jpmorganchase/mosaic-source-git-repo',
-      namespace: 'mosaic',
-      options: {
-        credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
-        prefixDir: 'mosaic',
-        subfolder: 'docs',
-        repo: 'https://github.com/jpmorganchase/mosaic.git',
-        branch: 'main',
-        extensions: ['.mdx'],
-        remote: 'origin'
-      }
+    modulePath: '@jpmorganchase/mosaic-source-git-repo',
+    namespace: 'mosaic',
+    options: {
+      credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+      prefixDir: 'mosaic',
+      subfolder: 'docs',
+      repo: 'https://github.com/jpmorganchase/mosaic.git',
+      branch: 'main',
+      extensions: ['.mdx'],
+      remote: 'origin'
     }
+  }
 
 ```
