@@ -38,17 +38,18 @@ const config: PlaywrightTestConfig = {
     //   ignoreHTTPSErrors: true,
     // },
   },
-
   projects: [
     {
-      name: 'Desktop Chrome',
-      use: {
-        ...devices['Desktop Chrome'],
-        bypassCSP: true,
-        launchOptions: {
-          args: ['--disable-web-security']
-        }
-      }
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] }
     }
   ]
 };
