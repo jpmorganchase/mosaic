@@ -27,6 +27,7 @@ export * from './icon';
 export * from './impact';
 export * from './link';
 export * from './list';
+export * from './pre';
 export * from './responsive';
 export * from './shadow';
 export * from './sidebar';

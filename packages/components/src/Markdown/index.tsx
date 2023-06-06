@@ -101,7 +101,6 @@ import type { ListItemProps, OrderedListProps, UnOrderedListProps } from '../Lis
 export { getMarkdownElements } from './markdownElements';
 
 export { withMarkdownSpacing } from './withMarkdownSpacing';
-export * from './Pre';
 
 const markdownElements = getMarkdownElements();
 export const getMarkdownComponents = () => ({

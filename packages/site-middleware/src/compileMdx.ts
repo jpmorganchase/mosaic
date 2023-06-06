@@ -1,7 +1,9 @@
 import { serialize } from 'next-mdx-remote/serialize';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
-import { codeBlocks } from './plugins/codeBlocks.js';
+import rehypePrettyCode from 'rehype-pretty-code';
+
+import options from './plugins/prettyCode';
 
 export async function compileMDX(
   content,
@@ -11,8 +13,8 @@ export async function compileMDX(
 ) {
   const mdxSource = await serialize(content, {
     mdxOptions: {
-      rehypePlugins: [rehypeSlug, ...rehypePlugins],
-      remarkPlugins: [codeBlocks, remarkGfm, ...remarkPlugins]
+      rehypePlugins: [rehypeSlug, [rehypePrettyCode, options], ...rehypePlugins],
+      remarkPlugins: [remarkGfm, ...remarkPlugins]
     },
     parseFrontmatter
   });

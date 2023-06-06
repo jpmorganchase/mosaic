@@ -6,7 +6,6 @@ import * as Heading from './Heading';
 import { ListItem, OrderedList, UnorderedList } from '../List';
 import { InlineCode } from './InlineCode';
 import { Link } from './Link';
-import { Pre } from './Pre';
 import { Table } from './Table';
 import { Tbody } from './Tbody';
 import { Thead } from './Thead';
@@ -31,8 +30,6 @@ export const getMarkdownElements = () => ({
   h5: withAnchorHeading(Heading.H5),
   h6: withAnchorHeading(Heading.H6),
   p: withStyledTypography(paragraph({ variant: 'paragraph2', context: 'markdown' })),
-  pre: withMarkdownSpacing(Pre),
-  Pre: withMarkdownSpacing(Pre),
   inlineCode: withMarkdownSpacing(InlineCode, 'none'),
   table: withMarkdownSpacing(Table),
   Table: withMarkdownSpacing(Table),

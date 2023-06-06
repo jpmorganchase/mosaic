@@ -30,7 +30,6 @@ import './LinkText/styles.css';
 import './Links/styles.css';
 import './Markdown/AnchorHeading/index.css';
 import './Markdown/BlockQuote/index.css';
-import './Markdown/Pre/index.css';
 import './Markdown/withMarkdownSpacing/styles.css';
 import './ReactLive/styles.css';
 import './SecondaryNavbar/styles.css';
