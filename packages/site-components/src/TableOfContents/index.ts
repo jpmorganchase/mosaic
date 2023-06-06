@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { withTableOfContentsAdapter } from './withTableOfContentsAdapter';
 import { TableOfContents as OriginalTableOfContents } from './TableOfContents';

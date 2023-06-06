@@ -1,3 +1,4 @@
+'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
 import { useSearchData } from './useSearchData';

@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import classnames from 'clsx';
 import { HelpLinks, LinkButton, H6, P2 } from '@jpmorganchase/mosaic-components';

@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Breadcrumbs as SaltBreadcrumbs } from '@salt-ds/lab';
 import { Breadcrumb } from './Breadcrumb';
