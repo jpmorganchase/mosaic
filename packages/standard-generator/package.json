@@ -11,10 +11,10 @@
   },
   "main": "./dist/index.js",
   "scripts": {
-    "build": "node ./scripts/bundle.js",
+    "build": "node ./scripts/bundle.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
-    "watch": "node ./scripts/bundle.js watch"
+    "watch": "node ./scripts/bundle.mjs watch"
   },
   "files": [
     "dist",
