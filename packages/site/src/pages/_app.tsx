@@ -20,13 +20,13 @@ import { MyAppProps } from '../types/mosaic';
 
 const ptMono = PT_Mono({
   weight: '400',
+  variable: '--salt-typography-fontFamily-code',
   display: 'swap',
-  subsets: ['latin'],
-  variable: '--salt-typography-fontFamily:'
+  subsets: ['latin']
 });
 const openSans = Open_Sans({
   subsets: ['latin'],
-  variable: '--salt-typography-fontFamily-code',
+  variable: '--salt-typography-fontFamily',
   display: 'swap'
 });
 
