@@ -1,9 +1,9 @@
 import React, { FC, ReactNode } from 'react';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
 import { LinkBase } from '../LinkBase';
 import { LinkText } from '../LinkText';
 import { TileBase, useTileState } from '../TileBase';
-import { useImageComponent } from '../ImageProvider';
 import { useBreakpoint } from '../useBreakpoint';
 import styles, { imageRecipe, tileImageRecipe } from './styles.css';
 

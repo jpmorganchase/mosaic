@@ -11,7 +11,7 @@ module.exports = {
       statements: 1
     }
   },
-  coveragePathIgnorePatterns: ['/node_modules/', '/dist/.*\\.(ts|js)$', '/__tests__/test-utils/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '/dist/.*\\.(ts|js)$', '/__tests__/utils/'],
   testRegex: '(/__tests__/.+\\.test)\\.(js|ts)x?$',
   transform: {
     '^.+\\.(t|j)sx?$': ['@swc/jest']

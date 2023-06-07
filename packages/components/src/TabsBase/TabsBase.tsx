@@ -6,11 +6,8 @@ import { TabsLink, TabsLinkItem } from './TabsLink';
 import { TabsMenuButton, TabsMenuButtonItem } from './TabsMenuButton';
 import styles from './styles.css';
 
-export enum TabMenuItemType {
-  MENU = 'menu',
-  LINK = 'link',
-  BUTTON = 'button'
-}
+export type TabMenuItemType = 'menu' | 'link' | 'button';
+
 export interface TabsBaseProps {
   /** Additional class name for root class override */
   className?: string;
@@ -24,10 +21,10 @@ export type TabsMenu = (TabsLinkItem | TabsButtonItem | TabsMenuButtonItem)[];
 
 function TabsItem({ children, item }) {
   const { type } = item;
-  if (type === TabMenuItemType.MENU) {
+  if (type === 'menu') {
     return <TabsMenuButton item={item}>{children}</TabsMenuButton>;
   }
-  if (type === TabMenuItemType.BUTTON) {
+  if (type === 'button') {
     return <TabsButton item={item}>{children}</TabsButton>;
   }
   return <TabsLink item={item}>{children}</TabsLink>;

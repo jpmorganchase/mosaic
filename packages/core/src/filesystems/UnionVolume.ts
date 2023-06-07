@@ -13,6 +13,8 @@ export default class UnionVolume extends MutableVolume implements IUnionVolume {
     this.#vfs = vfs;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /** @ts-ignore */
   promises = create(this.promises, {
     readFile: (file, options) => {
       if (options?.includeConflicts) {

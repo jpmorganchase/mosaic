@@ -1,7 +1,7 @@
 import React from 'react';
 import classnames from 'clsx';
 
-import { TabsBase, TabsButtonItem, TabMenuItemType } from '../TabsBase';
+import { TabsBase, TabsButtonItem } from '../TabsBase';
 import { ViewStack } from '../ViewStack';
 import type { ViewProps } from '../ViewStack/View';
 import styles from './styles.css';
@@ -36,7 +36,7 @@ export const Tabs: React.FC<TabsProps> = ({ className, children }) => {
     const tabButtonItem: ExtendedTabsButtonItem = {
       title: tabElement.props.id || `Tab ${childIndex}`,
       defaultView: Object.prototype.hasOwnProperty.call(child.props, 'defaultView'),
-      type: TabMenuItemType.BUTTON,
+      type: 'button',
       onSelect: (_event, sourceItem) => setCurrentViewId(sourceItem)
     };
     return tabButtonItem;

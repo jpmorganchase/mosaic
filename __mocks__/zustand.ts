@@ -1,22 +1,60 @@
-const actualZustand = jest.requireActual('zustand');
+/**
+ * From: https://docs.pmnd.rs/zustand/guides/testing
+ *
+ * Modified to also export useStore
+ */
 
-const actualCreate = actualZustand.create;
+import * as zustand from 'zustand';
+import { act } from '@testing-library/react';
 
-const stores = new Set<Function>();
+const {
+  create: actualCreate,
+  createStore: actualCreateStore,
+  useStore: actualUseStore
+} = jest.requireActual<typeof zustand>('zustand');
 
-const create: typeof actualCreate = createState => {
-  const store = actualCreate(createState);
+// a variable to hold reset functions for all stores declared in the app
+export const storeResetFns = new Set<() => void>();
+
+const createUncurried = <T>(stateCreator: zustand.StateCreator<T>) => {
+  const store = actualCreate(stateCreator);
   const initialState = store.getState();
-  stores.add(() => store.setState(initialState, true));
-
+  storeResetFns.add(() => {
+    store.setState(initialState, true);
+  });
   return store;
 };
 
-// eslint-disable-next-line no-undef
+// when creating a store, we get its initial state, create a reset function and add it in the set
+export const create = (<T>(stateCreator: zustand.StateCreator<T>) =>
+  // to support curried version of create
+  typeof stateCreator === 'function'
+    ? createUncurried(stateCreator)
+    : createUncurried) as typeof zustand.create;
+
+const createStoreUncurried = <T>(stateCreator: zustand.StateCreator<T>) => {
+  const store = actualCreateStore(stateCreator);
+  const initialState = store.getState();
+  storeResetFns.add(() => {
+    store.setState(initialState, true);
+  });
+  return store;
+};
+
+// when creating a store, we get its initial state, create a reset function and add it in the set
+export const createStore = (<T>(stateCreator: zustand.StateCreator<T>) =>
+  // to support curried version of createStore
+  typeof stateCreator === 'function'
+    ? createStoreUncurried(stateCreator)
+    : createStoreUncurried) as typeof zustand.createStore;
+
+export { actualUseStore as useStore };
+
+// reset all stores after each test run
 afterEach(() => {
-  stores.forEach(resetFn => resetFn());
+  act(() => {
+    storeResetFns.forEach(resetFn => {
+      resetFn();
+    });
+  });
 });
-
-const { createStore, useStore } = actualZustand;
-
-export { create, createStore, useStore };

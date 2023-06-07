@@ -1,32 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { MDXRemote } from 'next-mdx-remote';
 import { ErrorBoundary, useErrorBoundary } from 'react-error-boundary';
 import { useContentEditor, Editor } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
 
 import { createMDXScope } from './utils/createMDXScope';
 import { Page500 } from './500';
-import { Page404 } from './404';
+import { NavigationEvents } from './NavigationEvents';
 
 const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' } }) => {
-  const router = useRouter();
   const { resetBoundary } = useErrorBoundary();
 
-  useEffect(() => {
-    const handleRouteChange = () => {
-      resetBoundary();
-    };
+  const handleRouteChangeComplete = () => {
+    resetBoundary();
+  };
 
-    router.events.on('routeChangeComplete', handleRouteChange);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChange);
-    };
-  }, [router, resetBoundary]);
   console.error('An un-handled error created a 500 message');
   console.error(errorMessage);
-  return <Page500 />;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <NavigationEvents onRouteChange={handleRouteChangeComplete} />
+      </Suspense>
+      <Page500 />
+    </>
+  );
 };
 
 function MDXRemoteWithErrorBoundary({ components, source, meta = {} }) {
@@ -40,13 +38,6 @@ function MDXRemoteWithErrorBoundary({ components, source, meta = {} }) {
 export function Body({ components = {}, type, ...props }) {
   const { pageState } = useContentEditor();
   const { data: session } = useSession();
-
-  if (props.show404) {
-    return <Page404 />;
-  }
-  if (props.show500) {
-    return <Page500 />;
-  }
 
   if (pageState !== 'VIEW' && session !== null && type === 'mdx') {
     return (

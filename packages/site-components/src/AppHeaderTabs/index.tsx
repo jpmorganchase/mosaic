@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { hasProtocol, TabsBase, TabMenuItemType } from '@jpmorganchase/mosaic-components';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { hasProtocol, TabsBase } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@jpmorganchase/mosaic-components';
 
+import { NavigationEvents } from '../NavigationEvents';
 import { useWindowResize, Size } from './useWindowResize';
 
 export type { TabsMenu } from '@jpmorganchase/mosaic-components';
@@ -12,7 +13,7 @@ function resolveSelectedIndex(menu, itemPath) {
   let longestMatch = 0;
   for (let i = 0; i < menu.length; i++) {
     const item: TabsMenuButtonItem | TabsLinkItem = menu[i];
-    if (item.type === TabMenuItemType.MENU) {
+    if (item.type === 'menu') {
       // eslint-disable-next-line no-restricted-syntax
       for (const { link: subLink } of item.links) {
         // If menu link matches the current route - we can return this index
@@ -49,6 +50,7 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
     itemPath => resolveSelectedIndex(menu, itemPath),
     [menu]
   );
+  const pathname = usePathname();
 
   const [selectionIndex, setSelectionIndex] = useState(() => -1);
 
@@ -60,20 +62,11 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
   const handleRouteChangeComplete = (newRoute: string) => updateSelection(newRoute);
 
   useEffect(() => {
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (router.asPath && size?.width) {
-      updateSelection(router.asPath);
+    if (pathname && size?.width) {
+      updateSelection(pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, size]);
+  }, [pathname, size]);
 
   const handleMenuSelect = (_event, sourceItem) => {
     const { link } = sourceItem as TabsLinkItem;
@@ -84,10 +77,17 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
     }
   };
   const linkedMenu = menu.map(menuItem => {
-    if (menuItem.type === TabMenuItemType.MENU) {
+    if (menuItem.type === 'menu') {
       return { ...menuItem, onSelect: handleMenuSelect };
     }
     return menuItem;
   });
-  return <TabsBase menu={linkedMenu} selectedIndex={selectionIndex} />;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <NavigationEvents onRouteChange={handleRouteChangeComplete} />
+      </Suspense>
+      <TabsBase menu={linkedMenu} selectedIndex={selectionIndex} />
+    </>
+  );
 }

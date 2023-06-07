@@ -3,7 +3,6 @@ import { Text } from '@salt-ds/core';
 import { Logo, LogoImage } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
-import { useRoute } from '@jpmorganchase/mosaic-store';
 
 import { AppHeaderControls } from '../AppHeaderControls';
 import { AppHeaderDrawer } from '../AppHeaderDrawer';
@@ -15,6 +14,7 @@ export type AppHeaderProps = {
   logo?: string;
   menu?: TabsMenu;
   title?: string;
+  children: React.ReactNode;
 };
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -33,10 +33,15 @@ const createDrawerMenu = menu =>
     return [...result, parsedItem];
   }, []);
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({
+  children,
+  homeLink,
+  logo,
+  menu = [],
+  title
+}) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const breakpoint = useBreakpoint();
-  const { route } = useRoute();
 
   useIsomorphicLayoutEffect(() => {
     setShowDrawer(breakpoint === 'mobile' || breakpoint === 'tablet');
@@ -56,8 +61,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [],
             )}
           </Link>
         )}
-        {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
-        <AppHeaderControls />
+        {!showDrawer && <AppHeaderTabs menu={menu} />}
+        <AppHeaderControls>{children}</AppHeaderControls>
       </div>
     </>
   );

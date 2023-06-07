@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Breadcrumbs as SaltBreadcrumbs } from '@salt-ds/lab';
 import { Breadcrumb } from './Breadcrumb';
 
