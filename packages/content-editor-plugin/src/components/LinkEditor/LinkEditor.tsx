@@ -6,7 +6,7 @@ import {
   RangeSelection,
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
-import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useFloatingUI, Input } from '@salt-ds/core';

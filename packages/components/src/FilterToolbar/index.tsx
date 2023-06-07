@@ -4,6 +4,4 @@ export * from './SortDropdown';
 export * from './ToolbarProvider';
 export * from './ContentArea';
 export * from './Toolbar';
-export * from './PillGroup';
 export * from './Search';
-export * from './SortDropdown';

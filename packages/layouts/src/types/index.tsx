@@ -1,20 +1,24 @@
 import type { ReactNode } from 'react';
-import type { Breadcrumb, LinkType } from '@jpmorganchase/mosaic-site-components';
+import type { LinkType } from '@jpmorganchase/mosaic-site-components';
 import { FooterProps } from '@jpmorganchase/mosaic-site-components';
 
 export type LayoutProps = {
+  AppHeaderComponent: ReactNode;
+  BreadcrumbsComponent: ReactNode;
+  FooterComponent: ReactNode;
+  DocPaginatorComponent: ReactNode;
+  SecondarySidebarComponent: ReactNode;
+  PrimarySidebarComponent: ReactNode;
   children?: ReactNode;
   className?: string;
   ToCProps?: {
     items: any;
   };
   SidebarProps?: Pick<FooterProps, 'helpLinks'>;
-
   NextPrevLinksProps?: {
     next?: LinkType;
     prev?: LinkType;
   };
-  BreadcrumbsProps?: { breadcrumbs: typeof Breadcrumb[] };
   BackLinkProps?: { label?: string; link: string };
   FooterProps?: any;
   layout?: string;

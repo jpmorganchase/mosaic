@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { INSERT_HORIZONTAL_RULE_COMMAND } from '@lexical/react/LexicalHorizontalRuleNode';

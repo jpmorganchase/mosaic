@@ -67,6 +67,6 @@
     "mdast-util-directive": "^3.0.0",
     "mdast-util-to-string": "^4.0.0",
     "uuid": "^7.0.3",
-    "vfile-reporter": "^7.0.5"
+    "vfile-reporter": "^8.1.0"
   }
 }

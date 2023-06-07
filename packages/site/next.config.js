@@ -1,34 +1,19 @@
-const webpack = require('webpack');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true'
+});
 
-module.exports = {
+const nextConfig = {
+  experimental: {
+    mdxRs: true,
+    serverComponentsExternalPackages: ['@daviereid/next-mdx-remote']
+  },
   reactStrictMode: true,
+  output: process.env.GENERATE_STATIC_PARAMS_URL ? 'export' : 'standalone',
   swcMinify: true,
   experimental: {
     outputFileTracingExcludes: {
       '*': ['**/.next/cache/webpack']
     }
-  },
-  transpilePackages: [
-    '@jpmorganchase/mosaic-components',
-    '@jpmorganchase/mosaic-content-editor-plugin',
-    '@jpmorganchase/mosaic-labs-components',
-    '@jpmorganchase/mosaic-layouts',
-    '@jpmorganchase/mosaic-open-api-component',
-    '@jpmorganchase/mosaic-site-components',
-    '@jpmorganchase/mosaic-site-middleware',
-    '@jpmorganchase/mosaic-theme',
-    '@jpmorganchase/mosaic-store'
-  ],
-  rewrites() {
-    return {
-      // These rewrites are checked after headers/redirects
-      // and before all files including _next/public files which
-      // allows overriding page files
-      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
-      // These rewrites are checked after pages/public files
-      // are checked but before dynamic routes
-      afterFiles: []
-    };
   },
   images: {
     domains: [
@@ -43,26 +28,10 @@ module.exports = {
     } else {
       config.resolve.fallback = { fs: false };
     }
+    config.experiments.topLevelAwait = true;
     return config;
   },
-  env: {},
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/mosaic',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/local',
-        destination: '/local/index',
-        permanent: true
-      }
-    ];
-  }
+  env: {}
 };
+
+module.exports = withBundleAnalyzer(nextConfig);

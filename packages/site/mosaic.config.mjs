@@ -21,7 +21,12 @@ const siteConfig = {
       priority: -1,
       options: {
         outputDir: './public',
-        assets: ['sitemap.xml', 'search-data.json']
+        assets: [
+          'search-config.json',
+          'search-data.json',
+          'search-data-condensed.json',
+          'sitemap.xml'
+        ]
       }
     },
     {
@@ -54,19 +59,19 @@ export default deepmerge(siteConfig, {
         prefixDir: 'mosaic', // root path used for namespace
         extensions: ['.mdx'] // extensions of content which should be pulled
       }
-    },
+    }
     /**
      * Tags examples require multiple sources
      */
-    {
-      disabled: process.env.NODE_ENV !== 'development',
-      modulePath: '@jpmorganchase/mosaic-source-local-folder',
-      namespace: 'mosaic',
-      options: {
-        rootDir: '../../docs-tags',
-        prefixDir: 'mosaic/products',
-        extensions: ['.mdx']
-      }
-    }
+    // {
+    //   disabled: process.env.NODE_ENV !== 'development',
+    //   modulePath: '@jpmorganchase/mosaic-source-local-folder',
+    //   namespace: 'mosaic',
+    //   options: {
+    //     rootDir: '../../docs-tags',
+    //     prefixDir: 'mosaic/products',
+    //     extensions: ['.mdx']
+    //   }
+    // }
   ]
 });

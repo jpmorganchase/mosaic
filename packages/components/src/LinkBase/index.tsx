@@ -1,6 +1,6 @@
 import React, { forwardRef, Ref } from 'react';
+import { useLinkComponent } from '@jpmorganchase/mosaic-store';
 
-import { useLinkComponent } from '../LinkProvider';
 import { hasProtocol } from '../utils/hasProtocol';
 
 export interface LinkBaseProps extends Omit<React.HTMLProps<HTMLAnchorElement>, 'ref'> {

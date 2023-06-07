@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'clsx';
-import { useRoute } from '@jpmorganchase/mosaic-store';
 import { LayerLayout } from '@salt-ds/lab';
-import styles from './styles.css';
 import { Button, Icon, useOutsideClick } from '@jpmorganchase/mosaic-components';
+
+import styles from './styles.css';
 
 export type TriggerElementProps = {
   /** open state of drawer */
@@ -25,21 +25,11 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useOutsideClick(triggerRef, () => setOpen(false));
 
-  const { route } = useRoute();
-
   const handleNavigationToggle = () => {
     setOpen(!open);
   };
 
-  const [isClient, setIsClient] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Close drawer whenever a page loads
-    setOpen(false);
-    setIsClient(true);
-  }, [route]);
-
-  const portalRoot = isClient ? document.querySelector('[data-mosaic-id="portal-root"]') : null;
+  const portalRoot = document.querySelector('[data-mosaic-id="portal-root"]');
   return (
     <>
       <div ref={triggerRef}>

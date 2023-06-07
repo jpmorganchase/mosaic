@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
 import md5 from 'md5';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
@@ -65,7 +65,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   const handleErrorMessage = (errorMessage: string) => {
-    setError(errorMessage ? errorMessage : 'Sorry - an unexpected error has occurred');
+    setError(errorMessage || 'Sorry - an unexpected error has occurred');
     setPrHref(null);
     setProgress([]);
     setIsRaising(false);

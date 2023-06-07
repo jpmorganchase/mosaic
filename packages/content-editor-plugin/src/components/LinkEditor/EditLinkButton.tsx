@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { ToolbarButton, type ToolbarButtonProps } from '../Toolbar/ToolbarButton';
 

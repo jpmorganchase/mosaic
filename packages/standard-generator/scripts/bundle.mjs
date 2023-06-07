@@ -14,10 +14,15 @@ try {
     format: 'cjs',
     plugins: [
       {
-        name: 'copy-additional-files',
+        name: 'on-end',
         setup(build) {
-          build.onEnd(() => {
-            fs.copySync('./src/templates', './dist/templates', { overwrite: true });
+          build.onEnd(({ errors = [] }) => {
+            if (errors.length) {
+              console.error(`build failed for ${packageName}:`, errors);
+            } else {
+              console.log(`build succeeded for ${packageName}:`);
+              fs.copySync('./src/templates', './dist/templates', { overwrite: true });
+            }
           });
         }
       }

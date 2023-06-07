@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useState } from 'react';
 import { Dropdown, Option, DropdownProps } from '@salt-ds/core';
 import { Icon } from '../../Icon';
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';

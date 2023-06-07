@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { BaseToolbar as Toolbar } from './BaseToolbar/BaseToolbar';
 import { BaseTooltray as Tooltray } from './BaseTooltray/BaseTooltray';

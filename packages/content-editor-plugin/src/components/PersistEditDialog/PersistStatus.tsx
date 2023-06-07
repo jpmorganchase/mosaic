@@ -1,9 +1,9 @@
-import React, { FC, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 import classnames from 'clsx';
 import { P2, P6 } from '@jpmorganchase/mosaic-components';
+import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 import styles from './PersistStatus.css';
-import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 interface StepProps {
   children?: ReactNode;

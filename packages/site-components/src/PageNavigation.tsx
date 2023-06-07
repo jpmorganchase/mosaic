@@ -1,14 +1,17 @@
-import React from 'react';
-import { useSidebar } from '@jpmorganchase/mosaic-store';
 import { VerticalNavigation } from './VerticalNavigation';
+import { SidebarItem } from "@jpmorganchase/mosaic-types";
 
-export const PageNavigation = () => {
-  const { menu, selectedNodeId, selectedGroupIds } = useSidebar();
-  return (
-    <VerticalNavigation
-      menu={menu}
-      selectedNodeId={selectedNodeId}
-      selectedGroupIds={selectedGroupIds}
-    />
-  );
+
+export type PageNavigationProps = {
+  menu: SidebarItem[];
+  selectedNodeId?: string;
+  selectedGroupIds?: Set<string>;
 };
+
+export const PageNavigation = ({ menu, selectedNodeId, selectedGroupIds }: PageNavigationProps) => (
+  <VerticalNavigation
+    menu={menu}
+    selectedNodeId={selectedNodeId}
+    selectedGroupIds={selectedGroupIds}
+  />
+);

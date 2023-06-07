@@ -1,6 +1,4 @@
-import React, { lazy } from 'react';
-
-import { IsomorphicSuspense } from '../IsomorphicSuspense';
+import React, { lazy, Suspense } from 'react';
 
 export interface OpenAPIProps {
   /** Additional class name for root class override */
@@ -12,7 +10,7 @@ export interface OpenAPIProps {
 const LazySwagger = lazy(() => import('./SwaggerUi'));
 
 export const OpenAPI: React.FC<React.PropsWithChildren<OpenAPIProps>> = ({ url }) => (
-  <IsomorphicSuspense fallback={<span>Loading Swagger component...</span>}>
+  <Suspense fallback={<span>Loading Swagger component...</span>}>
     <LazySwagger url={url} />
-  </IsomorphicSuspense>
+  </Suspense>
 );

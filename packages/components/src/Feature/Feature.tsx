@@ -1,9 +1,9 @@
 import React from 'react';
 import classnames from 'clsx';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 import { feature } from '@jpmorganchase/mosaic-theme';
 
 import styles from './styles.css';
-import { useImageComponent } from '../ImageProvider';
 
 export type FeatureClassesType = {
   content?: string;

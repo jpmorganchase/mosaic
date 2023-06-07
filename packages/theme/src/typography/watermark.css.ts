@@ -2,9 +2,11 @@ import { style } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { vars } from '../vars.css';
-import { marginProperties, paddingProperties, responsiveSprinkles } from '../responsive';
+import { responsiveSprinkles } from '../responsive';
 import { opacity } from '../opacity';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const watermarkProperties = defineProperties({
   properties: {
@@ -22,11 +24,7 @@ const watermarkProperties = defineProperties({
   }
 });
 
-export const watermarkSprinkles = createSprinkles(
-  watermarkProperties,
-  marginProperties,
-  paddingProperties
-);
+export const watermarkSprinkles = createSprinkles(watermarkProperties);
 
 export type WatermarkSprinkles = Parameters<typeof watermarkSprinkles>[0];
 

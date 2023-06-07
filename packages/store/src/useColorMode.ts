@@ -1,8 +1,15 @@
-import { useStore } from './store';
+import { useStore } from './useStore';
 
-import { ColorMode } from './types/colorMode';
+export const lightMode = 'light';
+export const darkMode = 'dark';
 
-export function useColorMode(): ColorMode {
-  const colorMode = useStore(state => state.colorMode);
-  return colorMode;
+export type ColorMode = typeof lightMode | typeof darkMode;
+export type SetColorMode = (colorMode: ColorMode) => void;
+
+export function useColorMode(): { colorMode: ColorMode; setColorMode: SetColorMode } {
+  const result = useStore(state => ({
+    colorMode: state.colorMode,
+    setColorMode: state.actions.setColorMode
+  }));
+  return result;
 }

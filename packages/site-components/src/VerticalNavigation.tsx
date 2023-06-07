@@ -1,7 +1,7 @@
-import React, { MouseEventHandler, useState } from 'react';
+import { MouseEventHandler, useState } from 'react';
 import { StackLayout, NavigationItem, NavigationItemProps } from '@salt-ds/core';
 import { Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-store';
+import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-types';
 
 export type VerticalNavigationProps = {
   /** Selected item groups ids to expand */
@@ -77,7 +77,7 @@ const renderNavigationItem = (
           as="ul"
           gap="var(--salt-size-border)"
           style={{
-            width: 250,
+            minWidth: 250,
             listStyle: 'none',
             paddingLeft: 0
           }}

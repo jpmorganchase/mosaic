@@ -11,7 +11,6 @@ import {
 import { shadow } from './shadow';
 import { vars } from './vars.css';
 
-export * from './ssrClassName';
 export { themeClassName, vars } from './vars.css';
 export * from './animation';
 export * from './blockquote';
@@ -22,11 +21,12 @@ export * from './componentExample';
 export * from './config';
 export * from './feature';
 export * from './grid';
+export * from './gutter/index.css';
 export * from './hero';
-export * from './icon';
 export * from './impact';
 export * from './link';
 export * from './list';
+export * from './pre/index.css';
 export * from './responsive';
 export * from './shadow';
 export * from './sidebar';

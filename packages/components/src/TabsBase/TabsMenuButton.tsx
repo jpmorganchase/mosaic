@@ -4,7 +4,6 @@ import classnames from 'clsx';
 
 import styles from './tabsMenuButton.css';
 import type { TabsLinkItem } from './TabsLink';
-import type { TabMenuItemType } from './index';
 import { Icon } from '../Icon';
 
 export interface TabsMenuButtonItem {
@@ -15,11 +14,11 @@ export interface TabsMenuButtonItem {
   /** Collection of link options */
   links: TabsLinkItem[];
   /** Callback when Tab is selected */
-  onSelect: (event: MouseEvent | KeyboardEvent, sourceItem: TabsLinkItem) => void;
+  onSelect?: (event: MouseEvent | KeyboardEvent, sourceItem: TabsLinkItem) => void;
   /** Title of Tab */
   title: string;
   /** Type of Tab */
-  type: TabMenuItemType.MENU;
+  type: "menu";
 }
 
 export interface TabsMenuButtonProps {
@@ -39,7 +38,7 @@ export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, i
     </MenuTrigger>
     <MenuPanel>
       {item.links.map(link => (
-        <MenuItem key={link.title || link.label} onClick={event => item.onSelect(event, link)}>
+        <MenuItem key={link.title || link.label} onClick={event => item.onSelect?.(event, link)}>
           {link.title || link.label}
         </MenuItem>
       ))}

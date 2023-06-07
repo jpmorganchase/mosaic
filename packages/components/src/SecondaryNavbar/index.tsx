@@ -3,7 +3,7 @@ import classnames from 'clsx';
 import { findLastIndex } from 'lodash-es';
 import { config } from '@jpmorganchase/mosaic-theme';
 
-import { TabsBase, TabsMenu, TabMenuItemType, TabsLinkItem } from '../TabsBase';
+import { TabsBase, TabsMenu, TabsLinkItem } from '../TabsBase';
 import { canUseDOM } from '../canUseDOM';
 import { StickyHeader } from '../StickyHeader';
 import styles from './styles.css';
@@ -22,7 +22,7 @@ export interface SecondaryNavbarProps {
 
 const getSelectedTabIndex = (items: TabsMenu, itemPath: string): number =>
   findLastIndex(items, (item): boolean => {
-    if (item.type === TabMenuItemType.MENU) {
+    if (item.type === "menu") {
       return !!item.links.find(link => itemPath.startsWith(link.link));
     }
     return itemPath.startsWith((item as TabsLinkItem).link);

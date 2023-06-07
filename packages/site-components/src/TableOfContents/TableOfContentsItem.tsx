@@ -1,10 +1,9 @@
-import React from 'react';
 import { NavigationItem } from '@salt-ds/core';
 
 import { stripMarkdownLinks } from './utils';
-import type { Item } from './TableOfContents';
+import type { TOCItem } from './TableOfContents';
 
-export function TableOfContentsItem({ item, current }: { item: Item; current?: string }) {
+export function TableOfContentsItem({ item, current }: { item: TOCItem; current?: string }) {
   const selected = item.id === current;
 
   const handleItemClick = e => {

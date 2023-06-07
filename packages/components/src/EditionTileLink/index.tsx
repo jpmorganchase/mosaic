@@ -1,22 +1,10 @@
-import React, { FC, ReactNode } from 'react';
+import React, { FC, ReactNode, useRef } from 'react';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
-import { LinkBase } from '../LinkBase';
-import { LinkText } from '../LinkText';
-import { TileBase, useTileState } from '../TileBase';
-import { useImageComponent } from '../ImageProvider';
 import { useBreakpoint } from '../useBreakpoint';
 import styles, { imageRecipe, tileImageRecipe } from './styles.css';
-
-const PseudoLink = ({ children }) => {
-  const {
-    highlighted: [isHighlighted]
-  } = useTileState();
-  return (
-    <LinkText endIcon="chevronRight" hovered={isHighlighted}>
-      {children}
-    </LinkText>
-  );
-};
+import { Link } from '../Link';
+import { TileBase } from '../TileBase';
 
 export type EditionTileLinkProps = {
   /** Additional class name for root class override */
@@ -65,26 +53,38 @@ export const EditionTileLink: React.FC<React.PropsWithChildren<EditionTileLinkPr
   ...rest
 }) => {
   const breakpoint = useBreakpoint();
+  const linkRef = useRef<HTMLAnchorElement>(null);
   const imagePlacementResponsive = breakpoint === 'mobile' ? 'fullWidth' : 'left';
   const imagePlacement = imagePlacementProp || imagePlacementResponsive;
+
+  const handleSelect = () => {
+    console.log('handle select');
+    /**
+     * Why don't we just make the EditionTileLink a link itself and not use refs?
+     * Editions may contain content which **includes** links.
+     * It is invalid for a link to be within a link and will cause React hydration errors.
+     */
+    linkRef.current?.click();
+  };
+
   return (
-    <TileBase className={styles.root} {...rest} size="fullWidth">
-      <LinkBase
-        className={styles.content}
-        aria-labelledby="tilecontent-title"
-        href={link}
-        tabIndex={0}
-      >
+    <TileBase className={styles.root} {...rest} size="fullWidth" onSelect={handleSelect}>
+      <article className={styles.content} aria-labelledby="tilecontent-title">
         {image ? <TileImage image={image} imagePlacement={imagePlacement} /> : null}
         <div>
           {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
           {title ? <p className={styles.title}>{title}</p> : null}
           {description ? <div className={styles.description}>{description}</div> : null}
-          <PseudoLink>
-            <p className={styles.action}>Read More</p>
-          </PseudoLink>
+          <Link
+            href={link}
+            className={styles.action}
+            ref={linkRef}
+            aria-labelledby="tilecontent-title"
+          >
+            Read More
+          </Link>
         </div>
-      </LinkBase>
+      </article>
     </TileBase>
   );
 };
