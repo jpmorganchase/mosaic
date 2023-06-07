@@ -1,3 +1,6 @@
+import * as shiki from 'shiki';
+shiki.setCDN('https://unpkg.com/shiki/');
+
 const options = {
   theme: {
     dark: 'dark-plus',
