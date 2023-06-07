@@ -15,6 +15,11 @@ module.exports = {
     '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
+  experimental: {
+    outputFileTracingIncludes: {
+      '[...route]': ['node_modules/**/shiki/**/*.json']
+    }
+  },
   rewrites() {
     return {
       // These rewrites are checked after headers/redirects
