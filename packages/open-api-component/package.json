@@ -24,11 +24,11 @@
   },
   "scripts": {
     "build": "npm-run-all --parallel build:*",
-    "build:bundle": "node ../../scripts/bundle.js",
+    "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
-    "dev": "node ../../scripts/bundle.js watch"
+    "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
     "del-cli": "^4.0.1",

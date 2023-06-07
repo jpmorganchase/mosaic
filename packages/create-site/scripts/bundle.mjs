@@ -1,37 +1,39 @@
-const fs = require('fs-extra');
-const esbuild = require('esbuild');
+import fs from 'fs-extra';
+import esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
-const watchConfig = watchEnabled
-  ? {
-      onRebuild(error, result) {
-        if (error) console.error(`watch build failed for ${packageName}:`, error);
-        else console.log(`watch build succeeded for ${packageName}:`, result);
-      }
-    }
-  : false;
-
 try {
-  esbuild.build({
+  const context = await esbuild.context({
     entryPoints: ['src/create.ts', 'src/init.ts'],
     bundle: false,
     outdir: 'dist',
     outExtension: { '.js': '.mjs' },
     platform: 'node',
     format: 'esm',
-    watch: watchConfig
+    plugins: [
+      {
+        name: 'on-end',
+        setup(build) {
+          build.onEnd(({ errors = [] }) => {
+            if (errors.length) {
+              console.error(`build failed for ${packageName}:`, errors);
+            } else {
+              console.log(`build succeeded for ${packageName}:`);
+            }
+          });
+        }
+      }
+    ]
   });
-  esbuild.build({
-    entryPoints: ['src/index.ts'],
-    bundle: false,
-    outdir: 'dist',
-    platform: 'node',
-    format: 'cjs',
-    watch: watchConfig
-  });
+  await context.rebuild();
+  if (watchEnabled) {
+    await context.watch();
+  }
+  await context.serve();
+  context.dispose();
 } catch (e) {
   if (e.errors && e.errors.length > 0) {
     console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);
@@ -44,5 +46,5 @@ try {
     console.error(e.warnings);
     console.groupEnd();
   }
-  return process.exit(1);
+  process.exit(1);
 }
