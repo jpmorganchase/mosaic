@@ -13,10 +13,11 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
-    "clean": "rm -fr public/.tmp .next",
-    "build": "next build",
+    "clean": "rm -fr .tmp .next",
+    "build": "next build  && yarn copy:shiki",
     "dev": "next dev",
     "start": "next start",
+    "copy:shiki": "node ./scripts/copy-shiki.mjs",
     "debug": "yarn mosaic serve -c ./mosaic.config.js -p 8080",
     "deploy": "yarn mosaic deploy --out snapshots --name latest --config mosaic.config.js",
     "docker:build": "docker build . --tag mosaic-site:latest",
