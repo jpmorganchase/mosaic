@@ -4,6 +4,7 @@ node_modules
 **/dist/
 **/build/
 **/.next/
+**/public/shiki
 
 # Dependencies
 **/node_modules

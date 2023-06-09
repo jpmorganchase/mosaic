@@ -1,0 +1,21 @@
+diff --git a/node_modules/shiki/dist/index.js b/node_modules/shiki/dist/index.js
+index 55e732b..7f06106 100644
+--- a/node_modules/shiki/dist/index.js
++++ b/node_modules/shiki/dist/index.js
+@@ -1939,6 +1939,7 @@ async function getOniguruma(wasmPath) {
+   }
+   return _onigurumaPromise;
+ }
++
+ function _resolvePath(filepath) {
+   if (isBrowser) {
+     return `${CDN_ROOT}${filepath}`;
+@@ -1947,7 +1948,7 @@ function _resolvePath(filepath) {
+     if (path.isAbsolute(filepath)) {
+       return filepath;
+     } else {
+-      return path.resolve(__dirname, "..", filepath);
++      return path.resolve(process.cwd(), path.join(process.env.SHIKI_ASSETS_DIR, filepath));
+     }
+   }
+ }

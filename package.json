@@ -33,7 +33,7 @@
     "gen": "turbo run gen:site gen:snapshot --filter=//",
     "lint": "turbo run lint",
     "mosaic": "node ./packages/cli/dist/index.js",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package && yarn workspace @jpmorganchase/mosaic-site copy:shiki",
     "prepare": "husky install",
     "prettier:ci": "prettier --check .",
     "prettier": "prettier --write .",

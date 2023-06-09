@@ -13,8 +13,8 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
-    "clean": "rm -fr .tmp .next",
-    "build": "next build  && yarn copy:shiki",
+    "clean": "rm -fr .tmp .next public/shiki",
+    "build": "next build",
     "dev": "next dev",
     "start": "next start",
     "copy:shiki": "node ./scripts/copy-shiki.mjs",
