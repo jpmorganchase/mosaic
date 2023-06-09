@@ -1,4 +1,11 @@
+import { getHighlighter } from 'shiki';
+
 const options = {
+  getHighlighter: highlighterOptions =>
+    getHighlighter({
+      ...highlighterOptions,
+      langs: ['bat', 'diff', 'css', 'json', 'jsx', 'tsx', 'mdx', 'yaml', 'ts']
+    }),
   theme: {
     dark: 'dark-plus',
     light: 'light-plus'

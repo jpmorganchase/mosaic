@@ -25,12 +25,14 @@ try {
   console.log(`from: ${shikiModuleDir}`);
   console.log(`to: ${publicShikiDir}`);
   console.groupEnd();
+
   await fs.promises.cp(
-    path.posix.join(shikiModuleDir, 'themes'),
-    path.posix.join(publicShikiDir, 'themes'),
-    {
-      recursive: true
-    }
+    path.posix.join(shikiModuleDir, 'themes', 'light-plus.json'),
+    path.posix.join(publicShikiDir, 'themes', 'light-plus.json')
+  );
+  await fs.promises.cp(
+    path.posix.join(shikiModuleDir, 'themes', 'dark-plus.json'),
+    path.posix.join(publicShikiDir, 'themes', 'dark-plus.json')
   );
   await fs.promises.cp(
     path.posix.join(shikiModuleDir, 'languages'),
