@@ -1,3 +1,4 @@
+'use client'
 export * from './store';
 export * from './useAppHeader';
 export * from './useBreadcrumbs';
