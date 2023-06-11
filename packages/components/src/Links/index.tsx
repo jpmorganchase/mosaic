@@ -1,3 +1,4 @@
+'use client';
 import React, { Children } from 'react';
 import classnames from 'clsx';
 

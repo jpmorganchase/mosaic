@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Spinner } from '@salt-ds/core';
 import { ButtonBar, OrderedButton, Slider } from '@salt-ds/lab';

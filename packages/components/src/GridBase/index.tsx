@@ -1,3 +1,4 @@
+'use client';
 import React, { forwardRef, ReactElement, Ref } from 'react';
 import classnames from 'clsx';
 import { responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
