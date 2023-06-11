@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 
 export function IsomorphicSuspense({ children, fallback }) {

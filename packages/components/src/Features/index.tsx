@@ -1,3 +1,4 @@
+'use client';
 import React, { Children, cloneElement, ReactElement } from 'react';
 import classnames from 'clsx';
 

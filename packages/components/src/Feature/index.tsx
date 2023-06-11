@@ -1,3 +1,4 @@
+'use client';
 export { Feature } from './Feature';
 export { FeatureContent } from './FeatureContent';
 export type { FeatureContentProps } from './FeatureContent';
