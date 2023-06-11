@@ -14,25 +14,22 @@ type FadeProps = {
     enter: number;
     exit: number;
   };
-  in: boolean;
-  style?: React.CSSProperties;
 };
 
-export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp, style }) => {
+export const Fade: React.FC<FadeProps> = ({ children, duration }) => {
   const nodeRef = useRef(null);
   const defaultStyle = {
     transition: `opacity ${duration?.enter}ms ease-in-out`,
     opacity: 0
   };
   return (
-    <Transition nodeRef={nodeRef} in={inProp} timeout={duration} unmountOnExit>
+    <Transition nodeRef={nodeRef} in={true} timeout={duration} unmountOnExit>
       {state => (
         <div
           ref={nodeRef}
           style={{
             ...defaultStyle,
-            ...transitionStyles[state],
-            ...style
+            ...transitionStyles[state]
           }}
         >
           {children}
