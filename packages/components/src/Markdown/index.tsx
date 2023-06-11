@@ -1,3 +1,4 @@
+'use client';
 import type { Ref } from 'react';
 import {
   action,

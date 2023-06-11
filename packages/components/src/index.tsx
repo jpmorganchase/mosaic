@@ -1,3 +1,4 @@
+'use client';
 export * from './Accordion';
 export * from './AudioPlayer';
 export * from './Button';
