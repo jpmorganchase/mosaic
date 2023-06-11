@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
