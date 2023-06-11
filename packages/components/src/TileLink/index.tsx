@@ -1,3 +1,4 @@
+'use client';
 import React, { FC, Ref, forwardRef } from 'react';
 
 import { TileBase, TileBaseProps, useTileState } from '../TileBase';

@@ -1,3 +1,4 @@
+'use client';
 import { createContext, Context, ElementType, useContext } from 'react';
 
 export type ImageProviderValue = ElementType;

@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import classnames from 'clsx';
 import { Switch } from '@salt-ds/lab';

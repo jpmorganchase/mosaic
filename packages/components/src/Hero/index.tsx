@@ -1,3 +1,4 @@
+'use client';
 import React, { ReactElement } from 'react';
 import classnames from 'clsx';
 import { LinkButton } from '../LinkButton';

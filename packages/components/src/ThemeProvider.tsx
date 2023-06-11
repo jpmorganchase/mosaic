@@ -1,3 +1,4 @@
+'use client';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { SaltProvider } from '@salt-ds/core';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
