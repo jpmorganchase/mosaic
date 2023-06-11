@@ -1,3 +1,4 @@
+'use client';
 export * from './AppHeader';
 export * from './AppHeaderControls';
 export * from './AppHeaderDrawer';
@@ -14,6 +15,7 @@ export * from './HTMLView';
 export * from './Link';
 export * from './Image';
 export * from './Metadata';
+export * from './NavigationEvents';
 export * from './PageNavigation';
 export * from './Sidebar';
 export * from './TableOfContents';
