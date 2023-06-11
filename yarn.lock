@@ -2559,6 +2559,13 @@
   dependencies:
     glob "7.1.7"
 
+"@next/mdx@^13.4.4":
+  version "13.4.5"
+  resolved "https://registry.yarnpkg.com/@next/mdx/-/mdx-13.4.5.tgz#33bcaadb437560f40cadd9316bdffed74492f4a3"
+  integrity sha512-b8V7Jcv8+Px3vDDvbMomrHzLFDUABDMluX+ydgB7qCJjkM5/x/+oAdyKojAT/a50dWpIgQI0pXveRnaHvrQXQw==
+  dependencies:
+    source-map "^0.7.0"
+
 "@next/swc-darwin-arm64@13.4.4":
   version "13.4.4"
   resolved "https://registry.yarnpkg.com/@next/swc-darwin-arm64/-/swc-darwin-arm64-13.4.4.tgz#8c14083c2478e2a9a8d140cce5900f76b75667ff"

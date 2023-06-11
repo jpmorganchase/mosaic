@@ -17,7 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "rootDir": "./src",
     "outDir": "./dist",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "forceConsistentCasingInFileNames": true,
@@ -26,8 +25,13 @@
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "jsx": "preserve",
-    "module": "esnext"
+    "module": "esnext",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["src"],
+  "include": ["src", ".next/types/**/*.ts"],
   "exclude": ["node_modules", "dist/**/*"]
 }
