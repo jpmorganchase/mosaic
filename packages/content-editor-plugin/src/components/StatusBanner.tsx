@@ -1,5 +1,5 @@
 import React from 'react';
-import { Banner } from '@salt-ds/lab';
+import { Banner, BannerContent } from '@salt-ds/core';
 
 import { usePageState } from '../store';
 
@@ -7,8 +7,8 @@ const StatusBanner = () => {
   const { pageState, errorMessage } = usePageState();
   const isError = pageState === 'ERROR';
   return isError ? (
-    <Banner announcement={errorMessage} status="error">
-      {errorMessage}
+    <Banner status="error">
+      <BannerContent role="status">{errorMessage}</BannerContent>
     </Banner>
   ) : null;
 };
