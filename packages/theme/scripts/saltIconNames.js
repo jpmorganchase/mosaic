@@ -17,7 +17,7 @@ const saltIconNames = {
   name: 'iconEnum',
   setup(build) {
     const icons = [];
-    build.onLoad({ filter: /src[\/\\]components/ }, async args => {
+    build.onLoad({ filter: /components/ }, async args => {
       let iconName = path.basename(args.path, '.js');
       iconName = `${iconName[0].toLowerCase()}${iconName.substring(1)}`;
       icons.push(iconName);
