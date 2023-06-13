@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.35
+
+### Patch Changes
+
+- 00a9408: Use `next/font` to load fonts
+
 ## 0.1.0-beta.34
 
 ## 0.1.0-beta.33
