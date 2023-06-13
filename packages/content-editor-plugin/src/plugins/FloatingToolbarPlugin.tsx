@@ -50,7 +50,7 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
     const selection = $getSelection();
     const nativeSelection = window.getSelection();
     const anchorEl = nativeSelection?.anchorNode?.parentElement;
-    if ($isRangeSelection(selection) && anchorEl) {
+    if ($isRangeSelection(selection) && anchorEl && !nativeSelection?.isCollapsed) {
       reference(anchorEl);
       const getRange = nativeSelection.getRangeAt(0);
       const { x, y, height } = getRange.getBoundingClientRect();
