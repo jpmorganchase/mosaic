@@ -2,12 +2,13 @@ import React, { FC, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
-import { Dialog as SaltDialog, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import { DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { useEditorUser, usePageState } from '../../store';
 import { save } from '../../api/save';
 import transformers from '../../transformers';
 import { PersistStatus } from './PersistStatus';
+import { Dialog } from '../Dialog';
 
 interface InfoProps {
   isRaising: boolean;
@@ -85,7 +86,7 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
   };
 
   return (
-    <SaltDialog onClose={handleClose} open={open} status={error ? 'error' : state} width="50%">
+    <Dialog onClose={handleClose} open={open} status={error ? 'error' : state} width="50%">
       <DialogTitle>{!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}</DialogTitle>
       <DialogContent>
         {(isRaising || error) && !prHref && <PersistStatus isRaising={isRaising} error={error} />}
@@ -104,6 +105,6 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
           Raise Pull Request
         </Button>
       </DialogActions>
-    </SaltDialog>
+    </Dialog>
   );
 };
