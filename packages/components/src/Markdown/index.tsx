@@ -59,6 +59,8 @@ import { LinkBase, LinkBaseProps } from '../LinkBase';
 import { LinkText, LinkTextProps } from '../LinkText';
 import { Links } from '../Links';
 import type { LinksProps } from '../Links';
+import { MosaicSandpack } from '../MosaicSandpack';
+import type { MosaicSandpackProps } from '../MosaicSandpack';
 import { Tag } from '../Tag';
 import type { TagProps } from '../Tag';
 import { EditionFilterView } from '../EditionFilterView';
@@ -145,6 +147,7 @@ export const getMarkdownComponents = () => ({
   LinkText: withMarkdownSpacing<LinkTextProps>(LinkText),
   Links: withMarkdownSpacing<LinksProps>(Links),
   ListItem: withMarkdownSpacing<ListItemProps>(ListItem),
+  MosaicSandpack: withMarkdownSpacing<MosaicSandpackProps>(MosaicSandpack),
   OrderedList: withMarkdownSpacing<OrderedListProps>(OrderedList),
   PageFilterView,
   Tag: withMarkdownSpacing<TagProps>(Tag),

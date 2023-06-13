@@ -30,6 +30,7 @@ export * from './Links';
 export * from './LinkText';
 export * from './List';
 export * from './Markdown';
+export * from './MosaicSandpack';
 export * from './PageFilterView';
 export * from './ReactLive';
 export * from './SecondaryNavbar';
