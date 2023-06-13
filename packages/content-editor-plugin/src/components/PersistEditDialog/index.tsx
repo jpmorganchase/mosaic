@@ -2,7 +2,7 @@ import React, { FC, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
-import { DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { useEditorUser, usePageState } from '../../store';
 import { save } from '../../api/save';
@@ -98,12 +98,14 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button disabled={isRaising} onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button disabled={isRaising || prHref !== null} onClick={handleRaisePr} variant="cta">
-          Raise Pull Request
-        </Button>
+        <ButtonBar>
+          <Button disabled={isRaising} onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button disabled={isRaising || prHref !== null} onClick={handleRaisePr} variant="cta">
+            Raise Pull Request
+          </Button>
+        </ButtonBar>
       </DialogActions>
     </Dialog>
   );
