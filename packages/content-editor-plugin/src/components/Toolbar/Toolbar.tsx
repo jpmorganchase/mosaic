@@ -16,12 +16,22 @@ const Toolbar = () => {
   const { setPageState } = usePageState();
 
   return (
-    <SaltToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
+    <SaltToolbar aria-label="page editing toolbar">
       <Tooltray aria-label="history tooltray">
-        <ToolbarButton label="Undo" disabled={!canUndo} onClick={undoEdit}>
+        <ToolbarButton
+          label="Undo"
+          disabled={!canUndo}
+          onClick={undoEdit}
+          style={{ lineHeight: 'normal' }}
+        >
           <Icon name="undo" />
         </ToolbarButton>
-        <ToolbarButton label="Redo" disabled={!canRedo} onClick={redoEdit}>
+        <ToolbarButton
+          label="Redo"
+          disabled={!canRedo}
+          onClick={redoEdit}
+          style={{ lineHeight: 'normal' }}
+        >
           <Icon name="redo" />
         </ToolbarButton>
       </Tooltray>
@@ -33,7 +43,11 @@ const Toolbar = () => {
         <InsertHorizontalRule />
       </Tooltray>
       <Tooltray aria-label="stop editing tooltray" alignEnd>
-        <ToolbarButton label="Cancel Editing" onClick={() => setPageState('VIEW')}>
+        <ToolbarButton
+          label="Cancel Editing"
+          onClick={() => setPageState('VIEW')}
+          style={{ lineHeight: 'normal' }}
+        >
           <Icon name="delete" />
         </ToolbarButton>
       </Tooltray>

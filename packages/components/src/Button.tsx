@@ -15,7 +15,7 @@ export const Button: FC<React.PropsWithChildren<ButtonProps>> = ({
 }) => (
   <SaltButton
     className={classnames(buttonStyles({ variant }), className)}
-    variant={variant == 'regular' ? 'primary' : variant}
+    variant={variant === 'regular' ? 'primary' : variant}
     {...rest}
   >
     {children}

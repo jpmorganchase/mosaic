@@ -22,6 +22,7 @@ export const EditorControls = ({ isLoggedIn = false }) => {
           onClick={handleClick}
           disabled={!isLoggedIn}
           label={overflowLabel}
+          style={{ lineHeight: 'normal' }}
         >
           <Icon name={isEditing ? 'delete' : 'edit'} />
         </ToolbarButton>

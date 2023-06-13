@@ -88,7 +88,7 @@ export function TextFormatTooltray({ floating = false }) {
   );
 
   return (
-    <div className={styles.root}>
+    <div>
       {!floating ? <span /> : null}
       <Tooltray data-collapsible="instant">
         {!floating && <InsertBlockDropdown editor={activeEditor} type={blockType} />}
