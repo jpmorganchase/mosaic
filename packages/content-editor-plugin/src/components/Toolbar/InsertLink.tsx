@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import { FormField, Input } from '@salt-ds/lab';
 import {
+  FormField,
+  Input,
   ButtonBar,
   Dialog as SaltDialog,
   DialogTitle,
