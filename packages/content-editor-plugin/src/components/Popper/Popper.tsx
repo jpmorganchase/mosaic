@@ -1,5 +1,6 @@
 import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { Portal, useWindow } from '@salt-ds/lab';
+import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import classnames from 'clsx';
 
 import styles from './Popper.css';
@@ -23,7 +24,11 @@ export const Popper = forwardRef<HTMLDivElement, PopperProps>(function Popper(pr
 
   return (
     <Portal>
-      <Window className={classnames(className, styles.root)} ref={forwardedRef} {...rest}>
+      <Window
+        className={classnames(className, themeClassName, styles.root)}
+        ref={forwardedRef}
+        {...rest}
+      >
         {children}
       </Window>
     </Portal>
