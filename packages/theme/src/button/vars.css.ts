@@ -1,16 +1,16 @@
 const defaultButtonVars = {
   borderRadius: '0px',
   mobile: {
-    height: '44px'
+    height: '28px'
   },
   tablet: {
-    height: '44px'
+    height: '28px'
   },
   web: {
-    height: '44px'
+    height: '28px'
   },
   desktop: {
-    height: '44px'
+    height: '28px'
   }
 };
 
