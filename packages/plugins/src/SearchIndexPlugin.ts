@@ -94,7 +94,8 @@ export const optimizeContentForSearch = async ({
   maxLineLength,
   maxLineCount
 }: Optimization) => {
-  const content = (rawContent ?? '').replaceAll('\r', '');
+  // Normalize line endings
+  const content = rawContent.replaceAll('\r', '');
   if (!content || content.length < 1) return [content];
   const processor = unified().use(markdown).use(remarkMdx);
   let tree;

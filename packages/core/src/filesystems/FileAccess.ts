@@ -45,7 +45,19 @@ export default class FileAccess implements IFileAccess {
               })
             ).map(filepath => this.#resolvePath(filepath))
           )
-        ).sort((a, b) => a.localeCompare(b, 'en'))
+        ).sort((a, b) => {
+          // Sort by number of path parts, then alphabetically
+          const aParts = a.split('/');
+          const bParts = b.split('/');
+
+          if (aParts.length > bParts.length) {
+            return 1;
+          }
+          if (aParts.length < bParts.length) {
+            return -1;
+          }
+          return a.localeCompare(b, 'en');
+        })
       )
     );
 
