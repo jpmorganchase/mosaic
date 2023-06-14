@@ -1,0 +1,61 @@
+To author a page using MDX in Mosaic and showcase commonly used components such as Callout and Tile, follow these steps:
+
+1. Install dependencies: Ensure you have Node.js and npm installed on your machine. Then, navigate to the root directory of the cloned `mosaic` repository and run the following command to install the necessary dependencies:
+
+```bash
+npm install
+```
+
+2. Create a new MDX page: In the `docs` directory of the `mosaic` repository, create a new MDX file with a `.mdx` extension. For example, `my-page.mdx`.
+
+3. Author the page using MDX syntax: Open the newly created `.mdx` file in a text editor and use MDX syntax to write the content. You can include Markdown and Mosaic components in the document. Here's an example:
+
+```mdx
+import { Callout, Tile } from '@jpmorganchase/mosaic';
+
+# My Page
+
+This is an example page written in MDX using Mosaic components.
+
+## Callout Component
+
+<Callout variant="info">
+  This is an informational callout.
+</Callout>
+
+## Tile Component
+
+<Tile title="Tile 1">
+  This is the content of Tile 1.
+</Tile>
+
+<Tile title="Tile 2">
+  This is the content of Tile 2.
+</Tile>
+```
+
+In this example, the `Callout` and `Tile` components are imported from `@jpmorganchase/mosaic` and used within the MDX document. You can include any other commonly used components in a similar manner.
+
+4. Add the page to the sidebar: To display the newly created page in the sidebar navigation, you need to update the `sidebars.js` file located in the `.vuepress` directory. Open the `sidebars.js` file and add an entry for your page, specifying the title and file path. For example:
+
+```javascript
+module.exports = {
+  // other sidebar entries
+  'Guide': [
+    // other guide entries
+    'docs/my-page'
+  ],
+};
+```
+
+5. Start the development server: Run the following command in the root directory of the `mosaic` repository to start the development server:
+
+```bash
+npm run dev
+```
+
+This command will start the server and generate the static site. You can then view the site in your browser by navigating to `http://localhost:8080`.
+
+6. View the authored page: Once the development server is running, you can access the page you created by clicking on the sidebar navigation link. The MDX content will be rendered with the specified Mosaic components.
+
+Note: The example provided assumes that the `mosaic` repository uses MDX2 for creating documents. Please refer to the repository's documentation or the specific project requirements to ensure the correct version and usage of MDX.
