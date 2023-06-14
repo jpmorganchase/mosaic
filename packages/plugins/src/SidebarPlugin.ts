@@ -221,16 +221,15 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       function sortPagesByPriority(sidebarData) {
         const pagesByPriority = sidebarData.map(page => {
-          if (page.childNodes.length > 1) {
+          if (page.childNodes?.length > 1) {
             const pagesByPriority = page.childNodes.sort(
               (pageA, pageB) =>
                 (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
             );
             sortPagesByPriority(page.childNodes);
             return { ...page, childNodes: pagesByPriority };
-          } else {
-            return page;
           }
+          return page;
         });
         return pagesByPriority;
       }
