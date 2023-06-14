@@ -58,14 +58,14 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
           // eslint-disable-next-line @typescript-eslint/return-await
           await Promise.all(
             filepaths.map(async (filepath: string) => {
-              const fullPath = path.join(options.rootDir, filepath);
+              const fullPath = path.posix.join(options.rootDir, filepath);
               return lodashMerge(
                 {},
                 await serialiser.deserialise(fullPath, await fs.promises.readFile(fullPath)),
                 {
                   lastModified: new Date(await getLastModifiedDate(fullPath)).getTime(),
                   fullPath: `/${
-                    options.prefixDir ? path.join(options.prefixDir, filepath) : filepath
+                    options.prefixDir ? path.posix.join(options.prefixDir, filepath) : filepath
                   }`.replace(/^\/{2,}/, '/')
                 }
               );

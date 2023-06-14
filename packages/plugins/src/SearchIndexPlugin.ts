@@ -89,11 +89,13 @@ export function parseKeys(optionKeys = []) {
  * @returns array of sentence strings
  */
 export const optimizeContentForSearch = async ({
-  content,
+  content: rawContent,
   title,
   maxLineLength,
   maxLineCount
 }: Optimization) => {
+  // Normalize line endings
+  const content = rawContent.replaceAll('\r', '');
   if (!content || content.length < 1) return [content];
   const processor = unified().use(markdown).use(remarkMdx);
   let tree;

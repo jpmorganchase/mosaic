@@ -36,7 +36,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     );
 
     for (const pagePath of pagePaths) {
-      const sharedConfigFile = path.join(path.dirname(String(pagePath)), options.filename);
+      const sharedConfigFile = path.posix.join(path.dirname(String(pagePath)), options.filename);
 
       const page = await serialiser.deserialise(
         String(pagePath),

@@ -35,15 +35,29 @@ export default class FileAccess implements IFileAccess {
     this.#rawReadonlyFs = this.#rawReadonlyFs || createFsFromVolume(this.#adapter as any);
     const paths = Array.from(
       new Set(
-        await Promise.all(
-          (
-            await glob(pattern, {
-              ...options,
-              absolute: true,
-              fs: this.#rawReadonlyFs
-            })
-          ).map(filepath => this.#resolvePath(filepath))
-        )
+        (
+          await Promise.all(
+            (
+              await glob(pattern, {
+                ...options,
+                absolute: true,
+                fs: this.#rawReadonlyFs
+              })
+            ).map(filepath => this.#resolvePath(filepath))
+          )
+        ).sort((a, b) => {
+          // Sort by number of path parts, then alphabetically
+          const aParts = a.split('/');
+          const bParts = b.split('/');
+
+          if (aParts.length > bParts.length) {
+            return 1;
+          }
+          if (aParts.length < bParts.length) {
+            return -1;
+          }
+          return a.localeCompare(b, 'en');
+        })
       )
     );
 
@@ -173,11 +187,19 @@ export default class FileAccess implements IFileAccess {
     //   } catch {}
     // }
     if (!stat.isFile()) {
-      return file;
+      return this.#normalizePath(file);
       // throw new Error(`EISDIR: illegal operation on a directory, open '${file}'`);
     }
-    return realPath;
+    return this.#normalizePath(String(realPath));
   }
+
+  /**
+   ** This is a bit of a hack to get around a bug in fast-glob where when onlyDirectories is true the Drive letter is included in the path.
+   **/
+  #normalizePath = (file: string) => {
+    const root = path.parse(file).root;
+    return path.posix.normalize(file).replace(root, '/');
+  };
 
   async #getFileFromCache(file) {
     const stat = await this.#adapter.promises.stat(file, { throwIfNoEntry: true });
