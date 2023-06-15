@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 import {
   selectableColor,
   table,
@@ -7,6 +7,8 @@ import {
   backgroundColor,
   foregroundColor
 } from '@jpmorganchase/mosaic-theme';
+
+const button = style({ width: vars.space.horizontal.x10 });
 
 export default {
   tableContainer: style({
@@ -42,5 +44,9 @@ export default {
     foregroundColor({ variant: 'high' })
   ]),
   popper: style([style({ zIndex: 1600 }), backgroundColor({ variant: 'regular' })]),
-  spacer: style({ marginLeft: vars.space.horizontal.x1 })
+  button
 };
+
+globalStyle(`${button} > *:not(:first-child)`, {
+  marginLeft: vars.space.horizontal.x1
+});

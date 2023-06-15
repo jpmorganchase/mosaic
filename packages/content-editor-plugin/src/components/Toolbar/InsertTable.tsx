@@ -143,9 +143,13 @@ export const InsertTable: FC<InsertTableProps> = ({
 
   return (
     <>
-      <ToolbarButton ref={reference} onClick={togglePopper} active={isOpen}>
+      <ToolbarButton
+        className={styles.button}
+        ref={reference}
+        onClick={togglePopper}
+        active={isOpen}
+      >
         <Icon name="grid" />
-        <div className={styles.spacer} />
         <Icon name="chevronDown" />
       </ToolbarButton>
       <Popper
