@@ -7,13 +7,14 @@ import {
   COMMAND_PRIORITY_LOW,
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
-import { Toolbar as SaltToolbar, Tooltray as SaltTooltray } from '@salt-ds/lab';
-import { flip, inline } from '@floating-ui/react';
+import { flip, inline, useInteractions, useDismiss } from '@floating-ui/react';
 import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/core';
-import { useInteractions, useDismiss } from '@floating-ui/react';
 import { Popper } from '../components/Popper/Popper';
 import { TextFormatTooltray } from '../components/Toolbar/TextFormatTooltray';
 import { InsertLinkButton } from '../components/Toolbar/InsertLink';
+import { BaseToolbar as Toolbar } from '../components/BaseToolbar/BaseToolbar';
+import { BaseTooltray as Tooltray } from '../components/BaseTooltray/BaseTooltray';
+import { ToolbarSeparator } from '../components/Toolbar/ToolbarSepartor';
 
 export function FloatingToolbarPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
@@ -89,12 +90,13 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
   }
   return (
     <Popper ref={floating} open={open} style={style} {...getFloatingProps({})}>
-      <SaltToolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
+      <Toolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
         <TextFormatTooltray floating />
-        <SaltTooltray aria-label="text format tooltray">
+        <ToolbarSeparator />
+        <Tooltray aria-label="text format tooltray">
           <InsertLinkButton />
-        </SaltTooltray>
-      </SaltToolbar>
+        </Tooltray>
+      </Toolbar>
     </Popper>
   );
 }

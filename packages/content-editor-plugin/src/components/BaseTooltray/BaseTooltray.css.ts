@@ -3,6 +3,8 @@ import { vars } from '@jpmorganchase/mosaic-theme';
 
 const root = style({
   background: 'inherit',
+  display: 'flex',
+  justifyContent: 'center',
   flexShrink: 0,
   flexGrow: 0,
   position: 'relative',
