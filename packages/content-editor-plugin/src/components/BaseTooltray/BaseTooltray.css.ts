@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 import { vars } from '@jpmorganchase/mosaic-theme';
 
 const root = style({
@@ -8,13 +8,7 @@ const root = style({
   flexShrink: 0,
   flexGrow: 0,
   position: 'relative',
-  overflow: 'hidden',
-  selectors: {
-    '&:not(:first-child)': {
-      paddingLeft: vars.space.horizontal.x2,
-      marginLeft: vars.space.horizontal.x1
-    }
-  }
+  overflow: 'hidden'
 });
 
 export default {
@@ -24,9 +18,13 @@ export default {
   alignRight: style({
     selectors: {
       [`${root}&`]: {
-        marginLeft: 'auto'
+        marginLeft: 'auto!important'
       }
     }
   }),
   root
 };
+
+globalStyle(`${root} > *:not(:first-child)`, {
+  marginLeft: vars.space.horizontal.x1
+});
