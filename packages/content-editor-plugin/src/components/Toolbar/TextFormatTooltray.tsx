@@ -15,8 +15,8 @@ import { $isHeadingNode } from '@lexical/rich-text';
 import { $isCodeNode } from '@lexical/code';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
-import { Tooltray } from '@salt-ds/lab';
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';
+import { ToolbarButton } from './ToolbarButton';
 import styles from './TextFormatTooltray.css';
 import { InsertBlockDropdown } from './InsertBlockDropdown';
 
@@ -89,29 +89,20 @@ export function TextFormatTooltray({ floating = false }) {
 
   return (
     <div>
-      {!floating ? <span /> : null}
-      <Tooltray data-collapsible="instant">
+      <Tooltray>
         {!floating && <InsertBlockDropdown editor={activeEditor} type={blockType} />}
-        <TextFormatToolbarButton active={isBold} onClick={() => handleFormat('bold')} label="Bold">
+        <ToolbarButton active={isBold} onClick={() => handleFormat('bold')} label="Bold">
           <span className={classnames(styles.icon, styles.bold)}>B</span>
-        </TextFormatToolbarButton>
-        <TextFormatToolbarButton
-          active={isItalic}
-          onClick={() => handleFormat('italic')}
-          label="Italic"
-        >
+        </ToolbarButton>
+        <ToolbarButton active={isItalic} onClick={() => handleFormat('italic')} label="Italic">
           <span className={classnames(styles.icon, styles.italic)}>I</span>
-        </TextFormatToolbarButton>
-        <TextFormatToolbarButton
-          active={isCode}
-          onClick={() => handleFormat('code')}
-          label="Inline Code"
-        >
+        </ToolbarButton>
+        <ToolbarButton active={isCode} onClick={() => handleFormat('code')} label="Inline Code">
           <span className={classnames(styles.code)}>
             <Icon name="chevronLeft" />
             <Icon name="chevronRight" />
           </span>
-        </TextFormatToolbarButton>
+        </ToolbarButton>
       </Tooltray>
     </div>
   );

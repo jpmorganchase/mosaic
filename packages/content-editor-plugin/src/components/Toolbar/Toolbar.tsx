@@ -1,7 +1,5 @@
 import React from 'react';
-import { Toolbar as SaltToolbar, ToolbarButton, Tooltray } from '@salt-ds/lab';
 import { Icon } from '@jpmorganchase/mosaic-components';
-
 import { useEditHistory } from '../../hooks/useEditHistory';
 import { usePageState } from '../../store';
 import { SaveButton } from '../SaveButton';
@@ -10,13 +8,17 @@ import { InsertTable } from './InsertTable';
 import { InsertImage } from './InsertImage';
 import { InsertLinkButton } from './InsertLink';
 import { InsertHorizontalRule } from './InsertHorizontalRule';
+import { BaseToolbar } from '../BaseToolbar/BaseToolbar';
+import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';
+import { ToolbarButton } from './ToolbarButton';
+import { ToolbarSeparator } from './ToolbarSepartor';
 
 const Toolbar = () => {
   const { canRedo, canUndo, redoEdit, undoEdit } = useEditHistory();
   const { setPageState } = usePageState();
 
   return (
-    <SaltToolbar aria-label="page editing toolbar">
+    <BaseToolbar aria-label="page editing toolbar">
       <Tooltray aria-label="history tooltray">
         <ToolbarButton
           label="Undo"
@@ -35,6 +37,7 @@ const Toolbar = () => {
           <Icon name="redo" />
         </ToolbarButton>
       </Tooltray>
+      <ToolbarSeparator />
       <TextFormatTooltray />
       <Tooltray aria-label="text format tooltray">
         <InsertLinkButton />
@@ -42,7 +45,8 @@ const Toolbar = () => {
         <InsertImage />
         <InsertHorizontalRule />
       </Tooltray>
-      <Tooltray aria-label="stop editing tooltray" alignEnd>
+      <ToolbarSeparator />
+      <Tooltray aria-label="stop editing tooltray" align="right">
         <ToolbarButton
           label="Cancel Editing"
           onClick={() => setPageState('VIEW')}
@@ -51,10 +55,11 @@ const Toolbar = () => {
           <Icon name="delete" />
         </ToolbarButton>
       </Tooltray>
-      <Tooltray aria-label="copy tooltray" data-pad-start>
+      <ToolbarSeparator />
+      <Tooltray aria-label="copy tooltray">
         <SaveButton />
       </Tooltray>
-    </SaltToolbar>
+    </BaseToolbar>
   );
 };
 
