@@ -36,16 +36,16 @@ const Toolbar = () => {
         >
           <Icon name="redo" />
         </ToolbarButton>
+        <ToolbarSeparator />
       </Tooltray>
-      <ToolbarSeparator />
       <TextFormatTooltray />
       <Tooltray aria-label="text format tooltray">
         <InsertLinkButton />
         <InsertTable />
         <InsertImage />
         <InsertHorizontalRule />
+        <ToolbarSeparator />
       </Tooltray>
-      <ToolbarSeparator />
       <Tooltray aria-label="stop editing tooltray" align="right">
         <ToolbarButton
           label="Cancel Editing"
@@ -54,8 +54,8 @@ const Toolbar = () => {
         >
           <Icon name="delete" />
         </ToolbarButton>
+        <ToolbarSeparator />
       </Tooltray>
-      <ToolbarSeparator />
       <Tooltray aria-label="copy tooltray">
         <SaveButton />
       </Tooltray>

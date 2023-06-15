@@ -12,14 +12,13 @@ export default {
   root: style([
     beforeElementBackground,
     style({
-      marginLeft: vars.space.horizontal.x2,
-      marginRight: vars.space.horizontal.x1,
       selectors: {
         '&:before': {
           content: '""',
           position: 'absolute',
           background: 'inherit',
-          top: '10px',
+          top: '2px',
+          right: 0,
           width: '1px',
           height: vars.space.vertical.x6
         }
