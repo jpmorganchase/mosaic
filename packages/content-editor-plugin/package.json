@@ -44,6 +44,7 @@
     "@salt-ds/icons": "^1.4.0",
     "@salt-ds/lab": "1.0.0-alpha.10",
     "@salt-ds/theme": "^1.5.1",
+    "@floating-ui/react": "^0.23.0",
     "@lexical/code": "^0.11.1",
     "@lexical/link": "^0.11.1",
     "@lexical/list": "^0.11.1",
