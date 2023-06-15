@@ -12,7 +12,7 @@ import {
 } from '@salt-ds/lab';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
 import { INSERT_MARKDOWN_LINK_COMMAND, InsertLinkPayload } from '../../plugins/MarkdownLinkPlugin';
 import { useIsInsertingLink } from '../../store';
@@ -26,13 +26,13 @@ const validationSchema = object({
 export const InsertLinkButton = () => {
   const { isInsertingLink, setIsInsertingLink } = useIsInsertingLink();
   return (
-    <TextFormatToolbarButton
+    <ToolbarButton
       active={isInsertingLink}
       onClick={() => setIsInsertingLink(true)}
       label="Insert Link"
     >
       <Icon name="linked" />
-    </TextFormatToolbarButton>
+    </ToolbarButton>
   );
 };
 

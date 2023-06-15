@@ -11,7 +11,7 @@ import {
   Input
 } from '@salt-ds/lab';
 
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
 import {
   INSERT_MARKDOWN_IMAGE_COMMAND,
@@ -90,9 +90,9 @@ export const InsertImage = () => {
 
   return (
     <>
-      <TextFormatToolbarButton active={isOpen} onClick={handleOpen} label="Insert Image">
+      <ToolbarButton active={isOpen} onClick={handleOpen} label="Insert Image">
         <Icon name="addDocument" />
-      </TextFormatToolbarButton>
+      </ToolbarButton>
 
       <Dialog onClose={handleClose} open={isOpen} width={600}>
         <form onSubmit={handleSubmit} noValidate>

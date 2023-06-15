@@ -6,7 +6,7 @@ import { INSERT_TABLE_COMMAND } from '@lexical/table';
 import { useFloatingUI } from '@salt-ds/core';
 import { useDismiss, useInteractions } from '@floating-ui/react';
 import { Popper } from '../Popper/Popper';
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { ToolbarButton } from './ToolbarButton';
 import styles from './InsertTable.css';
 
 interface IndexableEntity {
@@ -143,11 +143,11 @@ export const InsertTable: FC<InsertTableProps> = ({
 
   return (
     <>
-      <TextFormatToolbarButton ref={reference} onClick={togglePopper} active={isOpen}>
+      <ToolbarButton ref={reference} onClick={togglePopper} active={isOpen}>
         <Icon name="grid" />
         <div className={styles.spacer} />
         <Icon name="chevronDown" />
-      </TextFormatToolbarButton>
+      </ToolbarButton>
       <Popper
         className={styles.popper}
         ref={floating}
