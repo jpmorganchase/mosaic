@@ -20,20 +20,10 @@ const Toolbar = () => {
   return (
     <BaseToolbar aria-label="page editing toolbar">
       <Tooltray aria-label="history tooltray">
-        <ToolbarButton
-          label="Undo"
-          disabled={!canUndo}
-          onClick={undoEdit}
-          style={{ lineHeight: 'normal' }}
-        >
+        <ToolbarButton label="Undo" disabled={!canUndo} onClick={undoEdit}>
           <Icon name="undo" />
         </ToolbarButton>
-        <ToolbarButton
-          label="Redo"
-          disabled={!canRedo}
-          onClick={redoEdit}
-          style={{ lineHeight: 'normal' }}
-        >
+        <ToolbarButton label="Redo" disabled={!canRedo} onClick={redoEdit}>
           <Icon name="redo" />
         </ToolbarButton>
         <ToolbarSeparator />
@@ -47,11 +37,7 @@ const Toolbar = () => {
         <ToolbarSeparator />
       </Tooltray>
       <Tooltray aria-label="stop editing tooltray" align="right">
-        <ToolbarButton
-          label="Cancel Editing"
-          onClick={() => setPageState('VIEW')}
-          style={{ lineHeight: 'normal' }}
-        >
+        <ToolbarButton label="Cancel Editing" onClick={() => setPageState('VIEW')}>
           <Icon name="delete" />
         </ToolbarButton>
         <ToolbarSeparator />
