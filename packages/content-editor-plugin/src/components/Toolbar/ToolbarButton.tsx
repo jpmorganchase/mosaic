@@ -21,7 +21,7 @@ export const ToolbarButton = forwardRef(
         [styles.active]: active
       })}
       aria-label={label}
-      variant="secondary"
+      variant={active ? 'regular' : 'secondary'}
       {...rest}
     >
       {children}
