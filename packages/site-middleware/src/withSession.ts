@@ -35,12 +35,6 @@ export const withSession: MosaicMiddleware<SessionProps<unknown>, SessionOptions
   if (process.env.NEXT_PUBLIC_ENABLE_LOGIN !== 'true') {
     return {};
   }
-  if (!process.env.NEXTAUTH_SECRET) {
-    const errorMessage = '`process.env.NEXTAUTH_SECRET` must be set in environment variables.';
-    throw new MiddlewareError(500, context.resolvedUrl, [errorMessage], {
-      show500: true
-    });
-  }
 
   if (!options?.authOptions) {
     const errorMessage = '`authOptions` must be provided.';
