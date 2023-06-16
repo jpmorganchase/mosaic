@@ -4,17 +4,27 @@ import { Button, type ButtonProps, Label } from '@jpmorganchase/mosaic-component
 
 import styles from './ToolbarButton.css';
 
-interface ToolbarButtonProps extends ButtonProps {
+export interface ToolbarButtonProps extends ButtonProps {
   active?: boolean;
   label?: string;
+  disableTooltip?: boolean;
 }
 
 export const ToolbarButton = forwardRef(
   (
-    { active, className, onClick, children, label, disabled, ...rest }: ToolbarButtonProps,
+    {
+      active,
+      className,
+      onClick,
+      children,
+      label,
+      disabled,
+      disableTooltip = disabled,
+      ...rest
+    }: ToolbarButtonProps,
     ref: Ref<HTMLButtonElement>
   ) => (
-    <Label tooltip={!disabled} TooltipProps={{ title: label, placement: 'bottom' }}>
+    <Label tooltip={!disableTooltip} TooltipProps={{ title: label, placement: 'bottom' }}>
       <Button
         aria-label={label}
         ref={ref}
