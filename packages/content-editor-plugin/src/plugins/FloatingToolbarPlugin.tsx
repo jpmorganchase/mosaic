@@ -15,6 +15,7 @@ import { InsertLinkButton } from '../components/Toolbar/InsertLink';
 import { BaseToolbar as Toolbar } from '../components/BaseToolbar/BaseToolbar';
 import { BaseTooltray as Tooltray } from '../components/BaseTooltray/BaseTooltray';
 import { ToolbarSeparator } from '../components/Toolbar/ToolbarSepartor';
+import styles from './FloatingToolbarPlugin.css';
 
 export function FloatingToolbarPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
@@ -90,7 +91,7 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
   }
   return (
     <Popper ref={floating} open={open} style={style} {...getFloatingProps({})}>
-      <Toolbar aria-label="page editing toolbar" style={{ minWidth: '100px' }}>
+      <Toolbar aria-label="page editing toolbar" className={styles.toolbar}>
         <TextFormatTooltray floating />
         <ToolbarSeparator />
         <Tooltray aria-label="text format tooltray">
