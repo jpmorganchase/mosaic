@@ -11,20 +11,20 @@ const siteConfig = {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
       options: { rootDirGlob: '*/*' }
     },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/FragmentPlugin',
-      options: {}
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
-      priority: -1,
-      // Exclude this plugin in builds
-      runTimeOnly: true,
-      disabled: process.env.NODE_ENV !== 'development',
-      options: {
-        baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
-      }
-    },
+    // {
+    //   modulePath: '@jpmorganchase/mosaic-plugins/FragmentPlugin',
+    //   options: {}
+    // },
+    // {
+    //   modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
+    //   priority: -1,
+    //   // Exclude this plugin in builds
+    //   runTimeOnly: true,
+    //   disabled: process.env.NODE_ENV !== 'development',
+    //   options: {
+    //     baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
+    //   }
+    // },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
       priority: -1,
@@ -45,7 +45,7 @@ module.exports = deepmerge(siteConfig, {
      * Access from your browser as http://localhost:3000/mosaic
      */
     {
-      disabled: process.env.NODE_ENV !== 'development',
+      // disabled: process.env.NODE_ENV !== 'development',
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
       namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
       options: {
