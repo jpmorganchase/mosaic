@@ -17,7 +17,7 @@ export default {
           content: '""',
           position: 'absolute',
           background: 'inherit',
-          top: '2px',
+          top: '6px',
           right: 0,
           width: '1px',
           height: vars.space.vertical.x6
