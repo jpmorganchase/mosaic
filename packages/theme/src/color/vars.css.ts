@@ -28,7 +28,7 @@ const dpColors = {
         dark: color.grey900,
         darkDisabled: color.grey200,
         light: color.white,
-        lighDisabled: color.white
+        lightDisabled: color.white
       }
     },
     navigable: {
@@ -122,7 +122,7 @@ const dpColors = {
         dark: color.grey200,
         darkDisabled: color.grey900,
         light: color.white,
-        lighDisabled: color.white
+        lightDisabled: color.white
       }
     },
     navigable: {
