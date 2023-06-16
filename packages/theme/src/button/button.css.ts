@@ -5,6 +5,7 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { breakpoint, responsiveSprinkles } from '../responsive';
 import { vars } from '../vars.css';
 import { ctaColorSprinkles, primaryColorSprinkles, secondaryColorSprinkles } from '../color';
+import { opacity } from '../opacity';
 
 export const buttonSizeProperties = defineProperties({
   conditions: {
@@ -57,6 +58,7 @@ export const button = recipe({
           borderRadius: vars.component.button.borderRadius
         },
         buttonSizeSprinkles({ height: ['mobile', 'tablet', 'web', 'desktop'] }),
+        opacity({ variant: 'actionableDisabled' }),
         ctaColorSprinkles({
           backgroundColor: {
             lightMode: vars.color.light.actionable.cta.regular,
@@ -72,11 +74,11 @@ export const button = recipe({
             lightMode: vars.color.light.actionable.label.light,
             lightModeHover: vars.color.light.actionable.label.light,
             lightModeActive: vars.color.light.actionable.label.light,
-            lightModeDisabled: vars.color.light.actionable.label.dark,
+            lightModeDisabled: vars.color.light.actionable.label.lightDisabled,
             darkMode: vars.color.dark.actionable.label.light,
             darkModeHover: vars.color.dark.actionable.label.light,
             darkModeActive: vars.color.dark.actionable.label.light,
-            darkModeDisabled: vars.color.dark.actionable.label.dark
+            darkModeDisabled: vars.color.dark.actionable.label.darkDisabled
           }
         })
       ]),
@@ -85,6 +87,7 @@ export const button = recipe({
           borderRadius: vars.component.button.borderRadius
         },
         buttonSizeSprinkles({ height: ['mobile', 'tablet', 'web', 'desktop'] }),
+        opacity({ variant: 'actionableDisabled' }),
         primaryColorSprinkles({
           backgroundColor: {
             lightMode: vars.color.light.actionable.primary.regular,
@@ -100,11 +103,11 @@ export const button = recipe({
             lightMode: vars.color.light.actionable.label.dark,
             lightModeHover: vars.color.light.actionable.label.dark,
             lightModeActive: vars.color.light.actionable.label.light,
-            lightModeDisabled: vars.color.light.actionable.label.dark,
+            lightModeDisabled: vars.color.light.actionable.label.darkDisabled,
             darkMode: vars.color.dark.actionable.label.light,
             darkModeHover: vars.color.dark.actionable.label.light,
             darkModeActive: vars.color.dark.actionable.label.dark,
-            darkModeDisabled: vars.color.dark.actionable.label.light
+            darkModeDisabled: vars.color.dark.actionable.label.lightDisabled
           }
         })
       ]),
@@ -117,6 +120,7 @@ export const button = recipe({
           height: ['mobile', 'tablet', 'web', 'desktop'],
           width: ['mobile', 'tablet', 'web', 'desktop']
         }),
+        opacity({ variant: 'actionableDisabled' }),
         secondaryColorSprinkles({
           backgroundColor: {
             lightMode: vars.color.light.actionable.secondary.regular,
@@ -132,11 +136,11 @@ export const button = recipe({
             lightMode: vars.color.light.actionable.label.dark,
             lightModeHover: vars.color.light.actionable.label.dark,
             lightModeActive: vars.color.light.actionable.label.light,
-            lightModeDisabled: vars.color.light.actionable.label.dark,
+            lightModeDisabled: vars.color.light.actionable.label.darkDisabled,
             darkMode: vars.color.dark.actionable.label.light,
             darkModeHover: vars.color.dark.actionable.label.light,
             darkModeActive: vars.color.dark.actionable.label.dark,
-            darkModeDisabled: vars.color.dark.actionable.label.light
+            darkModeDisabled: vars.color.dark.actionable.label.lightDisabled
           }
         })
       ]),
@@ -144,6 +148,7 @@ export const button = recipe({
         {
           borderRadius: vars.component.button.borderRadius
         },
+        opacity({ variant: 'actionableDisabled' }),
         buttonSizeSprinkles({ height: ['mobile', 'tablet', 'web', 'desktop'] }),
         secondaryColorSprinkles({
           backgroundColor: {
@@ -160,11 +165,11 @@ export const button = recipe({
             lightMode: vars.color.light.actionable.label.dark,
             lightModeHover: vars.color.light.actionable.label.dark,
             lightModeActive: vars.color.light.actionable.label.light,
-            lightModeDisabled: vars.color.light.actionable.label.dark,
+            lightModeDisabled: vars.color.light.actionable.label.darkDisabled,
             darkMode: vars.color.dark.actionable.label.light,
             darkModeHover: vars.color.dark.actionable.label.light,
             darkModeActive: vars.color.dark.actionable.label.dark,
-            darkModeDisabled: vars.color.dark.actionable.label.light
+            darkModeDisabled: vars.color.dark.actionable.label.lightDisabled
           }
         })
       ])
