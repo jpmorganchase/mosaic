@@ -1,7 +1,14 @@
-import { style } from '@vanilla-extract/css';
+import { vars } from '@jpmorganchase/mosaic-theme';
+import { globalStyle, style } from '@vanilla-extract/css';
+
+const toolbar = style({
+  minWidth: '100px'
+});
 
 export default {
-  toolbar: style({
-    minWidth: '100px'
-  })
+  toolbar
 };
+
+globalStyle(`${toolbar} > *:not(:first-child)`, {
+  marginLeft: vars.space.horizontal.none
+});

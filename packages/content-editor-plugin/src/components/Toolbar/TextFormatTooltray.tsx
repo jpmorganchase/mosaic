@@ -88,9 +88,13 @@ export function TextFormatTooltray({ floating = false }) {
   );
 
   return (
-    <div>
+    <>
+      {!floating && (
+        <Tooltray>
+          <InsertBlockDropdown editor={activeEditor} type={blockType} />
+        </Tooltray>
+      )}
       <Tooltray>
-        {!floating && <InsertBlockDropdown editor={activeEditor} type={blockType} />}
         <ToolbarButton active={isBold} onClick={() => handleFormat('bold')} label="Bold">
           <span className={classnames(styles.icon, styles.bold)}>B</span>
         </ToolbarButton>
@@ -104,6 +108,6 @@ export function TextFormatTooltray({ floating = false }) {
           </span>
         </ToolbarButton>
       </Tooltray>
-    </div>
+    </>
   );
 }

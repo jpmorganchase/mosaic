@@ -8,7 +8,8 @@ const root = style({
   flexShrink: 0,
   flexGrow: 0,
   position: 'relative',
-  overflow: 'hidden'
+  overflow: 'hidden',
+  padding: vars.space.horizontal.x1
 });
 
 export default {
