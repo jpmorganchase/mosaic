@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.36
+
+### Patch Changes
+
+- 03464ad: fix: remove env variable check in `withSession` middleware
+
+  The `NEXTAUTH_SECRET` env variable is not always required. It is possible to pass the secret as an option to `next-auth`
+
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.36
+  - @jpmorganchase/mosaic-store@0.1.0-beta.36
+  - @jpmorganchase/mosaic-types@0.1.0-beta.36
+
 ## 0.1.0-beta.35
 
 ### Patch Changes
