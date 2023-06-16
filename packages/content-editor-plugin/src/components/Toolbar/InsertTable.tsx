@@ -148,6 +148,7 @@ export const InsertTable: FC<InsertTableProps> = ({
         ref={reference}
         onClick={togglePopper}
         active={isOpen}
+        label="Insert Table"
       >
         <Icon name="grid" />
         <Icon name="chevronDown" />
