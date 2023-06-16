@@ -11,7 +11,7 @@ export const InsertHorizontalRule = () => {
     editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined);
   };
   return (
-    <ToolbarButton onClick={handleClick}>
+    <ToolbarButton onClick={handleClick} label="Insert Divider">
       <Icon name="minimize" />
     </ToolbarButton>
   );
