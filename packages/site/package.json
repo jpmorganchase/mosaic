@@ -26,7 +26,7 @@
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.js",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE='snapshot-file' concurrently --kill-others 'yarn dev'",
     "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE='snapshot-s3' concurrently --kill-others 'yarn dev'",
-    "serve": "concurrently --kill-others 'yarn dev' 'yarn mosaic serve -c ./mosaic.config.js' -p 8080"
+    "serve": "concurrently --kill-others \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.js\" -p 8080"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-cli": "^0.1.0-beta.36",
