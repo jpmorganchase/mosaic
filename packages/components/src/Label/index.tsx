@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import { Tooltip, TooltipProps as SaltTooltipProps } from '@salt-ds/core';
 

@@ -1,4 +1,3 @@
-'use client';
 import { RefObject, useEffect, useRef } from 'react';
 export const useOutsideClick: (
   triggerRef: RefObject<HTMLDivElement>,

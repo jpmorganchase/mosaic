@@ -1,4 +1,3 @@
-'use client';
 export * from './FilterDropdown';
 export * from './PillGroup';
 export * from './SortDropdown';
