@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { ElementStyles, Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { link } from '@jpmorganchase/mosaic-theme';

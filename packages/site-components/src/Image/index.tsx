@@ -1,3 +1,4 @@
+'use client';
 import React, { FC, forwardRef, Ref } from 'react';
 import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import classnames from 'clsx';

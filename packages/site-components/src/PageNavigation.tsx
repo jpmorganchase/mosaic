@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { useSidebar } from '@jpmorganchase/mosaic-store';
 import { VerticalNavigation } from './VerticalNavigation';
