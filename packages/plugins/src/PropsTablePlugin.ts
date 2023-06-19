@@ -5,6 +5,7 @@ import { remark } from 'remark';
 import { visit } from 'unist-util-visit';
 import { parse } from 'react-docgen-typescript';
 import type { Node } from 'unist';
+import path from 'path';
 
 const options = {
   propFilter: prop => !/@types[\\/]react[\\/]/.test(prop.parent?.fileName || '')
@@ -34,7 +35,9 @@ const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
         (node: LeafNode) => {
           if (node.name !== 'propsTable') return;
 
-          const propsTableData = parse(node.attributes.src, options)[0].props;
+          const componentPath = path.resolve(node.attributes.src);
+
+          const propsTableData = parse(componentPath, options)[0].props;
 
           const tableHeaders = {
             type: 'tableRow',
