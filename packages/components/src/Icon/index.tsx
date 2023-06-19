@@ -1,5 +1,5 @@
 import React from 'react';
-import { icons, IconNames } from '@jpmorganchase/mosaic-theme';
+import { icons, IconNames } from '@jpmorganchase/mosaic-icons';
 
 import styles from './styles.css';
 

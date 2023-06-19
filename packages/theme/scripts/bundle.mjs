@@ -3,7 +3,6 @@ import glob from 'fast-glob';
 import esbuild from 'esbuild';
 import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
 import publicImageResolverPlugin from './publicImageResolver.js';
-import saltIconNamesPlugin from './saltIconNames.js';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
@@ -21,34 +20,6 @@ const onEndPlugin = {
     });
   }
 };
-
-try {
-  const context = await esbuild.context({
-    entryPoints: glob.sync(['../../node_modules/@salt-ds/icons/dist-es/components/*.js']),
-    bundle: false,
-    outdir: 'dist',
-    plugins: [saltIconNamesPlugin, onEndPlugin]
-  });
-  await context.rebuild();
-  if (watchEnabled) {
-    await context.watch();
-  }
-  await context.serve();
-  context.dispose();
-} catch (e) {
-  if (e.errors && e.errors.length > 0) {
-    console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);
-    console.error(e.errors);
-    console.groupEnd();
-  }
-
-  if (e.warnings && e.warnings.length > 0) {
-    console.group(`!!!!!!! ${packageName} build warnings !!!!!!!`);
-    console.error(e.warnings);
-    console.groupEnd();
-  }
-  process.exit(1);
-}
 
 try {
   const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {

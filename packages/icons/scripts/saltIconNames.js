@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const typesPath = path.join(process.cwd(), 'types/saltIconNames.d.ts');
 
@@ -32,4 +32,4 @@ const saltIconNames = {
   }
 };
 
-module.exports = saltIconNames;
+export default saltIconNames;
