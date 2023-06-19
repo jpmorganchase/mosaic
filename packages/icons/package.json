@@ -1,0 +1,52 @@
+{
+  "name": "@jpmorganchase/mosaic-icons",
+  "description": "Mosaic - Icons",
+  "version": "0.1.0-beta.36",
+  "author": "",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/icons"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:types": "tsc",
+    "build:components": "node  ./scripts/bundle.mjs",
+    "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "dev": "node ./scripts/bundle.mjs watch"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.0.0",
+    "del-cli": "^4.0.1",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.36",
+    "@salt-ds/core": "^1.8.0-rc.0"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.0.26",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

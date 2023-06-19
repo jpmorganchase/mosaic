@@ -1,5 +1,5 @@
 import React from 'react';
-import { icons, IconNames } from '@jpmorganchase/mosaic-theme';
+import { icons, IconNames } from '@jpmorganchase/mosaic-icons';
 
 export interface IconProps {
   /** Additional class name for root class override. */
