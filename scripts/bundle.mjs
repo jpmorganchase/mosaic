@@ -46,6 +46,8 @@ try {
       'next/*',
       '@jpmorganchase/mosaic-components',
       '@jpmorganchase/mosaic-components-lab',
+      '@jpmorganchase/mosaic-mdx-components-client',
+      '@jpmorganchase/mosaic-mdx-components-server',
       '@jpmorganchase/mosaic-open-api-component',
       '@jpmorganchase/mosaic-content-editor-plugin',
       '@jpmorganchase/mosaic-site-components',
