@@ -1,4 +1,3 @@
-'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { ButtonBar, OrderedButton, Slider } from '@salt-ds/lab';

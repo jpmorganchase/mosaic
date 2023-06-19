@@ -1,4 +1,3 @@
-'use client';
 import React, { forwardRef, isValidElement, ReactNode, Ref } from 'react';
 import classnames from 'clsx';
 import { Icon, IconProps } from '../Icon';

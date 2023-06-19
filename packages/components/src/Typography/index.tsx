@@ -1,4 +1,3 @@
-'use client';
 import {
   action,
   amount,
@@ -12,6 +11,7 @@ import {
 } from '@jpmorganchase/mosaic-theme';
 
 import { withStyledTypography } from './withStyledTypography';
+export { withStyledTypography } from './withStyledTypography';
 
 export const Action1 = withStyledTypography(action({ variant: 'action1' }));
 export const Action2 = withStyledTypography(action({ variant: 'action2' }));

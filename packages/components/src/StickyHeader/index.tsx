@@ -1,4 +1,3 @@
-'use client';
 import React, { useRef, useState, useEffect, FC } from 'react';
 import classnames from 'clsx';
 
