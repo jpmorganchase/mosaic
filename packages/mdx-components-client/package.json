@@ -1,0 +1,56 @@
+{
+  "name": "@jpmorganchase/mosaic-mdx-components-client",
+  "description": "Mosaic - Markdown Components",
+  "version": "0.1.0-beta.36",
+  "author": "",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "directory": "packages/mdx-components-client"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/index.css",
+  "exports": {
+    "./index.css": "./dist/index.css",
+    ".": {
+      "style": "./dist/index.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "node": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm-run-all --parallel build:*",
+    "build:types": "tsc",
+    "build:components": "node  ../../scripts/bundle.mjs",
+    "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
+    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "doc": "node ../../scripts/updateDocs.js",
+    "dev": "node ../../scripts/bundle.mjs watch"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.0.0",
+    "react": "^18.2.0",
+    "del-cli": "^4.0.1",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.36",
+    "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.36",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.36",
+    "clsx": "^1.2.1",
+    "hoist-non-react-statics": "^3.3.2",
+    "prism-react-renderer": "^1.1.1",
+    "react-markdown": "^6.0.2"
+  },
+  "peerDependencies": {
+    "@types/react": "^18.0.26",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
