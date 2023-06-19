@@ -1,13 +1,4 @@
-import { withMarkdownSpacing } from '@jpmorganchase/mosaic-components';
-import { Diagram } from './Diagram';
-import { Sitemap } from './Sitemap';
-import type { SitemapProps } from './Sitemap';
-import type { DiagramProps } from './Diagram';
+'use client';
 
 export * from './Diagram';
 export * from './Sitemap';
-
-export const getLabMarkdownComponents = () => ({
-  Diagram: withMarkdownSpacing<DiagramProps>(Diagram),
-  Sitemap: withMarkdownSpacing<SitemapProps>(Sitemap)
-});
