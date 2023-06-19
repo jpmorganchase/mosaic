@@ -1,3 +1,4 @@
+'use client';
 import React, { forwardRef, ReactNode } from 'react';
 import { Link } from '@jpmorganchase/mosaic-components';
 

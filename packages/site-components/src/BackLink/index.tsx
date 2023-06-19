@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Action6, Link } from '@jpmorganchase/mosaic-components';
 

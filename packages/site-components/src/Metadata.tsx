@@ -1,3 +1,4 @@
+'use client';
 import React, { ElementType } from 'react';
 import { useMeta } from '@jpmorganchase/mosaic-store';
 import type { MetaSlice } from '@jpmorganchase/mosaic-store';

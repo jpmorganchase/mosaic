@@ -1,3 +1,4 @@
+'use client';
 import { withNavigationAdapter } from './withNavigationAdapter';
 import { DocPaginator as OriginalDocPaginator } from './DocPaginator';
 
