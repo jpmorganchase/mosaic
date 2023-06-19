@@ -32,6 +32,7 @@
     "@jpmorganchase/mosaic-cli": "^0.1.0-beta.40",
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.40",
     "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.40",
+    "@jpmorganchase/mosaic-mdx-components-server": "^0.1.0-beta.40",
     "@jpmorganchase/mosaic-layouts": "^0.1.0-beta.40",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.40",
     "@jpmorganchase/mosaic-site-preset-styles": "^0.1.0-beta.40",
@@ -43,7 +44,9 @@
     "@philpl/buble": "^0.19.7",
     "@types/react": "^18.0.26",
     "next": "^13.4.4",
-    "next-auth": "^4.22.1"
+    "next-auth": "^4.22.1",
+    "remark-gfm": "3.0.1",
+    "rehype-slug": "^5.0.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "12.3.1",
