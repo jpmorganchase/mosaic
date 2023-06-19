@@ -1,4 +1,3 @@
-'use client';
 import React, { ReactElement, Ref } from 'react';
 import type { Column, PluginHook } from 'react-table';
 import classnames from 'clsx';

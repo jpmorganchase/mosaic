@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import classnames from 'clsx';
 import findLastIndex from 'lodash/findLastIndex';

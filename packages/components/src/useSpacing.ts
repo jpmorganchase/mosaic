@@ -1,4 +1,3 @@
-'use client';
 import { GutterTop } from './common/types';
 
 const multiplierAliases: { [key: string]: number } = {
