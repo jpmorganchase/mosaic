@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import classnames from 'clsx';
 
@@ -6,7 +5,6 @@ import { FilterResultCount, FilterView } from '../FilterView';
 import { FilterDropdown, FilterSortDropdown } from '../FilterToolbar';
 import { EditionTileLink } from '../EditionTileLink';
 import { useBreakpoint } from '../useBreakpoint';
-import { FormattedContent } from '../FormattedContent';
 import styles from './styles.css';
 
 export const createCustomFilter = (view, filters) =>
@@ -64,11 +62,7 @@ export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item
   const breakpoint = useBreakpoint();
   return (
     <EditionTileLink
-      description={
-        item.formattedDescription ? (
-          <FormattedContent>{item.formattedDescription}</FormattedContent>
-        ) : null
-      }
+      description={item.formattedDescription ? item.formattedDescription : null}
       eyebrow={item.eyebrow}
       image={item.image}
       imagePlacement={breakpoint === 'mobile' ? 'fullWidth' : 'left'}

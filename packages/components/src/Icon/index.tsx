@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import { icons, IconNames } from '@jpmorganchase/mosaic-theme';
 
