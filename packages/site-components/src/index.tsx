@@ -19,6 +19,7 @@ export * from './NavigationEvents';
 export * from './PageNavigation';
 export * from './Sidebar';
 export * from './TableOfContents';
+export * from './ThemeProvider';
 export * from './UserProfile';
 export * from './VerticalNavigation';
 export * from './404';
