@@ -38,7 +38,6 @@ export * from './Story';
 export * from './Tabs';
 export * from './TabsBase';
 export * from './Tag';
-export * from './ThemeProvider';
 export * from './TileBase';
 export * from './TileButton';
 export * from './TileContent';
