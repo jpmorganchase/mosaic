@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.37
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.37
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.37
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.37
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.37
+- @jpmorganchase/mosaic-site-middleware@0.1.0-beta.37
+- @jpmorganchase/mosaic-store@0.1.0-beta.37
+- @jpmorganchase/mosaic-theme@0.1.0-beta.37
+
 ## 0.1.0-beta.36
 
 ### Patch Changes
