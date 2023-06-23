@@ -1,4 +1,3 @@
-'use client';
 import React, { createContext, Context, useContext } from 'react';
 import { hasProtocol } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';

@@ -1,4 +1,3 @@
-'use client';
 import { withBreadcrumbsAdapter } from './withBreadcrumbsAdapter';
 import { Breadcrumbs as OriginalBreadcrumbs } from './Breadcrumbs';
 
