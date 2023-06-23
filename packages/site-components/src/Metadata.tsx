@@ -3,14 +3,15 @@ import React, { ElementType } from 'react';
 import { useMeta } from '@jpmorganchase/mosaic-store';
 import type { MetaSlice } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
+import Head from 'next/head';
 
 export interface HTMLMeta extends MetaSlice {}
 
 export type MetadataProps = {
-  Component: ElementType;
+  Component?: ElementType;
 };
 
-export const Metadata: React.FC<MetadataProps> = ({ Component = 'head' }) => {
+export const Metadata: React.FC<MetadataProps> = ({ Component = Head }) => {
   const { meta } = useMeta();
   const { data: session } = useSession();
   return (
