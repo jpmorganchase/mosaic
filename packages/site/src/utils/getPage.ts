@@ -2,7 +2,6 @@ import path from 'path';
 import nodeFetch from 'node-fetch';
 import matter from 'gray-matter';
 import type { SiteState } from '@jpmorganchase/mosaic-store';
-import { getSharedConfig } from './getSharedConfig';
 
 type Page = {
   /** Page body content */
@@ -11,6 +10,14 @@ type Page = {
   data: SiteState;
 };
 type GetPage = (pathname: string) => Promise<Page>;
+
+export const getSharedConfig = async route => {
+  const routeBase = path.dirname(route);
+  const url = path.join('http://localhost:8080', routeBase, 'shared-config.json');
+  const res = await nodeFetch(url);
+  const resJson = await res.json();
+  return resJson.config;
+};
 
 export const getPage: GetPage = async pathname => {
   const url = path.join('http://localhost:8080', pathname);

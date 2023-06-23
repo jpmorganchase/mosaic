@@ -1,5 +1,4 @@
-'use client';
-
+import React from 'react';
 import { Image } from '@jpmorganchase/mosaic-site-components';
 import { ImageProvider as MosaicImageProvider } from '@jpmorganchase/mosaic-components';
 
