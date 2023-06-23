@@ -1,8 +1,7 @@
 import React, { FC, ReactNode } from 'react';
 import { useLayout } from '@jpmorganchase/mosaic-store';
 import { usePageState } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { FullWidth } from './layouts/FullWidth';
-
+import * as defaultLayouts from './layouts';
 import type { LayoutProps } from './types';
 
 export type LayoutProviderProps = {
@@ -22,10 +21,11 @@ export const LayoutProvider: FC<LayoutProviderProps> = ({
   const { pageState } = usePageState();
   const layout = pageState !== 'VIEW' ? 'EditLayout' : layoutInStore;
 
-  let LayoutComponent: FC<LayoutProps> | undefined = layoutComponents?.[layout] as FC<LayoutProps>;
+  const allLayouts = { ...defaultLayouts, ...layoutComponents };
+  let LayoutComponent: FC<LayoutProps> | undefined = allLayouts[layout] as FC<LayoutProps>;
   if (!LayoutComponent) {
     console.error(`Layout ${layout} is not supported, defaulting to FullWidth`);
-    LayoutComponent = FullWidth;
+    LayoutComponent = allLayouts.FullWidth;
   }
   return LayoutComponent ? (
     <LayoutComponent {...LayoutProps}>{children}</LayoutComponent>
