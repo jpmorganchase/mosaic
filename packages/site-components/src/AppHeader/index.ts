@@ -1,4 +1,3 @@
-'use client';
 import { withAppHeaderAdapter } from './withAppHeaderAdapter';
 import { AppHeader as OriginalAppHeader } from './AppHeader';
 
