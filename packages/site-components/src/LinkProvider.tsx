@@ -1,5 +1,4 @@
-'use client';
-
+import React from 'react';
 import { Link } from '@jpmorganchase/mosaic-site-components';
 import { LinkProvider as MosaicLinkProvider } from '@jpmorganchase/mosaic-components';
 
