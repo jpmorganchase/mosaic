@@ -12,7 +12,7 @@ type GetPage = (pathname: string) => Promise<Page>;
 
 export const getSharedConfig = async route => {
   const routeBase = path.dirname(route);
-  const url = path.join('http://localhost:8080', routeBase, 'shared-config.json');
+  const url = path.join(process.env.MOSAIC_ACTIVE_MODE_URL || '', routeBase, 'shared-config.json');
   const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json'
@@ -27,7 +27,7 @@ export const getSharedConfig = async route => {
 };
 
 export const getPage: GetPage = async pathname => {
-  const url = path.join('http://localhost:8080', pathname);
+  const url = path.join(process.env.MOSAIC_ACTIVE_MODE_URL || '', pathname);
   const result = await fetch(url);
   const text = await result.text();
   const { data, content: source } = matter(text);
