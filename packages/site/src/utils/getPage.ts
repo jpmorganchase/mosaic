@@ -13,9 +13,17 @@ type GetPage = (pathname: string) => Promise<Page>;
 export const getSharedConfig = async route => {
   const routeBase = path.dirname(route);
   const url = path.join('http://localhost:8080', routeBase, 'shared-config.json');
-  const res = await fetch(url);
-  const resJson = await res.json();
-  return resJson.config;
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (res.status === 200) {
+    const resJson = await res.json();
+    return resJson.config;
+  }
+
+  return {};
 };
 
 export const getPage: GetPage = async pathname => {
