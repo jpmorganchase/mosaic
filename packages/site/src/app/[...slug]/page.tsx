@@ -1,12 +1,11 @@
-import { headers } from 'next/headers';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import components from '@jpmorganchase/mosaic-mdx-components-server';
 import { getPage } from '../../utils/getPage';
 
-export default async function Page() {
-  const pathname = headers().get('x-next-pathname') as string;
+export default async function Page({ params }) {
+  const pathname = params.slug.join('/');
   if (!pathname) {
     return null;
   }

@@ -1,5 +1,4 @@
 import classnames from 'classnames';
-import { headers } from 'next/headers';
 import {
   BaseUrlProvider,
   ImageProvider,
@@ -15,8 +14,8 @@ import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import fontClassNames from './fonts';
 import { getPage } from '../../utils/getPage';
 
-export default async function Layout({ children }) {
-  const pathname = headers().get('x-next-pathname') as string;
+export default async function Layout({ children, params }) {
+  const pathname = params.slug.join('/');
   if (!pathname) {
     return null;
   }
