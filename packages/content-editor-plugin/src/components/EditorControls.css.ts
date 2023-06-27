@@ -1,9 +1,6 @@
 import { style } from '@vanilla-extract/css';
-import { vars } from '@jpmorganchase/mosaic-theme';
+import { backgroundColor, vars } from '@jpmorganchase/mosaic-theme';
 
 export default {
-  root: style({
-    backgroundColor: 'inherit',
-    width: vars.space.none
-  })
+  root: style([backgroundColor({ variant: 'regular' }), style({ height: vars.space.vertical.x8 })])
 };
