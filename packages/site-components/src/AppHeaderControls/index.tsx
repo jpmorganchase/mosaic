@@ -77,7 +77,8 @@ export const AppHeaderControls: React.FC = () => {
       {searchEnabled && <SearchInput />}
       {isLoginEnabled && (
         <>
-          <EditorControls isLoggedIn={isLoggedIn} />
+          <EditorControls enabled={isLoggedIn} />
+
           <div className={styles.userInfo}>
             {isLoggedIn ? (
               <UserProfile
