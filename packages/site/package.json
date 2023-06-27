@@ -35,6 +35,7 @@
     "@jpmorganchase/mosaic-mdx-components-server": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-layouts": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-site-loaders": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-site-preset-styles": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.47",
