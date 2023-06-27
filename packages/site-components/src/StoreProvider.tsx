@@ -6,7 +6,7 @@ export function StoreProvider({
   value,
   children
 }: {
-  value: SiteState;
+  value: Partial<SiteState>;
   children: React.ReactNode;
 }) {
   const createStore = useCreateStore(value);

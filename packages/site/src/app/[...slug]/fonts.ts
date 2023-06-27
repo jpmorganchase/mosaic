@@ -12,4 +12,5 @@ const openSans = Open_Sans({
   display: 'swap'
 });
 
-export default [ptMono.variable, openSans.variable];
+const fonts = [ptMono.variable, openSans.variable];
+export default fonts;
