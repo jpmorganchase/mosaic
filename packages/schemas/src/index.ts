@@ -3,6 +3,7 @@ export * from './credentialsSchema.js';
 export * from './fileExtensionSchema.js';
 export * from './validate.js';
 
+export * from './ActiveEnvSchema.js';
 export * from './SnapshotFileEnvSchema.js';
 export * from './MosaicConfigSchema.js';
 export * from './PluginModuleSchema.js';
