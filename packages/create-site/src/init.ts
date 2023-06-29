@@ -135,8 +135,8 @@ export default async function init() {
  * 
  * How can I add my own content ?
  *
- * Once you have generated a site, you can edit the file \`mosaic.config.js\` and add/configure a source entry.
- * Once you edit \`mosaic.config.js\` then re-running the generator will overwrite any changes.
+ * Once you have generated a site, you can edit the file \`mosaic.config.mjs\` and add/configure a source entry.
+ * Once you edit \`mosaic.config.mjs\` then re-running the generator will overwrite any changes.
  * If you plan to re-run the generator, add the \`sources\` to \`mosaic.generators.js\` instead, then you will be able to 
  * preserve your config and refresh the site.
  * 
