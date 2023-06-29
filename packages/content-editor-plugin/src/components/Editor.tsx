@@ -28,7 +28,6 @@ import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import { FloatingToolbarPlugin } from '../plugins/FloatingToolbarPlugin';
 import { TableActionMenuPlugin } from '../plugins/TableActionMenuPlugin';
 import { InsertLinkDialog } from './Toolbar/InsertLink';
-import type { PreviewPluginProps } from '../plugins/PreviewPlugin';
 
 function onError(error: Error) {
   console.error(error);
@@ -47,9 +46,11 @@ interface PreviewComponentProps {
   components: any;
 }
 
-interface EditorProps extends PreviewComponentProps, Partial<PreviewPluginProps> {
+interface EditorProps extends PreviewComponentProps {
   content: string;
   PreviewComponent?: ComponentType<PreviewComponentProps>;
+  previewUrl?: string;
+  persistUrl?: string;
   user?: any;
 }
 
@@ -60,12 +61,13 @@ const gutter = () => {
 };
 
 const Editor: FC<EditorProps> = ({
-  compileMDX,
+  components,
   content,
-  source,
+  persistUrl,
   PreviewComponent,
-  user,
-  components
+  previewUrl,
+  source,
+  user
 }) => {
   const previewContent = usePreviewContent() || source;
   const { setUser } = useEditorUser();
@@ -92,7 +94,7 @@ const Editor: FC<EditorProps> = ({
       <div className={styles.root} onFocus={handleEditorFocus} onBlur={handleEditorBlur}>
         <div className={styles.toolbarContainer}>
           <Toolbar />
-          <PersistDialog meta={meta} />
+          <PersistDialog meta={meta} persistUrl={persistUrl} />
           <StatusBanner />
         </div>
         <div className={styles.editorRoot}>
@@ -128,7 +130,7 @@ const Editor: FC<EditorProps> = ({
           <TablePlugin />
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={transformers} />
-          {compileMDX && <PreviewPlugin compileMDX={compileMDX} />}
+          {previewUrl ? <PreviewPlugin previewUrl={previewUrl} /> : null}
           <MarkdownImagePlugin />
           <MarkdownLinkPlugin />
           <LinkEditor />
