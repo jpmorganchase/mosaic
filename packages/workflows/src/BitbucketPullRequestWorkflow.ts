@@ -5,12 +5,12 @@ import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-rep
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
 import type { SourceWorkflow } from '@jpmorganchase/mosaic-types';
 
-interface BitBucketPullRequestWorkflowData {
+interface BitbucketPullRequestWorkflowData {
   user: { sid: string; name: string; email: string };
   markdown: string;
 }
 
-interface BitBucketPullRequestWorkflowOptions {
+interface BitbucketPullRequestWorkflowOptions {
   apiEndpoint: string;
   commitMessage: (filePath: string) => string;
   titlePrefix: string;
@@ -20,9 +20,9 @@ let repoInstance: Repo | null = null;
 
 async function createPullRequest(
   sourceOptions: GitRepoSourceOptions,
-  { apiEndpoint, commitMessage, titlePrefix }: BitBucketPullRequestWorkflowOptions,
+  { apiEndpoint, commitMessage, titlePrefix }: BitbucketPullRequestWorkflowOptions,
   filePath: string,
-  { user, markdown }: BitBucketPullRequestWorkflowData
+  { user, markdown }: BitbucketPullRequestWorkflowData
 ) {
   const {
     credentials,
