@@ -1,6 +1,7 @@
-const deepmerge = require('deepmerge');
-const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
-const dotenvLoad = require('dotenv-load');
+import dotenvLoad from 'dotenv-load';
+import deepmerge from 'deepmerge';
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+
 dotenvLoad();
 
 const siteConfig = {
@@ -16,16 +17,6 @@ const siteConfig = {
       options: {}
     },
     {
-      modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
-      priority: -1,
-      // Exclude this plugin in builds
-      runTimeOnly: true,
-      disabled: process.env.NODE_ENV !== 'development',
-      options: {
-        baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080'
-      }
-    },
-    {
       modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
       priority: -1,
       options: {
@@ -36,7 +27,7 @@ const siteConfig = {
   ]
 };
 
-module.exports = deepmerge(siteConfig, {
+export default deepmerge(siteConfig, {
   deployment: { mode: 'snapshot-file', platform: 'vercel' },
   sources: [
     /**
