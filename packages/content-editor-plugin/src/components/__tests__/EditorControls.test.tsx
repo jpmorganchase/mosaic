@@ -23,7 +23,7 @@ describe('GIVEN an EditorControls component', () => {
       });
     });
     test('THEN the edit button is disabled', () => {
-      render(<EditorControls isLoggedIn={false} />);
+      render(<EditorControls enabled={false} />);
       const tooltips = screen.queryAllByRole('tooltip');
       expect(tooltips.length).toBe(0);
     });
@@ -31,7 +31,7 @@ describe('GIVEN an EditorControls component', () => {
 
   describe('WHEN logged in', () => {
     test('THEN the edit button is enabled', () => {
-      render(<EditorControls isLoggedIn />);
+      render(<EditorControls enabled />);
       const button = screen.getByRole('button');
       expect(button).not.toBeDisabled();
     });
@@ -44,7 +44,7 @@ describe('GIVEN an EditorControls component', () => {
         });
       });
       test('THEN editing is started', async () => {
-        render(<EditorControls isLoggedIn />);
+        render(<EditorControls enabled />);
         const button = screen.getByLabelText('start editing');
         await userEvent.click(button);
         expect(startEditingSpy).toHaveBeenCalledTimes(1);
@@ -59,7 +59,7 @@ describe('GIVEN an EditorControls component', () => {
         });
       });
       test('THEN editing is stopped', async () => {
-        render(<EditorControls isLoggedIn />);
+        render(<EditorControls enabled />);
         const button = screen.getByLabelText('cancel editing');
         await userEvent.click(button);
         expect(stopEditingSpy).toHaveBeenCalledTimes(1);
