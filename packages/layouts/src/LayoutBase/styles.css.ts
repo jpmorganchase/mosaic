@@ -49,6 +49,7 @@ export default {
   header: style([
     {
       display: 'grid',
+      alignItems: 'center',
       height: `${config.appHeader.height}px`,
       gridArea: 'base-layout-header',
       position: 'sticky',
