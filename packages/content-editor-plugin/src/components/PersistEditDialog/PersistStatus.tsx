@@ -1,6 +1,6 @@
 import React, { FC, ReactNode, useEffect, useState } from 'react';
 import classnames from 'clsx';
-import { P2 } from '@jpmorganchase/mosaic-components';
+import { P2, P6 } from '@jpmorganchase/mosaic-components';
 
 import styles from './PersistStatus.css';
 
@@ -58,7 +58,12 @@ export const PersistStatus = ({ isRaising, error }: StatusProps) => {
   }, [currentStep]);
 
   if (error) {
-    return <P2>😢 Sorry something has went wrong. Please try again later.</P2>;
+    return (
+      <>
+        <P2>😢 Sorry something has went wrong. Please try again later.</P2>
+        <P6>Error - {error}</P6>
+      </>
+    );
   }
 
   return (
