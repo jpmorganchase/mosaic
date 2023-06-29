@@ -10,7 +10,7 @@ yarn add @jpmorganchase/mosaic-standard-generator
 
 ## Configuration
 
-Edit your `mosaic.config.js` to include the generator and it's config.
+Edit your `mosaic.config.mjs` to include the generator and it's config.
 
 ```
 const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/config');
