@@ -1,3 +1,3 @@
-import BitBucketPullRequestWorkflow from './BitBucketPullRequestWorkflow.js';
+import BitbucketPullRequestWorkflow from './BitbucketPullRequestWorkflow.js';
 
-export { BitBucketPullRequestWorkflow };
+export { BitbucketPullRequestWorkflow };
