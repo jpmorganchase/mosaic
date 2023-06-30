@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.38
+
+### Patch Changes
+
+- Updated dependencies [18f7a0b]
+- Updated dependencies [dc993df]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.38
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.38
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.38
+  - @jpmorganchase/mosaic-components@0.1.0-beta.38
+  - @jpmorganchase/mosaic-store@0.1.0-beta.38
+
 ## 0.1.0-beta.37
 
 ### Patch Changes
