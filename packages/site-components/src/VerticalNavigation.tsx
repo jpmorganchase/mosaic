@@ -49,7 +49,7 @@ const createMenuItemStyles = colorMode => ({
       color: active
         ? colorMode === 'light'
           ? 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
-          : 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
+          : 'var(--mosaic-color-dark-navigable-selectableLink-selectedLabel)'
         : colorMode === 'light'
         ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
         : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
