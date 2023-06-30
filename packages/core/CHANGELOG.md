@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.38
+
+### Patch Changes
+
+- dc993df: Styling and API changes for In-Browser Content Editor (IBCE)
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.38
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.38
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.38
+  - @jpmorganchase/mosaic-types@0.1.0-beta.38
+
 ## 0.1.0-beta.37
 
 ### Patch Changes
