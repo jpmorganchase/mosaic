@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import deepmerge from 'deepmerge';
 import fsExtra from 'fs-extra';
 import MosaicCore from '@jpmorganchase/mosaic-core';
 
@@ -34,18 +35,21 @@ export default async function build(config, targetDir, options) {
           const rawFiles = await filesystem.promises.readFile(String(filePath), {
             includeConflicts: true
           });
-          const rawFile = rawFiles[0];
+          let rawFile = rawFiles[0];
           if (rawFiles.length > 1) {
-            // TODO: We could join colliding JSON files together. e.g. sidebar.json files
-            // if (path.basename(String(filePath)).startsWith('.') && path.extname(String(filePath)) === '.json') {
-            //   console.warn(`'${filePath}' returned multiple files at the same location. Since the files were JSON dot files, they were merged using a basic Lodash \`merge\`.`);
-            //   rawFile = Buffer.from(JSON.stringify(merge(...rawFiles.map(fileData => JSON.parse(String(fileData))))));
-            // } else {
-            throw new Error(`'${filePath}' returned multiple files at the same location, this will result in overwritten data in the output. Aborting build.
+            // Join colliding JSON files together. e.g. sidebar.json files
+            if (path.posix.extname(String(filePath)) === '.json') {
+              console.warn(
+                `'${filePath}' returned multiple files at the same location. Since the files were JSON dot files, they were merged using \`deepmerge\`.`
+              );
+              const allRawFiles: string[] = rawFiles.map(fileData => JSON.parse(String(fileData)));
+              rawFile = Buffer.from(JSON.stringify(deepmerge(allRawFiles[0], allRawFiles[1])));
+            } else {
+              throw new Error(`'${filePath}' returned multiple files at the same location, this will result in overwritten data in the output. Aborting build.
 
 Try using \`--scope\` to just output certain namespaced sources, or adding a \`prefixDir\` to the source options to move the source files into a separate folder.`);
+            }
           }
-          //}
           await fs.promises.mkdir(path.dirname(path.join(pathDir, String(filePath))), {
             recursive: true
           });
