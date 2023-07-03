@@ -14,7 +14,7 @@ const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' }
   return <Page500 />;
 };
 
-function MDXRemoteWithErrorBoundary({ components, source, meta }) {
+function MDXRemoteWithErrorBoundary({ components, source, meta = {} }) {
   return (
     <ErrorBoundary FallbackComponent={DefaultFallBackComponent}>
       <MDXRemote components={components} lazy {...source} scope={createMDXScope(meta)} />
@@ -40,6 +40,9 @@ export function Body({ components = {}, type, ...props }) {
         content={props.raw}
         source={props.source}
         components={components}
+        PreviewComponent={MDXRemoteWithErrorBoundary}
+        previewUrl={process.env.NEXT_PUBLIC_MOSAIC_IBCE_PREVIEW_URL}
+        persistUrl={process.env.NEXT_PUBLIC_MOSAIC_IBCE_PERSIST_URL}
       />
     );
   }

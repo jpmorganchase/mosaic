@@ -1,6 +1,7 @@
-const deepmerge = require('deepmerge');
-const mosaicConfig = require('@jpmorganchase/mosaic-standard-generator/dist/fs.config.js');
-const dotenvLoad = require('dotenv-load');
+import dotenvLoad from 'dotenv-load';
+import deepmerge from 'deepmerge';
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+
 dotenvLoad();
 
 /** Enhance/modify your Mosaic core fs
@@ -10,7 +11,7 @@ dotenvLoad();
  * plugins: <...plugin definitions>
  * sources: <...source definitions>
  */
-module.exports = deepmerge(mosaicConfig, {
+export default deepmerge(mosaicConfig, {
   sources: [
 {{#unless answers}}
 {{#if sources}}

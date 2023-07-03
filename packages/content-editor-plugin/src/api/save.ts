@@ -1,12 +1,12 @@
 export function save(
   user: { sid: string; name: string; email: string },
   route: string,
-  markdown: string
+  markdown: string,
+  persistUrl: string
 ) {
-  /** TODO: fixup with Pull Docs host URL  */
-  return fetch('http://localhost:8080/savecontent', {
+  return fetch(persistUrl, {
     method: 'POST',
-    body: JSON.stringify({ user, route, markdown }),
+    body: JSON.stringify({ user, route, markdown, name: 'save' }),
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
   });
 }

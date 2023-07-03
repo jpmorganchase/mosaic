@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.38
+
+### Patch Changes
+
+- 18f7a0b: fix: update the dark mode selector used to invert the color of images when using dark mode of the theme.
+
+## 0.1.0-beta.37
+
 ## 0.1.0-beta.36
 
 ## 0.1.0-beta.35

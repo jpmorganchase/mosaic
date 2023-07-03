@@ -1,11 +1,15 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { lightModeConditions } from '../color';
+import { darkMode, lightMode, lightModeConditions } from '../color';
 import { vars } from '../vars.css';
 
 export const opacityProperties = defineProperties({
-  conditions: lightModeConditions,
+  conditions: {
+    ...lightModeConditions,
+    lightModeActionableDisabled: { selector: `${lightMode} &:disabled` },
+    darkModeActionableDisabled: { selector: `${darkMode} &:disabled` }
+  },
   defaultCondition: ['lightMode', 'darkMode'],
   properties: {
     opacity: [
@@ -33,6 +37,12 @@ export const opacity = recipe({
         opacity: {
           lightMode: vars.opacity.light.watermark,
           darkMode: vars.opacity.dark.watermark
+        }
+      }),
+      actionableDisabled: opacitySprinkles({
+        opacity: {
+          lightModeActionableDisabled: vars.opacity.light.disabled,
+          darkModeActionableDisabled: vars.opacity.dark.disabled
         }
       })
     }

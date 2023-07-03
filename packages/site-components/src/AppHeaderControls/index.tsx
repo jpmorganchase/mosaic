@@ -4,7 +4,7 @@ import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/router';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
 import { SearchInput } from '../SearchInput';
@@ -70,14 +70,13 @@ export const AppHeaderControls: React.FC = () => {
     menuItems: actionMenuOptions
   };
 
-  const handleLogin = () => signIn();
-
   return (
     <div className={styles.root}>
       {searchEnabled && <SearchInput />}
       {isLoginEnabled && (
         <>
-          <EditorControls isLoggedIn={isLoggedIn} />
+          <EditorControls enabled={isLoggedIn} />
+
           <div className={styles.userInfo}>
             {isLoggedIn ? (
               <UserProfile
@@ -87,7 +86,7 @@ export const AppHeaderControls: React.FC = () => {
               />
             ) : (
               // eslint-disable-next-line react/jsx-no-bind
-              <Link onClick={handleLogin} variant="component">
+              <Link href="/api/auth/signin" variant="component">
                 Login
               </Link>
             )}

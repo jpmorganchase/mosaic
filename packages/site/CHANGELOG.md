@@ -1,5 +1,40 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.38
+
+### Patch Changes
+
+- dc993df: Styling and API changes for In-Browser Content Editor (IBCE)
+- Updated dependencies [18f7a0b]
+- Updated dependencies [dc993df]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.38
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.38
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.38
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.38
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.38
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.38
+  - @jpmorganchase/mosaic-components@0.1.0-beta.38
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.38
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.38
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.38
+  - @jpmorganchase/mosaic-store@0.1.0-beta.38
+
+## 0.1.0-beta.37
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-cli@0.1.0-beta.37
+- @jpmorganchase/mosaic-components@0.1.0-beta.37
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.37
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.37
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.37
+- @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.37
+- @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.37
+- @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.37
+- @jpmorganchase/mosaic-standard-generator@0.1.0-beta.37
+- @jpmorganchase/mosaic-store@0.1.0-beta.37
+- @jpmorganchase/mosaic-theme@0.1.0-beta.37
+
 ## 0.1.0-beta.36
 
 ### Patch Changes

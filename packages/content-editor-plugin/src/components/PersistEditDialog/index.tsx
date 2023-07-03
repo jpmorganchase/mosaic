@@ -2,12 +2,14 @@ import React, { FC, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
-import { Dialog as SaltDialog, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { useEditorUser, usePageState } from '../../store';
 import { save } from '../../api/save';
 import transformers from '../../transformers';
 import { PersistStatus } from './PersistStatus';
+import { Dialog } from '../Dialog';
+import style from './index.css';
 
 interface InfoProps {
   isRaising: boolean;
@@ -30,7 +32,12 @@ const Info: FC<InfoProps> = ({ isRaising, prHref, error }) =>
     </>
   ) : null;
 
-export const PersistDialog = ({ meta }: { meta: any }) => {
+interface PersistDialogProps {
+  meta: any;
+  persistUrl?: string;
+}
+
+export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   const { pageState, setPageState } = usePageState();
   const { user } = useEditorUser();
   const [editor] = useLexicalComposerContext();
@@ -54,9 +61,14 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
     try {
       editor.update(async () => {
         const markdown = $convertToMarkdownString(transformers);
-        if (markdown && user) {
+        if (markdown && user && persistUrl) {
           const { sid, displayName, email } = user;
-          const response = await save({ sid, name: displayName, email }, meta.route, markdown);
+          const response = await save(
+            { sid, name: displayName, email },
+            meta.route,
+            markdown,
+            persistUrl
+          );
 
           if (response.ok) {
             const data = await response.json();
@@ -70,23 +82,26 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
             }
           }
 
-          if (response.status === 500) {
-            setError('An unexpected error has occurred.');
+          if (response.status === 500 || response.status === 404) {
+            const errorText = await response.text();
+            setError(errorText);
             setPrHref(null);
             setIsRaising(false);
           }
         }
       });
     } catch (e) {
-      setError('Sorry');
+      setError('Sorry - an unexpected error has occurred');
       setPrHref(null);
       setIsRaising(false);
     }
   };
 
   return (
-    <SaltDialog onClose={handleClose} open={open} status={error ? 'error' : state} width="50%">
-      <DialogTitle>{!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}</DialogTitle>
+    <Dialog onClose={handleClose} open={open} status={error ? 'error' : state}>
+      <DialogTitle className={style.title}>
+        {!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
+      </DialogTitle>
       <DialogContent>
         {(isRaising || error) && !prHref && <PersistStatus isRaising={isRaising} error={error} />}
         <Info isRaising={isRaising} prHref={prHref} error={error} />
@@ -97,13 +112,19 @@ export const PersistDialog = ({ meta }: { meta: any }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button disabled={isRaising} onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button disabled={isRaising || prHref !== null} onClick={handleRaisePr} variant="cta">
-          Raise Pull Request
-        </Button>
+        <ButtonBar>
+          <Button disabled={isRaising} onClick={handleClose}>
+            {!prHref ? 'Cancel' : 'Done'}
+          </Button>
+          <Button
+            disabled={persistUrl === undefined || isRaising || prHref !== null}
+            onClick={handleRaisePr}
+            variant="cta"
+          >
+            Raise Pull Request
+          </Button>
+        </ButtonBar>
       </DialogActions>
-    </SaltDialog>
+    </Dialog>
   );
 };

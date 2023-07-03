@@ -129,7 +129,7 @@
  *
  * How can I add my own content ?
  *
- * Once you have generated a site, edit the file `mosaic.config.js` and add/configure a source entry.
+ * Once you have generated a site, edit the file `mosaic.config.mjs` and add/configure a source entry.
  *
  */
 const { getGenerators } = require('@jpmorganchase/mosaic-create-site');

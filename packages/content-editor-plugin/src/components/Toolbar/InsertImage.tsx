@@ -4,14 +4,15 @@ import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
 import {
   ButtonBar,
-  Dialog as SaltDialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  FormField,
+  Input
 } from '@salt-ds/lab';
-import { FormField, Input } from '@salt-ds/lab';
 
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { ToolbarButton } from './ToolbarButton';
+import { Dialog } from '../Dialog';
 import {
   INSERT_MARKDOWN_IMAGE_COMMAND,
   InsertImagePayload
@@ -89,11 +90,11 @@ export const InsertImage = () => {
 
   return (
     <>
-      <TextFormatToolbarButton active={isOpen} onClick={handleOpen} label="Insert Image">
+      <ToolbarButton active={isOpen} onClick={handleOpen} label="Insert Image">
         <Icon name="addDocument" />
-      </TextFormatToolbarButton>
+      </ToolbarButton>
 
-      <SaltDialog onClose={handleClose} open={isOpen} width={600}>
+      <Dialog onClose={handleClose} open={isOpen} width={600}>
         <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>Insert Image</DialogTitle>
           <DialogContent>
@@ -126,7 +127,7 @@ export const InsertImage = () => {
             </ButtonBar>
           </DialogActions>
         </form>
-      </SaltDialog>
+      </Dialog>
     </>
   );
 };

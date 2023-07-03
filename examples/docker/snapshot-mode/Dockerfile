@@ -32,7 +32,7 @@ FROM base AS snapshot-apply
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=snapshots /snapshots ./snapshots
-COPY package.json mosaic.config.js ./
+COPY package.json mosaic.config.mjs ./
 COPY --from=builder /app/.next/standalone ./
 ENV MOSAIC_SNAPSHOT_DIR snapshots/latest
 ENV MOSAIC_MODE snapshot-file

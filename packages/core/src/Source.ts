@@ -47,7 +47,7 @@ export default class Source {
     pageExtensions: string[],
     ignorePages: string[],
     globalFilesystem: IUnionVolume,
-    workflows: SourceWorkflow[]
+    workflows: SourceWorkflow[] = []
   ) {
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
@@ -196,7 +196,7 @@ export default class Source {
   }
 
   async triggerWorkflow(name: string, filePath: string, data: unknown) {
-    const foundWorkflows = this.#workflows?.filter(workflow => workflow.name === name);
+    const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
 
     if (foundWorkflows.length === 0) {
       return {
@@ -206,7 +206,7 @@ export default class Source {
 
     if (foundWorkflows.length > 1) {
       return {
-        error: `[Mosaic] Multiple workflows with ${name} found for ${this.id.description.toString()}`
+        error: `[Mosaic] Multiple workflows with "${name}" found for ${this.id.description.toString()}`
       };
     }
 

@@ -2,20 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import { FormField, Input } from '@salt-ds/lab';
 import {
+  FormField,
+  Input,
   ButtonBar,
-  Dialog as SaltDialog,
   DialogTitle,
   DialogContent,
   DialogActions
 } from '@salt-ds/lab';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
-import { TextFormatToolbarButton } from './TextFormatToolbarButton';
+import { ToolbarButton } from './ToolbarButton';
+import { Dialog } from '../Dialog';
 import { INSERT_MARKDOWN_LINK_COMMAND, InsertLinkPayload } from '../../plugins/MarkdownLinkPlugin';
-import styles from './InsertLink.css';
 import { useIsInsertingLink } from '../../store';
+import styles from './InsertLink.css';
 
 const validationSchema = object({
   url: string().required('Url is required'),
@@ -25,13 +26,13 @@ const validationSchema = object({
 export const InsertLinkButton = () => {
   const { isInsertingLink, setIsInsertingLink } = useIsInsertingLink();
   return (
-    <TextFormatToolbarButton
+    <ToolbarButton
       active={isInsertingLink}
       onClick={() => setIsInsertingLink(true)}
       label="Insert Link"
     >
       <Icon name="linked" />
-    </TextFormatToolbarButton>
+    </ToolbarButton>
   );
 };
 
@@ -110,7 +111,7 @@ export const InsertLinkDialog = () => {
   };
 
   return (
-    <SaltDialog onClose={handleClose} open={isInsertingLink} width={600}>
+    <Dialog onClose={handleClose} open={isInsertingLink} width={600}>
       <form onSubmit={handleSubmit} noValidate>
         <DialogTitle>Insert Link</DialogTitle>
         <DialogContent>
@@ -140,6 +141,6 @@ export const InsertLinkDialog = () => {
           </ButtonBar>
         </DialogActions>
       </form>
-    </SaltDialog>
+    </Dialog>
   );
 };

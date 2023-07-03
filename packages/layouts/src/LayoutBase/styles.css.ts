@@ -43,12 +43,14 @@ export default {
     gridArea: 'base-layout-main',
     display: 'flex',
     justifyContent: 'center',
-    zIndex: 1
+    zIndex: 1,
+    minHeight: `calc(100vh - ${config.appHeader.height}px)`
   }),
 
   header: style([
     {
       display: 'grid',
+      alignItems: 'center',
       height: `${config.appHeader.height}px`,
       gridArea: 'base-layout-header',
       position: 'sticky',
