@@ -10,6 +10,7 @@ patches
 LICENSE 
 *.png
 *.hbs
+*.ico
 
 **/build
 **/dist
