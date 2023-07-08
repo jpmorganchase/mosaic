@@ -7,7 +7,7 @@ const nextConfig = {
     mdxRs: true
   },
   reactStrictMode: true,
-  output: 'standalone',
+  output: process.env.GENERATE_STATIC_PARAMS_URL ? 'output' : 'standalone',
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
@@ -18,17 +18,6 @@ const nextConfig = {
     '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
-  rewrites() {
-    return {
-      // These rewrites are checked after headers/redirects
-      // and before all files including _next/public files which
-      // allows overriding page files
-      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
-      // These rewrites are checked after pages/public files
-      // are checked but before dynamic routes
-      afterFiles: []
-    };
-  },
   images: {
     domains: [
       /** Insert the domains where you will load images from */
@@ -50,26 +39,7 @@ const nextConfig = {
     config.experiments.topLevelAwait = true;
     return config;
   },
-  env: {},
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/mosaic',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/local',
-        destination: '/local/index',
-        permanent: true
-      }
-    ];
-  }
+  env: {}
 };
 
 module.exports = withMDX(nextConfig);
