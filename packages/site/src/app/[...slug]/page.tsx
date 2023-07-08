@@ -1,16 +1,12 @@
-import { headers } from 'next/headers';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import components from '@jpmorganchase/mosaic-mdx-components-server';
-import { loadPage } from '@jpmorganchase/mosaic-site-loaders';
+import { load } from '@jpmorganchase/mosaic-site-mdx-loader';
 
-export default async function Page() {
-  const pathname = headers().get('x-next-pathname') as string;
-  if (!pathname) {
-    return null;
-  }
-  const { source = '', data = {} } = await loadPage(pathname);
+export default async function Page({ params: { slug } }) {
+  const route = `/${slug.join('/')}`;
+  const { source = '', data = {} } = await load(route);
   const { content } = await compileMDX({
     source,
     components,
@@ -20,8 +16,19 @@ export default async function Page() {
         rehypePlugins: [rehypeSlug],
         remarkPlugins: [remarkGfm]
       },
-      parseFrontmatter: true
+      parseFrontmatter: false
     }
   });
   return content;
+}
+
+export async function generateStaticParams() {
+  const generateStaticParamsURL = process.env.GENERATE_STATIC_PARAMS_URL;
+  if (generateStaticParamsURL) {
+    const pages = await fetch(generateStaticParamsURL).then(res => res.json());
+    return pages.map(({ route }) => ({
+      slug: route.substring(1).split('/')
+    }));
+  }
+  return [];
 }

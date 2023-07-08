@@ -15,6 +15,8 @@
   "scripts": {
     "clean": "rm -fr public/.tmp .next",
     "build": "next build",
+    "export:static": "yarn mosaic export:static",
+    "build:static": "yarn cross-env GENERATE_STATIC_PARAMS_URL=\"http://localhost:8080/search-data-condensed.json\" concurrently --kill-others \"next build\"",
     "dev": "next dev",
     "start": "next start",
     "debug": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
@@ -24,6 +26,8 @@
     "e2e": "npx playwright test",
     "e2e:codegen": "npx playwright codegen localhost:3000",
     "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.mjs",
+    "serve:fs": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
+    "serve:static": "yarn mosaic serve:static -o ./out",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE=\"snapshot-file\" concurrently --kill-others \"yarn dev\"",
     "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE=\"snapshot-s3\" concurrently --kill-others \"yarn dev\"",
     "serve": "concurrently --kill-others \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\" -p 8080"
@@ -35,7 +39,7 @@
     "@jpmorganchase/mosaic-mdx-components-server": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-layouts": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.47",
-    "@jpmorganchase/mosaic-site-loaders": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-site-mdx-loader": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-site-preset-styles": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.47",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.47",

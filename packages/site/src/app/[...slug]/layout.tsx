@@ -1,5 +1,4 @@
 import classnames from 'classnames';
-import { headers } from 'next/headers';
 import {
   BaseUrlProvider,
   ImageProvider,
@@ -11,16 +10,13 @@ import {
 } from '@jpmorganchase/mosaic-site-components';
 import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
-import { loadPage } from '@jpmorganchase/mosaic-site-loaders';
+import { load } from '@jpmorganchase/mosaic-site-mdx-loader';
 
 import fontClassNames from './fonts';
 
-export default async function Layout({ children }) {
-  const pathname = headers().get('x-next-pathname') as string;
-  if (!pathname) {
-    return null;
-  }
-  const { data = {} } = await loadPage(pathname);
+export default async function Layout({ params: { slug }, children }) {
+  const route = `/${slug.join('/')}`;
+  const { data = {} } = await load(route);
   return (
     <SessionProvider>
       <StoreProvider value={data}>

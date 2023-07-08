@@ -52,17 +52,18 @@
     "//#gen:site": {
       "cache": false
     },
-    "//#gen:snapshot": {
-      "outputs": ["./packages/site/public/snapshots/[0-9]*/**"]
-    },
-    "gen:snapshot": {
-      "outputs": ["./packages/site/public/snapshots/latest/**"]
+    "export:static": {
+      "cache": false
     },
     "lint": {},
     "lint:fix": {},
 
     "//#serve": {},
     "serve": {
+      "outputs": []
+    },
+    "//#serve:static": {},
+    "serve:static": {
       "outputs": []
     },
     "//#serve:rig": {},
