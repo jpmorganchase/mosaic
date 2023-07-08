@@ -15,6 +15,7 @@ tsconfig.tsbuildinfo
 
 # Deployment
 packages/rig
+packages/site/out
 
 # Test Results
 coverage

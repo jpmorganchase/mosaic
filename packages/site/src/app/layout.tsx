@@ -1,13 +1,14 @@
-import Head from 'next/head';
+import { Metadata } from 'next';
 
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
+
+export const metadata: Metadata = {
+  title: 'Mosaic'
+};
 
 export default async function RootLayout({ children }) {
   return (
     <html lang="en">
-      <Head>
-        <title>Some title</title>
-      </Head>
       <body>
         <main>{children}</main>
       </body>
