@@ -2,11 +2,11 @@ import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import components from '@jpmorganchase/mosaic-mdx-components-server';
-import { load } from '@jpmorganchase/mosaic-site-mdx-loader';
+import { loadPage } from '@jpmorganchase/mosaic-site-mdx-loader';
 
 export default async function Page({ params: { slug } }) {
   const route = `/${slug.join('/')}`;
-  const { source = '', data = {} } = await load(route);
+  const { source = '', data = {} } = await loadPage(route);
   const { content } = await compileMDX({
     source,
     components,

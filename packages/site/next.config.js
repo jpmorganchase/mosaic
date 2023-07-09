@@ -7,7 +7,7 @@ const nextConfig = {
     mdxRs: true
   },
   reactStrictMode: true,
-  output: process.env.GENERATE_STATIC_PARAMS_URL ? 'output' : 'standalone',
+  output: process.env.GENERATE_STATIC_PARAMS_URL ? 'export' : 'standalone',
   swcMinify: true,
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
