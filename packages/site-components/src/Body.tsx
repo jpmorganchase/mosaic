@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react';
 
 import { createMDXScope } from './utils/createMDXScope';
 import { Page500 } from './500';
-import { Page404 } from './404';
 
 const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' } }) => {
   console.error('An un-handled error created a 500 message');
@@ -25,13 +24,6 @@ function MDXRemoteWithErrorBoundary({ components, source, meta = {} }) {
 export function Body({ components = {}, type, ...props }) {
   const { pageState } = useContentEditor();
   const { data: session } = useSession();
-
-  if (props.show404) {
-    return <Page404 />;
-  }
-  if (props.show500) {
-    return <Page500 />;
-  }
 
   if (pageState !== 'VIEW' && session !== null && type === 'mdx') {
     return (
