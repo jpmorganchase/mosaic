@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 import classnames from 'clsx';
 import { LinkButton } from '../LinkButton';
 
@@ -30,6 +30,8 @@ export interface HeroLink {
  */
 export interface HeroProps {
   backgroundImage?: string;
+  /** Optional children to use instead of links */
+  children?: ReactNode;
   /** Additional class name for root class override. */
   className?: string;
   /** Prop to provide a datestamp. */
@@ -42,7 +44,7 @@ export interface HeroProps {
   /** Image to be displayed. */
   image?: string;
   /** The title of the Hero. */
-  title: string | ReactElement;
+  title?: string | ReactElement;
   links?: HeroLink[];
   /** Defines the variant.
    * @defaultValue `regular`
@@ -95,8 +97,9 @@ function HeroImageContainer({ isFramed, heroBackgroundImage, heroImage, isFullWi
  * />
  * ```
  */
-export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
+export const Hero: React.FC<HeroProps> = ({
   backgroundImage,
+  children,
   className,
   datestamp,
   datestampLabel = 'Last Modified',
@@ -139,7 +142,7 @@ export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
         ) : null}
         {description ? <P2 className={styles.description}>{description}</P2> : null}
         {links ? (
-          <div className={styles.links}>
+          <div className={styles.children}>
             {links.map((link, linkIndex) => {
               const isLastLink = linkIndex === links.length - 1;
               return (
@@ -157,7 +160,9 @@ export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
               );
             })}
           </div>
-        ) : null}
+        ) : (
+          <div className={styles.children}>{children}</div>
+        )}
       </div>
       {image ? (
         <HeroImageContainer

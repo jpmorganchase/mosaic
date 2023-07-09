@@ -1,13 +1,13 @@
 import React from 'react';
-import { Hero } from '@jpmorganchase/mosaic-components';
+import { Hero, HeroProps } from '@jpmorganchase/mosaic-components';
 
-export function Page500() {
-  return (
-    <Hero
-      description="A 500 error occurred."
-      image="/img/500.png"
-      links={[{ url: '/', label: 'Return to Homepage' }]}
-      title="Whoops! something went wrong"
-    />
-  );
-}
+export const Page500: React.FC<HeroProps> = ({
+  children,
+  description = 'A 500 error occurred.',
+  title = 'Whoops! something went wrong',
+  ...rest
+}) => (
+  <Hero description={description} image="/img/500.png" title={title} {...rest}>
+    {children}
+  </Hero>
+);
