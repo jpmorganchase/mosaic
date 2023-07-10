@@ -48,7 +48,7 @@
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.51",
     "@philpl/buble": "^0.19.7",
     "@types/react": "^18.0.26",
-    "next": "^13.4.4",
+    "next": "^13.4.9",
     "next-auth": "^4.22.1",
     "remark-gfm": "3.0.1",
     "rehype-slug": "^5.0.1"
