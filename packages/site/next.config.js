@@ -1,4 +1,3 @@
-const webpack = require('webpack');
 const withMDX = require('@next/mdx')();
 
 const nextConfig = {
@@ -25,11 +24,6 @@ const nextConfig = {
     ]
   },
   webpack(config) {
-    // Swaps out Buble for a smaller version that removes the latest Regex spec features.
-    // See https://github.com/FormidableLabs/react-live#what-bundle-size-can-i-expect
-    config.plugins.push(
-      new webpack.NormalModuleReplacementPlugin(/^buble$/, require.resolve('@philpl/buble'))
-    );
     // Required by MDX-JS
     if (config.resolve.fallback) {
       config.resolve.fallback.fs = false;
