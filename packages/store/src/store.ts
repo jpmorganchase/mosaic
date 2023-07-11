@@ -29,6 +29,7 @@ export type SiteState = BreadcrumbsSlice &
     colorMode: ColorMode;
     actions: {
       setColorMode: (colorMode: ColorMode) => void;
+      getSearchData: () => Promise<void>;
     };
   };
 
@@ -71,7 +72,17 @@ const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
       ...getDefaultInitialState(),
       ...preloadedState,
       actions: {
-        setColorMode: (colorMode: ColorMode) => set({ colorMode })
+        setColorMode: (colorMode: ColorMode) => set({ colorMode }),
+        getSearchData: async () => {
+          const configPromise = fetch('/search-config.json').then(async rawSearchConfig =>
+            rawSearchConfig.json().then(searchConfig => set({ searchConfig }))
+          );
+          // TODO refactor this to a server function to support large data sets
+          const dataPromise = fetch('/search-data.json').then(async rawSearchIndex =>
+            rawSearchIndex.json().then(searchIndex => set({ searchIndex }))
+          );
+          return Promise.all([configPromise, dataPromise]);
+        }
       }
     }))
   );
