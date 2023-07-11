@@ -32,7 +32,7 @@
     "@types/fs-extra": "^9.0.13"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^9.0.9",
+    "@apidevtools/json-schema-ref-parser": "^10.1.0",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.38",
     "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.38",
     "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.38",
