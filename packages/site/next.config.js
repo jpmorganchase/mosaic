@@ -13,7 +13,6 @@ const nextConfig = {
     '@jpmorganchase/mosaic-content-editor-plugin',
     '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-site-components',
-    '@jpmorganchase/mosaic-site-middleware',
     '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
