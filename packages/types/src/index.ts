@@ -16,7 +16,6 @@ export * from './Serialiser.js';
 export * from './Source.js';
 export * from './Volume.js';
 export * from './WorkerData.js';
-export * from './Mode.js';
 export * from './Session.js';
 
 export {
