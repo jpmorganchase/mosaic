@@ -20,16 +20,13 @@
     "dev": "next dev",
     "start": "next start",
     "debug": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
-    "deploy": "yarn mosaic deploy --out snapshots --name latest --config mosaic.config.mjs",
+    "deploy": "yarn mosaic deploy --out out --name latest --config mosaic.config.mjs",
     "docker:build": "docker build . --tag mosaic-site:latest",
     "docker:start": "docker run -it --rm --ipc=host -p 3000:3000 --network mosaic-net --name mosaic-site mosaic-site:latest",
     "e2e": "npx playwright test",
     "e2e:codegen": "npx playwright codegen localhost:3000",
-    "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.mjs",
     "serve:fs": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
     "serve:static": "yarn mosaic serve:static -o ./out",
-    "serve:snapshot:file": "yarn cross-env MOSAIC_MODE=\"snapshot-file\" concurrently --kill-others \"yarn dev\"",
-    "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE=\"snapshot-s3\" concurrently --kill-others \"yarn dev\"",
     "serve": "concurrently --kill-others \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\" -p 8080"
   },
   "dependencies": {
