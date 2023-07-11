@@ -8,14 +8,6 @@ const nextConfig = {
   reactStrictMode: true,
   output: process.env.GENERATE_STATIC_PARAMS_URL ? 'export' : 'standalone',
   swcMinify: true,
-  transpilePackages: [
-    '@jpmorganchase/mosaic-components',
-    '@jpmorganchase/mosaic-content-editor-plugin',
-    '@jpmorganchase/mosaic-layouts',
-    '@jpmorganchase/mosaic-site-components',
-    '@jpmorganchase/mosaic-theme',
-    '@jpmorganchase/mosaic-store'
-  ],
   images: {
     domains: [
       /** Insert the domains where you will load images from */
