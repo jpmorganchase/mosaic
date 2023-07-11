@@ -2,6 +2,7 @@ import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import remarkDirective from 'remark-directive';
 import remarkGfm from 'remark-gfm';
 import { remark } from 'remark';
+import remarkMdx from 'remark-mdx';
 import { visit } from 'unist-util-visit';
 import { parse } from 'react-docgen-typescript';
 import type { Node } from 'unist';
@@ -25,7 +26,7 @@ interface PropsTablePluginPage extends Page {
 const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
   // TODO: add support for active mode
   async $afterSource(pages) {
-    const processor = remark().use(remarkDirective).use(remarkGfm);
+    const processor = remark().use(remarkMdx).use(remarkDirective).use(remarkGfm);
     for (const page of pages) {
       const tree = await processor.parse(page.content);
 
@@ -37,7 +38,7 @@ const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
 
           const componentPath = path.resolve(node.attributes.src);
 
-          const propsTableData = parse(componentPath, options)[0].props;
+          const propsTableData = parse(componentPath, options)[0]?.props;
 
           const tableHeaders = {
             type: 'tableRow',
@@ -95,6 +96,7 @@ const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
 
       page.content = remark()
         .data('settings', { fences: true })
+        .use(remarkMdx)
         .use(remarkDirective)
         .use(remarkGfm)
         .stringify(tree);

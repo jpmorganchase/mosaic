@@ -2,6 +2,7 @@ import path from 'path';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash-es';
 import { remark } from 'remark';
+import remarkMdx from 'remark-mdx';
 import remarkDirective from 'remark-directive';
 import { visitParents } from 'unist-util-visit-parents';
 
@@ -93,12 +94,12 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      const fullPath = page.fullPath;
+      const { fullPath } = page;
       if (!isNonHiddenPage(fullPath)) {
         continue;
       }
 
-      const tree = remark().use(remarkDirective).parse(page.content);
+      const tree = remark().use(remarkMdx).use(remarkDirective).parse(page.content);
       const processedTree = await processTree(
         tree,
         serialiser,
@@ -109,6 +110,7 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
 
       page.content = remark()
         .data('settings', { fences: true })
+        .use(remarkMdx)
         .use(remarkDirective)
         .stringify(processedTree);
 
