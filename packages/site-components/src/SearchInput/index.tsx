@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
-import { useSearchData } from './useSearchData';
+import { useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
@@ -8,7 +8,8 @@ import type { SearchResults } from './Results';
 import styles from './styles.css';
 
 export function SearchInput() {
-  const { searchIndex, searchConfig } = useSearchData();
+  const { getSearchData } = useStoreActions();
+  const { searchIndex, searchConfig } = useSearchIndex();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -45,6 +46,7 @@ export function SearchInput() {
   };
 
   useEffect(() => {
+    getSearchData();
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleEsc);
     return () => {
@@ -53,6 +55,9 @@ export function SearchInput() {
     };
   }, []);
 
+  if (!searchIndex || !searchConfig) {
+    return null;
+  }
   return (
     <div className={styles.root} ref={wrapperRef}>
       <FormField style={{ minWidth: 200 }}>
