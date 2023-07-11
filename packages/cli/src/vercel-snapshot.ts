@@ -22,7 +22,6 @@ export async function updateTraceFile(config, options) {
     const projectBase = process.cwd();
     const buildDir = path.posix.join(projectBase, '.next');
     const snapshotDir = options.out;
-    const snapshotName = options.name ?? new Date().toISOString();
 
     if (!fsExtra.existsSync(buildDir)) {
       console.warn(
@@ -32,7 +31,7 @@ export async function updateTraceFile(config, options) {
     const nftFilePath = path.posix.join(buildDir, 'server', 'pages', '[...route].js.nft.json');
 
     // Find all snapshot files
-    const paths = await globby(`**/${snapshotDir}/${snapshotName}/**`, {
+    const paths = await globby(`**/${snapshotDir}/**`, {
       cwd: projectBase,
       onlyFiles: true
     });
