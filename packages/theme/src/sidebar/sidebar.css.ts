@@ -18,7 +18,7 @@ export const sidebar = styleVariants({
   ],
   scrollable: {
     display: 'flex',
-    overflowY: 'scroll',
+    overflowY: 'auto',
     top: `${config.appHeader.height}px`
   }
 });
