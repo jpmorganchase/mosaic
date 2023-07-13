@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-git-repo",
-  "version": "0.1.0-beta.38",
+  "version": "0.1.0-beta.39",
   "author": "",
   "description": "Mosaic git repository source for core file system",
   "license": "Apache-2.0",
@@ -31,9 +31,9 @@
     "directory": "packages/source-git-repo"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.38",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.39",
     "rxjs": "^7.5.5",
     "deepmerge": "^4.2.2",
     "fs-extra": "^9.1.0",

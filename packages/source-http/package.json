@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-http",
-  "version": "0.1.0-beta.38",
+  "version": "0.1.0-beta.39",
   "author": "",
   "description": "Mosaic HTTP source for core file system",
   "license": "Apache-2.0",
@@ -31,9 +31,9 @@
     "directory": "packages/source-http"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.38",
+    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.39",
     "rxjs": "^7.5.5",
     "zod": "^3.19.1"
   },
