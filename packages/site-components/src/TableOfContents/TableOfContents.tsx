@@ -95,8 +95,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
 
   return items.length ? (
     <nav>
-      <Caption1>On this Page</Caption1>
-      <ul aria-label="Table of Contents" className={styles.list} role="tree">
+      <Caption1>On this page</Caption1>
+      <ul aria-label="Table of contents" className={styles.list} role="tree">
         {items.map((item, i) => (
           <TableOfContentsItem
             current={selectedHeading}
