@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-cli",
-  "version": "0.1.0-beta.38",
+  "version": "0.1.0-beta.39",
   "author": "",
   "description": "Mosaic command line scripts",
   "license": "Apache-2.0",
@@ -37,16 +37,16 @@
     "directory": "packages/cli"
   },
   "devDependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.38",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.39",
     "esbuild": "0.14.35",
     "esbuild-node-externals": "^1.0.2",
     "fast-glob": "^3.2.7"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-core": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.38",
-    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.38",
+    "@jpmorganchase/mosaic-core": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.39",
+    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.39",
     "@aws-sdk/client-s3": "^3.359.0",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
