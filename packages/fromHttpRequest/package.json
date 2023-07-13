@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-from-http-request",
-  "version": "0.1.0-beta.38",
+  "version": "0.1.0-beta.39",
   "author": "",
   "description": "Utility package to turn HTTP fetch requests to observables.  This package can be deleted when node 18 is used.",
   "license": "Apache-2.0",

@@ -1,5 +1,22 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.39
+
+### Patch Changes
+
+- d2ff626: Fix `$RefPlugin` circular ref error when content updates
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.39
+  - @jpmorganchase/mosaic-components@0.1.0-beta.39
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.39
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.39
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.39
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.39
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.39
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.39
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.39
+  - @jpmorganchase/mosaic-store@0.1.0-beta.39
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.39
+
 ## 0.1.0-beta.38
 
 ### Patch Changes
