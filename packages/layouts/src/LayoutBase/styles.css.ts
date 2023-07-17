@@ -29,6 +29,7 @@ export default {
   root: style([
     {
       display: 'grid',
+      overflow: 'hidden',
       gridTemplateColumns: '1fr',
       gridTemplateAreas: `
       "base-layout-header"

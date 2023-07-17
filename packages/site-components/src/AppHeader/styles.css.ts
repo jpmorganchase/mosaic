@@ -7,7 +7,6 @@ export default {
       flexGrow: 1,
       display: 'flex',
       alignItems: 'center',
-      flexWrap: 'wrap',
       justifyContent: 'space-between'
     },
     caption({ variant: 'caption6' }),

@@ -14,6 +14,7 @@ export default {
   ]),
   menuButton: style([
     button({ variant: 'square' }),
+    style({ lineHeight: 1 }),
     responsiveSprinkles({ marginLeft: ['x2', 'x2', 'x2', 'x2'] })
   ]),
   userInfo: responsiveSprinkles({
