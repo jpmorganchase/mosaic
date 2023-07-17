@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { caption, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
+import { caption, responsiveSprinkles, vars } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -12,12 +12,13 @@ export default {
     },
     caption({ variant: 'caption6' }),
     responsiveSprinkles({
-      marginLeft: ['x3', 'x3', 'x4', 'x4'],
-      marginRight: 'none'
+      marginLeft: ['x6'],
+      marginRight: ['x6']
     })
   ]),
   logoContainer: style([
     {
+      fontSize: vars.fontSize.s50,
       selectors: { ['a&']: { alignItems: 'center', display: 'flex', height: '100%' } }
     }
   ])
