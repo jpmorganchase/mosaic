@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles, link } from '@jpmorganchase/mosaic-theme';
+import { responsiveSprinkles, link, vars } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -18,7 +18,7 @@ export default {
       }
     },
     responsiveSprinkles({
-      paddingX: ['none', 'none', 'none', 'none']
+      paddingX: ['x2', 'x2', 'x2', 'x2']
     }),
     link({ variant: 'selectable' })
   ])
