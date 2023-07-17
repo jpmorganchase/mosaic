@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles, link, vars } from '@jpmorganchase/mosaic-theme';
+import { responsiveSprinkles, link } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
