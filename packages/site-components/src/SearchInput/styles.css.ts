@@ -6,7 +6,8 @@ import {
   shadow,
   foregroundColor,
   responsiveSprinkles,
-  selectableBorder
+  selectableBorder,
+  vars
 } from '@jpmorganchase/mosaic-theme';
 
 export const POPPER_Z_INDEX = 10;
@@ -14,7 +15,9 @@ export const POPPER_Z_INDEX = 10;
 export default {
   root: style([
     style({
-      position: 'relative'
+      position: 'relative',
+      paddingLeft: vars.space.horizontal.x2,
+      paddingRight: vars.space.horizontal.x2
     }),
     responsiveSprinkles({
       display: ['none', 'none', 'flex', 'flex']
