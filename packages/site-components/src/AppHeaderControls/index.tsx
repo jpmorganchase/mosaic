@@ -72,26 +72,23 @@ export const AppHeaderControls: React.FC = () => {
 
   return (
     <div className={styles.root}>
+      {isLoginEnabled && <EditorControls enabled={isLoggedIn} />}
       {searchEnabled && <SearchInput />}
       {isLoginEnabled && (
-        <>
-          <EditorControls enabled={isLoggedIn} />
-
-          <div className={styles.userInfo}>
-            {isLoggedIn ? (
-              <UserProfile
-                avatarUrl={session?.user?.image || ''}
-                firstName={toUpperFirst(session?.user?.name)}
-                prefixText="Welcome, "
-              />
-            ) : (
-              // eslint-disable-next-line react/jsx-no-bind
-              <Link href="/api/auth/signin" variant="component">
-                Login
-              </Link>
-            )}
-          </div>
-        </>
+        <div className={styles.userInfo}>
+          {isLoggedIn ? (
+            <UserProfile
+              avatarUrl={session?.user?.image || ''}
+              firstName={toUpperFirst(session?.user?.name)}
+              prefixText="Welcome, "
+            />
+          ) : (
+            // eslint-disable-next-line react/jsx-no-bind
+            <Link href="/api/auth/signin" variant="component">
+              Login
+            </Link>
+          )}
+        </div>
       )}
       <MenuButton
         CascadingMenuProps={{
