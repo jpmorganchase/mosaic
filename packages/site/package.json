@@ -14,7 +14,7 @@
   "style": "dist/index.css",
   "scripts": {
     "clean": "rm -fr public/.tmp .next",
-    "build": "next build",
+    "build": "yarn mosaic export:static && next build",
     "export:static": "yarn mosaic export:static",
     "build:static": "yarn cross-env GENERATE_STATIC_PARAMS_URL=\"http://localhost:8080/search-data-condensed.json\" concurrently --kill-others \"next build\"",
     "dev": "next dev",
