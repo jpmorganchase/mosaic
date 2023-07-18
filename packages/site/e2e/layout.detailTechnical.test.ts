@@ -37,6 +37,6 @@ test.describe('GIVEN a page with the `DetailTechnical` Layout', () => {
 
   test('THEN there is a table of contents', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/detail-technical');
-    await expect(page.locator("ul[aria-label='Table of Contents']")).toBeVisible();
+    await expect(page.locator("ul[aria-label='Table of contents']")).toBeVisible();
   });
 });

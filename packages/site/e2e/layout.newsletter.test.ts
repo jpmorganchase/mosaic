@@ -30,6 +30,6 @@ test.describe('GIVEN a page with the `Newsletter` Layout', () => {
 
   test('THEN there is **NO** table of contents', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/newsletter');
-    await expect(page.locator("ul[aria-label='Table of Contents']")).toHaveCount(0);
+    await expect(page.locator("ul[aria-label='Table of contents']")).toHaveCount(0);
   });
 });
