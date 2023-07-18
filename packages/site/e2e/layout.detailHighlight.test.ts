@@ -16,7 +16,7 @@ test.describe('GIVEN a page with the `DetailHighlight` Layout', () => {
 
   test('THEN there is a table of contents', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/detail-highlight');
-    await expect(page.locator("ul[aria-label='Table of Contents']")).toBeDefined();
+    await expect(page.locator("ul[aria-label='Table of contents']")).toBeDefined();
   });
 
   test('THEN there is a footer', async ({ page }) => {
