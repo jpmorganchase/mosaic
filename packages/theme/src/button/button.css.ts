@@ -47,7 +47,8 @@ export type ButtonSizeSprinkles = Parameters<typeof buttonSizeSprinkles>[0];
 export const button = recipe({
   base: style([
     {
-      boxSizing: 'content-box'
+      boxSizing: 'content-box',
+      textTransform: 'uppercase'
     },
     responsiveSprinkles({ paddingX: ['x2', 'x2', 'x2', 'x4'] })
   ]),
