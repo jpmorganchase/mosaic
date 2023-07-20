@@ -15,8 +15,6 @@ export interface FilterSortDropdownProps extends PartialDropdownProps {
   source?: string[];
 }
 
-const DropdownIcon = () => <Icon name="chevronDown" />;
-
 export function FilterSortDropdown({
   className,
   itemToString = defaultItemToLabel,
@@ -43,10 +41,10 @@ export function FilterSortDropdown({
       selected={sort}
       source={source}
       triggerComponent={
-        <DropdownButton
-          IconComponent={DropdownIcon}
-          label={labelButton ? labelButton(sort) : sort}
-        />
+        <span className={styles.triggerRoot}>
+          <Icon name="swap" size="small" />
+          <DropdownButton label={labelButton ? labelButton(sort) : sort} />
+        </span>
       }
       width={150}
       {...rest}
