@@ -23,20 +23,20 @@ export const Label: React.FC<LabelProps> = ({
   tooltipClass,
   TooltipProps = {},
   ...rest
-}) => {
-  return (
-    <Tooltip
-      disabled={!tooltip}
-      {...TooltipProps}
-      content={
-        <div className={styles.tooltip}>
-          {TooltipProps.title && <span className={styles.tooltipTitle}>{TooltipProps.title}</span>}
-          <span className={styles.tooltipContent}>{tooltip}</span>
-        </div>
-      }
-      status="info"
-    >
-      <span {...rest}>{children}</span>
-    </Tooltip>
-  );
-};
+}) => (
+  <Tooltip
+    disabled={!tooltip}
+    {...TooltipProps}
+    content={
+      <div className={styles.tooltip}>
+        {TooltipProps.title && <span className={styles.tooltipTitle}>{TooltipProps.title}</span>}
+        <span className={styles.tooltipContent}>{tooltip}</span>
+      </div>
+    }
+    status="info"
+  >
+    <span className={className} {...rest}>
+      {children}
+    </span>
+  </Tooltip>
+);

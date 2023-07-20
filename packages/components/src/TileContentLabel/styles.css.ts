@@ -7,7 +7,7 @@ export default {
   }),
   numRemaining: caption({ variant: 'caption4' }),
   root: style([
-    caption({ variant: 'caption6' }),
+    caption({ variant: 'caption5' }),
     responsiveSprinkles({
       marginTop: ['x2', 'x2', 'x2', 'x2'],
       marginRight: ['x1', 'x1', 'x1', 'x1']
