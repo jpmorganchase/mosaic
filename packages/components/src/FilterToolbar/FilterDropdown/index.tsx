@@ -22,8 +22,6 @@ export interface FilterDropdownProps extends DropdownProps<string, 'multiple'> {
 
 const CLEAR_ALL = 'Clear all';
 
-const DropdownIcon = () => <Icon name="chevronDown" />;
-
 export function FilterDropdown({
   className,
   itemToString,
@@ -50,10 +48,12 @@ export function FilterDropdown({
       selectionStrategy="multiple"
       source={listItems}
       triggerComponent={
-        <DropdownButton
-          IconComponent={DropdownIcon}
-          label={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
-        />
+        <span className={styles.triggerRoot}>
+          <Icon name="filter" size="small" />
+          <DropdownButton
+            label={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
+          />
+        </span>
       }
       width={200}
       {...rest}
