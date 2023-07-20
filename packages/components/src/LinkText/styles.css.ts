@@ -1,5 +1,17 @@
 import { link, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
-import { style } from '@vanilla-extract/css';
+import { style, globalStyle } from '@vanilla-extract/css';
+
+const iconStyle = style([
+  {
+    color: 'inherit',
+    stroke: 'currentColor',
+    height: '1em'
+  },
+  responsiveSprinkles({
+    paddingX: ['x1', 'x1', 'x1', 'x1']
+  })
+]);
+
 export default {
   root: style([
     {
@@ -9,13 +21,10 @@ export default {
   document: link({ variant: 'document' }),
   regular: link({ variant: 'regular' }),
   disabled: style({}),
-  icon: style([
-    {
-      color: 'inherit',
-      stroke: 'currentColor'
-    },
-    responsiveSprinkles({
-      paddingX: ['x1', 'x1', 'x1', 'x1']
-    })
-  ])
+  icon: iconStyle
 };
+
+globalStyle(`${iconStyle} > svg.saltIcon`, {
+  height: 'calc(1em - 3px)',
+  minHeight: 'auto'
+});
