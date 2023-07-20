@@ -2,6 +2,7 @@ import path from 'path';
 import { reduce, omit, escapeRegExp } from 'lodash-es';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import deepmerge from 'deepmerge';
 
 import normaliseRefs from './utils/normaliseRefs.js';
 
@@ -139,7 +140,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
           pageExtensions,
           ignorePages
         );
-        normalisedRefs[fullPath] = { ...page, ...expandedRefs };
+        normalisedRefs[fullPath] = deepmerge(page, expandedRefs);
       }
 
       const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
