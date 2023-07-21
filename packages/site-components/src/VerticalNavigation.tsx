@@ -76,9 +76,9 @@ const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
   menu.reduce((result, item) => {
     const menuItem = item?.childNodes?.length ? (
       <SubMenu
-        active={selectedNodeId === item.id}
+        active={selectedNodeId === item.id && selectedNodeId !== undefined}
         component={<SubMenuLink href={item.data.link} selectedNodeId={selectedNodeId} />}
-        defaultOpen={expandedNodeIds.has(item.id)}
+        defaultOpen={expandedNodeIds?.has(item.id)}
         key={item.id}
         label={item.name}
       >
