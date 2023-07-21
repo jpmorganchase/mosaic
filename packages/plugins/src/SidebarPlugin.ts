@@ -248,7 +248,17 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           let pages = await createPageList(rootDir);
           pages = pages.filter(page => removeExcludedPages(page));
           const groupMap = createGroupMap(pages);
+
           const sidebarData = linkGroupMap(groupMap, rootDir);
+          if (sidebarData[0] === undefined) {
+            console.warn(
+              `[Mosaic] SidebarPlugin - Unable to create a Sidebar grouping for ${rootDir}`
+            );
+            console.log(
+              '[Mosaic] SidebarPlugin - likely you have a directory without an index file'
+            );
+            return;
+          }
           const pagesByPriority = sortPagesByPriority(sidebarData);
           addNavigationToFrontmatter(pagesByPriority);
           const pagesWithRootMovedDown = moveRootPageDown(pagesByPriority);
