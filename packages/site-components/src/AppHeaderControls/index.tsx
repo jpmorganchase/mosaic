@@ -3,7 +3,7 @@ import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/navigation';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
+import { useColorMode, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
@@ -29,7 +29,6 @@ export const AppHeaderControls: React.FC = () => {
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
-  const { searchEnabled } = useSearchIndex();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -73,7 +72,7 @@ export const AppHeaderControls: React.FC = () => {
   return (
     <div className={styles.root}>
       {isLoginEnabled && <EditorControls enabled={isLoggedIn} />}
-      {searchEnabled && <SearchInput />}
+      <SearchInput />
       {isLoginEnabled && (
         <div className={styles.userInfo}>
           {isLoggedIn ? (
