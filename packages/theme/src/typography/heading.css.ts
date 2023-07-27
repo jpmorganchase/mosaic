@@ -48,7 +48,7 @@ export const headingSprinkles = createSprinkles(
 export type HeadingSprinkles = Parameters<typeof headingSprinkles>[0];
 
 export const heading = recipe({
-  base: { textDecoration: 'none' },
+  base: { textDecoration: 'none', scrollMarginTop: '2em' },
   variants: {
     variant: {
       heading0: headingSprinkles({
