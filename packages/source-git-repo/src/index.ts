@@ -55,17 +55,28 @@ export const schema = z.object({
   /**
    * Add to use a folder prefix
    */
-  prefixDir: z.string({ required_error: 'Please provide a prefix directory name' })
+  prefixDir: z.string({ required_error: 'Please provide a prefix directory name' }),
+  /**
+   * If true, repo is pulled once
+   */
+  disableAutoPullChanges: z.boolean().optional().default(false)
 });
 
 export type GitRepoSourceOptions = z.infer<typeof schema>;
 
 const GitRepoSource: Source<GitRepoSourceOptions> = {
-  create(options, { serialiser, pageExtensions }): Observable<Page[]> {
-    validateMosaicSchema(schema, options);
-    const { credentials, remote, branch, repo: repoUrl, prefixDir, extensions } = options;
-    const repo = new Repo(credentials, remote, branch, repoUrl);
+  create(options, { serialiser, pageExtensions, schedule }): Observable<Page[]> {
+    const {
+      credentials,
+      remote,
+      branch,
+      repo: repoUrl,
+      prefixDir,
+      extensions,
+      disableAutoPullChanges
+    } = validateMosaicSchema(schema, options);
 
+    const repo = new Repo(credentials, remote, branch, repoUrl);
     const rootDir = path.join(repo.dir, options.subfolder);
 
     const watchFolder$: Observable<Page[]> = localFolderSource.create(
@@ -74,15 +85,15 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
         prefixDir,
         extensions
       },
-      { serialiser, pageExtensions }
+      { serialiser, pageExtensions, schedule }
     );
-    const commits$ = fromCommitChange(repo);
+    const commits$ = fromCommitChange(repo, disableAutoPullChanges, schedule.checkIntervalMins);
 
     return merge(
       defer(() => repo.init()),
       commits$
     ).pipe(
-      delay(1000),
+      delay(schedule.initialDelayMs),
       switchMap(() => watchFolder$),
       mergeMap(async pages => {
         const out = [];
