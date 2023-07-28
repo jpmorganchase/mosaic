@@ -10,3 +10,4 @@ export * from './SnapshotS3EnvSchema.js';
 export * from './SerialiserModuleSchema.js';
 export * from './SourceModuleSchema.js';
 export * from './SourceWorkflowSchema.js';
+export * from './SourceScheduleSchema.js';
