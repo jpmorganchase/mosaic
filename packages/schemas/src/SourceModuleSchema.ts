@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { pluginModuleSchema } from './PluginModuleSchema.js';
 import { sourceWorkflowSchema } from './SourceWorkflowSchema.js';
+import { sourceScheduleSchema } from './SourceScheduleSchema.js';
 
 export const sourceModuleSchema = pluginModuleSchema.merge(
   z.object({
@@ -15,7 +16,11 @@ export const sourceModuleSchema = pluginModuleSchema.merge(
     /**
      * A collection of workflows that can be triggered for this source
      */
-    workflows: z.array(sourceWorkflowSchema).optional()
+    workflows: z.array(sourceWorkflowSchema).optional(),
+    /**
+     * Configure how often a remote source should check for content updates
+     */
+    schedule: sourceScheduleSchema.optional()
   })
 );
 
