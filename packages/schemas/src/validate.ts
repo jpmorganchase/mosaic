@@ -1,11 +1,11 @@
-import { z, ZodError } from 'zod';
+import { z, ZodError, ZodTypeAny } from 'zod';
 
 // eslint-disable-next-line import/prefer-default-export
-export function validateMosaicSchema<T extends z.ZodTypeAny>(
+export function validateMosaicSchema<T extends ZodTypeAny>(
   schema: T,
   options: Record<string, unknown>,
   exitOnError = false
-) {
+): z.infer<typeof schema> {
   try {
     return schema.parse(options);
   } catch (err: unknown) {
