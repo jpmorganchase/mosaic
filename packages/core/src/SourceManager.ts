@@ -5,7 +5,8 @@ import type {
   IVolumeMutable,
   PluginModuleDefinition,
   SerialiserModuleDefinition,
-  SourceModuleDefinition
+  SourceModuleDefinition,
+  SourceSchedule
 } from '@jpmorganchase/mosaic-types';
 
 import Source from './Source.js';
@@ -34,6 +35,7 @@ export default class SourceManager {
   #pageExtensions: string[];
   #ignorePages: string[];
   #globalConfig = createConfig();
+  #schedule: SourceSchedule;
 
   constructor(
     globalFilesystem,
@@ -41,7 +43,8 @@ export default class SourceManager {
     plugins = [],
     serialisers = [],
     pageExtensions = [],
-    ignorePages = []
+    ignorePages = [],
+    schedule
   ) {
     this.#plugins = plugins;
     this.#pageExtensions = pageExtensions;
@@ -49,6 +52,7 @@ export default class SourceManager {
     this.#serialisers = serialisers;
     this.#globalFilesystem = globalFilesystem;
     this.#sharedFilesystem = sharedFilesystem;
+    this.#schedule = schedule;
   }
 
   onSourceUpdate(callback) {
@@ -90,7 +94,11 @@ export default class SourceManager {
       let sourceActive = false;
 
       const source = new Source(
-        sourceDefinition,
+        {
+          // if the source definition does not have a schedule then apply the default
+          schedule: sourceDefinition.schedule ? sourceDefinition.schedule : this.#schedule,
+          ...sourceDefinition
+        },
         {
           ...(sourceDefinition.options as Record<string, unknown>),
           ...options

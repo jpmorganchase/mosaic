@@ -33,11 +33,11 @@ function createPageTest(ignorePages, pageExtensions) {
 }
 
 export default async function createSourceObservable(
-  { modulePath, options, pageExtensions, ignorePages }: WorkerData,
+  { modulePath, options, pageExtensions, ignorePages, schedule }: WorkerData,
   serialiser
 ): Promise<Observable<Page[]>> {
   const api = await getSourceDefinitionExports(modulePath);
-  const source$ = api.create(options, { serialiser, pageExtensions });
+  const source$ = api.create(options, { serialiser, pageExtensions, schedule });
 
   if (!isObservable(source$)) {
     throw new Error(`Source at '${modulePath}' did not return an Observable.`);
