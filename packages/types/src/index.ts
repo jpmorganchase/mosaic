@@ -3,7 +3,8 @@ import type {
   MosaicConfig,
   PluginModuleDefinition,
   SourceModuleDefinition,
-  SourceWorkflow
+  SourceWorkflow,
+  SourceSchedule
 } from '@jpmorganchase/mosaic-schemas';
 
 export * from './Content.js';
@@ -24,5 +25,6 @@ export {
   MosaicConfig,
   PluginModuleDefinition,
   SourceModuleDefinition,
-  SourceWorkflow
+  SourceWorkflow,
+  SourceSchedule
 };
