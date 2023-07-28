@@ -23,9 +23,12 @@ function mockTransformer(response: any) {
 
 import Source from '../index.js';
 
-const options = {
+const schedule = {
   checkIntervalMins: 3,
-  initialDelayMs: 100,
+  initialDelayMs: 100
+};
+
+const options = {
   endpoints: ['https://api.endpoint.com'],
   transformResponseToPagesModulePath: '',
   prefixDir: 'prefixDir'
@@ -52,7 +55,9 @@ describe('GIVEN an HTTP Source ', () => {
 
     it('it emits a response after `initialDelayMs` and periodically after checkIntervalMins', () => {
       testScheduler.run(({ expectObservable }) => {
-        const Source$: Observable<Page[]> = Source.create(options, {}).pipe(
+        const Source$: Observable<Page[]> = Source.create(options, {
+          schedule
+        }).pipe(
           take(4), // make it actually finite, so it can be rendered
           concatWith(NEVER) // but pretend it's infinite by not completing
         );
@@ -65,8 +70,8 @@ describe('GIVEN an HTTP Source ', () => {
          * Note, you need to knock 1 ms off the expected delay because the marbles themselves advance time by 1 virtual frame
          * https://rxjs.dev/guide/testing/marble-testing#time-progression-syntax
          */
-        const delayMs = options.checkIntervalMins * 60000 - 1;
-        const expected = `${options.initialDelayMs}ms a ${delayMs}ms b ${delayMs}ms c ${delayMs}ms d`;
+        const delayMs = schedule.checkIntervalMins * 60000 - 1;
+        const expected = `${schedule.initialDelayMs}ms a ${delayMs}ms b ${delayMs}ms c ${delayMs}ms d`;
 
         const expectedValues = options.endpoints.map(() => 'response');
 
