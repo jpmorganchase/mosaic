@@ -197,17 +197,19 @@ export default class Repo {
   onCommitChange(
     callback: (files: DiffResult | null) => void,
     errCallback: (e: unknown) => void,
-    disableAutoPullChanges = false,
-    updateInterval = 15 * 60 * 1000
+    disableAutoPullChanges: boolean,
+    updateInterval: number
   ) {
     const updatedFilesGen = updatedFilesGenerator(this, disableAutoPullChanges);
 
     let intervalId: NodeJS.Timer | null = setInterval(async () => {
       try {
-        const { value: updatedFiles } = await updatedFilesGen.next();
+        if (this.#cloned) {
+          const { value: updatedFiles } = await updatedFilesGen.next();
 
-        if (updatedFiles && (disableAutoPullChanges || updatedFiles.length)) {
-          callback(updatedFiles);
+          if (updatedFiles && (disableAutoPullChanges || updatedFiles.length)) {
+            callback(updatedFiles);
+          }
         }
       } catch (e: unknown) {
         console.warn(`[Mosaic] Unsubscribing from \`onCommitChange\` for ${this.name}`);
@@ -329,8 +331,6 @@ export default class Repo {
 
   async init() {
     try {
-      this.#cloned = true;
-
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
         console.debug(`[Mosaic] Creating main worktree for repo '${this.#name}'`);
         await fs.emptyDir(this.#cloneRootDir);
@@ -343,6 +343,7 @@ export default class Repo {
       } else {
         console.debug(`[Mosaic] Re-using main worktree for repo '${this.#name}'`);
       }
+      this.#cloned = true;
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
         console.debug(
           `[Mosaic] Creating linked worktree repo '${this.#name} branch '${this.#branch}'`
