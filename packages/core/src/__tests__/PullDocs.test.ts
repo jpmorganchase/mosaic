@@ -6,6 +6,12 @@ import { MosaicConfig } from '@jpmorganchase/mosaic-schemas';
 
 jest.mock('../SourceManager');
 
+jest.mock('@jpmorganchase/mosaic-schemas', () => ({
+  ...jest.requireActual('@jpmorganchase/mosaic-schemas'),
+  __esModule: true,
+  validateMosaicSchema: jest.fn().mockImplementation((_schema, config) => config)
+}));
+
 const mockConfig: MosaicConfig = {
   sources: [
     {
@@ -15,7 +21,8 @@ const mockConfig: MosaicConfig = {
   ],
   plugins: [],
   serialisers: [],
-  pageExtensions: ['.mdx']
+  pageExtensions: ['.mdx'],
+  schedule: { checkIntervalMins: 1, initialDelayMs: 1000 }
 };
 
 describe('GIVEN PullDocs', () => {
@@ -103,7 +110,8 @@ describe('GIVEN PullDocs', () => {
           }
         ],
         ['.mdx'],
-        []
+        [],
+        { checkIntervalMins: 1, initialDelayMs: 1000 }
       );
     });
 
