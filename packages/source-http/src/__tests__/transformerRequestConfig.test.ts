@@ -22,11 +22,14 @@ function toUpperCaseTransformer(response) {
   return [response.correctHeaders.toUpperCase()];
 }
 
-const endpoints: [string] = ['https://api.endpoint.com/1'];
+const endpoints: [string] = ['https://api.endpoint.com/my-source'];
+
+const schedule = {
+  checkIntervalMins: 3,
+  initialDelayMs: 100
+};
 
 const options = {
-  checkIntervalMins: 3,
-  initialDelayMs: 100,
   endpoints,
   transformResponseToPagesModulePath: '',
   prefixDir: 'prefixDir'
@@ -54,7 +57,7 @@ describe('GIVEN an HTTP Source ', () => {
       server.close();
     });
     it('should use the request config', done => {
-      const source$: Observable<Page[]> = Source.create(options, {});
+      const source$: Observable<Page[]> = Source.create(options, { schedule });
 
       source$.pipe(take(1)).subscribe({
         next: result => {
