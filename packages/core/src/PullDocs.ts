@@ -33,6 +33,7 @@ export default class PullDocs {
    * @param config.serialisers  Serialisers are a form of plugin that tell PullDocs how to turn a file from/to a storable form for the filesystem - or back into a `Page` object
    * @param config.ignorePages Page names to exclude from lazy loading / `$ref`s / `$tag`s / serialisers and also any plugins that expect pages as input. Example input would be "ignore-me.xml"
    * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
+   * @param config.schedule Schedule to re-pull content from remote sources
    */
   constructor(config: MosaicConfig) {
     const {
