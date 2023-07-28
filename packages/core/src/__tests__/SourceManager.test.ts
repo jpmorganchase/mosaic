@@ -252,4 +252,64 @@ describe('GIVEN SourceManager', () => {
       expect(Source.prototype.start).toHaveBeenCalled();
     });
   });
+
+  describe('WHEN adding sources that are **NOT** scheduled', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      Source.prototype.constructorSpy.mockReset();
+      sourceManager = new SourceManager({}, {}, [{ options: { plugins: true } }], [], [], [], {
+        checkIntervalMins: 30,
+        initialDelayMs: 1000
+      });
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
+    });
+    test('THEN the Source Manager applies a schedule', () => {
+      expect(Source.prototype.constructorSpy).toBeCalledWith(
+        {
+          modulePath: 'source-module',
+          name: 'source',
+          schedule: { checkIntervalMins: 30, initialDelayMs: 1000 }
+        },
+        {},
+        [],
+        [],
+        {},
+        undefined
+      );
+    });
+  });
+  describe('WHEN adding sources that are scheduled', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      Source.prototype.constructorSpy.mockReset();
+      sourceManager = new SourceManager({}, {}, [{ options: { plugins: true } }], [], [], [], {
+        checkIntervalMins: 30,
+        initialDelayMs: 1000
+      });
+      scheduleOnStartCallback();
+      await sourceManager.addSource(
+        {
+          name: 'source',
+          modulePath: 'source-module',
+          schedule: { checkIntervalMins: 5, initialDelayMs: 5000 }
+        },
+        {}
+      );
+    });
+    test('THEN the Source Manager applies the schedule from the source definition', () => {
+      expect(Source.prototype.constructorSpy).toBeCalledWith(
+        {
+          modulePath: 'source-module',
+          name: 'source',
+          schedule: { checkIntervalMins: 5, initialDelayMs: 5000 }
+        },
+        {},
+        [],
+        [],
+        {},
+        undefined
+      );
+    });
+  });
 });
