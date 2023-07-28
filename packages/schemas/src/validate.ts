@@ -7,7 +7,7 @@ export function validateMosaicSchema<T extends z.ZodTypeAny>(
   exitOnError = false
 ) {
   try {
-    schema.parse(options);
+    return schema.parse(options);
   } catch (err: unknown) {
     console.group('[Mosaic] schema validation error');
     console.table((err as ZodError).issues);
@@ -16,4 +16,5 @@ export function validateMosaicSchema<T extends z.ZodTypeAny>(
       process.exit(1);
     }
   }
+  return undefined;
 }
