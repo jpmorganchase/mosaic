@@ -24,9 +24,12 @@ const endpoints: [string, string, string] = [
   'https://api.endpoint.com/3'
 ];
 
-const options = {
+const schedule = {
   checkIntervalMins: 3,
-  initialDelayMs: 100,
+  initialDelayMs: 100
+};
+
+const options = {
   endpoints,
   transformResponseToPagesModulePath: '',
   prefixDir: 'prefixDir'
@@ -62,7 +65,7 @@ describe('GIVEN an HTTP Source ', () => {
     });
 
     it('should merge results from all endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = Source.create(options, {});
+      const source$: Observable<Page[]> = Source.create(options, { schedule });
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -73,7 +76,7 @@ describe('GIVEN an HTTP Source ', () => {
     });
 
     it('should transform the responses using the transform function', done => {
-      const source$: Observable<Page[]> = Source.create(options, {});
+      const source$: Observable<Page[]> = Source.create(options, { schedule });
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -107,7 +110,7 @@ describe('GIVEN an HTTP Source ', () => {
     });
 
     it('should merge results from **successful** endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = Source.create(options, {});
+      const source$: Observable<Page[]> = Source.create(options, { schedule });
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -139,7 +142,7 @@ describe('GIVEN an HTTP Source ', () => {
       server.close();
     });
     it('should merge results from **successful** endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = Source.create(options, {});
+      const source$: Observable<Page[]> = Source.create(options, { schedule });
 
       source$.pipe(take(1)).subscribe({
         next: result => {
