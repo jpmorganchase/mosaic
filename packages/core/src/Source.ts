@@ -13,6 +13,7 @@ import type {
   Serialiser,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
+  SourceSchedule,
   SourceWorkflow
 } from '@jpmorganchase/mosaic-types';
 
@@ -34,6 +35,7 @@ export default class Source {
   #pageExtensions: string[];
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
+  #schedule: SourceSchedule;
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -42,7 +44,7 @@ export default class Source {
   filesystem: MutableVolume;
 
   constructor(
-    { modulePath, namespace }: SourceModuleDefinition,
+    { modulePath, namespace, schedule }: SourceModuleDefinition,
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
@@ -54,6 +56,7 @@ export default class Source {
     this.#globalFilesystem = globalFilesystem;
     this.#ignorePages = ignorePages;
     this.#workflows = workflows;
+    this.#schedule = schedule;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
@@ -167,7 +170,8 @@ export default class Source {
       pageExtensions: this.#pageExtensions,
       ignorePages: this.#ignorePages,
       plugins: this.#plugins,
-      serialisers: this.#serialisers
+      serialisers: this.#serialisers,
+      schedule: this.#schedule
     });
     worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
     worker.once(EVENT.EXIT, () => {
