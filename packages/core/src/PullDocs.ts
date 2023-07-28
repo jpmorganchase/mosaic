@@ -35,18 +35,18 @@ export default class PullDocs {
    * @param config.pageExtensions Exts of files to treat as pages. Pages contain metadata and content, in any file format (as long as a serialiser exists to encode/decode them). They can be referenced via `$ref`s / `$tag`s and also support lazy loading
    */
   constructor(config: MosaicConfig) {
-    validateMosaicSchema(mosaicConfigSchema, config, true);
-    const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.#ufs.use(sharedFilesystem as unknown as any);
-
     const {
       ignorePages = [],
       sources = [],
       plugins = [],
       serialisers = [],
-      pageExtensions = ['.mdx']
-    } = config;
+      pageExtensions = ['.mdx'],
+      schedule
+    } = validateMosaicSchema(mosaicConfigSchema, config, true);
+    const sharedFilesystem = new MutableVolume(new FileAccess(new Volume()), '*');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.#ufs.use(sharedFilesystem as unknown as any);
+
     this.#sourceDefinitions = sources.filter((source: SourceModuleDefinition) => !source.disabled);
     this.#vfs = new UnionVolume(new UnionFileAccess(this.#ufs), '*');
     this.#sourceManager = new SourceManager(
@@ -84,7 +84,8 @@ export default class PullDocs {
         filter: /\.json$/
       }),
       pageExtensions,
-      ignorePages
+      ignorePages,
+      schedule
     );
   }
 
@@ -108,7 +109,7 @@ export default class PullDocs {
     return this.#sourceManager.triggerWorkflow(name, filePath, data);
   }
 
-  async addSource(sourceDefinition) {
+  async addSource(sourceDefinition: SourceModuleDefinition) {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {
       console.error(

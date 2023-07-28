@@ -1,7 +1,8 @@
 import type {
   SerialiserModuleDefinition,
   PluginModuleDefinition,
-  SourceModuleDefinition
+  SourceModuleDefinition,
+  SourceSchedule
 } from './index.js';
 
 export type WorkerData<Options = {}> = {
@@ -17,4 +18,5 @@ export type WorkerData<Options = {}> = {
   plugins: PluginModuleDefinition[];
   serialisers: SerialiserModuleDefinition[];
   modulePath: string;
+  schedule: SourceSchedule;
 };
