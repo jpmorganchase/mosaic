@@ -21,7 +21,10 @@ export const mosaicConfigSchema = z.object({
   serialisers: z.array(serialiserModuleSchema),
   plugins: z.array(pluginModuleSchema),
   sources: z.array(sourceModuleSchema).nonempty(),
-  schedule: sourceScheduleSchema.optional().default({ checkIntervalMins: 30, initialDelayMs: 1000 })
+  schedule: sourceScheduleSchema.optional().default({
+    checkIntervalMins: 30,
+    initialDelayMs: 1000
+  })
 });
 
 export type MosaicConfig = z.infer<typeof mosaicConfigSchema>;
