@@ -1,9 +1,10 @@
-import { isObservable, map } from 'rxjs';
+import { isObservable, map, catchError, throwError } from 'rxjs';
 import type { Observable } from 'rxjs';
 import path from 'path';
 import { escapeRegExp } from 'lodash-es';
-
 import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
+
+import { exponentialBackOffRetryStrategy } from './exponentialBackOffRetryStrategy.js';
 
 async function getSourceDefinitionExports(modulePath): Promise<Source> {
   const { default: defaultProp }: { default: Source | { __esModule: boolean; default: Source } } =
@@ -74,6 +75,13 @@ NOTE: Only ${pageExtensions.join(
           route: page.route ? page.route.toLowerCase() : page.fullPath.toLowerCase()
         });
       }, [])
-    )
+    ),
+    exponentialBackOffRetryStrategy(schedule),
+    catchError(error => {
+      console.log(
+        `[Mosaic] Source failed and retries are ${schedule.retryEnabled ? 'exhausted' : 'disabled'}`
+      );
+      return throwError(() => error);
+    })
   );
 }
