@@ -3,7 +3,7 @@ title: Git Repo Source
 layout: DetailTechnical
 sidebar:
   priority: 2
-lastModified: 1686557319860
+lastModified: 1690880756428
 fullPath: /mosaic/configure/sources/git-repo-source.mdx
 route: /mosaic/configure/sources/git-repo-source
 breadcrumbs:
@@ -117,6 +117,14 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
+      - id: /mosaic/configure/sources/schedules
+        fullPath: /mosaic/configure/sources/schedules.mdx
+        name: Schedules
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/sources/schedules
+        childNodes: []
       - id: /mosaic/configure/sources/local-folder-source
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
         name: Local Folder Source
@@ -213,7 +221,7 @@ export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PA
 | Property            | Description                                                                      | Required |
 | ------------------- | -------------------------------------------------------------------------------- | -------- |
 | modulePath          | The path to the installed module (@jpmorganchase/mosaic-source-git-repo)         | Yes      |
-| namspace            | The scope for this source.                                                       | Yes      |
+| namespace           | The scope for this source.                                                       | Yes      |
 | disabled            | When true, content from this source is not used                                  | No       |
 | options.credentials | Collection of URLS to make requests                                              | Yes      |
 | options.prefixDir   | The root path used in the content URL                                            | Yes      |

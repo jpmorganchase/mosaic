@@ -3,7 +3,7 @@ title: HTTP Source
 layout: DetailTechnical
 sidebar:
   priority: 1
-lastModified: 1686557319861
+lastModified: 1690880756466
 fullPath: /mosaic/configure/sources/http-source.mdx
 route: /mosaic/configure/sources/http-source
 breadcrumbs:
@@ -111,6 +111,14 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
+      - id: /mosaic/configure/sources/schedules
+        fullPath: /mosaic/configure/sources/schedules.mdx
+        name: Schedules
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/sources/schedules
+        childNodes: []
       - id: /mosaic/configure/sources/local-folder-source
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
         name: Local Folder Source
@@ -195,7 +203,7 @@ Multiple endpoints can be specified and the source will combine and transform th
 | Property                                   | Description                                                                   | Required |
 | ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
 | modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
-| namspace                                   | The scope for this source                                                     | Yes      |
+| namespace                                  | The scope for this source                                                     | Yes      |
 | disabled                                   | When true, content from this source is not used                               | No       |
 | options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
 | options.prefixDir                          | The root path used in the content URL                                         | Yes      |

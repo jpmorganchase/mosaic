@@ -175,6 +175,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/schedules</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/custom-components</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
