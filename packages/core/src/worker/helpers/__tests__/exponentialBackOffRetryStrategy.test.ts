@@ -1,17 +1,20 @@
-import { defer, of, throwError } from 'rxjs';
-import { catchError, take } from 'rxjs/operators';
+import { defer, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { TestScheduler } from 'rxjs/testing';
-import type { Page, SourceSchedule } from '@jpmorganchase/mosaic-types';
 
-import { exponentialBackOffRetryStrategy } from '../exponentialBackOffRetryStrategy.js';
+import {
+  exponentialBackOffRetryStrategy,
+  type NamedSourceSchedule
+} from '../exponentialBackOffRetryStrategy.js';
 
-const schedule: SourceSchedule = {
+const schedule: NamedSourceSchedule = {
   checkIntervalMins: 3,
   initialDelayMs: 100,
   retryEnabled: true,
   retryDelayMins: 1,
   maxRetries: 3,
-  resetOnSuccess: true
+  resetOnSuccess: true,
+  name: 'back-off-test-source'
 };
 
 const source = observables => {
