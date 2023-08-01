@@ -34,7 +34,7 @@ function createPageTest(ignorePages, pageExtensions) {
 }
 
 export default async function createSourceObservable(
-  { modulePath, options, pageExtensions, ignorePages, schedule }: WorkerData,
+  { modulePath, name, options, pageExtensions, ignorePages, schedule }: WorkerData,
   serialiser
 ): Promise<Observable<Page[]>> {
   const api = await getSourceDefinitionExports(modulePath);
@@ -76,10 +76,12 @@ NOTE: Only ${pageExtensions.join(
         });
       }, [])
     ),
-    exponentialBackOffRetryStrategy(schedule),
+    exponentialBackOffRetryStrategy({ ...schedule, name }),
     catchError(error => {
       console.log(
-        `[Mosaic] Source failed and retries are ${schedule.retryEnabled ? 'exhausted' : 'disabled'}`
+        `[Mosaic] Source ${name} failed and retries are ${
+          schedule.retryEnabled ? 'exhausted' : 'disabled'
+        }`
       );
       return throwError(() => error);
     })
