@@ -18,15 +18,18 @@ export const exponentialBackOffRetryStrategy =
           const retryDelayMs = schedule.retryDelayMins * 60000;
           // eslint-disable-next-line prefer-exponentiation-operator, no-restricted-properties
           const backOffTime = Math.pow(2, retryIndex - 1) * retryDelayMs;
+          const backOffTimeMins = backOffTime / 60000;
           const remainingAttempts = schedule.maxRetries - retryIndex;
-          console.warn(`[Mosaic] Retrying failed source: ${schedule.name}`);
+          console.warn(`[Mosaic] Source '${schedule.name}' failed. Retrying...`);
           console.log(
-            `[Mosaic] Attempt (${retryIndex}/${schedule.maxRetries}). ${remainingAttempts} attempt${
-              remainingAttempts !== 1 ? 's' : ''
-            } remaining`
+            `[Mosaic] Source '${schedule.name}' retry attempt (${retryIndex}/${
+              schedule.maxRetries
+            }). ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining`
           );
           console.log(
-            `[Mosaic] Retry delay: ${backOffTime / 60000} mins for source: ${schedule.name}`
+            `[Mosaic] Source '${schedule.name}' current retry delay: ${backOffTimeMins} min${
+              backOffTimeMins !== 1 ? 's' : ''
+            }`
           );
           return timer(backOffTime);
         },
