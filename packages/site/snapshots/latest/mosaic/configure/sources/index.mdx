@@ -3,7 +3,7 @@ title: Sources
 layout: DetailTechnical
 sidebar:
   priority: 3
-lastModified: 1688045042625
+lastModified: 1690880695552
 fullPath: /mosaic/configure/sources/index.mdx
 route: /mosaic/configure/sources/index
 breadcrumbs:
@@ -18,9 +18,9 @@ breadcrumbs:
     id: /mosaic/configure/sources/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.27
-  time: 136200
-  words: 454
+  minutes: 2.395
+  time: 143700
+  words: 479
 tableOfContents:
   - level: 2
     id: source-definitions
@@ -31,6 +31,9 @@ tableOfContents:
   - level: 2
     id: source-namespace
     text: Source Namespace
+  - level: 2
+    id: source-schedules
+    text: Source Schedules
   - level: 2
     id: source-types
     text: Source Types
@@ -48,8 +51,8 @@ navigation:
     title: Custom Components
     route: /mosaic/configure/theme/custom-components
   next:
-    title: Local Folder Source
-    route: /mosaic/configure/sources/local-folder-source
+    title: Source Schedules
+    route: /mosaic/configure/sources/schedules
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -120,6 +123,14 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
+      - id: /mosaic/configure/sources/schedules
+        fullPath: /mosaic/configure/sources/schedules.mdx
+        name: Schedules
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/sources/schedules
+        childNodes: []
       - id: /mosaic/configure/sources/local-folder-source
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
         name: Local Folder Source
@@ -247,6 +258,10 @@ The following command will ensure mosaic only loads sources with the `local` sco
 ```
 yarn mosaic serve -c ''./mosaic.config.mjs' -p 8080 --scope "local"
 ```
+
+## Source Schedules
+
+Source schedules define how often sources pull in content that exists remotely and if a failed source is retried. More information can be found [here](./schedules)
 
 ## Source Types
 

@@ -1,10 +1,12 @@
 ---
-title: Snapshot file mode
-mode: snapshot-file
+title: Source Schedules
 layout: DetailTechnical
-lastModified: 1686557319858
-fullPath: /mosaic/configure/modes/snapshot-file.mdx
-route: /mosaic/configure/modes/snapshot-file
+sidebar:
+  priority: 4
+  label: Schedules
+lastModified: 1690881436519
+fullPath: /mosaic/configure/sources/schedules.mdx
+route: /mosaic/configure/sources/schedules
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index.mdx
@@ -12,28 +14,37 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index.mdx
     id: /mosaic/configure/index.mdx
-  - label: Modes of operation
-    path: /mosaic/configure/modes/index.mdx
-    id: /mosaic/configure/modes/index.mdx
-  - label: Snapshot file mode
-    path: /mosaic/configure/modes/snapshot-file.mdx
-    id: /mosaic/configure/modes/snapshot-file.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index.mdx
+    id: /mosaic/configure/sources/index.mdx
+  - label: Source Schedules
+    path: /mosaic/configure/sources/schedules.mdx
+    id: /mosaic/configure/sources/schedules.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.32
-  time: 19200
-  words: 64
+  text: 3 min read
+  minutes: 2.27
+  time: 136200
+  words: 454
 tableOfContents:
   - level: 2
-    id: generating-a-snapshot
-    text: Generating a snapshot
+    id: configuration
+    text: Configuration
+  - level: 2
+    id: global-schedule
+    text: Global Schedule
+  - level: 3
+    id: example
+    text: Example
+  - level: 2
+    id: retry-strategy
+    text: Retry Strategy
 navigation:
   prev:
-    title: Active mode
-    route: /mosaic/configure/modes/active
+    title: Sources
+    route: /mosaic/configure/sources/index
   next:
-    title: Snapshot AWS/S3 mode
-    route: /mosaic/configure/modes/snapshot-s3
+    title: Local Folder Source
+    route: /mosaic/configure/sources/local-folder-source
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -183,22 +194,105 @@ sidebarData:
 ---
 # {meta.title}
 
-In `snapshot-file` mode a local immutable snapshot can be loaded by the site. Typically, the snapshot and the site are
-deployed together and upon startup the site can load the snapshot from the local file-system.
+A source schedule defines how often a source initiates a content pull and what to do when their is a failure.
 
-To use `snapshot-file` mode
+A schedule can be specified for each source in the source definition, but should a source not provide a schedule it will inherit the "global" schedule.
 
+## Configuration
+
+| Property          | Description                                                                            | Required | Default |
+| ----------------- | -------------------------------------------------------------------------------------- | -------- | ------- |
+| checkIntervalMins | The length of time in minutes before triggering a content refresh                      | Yes      | 30 mins |
+| initialDelayMs    | Startup delay for the source.                                                          | Yes      | 1000 ms |
+| retryEnabled      | When true, failures will trigger another content pull                                  | No       | true    |
+| retryDelayMins    | The interval between retries. This will rise exponentially on every failure.           | No       | 5       |
+| maxRetries        | Maximum number of retry attempts                                                       | No       | 100     |
+| resetOnSuccess    | If true, when a source recovers and emits pages it's retry counter is returned to zero | No       | true    |
+
+## Global Schedule
+
+The global schedule applies to all sources that do **not** provide their own schedule. It can be configured as a top-level property of the Mosaic config file.
+
+```json
+ schedule: {
+    checkIntervalMins: 60,
+    initialDelayMs: 1000,
+    retryDelayMins: 15,
+    maxRetries: 20
+  }
 ```
-export MOSAIC_MODE="snapshot-file"
-export MOSAIC_SNAPSHOT_DIR="./snapshot/latest"
+
+### Example
+
+Given the config file below:
+
+```json
+ schedule: {
+    checkIntervalMins: 30,
+    initialDelayMs: 1000,
+    retryDelayMins: 5,
+    maxRetries: 10
+  },
+  sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'sourceA',
+      options: {
+        credentials: 'credentials',
+        prefixDir: 'sourceA',
+        subfolder: 'docs',
+        repo: 'source-a-repo-url',
+        branch: 'develop',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'sourceB',
+      schedule:{
+        checkIntervalMins: 60,
+        initialDelayMs: 5000,
+        retryDelayMins: 30,
+        maxRetries: 50
+      }
+      options: {
+        credentials: 'credentials',
+        prefixDir: 'sourceB',
+        subfolder: 'docs',
+        repo: 'source-b-repo-url',
+        branch: 'develop',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    }
+  ]
 ```
 
-## Generating a snapshot
+Source A will inherit the global schedule so it will:
 
-To generate a snapshot, run
+*   Start after a 1 second delay
+*   Pull content every 30 minutes
+*   Retry a failed content pull after an initial 5 minute delay
+*   Retry 10 times and if still unsuccessful, closing
 
-```
-yarn gen:snapshot
-```
+Source B has its own schedule so it will:
 
-Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
+*   Start after a 5 second delay
+*   Pull content every 60 minutes
+*   Retry a failed content pull after an initial 30 minute delay
+*   Retry 50 times and if still unsuccessful, closing
+
+## Retry Strategy
+
+The retry strategy that Mosaic employs is [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff). This is a common strategy for networking applications that aims to prevent retries from causing more harm than good.
+
+For example, given a source schedule that has a 1 minute retry delay and will retry a maximum of 3 times then the total time spent retrying is 7 minutes:
+
+*   1 minute delay then 1st retry
+*   2 minute delay then 2nd retry
+*   4 minute delay then 3rd (and final) retry
+
+Total delay: 1 + 2 + 4 = 7 minutes
+
+As you can see, the delay between retries is growing exponentially giving the content source more time to recover after each retry.
