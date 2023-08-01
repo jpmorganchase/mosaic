@@ -25,7 +25,8 @@ export const sourceScheduleSchema = z.object({
    */
   maxRetries: z.number().optional().default(100),
   /**
-   * If true, after a successful retry the retry logic is reset to its initial settings
+   * If true, when a source recovers and emits pages it's retry counter is returned to zero
+   * See: https://rxjs.dev/api/index/interface/RetryConfig
    * @default true
    */
   resetOnSuccess: z.boolean().optional().default(true)
