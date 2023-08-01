@@ -1,0 +1,112 @@
+---
+title: Source Schedules
+layout: DetailTechnical
+sidebar:
+  priority: 4
+  label: Schedules
+---
+
+# {meta.title}
+
+A source schedule defines how often a source initiates a content pull and what to do when their is a failure.
+
+A schedule can be specified for each source in the source definition, but should a source not provide a schedule it will inherit the "global" schedule.
+
+## Configuration
+
+| Property          | Description                                                                            | Required | Default |
+| ----------------- | -------------------------------------------------------------------------------------- | -------- | ------- |
+| checkIntervalMins | The length of time in minutes before triggering a content refresh                      | Yes      | 30 mins |
+| initialDelayMs    | Startup delay for the source.                                                          | Yes      | 1000 ms |
+| retryEnabled      | When true, failures will trigger another content pull                                  | No       | true    |
+| retryDelayMins    | The interval between retries. This will rise exponentially on every failure.           | No       | 5       |
+| maxRetries        | Maximum number of retry attempts                                                       | No       | 100     |
+| resetOnSuccess    | If true, when a source recovers and emits pages it's retry counter is returned to zero | No       | true    |
+
+## Global Schedule
+
+The global schedule applies to all sources that do **not** provide their own schedule. It can be configured as a top-level property of the Mosaic config file.
+
+```json
+ schedule: {
+    checkIntervalMins: 60,
+    initialDelayMs: 1000,
+    retryDelayMins: 15,
+    maxRetries: 20
+  }
+```
+
+### Example
+
+Given the config file below:
+
+```json
+ schedule: {
+    checkIntervalMins: 30,
+    initialDelayMs: 1000,
+    retryDelayMins: 5,
+    maxRetries: 10
+  },
+  sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'sourceA',
+      options: {
+        credentials: 'credentials',
+        prefixDir: 'sourceA',
+        subfolder: 'docs',
+        repo: 'source-a-repo-url',
+        branch: 'develop',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'sourceB',
+      schedule:{
+        checkIntervalMins: 60,
+        initialDelayMs: 5000,
+        retryDelayMins: 30,
+        maxRetries: 50
+      }
+      options: {
+        credentials: 'credentials',
+        prefixDir: 'sourceB',
+        subfolder: 'docs',
+        repo: 'source-b-repo-url',
+        branch: 'develop',
+        extensions: ['.mdx'],
+        remote: 'origin'
+      }
+    }
+  ]
+```
+
+Source A will inherit the global schedule so it will:
+
+- Start after a 1 second delay
+- Pull content every 30 minutes
+- Retry a failed content pull after an initial 5 minute delay
+- Retry 10 times and if still unsuccessful, closing
+
+Source B has its own schedule so it will:
+
+- Start after a 5 second delay
+- Pull content every 60 minutes
+- Retry a failed content pull after an initial 30 minute delay
+- Retry 50 times and if still unsuccessful, closing
+
+## Retry Strategy
+
+The retry strategy that Mosaic employs is [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff). This is a common strategy for networking applications that aims to prevent retries from causing more harm than good.
+
+For example, given a source schedule that has a 1 minute retry delay and will retry a maximum of 3 times then the total time spent retrying is 7 minutes:
+
+- 1 minute delay then 1st retry
+- 2 minute delay then 2nd retry
+- 4 minute delay then 3rd (and final) retry
+
+Total delay: 1 + 2 + 4 = 7 minutes
+
+As you can see, the delay between retries is growing exponentially giving the content source more time to recover after each retry.
