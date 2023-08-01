@@ -1,5 +1,37 @@
 # @jpmorganchase/mosaic-source-git-repo
 
+## 0.1.0-beta.41
+
+### Patch Changes
+
+- 898c9ad: Feature: Source Schedules
+
+  Sources that pull content from a remote source, need to poll the source to ensure that any updates are pulled into the mosaic filesystem.
+
+  Source Schedules provide the ability to specify a global schedule that is applied to all sources, but with the ability to override this for individual sources.
+
+  A schedule is defined as:
+
+  ```json
+    schedule: {
+      checkIntervalMins: 0.2,
+      initialDelayMs: 2000
+    },
+  ```
+
+  Add the above to the root of a mosaic config file to set up a "global" schedule or to a specific source definition to set up a schedule for that source.
+
+  The remote sources listed below have been updated to ensure compatibility with source schedules:
+
+  - @jpmorganchase/mosaic-source-git-repo
+  - @jpmorganchase/mosaic-source-http
+
+- Updated dependencies [898c9ad]
+- Updated dependencies [5cd5a87]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.41
+  - @jpmorganchase/mosaic-types@0.1.0-beta.41
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.41
+
 ## 0.1.0-beta.40
 
 ### Patch Changes
