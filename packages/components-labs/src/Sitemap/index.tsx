@@ -166,6 +166,8 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
         .finally(() => {
           if (dataRef.current) {
             const filteredPaths = filterPaths(dataRef.current, namespaceFilters);
+            console.log('finally', { filteredPaths });
+
             drawSitemap(filteredPaths, containerRef);
             setPageCount(filteredPaths.length);
           }
@@ -177,6 +179,9 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
         });
     } else {
       const filteredPaths = filterPaths(dataRef.current, namespaceFilters);
+
+      console.log({ filteredPaths });
+
       drawSitemap(filteredPaths, containerRef);
       setPageCount(filteredPaths.length);
     }
@@ -185,7 +190,7 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
   const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) => {
     setNamespaceFilters(selectedItems);
   };
-
+  console.log({ error, loading });
   return (
     <div {...rest}>
       <div className={styles.toolbar}>
@@ -217,7 +222,7 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
         ) : null}
         {error ? <>An error occurred: {error}</> : null}
       </div>
-      {!loading && !error ? <div ref={containerRef} /> : null}
+      {<div ref={containerRef} />}
     </div>
   );
 };
