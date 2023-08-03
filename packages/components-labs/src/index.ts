@@ -1,7 +1,6 @@
 import { withMarkdownSpacing } from '@jpmorganchase/mosaic-components';
 import { Diagram } from './Diagram';
 import { Sitemap } from './Sitemap';
-
 import type { SitemapProps } from './Sitemap';
 import type { DiagramProps } from './Diagram';
 

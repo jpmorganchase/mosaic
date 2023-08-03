@@ -3,7 +3,7 @@ const path = require('path');
 
 export default function handler(req, res) {
   try {
-    // Get the path to the test.json file
+    // Get the path to the search-data-condensed.json file
     const filePath = path.join(process.cwd(), 'public/search-data-condensed.json');
 
     // Read the contents of the file
