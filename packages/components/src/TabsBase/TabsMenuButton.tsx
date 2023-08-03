@@ -7,6 +7,10 @@ import { TabsLinkItem } from './TabsLink';
 import { TabMenuItemType } from './index';
 
 export interface TabsMenuButtonItem {
+  /**
+   * @deprecated use title
+   * Label of Tab */
+  label?: string;
   /** Collection of link options */
   links: TabsLinkItem[];
   /** Callback when Tab is selected */
@@ -31,7 +35,7 @@ export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, i
       onItemClick: (sourceItem, event) => item.onSelect(event, sourceItem)
     }}
   >
-    <span>{item.title}</span>
+    <span>{item.title || item.label}</span>
     {children}
   </MenuButton>
 );

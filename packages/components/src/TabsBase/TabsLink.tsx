@@ -5,6 +5,10 @@ import { TabMenuItemType } from './index';
 import styles from './styles.css';
 
 export interface TabsLinkItem {
+  /**
+   * @deprecated use title
+   * Label of Tab */
+  label?: string;
   /** URL linked by Tab */
   link: string;
   /** Title of Tab */
@@ -20,7 +24,7 @@ export interface TabsLinkProps {
 
 export const TabsLink: FC<React.PropsWithChildren<TabsLinkProps>> = ({ children, item }) => (
   <Link className={styles.menuLink} link={item.link} variant="selectable">
-    {item.title}
+    {item.title || item.label}
     {children}
   </Link>
 );
