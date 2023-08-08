@@ -1,5 +1,20 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.42
+
+### Patch Changes
+
+- 3491f29: ## Fixes
+
+  - Update lazy import of swagger-ui in the Mosaic Open API component
+  - Tab Component can use title or label props for tab title
+  - SharedConfigPlugin ensures closest shared-config.json file in the
+    page hierarchy is used to source the shared configuration.
+
+- Updated dependencies [3491f29]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.42
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.42
+
 ## 0.1.0-beta.41
 
 ### Patch Changes
