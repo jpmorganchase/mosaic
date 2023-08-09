@@ -97,6 +97,7 @@ import { withStyledTypography } from '../Typography/withStyledTypography';
 import { withMarkdownSpacing } from './withMarkdownSpacing';
 import { ListItem, OrderedList, UnorderedList } from '../List';
 import type { ListItemProps, OrderedListProps, UnOrderedListProps } from '../List';
+import { LinkButton, LinkButtonProps } from '../LinkButton';
 
 export { getMarkdownElements } from './markdownElements';
 
@@ -142,6 +143,7 @@ export const getMarkdownComponents = () => ({
   Label: withMarkdownSpacing<LabelProps>(Label),
   Link,
   LinkBase: withMarkdownSpacing<LinkBaseProps>(LinkBase),
+  LinkButton: withMarkdownSpacing<LinkButtonProps>(LinkButton),
   LinkText: withMarkdownSpacing<LinkTextProps>(LinkText),
   Links: withMarkdownSpacing<LinksProps>(Links),
   ListItem: withMarkdownSpacing<ListItemProps>(ListItem),

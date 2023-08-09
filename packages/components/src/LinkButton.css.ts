@@ -6,6 +6,7 @@ export default {
     {
       display: 'inline-flex',
       alignItems: 'center',
+      justifyContent: 'center',
       letterSpacing: '0.6px',
       fontWeight: vars.fontWeight.bold,
       fontSize: vars.fontSize.s50,
