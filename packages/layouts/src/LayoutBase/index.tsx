@@ -17,13 +17,13 @@ export const LayoutBase = ({
   children?: React.ReactNode;
 }) => {
   // Add a delay before showing loading state, so loading screen doesn't appear if page loads quickly
-  const [isLoading, isLoadingNewBaseRoute] = useIsLoading({ loadingDelay: 50 });
+  const isLoading = useIsLoading({ loadingDelay: 50 });
   return (
     <SidebarProvider>
       <div className={classnames(styles.root, className)}>
         <header className={styles.header}>{Header}</header>
         <main className={styles.main}>
-          <Fade duration={{ enter: 1200, exit: 500 }} in={isLoading || isLoadingNewBaseRoute}>
+          <Fade style={{ transitionDelay: isLoading ? '1000ms' : '0ms' }} in={isLoading}>
             <div className={styles.overlayRoot}>
               <div className={styles.overlayInner} />
               <Spinner size="large" />
