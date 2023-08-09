@@ -15,9 +15,10 @@ type FadeProps = {
     exit: number;
   };
   in: boolean;
+  style?: React.CSSProperties;
 };
 
-export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp }) => {
+export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp, style }) => {
   const nodeRef = useRef(null);
   const defaultStyle = {
     transition: `opacity ${duration?.enter}ms ease-in-out`,
@@ -30,7 +31,8 @@ export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp }) =>
           ref={nodeRef}
           style={{
             ...defaultStyle,
-            ...transitionStyles[state]
+            ...transitionStyles[state],
+            ...style
           }}
         >
           {children}

@@ -1,75 +1,41 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import debounce from 'lodash/debounce';
 
-/**
- * Returns an array with a boolean for `isLoading` and a boolean for `isBaseRouteChanging`
- */
+// Unexported type from next/dist/shared/lib/mitt.d.ts
+declare type Handler = (...evts: any[]) => void;
+
 export function useIsLoading({ loadingDelay }: { loadingDelay?: number } = {}) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = React.useState<[boolean, boolean]>([!router.isReady, false]);
-  const isLoadingRef = React.useRef(isLoading[0]);
-  const lastBaseRootRef = React.useRef(router.asPath.split('/')[1]);
-  const deferredStateTimerIdRef = React.useRef<NodeJS.Timeout | null>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const clearDeferredStateTimer = React.useCallback(() => {
-    if (deferredStateTimerIdRef.current) {
-      clearTimeout(deferredStateTimerIdRef.current);
-      deferredStateTimerIdRef.current = null;
-    }
-  }, []);
+  useEffect(() => {
+    const start = debounce(() => {
+      setIsLoading(true);
+    }, loadingDelay);
 
-  const handleRouteChangeStart = React.useCallback(
-    newRoute => {
-      const newBaseRoute = newRoute.split('/')[1];
-      const isBaseRouteChanging = newBaseRoute !== lastBaseRootRef.current;
-
-      isLoadingRef.current = true;
-
-      clearDeferredStateTimer();
-
-      if (loadingDelay) {
-        deferredStateTimerIdRef.current = setTimeout(() => {
-          if (isLoadingRef.current) {
-            setIsLoading([true, isBaseRouteChanging]);
-          }
-        }, loadingDelay);
-      } else {
-        setIsLoading([true, isBaseRouteChanging]);
+    const handleRouteChangeStart: Handler = (_url, { shallow }) => {
+      if (!shallow) {
+        start();
       }
-    },
-    [loadingDelay, clearDeferredStateTimer]
-  );
-  const handleRouteChangeError = React.useCallback(() => {
-    clearDeferredStateTimer();
-    if (isLoadingRef.current) {
-      setIsLoading([false, false]);
-    }
-    isLoadingRef.current = false;
-  }, [clearDeferredStateTimer]);
-  const handleRouteChangeComplete = React.useCallback(
-    newRoute => {
-      clearDeferredStateTimer();
-      if (isLoadingRef.current) {
-        setIsLoading([false, false]);
-      }
-      isLoadingRef.current = false;
-      lastBaseRootRef.current = newRoute.split('/')[1];
-    },
-    [clearDeferredStateTimer]
-  );
+    };
 
-  React.useEffect(() => {
+    const handleRouteChangeDone: Handler = (_url, { shallow }) => {
+      if (!shallow) {
+        setIsLoading(false);
+      }
+    };
+
     router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeError', handleRouteChangeError);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', handleRouteChangeDone);
+    router.events.on('routeChangeComplete', handleRouteChangeDone);
 
     return () => {
       router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeError', handleRouteChangeError);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', handleRouteChangeDone);
+      router.events.off('routeChangeComplete', handleRouteChangeDone);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
 
   return isLoading;
 }
