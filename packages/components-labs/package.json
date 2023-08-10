@@ -42,8 +42,8 @@
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.42",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.42",
-    "@salt-ds/core": "^1.8.0-rc.0",
-    "@salt-ds/lab": "1.0.0-alpha.10",
+    "@salt-ds/core": "^1.8.1",
+    "@salt-ds/lab": "1.0.0-alpha.16",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/recipes": "^0.2.1",
     "@vanilla-extract/sprinkles": "^1.3.0",
