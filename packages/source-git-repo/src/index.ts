@@ -7,8 +7,7 @@ import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import {
   fileExtensionSchema,
   credentialsSchema,
-  validateMosaicSchema,
-  sourceScheduleSchema
+  validateMosaicSchema
 } from '@jpmorganchase/mosaic-schemas';
 import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 
@@ -60,8 +59,7 @@ export const schema = z.object({
   /**
    * If true, repo is pulled once
    */
-  disableAutoPullChanges: z.boolean().optional().default(false),
-  schedule: sourceScheduleSchema.optional()
+  disableAutoPullChanges: z.boolean().optional().default(false)
 });
 
 export type GitRepoSourceOptions = z.infer<typeof schema>;
