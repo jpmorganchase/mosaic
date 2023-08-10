@@ -16,5 +16,5 @@ export function validateMosaicSchema<T extends ZodTypeAny>(
       process.exit(1);
     }
   }
-  return undefined;
+  return {};
 }
