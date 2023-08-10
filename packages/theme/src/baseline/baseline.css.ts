@@ -1,5 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css';
-import { ssrClassName, darkMode } from '../index';
+import { ssrClassName } from '../index';
 
 globalStyle('html, body', {
   fontFamily: 'Open Sans',
@@ -31,10 +31,6 @@ globalStyle('a:hover', {
 
 globalStyle('table', {
   border: 'none'
-});
-
-globalStyle(`${darkMode} main img:not(.no-filter)`, {
-  filter: 'invert(80%)'
 });
 
 globalStyle('h1, h2, h3, h4, h5, h6', {
