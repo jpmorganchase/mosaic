@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { Logo } from '@salt-ds/lab';
+import { Text } from '@salt-ds/core';
+import { Logo, LogoImage } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';
@@ -47,7 +48,12 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [],
       <div className={styles.root}>
         {homeLink && (
           <Link className={styles.logoContainer} href={homeLink} variant="component">
-            {logo && <Logo appTitle={title} src={logo} />}
+            {logo && (
+              <Logo>
+                <LogoImage src={logo} alt="" />
+                <Text>{title}</Text>
+              </Logo>
+            )}
           </Link>
         )}
         {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
