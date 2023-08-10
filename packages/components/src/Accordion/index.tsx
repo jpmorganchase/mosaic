@@ -1,11 +1,11 @@
 import React from 'react';
 import {
+  AccordionGroup,
   Accordion as SaltAccordion,
-  AccordionSection,
-  AccordionSummary,
-  AccordionDetails
-} from '@salt-ds/lab';
-import type { AccordionProps as SaltAccordionProps } from '@salt-ds/lab';
+  AccordionHeader,
+  AccordionPanel
+} from '@salt-ds/core';
+import type { AccordionGroupProps as SaltAccordionGroupProps } from '@salt-ds/core';
 import styles from './styles.css';
 
 export interface Panel {
@@ -14,9 +14,13 @@ export interface Panel {
   content: React.ReactNode;
 }
 
-export { AccordionSection, AccordionSummary, AccordionDetails } from '@salt-ds/lab';
+export {
+  Accordion as AccordionSection,
+  AccordionPanel as AccordionDetails,
+  AccordionHeader as AccordionSummary
+} from '@salt-ds/core';
 
-export interface AccordionProps extends SaltAccordionProps {
+export interface AccordionProps extends SaltAccordionGroupProps {
   panels?: Panel[];
 }
 
@@ -63,17 +67,15 @@ export const Accordion: React.FC<React.PropsWithChildren<AccordionProps>> = ({
   /** Panels props to be deprecated in the future and create as a compound component */
   if (panels) {
     accordionChildren = panels.map((panelItem, panelIndex) => (
-      <AccordionSection defaultExpanded={panelItem.expanded} key={`panelItem-${panelIndex}`}>
-        <AccordionSummary className={styles.summary}>{panelItem.summary}</AccordionSummary>
-        <AccordionDetails role="tabpanel" className={styles.content}>
-          {panelItem.content}
-        </AccordionDetails>
-      </AccordionSection>
+      <SaltAccordion
+        defaultExpanded={panelItem.expanded}
+        key={`panelItem-${panelIndex}`}
+        value={`panelItem-${panelIndex}`}
+      >
+        <AccordionHeader className={styles.summary}>{panelItem.summary}</AccordionHeader>
+        <AccordionPanel className={styles.content}>{panelItem.content}</AccordionPanel>
+      </SaltAccordion>
     ));
   }
-  return (
-    <SaltAccordion maxExpandedItems={1} {...rest}>
-      {accordionChildren}
-    </SaltAccordion>
-  );
+  return <AccordionGroup {...rest}>{accordionChildren}</AccordionGroup>;
 };
