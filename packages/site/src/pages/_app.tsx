@@ -17,6 +17,7 @@ import { SessionProvider } from 'next-auth/react';
 import classnames from 'clsx';
 
 import { MyAppProps } from '../types/mosaic';
+import 'swagger-ui-react/swagger-ui.css';
 
 const ptMono = PT_Mono({
   weight: '400',
