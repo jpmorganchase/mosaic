@@ -1,3 +1,3 @@
 import 'swagger-ui-react/swagger-ui.css';
 
-import './OpenAPI/styles.css';
+import '@jpmorganchase/mosaic-open-api-component/index.css';
