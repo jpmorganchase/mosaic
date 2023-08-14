@@ -72,17 +72,21 @@ export default class SourceManager {
     return 'Workflow not found';
   }
 
-  getSource(id: symbol) {
-    return this.#sources.get(id);
+  getSource(name: string) {
+    return Array.from(this.#sources.values()).find(s => s.id.description === name);
   }
 
   destroyAll() {
     this.#sources.forEach(source => source.stop());
   }
 
-  destroySource(id: symbol) {
-    const source = this.getSource(id);
-    source.stop();
+  destroySource(name: string) {
+    const source = this.getSource(name);
+    if (source) {
+      source.stop();
+    } else {
+      throw new Error(`[Mosaic] source ${name} was not found so can't be stopped`);
+    }
   }
 
   addSource(
@@ -218,5 +222,21 @@ export default class SourceManager {
         return existingSource;
       })
     );
+  }
+
+  listSources() {
+    return Array.from(this.#sources.values()).map((source, index) => ({
+      name: source.id.description,
+      index
+    }));
+  }
+
+  async restartSource(name: string) {
+    const source = this.getSource(name);
+    if (source) {
+      await source.restart();
+    } else {
+      throw new Error(`[Mosaic] source ${name} was not found so can't be restarted`);
+    }
   }
 }
