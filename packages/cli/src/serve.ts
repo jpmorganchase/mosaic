@@ -2,12 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import path from 'node:path';
 import MosaicCore from '@jpmorganchase/mosaic-core';
+import { MosaicConfig } from '@jpmorganchase/mosaic-types';
 
 const app = express();
 
-const addedSources = new Set<{ name: string; id: symbol }>();
-
-export default async function serve(config, port, scope) {
+export default async function serve(config: MosaicConfig, port, scope) {
   app.listen(port, () => {
     console.log(
       `[Mosaic] Listening on port ${port}${
@@ -21,6 +20,64 @@ export default async function serve(config, port, scope) {
   const fs = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
 
   app.use(cors(), express.json());
+
+  /**
+   * List the sources that Mosaic has been configured to use.
+   * Will provide the generated name of each source
+   * which can be used to stop/restart the source
+   */
+  app.get('/_mosaic_/sources/list', async (_req, res) => {
+    res.contentType('application/json');
+    const sources = await mosaic.listSources();
+
+    const response = sources.map(source => ({
+      name: source.name,
+      ...config.sources[source.index]
+    }));
+    res.send(response);
+  });
+
+  /**
+   * Return the JSON config that Mosaic was started with
+   */
+  app.get('/_mosaic_/config', async (_req, res) => {
+    res.contentType('application/json');
+    res.send(config);
+  });
+
+  /**
+   * Stop a running source using it's generated name
+   */
+  app.put('/_mosaic_/source/stop', async (req, res) => {
+    res.contentType('application/text');
+    const { name } = req.body;
+    if (name) {
+      try {
+        await mosaic.stopSource(String(name));
+        res.send(`${name} stopped successfully.`);
+      } catch (e) {
+        console.error(e);
+        res.status(500).send(`${name} not stopped.  Check you have the right name!`).end();
+      }
+    }
+  });
+
+  /**
+   * Restart a running source using it's generated name
+   */
+  app.put('/_mosaic_/source/restart', async (req, res) => {
+    res.contentType('application/text');
+    const { name } = req.body;
+    if (name) {
+      try {
+        await mosaic.restartSource(String(name));
+        res.send(`${name} restarted successfully.`);
+      } catch (e) {
+        console.error(e);
+        res.status(500).send(`${name} not restarted.  Check you have the right name!`).end();
+      }
+    }
+  });
 
   app.get('/**', async (req, res) => {
     try {
@@ -78,7 +135,7 @@ export default async function serve(config, port, scope) {
 
   app.post('/sources/add', async (req, res) => {
     try {
-      const { definition, name, isPreview = true } = req.body;
+      const { definition, isPreview = true } = req.body;
 
       if (process.env.MOSAIC_ENABLE_SOURCE_PUSH !== 'true') {
         throw new Error('Source push is disabled.');
@@ -88,24 +145,17 @@ export default async function serve(config, port, scope) {
         throw new Error('Source definition is required');
       }
 
-      if (!name) {
-        throw new Error('A name is required');
-      } else {
-        addedSources.forEach(addedSource => {
-          if (addedSource.name === name) {
-            mosaic.stopSource(addedSource.id);
-          }
-        });
-      }
-
       if (isPreview) {
         const namespace = `preview-${definition.namespace}`;
         definition.namespace = namespace;
       }
 
       const source = await mosaic.addSource(definition);
-      addedSources.add({ name, id: source.id });
-      res.send(source !== undefined ? definition.namespace : 'Unable to add source');
+      res.send(
+        source !== undefined
+          ? `Source ${source.id.description} added successfully`
+          : 'Unable to add source'
+      );
     } catch (e) {
       console.error(e);
       res.status(500).send(e.message).end();

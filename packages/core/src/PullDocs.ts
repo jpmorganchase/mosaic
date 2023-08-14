@@ -131,7 +131,15 @@ export default class PullDocs {
     return source;
   }
 
-  async stopSource(id: symbol) {
-    return this.#sourceManager.destroySource(id);
+  async stopSource(name: string) {
+    return this.#sourceManager.destroySource(name);
+  }
+
+  async restartSource(name: string) {
+    return this.#sourceManager.restartSource(name);
+  }
+
+  async listSources() {
+    return this.#sourceManager.listSources();
   }
 }

@@ -31,5 +31,6 @@ Source.prototype.start = jest.fn();
 Source.prototype.stop = jest.fn();
 Source.prototype.use = jest.fn();
 Source.prototype.constructorSpy = constructorSpy;
+Source.prototype.restart = jest.fn(() => Promise.resolve({}));
 
 export default Source;
