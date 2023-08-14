@@ -56,6 +56,18 @@ describe('GIVEN SourceManager', () => {
     expect(new SourceManager({}, {})).toHaveProperty('destroyAll');
   });
 
+  test('THEN it should have an listSources method', () => {
+    expect(new SourceManager({}, {})).toHaveProperty('listSources');
+  });
+
+  test('THEN it should have an restartSource method', () => {
+    expect(new SourceManager({}, {})).toHaveProperty('restartSource');
+  });
+
+  test('THEN it should have an destroySource method', () => {
+    expect(new SourceManager({}, {})).toHaveProperty('destroySource');
+  });
+
   describe('WHEN destroying a source', () => {
     let sourceManager: SourceManager;
 
@@ -190,7 +202,7 @@ describe('GIVEN SourceManager', () => {
       );
       scheduleOnStartCallback();
       await sourceManager.addSource({ name: 'source2', modulePath: 'source2-module' }, {});
-      expect(sourceManager.getSource(source1.id)).toBeDefined();
+      expect(sourceManager.getSource('source')).toBeDefined();
     });
 
     test('THEN the sources should be created for the new sources', async () => {
@@ -279,6 +291,7 @@ describe('GIVEN SourceManager', () => {
       );
     });
   });
+
   describe('WHEN adding sources that are scheduled', () => {
     let sourceManager: SourceManager;
     beforeEach(async () => {
@@ -310,6 +323,78 @@ describe('GIVEN SourceManager', () => {
         {},
         undefined
       );
+    });
+  });
+
+  describe('WHEN listing sources', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      Source.prototype.constructorSpy.mockReset();
+      sourceManager = new SourceManager({}, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 1', modulePath: 'source-module' }, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 2', modulePath: 'source-module' }, {});
+    });
+
+    test('THEN all sources name and index is returned', () => {
+      expect(sourceManager.listSources()).toEqual([
+        { index: 0, name: 'source 1' },
+        { index: 1, name: 'source 2' }
+      ]);
+    });
+  });
+
+  describe('WHEN restarting a source', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      Source.prototype.constructorSpy.mockReset();
+
+      sourceManager = new SourceManager({}, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 1', modulePath: 'source-module' }, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 2', modulePath: 'source-module' }, {});
+    });
+
+    describe('AND a source name that exists is used', () => {
+      test('THEN the source is restarted', async () => {
+        await sourceManager.restartSource('source 1');
+        expect(Source.prototype.restart).toBeCalledTimes(1);
+      });
+    });
+
+    describe('AND a source name that does **NOT** exist is used', () => {
+      test('THEN the source is **NOT** restarted', async () => {
+        await expect(sourceManager.restartSource('source 3')).rejects.toThrow();
+      });
+    });
+  });
+
+  describe('WHEN stopping a source', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      Source.prototype.constructorSpy.mockReset();
+
+      sourceManager = new SourceManager({}, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 1', modulePath: 'source-module' }, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 2', modulePath: 'source-module' }, {});
+    });
+
+    describe('AND a source name that exists is used', () => {
+      test('THEN the source is stopped', () => {
+        sourceManager.destroySource('source 1');
+        expect(Source.prototype.stop).toBeCalledTimes(1);
+      });
+    });
+
+    describe('AND a source name that does **NOT** exist is used', () => {
+      test('THEN the source is **NOT** restarted', () => {
+        const stop = () => sourceManager.destroySource('source 3');
+        expect(stop).toThrow();
+      });
     });
   });
 });

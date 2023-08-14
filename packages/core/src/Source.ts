@@ -226,4 +226,9 @@ export default class Source {
     }
     return false;
   }
+
+  async restart() {
+    this.stop();
+    await this.start();
+  }
 }
