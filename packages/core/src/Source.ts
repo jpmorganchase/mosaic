@@ -113,7 +113,8 @@ export default class Source {
         pageExtensions: this.#pageExtensions,
         ignorePages: this.#ignorePages,
         serialiser: this.serialiser,
-        config: this.config.asReadOnly()
+        config: this.config.asReadOnly(),
+        namespace: this.namespace
       }
     );
     const timeTaken = new Date().getTime() - initTime;
@@ -149,7 +150,8 @@ export default class Source {
       pageExtensions: this.#pageExtensions,
       ignorePages: this.#ignorePages,
       serialiser: this.serialiser,
-      config: this.config.asReadOnly()
+      config: this.config.asReadOnly(),
+      namespace: this.namespace
     });
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {

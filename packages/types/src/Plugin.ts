@@ -30,6 +30,7 @@ export type Plugin<
    * @param pages Array of pages from the source
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin
+   * @param param.namespace The namespace of the source running the plugin
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<Page[]>} Must re-return an array of `Page` objects, modified or not
    */
@@ -40,6 +41,7 @@ export type Plugin<
       config: MutableData<ConfigData>;
       pageExtensions: string[];
       ignorePages: string[];
+      namespace: string;
     },
     options?: TOptions
   ) => Promise<Array<TPage>>;
@@ -49,6 +51,7 @@ export type Plugin<
    * @param mutableFilesystem Mutable virtual filesystem instance with all of this source's pages inside (and symlinks applied)
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.config A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin
+   * @param param.namespace The namespace of the source running the plugin
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
    */
@@ -59,6 +62,7 @@ export type Plugin<
       pageExtensions: string[];
       ignorePages: string[];
       config: MutableData<ConfigData>;
+      namespace: string;
     },
     options?: TOptions
   ) => Promise<void>;
@@ -76,6 +80,7 @@ export type Plugin<
    * @param param.globalConfig An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.
    * @param param.sharedFilesystem Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
+   * @param param.namespace The namespace of the source running the plugin
    * @param options The options passed in when declaring the plugin
    * @returns {void} No return expected
    */
@@ -89,6 +94,7 @@ export type Plugin<
       globalConfig: ImmutableData<GlobalConfigData>;
       pageExtensions: string[];
       ignorePages: string[];
+      namespace: string;
     },
     options?: TOptions
   ) => Promise<void>;
@@ -101,6 +107,7 @@ export type Plugin<
    * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
    * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
    * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
+   * @param param.namespace The namespace of the source running the plugin
    * @param options The options passed in when declaring the plugin
    * @returns {Promise<boolean>} A boolean indicating whether to clear the cache for this source
    */
@@ -112,6 +119,7 @@ export type Plugin<
       globalFilesystem: IUnionVolume;
       pageExtensions: string[];
       ignorePages: string[];
+      namespace: string;
     },
     options?: TOptions
   ) => Promise<boolean>;
