@@ -39,7 +39,8 @@ if (isMainThread) {
           config,
           serialiser,
           ignorePages: workerData.ignorePages,
-          pageExtensions: workerData.pageExtensions
+          pageExtensions: workerData.pageExtensions,
+          namespace: workerData.namespace
         })
       ),
       switchMap((pages: Page[]) =>
@@ -58,7 +59,8 @@ if (isMainThread) {
           config,
           ignorePages: workerData.ignorePages,
           pageExtensions: workerData.pageExtensions,
-          serialiser
+          serialiser,
+          namespace: workerData.namespace
         });
         // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
         // we don't bother freezing
