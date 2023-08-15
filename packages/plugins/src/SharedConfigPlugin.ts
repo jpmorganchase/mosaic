@@ -43,16 +43,30 @@ export interface SharedConfigPluginOptions {
  * It then exports a JSON file (name: `options.filename`) into each directory with the merged config for that level
  */
 const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginOptions> = {
-  async $afterSource(pages, { ignorePages, pageExtensions }) {
+  async $afterSource(pages, { ignorePages, pageExtensions, config, namespace }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
     let finalSharedConfig;
 
-    const indexPagesWithSharedConfig = pages.filter(
+    const indexPages = pages.filter(
       page =>
         path.posix.basename(page.fullPath, path.posix.extname(page.fullPath)) === 'index' &&
-        page.sharedConfig !== undefined &&
         isNonHiddenPage(page.fullPath)
     );
+
+    const indexPagesWithSharedConfig = indexPages.filter(page => page.sharedConfig !== undefined);
+
+    if (indexPagesWithSharedConfig.length === 0 && indexPages.length > 0) {
+      const rootPath = indexPages[0].fullPath;
+      const applyNamespaceSharedConfig = {
+        [`${namespace}-${rootPath}`]: {
+          paths: indexPages.map(indexPage => indexPage.fullPath),
+          rootPath,
+          namespace
+        }
+      };
+      config.setData({ applyNamespaceSharedConfig });
+      return pages;
+    }
 
     for (const page of indexPagesWithSharedConfig) {
       if (finalSharedConfig === undefined) {
@@ -113,24 +127,98 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     }
 
     // apply closest shared config
-    let closestSharedConfigIndex = 0;
-    for (const pagePath of indexPagesWithoutConfig) {
-      for (let i = 0; i < sharedConfigFiles.length; i++) {
-        if (isWithin(sharedConfigFiles[i], pagePath)) {
-          closestSharedConfigIndex = i;
+    if (sharedConfigFiles.length > 0) {
+      let closestSharedConfigIndex = 0;
+      for (const pagePath of indexPagesWithoutConfig) {
+        for (let i = 0; i < sharedConfigFiles.length; i++) {
+          if (isWithin(sharedConfigFiles[i], pagePath)) {
+            closestSharedConfigIndex = i;
+          }
         }
+
+        const sharedConfigFile = path.posix.join(
+          path.posix.dirname(String(pagePath)),
+          options.filename
+        );
+
+        const closestSharedConfig = path.posix.resolve(
+          path.dirname(String(pagePath)),
+          sharedConfigFiles[closestSharedConfigIndex]
+        );
+        config.setAliases(closestSharedConfig, [sharedConfigFile]);
+      }
+    }
+  },
+  async afterUpdate(mutableFilesystem, { sharedFilesystem, globalConfig, namespace }, options) {
+    const { applyNamespaceSharedConfig } = globalConfig.data;
+
+    if (applyNamespaceSharedConfig === undefined) {
+      // there is no source that exists that has told us it needs to share a parent shared config
+      return;
+    }
+
+    // find all the entries that match the namespace the plugin is running against
+    const namespaceSharedConfigs: {
+      paths: string[];
+      rootPath: string;
+      namespace: string;
+    }[] = Object.keys(applyNamespaceSharedConfig)
+      .filter(key => {
+        const keyNamespace = key.split('-')?.[0];
+        return keyNamespace === namespace;
+      })
+      .map(key => applyNamespaceSharedConfig?.[key] || []);
+
+    for (const namespaceSharedConfig of namespaceSharedConfigs) {
+      if (await mutableFilesystem.promises.exists(namespaceSharedConfig.rootPath)) {
+        // a source does need a namespace shared config but the source running this plugin is the source that needs it
+        // so we don't need to do anything here
+        continue;
       }
 
-      const sharedConfigFile = path.posix.join(
-        path.posix.dirname(String(pagePath)),
-        options.filename
-      );
+      for (const applyPath of namespaceSharedConfig.paths) {
+        if (!(await sharedFilesystem.promises.exists(applyPath))) {
+          sharedFilesystem.promises.mkdir(path.posix.dirname(String(applyPath)), {
+            recursive: true
+          });
+        }
 
-      const closestSharedConfig = path.posix.resolve(
-        path.dirname(String(pagePath)),
-        sharedConfigFiles[closestSharedConfigIndex]
-      );
-      config.setAliases(closestSharedConfig, [sharedConfigFile]);
+        let parentDir = path.posix.join(path.posix.dirname(String(applyPath)), '../');
+        let closestSharedConfigPath = path.posix.join(parentDir, options.filename);
+
+        while (parentDir !== path.posix.sep) {
+          // walk up the directories in the path to find the closest shared config file
+          closestSharedConfigPath = path.posix.join(parentDir, options.filename);
+          if (await mutableFilesystem.promises.exists(closestSharedConfigPath)) {
+            break;
+          }
+          parentDir = path.posix.join(path.posix.dirname(String(closestSharedConfigPath)), '../');
+        }
+
+        const aliasSharedConfigPath = path.posix.join(
+          path.posix.dirname(String(applyPath)),
+          options.filename
+        );
+
+        if (
+          (await mutableFilesystem.promises.exists(closestSharedConfigPath)) &&
+          !(await sharedFilesystem.promises.exists(aliasSharedConfigPath))
+        ) {
+          console.log(
+            `[Mosaic][Plugin] Source has no shared config. Root index page is: ${namespaceSharedConfig.rootPath}`
+          );
+          console.log(
+            '[Mosaic][Plugin] Copying shared config ',
+            closestSharedConfigPath,
+            '-->',
+            aliasSharedConfigPath
+          );
+          await sharedFilesystem.promises.writeFile(
+            aliasSharedConfigPath,
+            await mutableFilesystem.promises.readFile(closestSharedConfigPath)
+          );
+        }
+      }
     }
   }
 };
