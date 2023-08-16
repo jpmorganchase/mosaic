@@ -50,11 +50,13 @@ export const InsertImage = () => {
   const [values, setValues] = useState<FormValueState>(initialState);
   const [errors, setErrors] = useState<FormErrorState>();
 
-  const handleClose = () => {
-    setIsOpen(false);
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
   };
 
   const handleOpen = () => setIsOpen(true);
+
+  const handleClose = () => setIsOpen(false);
 
   const processErrors = validationErrors => {
     const newErrors = validationErrors.inner.reduce(
@@ -94,7 +96,7 @@ export const InsertImage = () => {
         <Icon name="addDocument" />
       </ToolbarButton>
 
-      <Dialog onClose={handleClose} open={isOpen} width={600}>
+      <Dialog onOpenChange={handleOpenChange} open={isOpen}>
         <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>Insert Image</DialogTitle>
           <DialogContent>
