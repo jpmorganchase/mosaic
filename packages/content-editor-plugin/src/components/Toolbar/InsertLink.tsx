@@ -60,10 +60,16 @@ export const InsertLinkDialog = () => {
   const [values, setValues] = useState<FormValueState>(initialState);
   const [errors, setErrors] = useState<FormErrorState>();
 
+  const handleOpenChange = (open: boolean) => {
+    setIsInsertingLink(open);
+    if (!open) {
+      setErrors(undefined);
+      setValues(initialState);
+    }
+  };
+
   const handleClose = () => {
-    setIsInsertingLink(false);
-    setErrors(undefined);
-    setValues(initialState);
+    handleOpenChange(false);
   };
 
   useEffect(() => {
@@ -111,7 +117,7 @@ export const InsertLinkDialog = () => {
   };
 
   return (
-    <Dialog onClose={handleClose} open={isInsertingLink} width={600}>
+    <Dialog onOpenChange={handleOpenChange} open={isInsertingLink}>
       <form onSubmit={handleSubmit} noValidate>
         <DialogTitle>Insert Link</DialogTitle>
         <DialogContent>
