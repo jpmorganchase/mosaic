@@ -48,10 +48,16 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   const open = pageState === 'SAVING';
   const state = prHref !== null ? 'success' : 'info';
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setIsRaising(newOpen);
+    if (!newOpen) {
+      setPageState('EDIT');
+      setPrHref(null);
+    }
+  };
+
   const handleClose = () => {
-    setPageState('EDIT');
-    setPrHref(null);
-    setIsRaising(false);
+    handleOpenChange(false);
   };
 
   const handleRaisePr = () => {
@@ -98,7 +104,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   return (
-    <Dialog onClose={handleClose} open={open} status={error ? 'error' : state}>
+    <Dialog onOpenChange={handleOpenChange} open={open} status={error ? 'error' : state}>
       <DialogTitle className={style.title}>
         {!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
       </DialogTitle>
