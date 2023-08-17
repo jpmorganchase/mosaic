@@ -1,6 +1,12 @@
 import { Page } from '@jpmorganchase/mosaic-types';
 import SharedConfigPlugin from '../SharedConfigPlugin';
 
+jest.mock('node:crypto', () => {
+  return {
+    randomUUID: jest.fn(() => '123')
+  };
+});
+
 type SharedConfigPage = Page & { sharedConfig?: any };
 /**
  * 
@@ -209,7 +215,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       expect(namespaceConfig).toEqual({
         applyNamespaceSharedConfig: {
-          'test-ns~~/FolderA/index.mdx': {
+          '123': {
             namespace: 'test-ns',
             paths: [
               '/FolderA/index.mdx',
@@ -228,13 +234,9 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx']
-      ).toBeDefined();
+      expect(namespaceConfig.applyNamespaceSharedConfig['123']).toBeDefined();
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].namespace
-      ).toEqual(testNamespace);
+      expect(namespaceConfig.applyNamespaceSharedConfig['123'].namespace).toEqual(testNamespace);
     });
 
     test('THEN the namespace is included in the namespace shared config object', () => {
@@ -242,9 +244,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].namespace
-      ).toEqual(testNamespace);
+      expect(namespaceConfig.applyNamespaceSharedConfig['123'].namespace).toEqual(testNamespace);
     });
 
     test('THEN the root path is included in the namespace shared config object', () => {
@@ -252,9 +252,9 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].rootPath
-      ).toEqual('/FolderA/index.mdx');
+      expect(namespaceConfig.applyNamespaceSharedConfig['123'].rootPath).toEqual(
+        '/FolderA/index.mdx'
+      );
     });
 
     test('THEN all index pages in the source are included in namespace shared config object', () => {
@@ -262,13 +262,9 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].paths.length
-      ).toEqual(4);
+      expect(namespaceConfig.applyNamespaceSharedConfig['123'].paths.length).toEqual(4);
 
-      expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].paths
-      ).toEqual([
+      expect(namespaceConfig.applyNamespaceSharedConfig['123'].paths).toEqual([
         '/FolderA/index.mdx',
         '/FolderA/SubfolderA/index.mdx',
         '/FolderA/SubfolderB/index.mdx',
@@ -504,8 +500,6 @@ describe('GIVEN the SharedConfigPlugin', () => {
       test('THEN we check the shared config json file exists in the mutable fs and the target shared config is not in the shared filesystem', () => {
         expect(sharedFilesystem.promises.exists.mock.calls[0][0]).toEqual('/FolderY/index.mdx');
         expect(sharedFilesystem.promises.mkdir.mock.calls[0][0]).toEqual('/FolderY');
-
-        console.log('HELLO', volume.promises.exists.mock.calls);
 
         expect(volume.promises.exists.mock.calls[1][0]).toEqual('/test-shared-config.json');
 
