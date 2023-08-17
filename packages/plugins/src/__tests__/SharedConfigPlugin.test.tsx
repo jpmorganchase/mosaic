@@ -115,7 +115,7 @@ let setRefMock = jest.fn();
 let writeFileMock = jest.fn();
 const volume = {
   promises: {
-    exists: jest.fn().mockResolvedValue(true),
+    exists: jest.fn(),
     glob: jest.fn().mockResolvedValue([
       pages[0].fullPath, // Folder A Index
       pages[3].fullPath, // Subfolder A Index
@@ -209,7 +209,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       expect(namespaceConfig).toEqual({
         applyNamespaceSharedConfig: {
-          'test-ns-/FolderA/index.mdx': {
+          'test-ns~~/FolderA/index.mdx': {
             namespace: 'test-ns',
             paths: [
               '/FolderA/index.mdx',
@@ -229,11 +229,11 @@ describe('GIVEN the SharedConfigPlugin', () => {
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx']
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx']
       ).toBeDefined();
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].namespace
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].namespace
       ).toEqual(testNamespace);
     });
 
@@ -243,7 +243,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].namespace
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].namespace
       ).toEqual(testNamespace);
     });
 
@@ -253,7 +253,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].rootPath
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].rootPath
       ).toEqual('/FolderA/index.mdx');
     });
 
@@ -263,11 +263,11 @@ describe('GIVEN the SharedConfigPlugin', () => {
       const namespaceConfig = setDataMock.mock.calls[0][0];
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].paths.length
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].paths.length
       ).toEqual(4);
 
       expect(
-        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].paths
+        namespaceConfig.applyNamespaceSharedConfig['test-ns~~/FolderA/index.mdx'].paths
       ).toEqual([
         '/FolderA/index.mdx',
         '/FolderA/SubfolderA/index.mdx',
@@ -332,6 +332,190 @@ describe('GIVEN the SharedConfigPlugin', () => {
       expect(setAliasesMock.mock.calls[0][0]).toEqual(
         '/FolderA/SubfolderB/test-shared-config.json'
       );
+    });
+  });
+
+  describe('WHEN `afterUpdate` is called', () => {
+    describe('AND WHEN there is **NO** namespace shared config to apply at all', () => {
+      beforeEach(async () => {
+        const afterUpdate = SharedConfigPlugin.afterUpdate;
+        // @ts-ignore
+        (await afterUpdate?.(
+          volume,
+          {
+            config: {
+              setRef: setRefMock,
+              setAliases: setAliasesMock
+            },
+            serialiser: {
+              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+            },
+            globalConfig: { data: {} },
+            ignorePages: [],
+            pageExtensions: []
+          },
+          { filename: 'test-shared-config.json' }
+        )) || [];
+      });
+
+      test('THEN no action is taken', () => {
+        expect(volume.promises.exists).not.toBeCalled();
+      });
+    });
+
+    describe('AND WHEN there is **NO** namespace shared config to apply for the namespace', () => {
+      beforeEach(async () => {
+        const afterUpdate = SharedConfigPlugin.afterUpdate;
+        // @ts-ignore
+        (await afterUpdate?.(
+          volume,
+          {
+            config: {
+              setRef: setRefMock,
+              setAliases: setAliasesMock
+            },
+            serialiser: {
+              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+            },
+            globalConfig: {
+              data: { applyNamespaceSharedConfig: { ['another-ns']: { data: 'data' } } }
+            },
+            ignorePages: [],
+            pageExtensions: [],
+            namespace: 'test-ns'
+          },
+          { filename: 'test-shared-config.json' }
+        )) || [];
+      });
+
+      test('THEN no action is taken', () => {
+        expect(volume.promises.exists).not.toBeCalled();
+      });
+    });
+
+    describe('AND WHEN there is namespace shared config to apply for the namespace BUT the rootPath is part of this source', () => {
+      beforeEach(async () => {
+        const afterUpdate = SharedConfigPlugin.afterUpdate;
+
+        volume.promises.exists.mockResolvedValue(true);
+
+        // @ts-ignore
+        (await afterUpdate?.(
+          volume,
+          {
+            config: {
+              setRef: setRefMock,
+              setAliases: setAliasesMock
+            },
+            serialiser: {
+              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+            },
+            globalConfig: {
+              data: {
+                applyNamespaceSharedConfig: {
+                  'test-ns~~/FolderY/index.mdx': {
+                    namespace: 'test-ns',
+                    paths: ['/FolderY/index.mdx', '/FolderY/SubfolderX/index.mdx'],
+                    rootPath: '/FolderY/index.mdx'
+                  }
+                }
+              }
+            },
+            ignorePages: [],
+            pageExtensions: [],
+            namespace: 'test-ns'
+          },
+          { filename: 'test-shared-config.json' }
+        )) || [];
+      });
+
+      afterEach(() => {
+        volume.promises.exists.mockReset();
+      });
+
+      test('THEN we check for existence of the root path', () => {
+        expect(volume.promises.exists).toHaveBeenCalledTimes(1);
+        expect(volume.promises.exists.mock.calls[0][0]).toEqual('/FolderY/index.mdx');
+      });
+
+      test('THEN we do *NOT* write out any new shared config file', () => {
+        expect(volume.promises.exists).toHaveBeenCalledTimes(1);
+        expect(volume.promises.exists.mock.calls[0][0]).toEqual('/FolderY/index.mdx');
+      });
+    });
+
+    describe('AND WHEN there is namespace shared config to apply for the namespace AND the rootPath is **NOT** part of this source', () => {
+      const sharedFilesystem = {
+        promises: {
+          exists: jest.fn(),
+          mkdir: jest.fn(),
+          readdir: jest.fn(),
+          readFile: jest.fn(),
+          realpath: jest.fn(),
+          stat: jest.fn(),
+          symlink: jest.fn(),
+          unlink: jest.fn(),
+          writeFile: jest.fn()
+        }
+      };
+      beforeEach(async () => {
+        const afterUpdate = SharedConfigPlugin.afterUpdate;
+        volume.promises.readFile.mockReset();
+        volume.promises.exists.mockResolvedValueOnce(false).mockResolvedValue(true);
+        sharedFilesystem.promises.exists.mockResolvedValue(false);
+
+        // @ts-ignore
+        (await afterUpdate?.(
+          volume,
+          {
+            sharedFilesystem,
+            config: {
+              setRef: setRefMock,
+              setAliases: setAliasesMock
+            },
+            serialiser: {
+              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+            },
+            globalConfig: {
+              data: {
+                applyNamespaceSharedConfig: {
+                  'test-ns~~/FolderY/index.mdx': {
+                    namespace: 'test-ns',
+                    paths: ['/FolderY/index.mdx'],
+                    rootPath: '/FolderY/index.mdx'
+                  }
+                }
+              }
+            },
+            ignorePages: [],
+            pageExtensions: [],
+            namespace: 'test-ns'
+          },
+          { filename: 'test-shared-config.json' }
+        )) || [];
+      });
+
+      afterEach(() => {
+        volume.promises.exists.mockReset();
+        sharedFilesystem.promises.exists.mockReset();
+        volume.promises.readFile.mockReset();
+      });
+
+      test('THEN we check the shared config json file exists in the mutable fs and the target shared config is not in the shared filesystem', () => {
+        expect(sharedFilesystem.promises.exists.mock.calls[0][0]).toEqual('/FolderY/index.mdx');
+        expect(sharedFilesystem.promises.mkdir.mock.calls[0][0]).toEqual('/FolderY');
+
+        console.log('HELLO', volume.promises.exists.mock.calls);
+
+        expect(volume.promises.exists.mock.calls[1][0]).toEqual('/test-shared-config.json');
+
+        expect(sharedFilesystem.promises.writeFile).toBeCalledTimes(1);
+        expect(sharedFilesystem.promises.writeFile.mock.calls[0][0]).toEqual(
+          '/FolderY/test-shared-config.json'
+        );
+        expect(volume.promises.readFile).toBeCalledTimes(1);
+        expect(volume.promises.readFile.mock.calls[0][0]).toEqual('/test-shared-config.json');
+      });
     });
   });
 });
