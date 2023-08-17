@@ -71,6 +71,45 @@ const pages: SharedConfigPage[] = [
   }
 ];
 
+const pagesWithoutSharedConfig: SharedConfigPage[] = [
+  {
+    fullPath: '/FolderA/index.mdx',
+    route: 'route/folderA/index',
+    title: 'Folder A Index'
+  },
+  {
+    fullPath: '/FolderA/pageA.mdx',
+    route: 'route/folderA/pageA',
+    title: 'Folder A Page A'
+  },
+  {
+    fullPath: '/FolderA/pageB.mdx',
+    route: 'route/folderA/pageB',
+    title: 'Folder A Page B'
+  },
+  {
+    fullPath: '/FolderA/SubfolderA/index.mdx',
+    route: 'route/folderA/subfolderA/index',
+    title: 'Subfolder A Index'
+  },
+  {
+    fullPath: '/FolderA/SubfolderA/PageA.mdx',
+    route: 'route/folderA/subfolderA/pageA',
+    title: 'Subfolder A Page A'
+  },
+  {
+    fullPath: '/FolderA/SubfolderB/index.mdx',
+    route: 'route/folderA/subfolderB/index',
+    title: 'Subfolder B Index'
+  },
+  {
+    fullPath: '/FolderA/SubfolderB/SubfolderC/SubfolderD/index.mdx',
+    route: 'route/folderA/subfolderB/subfolderC/subfolderD/index',
+    title: 'Subfolder D Index'
+  }
+];
+
+let setDataMock = jest.fn();
 let setAliasesMock = jest.fn();
 let setRefMock = jest.fn();
 let writeFileMock = jest.fn();
@@ -103,6 +142,10 @@ describe('GIVEN the SharedConfigPlugin', () => {
     expect(SharedConfigPlugin).toHaveProperty('$beforeSend');
   });
 
+  test('THEN it should use the `afterUpdate` lifecycle event', () => {
+    expect(SharedConfigPlugin).toHaveProperty('afterUpdate');
+  });
+
   describe('WHEN `$afterSource` is called', () => {
     let updatedPages: SharedConfigPage[] = [];
     beforeEach(async () => {
@@ -132,6 +175,105 @@ describe('GIVEN the SharedConfigPlugin', () => {
     });
     test('THEN properties only present in the child shared config are copied', () => {
       expect(updatedPages[3].sharedConfig.shared3).toEqual('shared 3');
+    });
+  });
+
+  describe('WHEN `$afterSource` is called and *No* page has a shared config', () => {
+    const testNamespace = 'test-ns';
+    beforeEach(async () => {
+      const $afterSource = SharedConfigPlugin.$afterSource;
+      // @ts-ignore
+
+      (await $afterSource?.(
+        pagesWithoutSharedConfig,
+        {
+          pageExtensions: ['.mdx'],
+          ignorePages: ['shared-config.json'],
+          config: {
+            setData: setDataMock
+          },
+          namespace: testNamespace
+        },
+        { filename: 'shared-config.json' }
+      )) || [];
+    });
+
+    afterEach(() => {
+      setDataMock.mockReset();
+    });
+
+    test('THEN applyNamespaceSharedConfig property is written to the plugin config object', () => {
+      expect(setDataMock).toHaveBeenCalledTimes(1);
+
+      const namespaceConfig = setDataMock.mock.calls[0][0];
+
+      expect(namespaceConfig).toEqual({
+        applyNamespaceSharedConfig: {
+          'test-ns-/FolderA/index.mdx': {
+            namespace: 'test-ns',
+            paths: [
+              '/FolderA/index.mdx',
+              '/FolderA/SubfolderA/index.mdx',
+              '/FolderA/SubfolderB/index.mdx',
+              '/FolderA/SubfolderB/SubfolderC/SubfolderD/index.mdx'
+            ],
+            rootPath: '/FolderA/index.mdx'
+          }
+        }
+      });
+    });
+
+    test('THEN applyNamespaceSharedConfig property has a key that is a combination of namespace and first index page path', () => {
+      expect(setDataMock).toHaveBeenCalledTimes(1);
+
+      const namespaceConfig = setDataMock.mock.calls[0][0];
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx']
+      ).toBeDefined();
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].namespace
+      ).toEqual(testNamespace);
+    });
+
+    test('THEN the namespace is included in the namespace shared config object', () => {
+      expect(setDataMock).toHaveBeenCalledTimes(1);
+
+      const namespaceConfig = setDataMock.mock.calls[0][0];
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].namespace
+      ).toEqual(testNamespace);
+    });
+
+    test('THEN the root path is included in the namespace shared config object', () => {
+      expect(setDataMock).toHaveBeenCalledTimes(1);
+
+      const namespaceConfig = setDataMock.mock.calls[0][0];
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].rootPath
+      ).toEqual('/FolderA/index.mdx');
+    });
+
+    test('THEN all index pages in the source are included in namespace shared config object', () => {
+      expect(setDataMock).toHaveBeenCalledTimes(1);
+
+      const namespaceConfig = setDataMock.mock.calls[0][0];
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].paths.length
+      ).toEqual(4);
+
+      expect(
+        namespaceConfig.applyNamespaceSharedConfig['test-ns-/FolderA/index.mdx'].paths
+      ).toEqual([
+        '/FolderA/index.mdx',
+        '/FolderA/SubfolderA/index.mdx',
+        '/FolderA/SubfolderB/index.mdx',
+        '/FolderA/SubfolderB/SubfolderC/SubfolderD/index.mdx'
+      ]);
     });
   });
 
