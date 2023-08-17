@@ -1,6 +1,7 @@
+import crypto from 'node:crypto';
+import path from 'node:path';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { flatten, escapeRegExp } from 'lodash-es';
-import path from 'path';
 import deepmerge from 'deepmerge';
 
 function createPageTest(ignorePages, pageExtensions) {
@@ -58,7 +59,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     if (indexPagesWithSharedConfig.length === 0 && indexPages.length > 0) {
       const rootPath = indexPages[0].fullPath;
       const applyNamespaceSharedConfig = {
-        [`${namespace}~~${rootPath}`]: {
+        [`${crypto.randomUUID()}`]: {
           paths: indexPages.map(indexPage => indexPage.fullPath),
           rootPath,
           namespace
@@ -163,10 +164,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       rootPath: string;
       namespace: string;
     }[] = Object.keys(applyNamespaceSharedConfig)
-      .filter(key => {
-        const keyNamespace = key.split('~~')?.[0];
-        return keyNamespace === namespace;
-      })
+      .filter(key => applyNamespaceSharedConfig[key].namespace === namespace)
       .map(key => applyNamespaceSharedConfig?.[key] || []);
 
     for (const namespaceSharedConfig of namespaceSharedConfigs) {
