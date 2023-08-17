@@ -58,7 +58,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     if (indexPagesWithSharedConfig.length === 0 && indexPages.length > 0) {
       const rootPath = indexPages[0].fullPath;
       const applyNamespaceSharedConfig = {
-        [`${namespace}-${rootPath}`]: {
+        [`${namespace}~~${rootPath}`]: {
           paths: indexPages.map(indexPage => indexPage.fullPath),
           rootPath,
           namespace
@@ -153,7 +153,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     const { applyNamespaceSharedConfig } = globalConfig.data;
 
     if (applyNamespaceSharedConfig === undefined) {
-      // there is no source that exists that has told us it needs to share a parent shared config
+      // there is no source that exists that has told us it needs to share a namespace shared-config
       return;
     }
 
@@ -164,7 +164,7 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       namespace: string;
     }[] = Object.keys(applyNamespaceSharedConfig)
       .filter(key => {
-        const keyNamespace = key.split('-')?.[0];
+        const keyNamespace = key.split('~~')?.[0];
         return keyNamespace === namespace;
       })
       .map(key => applyNamespaceSharedConfig?.[key] || []);
@@ -182,7 +182,6 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
             recursive: true
           });
         }
-
         let parentDir = path.posix.join(path.posix.dirname(String(applyPath)), '../');
         let closestSharedConfigPath = path.posix.join(parentDir, options.filename);
 
