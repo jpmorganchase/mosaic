@@ -10,6 +10,11 @@
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
       "node": "./dist/*.js"
+    },
+    "./PluginError": {
+      "types": "./dist/utils/PluginError.d.ts",
+      "import": "./dist/utils/PluginError.js",
+      "node": "./dist/utils/PluginError.js"
     }
   },
   "engines": {
