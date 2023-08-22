@@ -5,7 +5,8 @@ import type {
   Page,
   Plugin,
   PluginModuleDefinition,
-  Serialiser
+  Serialiser,
+  TrackPluginErrorCallback
 } from '@jpmorganchase/mosaic-types';
 
 import loadPlugins from './createPluginAPI.js';
@@ -35,58 +36,27 @@ export async function bindSerialiser(serialisers): Promise<Serialiser> {
   };
 }
 
-export async function bindPluginMethods(plugins: PluginModuleDefinition[]): Promise<Plugin> {
-  const pluginApi = await loadPlugins<Page[] | TDataOut | IVolumeMutable>(plugins);
+export async function bindPluginMethods(
+  plugins: PluginModuleDefinition[],
+  track?: TrackPluginErrorCallback
+): Promise<Plugin> {
+  const pluginApi = await loadPlugins<Page[] | TDataOut | IVolumeMutable>(plugins, track);
 
   return {
     async $afterSource(pages, args) {
-      let result;
-      try {
-        result = await pluginApi.$afterSource(pages, args);
-      } catch (e) {
-        throw new Error(e);
-      }
+      const result = await pluginApi.$afterSource(pages, args);
       return result;
     },
     async shouldClearCache(lastAfterUpdateReturn, args) {
-      let result;
-      try {
-        result = await pluginApi.shouldClearCache(lastAfterUpdateReturn, args);
-      } catch (e) {
-        throw new Error(e);
-      }
+      const result = await pluginApi.shouldClearCache(lastAfterUpdateReturn, args);
       return result;
     },
     async afterUpdate(mutableFilesystem, args) {
-      let result;
-      try {
-        result = await pluginApi.afterUpdate(mutableFilesystem, args);
-      } catch (e) {
-        throw new Error(e);
-      }
+      const result = await pluginApi.afterUpdate(mutableFilesystem, args);
       return result;
     },
     async $beforeSend(mutableFilesystem, args) {
-      let result;
-      try {
-        result = await pluginApi.$beforeSend(mutableFilesystem, args);
-      } catch (e) {
-        throw new Error(e);
-      }
-      return result;
-    },
-    async saveContent(
-      filePath: string,
-      data: unknown,
-      sourceOptions: Record<string, unknown>,
-      args
-    ) {
-      let result;
-      try {
-        result = await pluginApi.saveContent(filePath, data, sourceOptions, args);
-      } catch (e) {
-        throw new Error(e);
-      }
+      const result = await pluginApi.$beforeSend(mutableFilesystem, args);
       return result;
     }
   };

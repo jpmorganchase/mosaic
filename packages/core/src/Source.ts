@@ -9,6 +9,7 @@ import type {
   IVolumeImmutable,
   MutableData,
   Plugin,
+  PluginErrors,
   PluginModuleDefinition,
   Serialiser,
   SerialiserModuleDefinition,
@@ -36,6 +37,7 @@ export default class Source {
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
   #schedule: SourceSchedule;
+  #pluginErrors: any = {};
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -188,11 +190,14 @@ export default class Source {
 
   async start() {
     this.serialiser = await bindSerialiser(this.#serialisers);
-    this.#pluginApi = await bindPluginMethods(this.#plugins);
+    this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
     this.#worker = this.#createWorker();
     this.#worker.on(EVENT.UPDATE, async ({ data: { pages, symlinks, data } }) => {
       this.config = createConfig(data);
       this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
+    });
+    this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
+      this.#pluginErrors[`${lifecycleMethod}`] = errors;
     });
   }
 
@@ -230,7 +235,12 @@ export default class Source {
   }
 
   async restart() {
+    console.log(this.#pluginErrors);
     this.stop();
     await this.start();
+  }
+
+  trackPluginErrors(errors: PluginErrors, lifecycleMethod: string) {
+    this.#pluginErrors[`${lifecycleMethod}`] = errors;
   }
 }
