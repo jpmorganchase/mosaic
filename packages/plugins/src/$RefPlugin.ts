@@ -5,6 +5,7 @@ import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import deepmerge from 'deepmerge';
 
 import normaliseRefs from './utils/normaliseRefs.js';
+import PluginError from './utils/PluginError.js';
 
 function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
   return {
@@ -109,7 +110,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
               e.source
             }'`
           );
-          throw e;
+          throw new PluginError(e.message, page.fullPath);
         }
       }
 
@@ -133,14 +134,18 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
           await mutableFilesystem.promises.readFile(fullPath)
         );
 
-        const expandedRefs = await normaliseRefs(
-          String(fullPath),
-          config.data.refs[fullPath],
-          mutableFilesystem,
-          pageExtensions,
-          ignorePages
-        );
-        normalisedRefs[fullPath] = deepmerge(page, expandedRefs);
+        try {
+          const expandedRefs = await normaliseRefs(
+            String(fullPath),
+            config.data.refs[fullPath],
+            mutableFilesystem,
+            pageExtensions,
+            ignorePages
+          );
+          normalisedRefs[fullPath] = deepmerge(page, expandedRefs);
+        } catch (e) {
+          throw new PluginError(e.message, page.fullPath);
+        }
       }
 
       const resolve = createRefResolver(normalisedRefs, serialiser, mutableFilesystem);
@@ -161,7 +166,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
               e.source
             }'`
           );
-          throw e;
+          throw new PluginError(e.message, page.fullPath);
         }
       }
       // Third pass, write out the files
