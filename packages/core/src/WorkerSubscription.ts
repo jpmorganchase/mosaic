@@ -7,7 +7,8 @@ export enum EVENT {
   ERROR = 'ERROR',
   EXIT = 'EXIT',
   START = 'START',
-  UPDATE = 'UPDATE'
+  UPDATE = 'UPDATE',
+  TRACK = 'TRACK'
 }
 
 const textDecoder = new TextDecoder('utf8');
@@ -52,9 +53,11 @@ export default class WorkerSubscription {
     return () => this.#emitter.off(type, handler);
   }
 
-  #onNext = ({ type, data }: { data: Uint8Array; type: 'init' | 'message' }) => {
+  #onNext = ({ type, data }: { data: Uint8Array; type: 'init' | 'message' | 'track' }) => {
     if (type === 'message') {
       this.#emitter.emit(EVENT.UPDATE, { data: JSON.parse(textDecoder.decode(data)) });
+    } else if (type === 'track') {
+      this.#emitter.emit(EVENT.TRACK, { data: JSON.parse(textDecoder.decode(data)) });
     } else if (type === 'init') {
       this.#emitter.emit(EVENT.START);
       if (data) {

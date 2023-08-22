@@ -1,7 +1,6 @@
 import type { LoadedSerialiser } from '@jpmorganchase/mosaic-types';
 import path from 'node:path';
-
-import PluginError from '../PluginError.js';
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
 
 const isPathWithExtension = (filePath: string) => {
   return typeof filePath === 'string' && path.extname(filePath).length > 1;
@@ -31,17 +30,18 @@ export default async function serialiserRunner(
       const result = await serialiser[serialiserMethod](fullPath, ...args, serialiser.options);
       return result;
     } catch (e) {
-      // This check will stop nested errors from ending up with multiple 'Plugin X threw an exception' headers from
-      // being prefixed to the messages
       if (e instanceof PluginError) {
+        e.lifecycleMethod = serialiserMethod;
+        e.pluginModulePath = serialiser.modulePath;
         throw e;
       }
-      throw new PluginError(
-        `Serialiser '${serialiser.modulePath}' threw an exception calling \`serialiser.${serialiserMethod}\` on '${fullPath}'.
-          
-  Is this the correct serialiser to use for this file type? See error below:
-  ${e.stack}`
-      );
+
+      // create a new plugin error
+      const pluginError = new PluginError(e.message);
+      pluginError.stack = e.stack;
+      pluginError.pluginModulePath = serialiser.modulePath;
+      pluginError.lifecycleMethod = serialiserMethod;
+      throw pluginError;
     }
   }
   throw new Error(`Could not find a suitable serialiser for file '${fullPath}'.`);

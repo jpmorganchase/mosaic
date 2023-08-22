@@ -12,6 +12,36 @@ import type { MutableData, ImmutableData } from './MutableData.js';
 export type LoadedPlugin = Partial<Plugin<Page>> & PluginModuleDefinition;
 export type LifecycleMethod = keyof Plugin<Page>;
 
+export type PluginErrorDescriptor = {
+  /**
+   * The plugin lifecycle method running when the error occurred
+   */
+  lifecycleMethod: string;
+  /**
+   * The path to the loaded plugin module
+   */
+  pluginModulePath: string;
+  /**
+   * The name of the plugin
+   */
+  pluginName: string;
+  /**
+   * The name of the error
+   */
+  name: string;
+  /**
+   * The path of the file that triggered the plugin error
+   */
+  fullPath?: string;
+};
+
+export type PluginErrors = Array<PluginErrorDescriptor>;
+
+export type TrackPluginErrorCallback = (
+  errors: Array<PluginErrorDescriptor>,
+  lifecycleMethod: string
+) => void;
+
 /**
  * Plugins are lifecycle-based hooks that are called on every source at different stages.
  * Consumers will never need to invoke a lifecycle method; but for technical clarity - when a lifecycle method is called,

@@ -5,13 +5,21 @@ import fs from 'fs';
 import { DirectoryJSON, Volume } from 'memfs';
 import { switchMap, tap } from 'rxjs';
 
-import type { Page, WorkerData } from '@jpmorganchase/mosaic-types';
+import type { Page, PluginErrors, WorkerData } from '@jpmorganchase/mosaic-types';
 
 import FileAccess from '../filesystems/FileAccess.js';
 import MutableVolume from '../filesystems/MutableVolume.js';
 import createConfig from '../helpers/createConfig.js';
 import { bindPluginMethods, bindSerialiser } from '../plugin/index.js';
 import createSourceObservable from './helpers/createSourceObservable.js';
+
+const trackPluginErrors = (errors: PluginErrors, lifecycleMethod: string) => {
+  const errorsBuffer = Buffer.from(JSON.stringify({ errors, lifecycleMethod }));
+  parentPort.postMessage({
+    type: 'track',
+    data: errorsBuffer
+  });
+};
 
 const workerData: WorkerData<{ cache: boolean }> = unTypedWorkerData;
 
@@ -22,7 +30,7 @@ if (isMainThread) {
   let config;
   let filesystem;
   const serialiser = await bindSerialiser(workerData.serialisers);
-  const pluginApi = await bindPluginMethods(workerData.plugins);
+  const pluginApi = await bindPluginMethods(workerData.plugins, trackPluginErrors);
   const cachePath = path.join(process.cwd(), '.tmp', '.cache', `${workerData.name}.json`);
 
   if (workerData.options.cache !== false) {

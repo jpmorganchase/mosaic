@@ -1,6 +1,6 @@
-import type { LoadedPlugin } from '@jpmorganchase/mosaic-types';
-
-import PluginError from '../PluginError.js';
+import path from 'node:path';
+import type { LoadedPlugin, PluginErrors } from '@jpmorganchase/mosaic-types';
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
 
 export default async function pluginRunner(
   { loadedPlugins, lifecycleName }: { loadedPlugins: LoadedPlugin[]; lifecycleName: string },
@@ -8,6 +8,7 @@ export default async function pluginRunner(
   ...args
 ) {
   let transformedInput = input;
+  const pluginErrors: PluginErrors = [];
 
   for (const plugin of loadedPlugins) {
     try {
@@ -20,10 +21,6 @@ export default async function pluginRunner(
         continue;
       }
 
-      // console.debug(
-      //   `[Mosaic] Applying plugin method \`${lifecycleName}\`${lifecycleName.startsWith('$') ? ' (in a child worker)' : ''} for '${plugin.modulePath}'.`
-      // );
-
       // eslint-disable-next-line no-await-in-loop
       const result = await plugin[lifecycleName](
         lifecycleName === '$afterSource' ? transformedInput : input,
@@ -31,37 +28,40 @@ export default async function pluginRunner(
         plugin.options
       );
 
-      if (
-        result &&
-        lifecycleName !== '$afterSource' &&
-        lifecycleName !== 'shouldClearCache' &&
-        lifecycleName !== 'saveContent'
-      ) {
+      if (result && lifecycleName !== '$afterSource' && lifecycleName !== 'shouldClearCache') {
         console.warn(
           `[Mosaic] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
         );
       }
 
-      if (lifecycleName === 'saveContent' && !result) {
-        console.warn(
-          `[Mosaic] \`${lifecycleName}\` plugin returned a falsy value - this result has been discarded.`
-        );
-        // eslint-disable-next-line no-continue
-        continue;
+      transformedInput = result;
+    } catch (exception) {
+      const pluginName = path.posix.basename(
+        plugin.modulePath,
+        path.posix.extname(plugin.modulePath)
+      );
+      console.log(
+        `[Mosaic][Plugin] '${pluginName}' threw an exception running \`${lifecycleName}\``
+      );
+      console.log(`[Mosaic][Plugin] stack: ${exception.stack}`);
+
+      if (exception instanceof PluginError) {
+        exception.lifecycleMethod = lifecycleName;
+        exception.pluginModulePath = plugin.modulePath;
+        exception.pluginName = pluginName;
+        pluginErrors.push(exception);
+      } else {
+        // create a new plugin error
+        const pluginError = new PluginError(exception.message);
+        pluginError.pluginModulePath = plugin.modulePath;
+        pluginError.lifecycleMethod = lifecycleName;
+        pluginError.pluginName = pluginName;
+        pluginErrors.push(pluginError);
       }
 
-      transformedInput = result;
-    } catch (e) {
-      // This check will stop nested errors from ending up with multiple 'Plugin X threw an exception' headers from
-      // being prefixed to the messages
-      if (e instanceof PluginError) {
-        throw e;
-      }
-      throw new PluginError(
-        `Plugin '${plugin.modulePath}' threw an exception running \`${lifecycleName}\`. See below:
-  ${e.stack}`
-      );
+      // process this lifecycle for the rest of the loaded plugins
+      continue;
     }
   }
-  return transformedInput;
+  return { result: transformedInput, errors: pluginErrors };
 }
