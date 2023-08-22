@@ -4,8 +4,10 @@ import type {
   Page,
   Plugin,
   PluginModuleDefinition,
-  Serialiser
+  Serialiser,
+  TrackPluginErrorCallback
 } from '@jpmorganchase/mosaic-types';
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
 
 import loadDefinitionModules from './loadDefinitionModules.js';
 import pluginRunner from './pluginRunner.js';
@@ -43,7 +45,8 @@ function createProxyBaseAPI<ConfigData>(): Plugin<Page, ConfigData> {
 }
 
 export default async function createPluginAPI<PluginInput, ConfigData = Record<string, unknown>>(
-  plugins: PluginModuleDefinition[]
+  plugins: PluginModuleDefinition[],
+  track?: TrackPluginErrorCallback
 ): Promise<Plugin<Page, ConfigData>> {
   const loadedPlugins: LoadedPlugin[] | LoadedSerialiser[] = await loadDefinitionModules(plugins);
   const baseObj = createProxyBaseAPI<ConfigData>();
@@ -64,6 +67,9 @@ export default async function createPluginAPI<PluginInput, ConfigData = Record<s
               ...args
             );
           } catch (e) {
+            if (e instanceof PluginError) {
+              throw e;
+            }
             throw new Error(e);
           }
           return result;
@@ -73,14 +79,19 @@ export default async function createPluginAPI<PluginInput, ConfigData = Record<s
         return async (...args: [PluginInput, Record<string, unknown>]) => {
           let result;
           try {
-            result = await pluginRunner(
+            const { result: pluginResult, errors } = await pluginRunner(
               {
                 loadedPlugins: loadedPlugins as LoadedPlugin[],
                 lifecycleName: String(propOrLifecycleName)
               },
               ...args
             );
+            track?.(errors, String(propOrLifecycleName));
+            result = pluginResult;
           } catch (e) {
+            if (e instanceof PluginError) {
+              throw e;
+            }
             throw new Error(e);
           }
           return result;
