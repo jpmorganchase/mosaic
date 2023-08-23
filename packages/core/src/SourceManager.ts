@@ -227,6 +227,7 @@ export default class SourceManager {
   listSources() {
     return Array.from(this.#sources.values()).map((source, index) => ({
       name: source.id.description,
+      pluginErrors: source.pluginErrors,
       index
     }));
   }
