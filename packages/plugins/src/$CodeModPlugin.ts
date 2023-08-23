@@ -1,6 +1,7 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash-es';
 import path from 'path';
+import PluginError from './utils/PluginError.js';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
@@ -19,12 +20,16 @@ const $CodeModPlugin: PluginType<CodeModPluginPage> = {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      if (!isNonHiddenPage(page.fullPath)) {
-        continue;
-      }
-      if (page.frameOverrides) {
-        page.sharedConfig = page.frameOverrides;
-        page.frameOverrides = { $ref: '#/sharedConfig' };
+      try {
+        if (!isNonHiddenPage(page.fullPath)) {
+          continue;
+        }
+        if (page.frameOverrides) {
+          page.sharedConfig = page.frameOverrides;
+          page.frameOverrides = { $ref: '#/sharedConfig' };
+        }
+      } catch (e) {
+        throw new PluginError(e.message, page.fullPath);
       }
     }
     return pages;
