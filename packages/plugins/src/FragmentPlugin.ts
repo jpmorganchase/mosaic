@@ -5,6 +5,7 @@ import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkDirective from 'remark-directive';
 import { visitParents } from 'unist-util-visit-parents';
+import PluginError from './utils/PluginError.js';
 
 interface FragmentPluginPage {
   fullPath: string;
@@ -94,28 +95,32 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      const { fullPath } = page;
-      if (!isNonHiddenPage(fullPath)) {
-        continue;
+      try {
+        const { fullPath } = page;
+        if (!isNonHiddenPage(fullPath)) {
+          continue;
+        }
+
+        const tree = remark().use(remarkMdx).use(remarkDirective).parse(page.content);
+        const processedTree = await processTree(
+          tree,
+          serialiser,
+          mutableFilesystem,
+          fullPath,
+          isNonHiddenPage
+        );
+
+        page.content = remark()
+          .data('settings', { fences: true })
+          .use(remarkMdx)
+          .use(remarkDirective)
+          .stringify(processedTree);
+
+        const updatedFileData = await serialiser.serialise(fullPath, page);
+        await mutableFilesystem.promises.writeFile(fullPath, updatedFileData);
+      } catch (e) {
+        throw new PluginError(e.message, page.fullPath);
       }
-
-      const tree = remark().use(remarkMdx).use(remarkDirective).parse(page.content);
-      const processedTree = await processTree(
-        tree,
-        serialiser,
-        mutableFilesystem,
-        fullPath,
-        isNonHiddenPage
-      );
-
-      page.content = remark()
-        .data('settings', { fences: true })
-        .use(remarkMdx)
-        .use(remarkDirective)
-        .stringify(processedTree);
-
-      const updatedFileData = await serialiser.serialise(fullPath, page);
-      await mutableFilesystem.promises.writeFile(fullPath, updatedFileData);
     }
   }
 };
