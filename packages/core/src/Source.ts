@@ -37,7 +37,7 @@ export default class Source {
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
   #schedule: SourceSchedule;
-  #pluginErrors: any = {};
+  pluginErrors: any = {};
 
   config: MutableData<Record<string, unknown>>;
   serialiser: Serialiser;
@@ -197,7 +197,7 @@ export default class Source {
       this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
     });
     this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
-      this.#pluginErrors[`${lifecycleMethod}`] = errors;
+      this.pluginErrors[`${lifecycleMethod}`] = errors;
     });
   }
 
@@ -235,12 +235,11 @@ export default class Source {
   }
 
   async restart() {
-    console.log(this.#pluginErrors);
     this.stop();
     await this.start();
   }
 
   trackPluginErrors(errors: PluginErrors, lifecycleMethod: string) {
-    this.#pluginErrors[`${lifecycleMethod}`] = errors;
+    this.pluginErrors[`${lifecycleMethod}`] = errors;
   }
 }
