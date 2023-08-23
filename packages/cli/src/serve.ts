@@ -32,7 +32,8 @@ export default async function serve(config: MosaicConfig, port, scope) {
 
     const response = sources.map(source => ({
       name: source.name,
-      ...config.sources[source.index]
+      ...config.sources[source.index],
+      pluginErrors: source.pluginErrors
     }));
     res.send(response);
   });

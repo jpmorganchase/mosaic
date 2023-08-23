@@ -40,10 +40,10 @@ export default async function pluginRunner(
         plugin.modulePath,
         path.posix.extname(plugin.modulePath)
       );
-      console.log(
+      console.error(
         `[Mosaic][Plugin] '${pluginName}' threw an exception running \`${lifecycleName}\``
       );
-      console.log(`[Mosaic][Plugin] stack: ${exception.stack}`);
+      console.error(`[Mosaic][Plugin] ${exception.stack}`);
 
       if (exception instanceof PluginError) {
         exception.lifecycleMethod = lifecycleName;
