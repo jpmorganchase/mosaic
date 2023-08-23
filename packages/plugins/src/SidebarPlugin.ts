@@ -245,9 +245,9 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       await Promise.all(
         rootUserJourneys.map(async rootDir => {
           const sidebarFilePath = path.posix.join(String(rootDir), filename);
-          let pages = await createPageList(rootDir);
-          pages = pages.filter(page => removeExcludedPages(page));
-          const groupMap = createGroupMap(pages);
+          const pages = await createPageList(rootDir);
+          const includedPages = pages.filter(page => removeExcludedPages(page));
+          const groupMap = createGroupMap(includedPages);
 
           const sidebarData = linkGroupMap(groupMap, rootDir);
           if (sidebarData[0] === undefined) {
