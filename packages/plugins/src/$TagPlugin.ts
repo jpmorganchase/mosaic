@@ -1,6 +1,7 @@
 import path from 'path';
 import { escapeRegExp, reduce } from 'lodash-es';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import PluginError from './utils/PluginError.js';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
@@ -61,33 +62,37 @@ const $TagPlugin: PluginType<TagPluginPage, unknown, TagPluginConfigData> = {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
     for (const page of pages) {
-      if (!isNonHiddenPage(page.fullPath)) {
-        continue;
-      }
-      const meta = page;
-      // Symlink every `tag` item to '/.tags' folder
-      if (meta.tags?.length) {
-        config.setTags(page.fullPath, meta.tags);
-        delete meta.tags;
-      }
+      try {
+        if (!isNonHiddenPage(page.fullPath)) {
+          continue;
+        }
+        const meta = page;
+        // Symlink every `tag` item to '/.tags' folder
+        if (meta.tags?.length) {
+          config.setTags(page.fullPath, meta.tags);
+          delete meta.tags;
+        }
 
-      // Find any references to $tag
-      const foundTags = findKeys(page, '$tag');
-      if (foundTags.length) {
-        const tags = new Set<string>();
+        // Find any references to $tag
+        const foundTags = findKeys(page, '$tag');
+        if (foundTags.length) {
+          const tags = new Set<string>();
 
-        foundTags.forEach(ref => {
-          const [tag, fragment = ''] = ref.$$value.split('#');
+          foundTags.forEach(ref => {
+            const [tag, fragment = ''] = ref.$$value.split('#');
 
-          tags.add(tag);
+            tags.add(tag);
 
-          config.setGlobalRef(
-            page.fullPath,
-            ref.$$path,
-            `${path.join('/.tags', tag, '**')}#${fragment}`
-          );
-        });
-        config.setData({ subscribedTags: Array.from(tags) });
+            config.setGlobalRef(
+              page.fullPath,
+              ref.$$path,
+              `${path.join('/.tags', tag, '**')}#${fragment}`
+            );
+          });
+          config.setData({ subscribedTags: Array.from(tags) });
+        }
+      } catch (e) {
+        throw new PluginError(e.message, page.fullPath);
       }
     }
     return pages;
