@@ -7,6 +7,7 @@ import { visit } from 'unist-util-visit';
 import { parse } from 'react-docgen-typescript';
 import type { Node } from 'unist';
 import path from 'path';
+import PluginError from './utils/PluginError.js';
 
 const options = {
   propFilter: prop => !/@types[\\/]react[\\/]/.test(prop.parent?.fileName || '')
@@ -28,78 +29,84 @@ const PropsTablePlugin: PluginType<PropsTablePluginPage> = {
   async $afterSource(pages) {
     const processor = remark().use(remarkMdx).use(remarkDirective).use(remarkGfm);
     for (const page of pages) {
-      const tree = await processor.parse(page.content);
+      try {
+        const tree = await processor.parse(page.content);
 
-      visit(
-        tree as Node,
-        (node: Node) => node.type === 'textDirective',
-        (node: LeafNode) => {
-          if (node.name !== 'propsTable') return;
+        visit(
+          tree as Node,
+          (node: Node) => node.type === 'textDirective',
+          (node: LeafNode) => {
+            if (node.name !== 'propsTable') return;
 
-          const componentPath = path.resolve(node.attributes.src);
+            const componentPath = path.resolve(node.attributes.src);
 
-          const propsTableData = parse(componentPath, options)[0]?.props;
+            const propsTableData = parse(componentPath, options)[0]?.props;
 
-          const tableHeaders = {
-            type: 'tableRow',
-            children: [
-              {
-                type: 'tableCell',
-                children: [{ type: 'text', value: 'Name' }]
-              },
-              {
-                type: 'tableCell',
-                children: [{ type: 'text', value: 'Type' }]
-              },
-              {
-                type: 'tableCell',
-                children: [{ type: 'text', value: 'Description' }]
-              },
-              {
-                type: 'tableCell',
-                children: [{ type: 'text', value: 'Default' }]
-              }
-            ]
-          };
-
-          const tableBody = Object.values(propsTableData).map(
-            ({ name, type, description, defaultValue }) => ({
+            const tableHeaders = {
               type: 'tableRow',
               children: [
                 {
                   type: 'tableCell',
-                  children: [{ type: 'text', value: name }]
+                  children: [{ type: 'text', value: 'Name' }]
                 },
                 {
                   type: 'tableCell',
-                  children: [{ type: 'inlineCode', value: type.name }]
+                  children: [{ type: 'text', value: 'Type' }]
                 },
                 {
                   type: 'tableCell',
-                  children: [{ type: 'html', value: description.replace(/\n/g, ' ') }]
+                  children: [{ type: 'text', value: 'Description' }]
                 },
                 {
                   type: 'tableCell',
-                  children: [{ type: 'inlineCode', value: defaultValue ? defaultValue.value : '-' }]
+                  children: [{ type: 'text', value: 'Default' }]
                 }
               ]
-            })
-          );
+            };
 
-          const table = [tableHeaders, ...tableBody];
+            const tableBody = Object.values(propsTableData).map(
+              ({ name, type, description, defaultValue }) => ({
+                type: 'tableRow',
+                children: [
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'text', value: name }]
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'inlineCode', value: type.name }]
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [{ type: 'html', value: description.replace(/\n/g, ' ') }]
+                  },
+                  {
+                    type: 'tableCell',
+                    children: [
+                      { type: 'inlineCode', value: defaultValue ? defaultValue.value : '-' }
+                    ]
+                  }
+                ]
+              })
+            );
 
-          // Replaces the current node with a new table node containing the props
-          node.type = 'table';
-          node.children = table;
-        }
-      );
+            const table = [tableHeaders, ...tableBody];
 
-      page.content = remark()
-        .data('settings', { fences: true })
-        .use(remarkMdx)
-        .use(remarkDirective)
-        .use(remarkGfm)
-        .stringify(tree);
+            // Replaces the current node with a new table node containing the props
+            node.type = 'table';
+            node.children = table;
+          }
+        );
+
+        page.content = remark()
+          .data('settings', { fences: true })
+          .use(remarkMdx)
+          .use(remarkDirective)
+          .use(remarkGfm)
+          .stringify(tree);
+      } catch (e) {
+        throw new PluginError(e.message, page.fullPath);
+      }
     }
 
     return pages;
