@@ -1,6 +1,8 @@
 import React, { forwardRef, ReactNode } from 'react';
 import { Link } from '@jpmorganchase/mosaic-components';
 
+import styles from './styles.css';
+
 export interface BreadcrumbProps {
   children?: ReactNode;
   href?: string;
@@ -13,11 +15,15 @@ export const Breadcrumb = forwardRef<HTMLLinkElement, BreadcrumbProps>(function 
   { children, isCurrentLevel, ...props },
   ref
 ) {
-  return isCurrentLevel ? (
-    <span>{children}</span>
-  ) : (
-    <Link endIcon="none" ref={ref} variant="regular" {...props}>
-      {children}
-    </Link>
+  return (
+    <li className={styles.wrapper}>
+      {isCurrentLevel ? (
+        <span>{children}</span>
+      ) : (
+        <Link endIcon="none" ref={ref} variant="regular" {...props}>
+          {children}
+        </Link>
+      )}
+    </li>
   );
 });
