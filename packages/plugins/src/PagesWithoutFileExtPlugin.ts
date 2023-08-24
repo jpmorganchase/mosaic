@@ -1,6 +1,7 @@
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash-es';
 import path from 'path';
+import PluginError from './utils/PluginError.js';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
@@ -21,11 +22,15 @@ const PagesWithoutFileExtPlugin: PluginType = {
     const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
 
     for (const page of pages) {
-      if (!isNonHiddenPage(page.fullPath)) {
-        continue;
+      try {
+        if (!isNonHiddenPage(page.fullPath)) {
+          continue;
+        }
+        page.route = page.route.replace(pageTest, '');
+        config.setAliases(page.fullPath, [page.route]);
+      } catch (e) {
+        throw new PluginError(e.message, page.fullPath);
       }
-      page.route = page.route.replace(pageTest, '');
-      config.setAliases(page.fullPath, [page.route]);
     }
     return pages;
   }
