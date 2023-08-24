@@ -1,5 +1,7 @@
 import React from 'react';
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import { render, waitFor, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { within } from '@testing-library/dom';
 
 import { Accordion, AccordionDetails, AccordionSection, AccordionSummary } from '../index';
 
@@ -23,11 +25,11 @@ describe('GIVEN an `Accordion` component', () => {
     );
     // assert
     expect(getAllByRole('button').length).toEqual(3);
-    expect(queryAllByRole('tabpanel').length).toEqual(3);
+    expect(queryAllByRole('tabpanel').length).toEqual(0);
   });
 
   test('THEN should show and hide panels when the tab is clicked', async () => {
-    const { getByRole, getAllByRole, queryAllByRole } = render(
+    render(
       <Accordion>
         <AccordionSection>
           <AccordionSummary>SUMMARY 1</AccordionSummary>
@@ -43,40 +45,38 @@ describe('GIVEN an `Accordion` component', () => {
         </AccordionSection>
       </Accordion>
     );
-
     // assert
-    expect(queryAllByRole('button').length).toEqual(3);
-    expect(getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
-    expect(getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'false');
-    expect(getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByText('CONTENT 1')).not.toBeInTheDocument();
-    expect(screen.queryByText('CONTENT 2')).not.toBeInTheDocument();
-    expect(screen.queryByText('CONTENT 3')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('button').length).toEqual(3);
+    expect(screen.getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryAllByRole('tabpanel').length).toEqual(0); // nothing visible
 
     // act - click to open tab 2
-    let tab2 = getAllByRole('button')[1];
-    fireEvent.click(tab2);
-
+    let tab2 = screen.getAllByRole('button')[1];
+    userEvent.click(tab2);
     // assert
-    await waitFor(() => expect(getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'true'));
-    await waitFor(() => expect(screen.queryByText('CONTENT 2')).toBeInTheDocument());
-    expect(getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
-    expect(getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByText('CONTENT 1')).not.toBeInTheDocument();
-    expect(screen.queryByText('CONTENT 3')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'true')
+    );
+    await waitFor(() => expect(screen.queryAllByRole('tabpanel').length).toEqual(1));
+    expect(screen.getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
+
+    const visiblePanelContent = within(screen.queryAllByRole('tabpanel')[0]).getByText('CONTENT 2');
+    expect(visiblePanelContent).toBeDefined();
 
     // act - click to close tab 2
-    tab2 = getAllByRole('button')[1];
-    fireEvent.click(tab2);
+    tab2 = screen.getAllByRole('button')[1];
+    userEvent.click(tab2);
 
     // assert
     await waitFor(() =>
-      expect(getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'false')
     );
-    await waitFor(() => expect(screen.queryByText('CONTENT 2')).not.toBeInTheDocument());
-    expect(getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
-    expect(getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByText('CONTENT 1')).not.toBeInTheDocument();
-    expect(screen.queryByText('CONTENT 3')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryAllByRole('tabpanel').length).toEqual(0));
+    expect(screen.getAllByRole('button')[0]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByRole('button')[1]).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.getAllByRole('button')[2]).toHaveAttribute('aria-expanded', 'false');
   });
 });
