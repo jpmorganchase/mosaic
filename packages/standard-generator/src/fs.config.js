@@ -62,7 +62,8 @@ module.exports = {
     // TODO: Remove this plugin once the docs add file extensions in refs
     {
       modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
-      options: {}
+      options: {},
+      priority: 1
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
