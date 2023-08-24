@@ -19,15 +19,14 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
   if (!enabled) {
     return null;
   }
-
   return (
     <SaltBreadcrumbs className={styles.root} itemsBeforeCollapse={2} maxItems={5}>
       {breadcrumbs.map(
-        (value, index) =>
+        value =>
           value && (
-            <li className={styles.wrapper} key={`${value.id}-${index}`}>
-              <Breadcrumb href={value.path}>{value.label}</Breadcrumb>
-            </li>
+            <Breadcrumb href={value.path} key={`${value.id}`} overflowLabel={value.label}>
+              {value.label}
+            </Breadcrumb>
           )
       )}
     </SaltBreadcrumbs>

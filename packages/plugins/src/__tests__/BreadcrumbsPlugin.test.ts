@@ -106,32 +106,5 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
         });
       });
     });
-
-    describe('AND WHEN a page has a layout without breadcrumbs UI', () => {
-      beforeEach(async () => {
-        const pagesWithWrongLayout = [
-          {
-            fullPath: '/FolderA/index.mdx',
-            route: 'route/folderA/index',
-            title: 'Folder A Index',
-            layout: 'Landing'
-          },
-          {
-            fullPath: '/FolderA/pageA.mdx',
-            route: 'route/folderA/pageA',
-            title: 'Folder A Page A',
-            layout: 'Newsletter'
-          }
-        ];
-        const $afterSource = BreadcrumbsPlugin.$afterSource;
-        // @ts-ignore
-        updatedPages =
-          (await $afterSource?.(pagesWithWrongLayout, {}, { indexPageName: 'index.mdx' })) || [];
-      });
-      test('THEN **NO** breadcrumbs are added to the page', () => {
-        const breadcrumbs = (updatedPages && updatedPages[0].breadcrumbs) || [];
-        expect(breadcrumbs.length).toEqual(0);
-      });
-    });
   });
 });

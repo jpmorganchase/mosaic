@@ -27,7 +27,7 @@ interface SidebarPluginConfigData {
   refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
 }
 
-interface SidebarPluginPage extends Page {
+export interface SidebarPluginPage extends Page {
   sidebar?: {
     label?: string;
   };
