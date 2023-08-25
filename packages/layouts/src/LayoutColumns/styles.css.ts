@@ -9,7 +9,10 @@ import {
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 const gridTemplates = {
-  columns: `minmax(300px, 1fr) minmax(min-content, ${config.main.wideWidth}px) minmax(282px, 1fr)`,
+  allAreas: `
+      "layout-column-sidebar layout-column-main layout-column-toc"`,
+  mainAreaOnly: `"layout-column-main"`,
+  allColumns: `minmax(300px, 1fr) minmax(min-content, ${config.main.wideWidth}px) minmax(282px, 1fr)`,
   fullWidthContent: '1fr'
 };
 
@@ -18,7 +21,8 @@ const rootGridProperties = defineProperties({
   defaultCondition: 'mobile',
   responsiveArray: ['mobile', 'tablet', 'web', 'desktop'],
   properties: {
-    gridTemplateColumns: [gridTemplates.fullWidthContent, gridTemplates.columns],
+    gridTemplateAreas: [gridTemplates.allAreas, gridTemplates.mainAreaOnly],
+    gridTemplateColumns: [gridTemplates.fullWidthContent, gridTemplates.allColumns],
     gridGap: vars.space.horizontal
   }
 });
@@ -29,9 +33,7 @@ const styles = {
   root: style([
     style({
       display: 'grid',
-      alignItems: 'start',
-      gridTemplateAreas: `
-      "layout-column-sidebar layout-column-main layout-column-toc"`
+      alignItems: 'start'
     }),
     responsiveSprinkles({
       marginTop: ['x10', 'x10', 'x20', 'x20'],
@@ -39,11 +41,17 @@ const styles = {
       paddingRight: ['x4', 'x6', 'x6', 'x6']
     }),
     rootGridSprinkles({
+      gridTemplateAreas: {
+        mobile: gridTemplates.mainAreaOnly,
+        tablet: gridTemplates.mainAreaOnly,
+        desktop: gridTemplates.allAreas,
+        web: gridTemplates.allAreas
+      },
       gridTemplateColumns: {
         mobile: gridTemplates.fullWidthContent,
         tablet: gridTemplates.fullWidthContent,
-        desktop: gridTemplates.columns,
-        web: gridTemplates.columns
+        desktop: gridTemplates.allColumns,
+        web: gridTemplates.allColumns
       },
       gridGap: ['none', 'none', 'x8', 'x8']
     })
