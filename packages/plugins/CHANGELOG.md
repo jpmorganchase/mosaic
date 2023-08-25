@@ -1,5 +1,31 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- d3b8b3a: `SharedConfigPlugin` can now apply a shared config to a source that doesn't have one but shares a namespace with 1 that does.
+- 7013042: Fix pages that are excluded from the sidebar having no sidebar
+- 0ced179: ## Feature
+
+  Any exception raised by plugins during any part of the plugin lifecycle are converted to instances of PluginError and tracked by the source that is running the plugins. This means plugin errors do not cause the source to close and content will continue to be served by Mosaic.
+
+  Plugin authors should be encouraged to throw a `PluginError` as should an error occur when processing a particular page, then the full path to the page can be included in the error descriptor.
+
+  Plugin errors are not currently surfaced to a Mosaic site but can be viewed using the list sources admin API.
+
+  ## Fix
+
+  The `saveContent` plugin lifecycle method is removed. This concept was replaced with workflows some time ago and should have been removed then.
+
+- Updated dependencies [d3b8b3a]
+- Updated dependencies [0ced179]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.43
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.43
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.43
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.43
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.43
+
 ## 0.1.0-beta.42
 
 ### Patch Changes
