@@ -14,7 +14,7 @@ export const exponentialBackOffRetryStrategy =
     attempts.pipe(
       retry({
         count: schedule.retryEnabled ? schedule.maxRetries : 0,
-        delay: (_error, retryIndex) => {
+        delay: (error, retryIndex) => {
           const retryDelayMs = schedule.retryDelayMins * 60000;
           // eslint-disable-next-line prefer-exponentiation-operator, no-restricted-properties
           const backOffTime = Math.pow(2, retryIndex - 1) * retryDelayMs;
@@ -31,6 +31,8 @@ export const exponentialBackOffRetryStrategy =
               backOffTimeMins !== 1 ? 's' : ''
             }`
           );
+
+          console.error(`[Mosaic] Source ${error}`);
           return timer(backOffTime);
         },
         resetOnSuccess: schedule.resetOnSuccess
