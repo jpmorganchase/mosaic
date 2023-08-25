@@ -53,7 +53,6 @@ export default {
       alignItems: 'center',
       height: `${config.appHeader.height}px`,
       gridArea: 'base-layout-header',
-      overflow: 'hidden',
       position: 'sticky',
       top: 0,
       // This is high so that the header can overlay the Salt component for mobile
