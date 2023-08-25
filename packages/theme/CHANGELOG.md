@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- 4e69178: Remove dark mode image filter
+
 ## 0.1.0-beta.42
 
 ## 0.1.0-beta.41

@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- c0ee0f3: ### Fixes
+
+  - Breadcrumb label matches sidebar label if available.
+  - When breadcrumbs collapse into a menu button, the breadcrumb label is used for the menu items.
+  - Collapsed breadcrumbs will navigate to the page the breadcrumb represents
+  - Breadcrumb links no longer include the unnecessary file extension
+
 ## 0.1.0-beta.42
 
 ## 0.1.0-beta.41

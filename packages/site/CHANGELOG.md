@@ -1,5 +1,54 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- d3b8b3a: `SharedConfigPlugin` can now apply a shared config to a source that doesn't have one but shares a namespace with 1 that does.
+- e32b5c6: ## Fixes
+
+  - Prevent the search results popover from being hidden by the main page content
+  - When on smaller screens switch the main content grid to only show the main content grid area
+
+- 0dc621d: `LinkButton` added to default MDX components.
+- 682c784: Add Admin endpoints
+- c0ee0f3: ### Fixes
+
+  - Breadcrumb label matches sidebar label if available.
+  - When breadcrumbs collapse into a menu button, the breadcrumb label is used for the menu items.
+  - Collapsed breadcrumbs will navigate to the page the breadcrumb represents
+  - Breadcrumb links no longer include the unnecessary file extension
+
+- b39d77b: ## Feature
+
+  Provide the ability to set the default page layout at the root of a Mosaic site. Pages without a layout in their metadata will use this layout.
+
+  ```
+  <LayoutProvider layoutComponents={layoutComponents} defaultLayout='DetailTechnical'>
+      <Page/>
+  </LayoutProvider>
+  ```
+
+- Updated dependencies [e32b5c6]
+- Updated dependencies [0dc621d]
+- Updated dependencies [4e69178]
+- Updated dependencies [682c784]
+- Updated dependencies [c0ee0f3]
+- Updated dependencies [0ced179]
+- Updated dependencies [b39d77b]
+- Updated dependencies [993b4b5]
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.43
+  - @jpmorganchase/mosaic-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.43
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.43
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.43
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.43
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.43
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.43
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.43
+  - @jpmorganchase/mosaic-store@0.1.0-beta.43
+
 ## 0.1.0-beta.42
 
 ### Patch Changes

@@ -1,5 +1,34 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- e32b5c6: ## Fixes
+
+  - Prevent the search results popover from being hidden by the main page content
+  - When on smaller screens switch the main content grid to only show the main content grid area
+
+- b39d77b: ## Feature
+
+  Provide the ability to set the default page layout at the root of a Mosaic site. Pages without a layout in their metadata will use this layout.
+
+  ```
+  <LayoutProvider layoutComponents={layoutComponents} defaultLayout='DetailTechnical'>
+      <Page/>
+  </LayoutProvider>
+  ```
+
+- 993b4b5: The logic for showing a spinner has been simplified and should be more consistent.
+- Updated dependencies [0dc621d]
+- Updated dependencies [4e69178]
+- Updated dependencies [c0ee0f3]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.43
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.43
+  - @jpmorganchase/mosaic-store@0.1.0-beta.43
+
 ## 0.1.0-beta.42
 
 ### Patch Changes
