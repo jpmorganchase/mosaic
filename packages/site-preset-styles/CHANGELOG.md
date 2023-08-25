@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- Updated dependencies [e32b5c6]
+- Updated dependencies [0dc621d]
+- Updated dependencies [4e69178]
+- Updated dependencies [c0ee0f3]
+- Updated dependencies [b39d77b]
+- Updated dependencies [993b4b5]
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.43
+  - @jpmorganchase/mosaic-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.43
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.43
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.43
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.43
+
 ## 0.1.0-beta.42
 
 ### Patch Changes

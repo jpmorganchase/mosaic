@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.43
+
+### Patch Changes
+
+- 0dc621d: `LinkButton` added to default MDX components.
+- Updated dependencies [4e69178]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.43
+  - @jpmorganchase/mosaic-store@0.1.0-beta.43
+
 ## 0.1.0-beta.42
 
 ### Patch Changes
