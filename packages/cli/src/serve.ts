@@ -30,11 +30,29 @@ export default async function serve(config: MosaicConfig, port, scope) {
     res.contentType('application/json');
     const sources = await mosaic.listSources();
 
-    const response = sources.map(source => ({
-      name: source.name,
-      ...config.sources[source.index],
-      pluginErrors: source.pluginErrors
-    }));
+    const response = sources.map(source => {
+      const sourceFromConfig = config.sources[source.index];
+      const options = sourceFromConfig.options as { credentials?: string } | undefined;
+
+      if (
+        options?.credentials &&
+        sourceFromConfig.modulePath === '@jpmorganchase/mosaic-source-git-repo'
+      ) {
+        const parts = options.credentials?.split(':');
+        if (parts) {
+          sourceFromConfig.options = {
+            ...options,
+            credentials: `${parts[0]}: ******`
+          };
+        }
+      }
+
+      return {
+        name: source.name,
+        ...sourceFromConfig,
+        pluginErrors: source.pluginErrors
+      };
+    });
     res.send(response);
   });
 
