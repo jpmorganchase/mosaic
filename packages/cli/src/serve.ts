@@ -38,11 +38,11 @@ export default async function serve(config: MosaicConfig, port, scope) {
         options?.credentials &&
         sourceFromConfig.modulePath === '@jpmorganchase/mosaic-source-git-repo'
       ) {
-        const parts = options.credentials?.split(':');
-        if (parts) {
+        const parts = options.credentials?.split(':') || [];
+        if (parts.length > 0) {
           sourceFromConfig.options = {
             ...options,
-            credentials: `${parts[0]}: ******`
+            credentials: `${parts[0]}: ********`
           };
         }
       }
