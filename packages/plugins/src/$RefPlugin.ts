@@ -1,4 +1,5 @@
-import path from 'path';
+import path from 'node:path';
+import os from 'node:os';
 import { reduce, omit, escapeRegExp } from 'lodash-es';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
@@ -7,6 +8,23 @@ import deepmerge from 'deepmerge';
 import normaliseRefs from './utils/normaliseRefs.js';
 import PluginError from './utils/PluginError.js';
 
+const isWindows = /^win/.test(os.platform());
+const windowsDrivePattern = /^([a-z]):/i;
+
+/**
+ * The JSON Schema Ref parser turns refs into URLs.
+ * When running on Windows it adds in the drive letter to the beginning of the resolved ref filepath
+ *
+ * WE DON"T WANT THIS
+ *
+ * Regardless of platform, Mosaic uses an in-memory fs so we don't need drive letters.
+ * We need the path as it is in the mosaic fs.
+ */
+function normaliseWindowsPath(url: string) {
+  const drivePart = windowsDrivePattern.exec(url)?.[0];
+  return drivePart ? url.slice(drivePart.length) : url;
+}
+
 function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
   return {
     file: {
@@ -14,11 +32,12 @@ function createRefResolver(normalisedRefs, serialiser, mutableFilesystem) {
       order: 1,
       async read(file, callback) {
         try {
+          const filePath = isWindows ? normaliseWindowsPath(file.url) : file.url;
           const refedPage =
-            normalisedRefs[file.url] ||
+            normalisedRefs[filePath] ||
             (await serialiser.deserialise(
-              file.url,
-              await mutableFilesystem.promises.readFile(file.url)
+              filePath,
+              await mutableFilesystem.promises.readFile(filePath)
             ));
           return callback(null, omit(refedPage, 'content'));
         } catch (e) {
@@ -189,6 +208,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
 
       if (refs.length) {
         for (const ref of refs) {
+          console.log(ref);
           config.setRef(page.fullPath, ...ref);
         }
       }
