@@ -4,7 +4,6 @@ import { globalStyle, style } from '@vanilla-extract/css';
 const base = style({});
 
 globalStyle(`${base} > main`, {
-  overflow: 'hidden',
   height: `calc(100% + ${config.appHeader.height}px)`
 });
 
