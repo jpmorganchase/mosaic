@@ -4,6 +4,7 @@ import { LinkBase } from '../LinkBase';
 import { LinkText } from '../LinkText';
 import { TileBase, useTileState } from '../TileBase';
 import { useImageComponent } from '../ImageProvider';
+import { useBreakpoint } from '../useBreakpoint';
 import styles, { imageRecipe, tileImageRecipe } from './styles.css';
 
 const PseudoLink = ({ children }) => {
@@ -58,27 +59,32 @@ export const EditionTileLink: React.FC<React.PropsWithChildren<EditionTileLinkPr
   description,
   eyebrow = null,
   image,
-  imagePlacement = 'fullWidth',
+  imagePlacement: imagePlacementProp,
   link,
   title,
   ...rest
-}) => (
-  <TileBase className={styles.root} {...rest} size="fullWidth">
-    <LinkBase
-      className={styles.content}
-      aria-labelledby="tilecontent-title"
-      href={link}
-      tabIndex={0}
-    >
-      {image ? <TileImage image={image} imagePlacement={imagePlacement} /> : null}
-      <div>
-        {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
-        {title ? <p className={styles.title}>{title}</p> : null}
-        {description ? <div className={styles.description}>{description}</div> : null}
-        <PseudoLink>
-          <p className={styles.action}>Read More</p>
-        </PseudoLink>
-      </div>
-    </LinkBase>
-  </TileBase>
-);
+}) => {
+  const breakpoint = useBreakpoint();
+  const imagePlacementResponsive = breakpoint === 'mobile' ? 'fullWidth' : 'left';
+  const imagePlacement = imagePlacementProp || imagePlacementResponsive;
+  return (
+    <TileBase className={styles.root} {...rest} size="fullWidth">
+      <LinkBase
+        className={styles.content}
+        aria-labelledby="tilecontent-title"
+        href={link}
+        tabIndex={0}
+      >
+        {image ? <TileImage image={image} imagePlacement={imagePlacement} /> : null}
+        <div>
+          {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+          {title ? <p className={styles.title}>{title}</p> : null}
+          {description ? <div className={styles.description}>{description}</div> : null}
+          <PseudoLink>
+            <p className={styles.action}>Read More</p>
+          </PseudoLink>
+        </div>
+      </LinkBase>
+    </TileBase>
+  );
+};
