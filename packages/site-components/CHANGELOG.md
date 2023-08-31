@@ -1,5 +1,25 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- 20bab77: ## Feat
+
+  Navigating away from a broken page will reset the error status.
+
+  This gives more independence to pages, one broken page does not impact the ability to view the other pages on the site.
+
+- Updated dependencies [cc5183e]
+- Updated dependencies [36896ac]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.44
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.44
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.44
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.44
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.44
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.44
+  - @jpmorganchase/mosaic-store@0.1.0-beta.44
+
 ## 0.1.0-beta.43
 
 ### Patch Changes

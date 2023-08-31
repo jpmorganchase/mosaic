@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- e768f4b: ### Fixes
+
+  Strip credentials when using the list sources admin API
+
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.44
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.44
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.44
+  - @jpmorganchase/mosaic-types@0.1.0-beta.44
+
 ## 0.1.0-beta.43
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- 36896ac: ## Fixes
+
+  Ensure that inline code blocks are styled according to design language
+
 ## 0.1.0-beta.43
 
 ### Patch Changes
