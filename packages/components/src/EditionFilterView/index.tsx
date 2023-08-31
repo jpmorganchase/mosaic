@@ -4,7 +4,6 @@ import classnames from 'clsx';
 import { FilterResultCount, FilterView } from '../FilterView';
 import { FilterDropdown, FilterSortDropdown } from '../FilterToolbar';
 import { EditionTileLink } from '../EditionTileLink';
-import { useBreakpoint } from '../useBreakpoint';
 import { FormattedContent } from '../FormattedContent';
 import styles from './styles.css';
 
@@ -59,24 +58,20 @@ export type EditionFilterViewProps = {
   ItemRenderer: EditionFilterViewRenderer;
 };
 
-export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item, itemIndex) => {
-  const breakpoint = useBreakpoint();
-  return (
-    <EditionTileLink
-      description={
-        item.formattedDescription ? (
-          <FormattedContent>{item.formattedDescription}</FormattedContent>
-        ) : null
-      }
-      eyebrow={item.eyebrow}
-      image={item.image}
-      imagePlacement={breakpoint === 'mobile' ? 'fullWidth' : 'left'}
-      key={`editionTile-${itemIndex}`}
-      link={item.link}
-      title={item.title}
-    />
-  );
-};
+export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item, itemIndex) => (
+  <EditionTileLink
+    description={
+      item.formattedDescription ? (
+        <FormattedContent>{item.formattedDescription}</FormattedContent>
+      ) : null
+    }
+    eyebrow={item.eyebrow}
+    image={item.image}
+    key={`editionTile-${itemIndex}`}
+    link={item.link}
+    title={item.title}
+  />
+);
 export const EditionFilterView: React.FC<React.PropsWithChildren<EditionFilterViewProps>> = ({
   className,
   ItemRenderer = DefaultEditionFilterViewRenderer,
