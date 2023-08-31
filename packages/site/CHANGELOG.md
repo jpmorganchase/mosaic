@@ -1,5 +1,43 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- e768f4b: ### Fixes
+
+  Strip credentials when using the list sources admin API
+
+- cc5183e: ## Fixes
+
+  Prevent `EditionFilterView` from showing `Rendered fewer hooks than expected` error when a filter is appled.
+
+- 20bab77: ## Feat
+
+  Navigating away from a broken page will reset the error status.
+
+  This gives more independence to pages, one broken page does not impact the ability to view the other pages on the site.
+
+- 36896ac: ## Fixes
+
+  Ensure that inline code blocks are styled according to design language
+
+- Updated dependencies [e768f4b]
+- Updated dependencies [cc5183e]
+- Updated dependencies [20bab77]
+- Updated dependencies [36896ac]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.44
+  - @jpmorganchase/mosaic-components@0.1.0-beta.44
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.44
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.44
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.44
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.44
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.44
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.44
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.44
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.44
+  - @jpmorganchase/mosaic-store@0.1.0-beta.44
+
 ## 0.1.0-beta.43
 
 ### Patch Changes
