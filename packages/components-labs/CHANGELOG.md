@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- Updated dependencies [cc5183e]
+- Updated dependencies [36896ac]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.44
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.44
+
 ## 0.1.0-beta.43
 
 ### Patch Changes

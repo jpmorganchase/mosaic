@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.44
+
+### Patch Changes
+
+- e768f4b: ### Fixes
+
+  Strip credentials when using the list sources admin API
+
+- Updated dependencies [e768f4b]
+  - @jpmorganchase/mosaic-core@0.1.0-beta.44
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.44
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.44
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.44
+
 ## 0.1.0-beta.43
 
 ### Patch Changes
