@@ -20,6 +20,7 @@ import { ThematicBreak } from './ThematicBreak';
 export const getMarkdownElements = () => ({
   a: withMarkdownSpacing(Link, link({ context: 'markdown', variant: 'document' })),
   blockquote: withMarkdownSpacing(BlockQuote),
+  code: withMarkdownSpacing(InlineCode),
   ol: withMarkdownSpacing(OrderedList),
   ul: withMarkdownSpacing(UnorderedList),
   li: withMarkdownSpacing(ListItem, 'none'),
