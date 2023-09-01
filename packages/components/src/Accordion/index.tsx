@@ -1,9 +1,12 @@
 import React from 'react';
+import classnames from 'clsx';
 import {
   AccordionGroup,
   Accordion as SaltAccordion,
   AccordionHeader,
-  AccordionPanel
+  AccordionPanel,
+  type AccordionPanelProps,
+  type AccordionHeaderProps
 } from '@salt-ds/core';
 import type { AccordionGroupProps as SaltAccordionGroupProps } from '@salt-ds/core';
 import styles from './styles.css';
@@ -14,11 +17,15 @@ export interface Panel {
   content: React.ReactNode;
 }
 
-export {
-  Accordion as AccordionSection,
-  AccordionPanel as AccordionDetails,
-  AccordionHeader as AccordionSummary
-} from '@salt-ds/core';
+export { Accordion as AccordionSection } from '@salt-ds/core';
+
+export const AccordionDetails = ({ className, ...rest }: AccordionPanelProps) => (
+  <AccordionPanel className={classnames(styles.content, className)} {...rest} />
+);
+
+export const AccordionSummary = ({ className, ...rest }: AccordionHeaderProps) => (
+  <AccordionHeader className={classnames(styles.summary, className)} {...rest} />
+);
 
 export interface AccordionProps extends SaltAccordionGroupProps {
   panels?: Panel[];
@@ -48,9 +55,9 @@ export interface AccordionProps extends SaltAccordionGroupProps {
  * or use it as a compound component and render richer content
  *
  * <Accordion>
- *   <AccordionSection summary="your summary text">
- *      <AccordionSummary defaultExpanded>
- *          Accordion section heading
+ *   <AccordionSection>
+ *      <AccordionSummary>
+ *          Summary Text
  *      <AccordionSummary>
  *      <AccordionDetails>
  *          Accordion section detail
@@ -72,8 +79,8 @@ export const Accordion: React.FC<React.PropsWithChildren<AccordionProps>> = ({
         key={`panelItem-${panelIndex}`}
         value={`panelItem-${panelIndex}`}
       >
-        <AccordionHeader className={styles.summary}>{panelItem.summary}</AccordionHeader>
-        <AccordionPanel className={styles.content}>{panelItem.content}</AccordionPanel>
+        <AccordionSummary>{panelItem.summary}</AccordionSummary>
+        <AccordionDetails>{panelItem.content}</AccordionDetails>
       </SaltAccordion>
     ));
   }
