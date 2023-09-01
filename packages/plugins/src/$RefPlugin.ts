@@ -208,7 +208,6 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
 
       if (refs.length) {
         for (const ref of refs) {
-          console.log(ref);
           config.setRef(page.fullPath, ...ref);
         }
       }
