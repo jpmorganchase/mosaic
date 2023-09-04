@@ -50,7 +50,7 @@ export const Callout: React.FC<CalloutProps> = ({
   title: titleProp,
   ...rest
 }: CalloutProps) => {
-  const { name: iconName, title } = iconByVariant[variant];
+  const { name: iconName, title } = iconByVariant[variant.toLowerCase()];
   const titleText = titleProp !== undefined ? titleProp : title;
   return (
     <div className={classnames(styles.root, styles[`${variant}Border`], className)} {...rest}>
