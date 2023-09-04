@@ -55,10 +55,7 @@ export default {
       gridArea: 'base-layout-header',
       position: 'sticky',
       top: 0,
-      // This is high so that the header can overlay the Salt component for mobile
-      // sidebars and menus. If Drawer (with a zIndex of 1300) is ever refactored, we should reduce
-      // this to a more sensible number.
-      zIndex: 1500
+      zIndex: 2
     },
     backgroundColor({ variant: 'regular' }),
     neutralBorder({ variant: 'low', borderBottomWidth: 'thin' }),
@@ -75,7 +72,7 @@ export default {
 
   overlayRoot: style([
     {
-      zIndex: 1501,
+      zIndex: 3,
       top: 0,
       bottom: 0,
       position: 'fixed',
