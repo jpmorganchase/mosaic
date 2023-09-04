@@ -28,6 +28,7 @@
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14"
   },
   "changesets": [
+    "afraid-ways-teach",
     "angry-carrots-destroy",
     "angry-mails-ring",
     "breezy-bottles-grin",
