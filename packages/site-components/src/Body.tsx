@@ -1,14 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MDXRemote } from 'next-mdx-remote';
-import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorBoundary, useErrorBoundary } from 'react-error-boundary';
 import { useContentEditor, Editor } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 import { createMDXScope } from './utils/createMDXScope';
 import { Page500 } from './500';
 import { Page404 } from './404';
 
 const DefaultFallBackComponent = ({ error: { message: errorMessage = 'unknown' } }) => {
+  const router = useRouter();
+  const { resetBoundary } = useErrorBoundary();
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      resetBoundary();
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router, resetBoundary]);
   console.error('An un-handled error created a 500 message');
   console.error(errorMessage);
   return <Page500 />;
