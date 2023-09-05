@@ -97,6 +97,52 @@ describe('GIVEN the `useCreateStore` hook', () => {
         title: undefined
       });
     });
+    test('THEN defaults applied when page props do not include default state', () => {
+      const state: { layout?: string; description: string } = {
+        layout: 'layout',
+        description: 'des'
+      };
+      const { result, rerender } = renderHook(() => useCreateStore(state));
+      let currentState = result.current().getState();
+
+      expect(getStateToVerify(currentState)).toEqual({
+        breadcrumbs: [],
+        navigation: {},
+        searchIndex: [],
+        searchConfig: {},
+        sidebarData: [],
+        tableOfContents: [],
+        sharedConfig: {},
+        colorMode: 'light',
+        ...state,
+        route: undefined,
+        title: undefined
+      });
+
+      /**
+       * we use delete here because the idea is that the page does not indicate a layout IN ANY WAY
+       * This is different from the page saying my layout is undefined
+       */
+      delete state.layout;
+      state.description = 'description';
+      rerender();
+
+      currentState = result.current().getState();
+      expect(getStateToVerify(currentState)).toEqual({
+        breadcrumbs: [],
+        navigation: {},
+        sidebarData: [],
+        searchIndex: [],
+        searchConfig: {},
+        tableOfContents: [],
+        sharedConfig: {},
+        colorMode: 'light',
+        description: 'description',
+        layout: undefined,
+        route: undefined,
+        title: undefined
+      });
+    });
   });
 
   describe('WHEN executed on the server', () => {
