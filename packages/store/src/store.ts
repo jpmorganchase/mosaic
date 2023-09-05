@@ -102,12 +102,18 @@ function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
     // states on CSR page navigation or not. I have chosen not to, but if you choose to,
     // then add `serverInitialState = getDefaultInitialState()` here.
     if (serverInitialState && isReusingStore) {
+      // recombine the page props with the initial state so that if page props are missing something then the default gets applied
+      const pageState = { ...getDefaultInitialState(), ...serverInitialState };
+      const { colorMode, actions, ...restStoreState } = store.getState();
+
       store.setState(
         {
           // re-use functions from existing store
-          ...store.getState(),
+          ...restStoreState,
           // but reset all other properties.
-          ...serverInitialState
+          ...pageState,
+          colorMode,
+          actions
         },
         true // replace states, rather than shallow merging
       );
