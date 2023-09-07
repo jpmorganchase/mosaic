@@ -74,26 +74,27 @@ const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
 
 const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
   menu.reduce((result, item) => {
-    const menuItem = item?.childNodes?.length ? (
-      <SubMenu
-        active={selectedNodeId === item.id && selectedNodeId !== undefined}
-        component={<SubMenuLink href={item.data.link} selectedNodeId={selectedNodeId} />}
-        defaultOpen={expandedNodeIds?.has(item.id)}
-        key={item.id}
-        label={item.name}
-      >
-        {renderMenu(item.childNodes, expandedNodeIds, selectedNodeId)}
-      </SubMenu>
-    ) : (
-      <MenuItem
-        active={selectedNodeId === item.id}
-        className={link({ variant: 'selectable' })}
-        component={<Link href={item.data.link} variant={'component'} />}
-        key={item.id}
-      >
-        {item.name}
-      </MenuItem>
-    );
+    const menuItem =
+      item?.childNodes?.length > 0 ? (
+        <SubMenu
+          active={selectedNodeId === item.id && selectedNodeId !== undefined}
+          component={<SubMenuLink href={item.data?.link} selectedNodeId={selectedNodeId} />}
+          defaultOpen={expandedNodeIds?.has(item.id)}
+          key={item.id}
+          label={item.name}
+        >
+          {renderMenu(item.childNodes, expandedNodeIds, selectedNodeId)}
+        </SubMenu>
+      ) : (
+        <MenuItem
+          active={selectedNodeId === item.id}
+          className={link({ variant: 'selectable' })}
+          component={<Link href={item.data?.link} variant={'component'} />}
+          key={item.id}
+        >
+          {item.name}
+        </MenuItem>
+      );
     return [...result, menuItem];
   }, []);
 
