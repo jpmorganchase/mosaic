@@ -33,7 +33,7 @@ export default function createConfig<T = BaseData>(initialData?: Partial<T>): Mu
     },
     setTags(fullPath: string, tags: string[]) {
       data.aliases[fullPath] = new Set<string>(data.aliases[fullPath] || []);
-      tags.forEach(tag => data.aliases[fullPath].add(path.join('/.tags', tag, fullPath)));
+      tags.forEach(tag => data.aliases[fullPath].add(path.posix.join('/.tags', tag, fullPath)));
     },
     setGlobalRef(targetPath, targetPropPath, refValue) {
       data.globalRefs[targetPath] = data.globalRefs[targetPath] || [];

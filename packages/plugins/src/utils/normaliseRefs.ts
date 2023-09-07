@@ -26,7 +26,7 @@ export default async function normaliseRefs(
       continue;
     }
 
-    const fullUrl = path.resolve(path.dirname(filepath), url);
+    const fullUrl = path.posix.resolve(path.posix.dirname(filepath), url);
 
     if (!glob.isDynamicPattern(url)) {
       if (!(await filesystem.promises.exists(fullUrl))) {
@@ -44,7 +44,9 @@ export default async function normaliseRefs(
       if (stat.isDirectory()) {
         // && !/\/index(\.\w{1,4})?$/.test(url)) {
         set(configWithoutGlobs, ref.$$path.slice(0, -1), {
-          $ref: `${await filesystem.promises.realpath(path.join(refRealPath, 'index'))}#${fragment}`
+          $ref: `${await filesystem.promises.realpath(
+            path.posix.join(refRealPath, 'index')
+          )}#${fragment}`
         });
       } else {
         set(configWithoutGlobs, ref.$$path.slice(0, -1), {
@@ -70,7 +72,7 @@ export default async function normaliseRefs(
       const resolvedRefs = new Set();
 
       for (const value of globResolvedRefs) {
-        const refRealPath = await filesystem.promises.realpath(path.resolve(filepath, value));
+        const refRealPath = await filesystem.promises.realpath(path.posix.resolve(filepath, value));
         if (refRealPath !== (await filesystem.promises.realpath(filepath))) {
           resolvedRefs.add(`${refRealPath}#${fragment}`);
         }
