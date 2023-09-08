@@ -60,8 +60,8 @@ describe('GIVEN SourceManager', () => {
     expect(new SourceManager({}, {})).toHaveProperty('listSources');
   });
 
-  test('THEN it should have an restartSource method', () => {
-    expect(new SourceManager({}, {})).toHaveProperty('restartSource');
+  test('THEN it should have an getSourceDefinition method', () => {
+    expect(new SourceManager({}, {})).toHaveProperty('getSourceDefinition');
   });
 
   test('THEN it should have an destroySource method', () => {
@@ -345,7 +345,7 @@ describe('GIVEN SourceManager', () => {
     });
   });
 
-  describe('WHEN restarting a source', () => {
+  describe('WHEN getting a sources definition', () => {
     let sourceManager: SourceManager;
     beforeEach(async () => {
       Source.prototype.constructorSpy.mockReset();
@@ -358,15 +358,17 @@ describe('GIVEN SourceManager', () => {
     });
 
     describe('AND a source name that exists is used', () => {
-      test('THEN the source is restarted', async () => {
-        await sourceManager.restartSource('source 1');
-        expect(Source.prototype.restart).toBeCalledTimes(1);
+      test('THEN the source definition is returned', async () => {
+        expect(await sourceManager.getSourceDefinition('source 1')).toEqual({
+          name: 'source 1',
+          modulePath: 'source-module'
+        });
       });
     });
 
     describe('AND a source name that does **NOT** exist is used', () => {
-      test('THEN the source is **NOT** restarted', async () => {
-        await expect(sourceManager.restartSource('source 3')).rejects.toThrow();
+      test('THEN undefined is returned', async () => {
+        expect(await sourceManager.getSourceDefinition('source 3')).toBeUndefined();
       });
     });
   });

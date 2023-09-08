@@ -15,6 +15,7 @@ class Source {
         })
     };
     this.id = Symbol(args[0].name || 'some description');
+    this.moduleDefinition = args[0];
   }
 }
 
@@ -31,6 +32,5 @@ Source.prototype.start = jest.fn();
 Source.prototype.stop = jest.fn();
 Source.prototype.use = jest.fn();
 Source.prototype.constructorSpy = constructorSpy;
-Source.prototype.restart = jest.fn(() => Promise.resolve({}));
 
 export default Source;
