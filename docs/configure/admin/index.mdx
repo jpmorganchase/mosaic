@@ -14,7 +14,8 @@ There are several admin urls exposed by Mosaic that provide an insight into how 
 | Endpoint                   | Method | Description                                  | Params                 |
 | -------------------------- | ------ | -------------------------------------------- | ---------------------- |
 | `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
+| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
 | `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
 | `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
 | `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Stops the source with the provided name      | name                   |
+| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
