@@ -65,6 +65,14 @@ export default async function serve(config: MosaicConfig, port, scope) {
   });
 
   /**
+   * Return the filesystem as JSON
+   */
+  app.get('/_mosaic_/content/dump', async (_req, res) => {
+    res.contentType('application/json');
+    res.send(fs.toJSON());
+  });
+
+  /**
    * Stop a running source using it's generated name
    */
   app.put('/_mosaic_/source/stop', async (req, res) => {
@@ -76,7 +84,7 @@ export default async function serve(config: MosaicConfig, port, scope) {
         res.send(`${name} stopped successfully.`);
       } catch (e) {
         console.error(e);
-        res.status(500).send(`${name} not stopped.  Check you have the right name!`).end();
+        res.status(500).send(`${name} not stopped.  Check you have the right name!`);
       }
     }
   });
@@ -93,7 +101,7 @@ export default async function serve(config: MosaicConfig, port, scope) {
         res.send(`${name} restarted successfully.`);
       } catch (e) {
         console.error(e);
-        res.status(500).send(`${name} not restarted.  Check you have the right name!`).end();
+        res.status(500).send(`${name} not restarted.  Check you have the right name!`);
       }
     }
   });
