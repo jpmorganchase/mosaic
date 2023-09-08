@@ -44,15 +44,18 @@ export default class Source {
   namespace: string;
   id: symbol;
   filesystem: MutableVolume;
+  moduleDefinition: SourceModuleDefinition;
 
   constructor(
-    { modulePath, namespace, schedule }: SourceModuleDefinition,
+    moduleDefinition: SourceModuleDefinition,
     mergedOptions: Record<string, unknown>,
     pageExtensions: string[],
     ignorePages: string[],
     globalFilesystem: IUnionVolume,
     workflows: SourceWorkflow[] = []
   ) {
+    const { modulePath, namespace, schedule } = moduleDefinition;
+    this.moduleDefinition = moduleDefinition;
     this.#modulePath = modulePath;
     this.#mergedOptions = mergedOptions;
     this.#globalFilesystem = globalFilesystem;
@@ -232,11 +235,6 @@ export default class Source {
       );
     }
     return false;
-  }
-
-  async restart() {
-    this.stop();
-    await this.start();
   }
 
   trackPluginErrors(errors: PluginErrors, lifecycleMethod: string) {

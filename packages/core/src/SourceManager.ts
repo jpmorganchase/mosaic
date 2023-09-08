@@ -232,12 +232,11 @@ export default class SourceManager {
     }));
   }
 
-  async restartSource(name: string) {
+  getSourceDefinition(name: string) {
     const source = this.getSource(name);
     if (source) {
-      await source.restart();
-    } else {
-      throw new Error(`[Mosaic] source ${name} was not found so can't be restarted`);
+      return source.moduleDefinition;
     }
+    return undefined;
   }
 }
