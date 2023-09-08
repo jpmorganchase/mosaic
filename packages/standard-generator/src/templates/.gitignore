@@ -4,6 +4,7 @@ node_modules
 **/dist/
 **/build/
 **/.next/
+next-env.d.ts
 
 # Dependencies
 **/node_modules
