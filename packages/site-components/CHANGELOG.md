@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.46
+
+### Patch Changes
+
+- 32e86cfd: ## Fix
+
+  When a page does not specify a property that is part of the store default props, we use what the default props specify and not what is currently in the store.
+
+- c59db0f1: Fix: Ensure sidebar does not break when it is given bad config
+- Updated dependencies [32e86cfd]
+  - @jpmorganchase/mosaic-store@0.1.0-beta.46
+  - @jpmorganchase/mosaic-components@0.1.0-beta.46
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.46
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.46
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.46
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.46
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.46
+
 ## 0.1.0-beta.45
 
 ### Patch Changes
