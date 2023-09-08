@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.46
+
+### Patch Changes
+
+- 32e86cfd: ## Fix
+
+  When a page does not specify a property that is part of the store default props, we use what the default props specify and not what is currently in the store.
+
 ## 0.1.0-beta.45
 
 ## 0.1.0-beta.44

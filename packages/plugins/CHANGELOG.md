@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.46
+
+### Patch Changes
+
+- 9a2aacb5: ## Fix
+
+  Support Mosaic `tags` on Windows
+
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.46
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.46
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.46
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.46
+  - @jpmorganchase/mosaic-types@0.1.0-beta.46
+
 ## 0.1.0-beta.45
 
 ### Patch Changes
