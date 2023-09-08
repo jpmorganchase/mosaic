@@ -136,7 +136,14 @@ export default class PullDocs {
   }
 
   async restartSource(name: string) {
-    return this.#sourceManager.restartSource(name);
+    const sourceDef = this.#sourceManager.getSourceDefinition(name);
+    if (sourceDef) {
+      console.log(`[Mosaic][Source] ${name} restarting as requested`);
+      await this.stopSource(name);
+      await this.addSource(sourceDef);
+    } else {
+      throw new Error(`[Mosaic] source ${name} was not found so can't be restarted`);
+    }
   }
 
   async listSources() {
