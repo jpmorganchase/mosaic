@@ -1,6 +1,5 @@
 import type { AppHeaderSlice } from './appHeader';
 import type { FooterSlice } from './footer';
-import type { SidebarSlice } from './sidebar';
 
 export type SharedConfig = {
   /** Footer props */
@@ -8,7 +7,7 @@ export type SharedConfig = {
   /** Header props */
   header?: AppHeaderSlice;
   /** Sidebar props */
-  sidebar?: SidebarSlice;
+  sidebar?: Pick<FooterSlice, 'helpLinks'>;
 };
 
 export type SharedConfigSlice = {
