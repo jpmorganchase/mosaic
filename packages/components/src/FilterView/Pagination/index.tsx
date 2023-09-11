@@ -32,7 +32,7 @@ export const Pagination: React.FC<React.PropsWithChildren<PaginationProps>> = ({
 }) => (
   <div className={classnames(styles.root, className)}>
     <SaltPagination count={pageCount} onPageChange={onPageChange} page={page}>
-      <Paginator />
+      <Paginator className={styles.paginator} />
     </SaltPagination>
   </div>
 );
