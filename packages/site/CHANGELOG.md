@@ -1,5 +1,42 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 5abe7fdf: ### Fix
+
+  The selected button in the Pagination control styling is updated to look like a CTA button
+
+- 6caa661a: ### Feature
+
+  Multiple instances of the same Plugin can be used by setting `allowMultiple` to true for all plugin definitions in the `mosaic.config.mjs` file that use that plugin.
+
+  If there are multiple plugin definitions and only some have `allowMultiple` set to true then those are used and the definitions that do not set `allowMultiple` are discarded.
+
+- 8c5cead5: ### Feat
+
+  Add admin API to retrieve the entire mosaic filesystem as JSON
+
+  ### Fix
+
+  Ensure that the pages from a restarted source are added to the global filesystem
+
+- Updated dependencies [5abe7fdf]
+- Updated dependencies [19b4e49a]
+- Updated dependencies [8c5cead5]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.47
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.47
+  - @jpmorganchase/mosaic-store@0.1.0-beta.47
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.47
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.47
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.47
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.47
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.47
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.47
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.47
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.47
+
 ## 0.1.0-beta.46
 
 ### Patch Changes

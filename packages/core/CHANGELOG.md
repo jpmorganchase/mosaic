@@ -1,5 +1,29 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 6caa661a: ### Feature
+
+  Multiple instances of the same Plugin can be used by setting `allowMultiple` to true for all plugin definitions in the `mosaic.config.mjs` file that use that plugin.
+
+  If there are multiple plugin definitions and only some have `allowMultiple` set to true then those are used and the definitions that do not set `allowMultiple` are discarded.
+
+- 8c5cead5: ### Feat
+
+  Add admin API to retrieve the entire mosaic filesystem as JSON
+
+  ### Fix
+
+  Ensure that the pages from a restarted source are added to the global filesystem
+
+- Updated dependencies [6caa661a]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.47
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.47
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.47
+  - @jpmorganchase/mosaic-types@0.1.0-beta.47
+
 ## 0.1.0-beta.46
 
 ### Patch Changes
