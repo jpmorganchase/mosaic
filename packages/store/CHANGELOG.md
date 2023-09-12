@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 19b4e49a: ### Fix
+
+  Ensure that help links in the sidebar are visible when they are present in the page `sharedConfig`
+
 ## 0.1.0-beta.46
 
 ### Patch Changes

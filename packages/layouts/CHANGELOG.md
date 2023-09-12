@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 19b4e49a: ### Fix
+
+  Ensure that help links in the sidebar are visible when they are present in the page `sharedConfig`
+
+- Updated dependencies [5abe7fdf]
+- Updated dependencies [19b4e49a]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.47
+  - @jpmorganchase/mosaic-store@0.1.0-beta.47
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.47
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.47
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.47
+
 ## 0.1.0-beta.46
 
 ### Patch Changes

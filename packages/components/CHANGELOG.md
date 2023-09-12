@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 5abe7fdf: ### Fix
+
+  The selected button in the Pagination control styling is updated to look like a CTA button
+
+- Updated dependencies [19b4e49a]
+  - @jpmorganchase/mosaic-store@0.1.0-beta.47
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.47
+
 ## 0.1.0-beta.46
 
 ### Patch Changes

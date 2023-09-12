@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.47
+
+### Patch Changes
+
+- 8c5cead5: ### Feat
+
+  Add admin API to retrieve the entire mosaic filesystem as JSON
+
+  ### Fix
+
+  Ensure that the pages from a restarted source are added to the global filesystem
+
+- Updated dependencies [6caa661a]
+- Updated dependencies [8c5cead5]
+  - @jpmorganchase/mosaic-core@0.1.0-beta.47
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.47
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.47
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.47
+
 ## 0.1.0-beta.46
 
 ### Patch Changes
