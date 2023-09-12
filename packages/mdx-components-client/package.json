@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-mdx-components-client",
   "description": "Mosaic - Markdown Components",
-  "version": "0.1.0-beta.40",
+  "version": "0.1.0-beta.47",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -40,10 +40,10 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.40",
-    "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.40",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.40",
-    "clsx": "^1.2.1",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.47",
+    "clsx": "^2.0.0",
     "hoist-non-react-statics": "^3.3.2",
     "prism-react-renderer": "^1.1.1",
     "react-markdown": "^6.0.2"

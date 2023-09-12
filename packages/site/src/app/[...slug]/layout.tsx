@@ -8,7 +8,7 @@ import {
   StoreProvider,
   ThemeProvider
 } from '@jpmorganchase/mosaic-site-components';
-import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
+import { LayoutProvider, layouts } from '@jpmorganchase/mosaic-layouts';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { loadPage, LoadPageError } from '@jpmorganchase/mosaic-site-mdx-loader';
 import { notFound } from 'next/navigation';
@@ -37,7 +37,7 @@ export default async function Layout({ params: { slug }, children }) {
           <LinkProvider>
             <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
               <ImageProvider>
-                <LayoutProvider>{children}</LayoutProvider>
+                <LayoutProvider layoutComponents={layouts}>{children}</LayoutProvider>
               </ImageProvider>
             </ThemeProvider>
           </LinkProvider>
