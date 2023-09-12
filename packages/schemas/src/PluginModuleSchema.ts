@@ -25,7 +25,11 @@ export const pluginModuleSchema = z.object({
   /**
    * Set to true to prevent the plugin from running when a source has a "preview" namespace
    */
-  previewDisabled: z.boolean().optional()
+  previewDisabled: z.boolean().optional(),
+  /**
+   * Set to true to allow loading multiple instances of this plugin
+   */
+  allowMultiple: z.boolean().optional()
 });
 
 export type PluginModuleDefinition = z.infer<typeof pluginModuleSchema>;
