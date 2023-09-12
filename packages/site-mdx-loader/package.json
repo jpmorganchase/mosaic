@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-site-mdx-loader",
   "description": "Mosaic - MDX Site Loader",
-  "version": "0.1.0-beta.40",
+  "version": "0.1.0-beta.47",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -29,7 +29,7 @@
     "dev": "node ./scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.40",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.47",
     "del-cli": "^4.0.1",
     "esbuild": "0.17.19",
     "esbuild-node-externals": "^1.7.0",
@@ -37,9 +37,9 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-mdx-components-client": "^0.1.0-beta.40",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.40",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.40",
+    "@jpmorganchase/mosaic-mdx-components-client": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.47",
     "@types/node": "^18.15.3",
     "deepmerge": "^4.2.2",
     "gray-matter": "^4.0.3",

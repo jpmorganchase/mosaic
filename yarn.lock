@@ -1099,6 +1099,13 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
+"@babel/runtime@^7.1.2":
+  version "7.22.15"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@babel/runtime/-/runtime-7.22.15.tgz#38f46494ccf6cf020bd4eed7124b425e83e523b8"
+  integrity sha1-OPRklMz2zwIL1O7XEktCXoPlI7g=
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
 "@babel/runtime@^7.12.1":
   version "7.22.6"
   resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@babel/runtime/-/runtime-7.22.6.tgz#57d64b9ae3cff1d67eb067ae117dac087f5bd438"
@@ -1667,6 +1674,90 @@
     "@floating-ui/react-dom" "^1.3.0"
     aria-hidden "^1.1.3"
     tabbable "^6.0.1"
+
+"@fluentui/keyboard-keys@^9.0.4":
+  version "9.0.4"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/keyboard-keys/-/keyboard-keys-9.0.4.tgz#486d94ae3908f44fd11ebb496ca3e4b31163f32e"
+  integrity sha1-SG2UrjkI9E/RHrtJbKPksxFj8y4=
+  dependencies:
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/priority-overflow@^9.1.5":
+  version "9.1.5"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/priority-overflow/-/priority-overflow-9.1.5.tgz#1cab1cc9baac1048d67b702649f9b662a1b9968e"
+  integrity sha1-HKscybqsEEjWe3AmSfm2YqG5lo4=
+  dependencies:
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/react-context-selector@^9.1.34":
+  version "9.1.34"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/react-context-selector/-/react-context-selector-9.1.34.tgz#85a2711be17cf56cc2ee32764c4c5d50b3e02e7e"
+  integrity sha1-haJxG+F89WzC7jJ2TExdULPgLn4=
+  dependencies:
+    "@fluentui/react-utilities" "^9.13.3"
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/react-overflow@^9.0.19":
+  version "9.0.33"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/react-overflow/-/react-overflow-9.0.33.tgz#9c282e1c150208ad11e0f08c6c64e56294012a32"
+  integrity sha1-nCguHBUCCK0R4PCMbGTlYpQBKjI=
+  dependencies:
+    "@fluentui/priority-overflow" "^9.1.5"
+    "@fluentui/react-context-selector" "^9.1.34"
+    "@fluentui/react-theme" "^9.1.12"
+    "@fluentui/react-utilities" "^9.13.3"
+    "@griffel/react" "^1.5.14"
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/react-theme@^9.1.12":
+  version "9.1.12"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/react-theme/-/react-theme-9.1.12.tgz#f38da07a04eb80adf79ff85679effab9bcd88dc4"
+  integrity sha1-842gegTrgK33n/hWee/6ubzYjcQ=
+  dependencies:
+    "@fluentui/tokens" "1.0.0-alpha.9"
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/react-utilities@^9.13.3":
+  version "9.13.3"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/react-utilities/-/react-utilities-9.13.3.tgz#3c7c5037a0e50e4c7f6bdd85e5d8f853fb27d087"
+  integrity sha1-PHxQN6DlDkx/a92F5dj4U/sn0Ic=
+  dependencies:
+    "@fluentui/keyboard-keys" "^9.0.4"
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/tokens@1.0.0-alpha.9":
+  version "1.0.0-alpha.9"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@fluentui/tokens/-/tokens-1.0.0-alpha.9.tgz#cf9cf2675eb7e57b6986331d8eff72b677128a30"
+  integrity sha1-z5zyZ1635XtphjMdjv9ytncSijA=
+  dependencies:
+    "@swc/helpers" "^0.5.1"
+
+"@griffel/core@^1.14.1":
+  version "1.14.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@griffel/core/-/core-1.14.1.tgz#1efe8f5cd5c4b348636264061c3a6cf4040b08f4"
+  integrity sha1-Hv6PXNXEs0hjYmQGHDps9AQLCPQ=
+  dependencies:
+    "@emotion/hash" "^0.9.0"
+    "@griffel/style-types" "^1.0.1"
+    csstype "^3.1.2"
+    rtl-css-js "^1.16.1"
+    stylis "^4.2.0"
+    tslib "^2.1.0"
+
+"@griffel/react@^1.5.14":
+  version "1.5.14"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@griffel/react/-/react-1.5.14.tgz#ea58ebd82007d421d16da49b7e57eccba391d609"
+  integrity sha1-6ljr2CAH1CHRbaSbflfsy6OR1gk=
+  dependencies:
+    "@griffel/core" "^1.14.1"
+    tslib "^2.1.0"
+
+"@griffel/style-types@^1.0.1":
+  version "1.0.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@griffel/style-types/-/style-types-1.0.1.tgz#4e7bca38d54c7371114309a5697869099a693e84"
+  integrity sha1-TnvKONVMc3ERQwmlaXhpCZppPoQ=
+  dependencies:
+    csstype "^3.1.2"
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
@@ -2416,6 +2507,17 @@
     "@salt-ds/window" "^0.1.0"
     clsx "^1.2.1"
 
+"@salt-ds/core@^1.8.1":
+  version "1.8.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/core/-/core-1.8.1.tgz#79056aabb88de5296ba85cd4fadc3f563677481a"
+  integrity sha1-eQVqq7iN5SlrqFzU+tw/VjZ3SBo=
+  dependencies:
+    "@floating-ui/react" "^0.23.0"
+    "@salt-ds/icons" "^1.6.0"
+    "@salt-ds/styles" "^0.1.1"
+    "@salt-ds/window" "^0.1.1"
+    clsx "^2.0.0"
+
 "@salt-ds/icons@^1.4.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.4.0.tgz#a754be22c2034b1d5f8cba71a62b8eb7d5ce51c5"
@@ -2425,21 +2527,31 @@
     "@salt-ds/window" "^0.1.0"
     clsx "^1.2.1"
 
-"@salt-ds/lab@1.0.0-alpha.10":
-  version "1.0.0-alpha.10"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.10.tgz#9fdc419c7439e4cdddeea16886d5c30bdf8a7535"
-  integrity sha512-iz94MCb7gzgZCthUOXu1Ve6oP4ebfaBfKlz9uVuCp8udsgwUs6XkCu5K3nxrKUzxzqnJnvcWKcZXe/L1wjJXiQ==
+"@salt-ds/icons@^1.6.0":
+  version "1.6.0"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/icons/-/icons-1.6.0.tgz#7e47df9080ec4976c66c6c3f67ec72a1076ffe56"
+  integrity sha1-fkffkIDsSXbGbGw/Z+xyoQdv/lY=
+  dependencies:
+    "@salt-ds/styles" "^0.1.1"
+    "@salt-ds/window" "^0.1.1"
+    clsx "^2.0.0"
+
+"@salt-ds/lab@1.0.0-alpha.16":
+  version "1.0.0-alpha.16"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/lab/-/lab-1.0.0-alpha.16.tgz#ed942f80bea1973b9a9f39dae28ab796bcedebdc"
+  integrity sha1-7ZQvgL6hlzuanzna4oq3lrzt69w=
   dependencies:
     "@floating-ui/react" "^0.23.0"
+    "@fluentui/react-overflow" "^9.0.19"
     "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "^1.8.0-rc.0"
-    "@salt-ds/icons" "^1.4.0"
-    "@salt-ds/styles" "^0.1.0"
-    "@salt-ds/window" "^0.1.0"
+    "@salt-ds/core" "^1.8.1"
+    "@salt-ds/icons" "^1.6.0"
+    "@salt-ds/styles" "^0.1.1"
+    "@salt-ds/window" "^0.1.1"
     aria-hidden "^1.1.1"
     attr-accept "^2.0.0"
     clipboard-copy "^4.0.1"
-    clsx "^1.2.1"
+    clsx "^2.0.0"
     compute-scroll-into-view "^3.0.0"
     deepmerge "^4.2.2"
     no-scroll "^2.1.1"
@@ -2453,15 +2565,25 @@
   resolved "https://registry.yarnpkg.com/@salt-ds/styles/-/styles-0.1.0.tgz#7cf5da1fe081f7480b9835a37fdb0c1eeb3a8f70"
   integrity sha512-OjQyiHiIGlNbS9rO8jVHNFk8uD5noOtSSCAiEPHJjikFflz0BrdO8gUwU4lQseEyFSpz9vK2WIdhwYYYWdIlOQ==
 
-"@salt-ds/theme@^1.5.1":
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.5.1.tgz#3bcb967b1d0dfaa42d1df620505a124ee243e468"
-  integrity sha512-zTRzis+jql2gCEuxWhc2cupKgyOF9UoH8wlYNDaHC9VVFRh1O7InHgxtcsDuZTjfsdFahrScK2BCvEORgBpLMA==
+"@salt-ds/styles@^0.1.1":
+  version "0.1.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/styles/-/styles-0.1.1.tgz#94ad206fab56cc2675a664661bdd6e67aae7c230"
+  integrity sha1-lK0gb6tWzCZ1pmRmG91uZ6rnwjA=
+
+"@salt-ds/theme@^1.8.0":
+  version "1.8.0"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/theme/-/theme-1.8.0.tgz#b663d7cee17b0e9f684a774b186d3ab7278803e2"
+  integrity sha1-tmPXzuF7Dp9oSndLGG06tyeIA+I=
 
 "@salt-ds/window@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@salt-ds/window/-/window-0.1.0.tgz#5f0d9fd92e5a95cd3bcc809cb676e538d39f9d34"
   integrity sha512-ApE9dvCMDzUkW5NewfMLfw3FLpq+LdlfuHUZNlrMiyYBth1TBRNrAvhN4XkKkneI9OVCs9K1y7S1uWku0tcL6g==
+
+"@salt-ds/window@^0.1.1":
+  version "0.1.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@salt-ds/window/-/window-0.1.1.tgz#1c26ab1b3e7457d271b2dd8a58bfbb423aee2cbe"
+  integrity sha1-HCarGz50V9Jxst2KWL+7QjruLL4=
 
 "@sinclair/typebox@^0.24.1":
   version "0.24.44"
@@ -3286,6 +3408,13 @@
   version "0.4.14"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.4.14.tgz#1352ac6d95e3617ccb7c1498ff019654f1e12a74"
   integrity sha512-4C7nX/dvpzB7za4Ql9K81xK3HPxCpHMgwTZVyf+9JQ6VUbn9jjZVN7/Nkdz/Ugzs2CSjqnL/UPXroiVBVHUWUw==
+  dependencies:
+    tslib "^2.4.0"
+
+"@swc/helpers@^0.5.1":
+  version "0.5.2"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@swc/helpers/-/helpers-0.5.2.tgz#85ea0c76450b61ad7d10a37050289eded783c27d"
+  integrity sha1-heoMdkULYa19EKNwUCie3teDwn0=
   dependencies:
     tslib "^2.4.0"
 
@@ -4966,6 +5095,11 @@ clsx@^1.2.1:
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.2.1.tgz#0ddc4a20a549b59c93a4116bb26f5294ca17dc12"
   integrity sha512-EcR6r5a8bj6pu3ycsa/E/cKVGuTgZJZdsyUYHOksG/UHIiKfjxzRxYJpyVBwYaQeOvghal9fcc4PidlgzugAQg==
 
+clsx@^2.0.0:
+  version "2.0.0"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/clsx/-/clsx-2.0.0.tgz#12658f3fd98fafe62075595a5c30e43d18f3d00b"
+  integrity sha1-EmWPP9mPr+YgdVlaXDDkPRjz0As=
+
 co@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/co/-/co-4.6.0.tgz#6ea6bdf3d853ae54ccb8e47bfa0bf3f9031fb184"
@@ -5254,6 +5388,11 @@ csstype@^3.0.2, csstype@^3.0.7:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.1.tgz#841b532c45c758ee546a11d5bd7b7b473c8c30b9"
   integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
+
+csstype@^3.1.2:
+  version "3.1.2"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/csstype/-/csstype-3.1.2.tgz#1d4bf9d572f11c14031f0436e1c10bc1f571f50b"
+  integrity sha1-HUv51XLxHBQDHwQ24cELwfVx9Qs=
 
 csv-generate@^3.4.3:
   version "3.4.3"
@@ -10957,6 +11096,13 @@ react-error-boundary@^3.1.4:
   dependencies:
     "@babel/runtime" "^7.12.5"
 
+react-error-boundary@^4.0.11:
+  version "4.0.11"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/react-error-boundary/-/react-error-boundary-4.0.11.tgz#36bf44de7746714725a814630282fee83a7c9a1c"
+  integrity sha1-Nr9E3ndGcUclqBRjAoL+6Dp8mhw=
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+
 react-immutable-proptypes@2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/react-immutable-proptypes/-/react-immutable-proptypes-2.2.0.tgz#cce96d68cc3c18e89617cbf3092d08e35126af4a"
@@ -11267,6 +11413,11 @@ regenerator-runtime@^0.13.11:
   resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz#f6dca3e7ceec20590d07ada785636a90cdca17f9"
   integrity sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==
 
+regenerator-runtime@^0.14.0:
+  version "0.14.0"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/regenerator-runtime/-/regenerator-runtime-0.14.0.tgz#5e19d68eb12d486f797e15a3c6a918f7cec5eb45"
+  integrity sha1-XhnWjrEtSG95fhWjxqkY987F60U=
+
 regexp.prototype.flags@^1.4.1, regexp.prototype.flags@^1.4.3:
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/regexp.prototype.flags/-/regexp.prototype.flags-1.4.3.tgz#87cab30f80f66660181a3bb7bf5981a872b367ac"
@@ -11569,6 +11720,13 @@ robust-predicates@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/robust-predicates/-/robust-predicates-3.0.1.tgz#ecde075044f7f30118682bd9fb3f123109577f9a"
   integrity sha512-ndEIpszUHiG4HtDsQLeIuMvRsDnn8c8rYStabochtUeCvfuvNptb5TUbVD68LRAILPX7p9nqQGh4xJgn3EHS/g==
+
+rtl-css-js@^1.16.1:
+  version "1.16.1"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/rtl-css-js/-/rtl-css-js-1.16.1.tgz#4b48b4354b0ff917a30488d95100fbf7219a3e80"
+  integrity sha1-S0i0NUsP+RejBIjZUQD79yGaPoA=
+  dependencies:
+    "@babel/runtime" "^7.1.2"
 
 run-async@^2.4.0:
   version "2.4.1"
@@ -12211,6 +12369,11 @@ stylis@4.1.3, stylis@^4.1.2:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.1.3.tgz#fd2fbe79f5fed17c55269e16ed8da14c84d069f7"
   integrity sha512-GP6WDNWf+o403jrEp9c5jibKavrtLW+/qYGhFxFrG8maXhwTBI7gLLhiBb0o7uFccWN+EOS9aMO6cGHWAO07OA==
+
+stylis@^4.2.0:
+  version "4.3.0"
+  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/stylis/-/stylis-4.3.0.tgz#abe305a669fc3d8777e10eefcfc73ad861c5588c"
+  integrity sha1-q+MFpmn8PYd34Q7vz8c62GHFWIw=
 
 supports-color@^5.3.0:
   version "5.5.0"
