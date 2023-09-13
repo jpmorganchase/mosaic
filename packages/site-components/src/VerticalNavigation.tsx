@@ -61,7 +61,7 @@ const createMenuItemStyles = colorMode => ({
 });
 
 const rootStyles = {
-  width: '100vw',
+  width: '100%',
   borderRightWidth: '0px'
 };
 

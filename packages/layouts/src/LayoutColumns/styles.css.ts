@@ -70,7 +70,7 @@ const styles = {
     gridArea: 'layout-column-sidebar',
     position: 'sticky',
     top: `${config.appHeader.height}px`,
-    maxWidth: '500px'
+    display: 'flex'
   }),
   toc: style({
     gridArea: 'layout-column-toc',
