@@ -32,14 +32,6 @@ createGlobalTheme('.saltIcon', iconSizeVars, {
   size: '1'
 });
 
-export const iconColorVars = createGlobalThemeContract({
-  fill: '--saltIcon-color'
-});
-
-createGlobalTheme('.saltIcon', iconColorVars, {
-  fill: 'currentColor'
-});
-
 const densities = [
   '.salt-density-high',
   '.salt-density-medium',
