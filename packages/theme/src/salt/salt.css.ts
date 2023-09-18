@@ -24,14 +24,6 @@ createGlobalTheme('.saltAccordionSection', accordionVars, {
   }
 });
 
-export const iconSizeVars = createGlobalThemeContract({
-  size: '--saltIcon-size-multiplier'
-});
-
-createGlobalTheme('.saltIcon', iconSizeVars, {
-  size: '1'
-});
-
 const densities = [
   '.salt-density-high',
   '.salt-density-medium',
