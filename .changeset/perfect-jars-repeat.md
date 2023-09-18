@@ -2,4 +2,4 @@
 '@jpmorganchase/mosaic-theme': patch
 ---
 
-Removed Salt icon color override
+Removed Salt icon color and size overrides
