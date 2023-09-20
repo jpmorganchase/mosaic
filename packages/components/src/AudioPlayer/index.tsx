@@ -136,7 +136,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
         <div>
           <a href={src} download target="_blank" rel="noreferrer">
             <OrderedButton variant="secondary" className={styles.button}>
-              <Icon name="download" size="small" />
+              <Icon name="download" />
             </OrderedButton>
           </a>
         </div>

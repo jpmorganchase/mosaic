@@ -23,7 +23,6 @@ import './Grid/styles.css';
 import './GridBase/styles.css';
 import './HelpLinks/styles.css';
 import './Hero/styles.css';
-import './Icon/styles.css';
 import './Impact/styles.css';
 import './Link/styles.css';
 import './LinkText/styles.css';
