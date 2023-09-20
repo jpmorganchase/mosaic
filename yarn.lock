@@ -2325,6 +2325,28 @@
     "@types/yargs" "^17.0.8"
     chalk "^4.0.0"
 
+"@jpmorganchase/mosaic-from-http-request@^0.1.0-beta.47":
+  version "0.1.0-beta.47"
+  resolved "https://registry.yarnpkg.com/@jpmorganchase/mosaic-from-http-request/-/mosaic-from-http-request-0.1.0-beta.47.tgz#045217cf9c7ea3023b91ac0fbb0e36243160b0b3"
+  integrity sha512-GLzxuvpxJy3r6kKL6eMJJW0eRDqt06O8whednxf8WI3wM7uuOaKypcgbOdEKMgCxjpqkEFuVi3LhHpPiv5NFhQ==
+  dependencies:
+    event-target-polyfill "^0.0.3"
+    node-fetch "^2.6.2"
+    rxjs "^7.5.5"
+    yet-another-abortcontroller-polyfill "0.0.4"
+
+"@jpmorganchase/mosaic-schemas@^0.1.0-beta.47":
+  version "0.1.0-beta.47"
+  resolved "https://registry.yarnpkg.com/@jpmorganchase/mosaic-schemas/-/mosaic-schemas-0.1.0-beta.47.tgz#b93162520e1907d02a3d2cfb1266d0d5a020ddb1"
+  integrity sha512-tfzt7DD3xDIlkMTK0EuJmMUli1lPXtUpBssDlvXE/7Zot1m/m8x3ghdzUGDn36uLK0OJRWuhDIMEc638day0cw==
+  dependencies:
+    zod "^3.19.1"
+
+"@jpmorganchase/mosaic-types@^0.1.0-beta.47":
+  version "0.1.0-beta.47"
+  resolved "https://registry.yarnpkg.com/@jpmorganchase/mosaic-types/-/mosaic-types-0.1.0-beta.47.tgz#22d965a59237c376c3c7b398e0633b88a5f87254"
+  integrity sha512-0ouSichD5O/45xYI+hbwFO5ZppxG0p8uh2pe/rROX2Sler9LnoipKzZfjWJ5strMGdgoKPt8G9n+9kK2SOgLGA==
+
 "@jridgewell/gen-mapping@^0.1.0":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.1.1.tgz#e5d2e450306a9491e3bd77e323e38d7aff315996"
@@ -3694,6 +3716,13 @@
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
+"@types/sanitize-html@^2.6.2":
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/@types/sanitize-html/-/sanitize-html-2.9.0.tgz#5b609f7592de22ef80a0930c39670329753dca1b"
+  integrity sha512-4fP/kEcKNj2u39IzrxWYuf/FnCCwwQCpif6wwY6ROUS1EPRIfWJjGkY3HIowY1EX/VbX5e86yq8AAE7UPMgATg==
+  dependencies:
+    htmlparser2 "^8.0.0"
+
 "@types/scheduler@*":
   version "0.16.2"
   resolved "https://registry.yarnpkg.com/@types/scheduler/-/scheduler-0.16.2.tgz#1a62f89525723dde24ba1b01b092bf5df8ad4d39"
@@ -3775,6 +3804,11 @@
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.2.tgz#6286b4c7228d58ab7866d19716f3696e03a09397"
   integrity sha512-Q5vtl1W5ue16D+nIaW8JWebSSraJVlK+EthKn7e7UcD4KWsaSJ8BqGPXNaPghgtcn/fhvrN17Tv8ksUsQpiplw==
+
+"@types/turndown@^5.0.1":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@types/turndown/-/turndown-5.0.2.tgz#947138408c6ef0f8ead821d45ca89b329f531c72"
+  integrity sha512-ghbjIyvMSQn/UGEuQJD6C4DfbokyYqGRhNAetWH02qnuRfvRZz9qTOG9e0RPkVqGsjv+YsjF3gRp7yFKvc/1PA==
 
 "@types/unist@*", "@types/unist@^2.0.0", "@types/unist@^2.0.2", "@types/unist@^2.0.3":
   version "2.0.6"
@@ -5840,12 +5874,33 @@ dom-iterator@^1.0.0:
     component-props "1.1.1"
     component-xor "0.0.4"
 
+dom-serializer@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/dom-serializer/-/dom-serializer-2.0.0.tgz#e41b802e1eedf9f6cae183ce5e622d789d7d8e53"
+  integrity sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==
+  dependencies:
+    domelementtype "^2.3.0"
+    domhandler "^5.0.2"
+    entities "^4.2.0"
+
+domelementtype@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/domelementtype/-/domelementtype-2.3.0.tgz#5c45e8e869952626331d7aab326d01daf65d589d"
+  integrity sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==
+
 domexception@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/domexception/-/domexception-4.0.0.tgz#4ad1be56ccadc86fc76d033353999a8037d03673"
   integrity sha512-A2is4PLG+eeSfoTMA95/s4pvAoSo2mKtiM5jlHkAVewmiO8ISFTFKZjH7UAM1Atli/OT/7JHOrJRJiMKUZKYBw==
   dependencies:
     webidl-conversions "^7.0.0"
+
+domhandler@^5.0.2, domhandler@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/domhandler/-/domhandler-5.0.3.tgz#cc385f7f751f1d1fc650c21374804254538c7d31"
+  integrity sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==
+  dependencies:
+    domelementtype "^2.3.0"
 
 dompurify@2.4.1:
   version "2.4.1"
@@ -5856,6 +5911,15 @@ dompurify@=3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.0.3.tgz#4b115d15a091ddc96f232bcef668550a2f6f1430"
   integrity sha512-axQ9zieHLnAnHh0sfAamKYiqXMJAVwu+LM/alQ7WDagoWessyWvMSFyW65CqF3owufNu8HBcE4cM2Vflu7YWcQ==
+
+domutils@^3.0.1:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/domutils/-/domutils-3.1.0.tgz#c47f551278d3dc4b0b1ab8cbb42d751a6f0d824e"
+  integrity sha512-H78uMmQtI2AhgDJjWeQmHwJJ2bLPD3GMmO7Zja/ZZh84wkm+4ut+IUnUdRa8uCGX88DiVx1j6FRe1XfxEgjEZA==
+  dependencies:
+    dom-serializer "^2.0.0"
+    domelementtype "^2.3.0"
+    domhandler "^5.0.3"
 
 dot-case@^3.0.4:
   version "3.0.4"
@@ -5942,6 +6006,11 @@ enquirer@^2.3.0, enquirer@^2.3.5:
   integrity sha512-yjNnPr315/FjS4zIsUxYguYUPP2e1NK4d7E7ZOLiyYCcbFBiTMyID+2wvm2w6+pZ/odMA7cRkjhsPbltwBOrLg==
   dependencies:
     ansi-colors "^4.1.1"
+
+entities@^4.2.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-4.5.0.tgz#5d268ea5e7113ec74c4d033b79ea5a35a488fb48"
+  integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
 
 entities@^4.4.0:
   version "4.4.0"
@@ -7435,6 +7504,16 @@ html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
   integrity sha1-39YAJ9o2o238viNiYsAKWCJoFFM=
+
+htmlparser2@^8.0.0:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/htmlparser2/-/htmlparser2-8.0.2.tgz#f002151705b383e62433b5cf466f5b716edaec21"
+  integrity sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA==
+  dependencies:
+    domelementtype "^2.3.0"
+    domhandler "^5.0.3"
+    domutils "^3.0.1"
+    entities "^4.4.0"
 
 http-cache-semantics@^4.1.1:
   version "4.1.1"
