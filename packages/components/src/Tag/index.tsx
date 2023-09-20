@@ -59,7 +59,6 @@ export const Tag: React.FC<React.PropsWithChildren<TagProps>> = ({
     >
       {iconName && (
         <span className={styles.icon}>
-          {/* TODO icon size is 1 if tag is small, 2 if tag is medium and 3 if tag is large */}
           <Icon name={iconName} size={iconSizeMap[size]} />
         </span>
       )}
