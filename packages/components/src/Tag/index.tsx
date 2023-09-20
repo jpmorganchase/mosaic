@@ -18,6 +18,12 @@ export interface TagProps {
   size?: Size;
 }
 
+const iconSizeMap = {
+  small: 1,
+  medium: 2,
+  large: 3
+};
+
 /**
  * Renders a Tag.
  * @example
@@ -53,7 +59,8 @@ export const Tag: React.FC<React.PropsWithChildren<TagProps>> = ({
     >
       {iconName && (
         <span className={styles.icon}>
-          <Icon name={iconName} size={size} />
+          {/* TODO icon size is 1 if tag is small, 2 if tag is medium and 3 if tag is large */}
+          <Icon name={iconName} size={iconSizeMap[size]} />
         </span>
       )}
       {label}

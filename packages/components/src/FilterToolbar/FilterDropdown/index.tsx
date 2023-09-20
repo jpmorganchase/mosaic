@@ -49,7 +49,7 @@ export function FilterDropdown({
       source={listItems}
       triggerComponent={
         <span className={styles.triggerRoot}>
-          <Icon name="filter" size="small" />
+          <Icon name="filter" />
           <DropdownButton
             label={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
           />

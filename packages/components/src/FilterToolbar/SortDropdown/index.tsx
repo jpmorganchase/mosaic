@@ -42,7 +42,7 @@ export function FilterSortDropdown({
       source={source}
       triggerComponent={
         <span className={styles.triggerRoot}>
-          <Icon name="swap" size="small" />
+          <Icon name="swap" />
           <DropdownButton label={labelButton ? labelButton(sort) : sort} />
         </span>
       }

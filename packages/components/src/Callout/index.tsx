@@ -54,7 +54,7 @@ export const Callout: React.FC<CalloutProps> = ({
   const titleText = titleProp !== undefined ? titleProp : title;
   return (
     <div className={classnames(styles.root, styles[`${variant}Border`], className)} {...rest}>
-      <Icon className={classnames(styles.icon, styles[variant])} size="medium" name={iconName} />
+      <Icon className={classnames(styles.icon, styles[variant])} size={2} name={iconName} />
       <span className={styles.title}>{titleText}</span>
       <div className={styles.content}>{children}</div>
     </div>
