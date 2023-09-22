@@ -27,7 +27,6 @@ import { ScrollableSection } from './ScrollableSection/ScrollableSection';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import { FloatingToolbarPlugin } from '../plugins/FloatingToolbarPlugin';
 import { TableActionMenuPlugin } from '../plugins/TableActionMenuPlugin';
-import { InsertLinkDialog } from './Toolbar/InsertLink';
 
 function onError(error: Error) {
   console.error(error);
@@ -137,7 +136,6 @@ const Editor: FC<EditorProps> = ({
           <HorizontalRulePlugin />
           <FloatingToolbarPlugin />
           <TableActionMenuPlugin />
-          <InsertLinkDialog />
         </div>
       </div>
     </LexicalComposer>
