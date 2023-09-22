@@ -2,14 +2,8 @@ import React, { useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import {
-  ButtonBar,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormField,
-  Input
-} from '@salt-ds/lab';
+import { Input, FormField, FormFieldLabel, FormFieldHelperText } from '@salt-ds/core';
+import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
@@ -52,11 +46,16 @@ export const InsertImage = () => {
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
+    if (!open) {
+      setValues(initialState);
+    }
   };
 
   const handleOpen = () => setIsOpen(true);
 
-  const handleClose = () => setIsOpen(false);
+  const handleClose = () => {
+    handleOpenChange(false);
+  };
 
   const processErrors = validationErrors => {
     const newErrors = validationErrors.inner.reduce(
@@ -69,8 +68,8 @@ export const InsertImage = () => {
     setErrors(newErrors);
   };
 
-  const handleChange = (event, value) => {
-    const { name } = event.target;
+  const handleChange = event => {
+    const { name, value } = event.target;
     const newValues = { ...values, [name]: value };
     validationSchema.validateAt(name, newValues, { abortEarly: false }).then(() => {
       setErrors({ ...errors, [name]: undefined });
@@ -101,22 +100,18 @@ export const InsertImage = () => {
           <DialogTitle>Insert Image</DialogTitle>
           <DialogContent>
             <div className={styles.fullWidth}>
-              <FormField
-                label="Url for image"
-                validationStatus={errors?.url ? 'error' : undefined}
-                helperText={errors?.url}
-              >
+              <FormField validationStatus={errors?.url ? 'error' : undefined}>
+                <FormFieldLabel>Url for image</FormFieldLabel>
                 <Input value={values?.url} inputProps={{ name: 'url' }} onChange={handleChange} />
+                <FormFieldHelperText>{errors?.url}</FormFieldHelperText>
               </FormField>
-              <FormField
-                label="Alternative Information (alt)"
-                validationStatus={errors?.alt ? 'error' : undefined}
-                helperText={
-                  errors?.alt ||
-                  'Provides alternative information for the image if for some reason it cannot be viewed'
-                }
-              >
+              <FormField validationStatus={errors?.alt ? 'error' : undefined}>
+                <FormFieldLabel>Alternative Information (alt)</FormFieldLabel>
                 <Input value={values?.alt} inputProps={{ name: 'alt' }} onChange={handleChange} />
+                <FormFieldHelperText>
+                  {errors?.alt ||
+                    'Provides alternative information for the image if for some reason it cannot be viewed'}
+                </FormFieldHelperText>
               </FormField>
             </div>
           </DialogContent>
