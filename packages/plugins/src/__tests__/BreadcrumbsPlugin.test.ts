@@ -61,11 +61,16 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
   let updatedPages: BreadcrumbsPluginPage[] = [];
   beforeEach(async () => {
     const $afterSource = BreadcrumbsPlugin.$afterSource;
-    // @ts-ignore
-    updatedPages = (await $afterSource?.(pages, {}, { indexPageName: 'index.mdx' })) || [];
+    updatedPages =
+      (await $afterSource?.(
+        pages,
+        { ignorePages: ['sidebar.json'], pageExtensions: ['.mdx'] },
+        { indexPageName: 'index.mdx' }
+      )) || [];
   });
+
   test('THEN it should use the `$afterSource` lifecycle event', () => {
-    expect(BreadcrumbsPlugin).toHaveProperty('$afterSource');
+    expect(BreadcrumbsPlugin).toHaveProperty('afterUpdate');
   });
 
   describe('AND WHEN `$afterSource` is called', () => {
