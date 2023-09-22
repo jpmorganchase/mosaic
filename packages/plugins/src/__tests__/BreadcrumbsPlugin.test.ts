@@ -1,3 +1,4 @@
+import { serialize } from 'v8';
 import BreadcrumbsPlugin, { BreadcrumbsPluginPage } from '../BreadcrumbsPlugin';
 
 const pages: BreadcrumbsPluginPage[] = [
@@ -57,23 +58,76 @@ const pages: BreadcrumbsPluginPage[] = [
   }
 ];
 
+const mutableFsPages = [
+  {
+    fullPath: '/FolderA/SubfolderA/SubfolderB/index.mdx',
+    route: 'route/folderA/subfolderA/SubfolderB/index',
+    title: 'Subfolder A Subfolder B Index',
+    layout: 'DetailOverview',
+    breadcrumbs: [
+      {
+        label: 'Subfolder B Index',
+        path: 'route/folderA/subfolderA/SubfolderB/index',
+        id: '/FolderA/SubfolderA/SubfolderB/index.mdx'
+      }
+    ]
+  }
+];
+
+let writeFileMock = jest.fn();
+const volume = {
+  promises: {
+    exists: jest.fn(),
+    glob: jest.fn().mockResolvedValue(mutableFsPages.map(page => page.fullPath)),
+    mkdir: jest.fn(),
+    readdir: jest.fn(),
+    readFile: jest.fn(value =>
+      Promise.resolve(mutableFsPages.find(page => page.fullPath === value))
+    ),
+    realpath: jest.fn(),
+    stat: jest.fn(),
+    symlink: jest.fn(),
+    unlink: jest.fn(),
+    writeFile: writeFileMock
+  }
+};
+const globalVolume = {
+  promises: {
+    exists: jest.fn().mockResolvedValue(true),
+    glob: jest.fn().mockResolvedValue(pages.map(page => page.fullPath)),
+    mkdir: jest.fn(),
+    readdir: jest.fn(),
+    readFile: jest.fn(value =>
+      Promise.resolve(mutableFsPages.find(page => page.fullPath === value))
+    ),
+    realpath: jest.fn(),
+    stat: jest.fn(),
+    symlink: jest.fn(),
+    unlink: jest.fn(),
+    writeFile: writeFileMock
+  }
+};
+
 describe('GIVEN the BreadcrumbsPlugin', () => {
-  let updatedPages: BreadcrumbsPluginPage[] = [];
-  beforeEach(async () => {
-    const $afterSource = BreadcrumbsPlugin.$afterSource;
-    updatedPages =
-      (await $afterSource?.(
-        pages,
-        { ignorePages: ['sidebar.json'], pageExtensions: ['.mdx'] },
-        { indexPageName: 'index.mdx' }
-      )) || [];
+  test('THEN it should use the `$afterSource` lifecycle event', () => {
+    expect(BreadcrumbsPlugin).toHaveProperty('$afterSource');
   });
 
-  test('THEN it should use the `$afterSource` lifecycle event', () => {
+  test('THEN it should use the `afterUpdate` lifecycle event', () => {
     expect(BreadcrumbsPlugin).toHaveProperty('afterUpdate');
   });
 
   describe('AND WHEN `$afterSource` is called', () => {
+    let updatedPages: BreadcrumbsPluginPage[] = [];
+    beforeEach(async () => {
+      const $afterSource = BreadcrumbsPlugin.$afterSource;
+      updatedPages =
+        (await $afterSource?.(
+          pages,
+          { ignorePages: ['sidebar.json'], pageExtensions: ['.mdx'] },
+          { indexPageName: 'index.mdx' }
+        )) || [];
+    });
     test('THEN breadcrumbs are added', async () => {
       const breadcrumbs = (updatedPages && updatedPages[4].breadcrumbs) || [];
 
@@ -110,6 +164,68 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
           id: 'id B'
         });
       });
+    });
+  });
+
+  /**
+   * This test requires a bit of setup and understanding
+   *
+   * The goal is for there to be a file in a mutable filesystem that
+   * needs breadcrumbs from the global filesystem.
+   *
+   * To facilitate this the mutable fs has 1 page which should get the breadcrumbs from the 4th page in the global fs
+   *
+   * deserialise will be called 3 times by this plugin event so we use mockReturnValueOnce 3 times
+   * 1. to read the page from the mutable fs
+   * 2. to read the 4th page from the global fs
+   * 3. to read the page from the mutable fs again
+   *
+   */
+
+  describe('AND WHEN `afterUpdate` is called', () => {
+    let serialiseMock = jest.fn();
+    beforeEach(async () => {
+      const afterUpdate = BreadcrumbsPlugin.afterUpdate;
+
+      (await afterUpdate?.(
+        volume,
+        {
+          globalFilesystem: globalVolume,
+          ignorePages: ['sidebar.json'],
+          pageExtensions: ['.mdx'],
+          serialiser: {
+            deserialise: jest
+              .fn()
+              .mockResolvedValueOnce(mutableFsPages[0])
+              .mockResolvedValueOnce(pages[3])
+              .mockResolvedValueOnce(mutableFsPages[0]),
+            serialise: serialiseMock
+          }
+        },
+        { indexPageName: 'index.mdx' }
+      )) || [];
+    });
+    test('THEN breadcrumbs from global fs are added', async () => {
+      expect(writeFileMock).toBeCalledTimes(1);
+      expect(serialiseMock).toBeCalledTimes(1);
+      expect(serialiseMock.mock.calls[0][0]).toEqual('/FolderA/SubfolderA/SubfolderB/index.mdx');
+      expect(serialiseMock.mock.calls[0][1].breadcrumbs).toEqual([
+        {
+          label: 'Folder A Index',
+          path: 'route/folderA/index',
+          id: '/FolderA/index.mdx'
+        },
+        {
+          label: 'Subfolder A Index',
+          path: 'route/folderA/subfolderA/index',
+          id: '/FolderA/SubfolderA/index.mdx'
+        },
+        {
+          label: 'Subfolder B Index',
+          path: 'route/folderA/subfolderA/SubfolderB/index',
+          id: '/FolderA/SubfolderA/SubfolderB/index.mdx'
+        }
+      ]);
     });
   });
 });
