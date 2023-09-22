@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.48
+
+### Patch Changes
+
+- 0eca1d6e: ### Fixes
+
+  - Fix types of `IUnionVolume` so that the `promises` property is correct
+
+  - Fix Breadcrumb generation so that the global filesystem is used to identify the full breadcrumbs path.
+
 ## 0.1.0-beta.47
 
 ## 0.1.0-beta.46

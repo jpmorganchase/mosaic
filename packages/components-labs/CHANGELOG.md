@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.48
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.48
+- @jpmorganchase/mosaic-theme@0.1.0-beta.48
+
 ## 0.1.0-beta.47
 
 ### Patch Changes

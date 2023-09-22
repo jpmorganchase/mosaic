@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-schemas
 
+## 0.1.0-beta.48
+
 ## 0.1.0-beta.47
 
 ### Patch Changes
