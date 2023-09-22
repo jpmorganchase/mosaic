@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-http
 
+## 0.1.0-beta.48
+
+### Patch Changes
+
+- Updated dependencies [0eca1d6e]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.48
+  - @jpmorganchase/mosaic-from-http-request@0.1.0-beta.48
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.48
+
 ## 0.1.0-beta.47
 
 ### Patch Changes
