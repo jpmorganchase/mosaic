@@ -83,36 +83,38 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
       // the root breadcrumb is the first breadcrumb for all pages in a source.  It is essentially the "first" page in a source
       const rootBreadcrumb = breadcrumbs?.[0] || undefined;
 
-      let parentDir = path.posix.join(path.posix.dirname(rootBreadcrumb.id), '../');
+      if (rootBreadcrumb) {
+        let parentDir = path.posix.join(path.posix.dirname(rootBreadcrumb.id), '../');
 
-      while (parentDir !== '/') {
-        const parentDirIndex = path.posix.join(parentDir, options.indexPageName);
+        while (parentDir !== '/') {
+          const parentDirIndex = path.posix.join(parentDir, options.indexPageName);
 
-        // check for this file in the global fs so we have a holistic view of all site pages
-        if (await globalFilesystem.promises.exists(parentDirIndex)) {
-          const { breadcrumbs: parentDirBreadcrumbs } = await serialiser.deserialise(
-            rootBreadcrumb.id,
-            await globalFilesystem.promises.readFile(parentDirIndex)
-          );
-          updatedBreadcrumbs = parentDirBreadcrumbs;
-          break;
+          // check for this file in the global fs so we have a holistic view of all site pages
+          if (await globalFilesystem.promises.exists(parentDirIndex)) {
+            const { breadcrumbs: parentDirBreadcrumbs } = await serialiser.deserialise(
+              rootBreadcrumb.id,
+              await globalFilesystem.promises.readFile(parentDirIndex)
+            );
+            updatedBreadcrumbs = parentDirBreadcrumbs;
+            break;
+          }
+          parentDir = path.posix.join(path.posix.dirname(parentDirIndex), '../');
         }
-        parentDir = path.posix.join(path.posix.dirname(parentDirIndex), '../');
-      }
 
-      if (updatedBreadcrumbs.length > 0) {
-        for (const pagePath of pages) {
-          const page = await serialiser.deserialise(
-            pagePath,
-            await mutableFilesystem.promises.readFile(pagePath)
-          );
+        if (updatedBreadcrumbs.length > 0) {
+          for (const pagePath of pages) {
+            const page = await serialiser.deserialise(
+              pagePath,
+              await mutableFilesystem.promises.readFile(pagePath)
+            );
 
-          // append the parent breadcrumbs **before** the current breadcrumbs
-          page.breadcrumbs = [...updatedBreadcrumbs, ...page.breadcrumbs];
-          await mutableFilesystem.promises.writeFile(
-            pagePath,
-            await serialiser.serialise(pagePath, page)
-          );
+            // append the parent breadcrumbs **before** the current breadcrumbs
+            page.breadcrumbs = [...updatedBreadcrumbs, ...page.breadcrumbs];
+            await mutableFilesystem.promises.writeFile(
+              pagePath,
+              await serialiser.serialise(pagePath, page)
+            );
+          }
         }
       }
     }
