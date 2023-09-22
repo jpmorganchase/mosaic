@@ -50,7 +50,7 @@ export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJS
 }
 
 export interface IUnionVolume extends Omit<IVolumeImmutable, 'promises'> {
-  promises: Pick<IVolumeImmutable, 'promises'> & {
+  promises: Omit<IVolumeImmutable['promises'], 'readFile'> & {
     /**
      * Reads a file
      * @param file Path
