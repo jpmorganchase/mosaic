@@ -35,6 +35,10 @@ export default async function pluginRunner(
       }
 
       transformedInput = result;
+      if (lifecycleName === 'shouldClearCache' && result === true) {
+        /** This lifecycle returns a boolean so if *any* plugin wants to clear the cache then we should do so */
+        break;
+      }
     } catch (exception) {
       const pluginName = path.posix.basename(
         plugin.modulePath,
@@ -63,5 +67,6 @@ export default async function pluginRunner(
       continue;
     }
   }
+
   return { result: transformedInput, errors: pluginErrors };
 }
