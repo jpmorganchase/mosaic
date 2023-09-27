@@ -90,7 +90,7 @@ if (isMainThread) {
     )
     .subscribe(async (pagesAndSymlinks: Buffer) => {
       if (workerData.options.cache !== false) {
-        console.info(`[Mosaic] Saving cached filesystem of ${workerData.name}`);
+        console.info(`[Mosaic][Source] Saving cached filesystem of ${workerData.name}`);
         await fs.promises.writeFile(cachePath, pagesAndSymlinks);
       }
 
@@ -107,7 +107,7 @@ if (isMainThread) {
     try {
       if (await fs.promises.stat(cachePath)) {
         const data = await fs.promises.readFile(cachePath);
-        console.info(`[Mosaic] Restoring cached filesystem for ${workerData.name}`);
+        console.info(`[Mosaic][Source] Restoring cached filesystem for ${workerData.name}`);
         parentPort.postMessage(
           {
             type: 'init',

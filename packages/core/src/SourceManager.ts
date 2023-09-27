@@ -15,12 +15,12 @@ import createConfig from './helpers/createConfig.js';
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
     console.debug(
-      `[Mosaic] Source '${sourceId.description}' received first docs snapshot ${
+      `[Mosaic][Source] '${sourceId.description}' received first docs snapshot ${
         (new Date().getTime() - initOrStartTime) / 1000
       }s after starting.`
     );
   } else {
-    console.debug(`[Mosaic] Source '${sourceId.description}' received updated docs`);
+    console.debug(`[Mosaic][Source] '${sourceId.description}' received updated docs`);
   }
 }
 
@@ -126,7 +126,7 @@ export default class SourceManager {
         if (!sourceActive) {
           reject(
             new Error(
-              `Source '${source.id.description}' received a message before it was initialised.`
+              `[Mosaic][Source] '${source.id.description}' received a message before it was initialised.`
             )
           );
         } else {
@@ -162,6 +162,12 @@ export default class SourceManager {
             source.filesystem.clearCache();
 
             await this.#updateSources(immutableSourceFilesystem, source);
+
+            // After each async operation, we should check if anything has caused the Source to close
+            if (!sourceActive) {
+              return;
+            }
+
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
           } catch (e) {
             console.warn(
@@ -184,18 +190,21 @@ export default class SourceManager {
       source.onExit(() => {
         if (!sourceActive) {
           reject(
-            new Error(`Source '${source.id.description}' silently exited before initialising.`)
+            new Error(
+              `[Mosaic][Source] '${source.id.description}' silently exited before initialising.`
+            )
           );
         }
-        console.debug(`[Mosaic] Source '${source.id.description}' closed`);
+        console.debug(`[Mosaic][Source] '${source.id.description}' closed`);
 
         this.#sources.delete(source.id);
         sourceActive = false;
       });
+
       source.onStart(() => {
         sourceActive = true;
         console.debug(
-          `[Mosaic] Source '${source.id.description}' started in ${
+          `[Mosaic][Source] '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime
           }ms - awaiting first docs snapshot`
         );
