@@ -118,6 +118,9 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
         }
       }
     }
+  },
+  async shouldClearCache() {
+    return true;
   }
 };
 
