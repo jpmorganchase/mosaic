@@ -151,7 +151,6 @@ export default class SourceManager {
             if (!sourceActive) {
               return;
             }
-
             await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
 
             // After each async operation, we should check if anything has caused the Source to close
@@ -217,7 +216,11 @@ export default class SourceManager {
     return Promise.all(
       Array.from(this.#sources.values()).map(existingSource => {
         if (existingSource !== source && existingSource.filesystem.frozen) {
-          return existingSource.requestCacheClear(immutableSourceFilesystem);
+          return existingSource.requestCacheClear(
+            immutableSourceFilesystem,
+            this.#sharedFilesystem,
+            this.#globalConfig
+          );
         }
         return existingSource;
       })

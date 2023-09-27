@@ -109,7 +109,11 @@ export default class Source {
    * Called when another source (not this one) has changed.
    * This source can then ask its plugins if they also want to clear their cache in response to the other source's change.
    */
-  async requestCacheClear(updatedSourceFilesystem: IVolumeImmutable) {
+  async requestCacheClear(
+    updatedSourceFilesystem: IVolumeImmutable,
+    sharedFilesystem: IVolumeImmutable,
+    globalConfig: MutableData<unknown>
+  ) {
     const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldClearCache(
       updatedSourceFilesystem,
@@ -130,6 +134,9 @@ export default class Source {
     }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.clearCache();
+      this.filesystem.unfreeze();
+      await this.invokeAfterUpdate(sharedFilesystem, globalConfig);
+      this.filesystem.freeze();
     }
   }
 
