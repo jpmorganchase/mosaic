@@ -28,14 +28,23 @@ export default async function pluginRunner(
         plugin.options
       );
 
-      if (result && lifecycleName !== '$afterSource' && lifecycleName !== 'shouldClearCache') {
+      if (
+        result &&
+        lifecycleName !== '$afterSource' &&
+        lifecycleName !== 'shouldClearCache' &&
+        lifecycleName !== 'shouldUpdateNamespaceSources'
+      ) {
         console.warn(
           `[Mosaic] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
         );
       }
 
       transformedInput = result;
-      if (lifecycleName === 'shouldClearCache' && result === true) {
+      if (
+        (lifecycleName === 'shouldClearCache' ||
+          lifecycleName === 'shouldUpdateNamespaceSources') &&
+        result === true
+      ) {
         /** This lifecycle returns a boolean so if *any* plugin wants to clear the cache then we should do so */
         break;
       }

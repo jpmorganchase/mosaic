@@ -58,6 +58,10 @@ export async function bindPluginMethods(
     async $beforeSend(mutableFilesystem, args) {
       const result = await pluginApi.$beforeSend(mutableFilesystem, args);
       return result;
+    },
+    async shouldUpdateNamespaceSources(lastAfterUpdateReturn, args) {
+      const result = await pluginApi.shouldUpdateNamespaceSources(lastAfterUpdateReturn, args);
+      return result;
     }
   };
 }

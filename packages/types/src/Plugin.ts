@@ -153,4 +153,28 @@ export type Plugin<
     },
     options?: TOptions
   ) => Promise<boolean>;
+  /**
+   * Plugin lifecycle method that triggers inside the main process everytime ANY source emits new pages.
+   * This method should return a boolean that will indicate if this source should force other namespace sources to re-run afterUpdate.
+   * Returning `undefined`, false or no value, will result in no update being triggered for namespace sources
+   * @param updatedSourceFilesystem Immutable filesystem for the source that changed
+   * @param param.config An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin
+   * @param param.serialiser A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem
+   * @param param.globalFilesystem Immutable union filesystem instance with all source's pages (and symlinks applied)
+   * @param param.namespace The namespace of the source running the plugin
+   * @param options The options passed in when declaring the plugin
+   * @returns {Promise<boolean>} A boolean indicating whether to clear the cache for this source
+   */
+  shouldUpdateNamespaceSources?: (
+    updatedSourceFilesystem: IVolumeImmutable,
+    helpers: {
+      serialiser: Serialiser<TPage>;
+      config: ImmutableData<ConfigData>;
+      globalFilesystem: IUnionVolume;
+      pageExtensions: string[];
+      ignorePages: string[];
+      namespace: string;
+    },
+    options?: TOptions
+  ) => Promise<boolean>;
 };
