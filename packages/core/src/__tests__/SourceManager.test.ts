@@ -172,7 +172,7 @@ describe('GIVEN SourceManager', () => {
         await expect(() =>
           sourceManager.addSource({ name: 'source2', modulePath: 'source2-module' }, {})
         ).rejects.toThrow(
-          new Error("Source 'source2' received a message before it was initialised.")
+          new Error("[Mosaic][Source] 'source2' received a message before it was initialised.")
         );
       });
 
@@ -242,7 +242,9 @@ describe('GIVEN SourceManager', () => {
         });
         await expect(() =>
           sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {})
-        ).rejects.toThrow(new Error("Source 'source' silently exited before initialising."));
+        ).rejects.toThrow(
+          new Error("[Mosaic][Source] 'source' silently exited before initialising.")
+        );
       });
       test('THEN the error should be reported in a rejected promise', async () => {
         setTimeout(() => {
