@@ -119,7 +119,7 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
       }
     }
   },
-  async shouldClearCache() {
+  async shouldUpdateNamespaceSources() {
     return true;
   }
 };
