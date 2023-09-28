@@ -168,6 +168,13 @@ export default class SourceManager {
               return;
             }
 
+            await this.#updateNamespaceSources(immutableSourceFilesystem, source);
+
+            // After each async operation, we should check if anything has caused the Source to close
+            if (!sourceActive) {
+              return;
+            }
+
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
           } catch (e) {
             console.warn(
@@ -218,14 +225,30 @@ export default class SourceManager {
     this.#handlers.forEach(callback => callback(filesystem, source));
   }
 
-  #updateSources(immutableSourceFilesystem, source) {
+  #updateSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
     // Notify other frozen sources that something has changed. If a source's filesystem hasn't been frozen yet - there's no point
     // in notifying it of another source changing, as it hasn't initialised or called `afterUpdate` for the first time yet anyway.
     // No need to do them sequentially - we can fire them all off at once and wait for them all to finish in their own time
     return Promise.all(
       Array.from(this.#sources.values()).map(existingSource => {
         if (existingSource !== source && existingSource.filesystem.frozen) {
-          return existingSource.requestCacheClear(
+          return existingSource.requestCacheClear(immutableSourceFilesystem);
+        }
+        return existingSource;
+      })
+    );
+  }
+
+  #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
+    // Notify other frozen sources that share this sources namespace that something has changed.
+    return Promise.all(
+      Array.from(this.#sources.values()).map(existingSource => {
+        if (
+          existingSource !== source &&
+          existingSource.filesystem.frozen &&
+          existingSource.namespace === source.namespace
+        ) {
+          return existingSource.requestNamespaceSourceUpdate(
             immutableSourceFilesystem,
             this.#sharedFilesystem,
             this.#globalConfig
