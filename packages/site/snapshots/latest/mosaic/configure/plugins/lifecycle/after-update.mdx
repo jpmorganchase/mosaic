@@ -1,11 +1,11 @@
 ---
-title: Admin
-layout: DetailTechnical
+title: afterUpdate
+layout: DetailOverview
 sidebar:
   priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+lastModified: 1695972151932
+fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
+route: /mosaic/configure/plugins/lifecycle/after-update
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +13,31 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: Lifecycle Events
+    path: /mosaic/configure/plugins/lifecycle/index
+    id: /mosaic/configure/plugins/lifecycle/index.mdx
+  - label: afterUpdate
+    path: /mosaic/configure/plugins/lifecycle/after-update
+    id: /mosaic/configure/plugins/lifecycle/after-update.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  text: 2 min read
+  minutes: 1.395
+  time: 83700
+  words: 279
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: helpers
+    text: Helpers
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: $beforeSend
+    route: /mosaic/configure/plugins/lifecycle/before-send
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: shouldClearCache
+    route: /mosaic/configure/plugins/lifecycle/should-clear-cache
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +323,28 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The third lifecycle event to trigger overall and the first to trigger inside the main Mosaic process.
 
-## Endpoints
+Calls after the filesystem and symlinks have been reconstructed due to a change to the current source pages. Pages will *not* be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
+This method is safe to use with lazy loading, as the filesystem should return the full page when read.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+The `afterUpdate` lifecycle event is called with:
+
+*   mutableFilesystem - Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
+*   helpers - an object with useful methods
+*   options - the options specified for the plugin in the mosaic config file
+
+## Helpers
+
+The helpers provided with this lifecycle event are listed in the table below.
+
+| Property         | Description                                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| serialiser       | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                                                  |
+| config           | An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source. |
+| globalConfig     | An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.                                                         |
+| sharedFilesystem | Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps                                                                      |
+| globalFilesystem | Immutable union filesystem instance with all source's pages (and symlinks applied)                                                                                  |
+| pageExtensions   | A collection of pageExtensions the source is using                                                                                                                  |
+| ignorePages      | A collection of page globs that are to be ignored for this source                                                                                                   |
+| namespace        | The namespace of the source running the plugin                                                                                                                      |

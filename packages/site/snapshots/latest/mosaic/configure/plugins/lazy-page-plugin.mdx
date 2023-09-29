@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: LazyPagePlugin
+layout: DetailOverview
+lastModified: 1695981498702
+fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
+route: /mosaic/configure/plugins/lazy-page-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,34 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: LazyPagePlugin
+    path: /mosaic/configure/plugins/lazy-page-plugin
+    id: /mosaic/configure/plugins/lazy-page-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.895
+  time: 53700
+  words: 179
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: options
+    text: Options
+  - level: 2
+    id: adding-to-mosaic
+    text: Adding to Mosaic
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: $CodeModPlugin
+    route: /mosaic/configure/plugins/codemod-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: PagesWithoutFileExtPlugin
+    route: /mosaic/configure/plugins/pages-wthout-extensions-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +324,53 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `LazyPagePlugin` attempts to reduce the size of the Mosaic filesystem in memory by moving page metadata and content to disk.
 
-## Endpoints
+It then adds a hook, so that when a page is requested the data is loaded from disk and combined with what is already in the Mosaic filesystem.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+<Callout variant="warning">
+  It must be the very last to run so that it can strip off metadata and content after other plugins
+  have finished with them.
+</Callout>
+
+## Priority
+
+This plugin runs with a priority of -2. Needs to be the last to run for biggest impact.
+
+## Options
+
+| Property | Description                                                                    |
+| -------- | ------------------------------------------------------------------------------ |
+| cacheDir | The directory to store the cache. Defaults to `.mosaic-lazy-page-plugin-cache` |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
+    // This plugin must be the very last to run, so it can strip off metadata and content after the other
+    // plugins are done with them
+    priority: -2,
+    // Exclude this plugin in builds
+    runTimeOnly: true,
+    options: {
+      cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
+    }
+  }
+  // other plugins
+];
+```
+
+<Callout>
+  This plugin needs to be a `runtimeOnly` plugin because the goal is to reduce the in-memory
+  filesystem size.
+</Callout>

@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: BrokenLinksPlugin
+layout: DetailOverview
+lastModified: 1695980767395
+fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
+route: /mosaic/configure/plugins/broken-links-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,37 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: BrokenLinksPlugin
+    path: /mosaic/configure/plugins/broken-links-plugin
+    id: /mosaic/configure/plugins/broken-links-plugin.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  text: 2 min read
+  minutes: 1.405
+  time: 84300
+  words: 281
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: options
+    text: Options
+  - level: 2
+    id: adding-to-mosaic
+    text: Adding to Mosaic
+  - level: 2
+    id: example-output
+    text: Example Output
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: BreadcrumbsPlugin
+    route: /mosaic/configure/plugins/breadcrumbs-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: $CodeModPlugin
+    route: /mosaic/configure/plugins/codemod-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +327,71 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `BrokenLinksPlugin` will identify any broken links in pages Mosaic has pulled into it's filesystem by making use of the [check-links](https://www.npmjs.com/package/check-links) package.
 
-## Endpoints
+It can identify broken links between the pages themselves and external links that pages link out to.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+What this plugin is really checking is "liveness" of a link.
+
+*   alive if the URL is reachable (2XX status code)
+*   dead if the URL is not reachable
+*   invalid if the URL was parsed as invalid or used an unsupported protocol
+
+<Callout variant="warning">
+  Links may be "alive", but the **content** of the linked page may not be what you want so continue
+  to check links show what you expect.
+</Callout>
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property      | Description                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| baseUrl       | This is used to calculate the full url for links between pages. It should be the url Mosaic is running on                         |
+| proxyEndpoint | If you are behind a corporate proxy, external link checking will not work unless you specify the proxy endpoint using this option |
+
+## Adding to Mosaic
+
+This plugin is **not** included in the mosaic config shipped by the Mosaic standard generator so it must be added manually to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/BrokenLinksPlugin',
+    priority: -1,
+    // Exclude this plugin in builds
+    runTimeOnly: true,
+    options: {
+      baseUrl: process.env.MOSAIC_ACTIVE_MODE_URL || 'http://localhost:8080',
+      proxyEndpoint: 'http://some-proxy-url'
+    }
+  }
+  // other plugins
+];
+```
+
+<Callout>
+  This plugin needs to be a `runtimeOnly` plugin because it needs Mosaic to be running in order to
+  make requests to all of the page links.
+</Callout>
+
+## Example Output
+
+When a link is found to be broken, you will see the following output in the console:
+
+```
+@jpmorganchase/mosaic-site:serve: 8080 [Mosaic] Broken links found in /local/docs/publish-site-to-vercel.mdx
+@jpmorganchase/mosaic-site:serve: 8080   Link to https://nextjs.org/davie is dead {
+@jpmorganchase/mosaic-site:serve: 8080     type: 'link',
+@jpmorganchase/mosaic-site:serve: 8080     title: null,
+@jpmorganchase/mosaic-site:serve: 8080     url: 'https://nextjs.org/davie',
+@jpmorganchase/mosaic-site:serve: 8080     children: [ { type: 'text', value: 'Next.Js', position: [Object] } ],
+@jpmorganchase/mosaic-site:serve: 8080     position: {
+@jpmorganchase/mosaic-site:serve: 8080       start: { line: 4, column: 20, offset: 36 },
+@jpmorganchase/mosaic-site:serve: 8080       end: { line: 4, column: 55, offset: 71 }
+@jpmorganchase/mosaic-site:serve: 8080     }
+@jpmorganchase/mosaic-site:serve: 8080   }
+```

@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: $AliasPlugin
+layout: DetailOverview
+lastModified: 1695975218794
+fullPath: /mosaic/configure/plugins/alias-plugin.mdx
+route: /mosaic/configure/plugins/alias-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,28 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: $AliasPlugin
+    path: /mosaic/configure/plugins/alias-plugin
+    id: /mosaic/configure/plugins/alias-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.415
+  time: 24900
+  words: 83
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: shouldUpdateNamespaceSources
+    route: /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: BreadcrumbsPlugin
+    route: /mosaic/configure/plugins/breadcrumbs-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +318,14 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `$AliasPlugin` is what powers the [aliases](../../author/aliases) feature of Mosaic.
 
-## Endpoints
+It does this by scrapes `aliases` from page metadata and also applies all aliases stored in `config.data.aliases`
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+Other plugins can use `setAliases` to apply new aliases, as long as they call it before this plugin has reaches the `$beforeSend` lifecycle event.
+
+This plugin is added to the plugins collection by Mosaic itself so users do *not* need to include it in their own mosaic config file.
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs *after* most other plugins.

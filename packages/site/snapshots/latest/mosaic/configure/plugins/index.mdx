@@ -3,7 +3,7 @@ title: Plugins
 layout: DetailTechnical
 sidebar:
   priority: 1
-lastModified: 1692689012049
+lastModified: 1695993736067
 fullPath: /mosaic/configure/plugins/index.mdx
 route: /mosaic/configure/plugins/index
 breadcrumbs:
@@ -18,9 +18,9 @@ breadcrumbs:
     id: /mosaic/configure/plugins/index.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.635
-  time: 98100
-  words: 327
+  minutes: 1.92
+  time: 115200
+  words: 384
 tableOfContents:
   - level: 2
     id: installation
@@ -29,18 +29,21 @@ tableOfContents:
     id: configuration
     text: Configuration
   - level: 2
-    id: plugin-lifecycle
-    text: Plugin lifecycle
+    id: default-plugins
+    text: Default Plugins
   - level: 2
-    id: mosaic-plugins
-    text: Mosaic Plugins
+    id: plugin-errors
+    text: Plugin errors
+  - level: 2
+    id: multiple-instances
+    text: Multiple Instances
 navigation:
   prev:
     title: Layouts
     route: /mosaic/configure/layouts/index
   next:
-    title: $afterSource
-    route: /mosaic/configure/plugins/after-source
+    title: Lifecycle Events
+    route: /mosaic/configure/plugins/lifecycle/index
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -167,40 +170,168 @@ sidebarData:
       level: 3
       link: /mosaic/configure/plugins/index
     childNodes:
-      - id: /mosaic/configure/plugins/after-source
-        fullPath: /mosaic/configure/plugins/after-source.mdx
-        name: Lifecycle - $afterSource
+      - id: /mosaic/configure/plugins/lifecycle/index
+        fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+        name: Lifecycle Events
+        priority: 1
+        data:
+          level: 4
+          link: /mosaic/configure/plugins/lifecycle/index
+        childNodes:
+          - id: /mosaic/configure/plugins/lifecycle/after-source
+            fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
+            name: $afterSource
+            priority: 5
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-source
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/before-send
+            fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
+            name: $beforeSend
+            priority: 4
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/before-send
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/after-update
+            fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
+            name: afterUpdate
+            priority: 3
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-update
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            fullPath: /mosaic/configure/plugins/lifecycle/should-clear-cache.mdx
+            name: shouldClearCache
+            priority: 2
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            childNodes: []
+          - id: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            fullPath: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
+            name: shouldUpdateNamespaceSources
+            priority: 1
+            data:
+              level: 4
+              link: >-
+                /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            childNodes: []
+      - id: /mosaic/configure/plugins/alias-plugin
+        fullPath: /mosaic/configure/plugins/alias-plugin.mdx
+        name: $AliasPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/after-source
+          link: /mosaic/configure/plugins/alias-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/after-update
-        fullPath: /mosaic/configure/plugins/after-update.mdx
-        name: Lifecycle - afterUpdate
+      - id: /mosaic/configure/plugins/breadcrumbs-plugin
+        fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
+        name: BreadcrumbsPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/after-update
+          link: /mosaic/configure/plugins/breadcrumbs-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/before-send
-        fullPath: /mosaic/configure/plugins/before-send.mdx
-        name: Lifecycle - $beforeSend
+      - id: /mosaic/configure/plugins/broken-links-plugin
+        fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
+        name: BrokenLinksPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/before-send
+          link: /mosaic/configure/plugins/broken-links-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/should-clear-cache
-        fullPath: /mosaic/configure/plugins/should-clear-cache.mdx
-        name: Lifecycle - shouldClearCache
+      - id: /mosaic/configure/plugins/codemod-plugin
+        fullPath: /mosaic/configure/plugins/codemod-plugin.mdx
+        name: $CodeModPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/should-clear-cache
+          link: /mosaic/configure/plugins/codemod-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/lazy-page-plugin
+        fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
+        name: LazyPagePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/lazy-page-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
+        name: PagesWithoutFileExtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/public-assets-plugin
+        fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
+        name: PublicAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/public-assets-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/reading-time-plugin
+        fullPath: /mosaic/configure/plugins/reading-time-plugin.mdx
+        name: ReadingTimePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/reading-time-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/ref-plugin
+        fullPath: /mosaic/configure/plugins/ref-plugin.mdx
+        name: $RefPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/ref-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/search-index-plugin
+        fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
+        name: SearchIndexPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/search-index-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/shared-config-plugin
+        fullPath: /mosaic/configure/plugins/shared-config-plugin.mdx
+        name: SharedConfigPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/shared-config-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/sidebar-plugin
+        fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
+        name: SidebarPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/sidebar-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/site-map-plugin
+        fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
+        name: SiteMapPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/site-map-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/tag-plugin
+        fullPath: /mosaic/configure/plugins/tag-plugin.mdx
+        name: $TagPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/tag-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/toc-plugin
+        fullPath: /mosaic/configure/plugins/toc-plugin.mdx
+        name: TableOfContentsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
 # {meta.title}
 
-Mosaic Plugins are lifecycle-based hooks that are called on *every* source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
+Mosaic Plugins are [lifecycle-based](./lifecycle/index) hooks that are called on *every* source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
 
-Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features in a plugin
+Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features and functionality as plugins.
 
 ## Installation
 
@@ -210,87 +341,76 @@ Plugins enable Mosaic to have a lightweight and flexible, modular architecture b
 
 Plugins are added to the `plugins` collection of the mosaic config file. Like [sources](../sources/index), plugins have an options property that can be used to provide plugin specific configuration.
 
-| Property    | Description                                                                 | Required |
-| ----------- | --------------------------------------------------------------------------- | -------- |
-| modulePath  | The path to the installed plugin module                                     | Yes      |
-| disabled    | Exclude this plugin completely. Defaults to false                           | No       |
-| runtimeOnly | Exclude this plugin when generating a snapshot. Defaults to false           | No       |
-| priority    | The importance of this plugin. This highest number plugin will be run first | No       |
-| options     | Collection of other configuration values                                    | No       |
+| Property        | Description                                                                | Required |
+| --------------- | -------------------------------------------------------------------------- | -------- |
+| modulePath      | The path to the installed plugin module                                    | Yes      |
+| disabled        | Exclude this plugin completely. Defaults to false                          | No       |
+| runtimeOnly     | Exclude this plugin when generating a snapshot. Defaults to false          | No       |
+| previewDisabled | Exclude this plugin for "preview" sources                                  | No       |
+| allowMultiple   | Allow multiple instances of this plugin to run.                            | No       |
+| priority        | The importance of this plugin. Plugins with the highest priority run first | No       |
+| options         | Collection of other configuration values                                   | No       |
 
-## Plugin lifecycle
-
-The plugin lifecycle is triggered when a source emits content.
-Whether the execution happens on the main thread or the source worker thread depends on which lifecycle event is called. There are 4 lifecycle events:
-
-1.  [$afterSource](./after-source)
-2.  [$beforeSend](./before-send)
-3.  [afterUpdate](./after-update)
-4.  [shouldClearCache](./should-clear-cache)
-
-<Callout variant="caution">
-  Plugin methods that trigger inside the main thread should be async and highly optimised to avoid
-  holding up the main thread.
-</Callout>
-
-## Mosaic Plugins
-
-Mosaic ships with many plugins, most of which are enabled when using the standard generator.
-
-```
-plugins: [
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
-      options: {}
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
-      options: { maxLineLength: 240, maxLineCount: 240 }
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
-      options: {
-        indexPageName: 'index.mdx'
-      }
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
-      // This plugin must be the very last to run, so it can strip off metadata and content after the other
-      // plugins are done with them
-      priority: -2,
-      // Exclude this plugin in builds
-      runTimeOnly: true,
-      options: {
-        cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
-      }
-    },
-    {
+```js
+ plugins: [
+  {
       modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
-      options: {}
+      options: {},
+      priority: 1
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
-      options: {
-        filename: 'sidebar.json'
-      }
+      options: {}
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
       options: {}
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/SharedConfigPlugin',
-      options: {
-        filename: 'shared-config.json'
-      },
-      priority: 3
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
-      options: {
-        minRank: 1,
-        maxRank: 3
-      }
     }
-  ]
+],
+```
+
+<Callout variant="tip">
+  There is no need to import the plugin module directly. As long as the plugin is installed, Mosaic
+  will be able to import it using the built-in plugin loader.
+</Callout>
+
+## Default Plugins
+
+The following plugins are always included by Mosaic, regardless of whether they are present in the plugins collection of the Mosaic config file:
+
+1.  [$TagPlugin](./tag-plugin)
+2.  [$AliasPlugin](./alias-plugin)
+3.  [$CodeModPlugin](./codemod-plugin)
+4.  [$RefPlugin](./ref-plugin)
+
+## Plugin errors
+
+Should a plugin fail, the failure will **not** cause a source to close or for any other plugin to not run.
+
+Instead plugin errors are tracked by Mosaic and can be viewed in the `pluginErrors` property available on each source listed by the list sources [admin API](../admin/index).
+
+Plugin errors will be split by lifecycle event and only the lifecycle events used by the loaded plugins used will be shown.
+
+## Multiple Instances
+
+By default, Mosaic will only run one instance of a plugin.
+
+It may be the case that you wish to run the same plugin twice with a slightly different config. To do this, you must have 2 instances listed in the plugins collection and they **both** must set the `allowMultiple` option to `true`.
+
+For example, the config below runs the [SidebarPlugin](./sidebar-plugin) twice:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+    options: { rootDirGlob: 'products/product-a' },
+    allowMultiple: true
+  },
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+    options: { rootDirGlob: '*/!(product-a)/*' },
+    allowMultiple: true
+  }
+  // other plugins
+];
 ```

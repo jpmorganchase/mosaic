@@ -160,33 +160,161 @@ sidebarData:
       level: 3
       link: /mosaic/configure/plugins/index
     childNodes:
-      - id: /mosaic/configure/plugins/after-source
-        fullPath: /mosaic/configure/plugins/after-source.mdx
-        name: Lifecycle - $afterSource
+      - id: /mosaic/configure/plugins/lifecycle/index
+        fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+        name: Lifecycle Events
+        priority: 1
+        data:
+          level: 4
+          link: /mosaic/configure/plugins/lifecycle/index
+        childNodes:
+          - id: /mosaic/configure/plugins/lifecycle/after-source
+            fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
+            name: $afterSource
+            priority: 5
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-source
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/before-send
+            fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
+            name: $beforeSend
+            priority: 4
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/before-send
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/after-update
+            fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
+            name: afterUpdate
+            priority: 3
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-update
+            childNodes: []
+          - id: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            fullPath: /mosaic/configure/plugins/lifecycle/should-clear-cache.mdx
+            name: shouldClearCache
+            priority: 2
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            childNodes: []
+          - id: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            fullPath: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
+            name: shouldUpdateNamespaceSources
+            priority: 1
+            data:
+              level: 4
+              link: >-
+                /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            childNodes: []
+      - id: /mosaic/configure/plugins/alias-plugin
+        fullPath: /mosaic/configure/plugins/alias-plugin.mdx
+        name: $AliasPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/after-source
+          link: /mosaic/configure/plugins/alias-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/after-update
-        fullPath: /mosaic/configure/plugins/after-update.mdx
-        name: Lifecycle - afterUpdate
+      - id: /mosaic/configure/plugins/breadcrumbs-plugin
+        fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
+        name: BreadcrumbsPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/after-update
+          link: /mosaic/configure/plugins/breadcrumbs-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/before-send
-        fullPath: /mosaic/configure/plugins/before-send.mdx
-        name: Lifecycle - $beforeSend
+      - id: /mosaic/configure/plugins/broken-links-plugin
+        fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
+        name: BrokenLinksPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/before-send
+          link: /mosaic/configure/plugins/broken-links-plugin
         childNodes: []
-      - id: /mosaic/configure/plugins/should-clear-cache
-        fullPath: /mosaic/configure/plugins/should-clear-cache.mdx
-        name: Lifecycle - shouldClearCache
+      - id: /mosaic/configure/plugins/codemod-plugin
+        fullPath: /mosaic/configure/plugins/codemod-plugin.mdx
+        name: $CodeModPlugin
         data:
           level: 3
-          link: /mosaic/configure/plugins/should-clear-cache
+          link: /mosaic/configure/plugins/codemod-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/lazy-page-plugin
+        fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
+        name: LazyPagePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/lazy-page-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
+        name: PagesWithoutFileExtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/public-assets-plugin
+        fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
+        name: PublicAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/public-assets-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/reading-time-plugin
+        fullPath: /mosaic/configure/plugins/reading-time-plugin.mdx
+        name: ReadingTimePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/reading-time-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/ref-plugin
+        fullPath: /mosaic/configure/plugins/ref-plugin.mdx
+        name: $RefPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/ref-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/search-index-plugin
+        fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
+        name: SearchIndexPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/search-index-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/shared-config-plugin
+        fullPath: /mosaic/configure/plugins/shared-config-plugin.mdx
+        name: SharedConfigPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/shared-config-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/sidebar-plugin
+        fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
+        name: SidebarPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/sidebar-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/site-map-plugin
+        fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
+        name: SiteMapPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/site-map-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/tag-plugin
+        fullPath: /mosaic/configure/plugins/tag-plugin.mdx
+        name: $TagPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/tag-plugin
+        childNodes: []
+      - id: /mosaic/configure/plugins/toc-plugin
+        fullPath: /mosaic/configure/plugins/toc-plugin.mdx
+        name: TableOfContentsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
 # {meta.title}

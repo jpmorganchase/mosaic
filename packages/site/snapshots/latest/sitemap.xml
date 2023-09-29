@@ -135,17 +135,22 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/after-source</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/alias-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/after-update</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/breadcrumbs-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/before-send</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/broken-links-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/codemod-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -155,7 +160,57 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/should-clear-cache</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lazy-page-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/pages-wthout-extensions-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/public-assets-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/reading-time-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/ref-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/search-index-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/shared-config-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/sidebar-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/site-map-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/tag-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/toc-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -261,6 +316,36 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/refs/index</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/after-source</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/after-update</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/before-send</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/index</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-clear-cache</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-update-namespace-sources</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

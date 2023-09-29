@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: PublicAssetsPlugin
+layout: DetailOverview
+lastModified: 1695982952228
+fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
+route: /mosaic/configure/plugins/public-assets-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,34 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: PublicAssetsPlugin
+    path: /mosaic/configure/plugins/public-assets-plugin
+    id: /mosaic/configure/plugins/public-assets-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.61
+  time: 36600
+  words: 122
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: options
+    text: Options
+  - level: 2
+    id: adding-to-mosaic
+    text: Adding to Mosaic
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: PagesWithoutFileExtPlugin
+    route: /mosaic/configure/plugins/pages-wthout-extensions-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: ReadingTimePlugin
+    route: /mosaic/configure/plugins/reading-time-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +324,35 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `PublicAssetsPlugin` is responsible for finding "assets" in the Mosaic filesystem and copying them to another directory.
 
-## Endpoints
+Typical usecase is for copying `sitemap.xml` and `search-data.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property  | Description                                                 |
+| --------- | ----------------------------------------------------------- |
+| outputDir | The directory to copy the assets to. Defaults to `./public` |
+| assets    | A collection of filenames to copy to the outputDir          |
+
+## Adding to Mosaic
+
+This plugin is **not** included in the mosaic config shipped by the Mosaic standard generator so it must be added manually to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
+    priority: -1,
+    options: {
+      outputDir: './public',
+      assets: ['sitemap.xml', 'search-data.json']
+    }
+  }
+  // other plugins
+];
+```
