@@ -1,11 +1,11 @@
 ---
-title: Admin
-layout: DetailTechnical
+title: $beforeSend
+layout: DetailOverview
 sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+  priority: 4
+lastModified: 1695916823867
+fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
+route: /mosaic/configure/plugins/lifecycle/before-send
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +13,31 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: Lifecycle Events
+    path: /mosaic/configure/plugins/lifecycle/index
+    id: /mosaic/configure/plugins/lifecycle/index.mdx
+  - label: $beforeSend
+    path: /mosaic/configure/plugins/lifecycle/before-send
+    id: /mosaic/configure/plugins/lifecycle/before-send.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.95
+  time: 57000
+  words: 190
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: helpers
+    text: Helpers
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: $afterSource
+    route: /mosaic/configure/plugins/lifecycle/after-source
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: afterUpdate
+    route: /mosaic/configure/plugins/lifecycle/after-update
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +323,24 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The second lifecycle event to trigger and does so after a filesystem has been built up from the source pages.
 
-## Endpoints
+It is the last lifecycle event to run in a source child process before the filesystem is sent to the main Mosaic process and should **not** return a value.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+The `$beforeSend` lifecycle event is called with:
+
+*   mutableFilesystem - Mutable virtual filesystem instance with all of this source's pages inside (and symlinks applied)
+*   helpers - an object with useful methods
+*   options - the options specified for the plugin in the mosaic config file
+
+## Helpers
+
+The helpers provided with this lifecycle event are listed in the table below.
+
+| Property       | Description                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| serialiser     | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                         |
+| config         | A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin |
+| pageExtensions | A collection of pageExtensions the source is using                                                                                         |
+| ignorePages    | A collection of page globs that are to be ignored for this source                                                                          |
+| namespace      | The namespace of the source running the plugin                                                                                             |

@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: $TagPlugin
+layout: DetailOverview
+lastModified: 1695976785238
+fullPath: /mosaic/configure/plugins/tag-plugin.mdx
+route: /mosaic/configure/plugins/tag-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,31 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: $TagPlugin
+    path: /mosaic/configure/plugins/tag-plugin
+    id: /mosaic/configure/plugins/tag-plugin.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  text: 2 min read
+  minutes: 1.555
+  time: 93300
+  words: 311
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: example-use-case---products-page
+    text: Example use case - Products Page
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: SiteMapPlugin
+    route: /mosaic/configure/plugins/site-map-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: TableOfContentsPlugin
+    route: /mosaic/configure/plugins/toc-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +321,73 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `$TagPlugin` powers the tags feature of Mosaic.
 
-## Endpoints
+This plugin scrapes `$tag` from page metadata and also applies all aliases stored in `config.data.tags`.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+Tags ultimately resolve down into [refs](../../author/refs), but are different from normal refs, in that they are applied to the
+union filesystem (all merged filesystems), not to the individual source filesystem that they were defined on. This can be thought of as a *global ref*.
+
+Other plugins can use `config.setData()` and modify the `tags` property, to apply new global refs, as long as
+they do so before this plugin has reaches `$beforeSend`.
+
+## Priority
+
+This plugin runs with no special priority but it must run before both the `$AliasPlugin` and the `$RefPlugin`.
+
+## Example use case - Products Page
+
+Let's assume there is a products page on your site and each product is shown as a tile. The information for each product tile is sourced from multiple Mosaic sources. How can tags be used to reference the product data needed for each tile on the products page?
+
+The product page should add a `$tag` metadata prop to its frontmatter:
+
+```yml
+---
+title: Products
+description: Product index
+layout: ProductPreview
+data:
+  items:
+    $tag: product#/data
+---
+```
+
+The tag shown in the example above is saying populate `data.items` of the Products index page with the `data` metadata property of pages tagged with `product`.
+
+A tagged product page needs to have a `tags` property which is a collection of tags and one of these needs to be `product`. This will allow the `$TagPlugin` to correctly associate the product page to the product index page. It will also need a `data` property because thats the property our product index page wants to use for the tiles.
+
+```yml
+---
+title: Product A
+description: My Product description
+layout: ProductDiscover
+tags:
+  - product
+data:
+  name:
+    $ref: '#/title'
+  date: 2023/02/07
+  action: Product Overview
+  description:
+    $ref: '#/description'
+  link: /products/a/index
+---
+```
+
+```yml
+---
+title: Product B
+description: My Product description
+layout: ProductDiscover
+tags:
+  - product
+data:
+  name:
+    $ref: '#/title'
+  date: 2023/02/07
+  action: Product Overview
+  description:
+    $ref: '#/description'
+  link: /products/b/index
+---
+```

@@ -1,11 +1,11 @@
 ---
-title: Admin
+title: Lifecycle Events
 layout: DetailTechnical
 sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+  priority: 1
+lastModified: 1695907718118
+fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+route: /mosaic/configure/plugins/lifecycle/index
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +13,25 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: Lifecycle Events
+    path: /mosaic/configure/plugins/lifecycle/index
+    id: /mosaic/configure/plugins/lifecycle/index.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
-tableOfContents:
-  - level: 2
-    id: endpoints
-    text: Endpoints
+  minutes: 0.235
+  time: 14100
+  words: 47
+tableOfContents: []
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: Plugins
+    route: /mosaic/configure/plugins/index
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: $afterSource
+    route: /mosaic/configure/plugins/lifecycle/after-source
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -315,17 +315,22 @@ sidebarData:
           link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
-# {meta.title}
+# Plugin lifecycle
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The plugin lifecycle is triggered when a source emits content.
 
-## Endpoints
+Each Mosaic source has its own worker thread and plugin lifecycle events that start with a `$` will execute inside the worker thread.
+All other lifecycle events will execute in the main Mosaic process.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+The 5 lifecycle events are:
+
+1.  [$afterSource](./after-source)
+2.  [$beforeSend](./before-send)
+3.  [afterUpdate](./after-update)
+4.  [shouldClearCache](./should-clear-cache)
+5.  [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+
+<Callout variant="caution">
+  Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to
+  avoid holding up the main thread.
+</Callout>

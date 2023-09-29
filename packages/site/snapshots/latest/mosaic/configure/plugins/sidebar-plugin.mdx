@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: SidebarPlugin
+layout: DetailOverview
+lastModified: 1695992206037
+fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
+route: /mosaic/configure/plugins/sidebar-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,37 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: SidebarPlugin
+    path: /mosaic/configure/plugins/sidebar-plugin
+    id: /mosaic/configure/plugins/sidebar-plugin.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  text: 2 min read
+  minutes: 1.27
+  time: 76200
+  words: 254
 tableOfContents:
+  - level: 3
+    id: configuration
+    text: Configuration
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: options
+    text: Options
+  - level: 2
+    id: adding-to-mosaic
+    text: Adding to Mosaic
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: SharedConfigPlugin
+    route: /mosaic/configure/plugins/shared-config-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: SiteMapPlugin
+    route: /mosaic/configure/plugins/site-map-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +327,52 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `SidebarPlugin` generates the necessary page metadata needed for the vertical navigation shown on some Mosaic pages.
 
-## Endpoints
+The output from the plugin is added to a `sidebarData` metadata property of the page.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+### Configuration
+
+The `rootDirGlob` is used to determine the "root" directories of the sidebar. So for example:
+
+*   `*/*/*` - generate sidebar data for the pages that are 3 directories deep in the filesystem hierarchy
+*   `*/!(product-a)/*` - same as above but ignore the product-a directory
+*   `products/product-b` - generate a sidebar just for product-b in the products directory
+
+To rearrange pages in the sidebar or to apply a different label to a page you can specify the following in the page frontmatter:
+
+| Property         | Description                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------- |
+| sidebar.label    | the name of the page to use in the sidebar. Defaults to the page title                    |
+| sidebar.priority | pages are ordered in the sidebar by priority high → low. Default is alphabetical ordering |
+
+## Priority
+
+This plugin runs with a priority of 3.
+
+## Options
+
+| Property    | Description                                                                   |
+| ----------- | ----------------------------------------------------------------------------- |
+| filename    | filename of the sidebar json, linked to each related page via ref             |
+| rootDirGlob | Glob pattern for matching directories which should be the root of the sidebar |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+    options: { rootDirGlob: '*/*/*' }
+  }
+  // other plugins
+];
+```

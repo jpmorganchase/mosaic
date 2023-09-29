@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: TableOfContentsPlugin
+layout: DetailOverview
+lastModified: 1695995283201
+fullPath: /mosaic/configure/plugins/toc-plugin.mdx
+route: /mosaic/configure/plugins/toc-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,31 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: TableOfContentsPlugin
+    path: /mosaic/configure/plugins/toc-plugin
+    id: /mosaic/configure/plugins/toc-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.93
+  time: 55800
+  words: 186
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
+  - level: 2
+    id: options
+    text: Options
+  - level: 2
+    id: adding-to-mosaic
+    text: Adding to Mosaic
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
-  next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: $TagPlugin
+    route: /mosaic/configure/plugins/tag-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +321,51 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `TableOfContentsPlugin` generates a Table of Contents for each page in the Mosaic filesystem using the headings on the page.
 
-## Endpoints
+Heading ranks are used to determine which page headings should be included in the Table of Contents:
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+| Heading Element (markdown syntax) | Rank |
+| --------------------------------- | ---- |
+| h1 (#)                            | 1    |
+| h2 (##)                           | 2    |
+| h3 (###)                          | 3    |
+| h4 (####)                         | 4    |
+| h5 (#####)                        | 5    |
+| h6 (######)                       | 6    |
+
+The plugin output is added to a `tableOfContents` metadata property of a page.
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property | Description                   |
+| -------- | ----------------------------- |
+| minRank  | The minimum page heading rank |
+| maxRank  | The maximum page heading rank |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+    options: {
+      minRank: 2,
+      maxRank: 3
+    }
+  }
+  // other plugins
+];
+```

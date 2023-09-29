@@ -1,11 +1,9 @@
 ---
-title: Admin
-layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1694206308811
-fullPath: /mosaic/configure/admin/index.mdx
-route: /mosaic/configure/admin/index
+title: $RefPlugin
+layout: DetailOverview
+lastModified: 1695977296466
+fullPath: /mosaic/configure/plugins/ref-plugin.mdx
+route: /mosaic/configure/plugins/ref-plugin
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +11,28 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Admin
-    path: /mosaic/configure/admin/index
-    id: /mosaic/configure/admin/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+  - label: $RefPlugin
+    path: /mosaic/configure/plugins/ref-plugin
+    id: /mosaic/configure/plugins/ref-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.625
-  time: 37500
-  words: 125
+  minutes: 0.27
+  time: 16200
+  words: 54
 tableOfContents:
   - level: 2
-    id: endpoints
-    text: Endpoints
+    id: priority
+    text: Priority
 navigation:
   prev:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
+    title: ReadingTimePlugin
+    route: /mosaic/configure/plugins/reading-time-plugin
   next:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: SearchIndexPlugin
+    route: /mosaic/configure/plugins/search-index-plugin
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -317,15 +318,12 @@ sidebarData:
 ---
 # {meta.title}
 
-There are several admin urls exposed by Mosaic that provide an insight into how the filesystem has been configured and a way to remotely manage sources.
+The `$RefPlugin` powers the [refs](../../author/refs) feature of Mosaic.
 
-## Endpoints
+The plugin scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+Other plugins can use `config.setRef` to apply new refs, as long as they call it before this plugin has reaches `$beforeSend`.
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs *after* most other plugins.
