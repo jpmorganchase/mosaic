@@ -1,0 +1,36 @@
+---
+title: shouldClearCache
+layout: DetailOverview
+sidebar:
+  priority: 2
+---
+
+# {meta.title}
+
+The fourth lifecycle event to trigger overall and the second to trigger inside the main Mosaic process.
+
+It is called every time _any_ source emits new pages and should return a boolean to indicate if **other** sources should clear their cache in response to the source updating.
+
+<Callout variant="warning">
+  Only sources that have already run `afterUpdate` will call this lifecycle hook since there is no
+  cache to clear if they haven't reached that stage in the lifecycle.
+</Callout>
+
+The `shouldClearCache` lifecycle event is called with:
+
+- updatedSourceFilesystem - Immutable filesystem for the source that changed i.e, not the source filesystem
+- helpers - an object with useful methods
+- options - the options specified for the plugin in the mosaic config file
+
+## Helpers
+
+The helpers provided with this lifecycle event are listed in the table below.
+
+| Property         | Description                                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| serialiser       | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                                                  |
+| config           | An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source. |
+| globalFilesystem | Immutable union filesystem instance with all source's pages (and symlinks applied)                                                                                  |
+| pageExtensions   | A collection of pageExtensions the source is using                                                                                                                  |
+| ignorePages      | A collection of page globs that are to be ignored for this source                                                                                                   |
+| namespace        | The namespace of the source running the plugin                                                                                                                      |

@@ -1,0 +1,55 @@
+---
+title: TableOfContentsPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `TableOfContentsPlugin` generates a Table of Contents for each page in the Mosaic filesystem using the headings on the page.
+
+Heading ranks are used to determine which page headings should be included in the Table of Contents:
+
+| Heading Element (markdown syntax) | Rank |
+| --------------------------------- | ---- |
+| h1 (#)                            | 1    |
+| h2 (##)                           | 2    |
+| h3 (###)                          | 3    |
+| h4 (####)                         | 4    |
+| h5 (#####)                        | 5    |
+| h6 (######)                       | 6    |
+
+The plugin output is added to a `tableOfContents` metadata property of a page.
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property | Description                   |
+| -------- | ----------------------------- |
+| minRank  | The minimum page heading rank |
+| maxRank  | The maximum page heading rank |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+    options: {
+      minRank: 2,
+      maxRank: 3
+    }
+  }
+  // other plugins
+];
+```

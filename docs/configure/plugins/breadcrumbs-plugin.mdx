@@ -1,0 +1,46 @@
+---
+title: BreadcrumbsPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `BreadcrumbsPlugin` is responsible for generating the data needed to show breadcrumbs navigation on pages. It then appends this data to a `breadcrumbs` property in the page metadata.
+
+Should a page already have a `breadcrumbs` property in it's metadata then it is respected and not overwritten.
+
+If a page has a `sidebar.label` property in it's metadata then this is used as the label for the breadcrumb, otherwise the page `tile` is used.
+
+When the `BreadcrumbsPlugin` is traversing up directories, it needs to know what page in the directory represents the _breadcrumb_ for that directory. It is recommended to use the `index` page for this but the page to use is a configurable option of the breadcrumbs plugin.
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property      | Description                                      |
+| ------------- | ------------------------------------------------ |
+| indexPageName | The page name to use for "directory" breadcrumbs |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the breadcrumbs plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
+    options: {
+      indexPageName: 'index.mdx'
+    }
+  }
+  // other plugins
+];
+```

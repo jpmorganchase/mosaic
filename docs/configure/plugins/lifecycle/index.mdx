@@ -1,0 +1,26 @@
+---
+title: Lifecycle Events
+layout: DetailTechnical
+sidebar:
+  priority: 1
+---
+
+# Plugin lifecycle
+
+The plugin lifecycle is triggered when a source emits content.
+
+Each Mosaic source has its own worker thread and plugin lifecycle events that start with a `$` will execute inside the worker thread.
+All other lifecycle events will execute in the main Mosaic process.
+
+The 5 lifecycle events are:
+
+1. [$afterSource](./after-source)
+2. [$beforeSend](./before-send)
+3. [afterUpdate](./after-update)
+4. [shouldClearCache](./should-clear-cache)
+5. [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+
+<Callout variant="caution">
+  Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to
+  avoid holding up the main thread.
+</Callout>

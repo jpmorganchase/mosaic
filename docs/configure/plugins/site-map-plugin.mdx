@@ -1,0 +1,41 @@
+---
+title: SiteMapPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `SiteMapPlugin` generates a [sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview) using the pages in the Mosaic filesystem that adheres to the [sitemaps XML schema](https://www.sitemaps.org/protocol.html).
+
+The output of the plugin is a file is named `/sitemap.xml`.
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property | Description                                                                                         |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| siteUrl  | The site URL. Used as the prefix for loc entries in the sitemap as these must start with a protocol |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+    previewDisabled: true,
+    options: { siteUrl: process.env.SITE_URL || 'http://localhost:3000' }
+  }
+  // other plugins
+];
+```
