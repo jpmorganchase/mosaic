@@ -1,0 +1,78 @@
+---
+title: SearchIndexPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `SearchIndexPlugin` is responsible for generating the search index and configuration information for [Fuse.js](https://www.fusejs.io/) which is the matching engine powering the client-side search functionality of Mosaic sites.
+
+It outputs 3 files:
+
+- Full Search Index - `search-data.json`
+- Condensed Search Index - `search-data-condensed.json`
+- Search Configuration - `search-config.json`
+
+### Full Search Index
+
+On a Mosaic site, the full index is fetched after a page has loaded, thus removing the chance of a huge index slowing down first-load.
+
+Practically, the full index should load in the background before a user searches for something, but should a search be initiated before that (e.g., slow-internet) then the condensed version of the search index is available.
+
+### Condensed Search Data
+
+Search Index plugin creates a "condensed" version of the search index that only includes the `title` and `route` for each page. This is the "Minimum Viable Index" to provide somewhat useable search results client-side while the main search index is loaded in the background.
+
+### Search Configuration
+
+Any [options](https://www.fusejs.io/api/options.html) that need to be passed to Fuse.js.
+
+### Search relevancy configuration
+
+| Property         | Description                                           |
+| ---------------- | ----------------------------------------------------- |
+| includeScore     | https://www.fusejs.io/api/options.html#includescore   |
+| includeMatches   | https://www.fusejs.io/api/options.html#includematches |
+| maxPatternLength | TODO                                                  |
+| ignoreLocation   | https://www.fusejs.io/api/options.html#ignorelocation |
+| threshold        | https://www.fusejs.io/api/options.html#threshold      |
+| keys             | https://www.fusejs.io/api/options.html#keys           |
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Options
+
+| Property      | Description                                         |
+| ------------- | --------------------------------------------------- |
+| maxLineLength | TODO                                                |
+| maxLineCount  | TODO                                                |
+| keys          | https://www.fusejs.io/api/options.html#keys         |
+| relevancy     | [search relevancy](#search-relevancy-configuration) |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
+    previewDisabled: true,
+    options: { maxLineLength: 240, maxLineCount: 240 }
+  }
+  // other plugins
+];
+```
+
+<Callout variant="warning">
+  It's usually a good idea to mark this plugin as disabled for preview sources otherwise the pages
+  from the preview will appear in search results.
+</Callout>

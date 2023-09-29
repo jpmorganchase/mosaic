@@ -1,0 +1,41 @@
+---
+title: $afterSource
+layout: DetailOverview
+sidebar:
+  priority: 5
+---
+
+# {meta.title}
+
+The first lifecycle event to trigger after receiving pages from a source and runs in a child process.
+The pages can safely be mutated and will be reflected in the final filesystem that gets generated.
+It **must** return a collection of pages.
+
+The `$afterSource` lifecycle event is called with:
+
+- pages - the collection of pages emitted by the source
+- helpers - an object with useful methods
+- options - the options specified for the plugin in the mosaic config file
+
+## Helpers
+
+The helpers provided with this lifecycle event are listed in the table below.
+
+| Property       | Description                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| serialiser     | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                         |
+| config         | A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin |
+| pageExtensions | A collection of pageExtensions the source is using                                                                                         |
+| ignorePages    | A collection of page globs that are to be ignored for this source                                                                          |
+| namespace      | The namespace of the source running the plugin                                                                                             |
+
+## Example - Log out all page routes
+
+```
+async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
+  for (const page of pages) {
+    console.log(page.route);
+  }
+  return pages;
+}
+```

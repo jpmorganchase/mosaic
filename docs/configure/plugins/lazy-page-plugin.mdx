@@ -1,0 +1,57 @@
+---
+title: LazyPagePlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `LazyPagePlugin` attempts to reduce the size of the Mosaic filesystem in memory by moving page metadata and content to disk.
+
+It then adds a hook, so that when a page is requested the data is loaded from disk and combined with what is already in the Mosaic filesystem.
+
+<Callout variant="warning">
+  It must be the very last to run so that it can strip off metadata and content after other plugins
+  have finished with them.
+</Callout>
+
+## Priority
+
+This plugin runs with a priority of -2. Needs to be the last to run for biggest impact.
+
+## Options
+
+| Property | Description                                                                    |
+| -------- | ------------------------------------------------------------------------------ |
+| cacheDir | The directory to store the cache. Defaults to `.mosaic-lazy-page-plugin-cache` |
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
+    // This plugin must be the very last to run, so it can strip off metadata and content after the other
+    // plugins are done with them
+    priority: -2,
+    // Exclude this plugin in builds
+    runTimeOnly: true,
+    options: {
+      cacheDir: '.tmp/.pull-docs-last-page-plugin-cache'
+    }
+  }
+  // other plugins
+];
+```
+
+<Callout>
+  This plugin needs to be a `runtimeOnly` plugin because the goal is to reduce the in-memory
+  filesystem size.
+</Callout>

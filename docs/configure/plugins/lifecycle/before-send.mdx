@@ -1,40 +1,30 @@
 ---
-title: $afterSource
+title: $beforeSend
 layout: DetailOverview
 sidebar:
-  label: Lifecycle - $afterSource
+  priority: 4
 ---
 
 # {meta.title}
 
-The first lifecycle hook to trigger after receiving pages from a source.
-The pages can safely be mutated and will be reflected in the final filesystem that gets generated.
-It **must** return a collection of pages.
+The second lifecycle event to trigger and does so after a filesystem has been built up from the source pages.
 
-The `$afterSource` lifecycle event is called with:
+It is the last lifecycle event to run in a source child process before the filesystem is sent to the main Mosaic process and should **not** return a value.
 
-- pages - the collection of pages emitted by the source
+The `$beforeSend` lifecycle event is called with:
+
+- mutableFilesystem - Mutable virtual filesystem instance with all of this source's pages inside (and symlinks applied)
 - helpers - an object with useful methods
 - options - the options specified for the plugin in the mosaic config file
 
 ## Helpers
 
-The helpers provided with this lifecycle event are listed in the table below
+The helpers provided with this lifecycle event are listed in the table below.
 
 | Property       | Description                                                                                                                                |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | serialiser     | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                         |
 | config         | A mutable object for sharing data with other lifecycle phases of all plugins for this source (including in the main thread) in this plugin |
 | pageExtensions | A collection of pageExtensions the source is using                                                                                         |
-| ignorePages    | A collection of page globs that are to be ignored                                                                                          |
-
-## Example - Log out all page routes
-
-```
-async function $afterSource(pages, { config, ignorePages, pageExtensions }) {
-  for (const page of pages) {
-    console.log(page.route);
-  }
-  return pages;
-}
-```
+| ignorePages    | A collection of page globs that are to be ignored for this source                                                                          |
+| namespace      | The namespace of the source running the plugin                                                                                             |

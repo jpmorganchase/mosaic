@@ -1,0 +1,16 @@
+---
+title: $RefPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `$RefPlugin` powers the [refs](../../author/refs) feature of Mosaic.
+
+The plugin scrapes `$ref` properties from page metadata and also applies all refs stored in `config.data.refs`.
+
+Other plugins can use `config.setRef` to apply new refs, as long as they call it before this plugin has reaches `$beforeSend`.
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs _after_ most other plugins.

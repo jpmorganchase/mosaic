@@ -1,0 +1,34 @@
+---
+title: afterUpdate
+layout: DetailOverview
+sidebar:
+  priority: 3
+---
+
+# {meta.title}
+
+The third lifecycle event to trigger overall and the first to trigger inside the main Mosaic process.
+
+Calls after the filesystem and symlinks have been reconstructed due to a change to the current source pages. Pages will _not_ be cached when read at this stage, to allow for reading content and writing a new copy of it without the cached version taking effect.
+This method is safe to use with lazy loading, as the filesystem should return the full page when read.
+
+The `afterUpdate` lifecycle event is called with:
+
+- mutableFilesystem - Mutable filesystem instance with all of this source's pages inside (and symlinks re-applied)
+- helpers - an object with useful methods
+- options - the options specified for the plugin in the mosaic config file
+
+## Helpers
+
+The helpers provided with this lifecycle event are listed in the table below.
+
+| Property         | Description                                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| serialiser       | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                                                  |
+| config           | An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source. |
+| globalConfig     | An immutable object for reading data from other lifecycle phases of all plugins. Shared across all sources.                                                         |
+| sharedFilesystem | Mutable filesystem instance independent of any sources. Useful for global pages, like sitemaps                                                                      |
+| globalFilesystem | Immutable union filesystem instance with all source's pages (and symlinks applied)                                                                                  |
+| pageExtensions   | A collection of pageExtensions the source is using                                                                                                                  |
+| ignorePages      | A collection of page globs that are to be ignored for this source                                                                                                   |
+| namespace        | The namespace of the source running the plugin                                                                                                                      |

@@ -1,0 +1,18 @@
+---
+title: $AliasPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `$AliasPlugin` is what powers the [aliases](../../author/aliases) feature of Mosaic.
+
+It does this by scrapes `aliases` from page metadata and also applies all aliases stored in `config.data.aliases`
+
+Other plugins can use `setAliases` to apply new aliases, as long as they call it before this plugin has reaches the `$beforeSend` lifecycle event.
+
+This plugin is added to the plugins collection by Mosaic itself so users do _not_ need to include it in their own mosaic config file.
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs _after_ most other plugins.

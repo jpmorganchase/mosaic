@@ -1,0 +1,36 @@
+---
+title: PagesWithoutFileExtPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `PagesWithoutFileExtPlugin` plugin creates [aliases](../../author/aliases) without the file extension for every page in the Mosaic filesystem.
+This allows pages to be retrieved from the filesystem without specifying the extension e.g., `.mdx`.
+
+The plugin also modifies the `route` metadata property of a page to point to the shorter alias.
+
+## Priority
+
+This plugin runs with a priority of 1. It must run after the [$AliasPlugin](./alias-plugin).
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
+    options: {},
+    priority: 1
+  }
+  // other plugins
+];
+```

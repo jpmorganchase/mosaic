@@ -1,0 +1,32 @@
+---
+title: ReadingTimePlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `ReadingTimePlugin` generates an estimation of how long a page written in MDX will take to read and adds the `readingTime` property to the metadata of a page.
+
+## Priority
+
+This plugin runs with no special priority.
+
+## Adding to Mosaic
+
+This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the plugin is included already:
+
+```js
+import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+```
+
+To add it yourself, add the following to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
+    options: {}
+  }
+  // other plugins
+];
+```
