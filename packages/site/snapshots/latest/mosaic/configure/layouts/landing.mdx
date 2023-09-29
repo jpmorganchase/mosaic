@@ -1,10 +1,10 @@
 ---
-title: Snapshot AWS/S3 mode
-mode: snapshot-s3
+title: Landing Layout
 layout: DetailTechnical
-lastModified: 1692689012048
-fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-route: /mosaic/configure/modes/snapshot-s3
+description: Landing layout example
+lastModified: 1696003065643
+fullPath: /mosaic/configure/layouts/landing.mdx
+route: /mosaic/configure/layouts/landing
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -12,31 +12,28 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Modes of operation
-    path: /mosaic/configure/modes/index
-    id: /mosaic/configure/modes/index.mdx
-  - label: Snapshot AWS/S3 mode
-    path: /mosaic/configure/modes/snapshot-s3
-    id: /mosaic/configure/modes/snapshot-s3.mdx
+  - label: Layouts
+    path: /mosaic/configure/layouts/index
+    id: /mosaic/configure/layouts/index.mdx
+  - label: Landing Layout
+    path: /mosaic/configure/layouts/landing
+    id: /mosaic/configure/layouts/landing.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.335
-  time: 20100
-  words: 67
+  minutes: 0.325
+  time: 19500
+  words: 65
 tableOfContents:
   - level: 2
-    id: generating-a-snapshot
-    text: Generating a snapshot
-  - level: 2
-    id: uploading-a-snapshot-to-s3
-    text: Uploading a snapshot to S3
+    id: page-geometry
+    text: Page geometry
 navigation:
   prev:
-    title: Snapshot file mode
-    route: /mosaic/configure/modes/snapshot-file
+    title: Detail Technical
+    route: /mosaic/configure/layouts/detail-technical
   next:
-    title: Theming Your Site
-    route: /mosaic/configure/theme/index
+    title: Product Discover Layout
+    route: /mosaic/configure/layouts/product-discover
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -362,32 +359,30 @@ sidebarData:
           link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
-# {meta.title}
+# Layout: Landing
 
-In `snapshot-s3` mode a snapshot can be loaded from a pre-configured AWS S3 bucket.
+Initialize with `layout: Landing` in your page's frontmatter.
 
-To use `snapshot-s3` mode
+Use this layout as a landing page to show large branded visuals, and high-level content about the
+line of business.
 
-```
-> export MOSAIC_MODE="snapshot-s3"
-> MOSAIC_S3_BUCKET="<your S3 bucket id>"
-> MOSAIC_S3_REGION="<your S3 region>"
-> MOSAIC_S3_ACCESS_KEY_ID="<your S3 access key>"
-> MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret access key>"
-```
+Set the tone and voice for your LOB’s experience.
 
-## Generating a snapshot
+Use components that support your content with places to insert visuals, share any stats or an
+introduction of LOB’s story.
 
-To generate a snapshot, run
+Use heading styles to show the grouping of content of a section.
 
-```
-yarn gen:snapshot
-```
+## Page geometry
 
-## Uploading a snapshot to S3
+<p>
+  <svg viewBox="0 0 200 260" width="200">
+    <rect fill="none" height="258" stroke="#4c505b" strokeWidth="2" width="198" x="1" y="1" />
 
-To upload a snapshot to S3, define the required environment variables and run
+    <rect fill="none" height="20" stroke="#4c505b" strokeWidth="2" width="188" x="6" y="6" />
 
-```
-yarn mosaic upload -S <path to snapshot file>
-```
+    <rect fill="none" height="196" stroke="#ea7319" strokeWidth="2" width="188" x="6" y="32" />
+
+    <rect fill="none" height="20" stroke="#4c505b" strokeWidth="2" width="188" x="6" y="234" />
+  </svg>
+</p>
