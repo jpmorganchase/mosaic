@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-serialisers
 
+## 0.1.0-beta.49
+
+### Patch Changes
+
+- Updated dependencies [425b5a00]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.49
+
 ## 0.1.0-beta.48
 
 ### Patch Changes

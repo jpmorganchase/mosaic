@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.49
+
+### Patch Changes
+
+- 425b5a00: ### Feature
+
+  Add new plugin lifecycle method `shouldUpdateNamespaceSources`.
+
+  This method is called when a source emits new pages and there is another source(s) that share the same namespace.
+
+  If `shouldUpdateNamespaceSources` returns `true` then the other source(s), i.e., not the source that triggered the initial update, will call `afterUpdate` again.
+
 ## 0.1.0-beta.48
 
 ### Patch Changes
