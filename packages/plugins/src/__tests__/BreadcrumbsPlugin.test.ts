@@ -1,4 +1,3 @@
-import { serialize } from 'v8';
 import BreadcrumbsPlugin, { BreadcrumbsPluginPage } from '../BreadcrumbsPlugin';
 
 const pages: BreadcrumbsPluginPage[] = [
