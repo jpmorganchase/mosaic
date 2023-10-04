@@ -9,17 +9,17 @@ import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
 
 const MOSAIC_ADMIN_PREFIX = '_mosaic_';
 
-export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
-  const server = Fastify({
-    logger: false
-  });
+export const server = Fastify({
+  logger: false
+});
 
+export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
   await server.register(middie);
   await server.register(fastifyMosaic, { config, scope });
   await server.register(fastifyMosaicWorkflows);
   await server.register(fastifyMosaicAdmin, {
     prefix: MOSAIC_ADMIN_PREFIX,
-    enableSourcePush: process.env.MOSAIC_ENABLE_SOURCE_PUSH !== 'true'
+    enableSourcePush: config.enableSourcePush
   });
 
   server.use(cors());
@@ -40,5 +40,5 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
       process.exit(1);
     }
   };
-  start();
+  await start();
 }

@@ -24,7 +24,12 @@ export const mosaicConfigSchema = z.object({
   schedule: sourceScheduleSchema.optional().default({
     checkIntervalMins: 30,
     initialDelayMs: 1000
-  })
+  }),
+  /**
+   * If true, allows source definitions to be pushed to Mosaic on demand.
+   * Only 'remote' source definitions will work as these will pull in the content from a remote source
+   */
+  enableSourcePush: z.boolean().optional().default(false)
 });
 
 export type MosaicConfig = z.infer<typeof mosaicConfigSchema>;
