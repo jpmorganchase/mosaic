@@ -21,11 +21,27 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
   const { config, fs, core } = fastify.mosaic;
 
   /**
-   * Return the JSON config that Mosaic was started with
+   * Return the JSON config that Mosaic was started with.
+   * Credentials for git sources are sanitized.
    */
   fastify.get(`/${prefix}/config`, async (_req, reply) => {
     reply.header('Content-Type', 'application/json');
-    reply.send(config);
+
+    const sourcesWithoutCredentials = config.sources.map(source => {
+      const sourceOptions = source?.options as { credentials?: string };
+      const credentials = sourceOptions?.credentials as string;
+
+      if (credentials && source.modulePath === '@jpmorganchase/mosaic-source-git-repo') {
+        const parts = credentials.split(':') || [];
+        if (parts.length > 0) {
+          source.options = { ...sourceOptions, credentials: `${parts[0]}: ********` };
+        }
+      }
+
+      return source;
+    });
+    const sanitizedConfig = { ...config, sources: sourcesWithoutCredentials };
+    reply.send(sanitizedConfig);
   });
 
   /**
@@ -47,7 +63,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
 
     const response = sources.map(source => {
       const sourceFromConfig = config.sources[source.index];
-      const sourceOptions = sourceFromConfig.options as { credentials?: string } | undefined;
+      const sourceOptions = sourceFromConfig?.options as { credentials?: string } | undefined;
 
       if (
         sourceOptions?.credentials &&
@@ -79,6 +95,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
     async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply) => {
       reply.header('Content-Type', 'application/text');
       const { name } = req.body;
+
       if (name) {
         try {
           await core.stopSource(String(name));
@@ -87,6 +104,8 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
           console.error(e);
           reply.status(500).send(`${name} not stopped.  Check you have the right name!`);
         }
+      } else {
+        reply.status(500).send('No source name provided.');
       }
     }
   );
@@ -107,6 +126,8 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
           console.error(e);
           reply.status(500).send(`${name} not restarted.  Check you have the right name!`);
         }
+      } else {
+        reply.status(500).send('No source name provided.');
       }
     }
   );
@@ -120,7 +141,9 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
       try {
         const { definition, isPreview = true } = req.body;
 
-        if (options.enableSourcePush) {
+        reply.header('Content-Type', 'application/text');
+
+        if (!options.enableSourcePush) {
           throw new Error('Source push is disabled.');
         }
 
