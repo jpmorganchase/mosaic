@@ -7,8 +7,14 @@ export interface IconProps {
   /** Name of the icon */
   name: IconNames;
   /** Size of Icon */
-  size?: number;
+  size?: number | 'small' | 'medium' | 'large';
 }
+
+const iconSizeMap = {
+  small: 1,
+  medium: 2,
+  large: 3
+};
 
 const deprecatedIcons = {
   tick: 'successTick'
@@ -35,9 +41,10 @@ export const Icon: React.FC<React.PropsWithChildren<IconProps>> = ({
     throw new Error(`icon ${currentIconName} is not supported`);
   }
   const IconComponent = icons[currentIconName];
+  const iconSize = typeof size === 'string' ? iconSizeMap[size] : size;
   return (
     <span className={className} {...rest}>
-      <IconComponent size={size} />
+      <IconComponent size={iconSize} />
     </span>
   );
 };
