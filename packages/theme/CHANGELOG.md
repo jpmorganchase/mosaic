@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.51
+
+### Patch Changes
+
+- 56bbad4b: Removed overrides for Salt icon color and size.
+  Mosaic Icon component now uses number for size.
+
 ## 0.1.0-beta.50
 
 ## 0.1.0-beta.49
