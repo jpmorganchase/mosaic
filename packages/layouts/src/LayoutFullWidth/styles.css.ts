@@ -4,6 +4,9 @@ import { style } from '@vanilla-extract/css';
 export default {
   root: style([
     style({
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
       maxWidth: `${config.main.width}px`,
       marginLeft: 'auto',
       marginRight: 'auto'
