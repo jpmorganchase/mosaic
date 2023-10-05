@@ -35,7 +35,7 @@
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.49",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.49",
     "rxjs": "^7.5.5",
-    "zod": "^3.19.1"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "msw": "^0.47.4"

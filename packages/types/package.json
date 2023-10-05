@@ -31,6 +31,6 @@
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.49",
     "memfs": "^3.4.12",
     "rxjs": "^7.5.5",
-    "zod": "^3.19.1"
+    "zod": "^3.22.3"
   }
 }
