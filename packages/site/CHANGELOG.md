@@ -1,5 +1,27 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.50
+
+### Patch Changes
+
+- c12e80ee: ### Fixes
+
+  Prevent full-width layouts from shrinking when there is not enough content to use up the full width of the page.
+
+- Updated dependencies [c12e80ee]
+- Updated dependencies [2f015976]
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.50
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.50
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.50
+  - @jpmorganchase/mosaic-components@0.1.0-beta.50
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.50
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.50
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.50
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.50
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.50
+  - @jpmorganchase/mosaic-store@0.1.0-beta.50
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.50
+
 ## 0.1.0-beta.49
 
 ### Patch Changes
