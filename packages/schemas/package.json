@@ -31,6 +31,6 @@
     "lint": "eslint --ignore-pattern \"**/__tests__/**\""
   },
   "dependencies": {
-    "zod": "^3.19.1"
+    "zod": "^3.22.3"
   }
 }
