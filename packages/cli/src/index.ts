@@ -22,7 +22,7 @@ const options = program.opts();
 if (program.args[0] === 'export:static') {
   exportStatic();
 } else if (program.args[0] === 'serve:static') {
-  serveStatic(path.resolve(process.cwd(), options.out));
+  serveStatic(path.resolve(process.cwd(), options.out), options.port);
 } else {
   let config;
   if (options.config !== undefined) {

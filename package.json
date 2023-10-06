@@ -11,9 +11,6 @@
   "engines": {
     "node": ">=16.10.0 || >=18.0.0"
   },
-  "bin": {
-    "mosaic": "yarn workspace @jpmorganchase/mosaic-cli"
-  },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
     "build": "turbo run build",

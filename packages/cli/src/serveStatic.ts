@@ -1,31 +1,24 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
-import path from 'node:path';
-import express from 'express';
+import Fastify from 'fastify';
+import fastifyStatic from '@fastify/static';
 
-export default function serveStatic(staticPath, rootURL = 'mosaic/index.html', port = 3000) {
-  function loadPage(res, fullPath) {
-    const extension = path.extname(fullPath) || 'html';
-    if (extension !== 'html') {
-      return;
+export default async function serveStatic(staticPath, port) {
+  const start = async () => {
+    try {
+      await server.listen({ port });
+      console.log(`[Mosaic] Listening on port ${port}`);
+    } catch (err) {
+      server.log.error(err);
+      process.exit(1);
     }
-    const fsPath = `${fullPath}.${extension}`;
-    fs.access(fsPath, fs.constants.F_OK, err => {
-      if (err) {
-        res.sendFile(path.join(staticPath, `404.html`));
-      } else {
-        res.sendFile(fsPath);
-      }
-    });
-  }
+  };
 
-  const server = express();
-  server.use(express.static(staticPath));
-  server.get(/^\/$/, (_req, res) => {
-    loadPage(res, path.join(staticPath, rootURL));
+  const server = Fastify();
+  await server.register(fastifyStatic, {
+    root: staticPath
   });
-  server.get(`*`, (req, res) => {
-    loadPage(res, path.join(staticPath, req.path));
+  server.setNotFoundHandler((_request, reply) => {
+    reply.sendFile(`404.html`);
   });
-  server.listen(port, () => console.log(`Server is listening on port ${port}`));
+  await start();
 }

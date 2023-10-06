@@ -26,7 +26,7 @@
     "e2e": "npx playwright test",
     "e2e:codegen": "npx playwright codegen localhost:3000",
     "serve:fs": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
-    "serve:static": "yarn mosaic serve:static -o ./out",
+    "serve:static": "yarn mosaic serve:static -o ./out -p 3000",
     "serve": "concurrently --kill-others \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\" -p 8080"
   },
   "dependencies": {
