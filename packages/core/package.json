@@ -32,9 +32,7 @@
     "directory": "packages/core"
   },
   "devDependencies": {
-    "express": "^4.17.1",
-    "cors": "^2.8.5",
-    "@types/express": "^4.17.13"
+    "cors": "^2.8.5"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
