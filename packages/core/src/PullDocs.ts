@@ -5,7 +5,8 @@ import { Volume } from 'memfs';
 import {
   MosaicConfig,
   SourceModuleDefinition,
-  PluginModuleDefinition
+  PluginModuleDefinition,
+  IUnionVolume
 } from '@jpmorganchase/mosaic-types';
 import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
@@ -24,7 +25,7 @@ export default class PullDocs {
   #sourceDefinitions: SourceModuleDefinition[];
   #sourceManager: SourceManager;
   #ufs = new Union() as IUnionFs & { fss: MutableVolume[] };
-  #vfs: UnionVolume;
+  #vfs: IUnionVolume;
 
   /**
    *
