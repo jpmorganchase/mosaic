@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import fp from 'fastify-plugin';
 import MosaicCore from '@jpmorganchase/mosaic-core';
 import { MosaicConfig, IUnionVolume } from '@jpmorganchase/mosaic-types';
@@ -25,7 +25,7 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
   /**
    * General content fetch
    */
-  fastify.get('/*', async (req, reply) => {
+  fastify.get('/*', async (req: FastifyRequest, reply: FastifyReply) => {
     try {
       if (await fs.promises.exists(req.url)) {
         if ((await fs.promises.stat(req.url)).isDirectory()) {
@@ -37,7 +37,7 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
             reply.status(404);
           }
         } else {
-          const pagePath = await fs.promises.realpath(req.url);
+          const pagePath = String(await fs.promises.realpath(req.url));
           if (path.extname(pagePath) === '.mdx') {
             reply.header('Content-Type', 'text/mdx');
           } else if (path.extname(pagePath) === '.json') {

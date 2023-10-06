@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import fp from 'fastify-plugin';
 import path from 'node:path';
 
@@ -22,11 +22,12 @@ function mosaicWorkflows(fastify: FastifyInstance, _options, next) {
    */
   fastify.post(
     '/workflows',
-    async (req: FastifyRequest<{ Body: WorkflowRequestBodyType }>, reply) => {
+    async (req: FastifyRequest<{ Body: WorkflowRequestBodyType }>, reply: FastifyReply) => {
       try {
-        const { user, route: routeReq, markdown, name } = req.body;
+        const { route: routeReq, name, ...restParams } = req.body;
 
         if (!name) {
+          reply.header('Content-Type', 'application/text');
           throw new Error('Workflow name is required');
         }
 
@@ -35,9 +36,12 @@ function mosaicWorkflows(fastify: FastifyInstance, _options, next) {
             ? path.posix.join(routeReq, 'index')
             : routeReq;
           const pagePath = (await fs.promises.realpath(route)) as string;
-          const result = await core.triggerWorkflow(name, pagePath, { user, markdown });
+          const result = await core.triggerWorkflow(name, pagePath, { ...restParams });
           reply.header('Content-Type', 'application/json');
           reply.send(result);
+        } else {
+          reply.header('Content-Type', 'application/text');
+          reply.status(404).send(`${routeReq} not found`);
         }
       } catch (e) {
         console.error(e);

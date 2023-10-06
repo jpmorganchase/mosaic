@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
 import fp from 'fastify-plugin';
 
@@ -24,7 +24,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    * Return the JSON config that Mosaic was started with.
    * Credentials for git sources are sanitized.
    */
-  fastify.get(`/${prefix}/config`, async (_req, reply) => {
+  fastify.get(`/${prefix}/config`, async (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
 
     const sourcesWithoutCredentials = config.sources.map(source => {
@@ -47,7 +47,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
   /**
    * Return the filesystem as JSON
    */
-  fastify.get(`/${prefix}/content/dump`, (_req, reply) => {
+  fastify.get(`/${prefix}/content/dump`, (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
     reply.send(fs.toJSON());
   });
@@ -57,7 +57,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    * Will provide the generated name of each source
    * which can be used to stop/restart the source
    */
-  fastify.get(`/${prefix}/sources/list`, async (_req, reply) => {
+  fastify.get(`/${prefix}/sources/list`, async (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
     const sources = await core.listSources();
 
@@ -92,7 +92,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.put(
     `/${prefix}/source/stop`,
-    async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply) => {
+    async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply: FastifyReply) => {
       reply.header('Content-Type', 'application/text');
       const { name } = req.body;
 
@@ -115,7 +115,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.put(
     `/${prefix}/source/restart`,
-    async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply) => {
+    async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply: FastifyReply) => {
       reply.header('Content-Type', 'application/text');
       const { name } = req.body;
       if (name) {
@@ -137,7 +137,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.post(
     `/${prefix}/source/add`,
-    async (req: FastifyRequest<{ Body: AddSourceRequestBodyType }>, reply) => {
+    async (req: FastifyRequest<{ Body: AddSourceRequestBodyType }>, reply: FastifyReply) => {
       try {
         const { definition, isPreview = true } = req.body;
 
