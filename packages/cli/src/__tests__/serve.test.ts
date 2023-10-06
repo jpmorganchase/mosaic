@@ -44,10 +44,28 @@ const mosaicConfig: MosaicConfig = {
 const mockFilesystemJSON = { '/file/path': { title: 'test 1' } };
 const mockStopSourceFn = jest.fn().mockResolvedValue(true);
 const mockAddSourceFn = jest.fn();
+const mockTriggerWorkflowFn = jest.fn();
 const mockRestartSourceFn = jest.fn().mockResolvedValue(true);
 const mockListSourcesFn = jest
   .fn()
   .mockResolvedValue(mosaicConfig.sources.map((source, index) => ({ index, ...source })));
+
+const mockExistsFn = jest.fn();
+const mockStatFn = jest.fn();
+const mockRealpathFn = jest.fn();
+const mockReadFileFn = jest.fn();
+const mockScopeFn = jest.fn();
+
+const mockFileSystem = {
+  scope: mockScopeFn,
+  toJSON: jest.fn().mockReturnValue(mockFilesystemJSON),
+  promises: {
+    exists: mockExistsFn,
+    stat: mockStatFn,
+    realpath: mockRealpathFn,
+    readFile: mockReadFileFn
+  }
+};
 
 jest.mock('@jpmorganchase/mosaic-core', () => {
   return jest.fn().mockImplementation(() => {
@@ -57,7 +75,8 @@ jest.mock('@jpmorganchase/mosaic-core', () => {
       restartSource: mockRestartSourceFn,
       stopSource: mockStopSourceFn,
       listSources: mockListSourcesFn,
-      filesystem: { scope: jest.fn(), toJSON: jest.fn().mockReturnValue(mockFilesystemJSON) }
+      triggerWorkflow: mockTriggerWorkflowFn,
+      filesystem: mockFileSystem
     };
   });
 });
@@ -84,130 +103,132 @@ describe('GIVEN the serve command', () => {
     expect(server.mosaic.fs).toBeDefined();
   });
 
-  test('THEN the config Admin API returns the mosaic config', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: '/_mosaic_/config'
-    });
-    expect(response.statusCode).toEqual(200);
-    const responseConfig = JSON.parse(response.payload);
-    expect(responseConfig).toEqual(mosaicConfig);
-    expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+  describe('AND WHEN using the Admin APIs', () => {
+    test('THEN the config Admin API returns the mosaic config', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/config'
+      });
+      expect(response.statusCode).toEqual(200);
+      const responseConfig = JSON.parse(response.payload);
+      expect(responseConfig).toEqual(mosaicConfig);
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
 
-    // confirm credentials are sanitized for git repo sources
-    expect(responseConfig.sources[1].options.credentials).toEqual('david: ********');
-  });
-
-  test('THEN the list sources Admin API returns the running sources', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: '/_mosaic_/sources/list'
-    });
-    expect(mockListSourcesFn).toBeCalledTimes(1);
-    expect(response.statusCode).toEqual(200);
-    expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
-    const sources = JSON.parse(response.payload);
-    expect(sources).toEqual(mosaicConfig.sources);
-
-    // confirm credentials are sanitized for git repo sources
-    expect(sources[1].options.credentials).toEqual('david: ********');
-  });
-
-  test('THEN the Get Filesystem Admin API returns the current fs content', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: '/_mosaic_/content/dump'
+      // confirm credentials are sanitized for git repo sources
+      expect(responseConfig.sources[1].options.credentials).toEqual('david: ********');
     });
 
-    expect(response.statusCode).toEqual(200);
-    expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
-    expect(JSON.parse(response.payload)).toEqual(mockFilesystemJSON);
-  });
+    test('THEN the list sources Admin API returns the running sources', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/sources/list'
+      });
+      expect(mockListSourcesFn).toBeCalledTimes(1);
+      expect(response.statusCode).toEqual(200);
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+      const sources = JSON.parse(response.payload);
+      expect(sources).toEqual(mosaicConfig.sources);
 
-  test('THEN the Stop Source Admin API stops a source if a valid name is given', async () => {
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/stop',
-      payload: { name: 'stop-me' }
+      // confirm credentials are sanitized for git repo sources
+      expect(sources[1].options.credentials).toEqual('david: ********');
     });
 
-    expect(mockStopSourceFn).toBeCalledTimes(1);
-    expect(mockStopSourceFn.mock.calls[0][0]).toEqual('stop-me');
-    expect(response.statusCode).toEqual(200);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('stop-me stopped successfully.');
-  });
+    test('THEN the Get Filesystem Admin API returns the current fs content', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/content/dump'
+      });
 
-  test('THEN the Stop Source Admin API returns an error if a source name is not provided', async () => {
-    mockStopSourceFn.mockClear();
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/stop',
-      payload: { something: 'stop-me' }
+      expect(response.statusCode).toEqual(200);
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+      expect(JSON.parse(response.payload)).toEqual(mockFilesystemJSON);
     });
 
-    expect(mockStopSourceFn).toBeCalledTimes(0);
-    expect(response.statusCode).toEqual(500);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('No source name provided.');
-  });
+    test('THEN the Stop Source Admin API stops a source if a valid name is given', async () => {
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/stop',
+        payload: { name: 'stop-me' }
+      });
 
-  test('THEN the Stop Source Admin API returns an error if the source cannot be stopped', async () => {
-    mockStopSourceFn.mockReset();
-    mockStopSourceFn.mockRejectedValueOnce(new Error('oopsy'));
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/stop',
-      payload: { name: 'stop-me' }
+      expect(mockStopSourceFn).toBeCalledTimes(1);
+      expect(mockStopSourceFn.mock.calls[0][0]).toEqual('stop-me');
+      expect(response.statusCode).toEqual(200);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('stop-me stopped successfully.');
     });
 
-    expect(mockStopSourceFn).toBeCalledTimes(1);
-    expect(response.statusCode).toEqual(500);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('stop-me not stopped.  Check you have the right name!');
-  });
+    test('THEN the Stop Source Admin API returns an error if a source name is not provided', async () => {
+      mockStopSourceFn.mockClear();
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/stop',
+        payload: { something: 'stop-me' }
+      });
 
-  test('THEN the Restart Source Admin API restarts a source if a valid name is given', async () => {
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/restart',
-      payload: { name: 'restart-me' }
+      expect(mockStopSourceFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(500);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('No source name provided.');
     });
 
-    expect(mockRestartSourceFn).toBeCalledTimes(1);
-    expect(mockRestartSourceFn.mock.calls[0][0]).toEqual('restart-me');
-    expect(response.statusCode).toEqual(200);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('restart-me restarted successfully.');
-  });
+    test('THEN the Stop Source Admin API returns an error if the source cannot be stopped', async () => {
+      mockStopSourceFn.mockReset();
+      mockStopSourceFn.mockRejectedValueOnce(new Error('oopsy'));
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/stop',
+        payload: { name: 'stop-me' }
+      });
 
-  test('THEN the Restart Source Admin API returns an error if a source name is not provided', async () => {
-    mockRestartSourceFn.mockClear();
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/restart',
-      payload: { something: 'restart-me' }
+      expect(mockStopSourceFn).toBeCalledTimes(1);
+      expect(response.statusCode).toEqual(500);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('stop-me not stopped.  Check you have the right name!');
     });
 
-    expect(mockRestartSourceFn).toBeCalledTimes(0);
-    expect(response.statusCode).toEqual(500);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('No source name provided.');
-  });
+    test('THEN the Restart Source Admin API restarts a source if a valid name is given', async () => {
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/restart',
+        payload: { name: 'restart-me' }
+      });
 
-  test('THEN the Restart Source Admin API returns an error if the source cannot be stopped', async () => {
-    mockRestartSourceFn.mockReset();
-    mockRestartSourceFn.mockRejectedValueOnce(new Error('oopsy'));
-    const response = await server.inject({
-      method: 'PUT',
-      url: '/_mosaic_/source/restart',
-      payload: { name: 'restart-me' }
+      expect(mockRestartSourceFn).toBeCalledTimes(1);
+      expect(mockRestartSourceFn.mock.calls[0][0]).toEqual('restart-me');
+      expect(response.statusCode).toEqual(200);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('restart-me restarted successfully.');
     });
 
-    expect(mockRestartSourceFn).toBeCalledTimes(1);
-    expect(response.statusCode).toEqual(500);
-    expect(response.headers['content-type']).toEqual('application/text');
-    expect(response.payload).toEqual('restart-me not restarted.  Check you have the right name!');
+    test('THEN the Restart Source Admin API returns an error if a source name is not provided', async () => {
+      mockRestartSourceFn.mockClear();
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/restart',
+        payload: { something: 'restart-me' }
+      });
+
+      expect(mockRestartSourceFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(500);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('No source name provided.');
+    });
+
+    test('THEN the Restart Source Admin API returns an error if the source cannot be stopped', async () => {
+      mockRestartSourceFn.mockReset();
+      mockRestartSourceFn.mockRejectedValueOnce(new Error('oopsy'));
+      const response = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/restart',
+        payload: { name: 'restart-me' }
+      });
+
+      expect(mockRestartSourceFn).toBeCalledTimes(1);
+      expect(response.statusCode).toEqual(500);
+      expect(response.headers['content-type']).toEqual('application/text');
+      expect(response.payload).toEqual('restart-me not restarted.  Check you have the right name!');
+    });
   });
 
   describe('AND WHEN source pushing is enabled', () => {
@@ -339,6 +360,252 @@ describe('GIVEN the serve command', () => {
       expect(response.statusCode).toEqual(500);
       expect(response.headers['content-type']).toEqual('application/text');
       expect(response.payload).toEqual('oopsy');
+    });
+  });
+
+  describe('AND WHEN running a workflow', () => {
+    beforeEach(() => {
+      mockExistsFn.mockClear();
+      mockRealpathFn.mockClear();
+      mockStatFn.mockClear();
+      mockTriggerWorkflowFn.mockClear();
+    });
+
+    test('THEN the workflow is run if the page exists', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockResolvedValueOnce(false) });
+      mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
+      const response = await server.inject({
+        method: 'POST',
+        url: '/workflows',
+        payload: {
+          user: { name: 'David Reid', email: 'email.address@something.com' },
+          route: '/file/path',
+          markdown: '### This is a title',
+          name: 'save'
+        }
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockRealpathFn).toBeCalledTimes(1);
+      expect(mockStatFn).toBeCalledTimes(1);
+      expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
+      expect(mockTriggerWorkflowFn.mock.calls[0][0]).toEqual('save');
+      expect(mockTriggerWorkflowFn.mock.calls[0][1]).toEqual('/file/path');
+      expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual({
+        markdown: '### This is a title',
+        user: { name: 'David Reid', email: 'email.address@something.com' }
+      });
+      expect(response.statusCode).toEqual(200);
+      expect(response.payload).toEqual('workflow result');
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+    });
+
+    test('THEN the workflow is run for index page if directory path is provided', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path/index');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValue(true) });
+      mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
+      const response = await server.inject({
+        method: 'POST',
+        url: '/workflows',
+        payload: {
+          user: { name: 'David Reid', email: 'email.address@something.com' },
+          route: '/file/path',
+          markdown: '### This is a title',
+          name: 'save'
+        }
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockRealpathFn).toBeCalledTimes(1);
+      expect(mockRealpathFn.mock.calls[0][0]).toEqual('/file/path/index');
+      expect(mockStatFn).toBeCalledTimes(1);
+      expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
+      expect(mockTriggerWorkflowFn.mock.calls[0][0]).toEqual('save');
+      expect(mockTriggerWorkflowFn.mock.calls[0][1]).toEqual('/file/path/index');
+      expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual({
+        markdown: '### This is a title',
+        user: { name: 'David Reid', email: 'email.address@something.com' }
+      });
+      expect(response.statusCode).toEqual(200);
+      expect(response.payload).toEqual('workflow result');
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+    });
+
+    test('THEN the workflow is not run without providing the workflow name', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/workflows',
+        payload: {
+          user: { name: 'David Reid', email: 'email.address@something.com' },
+          route: '/file/path',
+          markdown: '### This is a title'
+        }
+      });
+
+      expect(mockTriggerWorkflowFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(500);
+      expect(response.payload).toEqual('Workflow name is required');
+      expect(response.headers['content-type']).toEqual('application/text');
+    });
+
+    test('THEN the workflow is not run if the page does not exist', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/workflows',
+        payload: {
+          user: { name: 'David Reid', email: 'email.address@something.com' },
+          route: '/file/path',
+          markdown: '### This is a title',
+          name: 'save'
+        }
+      });
+
+      expect(mockTriggerWorkflowFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(404);
+      expect(response.payload).toEqual('/file/path not found');
+      expect(response.headers['content-type']).toEqual('application/text');
+    });
+  });
+
+  describe('AND WHEN requesting content', () => {
+    beforeEach(() => {
+      mockExistsFn.mockClear();
+      mockRealpathFn.mockClear();
+      mockReadFileFn.mockClear();
+      mockStatFn.mockClear();
+    });
+
+    test('THEN an MDX page is returned if it exists', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.mdx');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockReadFileFn.mockResolvedValueOnce('Some page content');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockRealpathFn).toBeCalledTimes(1);
+      expect(mockStatFn).toBeCalledTimes(1);
+      expect(mockReadFileFn).toBeCalledTimes(1);
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.payload).toEqual('Some page content');
+      expect(response.headers['content-type']).toEqual('text/mdx');
+    });
+
+    test('THEN an JSON page is returned if it exists', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.json');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockReadFileFn.mockResolvedValueOnce({ content: 'some content' });
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockRealpathFn).toBeCalledTimes(1);
+      expect(mockStatFn).toBeCalledTimes(1);
+      expect(mockReadFileFn).toBeCalledTimes(1);
+
+      expect(response.statusCode).toEqual(200);
+      expect(JSON.parse(response.payload)).toEqual({ content: 'some content' });
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+    });
+
+    test('THEN an XML page is returned if it exists', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockReadFileFn.mockResolvedValueOnce('some xml');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockRealpathFn).toBeCalledTimes(1);
+      expect(mockStatFn).toBeCalledTimes(1);
+      expect(mockReadFileFn).toBeCalledTimes(1);
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.payload).toEqual('some xml');
+      expect(response.headers['content-type']).toEqual('application/xml');
+    });
+
+    test('THEN index pages are redirected if found', async () => {
+      mockExistsFn.mockResolvedValue(true);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockReadFileFn.mockResolvedValueOnce('some xml');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(2);
+      expect(mockReadFileFn).toBeCalledTimes(0);
+
+      expect(response.statusCode).toEqual(302);
+      expect(JSON.parse(response.payload)).toEqual({ redirect: '/file/path/index' });
+      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+    });
+
+    test('THEN pages return 404 if not found', async () => {
+      mockExistsFn.mockResolvedValueOnce(false);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockReadFileFn.mockResolvedValueOnce('some xml');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockReadFileFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(404);
+    });
+
+    test('THEN index pages return 404 if not found', async () => {
+      mockExistsFn.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+      mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockReadFileFn.mockResolvedValueOnce('some xml');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(2);
+      expect(mockReadFileFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(404);
+    });
+
+    test('THEN returns a 500 if an error occurs', async () => {
+      mockExistsFn.mockRejectedValueOnce(new Error('oopsy'));
+      mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
+      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockReadFileFn.mockResolvedValueOnce('some xml');
+
+      const response = await server.inject({
+        method: 'GET',
+        url: '/file/path'
+      });
+
+      expect(mockExistsFn).toBeCalledTimes(1);
+      expect(mockReadFileFn).toBeCalledTimes(0);
+      expect(response.statusCode).toEqual(500);
     });
   });
 });
