@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "moduleResolution": "Node",
     "isolatedModules": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": true,
     "allowJs": false,
     "strict": true,
