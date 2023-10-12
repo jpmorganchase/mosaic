@@ -2,7 +2,6 @@ import React, { FC, forwardRef, Ref } from 'react';
 import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import classnames from 'clsx';
 
-import { useResolveRelativeUrl } from '../BaseUrlProvider';
 import styles from './styles.css';
 
 export type ImageProps = Omit<NextImageProps, 'src'> & {
@@ -31,7 +30,6 @@ export const Image: FC<ImageProps> = forwardRef(
     },
     ref: Ref<HTMLDivElement>
   ) => {
-    const resolvedSrc = useResolveRelativeUrl(src);
     return (
       <div className={classnames(styles.root, className)} ref={ref}>
         {fill || (width && height) ? (
@@ -41,16 +39,12 @@ export const Image: FC<ImageProps> = forwardRef(
             {...rest}
             height={height}
             fill={fill}
-            src={src.match(/^(http[s]?:)?\/{1,2}/) === null ? resolvedSrc : src}
+            src={src}
             width={width}
             unoptimized={unoptimized}
           />
         ) : (
-          <img
-            alt={alt}
-            className={styles.img}
-            src={src.match(/^(http[s]?:)?\/{1,2}/) === null ? resolvedSrc : src}
-          />
+          <img alt={alt} className={styles.img} src={src} />
         )}
       </div>
     );

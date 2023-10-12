@@ -7,7 +7,6 @@ import { useColorMode, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
-import { SearchInput } from '../SearchInput';
 import styles from './styles.css';
 
 type ActionMenuItem = {
@@ -20,7 +19,7 @@ function toUpperFirst(str) {
   return `${str.substr(0, 1).toUpperCase()}${str.toLowerCase().substr(1)}`;
 }
 
-export const AppHeaderControls: React.FC = () => {
+export const AppHeaderControls = ({ children }) => {
   const router = useRouter();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
@@ -72,7 +71,7 @@ export const AppHeaderControls: React.FC = () => {
   return (
     <div className={styles.root}>
       {isLoginEnabled && <EditorControls enabled={isLoggedIn} />}
-      <SearchInput />
+      {children}
       {isLoginEnabled && (
         <div className={styles.userInfo}>
           {isLoggedIn ? (

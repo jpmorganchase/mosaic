@@ -1,26 +1,36 @@
-import classnames from 'classnames';
+import classnames from 'clsx';
 import {
   BaseUrlProvider,
   ImageProvider,
   LinkProvider,
-  Metadata,
   SessionProvider,
   StoreProvider,
   ThemeProvider
 } from '@jpmorganchase/mosaic-site-components';
-import { LayoutProvider, layouts } from '@jpmorganchase/mosaic-layouts';
+import {
+  AppHeader,
+  Breadcrumbs,
+  Footer,
+  DocPaginator,
+  TableOfContents
+} from '@jpmorganchase/mosaic-site-components-next';
+import { SiteState } from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { loadPage, LoadPageError } from '@jpmorganchase/mosaic-site-mdx-loader';
 import { notFound } from 'next/navigation';
-
+import { LayoutBase, layouts } from '@jpmorganchase/mosaic-layouts';
 import fontClassNames from '../fonts';
+
+function getLayoutComponent(layout = 'FullWidth') {
+  return layouts?.[layout];
+}
 
 export default async function Layout({ params: { slug }, children }) {
   const route = `/${slug.join('/')}`;
-  let store = {};
+  let metadata: Partial<SiteState> = {};
   try {
     const { data = {} } = await loadPage(route);
-    store = data;
+    metadata = data;
   } catch (error) {
     const loadPageError = error as LoadPageError;
     if (loadPageError.statusCode === 404) {
@@ -29,19 +39,30 @@ export default async function Layout({ params: { slug }, children }) {
       throw error;
     }
   }
+
+  const LayoutComponent = getLayoutComponent(metadata.layout);
+
   return (
     <SessionProvider>
-      <StoreProvider value={store}>
-        <Metadata />
-        <BaseUrlProvider>
-          <LinkProvider>
-            <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
-              <ImageProvider>
-                <LayoutProvider layoutComponents={layouts}>{children}</LayoutProvider>
-              </ImageProvider>
-            </ThemeProvider>
-          </LinkProvider>
-        </BaseUrlProvider>
+      <StoreProvider value={metadata}>
+        <LinkProvider>
+          <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
+            <ImageProvider>
+              <LayoutBase Header={<AppHeader path={route} fetcher={loadPage} />}>
+                <LayoutComponent
+                  FooterComponent={<Footer path={route} fetcher={loadPage} />}
+                  DocPaginatorComponent={
+                    <DocPaginator linkSuffix="Page" path={route} fetcher={loadPage} />
+                  }
+                  SecondarySidebarComponent={<TableOfContents path={route} fetcher={loadPage} />}
+                >
+                  <Breadcrumbs path={route} fetcher={loadPage} />
+                  {children}
+                </LayoutComponent>
+              </LayoutBase>
+            </ImageProvider>
+          </ThemeProvider>
+        </LinkProvider>
       </StoreProvider>
     </SessionProvider>
   );

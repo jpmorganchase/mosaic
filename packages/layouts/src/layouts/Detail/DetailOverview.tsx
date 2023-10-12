@@ -1,15 +1,7 @@
 import React from 'react';
 import { HelpLinks } from '@jpmorganchase/mosaic-components';
-import {
-  AppHeader,
-  BackLink,
-  Breadcrumbs,
-  DocPaginator,
-  Footer,
-  PageNavigation
-} from '@jpmorganchase/mosaic-site-components';
+import { BackLink, PageNavigation } from '@jpmorganchase/mosaic-site-components';
 
-import { LayoutBase } from '../../LayoutBase';
 import { LayoutColumns } from '../../LayoutColumns';
 import type { LayoutProps } from '../../types';
 import styles from './styles.css';
@@ -17,7 +9,8 @@ import styles from './styles.css';
 export const DetailOverview: React.FC<LayoutProps> = ({
   BackLinkProps,
   SidebarProps,
-  FooterProps,
+  FooterComponent,
+  DocPaginatorComponent,
   children
 }) => {
   const Sidebar = (
@@ -32,16 +25,9 @@ export const DetailOverview: React.FC<LayoutProps> = ({
     </>
   );
   return (
-    <LayoutBase Header={<AppHeader />}>
-      <LayoutColumns
-        PrimarySidebar={Sidebar}
-        SecondarySidebar={null}
-        Footer={<Footer {...FooterProps} />}
-      >
-        <Breadcrumbs />
-        {children}
-        <DocPaginator />
-      </LayoutColumns>
-    </LayoutBase>
+    <LayoutColumns PrimarySidebar={Sidebar} SecondarySidebar={null} Footer={FooterComponent}>
+      {children}
+      {DocPaginatorComponent}
+    </LayoutColumns>
   );
 };

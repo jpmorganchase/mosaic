@@ -4,7 +4,6 @@ import classnames from 'clsx';
 import styles from './styles.css';
 
 export interface LayoutFullWidthProps {
-  Header?: React.ReactElement;
   Footer?: React.ReactElement;
   children: React.ReactNode;
   className?: string;

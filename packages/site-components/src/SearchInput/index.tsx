@@ -1,15 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
-import { useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
 
-export function SearchInput() {
-  const { getSearchData } = useStoreActions();
-  const { searchIndex, searchConfig } = useSearchIndex();
+export function SearchInput({ searchIndex, searchConfig }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -46,7 +43,6 @@ export function SearchInput() {
   };
 
   useEffect(() => {
-    getSearchData();
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleEsc);
     return () => {

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["es2022", "DOM", "DOM.iterable"],
     "jsx": "react",
+    "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitAny": false,
     "emitDeclarationOnly": true,

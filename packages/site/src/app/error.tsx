@@ -10,7 +10,6 @@ import {
   ThemeProvider
 } from '@jpmorganchase/mosaic-site-components';
 import { Button } from '@jpmorganchase/mosaic-components';
-import { LayoutProvider } from '@jpmorganchase/mosaic-layouts';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 
 import fontClassNames from './fonts';
@@ -23,18 +22,16 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
       <StoreProvider value={store}>
         <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
           <ImageProvider>
-            <LayoutProvider>
-              <Page500 description={error.message}>
-                <Button
-                  onClick={
-                    // Attempt to recover by trying to re-render the segment
-                    () => reset()
-                  }
-                >
-                  Try Again
-                </Button>
-              </Page500>
-            </LayoutProvider>
+            <Page500 description={error.message}>
+              <Button
+                onClick={
+                  // Attempt to recover by trying to re-render the segment
+                  () => reset()
+                }
+              >
+                Try Again
+              </Button>
+            </Page500>
           </ImageProvider>
         </ThemeProvider>
       </StoreProvider>

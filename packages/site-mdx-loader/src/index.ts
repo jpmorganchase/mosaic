@@ -76,3 +76,15 @@ export const loadPage = async (route: string): Promise<LoaderPage> => {
     statusCode: 404
   });
 };
+
+export const loadMosaicData = async <T>(url: string): Promise<T> => {
+  const fsRootUrl = getFSRootUrl();
+  const dataUrl = new URL(url, fsRootUrl);
+  const response = await fetch(dataUrl);
+
+  if (!response.ok) {
+    // This will activate the closest `error.js` Error Boundary
+    throw new Error(`Failed to fetch mosaic data @ ${dataUrl}`);
+  }
+  return response.json();
+};

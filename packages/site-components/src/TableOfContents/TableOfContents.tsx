@@ -6,14 +6,14 @@ import { TableOfContentsItem } from './TableOfContentsItem';
 import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';
 import styles from './styles.css';
 
-export type Item = { level: number; id: string; text: string };
-export interface CurrentItem extends Item {
+export type TOCItem = { level: number; id: string; text: string };
+export interface CurrentItem extends TOCItem {
   current: boolean;
 }
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export type TableOfContentsProps = {
-  items?: Item[];
+  items?: TOCItem[];
 };
 
 export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
