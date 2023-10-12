@@ -1,9 +1,16 @@
 import React from 'react';
-import { ElementStyles, Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
+import {
+  ElementStyles,
+  Sidebar as SidebarPro,
+  Menu,
+  MenuItem,
+  SubMenu,
+  ProSidebarProvider
+} from 'react-pro-sidebar';
 import { link } from '@jpmorganchase/mosaic-theme';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { SidebarItem, useColorMode } from '@jpmorganchase/mosaic-store';
-export { ProSidebarProvider as SidebarProvider } from 'react-pro-sidebar';
+
 export { useProSidebar as useSidebar } from 'react-pro-sidebar';
 
 export type VerticalNavigationProps = {
@@ -107,10 +114,12 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   const colorMode = useColorMode();
   const menuItemStyles = createMenuItemStyles(colorMode);
   return (
-    <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="100%" {...rest}>
-      <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
-        {renderMenu(menu, expandedNodeIds, selectedNodeId)}
-      </Menu>
-    </SidebarPro>
+    <ProSidebarProvider>
+      <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="100%" {...rest}>
+        <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
+          {renderMenu(menu, expandedNodeIds, selectedNodeId)}
+        </Menu>
+      </SidebarPro>
+    </ProSidebarProvider>
   );
 };
