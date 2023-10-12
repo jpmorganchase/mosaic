@@ -98,7 +98,7 @@
   },
   "resolutions": {
     "@braintree/sanitize-url": "^6.0.0",
-    "@types/react": "^18.0.26",
+    "@types/react": "^18.2.27",
     "commander": "^9.4.0",
     "json5": "^1.0.2"
   },

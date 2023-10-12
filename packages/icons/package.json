@@ -45,7 +45,7 @@
     "@salt-ds/core": "^1.8.0-rc.0"
   },
   "peerDependencies": {
-    "@types/react": "^18.0.26",
+    "@types/react": "^18.2.27",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

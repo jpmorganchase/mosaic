@@ -36,7 +36,7 @@
     "zustand": "^4.1.1"
   },
   "peerDependencies": {
-    "@types/react": "^18.0.26",
+    "@types/react": "^18.2.27",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
