@@ -16,7 +16,6 @@ export * from './ImageProvider';
 export * from './LinkProvider';
 export * from './Link';
 export * from './Image';
-export * from './Metadata';
 export * from './NavigationEvents';
 export * from './PageNavigation';
 export * from './SessionProvider';

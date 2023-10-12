@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import components from '@jpmorganchase/mosaic-mdx-components-server';
 import { loadPage } from '@jpmorganchase/mosaic-site-mdx-loader';
+import { Metadata } from 'next';
 
 export default async function Page({ params: { slug } }) {
   const route = `/${slug.join('/')}`;
@@ -31,4 +32,14 @@ export async function generateStaticParams() {
     }));
   }
   return [];
+}
+
+export async function generateMetadata({ params: { slug } }): Promise<Metadata> {
+  const route = `/${slug.join('/')}`;
+  const { data = {} } = await loadPage(route);
+
+  return {
+    title: data.title,
+    description: data.description
+  };
 }
