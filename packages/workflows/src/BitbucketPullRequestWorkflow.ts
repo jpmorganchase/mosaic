@@ -16,8 +16,6 @@ interface BitbucketPullRequestWorkflowOptions {
   titlePrefix: string;
 }
 
-let repoInstance: Repo | null = null;
-
 async function createPullRequest(
   sourceOptions: GitRepoSourceOptions,
   { apiEndpoint, commitMessage, titlePrefix }: BitbucketPullRequestWorkflowOptions,
@@ -38,10 +36,8 @@ async function createPullRequest(
     return false;
   }
 
-  if (!repoInstance) {
-    repoInstance = new Repo(credentials, remote, sourceBranch, repoUrl);
-    await repoInstance.init();
-  }
+  let repoInstance: Repo | null = new Repo(credentials, remote, sourceBranch, repoUrl);
+  await repoInstance.init();
 
   const branchName = `${user.sid.toLowerCase()}-${uuidv4()}`;
   await repoInstance.createWorktree(user.sid.toLowerCase(), branchName);
@@ -88,7 +84,7 @@ async function createPullRequest(
 
   const endpoint = `${apiEndpoint}/projects/${repoInstance.projectName}/repos/${repoInstance.repoName}/pull-requests`;
 
-  return repoInstance.createPullRequest(
+  const result = repoInstance.createPullRequest(
     user,
     branchName,
     filePath,
@@ -96,6 +92,9 @@ async function createPullRequest(
     bitBucketRequest,
     commitMessage(filePath)
   );
+
+  repoInstance = null;
+  return result;
 }
 
 const workflow: SourceWorkflow = {
