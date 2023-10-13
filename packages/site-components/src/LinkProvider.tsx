@@ -1,7 +1,14 @@
-import React from 'react';
-import { Link } from '@jpmorganchase/mosaic-site-components';
-import { LinkProvider as MosaicLinkProvider } from '@jpmorganchase/mosaic-components';
+import type { ElementType } from 'react';
 
-export function LinkProvider({ children }) {
-  return <MosaicLinkProvider value={Link}>{children}</MosaicLinkProvider>;
+import { useStoreActions } from '@jpmorganchase/mosaic-store';
+import { Link } from './Link';
+
+interface LinkProviderProps {
+  LinkComponent?: ElementType;
+}
+
+export function LinkProvider({ LinkComponent = Link }: LinkProviderProps) {
+  const actions = useStoreActions();
+  actions.setLinkComponent(LinkComponent);
+  return null;
 }

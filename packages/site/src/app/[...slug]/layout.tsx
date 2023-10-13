@@ -42,25 +42,24 @@ export default async function Layout({ params: { slug }, children }) {
 
   return (
     <SessionProvider>
-      <LinkProvider>
-        <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
-          <ImageProvider>
-            <LayoutBase Header={<AppHeader path={route} fetcher={loadPage} />}>
-              <LayoutComponent
-                FooterComponent={<Footer path={route} fetcher={loadPage} />}
-                DocPaginatorComponent={
-                  <DocPaginator linkSuffix="Page" path={route} fetcher={loadPage} />
-                }
-                PrimarySidebarComponent={<Sidebar path={route} fetcher={loadPage} />}
-                SecondarySidebarComponent={<TableOfContents path={route} fetcher={loadPage} />}
-              >
-                <Breadcrumbs path={route} fetcher={loadPage} />
-                {children}
-              </LayoutComponent>
-            </LayoutBase>
-          </ImageProvider>
-        </ThemeProvider>
-      </LinkProvider>
+      <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
+        <ImageProvider>
+          <LayoutBase Header={<AppHeader path={route} fetcher={loadPage} />}>
+            <LayoutComponent
+              FooterComponent={<Footer path={route} fetcher={loadPage} />}
+              DocPaginatorComponent={
+                <DocPaginator linkSuffix="Page" path={route} fetcher={loadPage} />
+              }
+              PrimarySidebarComponent={<Sidebar path={route} fetcher={loadPage} />}
+              SecondarySidebarComponent={<TableOfContents path={route} fetcher={loadPage} />}
+            >
+              <LinkProvider />
+              <Breadcrumbs path={route} fetcher={loadPage} />
+              {children}
+            </LayoutComponent>
+          </LayoutBase>
+        </ImageProvider>
+      </ThemeProvider>
     </SessionProvider>
   );
 }
