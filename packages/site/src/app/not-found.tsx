@@ -13,12 +13,11 @@ export default async function NotFound() {
   return (
     <SessionProvider>
       <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
-        <ImageProvider>
-          <Page404
-            description="This page does not exist, check the URL"
-            links={[{ url: '/mosaic', label: 'Return to Homepage' }]}
-          />
-        </ImageProvider>
+        <ImageProvider />
+        <Page404
+          description="This page does not exist, check the URL"
+          links={[{ url: '/mosaic', label: 'Return to Homepage' }]}
+        />
       </ThemeProvider>
     </SessionProvider>
   );

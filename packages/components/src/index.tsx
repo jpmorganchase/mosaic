@@ -18,7 +18,6 @@ export * from './GridBase';
 export * from './HelpLinks';
 export * from './Hero';
 export * from './Icon';
-export * from './ImageProvider';
 export * from './Impact';
 export * from './Impacts';
 export * from './IsomorphicSuspense';

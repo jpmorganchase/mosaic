@@ -6,9 +6,11 @@ import type { ColorMode } from './useColorMode';
 
 export type SiteState = {
   colorMode: ColorMode;
+  ImageComponent: ElementType;
   LinkComponent: ElementType;
   actions: {
     setColorMode: (colorMode: ColorMode) => void;
+    setImageComponent: (component: ElementType) => void;
     setLinkComponent: (component: ElementType) => void;
   };
 };
@@ -19,6 +21,7 @@ type DefaultSiteState = Omit<SiteState, 'actions'>;
 function getDefaultInitialState(): DefaultSiteState {
   return {
     colorMode: 'light',
+    ImageComponent: 'img',
     LinkComponent: 'a'
   };
 }
@@ -38,6 +41,7 @@ const useStore = create(
     ...getDefaultInitialState(),
     actions: {
       setColorMode: (colorMode: ColorMode) => set({ colorMode }),
+      setImageComponent: (component: ElementType) => set({ ImageComponent: component }),
       setLinkComponent: (component: ElementType) => set({ LinkComponent: component })
     }
   }))

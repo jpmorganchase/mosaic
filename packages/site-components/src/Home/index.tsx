@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'clsx';
-import { useImageComponent } from '@jpmorganchase/mosaic-components';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
 import styles from './styles.css';
 

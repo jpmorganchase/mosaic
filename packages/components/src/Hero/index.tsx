@@ -1,10 +1,10 @@
 import React, { ReactElement, ReactNode } from 'react';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 import classnames from 'clsx';
 import { LinkButton } from '../LinkButton';
 
 import styles from './styles.css';
 import { Eyebrow, H1, P2 } from '../Typography';
-import { useImageComponent } from '../ImageProvider';
 
 const formatTitle = (fullWidth: boolean, title: string, key: string): React.ReactNode => {
   const lines = title ? title.split('<br>') : [];

@@ -1,7 +1,14 @@
-import React from 'react';
-import { Image } from '@jpmorganchase/mosaic-site-components';
-import { ImageProvider as MosaicImageProvider } from '@jpmorganchase/mosaic-components';
+import type { ElementType } from 'react';
+import { useStoreActions } from '@jpmorganchase/mosaic-store';
 
-export function ImageProvider({ children }) {
-  return <MosaicImageProvider value={Image}>{children}</MosaicImageProvider>;
+import { Image } from './Image';
+
+interface ImageProviderProps {
+  ImageComponent?: ElementType;
+}
+
+export function ImageProvider({ ImageComponent = Image }: ImageProviderProps) {
+  const actions = useStoreActions();
+  actions.setImageComponent(ImageComponent);
+  return null;
 }
