@@ -100,8 +100,7 @@ function createTabsMenu(appHeaderMenu: AppHeaderMenu): TabsMenu {
             type: 'link',
             title,
             link
-          })),
-          onSelect: () => undefined
+          }))
         };
         return [...result, tabsLinksItem];
       }

@@ -13,7 +13,7 @@ export interface TabsMenuButtonItem {
   /** Collection of link options */
   links: TabsLinkItem[];
   /** Callback when Tab is selected */
-  onSelect: (event: MouseEvent | KeyboardEvent, sourceItem: MenuDescriptor) => void;
+  onSelect?: (event: MouseEvent | KeyboardEvent, sourceItem: MenuDescriptor) => void;
   /** Title of Tab */
   title: string;
   /** Type of Tab */
@@ -31,7 +31,7 @@ export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, i
     className={classnames([className, styles.root])}
     CascadingMenuProps={{
       initialSource: { menuItems: item.links },
-      onItemClick: (sourceItem, event) => item.onSelect(event, sourceItem)
+      onItemClick: (sourceItem, event) => item.onSelect?.(event, sourceItem)
     }}
   >
     <span>{item.title || item.label}</span>
