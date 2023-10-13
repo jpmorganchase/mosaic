@@ -17,7 +17,3 @@ export type Navigation = {
   /** previous page in sequence */
   prev?: NavigationLink;
 };
-
-export type NavigationSlice = {
-  navigation?: Navigation;
-};

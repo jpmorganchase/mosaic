@@ -15,10 +15,3 @@ export type SidebarItem = {
   /** Whether the item is hidden */
   hidden: boolean;
 };
-/**
- *  [[`SidebarSlice`]] specifies sidebar content
- */
-export type SidebarSlice = {
-  /** Sidebar items */
-  sidebarData: SidebarItem[];
-};

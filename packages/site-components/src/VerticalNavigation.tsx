@@ -9,7 +9,8 @@ import {
 } from 'react-pro-sidebar';
 import { link } from '@jpmorganchase/mosaic-theme';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem, useColorMode } from '@jpmorganchase/mosaic-store';
+import { useColorMode } from '@jpmorganchase/mosaic-store';
+import type { SidebarItem } from '@jpmorganchase/mosaic-types';
 
 export { useProSidebar as useSidebar } from 'react-pro-sidebar';
 

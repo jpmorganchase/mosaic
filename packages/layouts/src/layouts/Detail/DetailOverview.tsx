@@ -1,6 +1,6 @@
 import React from 'react';
 import { HelpLinks } from '@jpmorganchase/mosaic-components';
-import { BackLink, PageNavigation } from '@jpmorganchase/mosaic-site-components';
+import { BackLink } from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutColumns } from '../../LayoutColumns';
 import type { LayoutProps } from '../../types';
@@ -11,6 +11,7 @@ export const DetailOverview: React.FC<LayoutProps> = ({
   SidebarProps,
   FooterComponent,
   DocPaginatorComponent,
+  PrimarySidebarComponent,
   children
 }) => {
   const Sidebar = (
@@ -20,7 +21,7 @@ export const DetailOverview: React.FC<LayoutProps> = ({
           <BackLink {...BackLinkProps} />
         </header>
       )}
-      <PageNavigation />
+      {PrimarySidebarComponent}
       {SidebarProps?.helpLinks && <HelpLinks subTitle="Need help?" {...SidebarProps.helpLinks} />}
     </>
   );

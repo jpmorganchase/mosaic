@@ -19,7 +19,6 @@ export * from './NavigationEvents';
 export * from './PageNavigation';
 export * from './SearchInput';
 export * from './SessionProvider';
-export * from './StoreProvider';
 export * from './Sidebar';
 export * from './TableOfContents';
 export * from './ThemeProvider';

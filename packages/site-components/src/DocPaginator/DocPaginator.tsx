@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import classnames from 'clsx';
 import { Link, P6, P3, TileBase, Icon } from '@jpmorganchase/mosaic-components';
-import { NavigationLink } from '@jpmorganchase/mosaic-store';
+import { NavigationLink } from '@jpmorganchase/mosaic-types';
 
 import styles from './styles.css';
 import { NavigationEvents } from '../NavigationEvents';

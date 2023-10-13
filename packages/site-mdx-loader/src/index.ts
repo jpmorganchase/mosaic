@@ -2,9 +2,11 @@ import path from 'path';
 import matter from 'gray-matter';
 import type { SafeParseError } from 'zod';
 import { activeEnvSchema } from '@jpmorganchase/mosaic-schemas';
-import type { SharedConfig } from '@jpmorganchase/mosaic-store';
+import type { SharedConfig } from '@jpmorganchase/mosaic-types';
 
 import type { LoaderPage } from './types/index.js';
+
+export * from './types/index.js';
 
 const normalizePageUrl = (url: string): string => (/\/index$/.test(url) ? `${url}.mdx` : url);
 

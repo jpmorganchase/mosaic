@@ -8,6 +8,7 @@ export type LayoutProps = {
   FooterComponent: any;
   DocPaginatorComponent: any;
   SecondarySidebarComponent: any;
+  PrimarySidebarComponent: any;
   children?: ReactNode;
   className?: string;
   ToCProps?: {
