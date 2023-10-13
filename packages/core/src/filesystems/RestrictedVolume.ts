@@ -14,6 +14,8 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
     this.#vfs = vfs;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  /** @ts-ignore */
   promises = create(this.promises, {
     unlink: target => this.#vfs.unlink(target),
     symlink: (target, alias, type) => this.#vfs.symlink(target, alias, type),
