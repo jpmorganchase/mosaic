@@ -5,11 +5,12 @@ import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
 import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
 
 import { useEditorUser, usePageState } from '../../store';
-import { save } from '../../api/save';
 import transformers from '../../transformers';
 import { PersistStatus } from './PersistStatus';
 import { Dialog } from '../Dialog';
 import style from './index.css';
+import useWorkflowFeed from '../../hooks/useWorkflowFeed';
+import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 interface InfoProps {
   isRaising: boolean;
@@ -44,6 +45,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   const [isRaising, setIsRaising] = useState(false);
   const [prHref, setPrHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<SourceWorkflowMessageEvent[]>([]);
 
   const open = pageState === 'SAVING';
   const state = prHref !== null ? 'success' : 'info';
@@ -53,6 +55,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
     if (!newOpen) {
       setPageState('EDIT');
       setPrHref(null);
+      setProgress([]);
     }
   };
 
@@ -60,46 +63,55 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
     handleOpenChange(false);
   };
 
+  const handleErrorMessage = (errorMessage: string) => {
+    setError(errorMessage ? errorMessage : 'Sorry - an unexpected error has occurred');
+    setPrHref(null);
+    setProgress([]);
+    setIsRaising(false);
+  };
+
+  const handleCompleteMessage = message => {
+    console.log(message);
+    setPrHref(message.message?.links?.self[0]?.href);
+    setIsRaising(false);
+  };
+
+  const handleSuccessMessage = message => {
+    setProgress(prevState => [...prevState, message]);
+  };
+
+  const { sendMessage } = useWorkflowFeed(
+    handleErrorMessage,
+    handleSuccessMessage,
+    handleCompleteMessage
+  );
+
   const handleRaisePr = () => {
     setIsRaising(true);
     setPrHref(null);
     setError(null);
+
     try {
-      editor.update(async () => {
+      editor.update(() => {
         const markdown = $convertToMarkdownString(transformers);
         if (markdown && user && persistUrl) {
           const { sid, displayName, email } = user;
-          const response = await save(
-            { sid, name: displayName, email },
-            meta.route,
-            markdown,
-            persistUrl
+
+          sendMessage(
+            JSON.stringify({
+              user: { sid, name: displayName, email },
+              route: meta.route,
+              markdown,
+              name: 'save'
+            })
           );
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.error) {
-              setError(data.error);
-              setPrHref(null);
-              setIsRaising(false);
-            } else {
-              setPrHref(data?.links?.self[0]?.href);
-              setIsRaising(false);
-            }
-          }
-
-          if (response.status === 500 || response.status === 404) {
-            const errorText = await response.text();
-            setError(errorText);
-            setPrHref(null);
-            setIsRaising(false);
-          }
         }
       });
     } catch (e) {
       setError('Sorry - an unexpected error has occurred');
       setPrHref(null);
       setIsRaising(false);
+      setProgress([]);
     }
   };
 
@@ -109,7 +121,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
         {!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
       </DialogTitle>
       <DialogContent>
-        {(isRaising || error) && !prHref && <PersistStatus isRaising={isRaising} error={error} />}
+        {(isRaising || error) && !prHref && <PersistStatus error={error} progress={progress} />}
         <Info isRaising={isRaising} prHref={prHref} error={error} />
         {!isRaising && prHref && (
           <Link href={prHref} target="_blank">
