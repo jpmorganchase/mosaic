@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import path from 'node:path';
+import md5 from 'md5';
 import websocket from '@fastify/websocket';
 import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
@@ -25,30 +26,46 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
    */
   fastify.get('/workflows', { websocket: true }, (connection /* SocketStream */) => {
     connection.socket.on('message', async message => {
-      const sendMessage: SendSourceWorkflowMessage = (message, status) =>
-        connection.socket.send(JSON.stringify({ status, message }));
-
       if (connection.socket.OPEN) {
         try {
-          const { type, route: routeReq, name, ...restParams } = JSON.parse(message.toString());
+          const {
+            type,
+            route: routeReq,
+            name,
+            user,
+            ...restParams
+          } = JSON.parse(message.toString());
 
           if (!name) {
-            sendMessage('Workflow name is required', 'ERROR');
+            connection.socket.send(
+              JSON.stringify({ status: 'ERROR', message: 'Workflow name is required' })
+            );
           }
+
+          if (!user) {
+            connection.socket.send(
+              JSON.stringify({ status: 'ERROR', message: 'Workflow must be run for a user' })
+            );
+          }
+
+          const channel = md5(`${user.sid.toLowerCase()} - ${name.toLowerCase()}`);
+
+          const sendMessage: SendSourceWorkflowMessage = (message, status) =>
+            connection.socket.send(JSON.stringify({ status, message, channel }));
 
           if (await fs.promises.exists(routeReq)) {
             const route = (await fs.promises.stat(routeReq)).isDirectory()
               ? path.posix.join(routeReq, 'index')
               : routeReq;
             const pagePath = (await fs.promises.realpath(route)) as string;
-            core.triggerWorkflow(sendMessage, name, pagePath, { ...restParams });
+            core.triggerWorkflow(sendMessage, name, pagePath, { user, ...restParams });
             sendMessage(`Workflow ${name} has started`, 'SUCCESS');
           } else {
             sendMessage(`${routeReq} not found`, 'ERROR');
           }
         } catch (e) {
           console.error(e);
-          sendMessage(e.message, 'ERROR');
+          connection.socket.send(JSON.stringify({ status: 'ERROR', message: 'e.message' }));
         }
       }
     });

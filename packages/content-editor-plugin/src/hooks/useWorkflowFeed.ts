@@ -5,6 +5,7 @@ const ENDPOINT = process.env.NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL || '';
 
 export default function useDataFeed(onError, onSuccess, onComplete) {
   const webSocketRef = useRef<WebSocket>();
+  const channelRef = useRef<string | null>();
 
   useEffect(function subscribe() {
     try {
@@ -14,6 +15,11 @@ export default function useDataFeed(onError, onSuccess, onComplete) {
 
       webSocketRef.current.onmessage = (msg: MessageEvent) => {
         const message: SourceWorkflowMessageEvent = JSON.parse(msg.data);
+
+        if (message.channel !== channelRef.current) {
+          // message is not for us;
+          return;
+        }
 
         if (message.status === 'ERROR') {
           onError(message);
@@ -31,13 +37,15 @@ export default function useDataFeed(onError, onSuccess, onComplete) {
 
     return () => {
       if (webSocketRef.current && webSocketRef.current?.OPEN) {
+        channelRef.current = null;
         webSocketRef.current.close();
       }
     };
   }, []);
 
-  const sendMessage = message => {
+  const sendMessage = (message, channel) => {
     if (webSocketRef.current?.OPEN) {
+      channelRef.current = channel;
       webSocketRef.current?.send(message);
     }
   };

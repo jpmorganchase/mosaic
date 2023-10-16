@@ -43,7 +43,7 @@ async function createPullRequest(
 
   const branchName = `${user.sid.toLowerCase()}-${uuidv4()}`;
   await repoInstance.createWorktree(user.sid.toLowerCase(), branchName);
-  sendMessage('Created Worktree', 'IN_PROGRESS');
+  sendMessage('Created git worktree', 'IN_PROGRESS');
 
   /**
    * strip out the namespace from the file path.
@@ -58,9 +58,9 @@ async function createPullRequest(
   const rawPage = await fs.promises.readFile(pathOnDisk);
   const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
   const updatedPage = { ...metadata, content: markdown };
-  sendMessage('Update Page content', 'IN_PROGRESS');
+  sendMessage('Updated page content', 'IN_PROGRESS');
   await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
-  sendMessage('Saved Page to disk', 'IN_PROGRESS');
+  sendMessage('Saved page', 'IN_PROGRESS');
   const bitBucketRequest = JSON.stringify({
     title: `${titlePrefix} - Content update - ${filePath}`,
     fromRef: {
