@@ -1,4 +1,5 @@
 import React, { FC, useState } from 'react';
+import md5 from 'md5';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
@@ -71,7 +72,6 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   const handleCompleteMessage = message => {
-    console.log(message);
     setPrHref(message.message?.links?.self[0]?.href);
     setIsRaising(false);
   };
@@ -103,7 +103,8 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
               route: meta.route,
               markdown,
               name: 'save'
-            })
+            }),
+            md5(`${sid.toLowerCase()} - save`)
           );
         }
       });
