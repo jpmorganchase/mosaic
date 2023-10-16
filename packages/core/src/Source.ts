@@ -11,6 +11,7 @@ import type {
   Plugin,
   PluginErrors,
   PluginModuleDefinition,
+  SendSourceWorkflowMessage,
   Serialiser,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
@@ -240,32 +241,41 @@ export default class Source {
     return isFileInSource;
   }
 
-  async triggerWorkflow(name: string, filePath: string, data: unknown) {
+  triggerWorkflow(
+    sendMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data: unknown
+  ) {
     const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
 
     if (foundWorkflows.length === 0) {
-      return {
-        error: `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`
-      };
+      sendMessage(
+        `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`,
+        'ERROR'
+      );
+      return;
     }
 
     if (foundWorkflows.length > 1) {
-      return {
-        error: `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`
-      };
+      sendMessage(
+        `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`,
+        'ERROR'
+      );
+      return;
     }
 
     const triggeredWorkflow = foundWorkflows[0];
 
     if (triggeredWorkflow) {
-      return triggeredWorkflow.action(
+      triggeredWorkflow.action(
+        sendMessage,
         this.#mergedOptions,
         triggeredWorkflow.options,
         filePath,
         data
       );
     }
-    return false;
   }
 
   trackPluginErrors(errors: PluginErrors, lifecycleMethod: string) {

@@ -4,6 +4,7 @@ import type {
   IVolumeImmutable,
   IVolumeMutable,
   PluginModuleDefinition,
+  SendSourceWorkflowMessage,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
   SourceSchedule
@@ -61,15 +62,20 @@ export default class SourceManager {
     return () => this.#handlers.delete(handler);
   }
 
-  async triggerWorkflow(name: string, filePath: string, data: unknown): Promise<unknown> {
+  async triggerWorkflow(
+    sendMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data: unknown
+  ) {
     for (const source of this.#sources.values()) {
       // eslint-disable-next-line no-await-in-loop
       if (await source.isOwner(filePath)) {
-        const result = await source.triggerWorkflow(name, filePath, data);
-        return result;
+        source.triggerWorkflow(sendMessage, name, filePath, data);
+        return;
       }
     }
-    return 'Workflow not found';
+    sendMessage(`Workflow ${name} not found`, 'ERROR');
   }
 
   getSource(name: string) {
