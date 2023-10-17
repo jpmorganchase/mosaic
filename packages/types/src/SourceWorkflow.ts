@@ -11,7 +11,7 @@ export type SourceWorkflow<TSourceOptions = unknown, TOptions = unknown> = {
   action: SourceWorkflowAction<TSourceOptions, TOptions>;
 };
 
-export type SourceWorkflowMessageStatus = 'SUCCESS' | 'ERROR' | 'IN_PROGRESS' | 'DONE';
+export type SourceWorkflowMessageStatus = 'SUCCESS' | 'ERROR' | 'IN_PROGRESS' | 'COMPLETE';
 
 export type SendSourceWorkflowMessage = (message: any, status: SourceWorkflowMessageStatus) => void;
 
