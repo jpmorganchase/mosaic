@@ -34,7 +34,6 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.0.0",
-    "msw": "^0.49.1",
     "typescript": "^4.8.3"
   },
   "dependencies": {
@@ -60,6 +59,7 @@
     "lexical": "^0.11.1",
     "react-split": "^2.0.14",
     "lodash": "^4.17.21",
+    "md5": "*",
     "yup": "^0.32.9",
     "zustand": "^4.1.1"
   },
