@@ -24,7 +24,7 @@ export default function useDataFeed(onError, onSuccess, onComplete) {
         if (message.status === 'ERROR') {
           onError(message);
         }
-        if (message.status === 'DONE') {
+        if (message.status === 'COMPLETE') {
           onComplete(message);
         }
         if (message.status === 'IN_PROGRESS' || message.status === 'SUCCESS') {

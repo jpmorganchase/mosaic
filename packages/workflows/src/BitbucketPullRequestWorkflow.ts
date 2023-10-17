@@ -96,7 +96,7 @@ async function createPullRequest(
     commitMessage(filePath)
   );
 
-  sendWorkflowProgressMessage(result, 'DONE');
+  sendWorkflowProgressMessage(result, 'COMPLETE');
 
   repoInstance = null;
   return result;
