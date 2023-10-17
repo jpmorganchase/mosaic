@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- 9ad7418c: Use a websocket for workflows
+
 ## 0.1.0-beta.51
 
 ## 0.1.0-beta.50

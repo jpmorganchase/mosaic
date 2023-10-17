@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- 9ad7418c: Use a websocket for workflows
+- Updated dependencies [9ad7418c]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.52
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.52
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.52
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.52
+
 ## 0.1.0-beta.51
 
 ### Patch Changes

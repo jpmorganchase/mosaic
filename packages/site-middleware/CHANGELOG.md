@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- Updated dependencies [9ad7418c]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.52
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.52
+  - @jpmorganchase/mosaic-store@0.1.0-beta.52
+
 ## 0.1.0-beta.51
 
 ### Patch Changes

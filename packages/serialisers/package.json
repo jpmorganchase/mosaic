@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-serialisers",
-  "version": "0.1.0-beta.51",
+  "version": "0.1.0-beta.52",
   "author": "",
   "description": "Mosaic serializers for core file system",
   "license": "Apache-2.0",
@@ -49,7 +49,7 @@
     "rxjs": "^7.5.5"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.51",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.52",
     "gray-matter": "^4.0.3"
   }
 }
