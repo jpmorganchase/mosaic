@@ -50,8 +50,8 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
 
           const channel = md5(`${user.sid.toLowerCase()} - ${name.toLowerCase()}`);
 
-          const sendMessage: SendSourceWorkflowMessage = (message, status) =>
-            connection.socket.send(JSON.stringify({ status, message, channel }));
+          const sendMessage: SendSourceWorkflowMessage = (info, status) =>
+            connection.socket.send(JSON.stringify({ status, message: info, channel }));
 
           if (await fs.promises.exists(routeReq)) {
             const route = (await fs.promises.stat(routeReq)).isDirectory()
