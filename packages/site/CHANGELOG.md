@@ -1,5 +1,27 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- 9ad7418c: Use a websocket for workflows
+- cf428292: Fix Bitbucket Pull Request Workflow
+
+  Create a new repo instance every time the workflow is triggered to prevent the wrong source being used to raise the PR.
+
+- Updated dependencies [9ad7418c]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.52
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.52
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.52
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.52
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.52
+  - @jpmorganchase/mosaic-components@0.1.0-beta.52
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.52
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.52
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.52
+  - @jpmorganchase/mosaic-store@0.1.0-beta.52
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.52
+
 ## 0.1.0-beta.51
 
 ### Patch Changes
