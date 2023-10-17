@@ -17,7 +17,7 @@ interface BitbucketPullRequestWorkflowOptions {
 }
 
 async function createPullRequest(
-  sendMessage: SendSourceWorkflowMessage,
+  sendWorkflowProgressMessage: SendSourceWorkflowMessage,
   sourceOptions: GitRepoSourceOptions,
   { apiEndpoint, commitMessage, titlePrefix }: BitbucketPullRequestWorkflowOptions,
   filePath: string,
@@ -39,11 +39,11 @@ async function createPullRequest(
 
   let repoInstance: Repo | null = new Repo(credentials, remote, sourceBranch, repoUrl);
   await repoInstance.init();
-  sendMessage('Bitbucket clone complete', 'IN_PROGRESS');
+  sendWorkflowProgressMessage('Bitbucket clone complete', 'IN_PROGRESS');
 
   const branchName = `${user.sid.toLowerCase()}-${uuidv4()}`;
   await repoInstance.createWorktree(user.sid.toLowerCase(), branchName);
-  sendMessage('Created git worktree', 'IN_PROGRESS');
+  sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
 
   /**
    * strip out the namespace from the file path.
@@ -58,9 +58,9 @@ async function createPullRequest(
   const rawPage = await fs.promises.readFile(pathOnDisk);
   const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
   const updatedPage = { ...metadata, content: markdown };
-  sendMessage('Updated page content', 'IN_PROGRESS');
+  sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
   await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
-  sendMessage('Saved page', 'IN_PROGRESS');
+  sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
   const bitBucketRequest = JSON.stringify({
     title: `${titlePrefix} - Content update - ${filePath}`,
     fromRef: {
@@ -86,7 +86,7 @@ async function createPullRequest(
   });
 
   const endpoint = `${apiEndpoint}/projects/${repoInstance.projectName}/repos/${repoInstance.repoName}/pull-requests`;
-  sendMessage('Creating Pull Request', 'IN_PROGRESS');
+  sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
   const result = await repoInstance.createPullRequest(
     user,
     branchName,
@@ -96,7 +96,7 @@ async function createPullRequest(
     commitMessage(filePath)
   );
 
-  sendMessage(result, 'DONE');
+  sendWorkflowProgressMessage(result, 'DONE');
 
   repoInstance = null;
   return result;

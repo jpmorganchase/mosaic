@@ -80,7 +80,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
     setProgress(prevState => [...prevState, message]);
   };
 
-  const { sendMessage } = useWorkflowFeed(
+  const { sendWorkflowProgressMessage } = useWorkflowFeed(
     handleErrorMessage,
     handleSuccessMessage,
     handleCompleteMessage
@@ -97,7 +97,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
         if (markdown && user && persistUrl) {
           const { sid, displayName, email } = user;
 
-          sendMessage(
+          sendWorkflowProgressMessage(
             JSON.stringify({
               user: { sid, name: displayName, email },
               route: meta.route,

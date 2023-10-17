@@ -108,8 +108,13 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
-  triggerWorkflow(sendMessage: SendSourceWorkflowMessage, name: string, filePath: string, data) {
-    this.#sourceManager.triggerWorkflow(sendMessage, name, filePath, data);
+  triggerWorkflow(
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data
+  ) {
+    this.#sourceManager.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {

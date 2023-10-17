@@ -50,7 +50,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
 
           const channel = md5(`${user.sid.toLowerCase()} - ${name.toLowerCase()}`);
 
-          const sendMessage: SendSourceWorkflowMessage = (info, status) =>
+          const sendWorkflowProgressMessage: SendSourceWorkflowMessage = (info, status) =>
             connection.socket.send(JSON.stringify({ status, message: info, channel }));
 
           if (await fs.promises.exists(routeReq)) {
@@ -58,10 +58,13 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
               ? path.posix.join(routeReq, 'index')
               : routeReq;
             const pagePath = (await fs.promises.realpath(route)) as string;
-            core.triggerWorkflow(sendMessage, name, pagePath, { user, ...restParams });
-            sendMessage(`Workflow ${name} has started`, 'SUCCESS');
+            core.triggerWorkflow(sendWorkflowProgressMessage, name, pagePath, {
+              user,
+              ...restParams
+            });
+            sendWorkflowProgressMessage(`Workflow ${name} has started`, 'SUCCESS');
           } else {
-            sendMessage(`${routeReq} not found`, 'ERROR');
+            sendWorkflowProgressMessage(`${routeReq} not found`, 'ERROR');
           }
         } catch (e) {
           console.error(e);
