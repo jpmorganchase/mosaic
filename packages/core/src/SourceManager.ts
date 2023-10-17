@@ -63,7 +63,7 @@ export default class SourceManager {
   }
 
   async triggerWorkflow(
-    sendMessage: SendSourceWorkflowMessage,
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
     data: unknown
@@ -71,11 +71,11 @@ export default class SourceManager {
     for (const source of this.#sources.values()) {
       // eslint-disable-next-line no-await-in-loop
       if (await source.isOwner(filePath)) {
-        source.triggerWorkflow(sendMessage, name, filePath, data);
+        source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
         return;
       }
     }
-    sendMessage(`Workflow ${name} not found`, 'ERROR');
+    sendWorkflowProgressMessage(`Workflow ${name} not found`, 'ERROR');
   }
 
   getSource(name: string) {

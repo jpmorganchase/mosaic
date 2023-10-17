@@ -1,5 +1,5 @@
 export type SourceWorkflowAction<TSourceOptions, TOptions> = (
-  sendMessage: SendSourceWorkflowMessage,
+  sendWorkflowProgressMessage: SendSourceWorkflowMessage,
   sourceOptions: TSourceOptions,
   workflowOptions: TOptions,
   ...args: any[]

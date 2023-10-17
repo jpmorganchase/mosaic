@@ -43,7 +43,7 @@ export default function useDataFeed(onError, onSuccess, onComplete) {
     };
   }, []);
 
-  const sendMessage = (message, channel) => {
+  const sendWorkflowProgressMessage = (message, channel) => {
     if (webSocketRef.current?.OPEN) {
       channelRef.current = channel;
       webSocketRef.current?.send(message);
@@ -51,6 +51,6 @@ export default function useDataFeed(onError, onSuccess, onComplete) {
   };
 
   return {
-    sendMessage
+    sendWorkflowProgressMessage
   };
 }

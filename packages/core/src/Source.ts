@@ -242,7 +242,7 @@ export default class Source {
   }
 
   triggerWorkflow(
-    sendMessage: SendSourceWorkflowMessage,
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
     data: unknown
@@ -250,7 +250,7 @@ export default class Source {
     const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
 
     if (foundWorkflows.length === 0) {
-      sendMessage(
+      sendWorkflowProgressMessage(
         `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`,
         'ERROR'
       );
@@ -258,7 +258,7 @@ export default class Source {
     }
 
     if (foundWorkflows.length > 1) {
-      sendMessage(
+      sendWorkflowProgressMessage(
         `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`,
         'ERROR'
       );
@@ -269,7 +269,7 @@ export default class Source {
 
     if (triggeredWorkflow) {
       triggeredWorkflow.action(
-        sendMessage,
+        sendWorkflowProgressMessage,
         this.#mergedOptions,
         triggeredWorkflow.options,
         filePath,
