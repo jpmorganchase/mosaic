@@ -4,6 +4,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
 import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 import { useEditorUser, usePageState } from '../../store';
 import transformers from '../../transformers';
@@ -11,7 +12,6 @@ import { PersistStatus } from './PersistStatus';
 import { Dialog } from '../Dialog';
 import style from './index.css';
 import useWorkflowFeed from '../../hooks/useWorkflowFeed';
-import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 interface InfoProps {
   isRaising: boolean;
