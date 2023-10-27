@@ -1,8 +1,9 @@
 module.exports = {
+  extends: ['eslint:recommended', 'next'],
+  ignorePatterns: ['**/*.test.*'],
   overrides: [
     {
       files: ['./src/**/*'],
-      extends: ['next'],
       rules: {
         'import/no-extraneous-dependencies': ['off'],
         'import/no-duplicates': ['off'],
