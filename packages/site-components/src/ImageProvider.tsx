@@ -1,4 +1,4 @@
-import type { ElementType } from 'react';
+import { ElementType, useEffect } from 'react';
 import { useStoreActions } from '@jpmorganchase/mosaic-store';
 
 import { Image } from './Image';
@@ -9,6 +9,9 @@ interface ImageProviderProps {
 
 export function ImageProvider({ ImageComponent = Image }: ImageProviderProps) {
   const actions = useStoreActions();
-  actions.setImageComponent(ImageComponent);
+
+  useEffect(() => {
+    actions.setImageComponent(ImageComponent);
+  }, [ImageComponent]);
   return null;
 }

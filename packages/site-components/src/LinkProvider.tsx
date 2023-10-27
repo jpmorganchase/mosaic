@@ -1,6 +1,6 @@
-import type { ElementType } from 'react';
-
+import { ElementType, useEffect } from 'react';
 import { useStoreActions } from '@jpmorganchase/mosaic-store';
+
 import { Link } from './Link';
 
 interface LinkProviderProps {
@@ -9,6 +9,9 @@ interface LinkProviderProps {
 
 export function LinkProvider({ LinkComponent = Link }: LinkProviderProps) {
   const actions = useStoreActions();
-  actions.setLinkComponent(LinkComponent);
+  useEffect(() => {
+    actions.setLinkComponent(LinkComponent);
+  }, [LinkComponent]);
+
   return null;
 }
