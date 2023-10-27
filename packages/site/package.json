@@ -44,13 +44,13 @@
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.51",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.51",
     "@philpl/buble": "^0.19.7",
-    "next": "^13.4.10",
+    "next": "^14.0.0",
     "next-auth": "^4.22.1",
     "remark-gfm": "3.0.1",
     "rehype-slug": "^5.0.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "12.3.1",
+    "@next/eslint-plugin-next": "^14.0.0",
     "@next/mdx": "^13.4.4",
     "@playwright/test": "^1.33.0",
     "@types/react": "^18.2.27",
@@ -58,7 +58,7 @@
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "dotenv-load": "^2.0.1",
-    "eslint-config-next": "^13.5.4",
+    "eslint-config-next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
