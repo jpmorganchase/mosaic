@@ -159,7 +159,7 @@ export default class Source {
     }
     if (shouldInvokeAfterUpdate === true) {
       this.filesystem.unfreeze();
-      await this.invokeAfterUpdate(sharedFilesystem, globalConfig);
+      await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
       this.filesystem.freeze();
       this.filesystem.clearCache();
     }
@@ -178,9 +178,9 @@ export default class Source {
     this.#serialisers.push(...serialisers);
   }
 
-  async invokeAfterUpdate(sharedFilesystem, globalConfig) {
+  async invokeAfterUpdate(sharedFilesystem, globalConfig, lifecycleMethod = 'afterUpdate') {
     const initTime = new Date().getTime();
-    await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
+    await this.#pluginApi[lifecycleMethod](this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFilesystem,
       sharedFilesystem,
       globalConfig,
@@ -193,7 +193,7 @@ export default class Source {
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {
       console.warn(
-        `Lifecycle phase 'afterUpdate' for source '${this.id.description}' took ${
+        `Lifecycle phase '${lifecycleMethod}' for source '${this.id.description}' took ${
           timeTaken / 1000
         }s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );

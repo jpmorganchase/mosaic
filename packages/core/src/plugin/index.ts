@@ -62,6 +62,10 @@ export async function bindPluginMethods(
     async shouldUpdateNamespaceSources(lastAfterUpdateReturn, args) {
       const result = await pluginApi.shouldUpdateNamespaceSources(lastAfterUpdateReturn, args);
       return result;
+    },
+    async afterNamespaceSourceUpdate(mutableFilesystem, args) {
+      const result = await pluginApi.afterNamespaceSourceUpdate(mutableFilesystem, args);
+      return result;
     }
   };
 }
