@@ -112,8 +112,8 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
     expect(BreadcrumbsPlugin).toHaveProperty('$afterSource');
   });
 
-  test('THEN it should use the `afterUpdate` lifecycle event', () => {
-    expect(BreadcrumbsPlugin).toHaveProperty('afterUpdate');
+  test('THEN it should use the `afterNamespaceSourceUpdate` lifecycle event', () => {
+    expect(BreadcrumbsPlugin).toHaveProperty('afterNamespaceSourceUpdate');
   });
 
   describe('AND WHEN `$afterSource` is called', () => {
@@ -181,12 +181,12 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
    *
    */
 
-  describe('AND WHEN `afterUpdate` is called', () => {
+  describe('AND WHEN `afterNamespaceSourceUpdate` is called', () => {
     let serialiseMock = jest.fn();
     beforeEach(async () => {
-      const afterUpdate = BreadcrumbsPlugin.afterUpdate;
+      const afterNamespaceSourceUpdate = BreadcrumbsPlugin.afterNamespaceSourceUpdate;
 
-      (await afterUpdate?.(
+      (await afterNamespaceSourceUpdate?.(
         volume,
         {
           globalFilesystem: globalVolume,

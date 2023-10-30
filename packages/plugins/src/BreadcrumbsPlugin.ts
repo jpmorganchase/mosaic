@@ -66,7 +66,11 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
 
     return pages;
   },
-  async afterUpdate(mutableFilesystem, { serialiser, globalFilesystem, ignorePages }, options) {
+  async afterNamespaceSourceUpdate(
+    mutableFilesystem,
+    { serialiser, globalFilesystem, ignorePages },
+    options
+  ) {
     const pages = (await mutableFilesystem.promises.glob('**', {
       onlyFiles: true,
       ignore: ignorePages.map(ignore => `**/${ignore}`),
