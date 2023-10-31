@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.53
+
+### Patch Changes
+
+- d7098baa: ### Feature
+
+  Add new `afterNamespaceSourceUpdate` plugin lifecycle method.
+
+  This method is identical to `afterUpdate` but will **only** run if the `shouldUpdateNamespaceSources` lifecycle method returns `true`.
+
+- Updated dependencies [d7098baa]
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.53
+  - @jpmorganchase/mosaic-types@0.1.0-beta.53
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.53
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.53
+
 ## 0.1.0-beta.52
 
 ### Patch Changes

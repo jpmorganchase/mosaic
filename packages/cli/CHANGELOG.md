@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.53
+
+### Patch Changes
+
+- Updated dependencies [d7098baa]
+  - @jpmorganchase/mosaic-core@0.1.0-beta.53
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.53
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.53
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.53
+
 ## 0.1.0-beta.52
 
 ### Patch Changes
