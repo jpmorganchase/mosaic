@@ -22,6 +22,64 @@ function sortByPathLevel(pathA, pathB) {
   return pathBLevel - pathALevel;
 }
 
+/**
+ * Given the sharedSortConfig
+ * 1. find the field specified by 'field' in the sort config
+ * 2. transform the field value into the type specified by 'dataType'
+ * @param page
+ * @param sharedSortConfig
+ * @returns transformed field value
+ */
+function getSortFieldData(page: SidebarPluginPage, sharedSortConfig?: SortConfig) {
+  let fieldData;
+
+  if (sharedSortConfig !== undefined) {
+    const { field, dataType = 'string' } = sharedSortConfig;
+    field
+      .replace(/^(?:\.\.\/|\.\/)+/, '')
+      .split('/')
+      .forEach(part => {
+        const source = fieldData === undefined ? page : fieldData;
+
+        if (Object.prototype.hasOwnProperty.call(source, part)) {
+          fieldData = source[part];
+        }
+      });
+
+    switch (dataType) {
+      case 'date':
+        fieldData = new Date(fieldData);
+        break;
+      case 'string':
+        fieldData = String(fieldData);
+        break;
+      case 'number':
+        fieldData = Number(fieldData);
+        break;
+      default:
+        fieldData = String(fieldData);
+    }
+  }
+
+  return fieldData;
+}
+
+interface SortConfig {
+  field: string;
+  dataType: 'string' | 'number' | 'date';
+  arrange: 'asc' | 'desc';
+}
+
+interface ChildNode {
+  id: string;
+  fullPath: string;
+  name: string;
+  priority?: number;
+  data: { level: number; link: string };
+  childNodes: ChildNode[];
+  sharedSortConfig?: SortConfig & { fieldData: string | Date | number };
+}
+
 interface SidebarPluginConfigData {
   dirs: string[];
   refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
@@ -30,6 +88,11 @@ interface SidebarPluginConfigData {
 export interface SidebarPluginPage extends Page {
   sidebar?: {
     label?: string;
+  };
+  sharedConfig: {
+    sidebar: {
+      sort: SortConfig;
+    };
   };
 }
 
@@ -90,18 +153,25 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       }
 
       /**
-       * Group the pages into parent/child hierachy
+       * Group the pages into parent/child hierarchy
        * @param pages - sidebar pages
        */
       function createGroupMap(pages) {
+        const sortConfigPages = {};
         return pages.reduce((result, page) => {
           const name = page.sidebar?.label || page.title;
+          const sharedSortConfig = page?.sharedConfig?.sidebar?.sort;
+
+          if (sharedSortConfig) {
+            sortConfigPages[`${path.posix.dirname(page.fullPath)}`] = sharedSortConfig;
+          }
+
           const priority = page.sidebar?.priority;
           const id = page.route;
           const isGroup = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
           const level = getPageLevel(page);
-          const newChildNode = {
+          const newChildNode: ChildNode = {
             id,
             fullPath: page.fullPath,
             name,
@@ -109,6 +179,19 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             data: { level, link: page.route },
             childNodes: []
           };
+
+          if (!isGroup && sortConfigPages[`${path.posix.dirname(page.fullPath)}`] !== undefined) {
+            const fieldData = getSortFieldData(
+              page,
+              sortConfigPages[`${path.posix.dirname(page.fullPath)}`]
+            );
+
+            newChildNode.sharedSortConfig = {
+              ...sortConfigPages[`${path.posix.dirname(page.fullPath)}`],
+              fieldData
+            };
+          }
+
           if (isGroup) {
             result[groupPath] = {
               ...newChildNode,
@@ -219,15 +302,30 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
-      function sortPagesByPriority(sidebarData) {
+      function sortBySharedSortConfig(pageA, pageB) {
+        if (pageA.sharedSortConfig?.arrange === 'asc') {
+          return (
+            (pageA.sharedSortConfig ? pageA.sharedSortConfig.fieldData : -1) -
+            (pageB.sharedSortConfig ? pageB.sharedSortConfig.fieldData : -1)
+          );
+        }
+
+        return (
+          (pageB.sharedSortConfig ? pageB.sharedSortConfig.fieldData : -1) -
+          (pageA.sharedSortConfig ? pageA.sharedSortConfig.fieldData : -1)
+        );
+      }
+
+      function sortPages(sidebarData) {
         const pagesByPriority = sidebarData.map(page => {
           if (page.childNodes?.length > 1) {
-            const pagesByPriority = page.childNodes.sort(
+            const sortedChildNodes = page.childNodes.sort(
               (pageA, pageB) =>
-                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1)
+                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1) ||
+                sortBySharedSortConfig(pageA, pageB)
             );
-            sortPagesByPriority(page.childNodes);
-            return { ...page, childNodes: pagesByPriority };
+            sortPages(page.childNodes);
+            return { ...page, childNodes: sortedChildNodes };
           }
           return page;
         });
@@ -259,7 +357,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             );
             return;
           }
-          const pagesByPriority = sortPagesByPriority(sidebarData);
+          const pagesByPriority = sortPages(sidebarData);
           addNavigationToFrontmatter(pagesByPriority);
           const pagesWithRootMovedDown = moveRootPageDown(pagesByPriority);
           await mutableFilesystem.promises.writeFile(
