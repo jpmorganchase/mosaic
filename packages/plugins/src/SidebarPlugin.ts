@@ -2,6 +2,8 @@ import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { cloneDeep } from 'lodash-es';
 
+import { type SortConfig, type SidebarDataNode, sortSidebarData } from './utils/sortSidebarData.js';
+
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
     return patterns.map(pattern => createFileGlob(pattern, pageExtensions));
@@ -31,7 +33,7 @@ function sortByPathLevel(pathA, pathB) {
  * @returns transformed field value
  */
 function getSortFieldData(page: SidebarPluginPage, sharedSortConfig?: SortConfig) {
-  let fieldData;
+  let fieldData: string | number | undefined;
 
   if (sharedSortConfig !== undefined) {
     const { field, dataType = 'string' } = sharedSortConfig;
@@ -48,7 +50,7 @@ function getSortFieldData(page: SidebarPluginPage, sharedSortConfig?: SortConfig
 
     switch (dataType) {
       case 'date':
-        fieldData = new Date(fieldData);
+        fieldData = new Date(fieldData).getTime(); // call getTime to convert to a number
         break;
       case 'string':
         fieldData = String(fieldData);
@@ -62,22 +64,6 @@ function getSortFieldData(page: SidebarPluginPage, sharedSortConfig?: SortConfig
   }
 
   return fieldData;
-}
-
-interface SortConfig {
-  field: string;
-  dataType: 'string' | 'number' | 'date';
-  arrange: 'asc' | 'desc';
-}
-
-interface ChildNode {
-  id: string;
-  fullPath: string;
-  name: string;
-  priority?: number;
-  data: { level: number; link: string };
-  childNodes: ChildNode[];
-  sharedSortConfig?: SortConfig & { fieldData: string | Date | number };
 }
 
 interface SidebarPluginConfigData {
@@ -171,7 +157,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const isGroup = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
           const level = getPageLevel(page);
-          const newChildNode: ChildNode = {
+          const newChildNode: SidebarDataNode = {
             id,
             fullPath: page.fullPath,
             name,
@@ -302,36 +288,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
-      function sortBySharedSortConfig(pageA, pageB) {
-        if (pageA.sharedSortConfig?.arrange === 'asc') {
-          return (
-            (pageA.sharedSortConfig ? pageA.sharedSortConfig.fieldData : -1) -
-            (pageB.sharedSortConfig ? pageB.sharedSortConfig.fieldData : -1)
-          );
-        }
-
-        return (
-          (pageB.sharedSortConfig ? pageB.sharedSortConfig.fieldData : -1) -
-          (pageA.sharedSortConfig ? pageA.sharedSortConfig.fieldData : -1)
-        );
-      }
-
-      function sortPages(sidebarData) {
-        const pagesByPriority = sidebarData.map(page => {
-          if (page.childNodes?.length > 1) {
-            const sortedChildNodes = page.childNodes.sort(
-              (pageA, pageB) =>
-                (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1) ||
-                sortBySharedSortConfig(pageA, pageB)
-            );
-            sortPages(page.childNodes);
-            return { ...page, childNodes: sortedChildNodes };
-          }
-          return page;
-        });
-        return pagesByPriority;
-      }
-
       function moveRootPageDown(pagesByPriority) {
         const rootPage = pagesByPriority[0];
         const pagesWithRootMovedDown = rootPage.childNodes;
@@ -357,9 +313,9 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             );
             return;
           }
-          const pagesByPriority = sortPages(sidebarData);
-          addNavigationToFrontmatter(pagesByPriority);
-          const pagesWithRootMovedDown = moveRootPageDown(pagesByPriority);
+          const sortedSidebarData = sortSidebarData(sidebarData);
+          addNavigationToFrontmatter(sortedSidebarData);
+          const pagesWithRootMovedDown = moveRootPageDown(sortedSidebarData);
           await mutableFilesystem.promises.writeFile(
             sidebarFilePath,
             JSON.stringify({ pages: pagesWithRootMovedDown })
