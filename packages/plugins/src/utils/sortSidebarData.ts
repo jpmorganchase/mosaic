@@ -1,12 +1,6 @@
+import type { SortConfig } from '@jpmorganchase/mosaic-schemas';
+
 type FieldData = string | number;
-type SortConfigDataType = 'string' | 'number' | 'date';
-
-export interface SortConfig {
-  field: string;
-  dataType: SortConfigDataType;
-  arrange: 'asc' | 'desc';
-}
-
 interface SortConfigWithValue extends SortConfig {
   fieldData: FieldData;
 }
@@ -21,9 +15,11 @@ export interface SidebarDataNode {
   sharedSortConfig?: SortConfigWithValue;
 }
 
-function doSort(dataType: SortConfigDataType, a: FieldData, b: FieldData) {
-  if (dataType === 'number' || dataType === 'date') {
-    return (a as number) - (b as number);
+const isNumber = (fieldData: FieldData): fieldData is number => typeof fieldData === 'number';
+
+function doSort(a: FieldData, b: FieldData) {
+  if (isNumber(a) && isNumber(b)) {
+    return a - b;
   }
   if (a > b) {
     return 1;
@@ -40,18 +36,10 @@ function sortBySharedSortConfig(pageA: SidebarDataNode, pageB: SidebarDataNode) 
   }
 
   if (pageA.sharedSortConfig?.arrange === 'asc') {
-    return doSort(
-      pageA.sharedSortConfig.dataType,
-      pageA.sharedSortConfig.fieldData,
-      pageB.sharedSortConfig.fieldData
-    );
+    return doSort(pageA.sharedSortConfig.fieldData, pageB.sharedSortConfig.fieldData);
   }
 
-  return doSort(
-    pageB.sharedSortConfig.dataType,
-    pageB.sharedSortConfig.fieldData,
-    pageA.sharedSortConfig.fieldData
-  );
+  return doSort(pageB.sharedSortConfig.fieldData, pageA.sharedSortConfig.fieldData);
 }
 
 export function sortSidebarData(sidebarData: SidebarDataNode[]) {

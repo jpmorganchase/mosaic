@@ -1,6 +1,7 @@
 export * from './breadcrumbsLayoutSchema.js';
 export * from './credentialsSchema.js';
 export * from './fileExtensionSchema.js';
+export * from './sidebarSortConfigSchema.js';
 export * from './validate.js';
 
 export * from './SnapshotFileEnvSchema.js';

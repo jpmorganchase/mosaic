@@ -1,8 +1,9 @@
 import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
+import { sidebarSortConfigSchema, type SortConfig } from '@jpmorganchase/mosaic-schemas';
 import { cloneDeep } from 'lodash-es';
 
-import { type SortConfig, type SidebarDataNode, sortSidebarData } from './utils/sortSidebarData.js';
+import { type SidebarDataNode, sortSidebarData } from './utils/sortSidebarData.js';
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
@@ -149,7 +150,18 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const sharedSortConfig = page?.sharedConfig?.sidebar?.sort;
 
           if (sharedSortConfig) {
-            sortConfigPages[`${path.posix.dirname(page.fullPath)}`] = sharedSortConfig;
+            try {
+              sidebarSortConfigSchema.parse(sharedSortConfig);
+              sortConfigPages[`${path.posix.dirname(page.fullPath)}`] = sharedSortConfig;
+            } catch (e) {
+              /**
+               * Don't throw a PluginError here as this will stop the sidebar being generated.
+               * Plugins need a way to log errors/warnings without exceptions
+               */
+              console.error(
+                `[Mosaic] SidebarPlugin - Invalid sidebar sort config found in ${page.fullPath}`
+              );
+            }
           }
 
           const priority = page.sidebar?.priority;
