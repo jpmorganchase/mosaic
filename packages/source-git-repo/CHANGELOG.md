@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-source-git-repo
 
+## 0.1.0-beta.54
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.54
+- @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.54
+- @jpmorganchase/mosaic-types@0.1.0-beta.54
+
 ## 0.1.0-beta.53
 
 ### Patch Changes

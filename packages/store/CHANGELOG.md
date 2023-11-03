@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.54
+
 ## 0.1.0-beta.53
 
 ## 0.1.0-beta.52
