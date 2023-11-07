@@ -1,5 +1,22 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.55
+
+### Minor Changes
+
+- 3dd27378: Upgraded Salt packages to:
+
+  @salt-ds/core@1.11.0
+  @salt-ds/lab@1.0.0-alpha.20
+  @salt-ds/icons@1.7.0
+  @salt-ds/theme@1.9.0
+
+### Patch Changes
+
+- Updated dependencies [3dd27378]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.55
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.55
+
 ## 0.1.0-beta.54
 
 ### Patch Changes
