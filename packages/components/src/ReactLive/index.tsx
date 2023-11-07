@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import classnames from 'clsx';
-import { Switch } from '@salt-ds/lab';
+import { Switch } from '@salt-ds/core';
 
 import { ComponentExample } from '../ComponentExample';
 import { getMarkdownComponents } from '../Markdown';
