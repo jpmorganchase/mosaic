@@ -30,12 +30,12 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/page-templates</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/refs</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/refs</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/sidebars</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
