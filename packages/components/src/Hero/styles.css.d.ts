@@ -1,0 +1,22 @@
+declare const _default: {
+  datestamp: string;
+  datestampLabel: string;
+  description: string;
+  eyebrow: string;
+  fixedSize: string;
+  fullWidth: string;
+  fullWidthImage: string;
+  fullWidthTitle: string;
+  frame: string;
+  frameImage: string;
+  frameBackgroundImage: string;
+  heading: string;
+  image: string;
+  imageWidth: string;
+  lastLink: string;
+  link: string;
+  links: string;
+  root: string;
+  title: string;
+};
+export default _default;

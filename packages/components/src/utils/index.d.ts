@@ -1,0 +1,1 @@
+export { hasProtocol } from './hasProtocol';

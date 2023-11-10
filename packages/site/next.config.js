@@ -29,6 +29,7 @@ module.exports = {
   images: {
     domains: [
       /** Insert the domains where you will load images from */
+      'figma-store.apps.test.na-1z.gap.jpmchase.net'
       /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
     ]
   },

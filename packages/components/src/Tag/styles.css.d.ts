@@ -1,0 +1,23 @@
+declare const _default: {
+  root: string;
+  label: string;
+  icon: string;
+  small: string;
+  medium: string;
+  large: string;
+  category0: string;
+  category1: string;
+  category2: string;
+  category3: string;
+  category4: string;
+  category5: string;
+  category6: string;
+  border0: string;
+  border1: string;
+  border2: string;
+  border3: string;
+  border4: string;
+  border5: string;
+  border6: string;
+};
+export default _default;

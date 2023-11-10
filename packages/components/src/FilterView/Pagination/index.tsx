@@ -8,6 +8,8 @@ import {
 
 import styles from './styles.css';
 
+export * from './usePagination';
+
 export interface PaginationProps {
   /** Additional class name for root class override */
   className?: string;
@@ -23,7 +25,6 @@ export interface PaginationProps {
   /** Number of pages  */
   pageCount: number;
 }
-
 export const Pagination: React.FC<React.PropsWithChildren<PaginationProps>> = ({
   className,
   pageCount,

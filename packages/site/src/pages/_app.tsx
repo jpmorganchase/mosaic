@@ -1,6 +1,7 @@
 import { AppProps } from 'next/app';
 import Head from 'next/head';
 import { PT_Mono, Open_Sans } from 'next/font/google';
+import classnames from 'clsx';
 import {
   BaseUrlProvider,
   Image,
@@ -8,13 +9,18 @@ import {
   Metadata,
   components as mosaicComponents
 } from '@jpmorganchase/mosaic-site-components';
-import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
+import {
+  CommunityIndex,
+  ImageProvider,
+  LinkProvider,
+  PatternIndex,
+  ThemeProvider
+} from '@jpmorganchase/mosaic-components';
 import { useCreateStore, StoreProvider } from '@jpmorganchase/mosaic-store';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import { SessionProvider } from 'next-auth/react';
-import classnames from 'clsx';
 
 import { MyAppProps } from '../types/mosaic';
 
@@ -30,7 +36,7 @@ const openSans = Open_Sans({
   display: 'swap'
 });
 
-const components = mosaicComponents;
+const components = { ...mosaicComponents, CommunityIndex, PatternIndex };
 const layoutComponents = mosaicLayouts;
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
