@@ -1,11 +1,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/index</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/producta</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/aliases</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/productb</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -36,6 +36,11 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/sidebars</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/tags</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
