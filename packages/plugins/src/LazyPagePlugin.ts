@@ -1,9 +1,10 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import { merge, escapeRegExp } from 'lodash-es';
+import { escapeRegExp } from 'lodash-es';
 import path from 'path';
 import { TDataOut } from 'memfs';
+import { mergePageContent } from './utils/mergePageConent.js';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
@@ -31,7 +32,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
   async afterUpdate(mutableFilesystem, { ignorePages, config, pageExtensions, serialiser }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
-    // This adds a hook that triggers everytime a non-cached page is read from the filesystem.
+    // This adds a hook that triggers every time a non-cached page is read from the filesystem.
     mutableFilesystem.__internal_do_not_use_addReadFileHook(
       async (pagePath: string, fileData: TDataOut) => {
         // If this is a 'page' - read the original file from disk and try to inject anything that's missing.
@@ -42,10 +43,17 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
               pagePath,
               await fs.promises.readFile(config.data.hddPaths[pagePath])
             );
+
+            const mergedPage = mergePageContent<LazyPagePluginPage, LazyPagePluginPage>(
+              page,
+              currentPage
+            );
+
             const completePage = await serialiser.serialise(
               pagePath,
-              merge(page, currentPage, { content: page.content })
+              mergePageContent(mergedPage, { content: page.content })
             );
+
             return completePage;
           }
         }
