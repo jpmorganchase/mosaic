@@ -1,11 +1,14 @@
 ---
-title: Test
+title: Tags Test
 layout: DetailTechnical
-sidebar:
-  priority: 3
-lastModified: 1699883563219
-fullPath: /mosaic/test/index.mdx
-route: /mosaic/test/index
+data:
+  in-stock:
+    - name: Product A
+  out-of-stock:
+    - name: Product B
+lastModified: 1699976029810
+fullPath: /mosaic/test/tags/index.mdx
+route: /mosaic/test/tags/index
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,16 +16,25 @@ breadcrumbs:
   - label: Test
     path: /mosaic/test/index
     id: /mosaic/test/index.mdx
+  - label: Tags Test
+    path: /mosaic/test/tags/index
+    id: /mosaic/test/tags/index.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.02
-  time: 1200
-  words: 4
-tableOfContents: []
+  minutes: 0.04
+  time: 2400
+  words: 8
+tableOfContents:
+  - level: 2
+    id: in-stock
+    text: In Stock
+  - level: 2
+    id: out-of-stock
+    text: Out of Stock
 navigation:
-  next:
-    title: Layouts
-    route: /mosaic/test/layouts/index
+  prev:
+    title: Aliases Test
+    route: /mosaic/test/aliases/index
 sidebarData:
   - id: /mosaic/test/index
     fullPath: /mosaic/test/index.mdx
@@ -135,4 +147,10 @@ sidebarData:
 ---
 # {meta.title}
 
-Pages for e2e testing.
+## In Stock
+
+<PageFilterView view={meta.data['in-stock']} />
+
+## Out of Stock
+
+<PageFilterView view={meta.data['out-of-stock']} />
