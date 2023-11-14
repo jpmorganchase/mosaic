@@ -1,0 +1,72 @@
+---
+title: Tags
+layout: DetailTechnical
+sidebar:
+  priority: 3
+data:
+  in-stock:
+    $tag: in-stock#/data
+  out-of-stock:
+    $tag: out-of-stock#/data
+---
+
+# {meta.title}
+
+Tags are very similar to [Refs](./refs) with one very important distinction: Tags work **across multiple sources**.
+
+In Mosaic, each source has it's own filesystem which are then merged together to form a union of all source filesystems. It is in this union filesystem that tags are applied and not to the individual source filesystem that the tag was defined on.
+
+<Callout variant="warning">
+  Tags are slower to apply than refs. Multiple sources need to run and update before tagged data
+  will be resolved. If possible, stick to refs and only use tags when dealing with multiple sources.
+</Callout>
+
+## Tagging a page
+
+To tag a page, add a `tags` property to the page frontmatter. For example, the Product A page is tagged with "in-stock":
+
+```
+---
+title: Product A
+description: Mosaic Product A
+layout: ProductDiscover
+tags:
+  - in-stock
+data:
+  name:
+    $ref: '#/title'
+---
+```
+
+<Callout>`tags` is always an array</Callout>
+
+## Subscribing to a tag
+
+To subscribe to a tag, use the `$tag` property. For example, the Products page has subscribed to the `data` property of pages tagged with `in-stock`.
+
+```
+---
+title: Products
+data:
+  in-stock:
+    $tag: in-stock#/data
+---
+```
+
+<Callout>
+  A `$tag` can provide a path to a specific piece of metadata on tagged pages, just like a ref.
+</Callout>
+
+### Example
+
+This page has subscribed to `in-stock` and `out-of-stock` tags and is displaying them using 2 Mosaic `PageFilterView` components.
+
+Both the Product A and Product B pages are part of a different source than this page.
+
+#### In Stock
+
+<PageFilterView view={meta.data['in-stock']} />
+
+#### Out of Stock
+
+<PageFilterView view={meta.data['out-of-stock']} />
