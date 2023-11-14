@@ -7,6 +7,7 @@ import deepmerge from 'deepmerge';
 
 import normaliseRefs from './utils/normaliseRefs.js';
 import PluginError from './utils/PluginError.js';
+import { mergePageContent } from './utils/mergePageConent.js';
 
 const isWindows = /^win/.test(os.platform());
 const windowsDrivePattern = /^([a-z]):/i;
@@ -102,7 +103,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
         );
 
         const page = await serialiser.deserialise(pagePath, fileData);
-        const normalisedRef = { ...page, ...expandedRefs };
+        const normalisedRef = mergePageContent(page, expandedRefs);
 
         const resolve = createRefResolver(
           {
