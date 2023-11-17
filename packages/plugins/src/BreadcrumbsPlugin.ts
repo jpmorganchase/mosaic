@@ -123,8 +123,21 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
       }
     }
   },
-  async shouldUpdateNamespaceSources() {
-    return true;
+  async shouldUpdateNamespaceSources(updatedSourceFilesystem, { ignorePages, namespace }) {
+    /**
+     * Only trigger an update when the updated source happens to be the "root" namespace source
+     * This is determined this by checking if the filesystem has files inside the "namespace" directory
+     *
+     * "child" sources will have the namespace directory but they wont have files until further down the directory hierarchy
+     */
+    const namespaceDirFiles = (await updatedSourceFilesystem.promises.glob(`${namespace}/*`, {
+      onlyFiles: true,
+      ignore: ignorePages.map(ignore => `**/${ignore}`),
+      cwd: '/'
+    })) as string[];
+
+    // the root namespace has updated
+    return namespaceDirFiles.length > 0;
   }
 };
 

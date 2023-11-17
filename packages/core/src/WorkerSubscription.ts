@@ -59,10 +59,12 @@ export default class WorkerSubscription {
     } else if (type === 'track') {
       this.#emitter.emit(EVENT.TRACK, { data: JSON.parse(textDecoder.decode(data)) });
     } else if (type === 'init') {
-      this.#emitter.emit(EVENT.START);
       if (data) {
-        // We receive a file buffer for 'init', not an object
-        this.#emitter.emit(EVENT.UPDATE, { data: JSON.parse(textDecoder.decode(data)) });
+        // We receive a file buffer (cached fs) for 'init', not an object
+        this.#emitter.emit(EVENT.START, { data: JSON.parse(textDecoder.decode(data)) });
+      } else {
+        // started with no cached fs
+        this.#emitter.emit(EVENT.START);
       }
     } else {
       this.#onError(
