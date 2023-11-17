@@ -135,6 +135,7 @@ export default class Source {
   }
 
   async requestNamespaceSourceUpdate(
+    namespaceSourceDesc: string,
     updatedSourceFilesystem: IVolumeImmutable,
     sharedFilesystem: IVolumeImmutable,
     globalConfig: MutableData<unknown>
@@ -158,6 +159,9 @@ export default class Source {
       );
     }
     if (shouldInvokeAfterUpdate === true) {
+      console.log(
+        `[Mosaic][Source] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
+      );
       this.filesystem.unfreeze();
       await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
       this.filesystem.freeze();

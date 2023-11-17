@@ -247,20 +247,21 @@ export default class SourceManager {
 
   #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
     // Notify other frozen sources that share this sources namespace that something has changed.
+    const sourcesToUpdate = Array.from(this.#sources.values()).filter(
+      existingSource =>
+        existingSource !== source &&
+        existingSource.filesystem.frozen &&
+        existingSource.namespace === source.namespace
+    );
+
     return Promise.all(
-      Array.from(this.#sources.values()).map(existingSource => {
-        if (
-          existingSource !== source &&
-          existingSource.filesystem.frozen &&
-          existingSource.namespace === source.namespace
-        ) {
-          return existingSource.requestNamespaceSourceUpdate(
-            immutableSourceFilesystem,
-            this.#sharedFilesystem,
-            this.#globalConfig
-          );
-        }
-        return existingSource;
+      sourcesToUpdate.map(async sourceToUpdate => {
+        await sourceToUpdate.requestNamespaceSourceUpdate(
+          source.id.description,
+          immutableSourceFilesystem,
+          this.#sharedFilesystem,
+          this.#globalConfig
+        );
       })
     );
   }
