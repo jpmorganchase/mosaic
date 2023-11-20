@@ -43,7 +43,7 @@
     "@philpl/buble": "^0.19.7",
     "@types/react": "^18.0.26",
     "next": "^13.4.1",
-    "next-auth": "^4.22.1"
+    "next-auth": "^4.24.5"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "12.3.1",
