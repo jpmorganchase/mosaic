@@ -94,7 +94,7 @@ const StorybookSource: Source<StorybookSourceOptions> = {
 
     return timer(schedule.initialDelayMs, delayMs).pipe(
       switchMap(() => {
-        console.log('checking for new Storybook patterns', delayMs, schedule, options);
+        console.log('checking for new Storybook patterns');
         const projectFiles$: Observable<StorybookPage[]>[] = storiesConfig.map(
           (storyConfig: StoryConfig) => {
             const { url } = storyConfig;
