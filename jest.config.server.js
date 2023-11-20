@@ -19,7 +19,8 @@ module.exports = {
     '<rootDir>/packages/fromHttpRequest',
     '<rootDir>/packages/plugins',
     '<rootDir>/packages/site-middleware',
-    '<rootDir>/packages/source-http'
+    '<rootDir>/packages/source-http',
+    '<rootDir>/packages/source-storybook'
   ],
   transformIgnorePatterns: [
     // Ignore node_modules except for the following packages (required to run Plugin tests)
