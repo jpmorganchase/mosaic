@@ -4,39 +4,66 @@ import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import { fromHttpRequest, isErrorResponse } from '@jpmorganchase/mosaic-from-http-request';
 import { sourceScheduleSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
+import proxyAgentPkg from 'https-proxy-agent';
 
-import { fromDynamicImport } from './fromDynamicImport.js';
+import { fromDynamicImport, type ResponseTransformer } from './fromDynamicImport.js';
+
+const { HttpsProxyAgent } = proxyAgentPkg;
 
 export const schema = z.object({
   schedule: sourceScheduleSchema.optional(),
-  endpoints: z.array(z.string()).nonempty('Please provide a URL'),
+  endpoints: z.array(z.string().url()).default([]),
   prefixDir: z.string({ required_error: 'Please provide a prefixDir' }),
+  requestTimeout: z.number().default(5000),
+  proxyEndpoint: z.string().url().optional(),
+  requestHeaders: z.object({}).passthrough().optional(),
   transformResponseToPagesModulePath: z.string({
-    description: `The path to a module that exports a function to transform request responses into Pages. The transformer must bea default export.
-      An optional request config object (https://developer.mozilla.org/en-US/docs/Web/API/Request) can also be provided to further configure requests.`,
+    description: `The path to a module that exports a function to transform request responses into Pages. The transformer must be a default export or named "transformer".`,
     required_error: 'Please provide the path to the module for transforming responses'
-  })
+  }),
+  transformerOptions: z.unknown().optional()
 });
 
 export type HttpSourceOptions = z.infer<typeof schema>;
+export type HttpSourceResponseTransformerType<TResponse, TOptions> = ResponseTransformer<
+  TResponse,
+  TOptions
+>;
 
 const HttpSource: Source<HttpSourceOptions> = {
   create(options, { schedule }): Observable<Page[]> {
-    const { endpoints, prefixDir, transformResponseToPagesModulePath } = validateMosaicSchema(
-      schema,
-      options
-    );
+    const {
+      endpoints,
+      prefixDir,
+      transformResponseToPagesModulePath,
+      transformerOptions,
+      proxyEndpoint,
+      requestTimeout,
+      requestHeaders
+    } = validateMosaicSchema(schema, options);
     const delayMs = schedule.checkIntervalMins * 60000;
 
-    return fromDynamicImport(transformResponseToPagesModulePath).pipe(
-      switchMap(({ transformer, requestConfig }) =>
+    const requestConfig = {
+      agent: proxyEndpoint ? new HttpsProxyAgent(proxyEndpoint) : undefined,
+      timeout: requestTimeout,
+      headers: {
+        ...(requestHeaders as HeadersInit)
+      }
+    };
+
+    return fromDynamicImport<Page[], typeof transformerOptions>(
+      transformResponseToPagesModulePath
+    ).pipe(
+      switchMap(({ transformer }) =>
         timer(schedule.initialDelayMs, delayMs).pipe(
           switchMap(() => {
-            const requests = endpoints.map(endpoint => {
-              const request = requestConfig ? new Request(endpoint, requestConfig) : endpoint;
+            const requests = endpoints.map((endpoint, index) => {
+              const request = new Request(endpoint, requestConfig);
               return fromHttpRequest<Page[]>(request).pipe(
                 map(response =>
-                  isErrorResponse<Page[]>(response) ? [] : transformer(response, prefixDir)
+                  isErrorResponse<Page[]>(response)
+                    ? []
+                    : transformer(response, prefixDir, index, transformerOptions)
                 )
               );
             });
