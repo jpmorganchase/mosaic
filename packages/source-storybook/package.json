@@ -30,12 +30,12 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.47",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.47",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.47",
+    "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.55",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.55",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.55",
     "https-proxy-agent": "^5.0.1",
     "rxjs": "^7.5.5",
-    "zod": "^3.19.1"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "msw": "^0.47.4"
