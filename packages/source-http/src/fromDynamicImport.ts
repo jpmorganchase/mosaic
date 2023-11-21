@@ -1,21 +1,28 @@
 import type { Page } from '@jpmorganchase/mosaic-types';
-import { from } from 'rxjs';
+import { distinctUntilChanged, from, switchMap } from 'rxjs';
 
-export type ResponseTransformer = (...args: unknown[]) => Page[];
+export type ResponseTransformer<TResponse, TOptions> = (
+  response: TResponse,
+  prefixDir: string,
+  index: number,
+  options?: TOptions
+) => Page[];
 
-let transformer: { transformer: ResponseTransformer; requestConfig?: RequestInit };
-
-async function importTransformer(modulePath: string): Promise<typeof transformer> {
-  if (transformer !== undefined) {
-    return transformer;
-  }
-
-  const { default: transformResponseToPages, requestConfig } = await import(modulePath);
+async function importTransformer<T, O>(
+  modulePath: string
+): Promise<{
+  transformer: ResponseTransformer<T, O>;
+}> {
+  const { default: transformResponseToPages } = await import(modulePath);
   if (!transformResponseToPages) {
     throw new Error(`[Mosaic] '${modulePath}' did not have a default export.`);
   }
-  transformer = { transformer: transformResponseToPages, requestConfig };
-  return transformer;
+
+  return { transformer: transformResponseToPages };
 }
 
-export const fromDynamicImport = (modulePath: string) => from(importTransformer(modulePath));
+export const fromDynamicImport = <TResponse = unknown, TOptions = unknown>(modulePath: string) =>
+  from(modulePath).pipe(
+    distinctUntilChanged(),
+    switchMap(() => importTransformer<TResponse, TOptions>(modulePath))
+  );
