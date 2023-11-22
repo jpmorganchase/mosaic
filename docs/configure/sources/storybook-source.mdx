@@ -1,0 +1,75 @@
+---
+title: Storybook Source
+layout: DetailTechnical
+sidebar:
+  priority: 5
+  label: Storybook
+---
+
+# {meta.title}
+
+The Storybook source is used to pull individual stories from Storybook, based on tags.
+
+The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
+
+For each matching story, a page is created in the Mosaic file-system.
+
+- additional Mosaic tags can be added to each page using `additionalTags`
+- additional Mosaic metadata can be added to each page using `additionalData`
+
+This information can be used to create a dynamic index of stories from Storybook.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-storybook`
+
+## Configuration
+
+The Storybook source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
+
+The `stories` option is an array of Storybook urls that are used as Sources.
+Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
+
+If specified, `additionalTags` and `additionalData` can be added to any matching pages.
+
+| Property        | Description            | Required |
+| --------------- | ---------------------- | -------- |
+| options.stories | array of story configs | Yes      |
+
+`stories` is an array of Storybooks that you want to pull stories from
+
+| Property       | Description                              | Required |
+| -------------- | ---------------------------------------- | -------- |
+| url            | url of the storybook                     | Yes      |
+| description    | description of the storybook stories     | Yes      |
+| filter         | RegExp filter to match on                | No       |
+| filterTags     | Array of Storybook tags to match on      | No       |
+| additionalTags | additional tags to add to the stories    | No       |
+| additionalData | additional data to add to matching pages | No       |
+
+### Example Local Folder Source Definition
+
+```
+sources: [
+    {
+      disabled: process.env.NODE_ENV !== 'development',
+      modulePath: '@jpmorganchase/mosaic-source-storybook',
+      namespace: 'salt',
+      options: {
+        prefixDir: '/salt/internal/community-index/story-navigation',
+        stories: [
+          {
+            url: 'https://storybook.saltdesignsystem.com',
+            description: 'Navigation patterns created in the Salt Labs',
+            additionalData: {
+                someAdditionalData: 'some-value' // can be any additional metadata you want added to the page's meta.data
+            },
+            additionalTags: ['salt-pattern-navigation'],
+            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+          }
+        ]
+      }
+    }
+]
+```

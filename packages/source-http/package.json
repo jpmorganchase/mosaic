@@ -11,7 +11,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "node": "./dist/index.js"
+      "node": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "engines": {
@@ -34,6 +35,7 @@
     "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.55",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.55",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.55",
+    "https-proxy-agent": "^5.0.1",
     "rxjs": "^7.5.5",
     "zod": "^3.22.3"
   },

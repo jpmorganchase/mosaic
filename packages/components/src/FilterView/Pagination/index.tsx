@@ -8,6 +8,8 @@ import {
 
 import styles from './styles.css';
 
+export * from './usePagination';
+
 export interface PaginationProps {
   /** Additional class name for root class override */
   className?: string;
