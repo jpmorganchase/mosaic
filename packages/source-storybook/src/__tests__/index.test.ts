@@ -86,10 +86,8 @@ const successHandlers = [
 
 describe('GIVEN a Storybook Source ', () => {
   describe.only('WHEN a fetch is successful', () => {
-    console.log('>>>>>>>> 2');
     const server = setupServer();
     beforeAll(() => {
-      console.log('>>>>>>>> 3');
       server.use(...successHandlers);
       server.listen({ onUnhandledRequest: 'warn' });
     });

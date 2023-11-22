@@ -2,7 +2,9 @@ const sharedConfig = require('./scripts/jest/jest.config.base.js');
 
 const moduleNameMapper = {
   '^(\\.{1,2}/.*)\\.js$': '$1',
-  '^lodash-es$': 'lodash'
+  '^lodash-es$': 'lodash',
+  '@jpmorganchase/mosaic-source-storybook/dist/transformer.js':
+    '<rootDir>/packages/source-storybook/dist/transformer.js'
 };
 
 module.exports = {
