@@ -1,21 +1,19 @@
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import HttpSource, { schema as httpSourceSchema } from '@jpmorganchase/mosaic-source-http';
-import { fileURLToPath } from 'node:url';
 
-const defaultStorybookTransformer = fileURLToPath(new URL('./transformer.js', import.meta.url));
+import createStorybookPages from './transformer.js';
+import { StoriesResponseJSON } from './types/index.js';
 
 const baseSchema = httpSourceSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
-  transformResponseToPagesModulePath: true, // this is optional for this source as there is a default
   transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
 });
 
 export const schema = baseSchema.merge(
   z.object({
-    transformResponseToPagesModulePath: z.string().default(defaultStorybookTransformer),
     stories: z
       .array(
         z.object({
@@ -39,21 +37,29 @@ export type StorybookSourceOptions = z.infer<typeof schema>;
 const StorybookSource: Source<StorybookSourceOptions> = {
   create(options, sourceConfig): Observable<Page[]> {
     const parsedOptions = validateMosaicSchema(schema, options);
-    const { stories: storiesConfig, ...restOptions } = parsedOptions;
+    const { prefixDir, stories: storiesConfig, ...restOptions } = parsedOptions;
 
     const storybookPages$ = HttpSource.create(
       {
-        ...restOptions,
-        endpoints: storiesConfig.map(config => `${config.url}/stories.json`),
-        transformerOptions: storiesConfig,
+        prefixDir,
         requestHeaders: {
           'Content-Type': 'application/json'
-        }
+        },
+        ...restOptions,
+        endpoints: storiesConfig.map(config => `${config.url}/stories.json`)
       },
       sourceConfig
     );
 
-    return storybookPages$;
+    return storybookPages$.pipe(
+      map(responses =>
+        // TODO: why is flatMap needed?
+        responses.flatMap((response, index) => {
+          const stories = response as unknown as StoriesResponseJSON;
+          return createStorybookPages(stories, prefixDir, index, storiesConfig);
+        })
+      )
+    );
   }
 };
 

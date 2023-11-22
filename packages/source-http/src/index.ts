@@ -14,13 +14,15 @@ export const schema = z.object({
   schedule: sourceScheduleSchema.optional(),
   endpoints: z.array(z.string().url()).default([]),
   prefixDir: z.string({ required_error: 'Please provide a prefixDir' }),
-  requestTimeout: z.number().default(5000),
+  requestTimeout: z.number().optional().default(5000),
   proxyEndpoint: z.string().url().optional(),
   requestHeaders: z.object({}).passthrough().optional(),
-  transformResponseToPagesModulePath: z.string({
-    description: `The path to a module that exports a function to transform request responses into Pages. The transformer must be a default export or named "transformer".`,
-    required_error: 'Please provide the path to the module for transforming responses'
-  }),
+  transformResponseToPagesModulePath: z
+    .string({
+      description: `The path to a module that exports a function to transform request responses into Pages. The transformer must be a default export.
+      If omitted, the raw request responses are returned unmodified`
+    })
+    .optional(),
   transformerOptions: z.unknown().optional()
 });
 
@@ -42,6 +44,7 @@ const HttpSource: Source<HttpSourceOptions> = {
       requestHeaders
     } = validateMosaicSchema(schema, options);
     const delayMs = schedule.checkIntervalMins * 60000;
+    const applyTransformer = transformResponseToPagesModulePath !== undefined;
 
     const requestConfig = {
       agent: proxyEndpoint ? new HttpsProxyAgent(proxyEndpoint) : undefined,
@@ -60,11 +63,15 @@ const HttpSource: Source<HttpSourceOptions> = {
             const requests = endpoints.map((endpoint, index) => {
               const request = new Request(endpoint, requestConfig);
               return fromHttpRequest<Page[]>(request).pipe(
-                map(response =>
-                  isErrorResponse<Page[]>(response)
-                    ? []
-                    : transformer(response, prefixDir, index, transformerOptions)
-                )
+                map(response => {
+                  if (isErrorResponse<Page[]>(response)) {
+                    return [];
+                  }
+
+                  return applyTransformer && transformer !== null
+                    ? transformer(response, prefixDir, index, transformerOptions)
+                    : response;
+                })
               );
             });
             return forkJoin(requests).pipe(map(result => result.flat()));
