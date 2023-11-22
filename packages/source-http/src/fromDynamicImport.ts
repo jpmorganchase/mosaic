@@ -1,5 +1,5 @@
 import type { Page } from '@jpmorganchase/mosaic-types';
-import { distinctUntilChanged, from, switchMap } from 'rxjs';
+import { distinctUntilChanged, from, iif, of, switchMap } from 'rxjs';
 
 export type ResponseTransformer<TResponse, TOptions> = (
   response: TResponse,
@@ -21,8 +21,12 @@ async function importTransformer<T, O>(
   return { transformer: transformResponseToPages };
 }
 
-export const fromDynamicImport = <TResponse = unknown, TOptions = unknown>(modulePath: string) =>
-  from(modulePath).pipe(
-    distinctUntilChanged(),
-    switchMap(() => importTransformer<TResponse, TOptions>(modulePath))
+export const fromDynamicImport = <TResponse = unknown, TOptions = unknown>(modulePath?: string) =>
+  iif(
+    () => modulePath === undefined,
+    of({ transformer: null }),
+    from(String(modulePath)).pipe(
+      distinctUntilChanged(),
+      switchMap(() => importTransformer<TResponse, TOptions>(String(modulePath)))
+    )
   );
