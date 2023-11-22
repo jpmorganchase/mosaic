@@ -1,5 +1,28 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.56
+
+### Patch Changes
+
+- 6d30e29f: Add new Storybook source
+
+  Storybook stories can be extracted from Storybook and embedded into Mosaic pages.
+
+  The stories are extracted based on a configured filter or matching tags.
+
+  With a page created for each Story, the author can create a dynamic index of matching stories.
+
+  eg. An index of patterns which match a specific tag
+
+- Updated dependencies [6d30e29f]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.56
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.56
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.56
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.56
+
 ## 0.1.0-beta.55
 
 ### Minor Changes
