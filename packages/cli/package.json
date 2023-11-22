@@ -10,7 +10,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "node": "./dist/index.mjs"
+      "node": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     }
   },
   "engines": {

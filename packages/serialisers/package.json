@@ -11,7 +11,8 @@
     "./mdx": {
       "types": "./dist/mdx.d.ts",
       "import": "./dist/mdx.js",
-      "node": "./dist/mdx.js"
+      "node": "./dist/mdx.js",
+      "default": "./dist/index.js"
     },
     "./json": {
       "types": "./dist/json.d.ts",

@@ -106,6 +106,9 @@
     "commander": "^9.4.0",
     "json5": "^1.0.2"
   },
+  "overrides": {
+    "types-ramda": "0.29.4"
+  },
   "lint-staged": {
     "*": [
       "prettier --write"

@@ -19,7 +19,8 @@
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "node": "./dist/index.js"
+      "node": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {

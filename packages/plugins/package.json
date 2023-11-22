@@ -9,7 +9,8 @@
     "./*": {
       "types": "./dist/*.d.ts",
       "import": "./dist/*.js",
-      "node": "./dist/*.js"
+      "node": "./dist/*.js",
+      "default": "./dist/index.js"
     },
     "./PluginError": {
       "types": "./dist/utils/PluginError.d.ts",
