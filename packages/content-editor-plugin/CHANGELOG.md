@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.57
+
+### Patch Changes
+
+- d214d112: Add catch-all default exports for
+
+  - `@jpmorganchase/mosaic-store`
+  - `@jpmorganchase/mosaic-theme`
+  - `@jpmorganchase/mosaic-workflows`
+
+  This resolves an issue when running tests from an external repo which depends on these packages
+
+- Updated dependencies [d214d112]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.57
+  - @jpmorganchase/mosaic-components@0.1.0-beta.57
+
 ## 0.1.0-beta.56
 
 ### Patch Changes
