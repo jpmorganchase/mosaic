@@ -1,12 +1,12 @@
-import { forkJoin, Observable, timer } from 'rxjs';
+import { forkJoin, timer } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { z } from 'zod';
-import type { Page, Source } from '@jpmorganchase/mosaic-types';
+import type { Page, Source, SourceConfig } from '@jpmorganchase/mosaic-types';
 import { fromHttpRequest, isErrorResponse } from '@jpmorganchase/mosaic-from-http-request';
 import { sourceScheduleSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import proxyAgentPkg from 'https-proxy-agent';
 
-import { fromDynamicImport, type ResponseTransformer } from './fromDynamicImport.js';
+import { fromDynamicImport, ResponseTransformer } from './fromDynamicImport.js';
 
 const { HttpsProxyAgent } = proxyAgentPkg;
 
@@ -32,53 +32,67 @@ export type HttpSourceResponseTransformerType<TResponse, TOptions> = ResponseTra
   TOptions
 >;
 
-const HttpSource: Source<HttpSourceOptions> = {
-  create(options, { schedule }): Observable<Page[]> {
-    const {
-      endpoints,
-      prefixDir,
-      transformResponseToPagesModulePath,
-      transformerOptions,
-      proxyEndpoint,
-      requestTimeout,
-      requestHeaders
-    } = validateMosaicSchema(schema, options);
-    const delayMs = schedule.checkIntervalMins * 60000;
-    const applyTransformer = transformResponseToPagesModulePath !== undefined;
+/**
+ * For use inside *other* sources.
+ * Allows the return type to be defined
+ */
+export function createHttpSource<TResponse>(
+  options: HttpSourceOptions,
+  { schedule }: SourceConfig
+) {
+  const {
+    endpoints,
+    prefixDir,
+    transformResponseToPagesModulePath,
+    transformerOptions,
+    proxyEndpoint,
+    requestTimeout,
+    requestHeaders
+  } = validateMosaicSchema(schema, options);
+  const delayMs = schedule.checkIntervalMins * 60000;
+  const applyTransformer = transformResponseToPagesModulePath !== undefined;
 
-    const requestConfig = {
-      agent: proxyEndpoint ? new HttpsProxyAgent(proxyEndpoint) : undefined,
-      timeout: requestTimeout,
-      headers: {
-        ...(requestHeaders as HeadersInit)
-      }
-    };
+  const requestConfig = {
+    agent: proxyEndpoint ? new HttpsProxyAgent(proxyEndpoint) : undefined,
+    timeout: requestTimeout,
+    headers: {
+      ...(requestHeaders as HeadersInit)
+    }
+  };
 
-    return fromDynamicImport<Page[], typeof transformerOptions>(
-      transformResponseToPagesModulePath
-    ).pipe(
-      switchMap(({ transformer }) =>
-        timer(schedule.initialDelayMs, delayMs).pipe(
-          switchMap(() => {
-            const requests = endpoints.map((endpoint, index) => {
-              const request = new Request(endpoint, requestConfig);
-              return fromHttpRequest<Page[]>(request).pipe(
-                map(response => {
-                  if (isErrorResponse<Page[]>(response)) {
-                    return [];
-                  }
+  return fromDynamicImport<TResponse, typeof transformerOptions>(
+    transformResponseToPagesModulePath
+  ).pipe(
+    switchMap(({ transformer }) =>
+      timer(schedule.initialDelayMs, delayMs).pipe(
+        switchMap(() => {
+          const requests = endpoints.map((endpoint, index) => {
+            const request = new Request(endpoint, requestConfig);
+            return fromHttpRequest<TResponse>(request).pipe(
+              map(response => {
+                if (isErrorResponse<TResponse>(response)) {
+                  return [];
+                }
 
-                  return applyTransformer && transformer !== null
+                const result =
+                  applyTransformer && transformer !== null
                     ? transformer(response, prefixDir, index, transformerOptions)
                     : response;
-                })
-              );
-            });
-            return forkJoin(requests).pipe(map(result => result.flat()));
-          })
-        )
+
+                return result;
+              })
+            );
+          });
+          return forkJoin(requests).pipe(map(result => result.flat()));
+        })
       )
-    );
+    )
+  );
+}
+
+const HttpSource: Source<HttpSourceOptions> = {
+  create(options, sourceConfig) {
+    return createHttpSource<Page>(options, sourceConfig);
   }
 };
 

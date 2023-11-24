@@ -1,4 +1,3 @@
-import type { Page } from '@jpmorganchase/mosaic-types';
 import { distinctUntilChanged, from, iif, of, switchMap } from 'rxjs';
 
 export type ResponseTransformer<TResponse, TOptions> = (
@@ -6,7 +5,7 @@ export type ResponseTransformer<TResponse, TOptions> = (
   prefixDir: string,
   index: number,
   options?: TOptions
-) => Page[];
+) => Array<TResponse>;
 
 async function importTransformer<T, O>(
   modulePath: string
