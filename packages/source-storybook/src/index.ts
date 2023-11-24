@@ -1,11 +1,11 @@
-import { map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 import { z } from 'zod';
-import type { Page, Source } from '@jpmorganchase/mosaic-types';
+import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
-import HttpSource, { schema as httpSourceSchema } from '@jpmorganchase/mosaic-source-http';
+import { createHttpSource, schema as httpSourceSchema } from '@jpmorganchase/mosaic-source-http';
 
 import createStorybookPages from './transformer.js';
-import { StoriesResponseJSON } from './types/index.js';
+import { StoriesResponseJSON, StorybookPage } from './types/index.js';
 
 const baseSchema = httpSourceSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
@@ -34,12 +34,12 @@ export const schema = baseSchema.merge(
 
 export type StorybookSourceOptions = z.infer<typeof schema>;
 
-const StorybookSource: Source<StorybookSourceOptions> = {
-  create(options, sourceConfig): Observable<Page[]> {
+const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
+  create(options, sourceConfig) {
     const parsedOptions = validateMosaicSchema(schema, options);
     const { prefixDir, stories: storiesConfig, ...restOptions } = parsedOptions;
 
-    const storybookPages$ = HttpSource.create(
+    const storybookHttpSource$ = createHttpSource<StoriesResponseJSON>(
       {
         prefixDir,
         requestHeaders: {
@@ -51,13 +51,11 @@ const StorybookSource: Source<StorybookSourceOptions> = {
       sourceConfig
     );
 
-    return storybookPages$.pipe(
+    return storybookHttpSource$.pipe(
       map(responses =>
-        // TODO: why is flatMap needed?
-        responses.flatMap((response, index) => {
-          const stories = response as unknown as StoriesResponseJSON;
-          return createStorybookPages(stories, prefixDir, index, storiesConfig);
-        })
+        responses.flatMap((storybookJsons, index) =>
+          createStorybookPages(storybookJsons, prefixDir, index, storiesConfig)
+        )
       )
     );
   }
