@@ -21,6 +21,9 @@ const options = {
       additionalTags: ['some-additional-tag-1'],
       filter: /TestComponent\/SomePath\/Component/
     },
+    /**
+     * Will be filter by filterTags
+     */
     {
       description: 'some description 2',
       url: 'https://api.endpoint.com/2',
@@ -28,12 +31,30 @@ const options = {
       additionalTags: ['some-additional-tag-2'],
       filterTags: ['tag-2']
     },
+    /**
+     * Will be filter by filter regex
+     */
     {
       description: 'some description 3',
       url: 'https://api.endpoint.com/3',
       additionalData: { owner: 'some owner 3' },
       additionalTags: ['some-additional-tag-3'],
       filter: /IgnoredComponent\/SomePath\/Component/
+    },
+    {
+      description: 'some description 4',
+      url: 'https://api.endpoint.com/4',
+      additionalData: { owner: 'some owner 4' },
+      additionalTags: ['some-additional-tag-4'],
+      filter: /TestComponent\/SomePath\/Component/
+    },
+    /**
+     * No additional data or tags
+     */
+    {
+      description: 'some description 5',
+      url: 'https://api.endpoint.com/5',
+      filter: /TestComponent\/SomePath\/Component/
     }
   ]
 };
@@ -81,11 +102,17 @@ const successHandlers = [
   }),
   rest.get(`${options.stories[2].url}/stories.json`, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(3)));
+  }),
+  rest.get(`${options.stories[3].url}/stories.json`, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(createResponse(4)));
+  }),
+  rest.get(`${options.stories[4].url}/stories.json`, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(createResponse(5)));
   })
 ];
 
 describe('GIVEN a Storybook Source ', () => {
-  describe.only('WHEN a fetch is successful', () => {
+  describe('WHEN a fetch is successful', () => {
     const server = setupServer();
     beforeAll(() => {
       server.use(...successHandlers);
@@ -99,7 +126,8 @@ describe('GIVEN a Storybook Source ', () => {
       const source$: Observable<StorybookPage[]> = Source.create(options, { schedule });
       source$.pipe(take(1)).subscribe({
         next: result => {
-          expect(result.length).toEqual(2);
+          // 5 stories, 1 filtered by `filter` and another by `filterTags`
+          expect(result.length).toEqual(options.stories.length - 2);
         },
         complete: () => done()
       });
@@ -110,7 +138,12 @@ describe('GIVEN a Storybook Source ', () => {
       source$.pipe(take(1)).subscribe({
         next: result => {
           expect(result[0]).toEqual(createExpectedResult(1));
-          expect(result[1]).toEqual(createExpectedResult(2));
+          expect(result[1]).toEqual(createExpectedResult(4));
+
+          const result5 = createExpectedResult(5);
+          result5.tags = []; // no tags added for this 1
+          delete result5.data.owner; // no additional data added for this 1
+          expect(result[2]).toEqual(result5);
         },
         complete: () => done()
       });

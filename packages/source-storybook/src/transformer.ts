@@ -20,7 +20,7 @@ const createStorybookPages = (
     if (filter && !filter.test(story.kind)) {
       return result;
     }
-    if (filterTags && !filterTags.some(filterTag => story.tags.indexOf(filterTag) >= 0)) {
+    if (filterTags && filterTags.some(filterTag => story.tags.indexOf(filterTag) >= 0)) {
       return result;
     }
     const { id, kind, name, tags, story: storyName } = story;
