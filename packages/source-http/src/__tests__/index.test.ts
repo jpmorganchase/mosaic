@@ -1,10 +1,12 @@
 import { Observable, of, take } from 'rxjs';
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
+
 import type { Page } from '@jpmorganchase/mosaic-types';
 
 import Source, { createHttpSource } from '../index.js';
 import { fromDynamicImport } from '../fromDynamicImport.js';
+import { createProxyAgent } from '../proxyAgent.js';
 
 jest.mock('../fromDynamicImport', () => ({
   ...jest.requireActual('../fromDynamicImport'),
@@ -12,6 +14,11 @@ jest.mock('../fromDynamicImport', () => ({
   fromDynamicImport: jest
     .fn()
     .mockImplementation((modulePath: string) => of({ transformer: toUpperCaseTransformer }))
+}));
+
+jest.mock('../proxyAgent', () => ({
+  __esModule: true,
+  createProxyAgent: jest.fn().mockImplementation((proxyUrl: string) => undefined)
 }));
 
 function toUpperCaseTransformer(response) {
@@ -31,6 +38,19 @@ const schedule = {
 
 const options = {
   endpoints,
+  transformResponseToPagesModulePath: '',
+  prefixDir: 'prefixDir'
+};
+
+const configuredRequestsOptions = {
+  configuredRequests: endpoints.map(
+    url =>
+      new Request(url, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+  ),
   transformResponseToPagesModulePath: '',
   prefixDir: 'prefixDir'
 };
@@ -122,28 +142,6 @@ describe('GIVEN an HTTP Source ', () => {
     });
   });
 
-  describe('WHEN the transformer has a request config', () => {
-    const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
-    it('should merge results from **successful** endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = Source.create(options, { schedule });
-
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result.length).toEqual(3);
-          expect(result[0]).toEqual('ALICE');
-        },
-        complete: () => done()
-      });
-    });
-  });
-
   describe('WHEN no transformResponseToPagesModulePath is undefined', () => {
     const server = setupServer();
     beforeAll(() => {
@@ -179,6 +177,36 @@ describe('GIVEN an HTTP Source ', () => {
           expect(result[0]).toEqual({ name: 'Alice' });
           expect(result[1]).toEqual({ name: 'Bob' });
           expect(result[2]).toEqual({ name: 'Eve' });
+        },
+        complete: () => done()
+      });
+    });
+  });
+
+  describe('WHEN noProxy option is used', () => {
+    const server = setupServer();
+    beforeAll(() => {
+      server.use(...successHandlers);
+      server.listen({ onUnhandledRequest: 'warn' });
+    });
+    afterAll(() => {
+      server.close();
+    });
+
+    it('THEN a proxy agent is created for all matching endpoints', done => {
+      const proxyEndpoint = 'https://proxy.endpoint.com';
+      const source$: Observable<Page[]> = Source.create(
+        {
+          ...options,
+          noProxy: /api.endpoint.com\/2/,
+          proxyEndpoint
+        },
+        { schedule }
+      );
+
+      source$.pipe(take(1)).subscribe({
+        next: result => {
+          expect(createProxyAgent).toHaveBeenCalledTimes(2);
         },
         complete: () => done()
       });
@@ -312,6 +340,49 @@ describe('GIVEN the createHttpSource function ', () => {
           expect(result[0]).toEqual({ name: 'Alice' });
           expect(result[1]).toEqual({ name: 'Bob' });
           expect(result[2]).toEqual({ name: 'Eve' });
+        },
+        complete: () => done()
+      });
+    });
+  });
+
+  describe('WHEN `configuredRequests` option is used', () => {
+    const server = setupServer();
+    beforeAll(() => {
+      server.use(
+        rest.get('*', (req, res, ctx) => {
+          return res(ctx.status(200), ctx.json({ name: `David ${req.url}` }));
+        })
+      );
+      server.listen({ onUnhandledRequest: 'warn' });
+    });
+    afterAll(() => {
+      server.close();
+    });
+
+    it('should merge results from all endpoints into 1 array', done => {
+      const source$: Observable<Page[]> = createHttpSource(configuredRequestsOptions, {
+        schedule
+      });
+
+      source$.pipe(take(1)).subscribe({
+        next: result => {
+          expect(result.length).toEqual(3);
+        },
+        complete: () => done()
+      });
+    });
+
+    it('should transform the responses using the transform function', done => {
+      const source$: Observable<Page[]> = createHttpSource(configuredRequestsOptions, {
+        schedule
+      });
+
+      source$.pipe(take(1)).subscribe({
+        next: result => {
+          expect(result[0]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/1');
+          expect(result[1]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/2');
+          expect(result[2]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/3');
         },
         complete: () => done()
       });
