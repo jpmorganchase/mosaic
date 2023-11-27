@@ -34,7 +34,6 @@
     "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.57",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.57",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.57",
-    "https-proxy-agent": "^5.0.1",
     "rxjs": "^7.5.5",
     "zod": "^3.22.3"
   },
