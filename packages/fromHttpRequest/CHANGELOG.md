@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-from-http-request
 
+## 0.1.0-beta.58
+
 ## 0.1.0-beta.57
 
 ### Patch Changes
