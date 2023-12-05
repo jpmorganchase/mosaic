@@ -1,16 +1,17 @@
-import { distinctUntilChanged, from, iif, of, switchMap } from 'rxjs';
+import type { Page } from '@jpmorganchase/mosaic-types';
+import { distinctUntilChanged, from, switchMap } from 'rxjs';
 
-export type ResponseTransformer<TResponse, TOptions> = (
+export type ResponseTransformer<TResponse, TPage> = (
   response: TResponse,
   prefixDir: string,
   index: number,
-  options?: TOptions
-) => Array<TResponse>;
+  ...rest: any[]
+) => Array<TPage>;
 
-async function importTransformer<T, O>(
+async function importTransformer<TResponse, TPage>(
   modulePath: string
 ): Promise<{
-  transformer: ResponseTransformer<T, O>;
+  transformer: ResponseTransformer<TResponse, TPage>;
 }> {
   const { default: transformResponseToPages } = await import(modulePath);
   if (!transformResponseToPages) {
@@ -20,12 +21,8 @@ async function importTransformer<T, O>(
   return { transformer: transformResponseToPages };
 }
 
-export const fromDynamicImport = <TResponse = unknown, TOptions = unknown>(modulePath?: string) =>
-  iif(
-    () => modulePath === undefined,
-    of({ transformer: null }),
-    from(String(modulePath)).pipe(
-      distinctUntilChanged(),
-      switchMap(() => importTransformer<TResponse, TOptions>(String(modulePath)))
-    )
+export const fromDynamicImport = <TResponse = unknown, TPage = Page>(modulePath: string) =>
+  from(modulePath).pipe(
+    distinctUntilChanged(),
+    switchMap(() => importTransformer<TResponse, TPage>(modulePath))
   );

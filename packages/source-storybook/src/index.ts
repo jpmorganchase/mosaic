@@ -4,14 +4,14 @@ import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import {
   createHttpSource,
-  schema as httpSourceSchema,
+  httpSourceCreatorSchema,
   createProxyAgent
 } from '@jpmorganchase/mosaic-source-http';
 
 import createStorybookPages from './transformer.js';
 import { StoriesResponseJSON, StorybookPage } from './types/index.js';
 
-const baseSchema = httpSourceSchema.omit({
+const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
   noProxy: true, // proxy is specified per storybook config.  Remove it if not needed for that storybook
   transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
@@ -70,22 +70,18 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
       });
     });
 
-    const storybookHttpSource$ = createHttpSource<StoriesResponseJSON>(
+    const storybookHttpSource$ = createHttpSource<StoriesResponseJSON, StorybookPage>(
       {
         prefixDir,
         ...restOptions,
-        configuredRequests
+        configuredRequests,
+        transformer: createStorybookPages,
+        transformerOptions: storiesConfig
       },
       sourceConfig
     );
 
-    return storybookHttpSource$.pipe(
-      map(responses =>
-        responses.flatMap((storybookJsons, index) =>
-          createStorybookPages(storybookJsons, prefixDir, index, storiesConfig)
-        )
-      )
-    );
+    return storybookHttpSource$.pipe(map(pages => pages.flat()));
   }
 };
 
