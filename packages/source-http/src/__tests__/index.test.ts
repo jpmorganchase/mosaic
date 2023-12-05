@@ -142,47 +142,6 @@ describe('GIVEN an HTTP Source ', () => {
     });
   });
 
-  describe('WHEN no transformResponseToPagesModulePath is undefined', () => {
-    const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
-
-    it('should merge results from all endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = Source.create(
-        { ...options, transformResponseToPagesModulePath: undefined },
-        { schedule }
-      );
-
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result.length).toEqual(3);
-        },
-        complete: () => done()
-      });
-    });
-
-    it('no transformation of responses is carried out', done => {
-      const source$: Observable<Page[]> = Source.create(
-        { ...options, transformResponseToPagesModulePath: undefined },
-        { schedule }
-      );
-
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result[0]).toEqual({ name: 'Alice' });
-          expect(result[1]).toEqual({ name: 'Bob' });
-          expect(result[2]).toEqual({ name: 'Eve' });
-        },
-        complete: () => done()
-      });
-    });
-  });
-
   describe('WHEN noProxy option is used', () => {
     const server = setupServer();
     beforeAll(() => {
@@ -226,7 +185,10 @@ describe('GIVEN the createHttpSource function ', () => {
     });
 
     it('should merge results from all endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = createHttpSource(options, { schedule });
+      const source$: Observable<Page[]> = createHttpSource(
+        { ...options, transformer: toUpperCaseTransformer },
+        { schedule }
+      );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -237,7 +199,10 @@ describe('GIVEN the createHttpSource function ', () => {
     });
 
     it('should transform the responses using the transform function', done => {
-      const source$: Observable<Page[]> = createHttpSource(options, { schedule });
+      const source$: Observable<Page[]> = createHttpSource(
+        { ...options, transformer: toUpperCaseTransformer },
+        { schedule }
+      );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -271,7 +236,10 @@ describe('GIVEN the createHttpSource function ', () => {
     });
 
     it('should merge results from **successful** endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = createHttpSource(options, { schedule });
+      const source$: Observable<Page[]> = createHttpSource(
+        { ...options, transformer: toUpperCaseTransformer },
+        { schedule }
+      );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -283,30 +251,9 @@ describe('GIVEN the createHttpSource function ', () => {
     });
   });
 
-  describe('WHEN the transformer has a request config', () => {
+  describe('WHEN the transformer is passed params', () => {
     const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
-    it('should merge results from **successful** endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = createHttpSource(options, { schedule });
-
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result.length).toEqual(3);
-          expect(result[0]).toEqual('ALICE');
-        },
-        complete: () => done()
-      });
-    });
-  });
-
-  describe('WHEN no transformResponseToPagesModulePath is undefined', () => {
-    const server = setupServer();
+    const mockTransformer = jest.fn();
     beforeAll(() => {
       server.use(...successHandlers);
       server.listen({ onUnhandledRequest: 'warn' });
@@ -315,31 +262,19 @@ describe('GIVEN the createHttpSource function ', () => {
       server.close();
     });
 
-    it('should merge results from all endpoints into 1 array', done => {
+    it('should pass transformer options to the transformer', done => {
       const source$: Observable<Page[]> = createHttpSource(
-        { ...options, transformResponseToPagesModulePath: undefined },
+        { ...options, transformer: mockTransformer, transformerOptions: { option: 'an option' } },
         { schedule }
       );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
-          expect(result.length).toEqual(3);
-        },
-        complete: () => done()
-      });
-    });
-
-    it('no transformation of responses is carried out', done => {
-      const source$: Observable<Page[]> = createHttpSource(
-        { ...options, transformResponseToPagesModulePath: undefined },
-        { schedule }
-      );
-
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result[0]).toEqual({ name: 'Alice' });
-          expect(result[1]).toEqual({ name: 'Bob' });
-          expect(result[2]).toEqual({ name: 'Eve' });
+          expect(mockTransformer).toBeCalledTimes(3);
+          expect(mockTransformer.mock.calls[0][0]).toEqual({ name: 'Alice' });
+          expect(mockTransformer.mock.calls[0][1]).toEqual(options.prefixDir);
+          expect(mockTransformer.mock.calls[0][2]).toEqual(0);
+          expect(mockTransformer.mock.calls[0][3]).toEqual({ option: 'an option' });
         },
         complete: () => done()
       });
@@ -361,9 +296,12 @@ describe('GIVEN the createHttpSource function ', () => {
     });
 
     it('should merge results from all endpoints into 1 array', done => {
-      const source$: Observable<Page[]> = createHttpSource(configuredRequestsOptions, {
-        schedule
-      });
+      const source$: Observable<Page[]> = createHttpSource(
+        { ...configuredRequestsOptions, transformer: toUpperCaseTransformer },
+        {
+          schedule
+        }
+      );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
@@ -374,9 +312,12 @@ describe('GIVEN the createHttpSource function ', () => {
     });
 
     it('should transform the responses using the transform function', done => {
-      const source$: Observable<Page[]> = createHttpSource(configuredRequestsOptions, {
-        schedule
-      });
+      const source$: Observable<Page[]> = createHttpSource(
+        { ...configuredRequestsOptions, transformer: toUpperCaseTransformer },
+        {
+          schedule
+        }
+      );
 
       source$.pipe(take(1)).subscribe({
         next: result => {
