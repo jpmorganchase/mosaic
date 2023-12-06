@@ -20,8 +20,7 @@ function stripParams(resolvedUrl: string) {
 }
 
 function normalizeUrl(url: string) {
-  const pathname = stripParams(url);
-  return /\/index$/.test(pathname) ? `${pathname}.mdx` : pathname;
+  return /\/index$/.test(url) ? `${url}.mdx` : url;
 }
 
 async function loadSnapshotFile(url) {
@@ -90,6 +89,7 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
   const { resolvedUrl } = context;
   const mosaicMode = context.res.getHeader('X-Mosaic-Mode' || 'active') as MosaicMode;
   const extname = path.extname(resolvedUrl);
+  const pathname = stripParams(resolvedUrl);
   // Any urls which are not prefixed, will default to MDX
   const isMDX = extname === '.mdx' || extname === '';
   if (!isMDX) {
@@ -97,12 +97,12 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
   }
   let text;
   if (mosaicMode === 'snapshot-file') {
-    text = await loadSnapshotFile(resolvedUrl);
+    text = await loadSnapshotFile(pathname);
   } else if (mosaicMode === 'snapshot-s3') {
-    text = await loadSnapshotS3(resolvedUrl);
+    text = await loadSnapshotS3(pathname);
   } else {
     const mosaicUrl = context.res.getHeader('X-Mosaic-Content-Url');
-    const fetchedResult = await loadActiveContent(`${mosaicUrl}${resolvedUrl}`);
+    const fetchedResult = await loadActiveContent(`${mosaicUrl}${pathname}`);
     const isRedirect = typeof fetchedResult === 'object';
     if (isRedirect) {
       return fetchedResult;
