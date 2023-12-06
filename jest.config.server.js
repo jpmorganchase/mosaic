@@ -21,6 +21,7 @@ module.exports = {
     '<rootDir>/packages/fromHttpRequest',
     '<rootDir>/packages/plugins',
     '<rootDir>/packages/site-middleware',
+    '<rootDir>/packages/source-figma',
     '<rootDir>/packages/source-http',
     '<rootDir>/packages/source-storybook'
   ],
