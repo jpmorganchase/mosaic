@@ -1,0 +1,80 @@
+---
+title: Figma Source
+layout: DetailTechnical
+sidebar:
+  priority: 5
+  label: Figma
+---
+
+# {meta.title}
+
+The Figma source is used to pull individual design patterns from Figma projects.
+The source subscribes to Figma project groups, then extracts from project files, tagged patterns.
+
+A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
+(Refer to the JPM Figma plugin for more details - a current Q4 2023 deliverable)
+
+For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
+Additional Mosaic medata can be added, to each created page, using `projects.meta`
+For instance we could add metadata which defines which product owns a particular pattern and then
+group patterns based on owner.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-figma`
+
+## Configuration
+
+The Figma source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
+
+| Property   | Description                       | Required |
+| ---------- | --------------------------------- | -------- |
+| prefixDir  | path to store figma patterns      | Yes      |
+| figmaToken | figma access token                | Yes      |
+| projects   | array of projects to subscribe to | Yes      |
+| endpoints  | figma endpoints                   | Yes      |
+
+Each project is configured from the `projects` array.
+
+| Property | Description                                   | Required |
+| -------- | --------------------------------------------- | -------- |
+| id       | numerical id of the subscribed project group  | Yes      |
+| meta     | metadata to add to each of the projects pages | Yes      |
+
+`endpoints` defined the Figma REST API endpoints.
+
+| Property   | Description                                               | Required |
+| ---------- | --------------------------------------------------------- | -------- |
+| getProject | url to return a list of projects within the project group | Yes      |
+| getFile    | url to return a project file                              | Yes      |
+
+### Example Local Folder Source Definition
+
+```
+sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-figma',
+      namespace: 'some-namespace',
+      options: {
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          'X-FIGMA-TOKEN': process.env.FIGMA_TOKEN
+        },
+        proxyEndpoint: 'http://path/to/optional/proxy',
+        prefixDir: '/some/path/to/where/you/store/pattern/pages',
+        figmaToken: process.env.FIGMA_TOKEN,
+        projects: [{
+          id: 99999,
+          meta: {
+            owner: 'some-owner'
+          }
+        }],
+        endpoints: {
+          getFile: 'https://api.figma.com/v1/files/:file_id?plugin_data=shared',
+          getProject: 'https://api.figma.com/v1/projects/:project_id/files'
+        }
+      }
+    }
+]
+```
