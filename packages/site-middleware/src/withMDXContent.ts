@@ -14,8 +14,15 @@ import { compileMDX } from './compileMdx.js';
 if (typeof window !== 'undefined') {
   throw new Error('This file should not be loaded on the client.');
 }
+function stripParams(resolvedUrl: string) {
+  const url = new URL(resolvedUrl, 'https://example.com');
+  return url.pathname;
+}
 
-const normalizeUrl = url => (/\/index$/.test(url) ? `${url}.mdx` : url);
+function normalizeUrl(url: string) {
+  const pathname = stripParams(url);
+  return /\/index$/.test(pathname) ? `${pathname}.mdx` : pathname;
+}
 
 async function loadSnapshotFile(url) {
   const { snapshotDir } = getSnapshotFileConfig(url);
