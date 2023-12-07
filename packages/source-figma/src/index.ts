@@ -1,28 +1,29 @@
-import { merge, mergeMap, map } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { z } from 'zod';
 import deepmerge from 'deepmerge';
 import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import {
   createHttpSource,
-  createProxyAgent,
-  schema as httpSourceSchema
+  httpSourceCreatorSchema,
+  HttpSourceResponseTransformerType
 } from '@jpmorganchase/mosaic-source-http';
 
 import createFigmaPage from './transformer.js';
-import { FigmaPage, ProjectFilesResponseJson, ProjectResponseJson } from './types/index.js';
+import type {
+  FigmaPage,
+  FileUrlAndMeta,
+  ProjectFilesResponseJson,
+  ProjectResponseJson
+} from './types/index.js';
 
 const JPM_PATTERN_PREFIX = 'jpmSaltPattern.';
 
-const baseSchema = httpSourceSchema.omit({
+const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
   transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
 });
 
-const defaultRequestHeaders: HeadersInit = {
-  'Content-Type': 'application/json',
-  'X-FIGMA-TOKEN': process.env.FIGMA_TOKEN || ''
-};
 export const schema = baseSchema.merge(
   z.object({
     prefixDir: z.string(),
@@ -43,142 +44,106 @@ export const schema = baseSchema.merge(
 
 export type FigmaSourceOptions = z.infer<typeof schema>;
 
-type ProjectRequestAndOptions = { request: Request; meta: Partial<FigmaPage> };
-
-function createProjectRequestsAndOptions({
-  endpoints,
-  projects,
-  proxyEndpoint,
-  requestTimeout,
-  requestHeaders
-}: FigmaSourceOptions): { request: Request; meta: Partial<FigmaPage> }[] {
-  return projects.map<ProjectRequestAndOptions>(({ id, meta }) => {
-    let agent;
-    const getProjectURL = endpoints.getProject.replace(':project_id', id.toString());
-    const headers = requestHeaders ? (requestHeaders as HeadersInit) : defaultRequestHeaders;
-    if (proxyEndpoint) {
-      agent = createProxyAgent(proxyEndpoint);
-    }
-
-    const request = new Request(getProjectURL, {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      agent,
-      headers,
-      timeout: requestTimeout
-    });
-    return { request, meta };
-  });
-}
-
-function createProjectFileRequests(
-  projectFileUrls: string[],
-  { proxyEndpoint, requestHeaders, requestTimeout }: FigmaSourceOptions
-) {
-  return projectFileUrls.map(projectFileURL => {
-    let agent;
-    const headers = requestHeaders ? (requestHeaders as HeadersInit) : defaultRequestHeaders;
-    if (proxyEndpoint) {
-      agent = createProxyAgent(proxyEndpoint);
-    }
-    return new Request(projectFileURL, {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      agent,
-      headers,
-      timeout: requestTimeout
-    });
-  });
-}
-
 const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
   create(options, sourceConfig) {
     const parsedOptions = validateMosaicSchema(schema, options);
 
     const {
-      requestTimeout,
-      requestHeaders,
-      prefixDir,
-      proxyEndpoint,
-      projects,
       endpoints,
-      ...restOptions
+      projects,
+      figmaToken,
+      proxyEndpoint,
+      prefixDir,
+      requestHeaders: requestHeadersParam
     } = parsedOptions;
 
-    const requestsAndOptions = createProjectRequestsAndOptions(parsedOptions);
-    // Get a list of project file descriptors for each configured project group
-    const configuredRequests = requestsAndOptions.map(
-      requestAndOptions => requestAndOptions.request
+    const projectEndpoints = projects.map(project =>
+      endpoints.getProject.replace(':project_id', project.id.toString())
     );
-    const figmaProjectsHttpSource$ = createHttpSource<ProjectFilesResponseJson>(
+
+    const projectsTransformer: HttpSourceResponseTransformerType<
+      ProjectFilesResponseJson,
+      FileUrlAndMeta
+    > = (response: ProjectFilesResponseJson, _prefixDir, index) =>
+      [response].reduce<FileUrlAndMeta[]>((allProjectFileUrls, { files }) => {
+        const projectFileUrls = files.reduce<FileUrlAndMeta[]>((project, { key }) => {
+          const fileUrlAndMetadata = {
+            fileUrl: endpoints.getFile.replace(':file_id', key),
+            meta: projects[index].meta
+          };
+
+          return [...project, fileUrlAndMetadata];
+        }, []);
+        return [...allProjectFileUrls, ...projectFileUrls];
+      }, []);
+
+    const projectFilesTransformer = (
+      response: ProjectResponseJson,
+      _prefixDir: string,
+      index: number,
+      transformerOptions: FileUrlAndMeta[]
+    ) => {
+      const {
+        document: { sharedPluginData }
+      } = response;
+      return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
+        if (patternId.indexOf(JPM_PATTERN_PREFIX) === 0) {
+          /** Figma provided metadata */
+          const figmaProvidedMetadata: Partial<FigmaPage> = {
+            data: {
+              patternId,
+              ...sharedPluginData[patternId]
+            }
+          };
+          const sourceProvidedMetadata = transformerOptions[index].meta;
+
+          const figmaPageMeta = sourceProvidedMetadata
+            ? deepmerge<FigmaPage, Record<string, unknown>>(
+                figmaProvidedMetadata,
+                sourceProvidedMetadata || {}
+              )
+            : figmaProvidedMetadata;
+          return [...figmaPagesResult, createFigmaPage(figmaPageMeta, prefixDir)];
+        }
+        return figmaPagesResult;
+      }, []);
+    };
+
+    const projects$ = createHttpSource<ProjectFilesResponseJson, FileUrlAndMeta>(
       {
+        endpoints: projectEndpoints,
+        requestHeaders: {
+          'Content-Type': 'application/json',
+          'X-FIGMA-TOKEN': figmaToken,
+          ...requestHeadersParam
+        },
+        proxyEndpoint,
         prefixDir,
-        ...restOptions,
-        configuredRequests
+        transformer: projectsTransformer
       },
       sourceConfig
-    ).pipe(
-      map(projectsResponse => {
-        return projectsResponse.reduce<string[]>((allProjectFileUrls, { files }) => {
-          const projectFileUrls = files.reduce<string[]>((project, { key }) => {
-            const getProjectFileURL = endpoints.getFile.replace(':file_id', key);
-            return [...project, getProjectFileURL];
-          }, []);
-          return [...allProjectFileUrls, ...projectFileUrls];
-        }, []);
+    );
+
+    const figmaSource$ = projects$.pipe(
+      switchMap(fileUrlAndMetaCollection => {
+        const fileUrls = fileUrlAndMetaCollection.map(item => item.fileUrl);
+
+        return createHttpSource<ProjectResponseJson, FigmaPage>({
+          endpoints: fileUrls,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'X-FIGMA-TOKEN': figmaToken,
+            ...requestHeadersParam
+          },
+          proxyEndpoint,
+          prefixDir,
+          transformer: projectFilesTransformer,
+          transformerOptions: fileUrlAndMetaCollection
+        });
       })
     );
 
-    const figmaSource$ = figmaProjectsHttpSource$.pipe(
-      map(projectResponses => {
-        const configuredProjectFileRequests = createProjectFileRequests(
-          projectResponses,
-          parsedOptions
-        );
-        const figmaProjectFilesHttpSource$ = createHttpSource<ProjectResponseJson>(
-          {
-            prefixDir,
-            ...restOptions,
-            configuredRequests: configuredProjectFileRequests
-          },
-          sourceConfig
-        );
-        return figmaProjectFilesHttpSource$.pipe(
-          map(projectsResponse => {
-            return projectsResponse.reduce<FigmaPage[]>((projectFile, response, responseIndex) => {
-              const {
-                document: { sharedPluginData }
-              } = response;
-              const figmaPages = Object.keys(sharedPluginData).reduce<FigmaPage[]>(
-                (figmaPagesResult, patternId) => {
-                  if (patternId.indexOf(JPM_PATTERN_PREFIX) === 0) {
-                    /** Figma provided metadata */
-                    const figmaProvidedMetadata: Partial<FigmaPage> = {
-                      data: {
-                        patternId,
-                        ...sharedPluginData[patternId]
-                      }
-                    };
-                    const sourceProvidedMetadata = requestsAndOptions[responseIndex].meta;
-                    const figmaPageMeta = requestsAndOptions[responseIndex]
-                      ? deepmerge<FigmaPage, FigmaPage>(
-                          figmaProvidedMetadata,
-                          sourceProvidedMetadata
-                        )
-                      : figmaProvidedMetadata;
-                    return [...figmaPagesResult, createFigmaPage(figmaPageMeta, prefixDir)];
-                  }
-                  return figmaPagesResult;
-                },
-                []
-              );
-              return [...projectFile, ...figmaPages];
-            }, []);
-          })
-        );
-      })
-    );
-    return figmaSource$.pipe(mergeMap(res => merge(res)));
+    return figmaSource$;
   }
 };
 

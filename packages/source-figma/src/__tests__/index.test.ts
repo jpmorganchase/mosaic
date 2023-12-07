@@ -33,24 +33,23 @@ const options = {
     }
   ],
   endpoints: {
-    getProject: 'https://myfigma/:project_id/files',
-    getFile: 'https://myfigma/:file_id?plugin_data=shared'
+    getProject: 'https://myfigma.com/:project_id/files',
+    getFile: 'https://myfigma.com/:file_id?plugin_data=shared'
   }
 };
 
 const getProjectById = (id: number) =>
   options.projects.find(item => item.id === id) || { meta: { tags: [] } };
 
-const createProjectsResponse = (patternId: string) => [
-  {
-    name: 'Figma Test Patterns',
-    files: [
-      {
-        key: patternId
-      }
-    ]
-  }
-];
+const createProjectsResponse = (patternId: string) => ({
+  name: 'Figma Test Patterns',
+  files: [
+    {
+      key: patternId
+    }
+  ]
+});
+
 const createProjectFilesResponse = (patternId: string) => ({
   document: {
     sharedPluginData: {
@@ -72,7 +71,7 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
   description: `some description for ${patternId}`,
   layout: 'DetailTechnical',
   route: `/prefixdir/jpmsaltpattern_${patternId}`,
-  fullPath: `/prefixdir/jpmsaltpattern_${patternId}.mdx`,
+  fullPath: `/prefixdir/jpmsaltpattern_${patternId}.json`,
   tags: ['some-tag1', 'some-tag2'],
   ...data,
   data: {
@@ -91,29 +90,21 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
 });
 
 const successHandlers = [
-  // Project 1 - pattern 1
-  rest.get(`${options.endpoints.getProject}`.replace(':project_id', '888'), (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createProjectsResponse('pattern1')));
+  // Projects
+  rest.get('https://myfigma.com/:project_id/*', (req, res, ctx) => {
+    const { project_id } = req.params;
+    const pattern = project_id === '888' ? 'pattern1' : 'pattern2';
+    return res(ctx.status(200), ctx.json(createProjectsResponse(pattern)));
   }),
-  rest.get(
-    `${options.endpoints.getFile.replace(':file_id', 'pattern1')}?plugin_data=shared`,
-    (_req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern1')));
-    }
-  ),
-  // Project 2 - pattern 2
-  rest.get(`${options.endpoints.getProject}`.replace(':project_id', '999'), (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createProjectsResponse('pattern2')));
+  // Patterns
+  rest.get('https://myfigma.com/pattern1', (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern1')));
   }),
-  rest.get(
-    `${options.endpoints.getFile.replace(':file_id', 'pattern2')}?plugin_data=shared`,
-    (_req, res, ctx) => {
-      return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern2')));
-    }
-  )
+  rest.get('https://myfigma.com/pattern2', (req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern2')));
+  })
 ];
-//myfigma/pattern1?plugin_data=shared
-https: describe('GIVEN a Figma Source ', () => {
+describe('GIVEN a Figma Source ', () => {
   describe('WHEN a fetch is successful', () => {
     const server = setupServer();
     beforeAll(() => {
