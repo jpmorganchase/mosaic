@@ -1,5 +1,6 @@
-import { FigmaPage } from './types/index.js';
 import deepmerge from 'deepmerge';
+
+import { FigmaPage } from './types/index.js';
 
 const createFigmaPage = (pageData: Partial<FigmaPage>, prefixDir: string) => {
   const { data: { name, description, patternId, tags } = {} } = pageData;

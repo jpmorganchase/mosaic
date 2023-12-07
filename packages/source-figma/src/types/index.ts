@@ -26,6 +26,11 @@ export type ProjectFilesResponseJson = {
   files: ProjectFile[];
 };
 
+export type FileUrlAndMeta = {
+  fileUrl: string;
+  meta?: Record<string, unknown>;
+};
+
 /** Figma page Metadata */
 export type FigmaPageData = {
   name: string;

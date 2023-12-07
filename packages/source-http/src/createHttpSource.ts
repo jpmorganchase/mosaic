@@ -1,4 +1,4 @@
-import { forkJoin, timer } from 'rxjs';
+import { forkJoin, of, timer } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { z } from 'zod';
 import type { Page, SourceConfig } from '@jpmorganchase/mosaic-types';
@@ -39,10 +39,11 @@ export interface CreateHttpSourceParams<TResponse, TPage>
  * For use inside *other* sources.
  * Allows a transformer function to be passed directly without the need for dynamic imports.
  *
+ * SourceConfig is also optional here so that scheduling can be ignored.
  */
-export function createHttpSource<TResponse, TPage extends Page>(
+export function createHttpSource<TResponse, TPage = Page>(
   { configuredRequests, transformer, ...restOptions }: CreateHttpSourceParams<TResponse, TPage>,
-  { schedule }: SourceConfig
+  sourceConfig?: SourceConfig
 ) {
   const {
     endpoints,
@@ -54,7 +55,8 @@ export function createHttpSource<TResponse, TPage extends Page>(
     transformerOptions
   } = validateMosaicSchema(httpSourceCreatorSchema, restOptions);
 
-  const delayMs = schedule.checkIntervalMins * 60000;
+  const delayMs = (sourceConfig?.schedule.checkIntervalMins || 30) * 60000;
+  const initialDelayMs = sourceConfig?.schedule.initialDelayMs || 0;
   let requests = configuredRequests || [];
 
   if (endpoints.length > 0) {
@@ -80,7 +82,10 @@ export function createHttpSource<TResponse, TPage extends Page>(
     });
   }
 
-  return timer(schedule.initialDelayMs, delayMs).pipe(
+  // if there is no schedule then emit once, immediately, and then complete
+  const schedule$ = sourceConfig?.schedule ? timer(initialDelayMs, delayMs) : of(1);
+
+  return schedule$.pipe(
     switchMap(() => {
       const fetches = requests.map((request, index) =>
         fromHttpRequest<TResponse>(request).pipe(
