@@ -23,6 +23,7 @@ module.exports = {
     '<rootDir>/packages/site-middleware',
     '<rootDir>/packages/source-figma',
     '<rootDir>/packages/source-http',
+    '<rootDir>/packages/source-readme',
     '<rootDir>/packages/source-storybook'
   ],
   transformIgnorePatterns: [
