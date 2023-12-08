@@ -15,7 +15,7 @@ A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
 (Refer to the JPM Figma plugin for more details - a current Q4 2023 deliverable)
 
 For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
-Additional Mosaic medata can be added, to each created page, using `projects.meta`
+Additional Mosaic metadata can be added, to each created page, using `meta`
 For instance we could add metadata which defines which product owns a particular pattern and then
 group patterns based on owner.
 
@@ -37,10 +37,11 @@ The `transformResponseToPagesModulePath` prop has a default transformer which cr
 
 Each project is configured from the `projects` array.
 
-| Property | Description                                   | Required |
-| -------- | --------------------------------------------- | -------- |
-| id       | numerical id of the subscribed project group  | Yes      |
-| meta     | metadata to add to each of the projects pages | Yes      |
+| Property      | Description                                   | Required |
+| ------------- | --------------------------------------------- | -------- |
+| id            | numerical id of the subscribed project group  | Yes      |
+| meta          | metadata to add to each of the projects pages | Yes      |
+| patternPrefix | prefix to add to all pages created            | Yes      |
 
 `endpoints` defined the Figma REST API endpoints.
 
@@ -49,7 +50,7 @@ Each project is configured from the `projects` array.
 | getProject | url to return a list of projects within the project group | Yes      |
 | getFile    | url to return a project file                              | Yes      |
 
-### Example Local Folder Source Definition
+### Example Figma Source Definition
 
 ```
 sources: [
@@ -57,15 +58,12 @@ sources: [
       modulePath: '@jpmorganchase/mosaic-source-figma',
       namespace: 'some-namespace',
       options: {
-        requestHeaders: {
-          'Content-Type': 'application/json',
-          'X-FIGMA-TOKEN': process.env.FIGMA_TOKEN
-        },
         proxyEndpoint: 'http://path/to/optional/proxy',
         prefixDir: '/some/path/to/where/you/store/pattern/pages',
         figmaToken: process.env.FIGMA_TOKEN,
         projects: [{
           id: 99999,
+          patternPrefix: 'yourPrefix',
           meta: {
             owner: 'some-owner'
           }
