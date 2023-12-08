@@ -1,0 +1,71 @@
+---
+title: Readme Source
+layout: DetailTechnical
+sidebar:
+  priority: 5
+  label: Readme Files
+---
+
+# {meta.title}
+
+The Readme source is used to pull individual `Readme.md` text files from repositories.
+This is a lighter weight version of a Git repository resource, which just pulls a single file,
+rather the whole contents of the repo.
+
+For each retrieved readme, a page is created in the Mosaic file-system.
+Additional Mosaic metadata can be added, to each created page, using `meta`
+For instance we could add metadata which defines which product owns a particular `Readme.md` and then
+group this page, with others, based on owner.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-readme`
+
+## Configuration
+
+The Readme source is an [`HttpSource`](./https-source) and shares the same base configuration.
+
+| Property    | Description           | Required |
+| ----------- | --------------------- | -------- |
+| accessToken | request access token  | Yes      |
+| prefixDir   | path to store pages   | Yes      |
+| readme      | array of readme files | Yes      |
+
+Each readme is configured from the `readme` array.
+
+| Property        | Description                  | Required |
+| --------------- | ---------------------------- | -------- |
+| contentTemplate | template for content of page | No       |
+| name            | page name used in route      | Yes      |
+| readmeUrl       | url of readme                | Yes      |
+| meta            | metadata for page            | Yes      |
+
+### Example Readme Source Definition
+
+```
+   sources: [
+   {
+      modulePath: '@jpmorganchase/mosaic-source-readme',
+      namespace: 'your-namespace',
+      schedule: { checkIntervalMins: 0.25, initialDelayMs: 0 },
+      options: {
+         prefixDir: '/salt/community-index/readme',
+         accessToken: 'Bearer your-access-token',
+         readme: [
+         {
+            name: 'your-mosaic-page-name',
+            readmeUrl: 'https://some/repo/url/readme.md',
+            contentTemplate: `a template which replaces ::content:: with the content`,
+            meta: {
+              layout: 'DetailTechnical',
+              title: 'Your Page Title',
+              tags: ['your-tag-if-required'],
+              description: 'A description for your readme',
+              data: {
+                 repoUrl:  'https://some/repo/url',
+              }
+            }
+         }]
+     }
+   }]
+```
