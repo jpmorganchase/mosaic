@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.59
+
+### Patch Changes
+
+- e3f4b7c3: Fixed routing breaking when URL parameters are present.
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.59
+  - @jpmorganchase/mosaic-store@0.1.0-beta.59
+  - @jpmorganchase/mosaic-types@0.1.0-beta.59
+
 ## 0.1.0-beta.58
 
 ### Patch Changes
