@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.59
+
+### Patch Changes
+
+- Updated dependencies [e3f4b7c3]
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.59
+  - @jpmorganchase/mosaic-components@0.1.0-beta.59
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.59
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.59
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.59
+  - @jpmorganchase/mosaic-store@0.1.0-beta.59
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.59
+
 ## 0.1.0-beta.58
 
 ### Patch Changes

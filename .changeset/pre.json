@@ -26,7 +26,8 @@
     "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.11",
     "@jpmorganchase/mosaic-from-http-request": "0.1.0-beta.14",
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14",
-    "@jpmorganchase/mosaic-source-storybook": "0.1.0-beta.55"
+    "@jpmorganchase/mosaic-source-storybook": "0.1.0-beta.55",
+    "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58"
   },
   "changesets": [
     "afraid-ways-teach",
@@ -35,6 +36,7 @@
     "breezy-bottles-grin",
     "breezy-carrots-tie",
     "calm-dingos-fix",
+    "calm-pants-cheat",
     "chatty-readers-sing",
     "chilled-parents-visit",
     "cold-buses-check",
@@ -83,6 +85,7 @@
     "ninety-coins-fetch",
     "ninety-teachers-lick",
     "poor-students-tickle",
+    "popular-cows-deny",
     "proud-chefs-applaud",
     "quiet-apricots-laugh",
     "quiet-walls-lay",

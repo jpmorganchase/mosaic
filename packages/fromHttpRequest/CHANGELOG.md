@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-from-http-request
 
+## 0.1.0-beta.59
+
+### Patch Changes
+
+- b802cdc4: Add support for text content types to `fromHttpRequest`.
+
 ## 0.1.0-beta.58
 
 ## 0.1.0-beta.57
