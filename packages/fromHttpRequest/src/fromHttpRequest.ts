@@ -2,6 +2,7 @@ import 'event-target-polyfill';
 import 'yet-another-abortcontroller-polyfill';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import contentTypeParser from 'fast-content-type-parse';
 
 import { fromFetch } from './fromFetch.js';
 
@@ -20,6 +21,17 @@ export function fromHttpRequest<TData>(input: string | Request): Observable<TDat
   return fromFetch(input).pipe(
     switchMap(response => {
       if (response.ok) {
+        const contentTypeHeader = response.headers.get('content-type') || '';
+        const contentType = contentTypeParser.safeParse(contentTypeHeader).type;
+
+        if (contentType.includes('json')) {
+          return response.json() as Promise<TData>;
+        }
+
+        if (contentType.includes('text')) {
+          return response.text() as Promise<TData>;
+        }
+        // default to json
         return response.json() as Promise<TData>;
       }
       return of<ErrorResponse>({ error: true, message: `Error ${response.status}` });
