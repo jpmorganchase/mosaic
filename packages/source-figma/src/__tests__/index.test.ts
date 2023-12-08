@@ -17,6 +17,7 @@ const options = {
   projects: [
     {
       id: 888,
+      patternPrefix: 'jpmSaltPattern',
       meta: {
         layout: 'layout project 1',
         data: { owner: 'owner project 1' },
@@ -25,6 +26,7 @@ const options = {
     },
     {
       id: 999,
+      patternPrefix: 'jpmSaltPattern',
       meta: {
         layout: 'layout project 2',
         data: { owner: 'owner project 2' },
