@@ -17,8 +17,6 @@ import type {
   ProjectResponseJson
 } from './types/index.js';
 
-const JPM_PATTERN_PREFIX = 'jpmSaltPattern.';
-
 const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
   transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
@@ -31,6 +29,7 @@ export const schema = baseSchema.merge(
     projects: z.array(
       z.object({
         id: z.number(),
+        patternPrefix: z.string(),
         meta: z.object({}).passthrough()
       })
     ),
@@ -86,8 +85,9 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       const {
         document: { sharedPluginData }
       } = response;
+      const { patternPrefix } = projects[index];
       return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
-        if (patternId.indexOf(JPM_PATTERN_PREFIX) === 0) {
+        if (patternId.indexOf(patternPrefix) === 0) {
           /** Figma provided metadata */
           const figmaProvidedMetadata: Partial<FigmaPage> = {
             data: {
