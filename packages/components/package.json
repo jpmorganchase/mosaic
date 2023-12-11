@@ -51,7 +51,7 @@
     "clsx": "^2.0.0",
     "deepmerge": "^2.0.1",
     "hoist-non-react-statics": "^3.3.2",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "prism-react-renderer": "^1.1.1",
     "react-live": "^2.2.3",
     "react-markdown": "^6.0.2",

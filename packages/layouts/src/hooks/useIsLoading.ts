@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es';
 
 // Unexported type from next/dist/shared/lib/mitt.d.ts
 declare type Handler = (...evts: any[]) => void;
