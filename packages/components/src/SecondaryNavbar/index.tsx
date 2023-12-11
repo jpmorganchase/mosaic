@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'clsx';
-import findLastIndex from 'lodash/findLastIndex';
+import { findLastIndex } from 'lodash-es';
 import { config } from '@jpmorganchase/mosaic-theme';
 
 import { TabsBase, TabsMenu, TabMenuItemType, TabsLinkItem } from '../TabsBase';

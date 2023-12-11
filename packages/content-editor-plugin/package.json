@@ -59,7 +59,7 @@
     "gray-matter": "^4.0.3",
     "lexical": "^0.11.1",
     "react-split": "^2.0.14",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "md5": "*",
     "yup": "^0.32.9",
     "zustand": "^4.1.1"

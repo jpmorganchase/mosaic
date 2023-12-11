@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
 
 import { TableOfContentsItem } from './TableOfContentsItem';

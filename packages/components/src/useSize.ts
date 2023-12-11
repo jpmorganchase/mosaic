@@ -1,5 +1,5 @@
 import { useState, useLayoutEffect, useEffect } from 'react';
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash-es';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
