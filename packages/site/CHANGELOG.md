@@ -1,5 +1,30 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.60
+
+### Patch Changes
+
+- a3da0830: New Readme Source
+
+  This source pulls a single Readme.md from a remote Source repo.
+  Typically used for third-party repos which exist already or don't want to
+  create a full document hierachy and use `@jpmorganchase/mosaic-source-git-repo`.
+  By pulling a single page, we can add metadata to that page via the source's config.
+  It's also more performant as we do not need to pull a whole source repo.
+
+- Updated dependencies [a3da0830]
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.60
+  - @jpmorganchase/mosaic-components@0.1.0-beta.60
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.60
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.60
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.60
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.60
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.60
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.60
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.60
+  - @jpmorganchase/mosaic-store@0.1.0-beta.60
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.60
+
 ## 0.1.0-beta.59
 
 ### Patch Changes

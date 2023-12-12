@@ -27,7 +27,8 @@
     "@jpmorganchase/mosaic-from-http-request": "0.1.0-beta.14",
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14",
     "@jpmorganchase/mosaic-source-storybook": "0.1.0-beta.55",
-    "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58"
+    "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58",
+    "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59"
   },
   "changesets": [
     "afraid-ways-teach",
@@ -90,6 +91,7 @@
     "quiet-apricots-laugh",
     "quiet-walls-lay",
     "rare-elephants-wave",
+    "red-rivers-work",
     "rich-queens-exercise",
     "rude-emus-trade",
     "selfish-waves-appear",
