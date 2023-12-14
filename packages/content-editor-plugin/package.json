@@ -41,9 +41,9 @@
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.62",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.62",
-    "@salt-ds/core": "^1.11.0",
+    "@salt-ds/core": "^1.13.1",
     "@salt-ds/icons": "^1.7.0",
-    "@salt-ds/lab": "1.0.0-alpha.20",
+    "@salt-ds/lab": "1.0.0-alpha.23",
     "@salt-ds/theme": "^1.9.0",
     "@floating-ui/react": "^0.23.0",
     "@lexical/code": "^0.11.1",
