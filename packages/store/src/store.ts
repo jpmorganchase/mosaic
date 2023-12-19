@@ -4,7 +4,7 @@ import { devtools, persist } from 'zustand/middleware';
 
 import type { ColorMode } from './useColorMode';
 
-export type SiteState = {
+export type StoreState = {
   colorMode: ColorMode;
   ImageComponent: ElementType;
   LinkComponent: ElementType;
@@ -13,11 +13,11 @@ export type SiteState = {
   };
 };
 
-type PeristedStoreState = Pick<SiteState, 'colorMode'>;
-export type DefaultSiteState = Omit<SiteState, 'actions'>;
-export type InitialSiteState = Partial<DefaultSiteState>;
+type PeristedStoreState = Pick<StoreState, 'colorMode'>;
+export type DefaultStoreState = Omit<StoreState, 'actions'>;
+export type InitialStoreState = Partial<DefaultStoreState>;
 
-function getDefaultInitialState(initialState?: InitialSiteState): DefaultSiteState {
+function getDefaultInitialState(initialState?: InitialStoreState): DefaultStoreState {
   return {
     colorMode: initialState?.colorMode || 'light',
     ImageComponent: initialState?.ImageComponent || 'img',
@@ -27,15 +27,15 @@ function getDefaultInitialState(initialState?: InitialSiteState): DefaultSiteSta
 
 const storeMiddlewares = stateCreatorFn =>
   devtools(
-    persist<SiteState, [], [], PeristedStoreState>(stateCreatorFn, {
+    persist<StoreState, [], [], PeristedStoreState>(stateCreatorFn, {
       name: 'mosaic-theme-pref',
-      partialize: (state: SiteState) => ({
+      partialize: (state: StoreState) => ({
         colorMode: state.colorMode
       })
     })
   );
 
-export const createStore = (initialState?: InitialSiteState) =>
+export const createStore = (initialState?: InitialStoreState) =>
   createZustandStore(
     storeMiddlewares(set => ({
       ...getDefaultInitialState(initialState),

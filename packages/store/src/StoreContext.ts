@@ -1,5 +1,5 @@
 import { createContext } from 'react';
 import { type StoreApi } from 'zustand';
-import { SiteState } from './store';
+import { StoreState } from './store';
 
-export const StoreContext = createContext<StoreApi<SiteState> | null>(null);
+export const StoreContext = createContext<StoreApi<StoreState> | null>(null);

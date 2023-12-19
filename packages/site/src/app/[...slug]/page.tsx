@@ -1,30 +1,22 @@
+import { Suspense } from 'react';
 import { Metadata } from 'next';
-import { compileMDX } from 'next-mdx-remote/rsc';
-import remarkGfm from 'remark-gfm';
-import rehypeSlug from 'rehype-slug';
-import { mdxComponents } from '@jpmorganchase/mosaic-site-components-next';
 import { loadPage } from '@jpmorganchase/mosaic-loaders';
-import type { MDXProvider } from '@mdx-js/react';
-import type { ComponentProps } from 'react';
 
-const components = mdxComponents as unknown as ComponentProps<typeof MDXProvider>['components'];
+import { Body } from './Body';
+import { compile } from '../../mdx/compile';
 
 export default async function Page({ params: { slug } }) {
   const route = `/${slug.join('/')}`;
   const { source = '', data = {} } = await loadPage(route);
-  const { content } = await compileMDX({
-    source,
-    components,
-    options: {
-      scope: { meta: data },
-      mdxOptions: {
-        rehypePlugins: [rehypeSlug],
-        remarkPlugins: [remarkGfm]
-      },
-      parseFrontmatter: false
-    }
-  });
-  return content;
+  const content = await compile({ source, data });
+
+  return (
+    <Suspense fallback={content}>
+      <Body source={source} meta={data}>
+        {content}
+      </Body>
+    </Suspense>
+  );
 }
 
 export async function generateStaticParams() {

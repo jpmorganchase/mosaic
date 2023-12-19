@@ -6,7 +6,6 @@ export * from './AppHeaderDrawer';
 export * from './AppHeaderTabs';
 export * from './BackLink';
 export * from './Breadcrumbs';
-export * from './Body';
 export * from './Document';
 export * from './DocPaginator';
 export * from './Drawer';

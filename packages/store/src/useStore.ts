@@ -1,14 +1,14 @@
 import { useContext } from 'react';
 import { useStore as useZustandStore } from 'zustand';
 
-import { SiteState } from './store';
+import { StoreState } from './store';
 import { StoreContext } from './StoreContext';
 
 /**
  * Hook providing access to state stored in the site store
  */
 export function useStore<T>(
-  selector: (state: SiteState) => T,
+  selector: (state: StoreState) => T,
   equalityFn?: (left: T, right: T) => boolean
 ): T {
   const storeFromContext = useContext(StoreContext);

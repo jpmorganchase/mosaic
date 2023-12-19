@@ -1,6 +1,5 @@
-import React, { ComponentType, FC, useRef, useState } from 'react';
+import React, { FC, useRef, useState } from 'react';
 import classnames from 'clsx';
-import matter from 'gray-matter';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
@@ -13,8 +12,8 @@ import { $convertFromMarkdownString } from '@lexical/markdown';
 import transformers from '../transformers';
 import ContentEditor from './ContentEditor';
 import { nodes } from '../nodes';
-import { useEditorUser, usePreviewContent } from '../store';
-import { PreviewPlugin } from '../plugins/PreviewPlugin';
+import { useEditorUser } from '../store';
+import { PreviewPlugin, type PreviewPluginProps } from '../plugins/PreviewPlugin';
 import styles from './Editor.css';
 import Toolbar from './Toolbar/Toolbar';
 import theme from '../theme';
@@ -27,6 +26,7 @@ import { ScrollableSection } from './ScrollableSection/ScrollableSection';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import { FloatingToolbarPlugin } from '../plugins/FloatingToolbarPlugin';
 import { TableActionMenuPlugin } from '../plugins/TableActionMenuPlugin';
+import { ContentPreview } from './ContentPreview';
 
 function onError(error: Error) {
   console.error(error);
@@ -39,40 +39,23 @@ const initialConfig = {
   theme
 };
 
-interface PreviewComponentProps {
-  source: any;
-  meta?: any;
-  components: any;
-}
-
-interface EditorProps extends PreviewComponentProps {
+interface EditorProps extends PreviewPluginProps {
   content: string;
-  PreviewComponent?: ComponentType<PreviewComponentProps>;
-  previewUrl?: string;
   persistUrl?: string;
   user?: any;
+  children: React.ReactNode;
 }
 
 const gutter = () => {
-  const gutter = document.createElement('div');
-  gutter.className = styles.gutter;
-  return gutter;
+  const gutterDiv = document.createElement('div');
+  gutterDiv.className = styles.gutter;
+  return gutterDiv;
 };
 
-const Editor: FC<EditorProps> = ({
-  components,
-  content,
-  persistUrl,
-  PreviewComponent,
-  previewUrl,
-  source,
-  user
-}) => {
-  const previewContent = usePreviewContent() || source;
+const Editor: FC<EditorProps> = ({ content, persistUrl, user, meta, children, onChange }) => {
   const { setUser } = useEditorUser();
   const [focused, setFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { data: meta, content: markdown } = matter(content);
 
   const handleEditorFocus = () => {
     setFocused(true);
@@ -87,7 +70,7 @@ const Editor: FC<EditorProps> = ({
     <LexicalComposer
       initialConfig={{
         ...initialConfig,
-        editorState: () => $convertFromMarkdownString(markdown, transformers)
+        editorState: () => $convertFromMarkdownString(content, transformers)
       }}
     >
       <div className={styles.root} onFocus={handleEditorFocus} onBlur={handleEditorBlur}>
@@ -119,9 +102,7 @@ const Editor: FC<EditorProps> = ({
               <ContentEditor />
             </ScrollableSection>
             <ScrollableSection>
-              {PreviewComponent && (
-                <PreviewComponent source={previewContent} meta={meta} components={components} />
-              )}
+              <ContentPreview>{children}</ContentPreview>
             </ScrollableSection>
           </Split>
           <HistoryPlugin />
@@ -129,7 +110,7 @@ const Editor: FC<EditorProps> = ({
           <TablePlugin />
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={transformers} />
-          {previewUrl ? <PreviewPlugin previewUrl={previewUrl} /> : null}
+          {onChange ? <PreviewPlugin onChange={onChange} meta={meta} /> : null}
           <MarkdownImagePlugin />
           <MarkdownLinkPlugin />
           <LinkEditor />

@@ -5,38 +5,49 @@ const ENDPOINT = process.env.NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL || '';
 
 export default function useDataFeed(onError, onSuccess, onComplete) {
   const webSocketRef = useRef<WebSocket>();
+  const socketOpenRef = useRef(false);
   const channelRef = useRef<string | null>();
 
-  useEffect(function subscribe() {
+  useEffect(() => {
     try {
-      webSocketRef.current = new WebSocket(ENDPOINT);
-      webSocketRef.current.onopen = () => console.log(`Workflows websocket open: ${ENDPOINT}`);
-      webSocketRef.current.onclose = () => console.log('Workflows websocket closed');
+      if (!socketOpenRef.current && !webSocketRef.current) {
+        webSocketRef.current = new WebSocket(ENDPOINT);
 
-      webSocketRef.current.onmessage = (msg: MessageEvent) => {
-        const message: SourceWorkflowMessageEvent = JSON.parse(msg.data);
+        webSocketRef.current.onopen = () => {
+          socketOpenRef.current = true;
+          console.log(`Workflows websocket open: ${ENDPOINT}`);
+        };
 
-        if (message.channel !== channelRef.current) {
-          // message is not for us;
-          return;
-        }
+        webSocketRef.current.onclose = () => {
+          socketOpenRef.current = false;
+          console.log('Workflows websocket closed');
+        };
 
-        if (message.status === 'ERROR') {
-          onError(message);
-        }
-        if (message.status === 'COMPLETE') {
-          onComplete(message);
-        }
-        if (message.status === 'IN_PROGRESS' || message.status === 'SUCCESS') {
-          onSuccess(message);
-        }
-      };
+        webSocketRef.current.onmessage = (msg: MessageEvent) => {
+          const message: SourceWorkflowMessageEvent = JSON.parse(msg.data);
+
+          if (message.channel !== channelRef.current) {
+            // message is not for us;
+            return;
+          }
+
+          if (message.status === 'ERROR') {
+            onError(message);
+          }
+          if (message.status === 'COMPLETE') {
+            onComplete(message);
+          }
+          if (message.status === 'IN_PROGRESS' || message.status === 'SUCCESS') {
+            onSuccess(message);
+          }
+        };
+      }
     } catch (ex) {
       onError(ex);
     }
 
     return () => {
-      if (webSocketRef.current && webSocketRef.current?.OPEN) {
+      if (webSocketRef.current && socketOpenRef.current) {
         channelRef.current = null;
         webSocketRef.current.close();
       }

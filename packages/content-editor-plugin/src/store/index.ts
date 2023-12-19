@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { ReactNode, useCallback } from 'react';
 import { create } from 'zustand';
 
 type PageState = 'VIEW' | 'EDIT' | 'REVIEW' | 'SAVING' | 'ERROR';
@@ -7,13 +7,13 @@ type UserType = { sid: string; displayName: string; email: string };
 export interface ContentEditorState {
   pageState: PageState;
   user?: UserType;
-  previewContent?: any;
+  previewContent?: ReactNode;
   errorMessage?: string;
   isInsertingLink: boolean;
   setPageState: (state: PageState) => void;
   startEditing: () => void;
   stopEditing: () => void;
-  setPreviewContent: (content: any) => void;
+  setPreviewContent: (content: ReactNode) => void;
   setErrorMessage: (errorMessage: string) => void;
   setUser: (user: UserType) => void;
   setIsInsertingLink: (isInsertingLink: boolean) => void;
@@ -35,7 +35,7 @@ const useStore = create<ContentEditorState>(set => ({
   setPageState: state => set({ pageState: state }),
   startEditing: () => set({ ...initialState, pageState: 'EDIT' }),
   stopEditing: () => set({ pageState: initialState.pageState }),
-  setPreviewContent: (content: string) =>
+  setPreviewContent: (content: ReactNode) =>
     set({ pageState: 'EDIT', previewContent: content, errorMessage: undefined }),
   setErrorMessage: (errorMessage: string) => set({ errorMessage, pageState: 'ERROR' }),
   setUser: (user: any) => set({ user }),

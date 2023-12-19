@@ -2,14 +2,14 @@ import React, { useRef } from 'react';
 import type { StoreApi } from 'zustand';
 
 import { StoreContext } from './StoreContext';
-import { InitialSiteState, SiteState, createStore } from './store';
+import { InitialStoreState, StoreState, createStore } from './store';
 
-interface StoreProviderProps extends InitialSiteState {
+interface StoreProviderProps extends InitialStoreState {
   children?: React.ReactNode;
 }
 
 export const StoreProvider = ({ children, ...restProps }: StoreProviderProps) => {
-  const storeRef = useRef<StoreApi<SiteState> | null>(null);
+  const storeRef = useRef<StoreApi<StoreState> | null>(null);
   if (!storeRef.current) {
     storeRef.current = createStore({ ...restProps });
   }

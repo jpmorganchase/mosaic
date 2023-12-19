@@ -14,7 +14,7 @@ import { notFound } from 'next/navigation';
 import { LayoutBase, layouts } from '@jpmorganchase/mosaic-layouts';
 import fontClassNames from '../fonts';
 
-function getLayoutComponent(layout = 'FullWidth') {
+function getLayoutComponent(layout = 'DetailTechnical') {
   return layouts?.[layout];
 }
 

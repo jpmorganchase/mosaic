@@ -65,7 +65,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   const handleErrorMessage = (errorMessage: string) => {
-    setError(errorMessage ? errorMessage : 'Sorry - an unexpected error has occurred');
+    setError(errorMessage || 'Sorry - an unexpected error has occurred');
     setPrHref(null);
     setProgress([]);
     setIsRaising(false);
