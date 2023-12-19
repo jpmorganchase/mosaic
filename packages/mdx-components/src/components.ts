@@ -50,6 +50,8 @@ import {
   LabelProps,
   LinkBase as MosaicLinkBase,
   LinkBaseProps,
+  LinkButton as MosaicLinkButton,
+  LinkButtonProps,
   Links as MosaicLinks,
   LinksProps,
   LinkText as MosaicLinkText,
@@ -83,6 +85,7 @@ import {
   ViewStack as MosaicViewStack,
   ViewStackProps
 } from '@jpmorganchase/mosaic-components';
+
 import { withMarkdownSpacing } from './withMarkdownSpacing';
 
 export {
@@ -139,6 +142,7 @@ export const Impact = withMarkdownSpacing<ImpactProps>(MosaicImpact);
 export const Impacts = withMarkdownSpacing<ImpactsProps>(MosaicImpacts);
 export const Label = withMarkdownSpacing<LabelProps>(MosaicLabel);
 export const LinkBase = withMarkdownSpacing<LinkBaseProps>(MosaicLinkBase);
+export const LinkButton = withMarkdownSpacing<LinkButtonProps>(MosaicLinkButton);
 export const LinkText = withMarkdownSpacing<LinkTextProps>(MosaicLinkText);
 export const Links = withMarkdownSpacing<LinksProps>(MosaicLinks);
 export const ListItem = withMarkdownSpacing<ListItemProps>(MosaicListItem);
