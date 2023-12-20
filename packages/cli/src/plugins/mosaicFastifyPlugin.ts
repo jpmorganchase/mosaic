@@ -7,6 +7,7 @@ import path from 'node:path';
 export interface FastifyMosaicPluginOptions {
   config: MosaicConfig;
   scope?: string[];
+  mosaic: MosaicCore;
 }
 
 export interface FastifyMosaic {
@@ -16,9 +17,7 @@ export interface FastifyMosaic {
 }
 
 async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPluginOptions) {
-  const { config, scope } = options;
-  const mosaic = new MosaicCore(config);
-  await mosaic.start();
+  const { config, scope, mosaic } = options;
   const fs = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
   fastify.decorate('mosaic', { config, core: mosaic, fs });
 
