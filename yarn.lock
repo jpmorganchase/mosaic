@@ -1820,21 +1820,6 @@
     human-id "^1.0.2"
     prettier "^2.7.1"
 
-"@dpmosaic/mosaic-internal-components@^0.6.2":
-  version "0.6.2"
-  resolved "https://artifacts.jpmchase.net/artifactory/api/npm/npm/@dpmosaic/mosaic-internal-components/-/@dpmosaic/mosaic-internal-components-0.6.2.tgz#9fe8df72cdef24912cae041dd4ab7d149b8a240a"
-  integrity sha1-n+jfcs3vJJEsrgQd1Kt9FJuKJAo=
-  dependencies:
-    "@jpmorganchase/mosaic-components" "^0.1.0-beta.57"
-    "@jpmorganchase/mosaic-store" "^0.1.0-beta.57"
-    "@jpmorganchase/mosaic-theme" "^0.1.0-beta.57"
-    "@salt-ds/core" "^1.11.0"
-    "@salt-ds/lab" "1.0.0-alpha.20"
-    "@vanilla-extract/css" "^1.6.0"
-    "@vanilla-extract/recipes" "^0.2.1"
-    "@vanilla-extract/sprinkles" "^1.3.0"
-    clsx "^2.0.0"
-
 "@emotion/babel-plugin@^11.10.5":
   version "11.10.5"
   resolved "https://registry.yarnpkg.com/@emotion/babel-plugin/-/babel-plugin-11.10.5.tgz#65fa6e1790ddc9e23cc22658a4c5dea423c55c3c"

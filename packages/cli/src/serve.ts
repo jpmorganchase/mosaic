@@ -10,7 +10,8 @@ import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
 const MOSAIC_ADMIN_PREFIX = '_mosaic_';
 
 export const server = Fastify({
-  logger: false
+  logger: false,
+  pluginTimeout: 20000
 });
 
 export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
