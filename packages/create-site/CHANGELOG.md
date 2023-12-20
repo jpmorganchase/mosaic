@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.61
+
+### Patch Changes
+
+- cec89401: add `pluginTimeout` (20 secs) to fastify to prevent loading timeout
+- Updated dependencies [cec89401]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.61
+
 ## 0.1.0-beta.60
 
 ### Patch Changes
