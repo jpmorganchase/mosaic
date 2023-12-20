@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.61
+
+### Patch Changes
+
+- cec89401: add `pluginTimeout` (20 secs) to fastify to prevent loading timeout
+- Updated dependencies [cec89401]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.61
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.61
+
 ## 0.1.0-beta.60
 
 ### Patch Changes

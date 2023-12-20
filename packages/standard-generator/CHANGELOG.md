@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.61
+
+### Patch Changes
+
+- cec89401: add `pluginTimeout` (20 secs) to fastify to prevent loading timeout
+
 ## 0.1.0-beta.60
 
 ### Patch Changes
