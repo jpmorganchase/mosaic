@@ -6,6 +6,7 @@ import middie from '@fastify/middie';
 import fastifyMosaic from './plugins/mosaicFastifyPlugin.js';
 import fastifyMosaicAdmin from './plugins/mosaicAdminPlugin.js';
 import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
+import { createMosaicInstance } from './plugins/createMosaicInstance.js';
 
 const MOSAIC_ADMIN_PREFIX = '_mosaic_';
 
@@ -15,8 +16,9 @@ export const server = Fastify({
 });
 
 export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
+  const mosaic = await createMosaicInstance(config);
   await server.register(middie);
-  await server.register(fastifyMosaic, { config, scope });
+  await server.register(fastifyMosaic, { config, scope, mosaic });
   await server.register(fastifyMosaicWorkflows);
   await server.register(fastifyMosaicAdmin, {
     prefix: MOSAIC_ADMIN_PREFIX,
