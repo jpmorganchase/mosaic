@@ -11,12 +11,9 @@ import {
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { loadPage, LoadPageError, LoaderData } from '@jpmorganchase/mosaic-loaders';
 import { notFound } from 'next/navigation';
-import { LayoutBase, layouts } from '@jpmorganchase/mosaic-layouts';
+import { LayoutBase } from '@jpmorganchase/mosaic-layouts';
 import fontClassNames from '../fonts';
-
-function getLayoutComponent(layout = 'DetailTechnical') {
-  return layouts?.[layout];
-}
+import { View } from './View';
 
 export default async function Layout({ params: { slug }, children }) {
   const route = `/${slug.join('/')}`;
@@ -33,13 +30,12 @@ export default async function Layout({ params: { slug }, children }) {
     }
   }
 
-  const LayoutComponent = getLayoutComponent(metadata.layout);
-
   return (
     <SessionProvider>
       <ThemeProvider className={classnames(themeClassName, ...fontClassNames)}>
         <LayoutBase Header={<AppHeader path={route} />}>
-          <LayoutComponent
+          <View
+            layout={metadata.layout}
             FooterComponent={<Footer path={route} />}
             DocPaginatorComponent={
               <DocPaginator linkSuffix="Page" path={route} loader={loadPage} />
@@ -49,7 +45,7 @@ export default async function Layout({ params: { slug }, children }) {
           >
             <Breadcrumbs path={route} loader={loadPage} />
             {children}
-          </LayoutComponent>
+          </View>
         </LayoutBase>
       </ThemeProvider>
     </SessionProvider>
