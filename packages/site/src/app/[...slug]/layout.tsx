@@ -42,12 +42,12 @@ export default async function Layout({ params: { slug }, children }) {
           <LayoutComponent
             FooterComponent={<Footer path={route} />}
             DocPaginatorComponent={
-              <DocPaginator linkSuffix="Page" path={route} fetcher={loadPage} />
+              <DocPaginator linkSuffix="Page" path={route} loader={loadPage} />
             }
-            PrimarySidebarComponent={<Sidebar path={route} fetcher={loadPage} />}
-            SecondarySidebarComponent={<TableOfContents path={route} fetcher={loadPage} />}
+            PrimarySidebarComponent={<Sidebar path={route} loader={loadPage} />}
+            SecondarySidebarComponent={<TableOfContents path={route} loader={loadPage} />}
           >
-            <Breadcrumbs path={route} fetcher={loadPage} />
+            <Breadcrumbs path={route} loader={loadPage} />
             {children}
           </LayoutComponent>
         </LayoutBase>

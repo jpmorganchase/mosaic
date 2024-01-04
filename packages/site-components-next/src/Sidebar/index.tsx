@@ -7,8 +7,8 @@ function getIds(breadcrumbs: Breadcrumb[]) {
   return new Set(breadcrumbs.map(({ id }) => id.substr(0, id.lastIndexOf('.'))));
 }
 
-export async function Sidebar({ path, fetcher }: { path: string; fetcher: typeof loadPage }) {
-  const { data } = await fetcher(path);
+export async function Sidebar({ path, loader }: { path: string; loader: typeof loadPage }) {
+  const { data } = await loader(path);
   const props = {
     menu: data?.sidebarData || [],
     selectedNodeId: data?.route,

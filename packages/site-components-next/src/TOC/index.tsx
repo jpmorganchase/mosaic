@@ -4,14 +4,14 @@ import { TableOfContents as UI, type TOCItem } from '@jpmorganchase/mosaic-site-
 
 export async function TableOfContents({
   path,
-  fetcher,
+  loader,
   items
 }: {
   path: string;
-  fetcher: typeof loadPage;
+  loader: typeof loadPage;
   items?: TOCItem[];
 }) {
-  const { data } = await fetcher(path);
+  const { data } = await loader(path);
   const tableOfContents = data?.tableOfContents || [];
   return <UI items={items || tableOfContents} />;
 }

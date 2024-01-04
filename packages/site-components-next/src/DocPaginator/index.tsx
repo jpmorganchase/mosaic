@@ -4,14 +4,14 @@ import { DocPaginator as UI } from '@jpmorganchase/mosaic-site-components';
 
 export async function DocPaginator({
   path,
-  fetcher,
+  loader,
   linkSuffix = 'Page'
 }: {
   path: string;
-  fetcher: typeof loadPage;
+  loader: typeof loadPage;
   linkSuffix: string;
 }) {
-  const { data } = await fetcher(path);
+  const { data } = await loader(path);
   const { next, prev } = data?.navigation || {};
   return <UI linkSuffix={linkSuffix} next={next} prev={prev} />;
 }
