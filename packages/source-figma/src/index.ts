@@ -12,9 +12,12 @@ import {
 import createFigmaPage from './transformer.js';
 import type {
   FigmaPage,
-  FileUrlAndMeta,
-  ProjectFilesResponseJson,
-  ProjectResponseJson
+  GenerateThumbnailResponse,
+  GenerateThumbnailTransformerOptions,
+  ProjectFilesResponse,
+  ProjectsResponse,
+  ProjectsTransformerOptions,
+  ProjectsTransformerResult
 } from './types/index.js';
 
 const baseSchema = httpSourceCreatorSchema.omit({
@@ -35,7 +38,8 @@ export const schema = baseSchema.merge(
     ),
     endpoints: z.object({
       getFile: z.string().url(),
-      getProject: z.string().url()
+      getProject: z.string().url(),
+      generateThumbnail: z.string().url()
     }),
     requestTimeout: z.number().default(5000)
   })
@@ -56,31 +60,48 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       requestHeaders: requestHeadersParam
     } = parsedOptions;
 
-    const projectEndpoints = projects.map(project =>
-      endpoints.getProject.replace(':project_id', project.id.toString())
-    );
+    const projectEndpoints = projects.reduce<Record<string, string>>((result, project) => {
+      const projectId = project.id.toString();
+      return {
+        ...result,
+        [projectId]: endpoints.getProject.replace(':project_id', projectId)
+      };
+    }, {});
 
     const projectsTransformer: HttpSourceResponseTransformerType<
-      ProjectFilesResponseJson,
-      FileUrlAndMeta
-    > = (response: ProjectFilesResponseJson, _prefixDir, index) =>
-      [response].reduce<FileUrlAndMeta[]>((allProjectFileUrls, { files }) => {
-        const projectFileUrls = files.reduce<FileUrlAndMeta[]>((project, { key }) => {
+      ProjectsResponse,
+      ProjectsTransformerResult
+    > = (
+      response: ProjectsResponse,
+      _prefixDir,
+      index,
+      transformerOptions: ProjectsTransformerOptions
+    ) => {
+      return [response].reduce<ProjectsTransformerResult[]>((allProjectFileUrls, { files }) => {
+        const projectFileUrls = files.reduce<ProjectsTransformerResult[]>((project, { key }) => {
+          const meta: Record<string, any> = {
+            ...projects[index].meta
+          };
+          meta.data = {
+            ...meta.data,
+            fileId: key,
+            projectId: transformerOptions.projectIds[index]
+          };
           const fileUrlAndMetadata = {
             fileUrl: endpoints.getFile.replace(':file_id', key),
-            meta: projects[index].meta
+            meta
           };
-
           return [...project, fileUrlAndMetadata];
         }, []);
         return [...allProjectFileUrls, ...projectFileUrls];
       }, []);
+    };
 
     const projectFilesTransformer = (
-      response: ProjectResponseJson,
+      response: ProjectFilesResponse,
       _prefixDir: string,
       index: number,
-      transformerOptions: FileUrlAndMeta[]
+      transformerOptions: ProjectsTransformerResult[]
     ) => {
       const {
         document: { sharedPluginData }
@@ -109,9 +130,32 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       }, []);
     };
 
-    const projects$ = createHttpSource<ProjectFilesResponseJson, FileUrlAndMeta>(
+    const generateThumbnailTransformer = (
+      response: GenerateThumbnailResponse,
+      _prefixDir: string,
+      index: number,
+      transformerOptions: GenerateThumbnailTransformerOptions
+    ) => {
+      const fileId = transformerOptions.fileIds[index];
+      if (response.err) {
+        console.error(`Figma returned ${response.err} for ${fileId} thumbnail generation `);
+        return transformerOptions.pages;
+      }
+      const thumbnailNodes = Object.keys(response.images);
+      thumbnailNodes.forEach(thumbnailNodeId => {
+        const pageForNode = transformerOptions.pages.find(
+          page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
+        );
+        if (pageForNode) {
+          pageForNode.data.thumbnailUrl = response.images[thumbnailNodeId];
+        }
+      });
+      return transformerOptions.pages;
+    };
+
+    const projects$ = createHttpSource<ProjectsResponse, ProjectsTransformerResult>(
       {
-        endpoints: projectEndpoints,
+        endpoints: Object.values(projectEndpoints),
         requestHeaders: {
           'Content-Type': 'application/json',
           'X-FIGMA-TOKEN': figmaToken,
@@ -119,16 +163,17 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         },
         proxyEndpoint,
         prefixDir,
-        transformer: projectsTransformer
+        transformer: projectsTransformer,
+        transformerOptions: { projectIds: Object.keys(projectEndpoints) }
       },
       sourceConfig
     );
 
-    const figmaSource$ = projects$.pipe(
-      switchMap(fileUrlAndMetaCollection => {
-        const fileUrls = fileUrlAndMetaCollection.map(item => item.fileUrl);
+    const figmaPages$ = projects$.pipe(
+      switchMap(projectFiles => {
+        const fileUrls = projectFiles.map(item => item.fileUrl);
 
-        return createHttpSource<ProjectResponseJson, FigmaPage>({
+        return createHttpSource<ProjectFilesResponse, FigmaPage>({
           endpoints: fileUrls,
           requestHeaders: {
             'Content-Type': 'application/json',
@@ -138,12 +183,45 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           proxyEndpoint,
           prefixDir,
           transformer: projectFilesTransformer,
-          transformerOptions: fileUrlAndMetaCollection
+          transformerOptions: projectFiles
         });
       })
     );
 
-    return figmaSource$;
+    const figmaPagesWithThumbnails$ = figmaPages$.pipe(
+      switchMap(figmaPages => {
+        const thumbnailNodes = figmaPages.reduce<Record<string, string[]>>(
+          (thumbnailNodeMap, page) => {
+            const { fileId } = page.data;
+            if (thumbnailNodeMap[fileId]) {
+              thumbnailNodeMap[fileId] = [...thumbnailNodeMap[fileId], page.data.nodeId];
+            } else {
+              thumbnailNodeMap[fileId] = [page.data.nodeId];
+            }
+            return thumbnailNodeMap;
+          },
+          {}
+        );
+
+        const thumbnailRequestUrls = Object.keys(thumbnailNodes).map(fileId => {
+          let generateThumbnailUrl = endpoints.generateThumbnail.replace(':project_id', fileId);
+          return generateThumbnailUrl.replace(':node_id', thumbnailNodes[fileId].join(','));
+        });
+        return createHttpSource<GenerateThumbnailResponse, FigmaPage>({
+          endpoints: thumbnailRequestUrls,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'X-FIGMA-TOKEN': figmaToken,
+            ...requestHeadersParam
+          },
+          proxyEndpoint,
+          prefixDir,
+          transformer: generateThumbnailTransformer,
+          transformerOptions: { fileIds: Object.keys(thumbnailNodes), pages: figmaPages }
+        });
+      })
+    );
+    return figmaPagesWithThumbnails$;
   }
 };
 

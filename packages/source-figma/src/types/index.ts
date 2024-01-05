@@ -1,7 +1,26 @@
 import type { Page } from '@jpmorganchase/mosaic-types';
 
-/** Get project response */
-export type ProjectResponseJson = {
+/** Get Projects Observable */
+export type ProjectsTransformerOptions = {
+  projectIds: string[];
+};
+export type ProjectsTransformerResult = {
+  fileUrl: string;
+  meta?: Record<string, unknown>;
+};
+export type ProjectFile = {
+  key: string;
+  thumbnail_url: string;
+  last_modified: string;
+  branches?: ProjectFile[];
+};
+export type ProjectsResponse = {
+  name: string;
+  files: ProjectFile[];
+};
+
+/** Get Project Files Observable */
+export type ProjectFilesResponse = {
   document: {
     id: string;
     name: string;
@@ -13,32 +32,25 @@ export type ProjectResponseJson = {
   version: string;
 };
 
-export type ProjectFile = {
-  key: string;
-  thumbnail_url: string;
-  last_modified: string;
-  branches?: ProjectFile[];
+/** Generate Thumbnail Observable */
+export type GenerateThumbnailResponse = {
+  err: null | number;
+  images: Record<string, string>;
 };
-
-/** Get project files response */
-export type ProjectFilesResponseJson = {
-  name: string;
-  files: ProjectFile[];
-};
-
-export type FileUrlAndMeta = {
-  fileUrl: string;
-  meta?: Record<string, unknown>;
-};
+export type GenerateThumbnailTransformerOptions = { fileIds: string[]; pages: FigmaPage[] };
 
 /** Figma page Metadata */
 export type FigmaPageData = {
   name: string;
   patternId: string;
+  projectId: string;
+  fileId: string;
   description: string;
   embedLink: string;
+  nodeId: string;
   link: string;
   source: 'FIGMA';
+  thumbnailUrl?: string;
   tags?: string;
 };
 
