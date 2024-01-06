@@ -35,31 +35,32 @@ const options = {
     }
   ],
   endpoints: {
-    getProject: 'https://myfigma.com/:project_id/files',
-    getFile: 'https://myfigma.com/:file_id?plugin_data=shared'
+    getProject: 'https://myfigma.com/getproject/:project_id/files',
+    getFile: 'https://myfigma.com/getfile/:file_id?plugin_data=shared',
+    generateThumbnail: 'https://myfigma.com/generatethumb/:project_id?ids=:node_id'
   }
 };
 
 const getProjectById = (id: number) =>
   options.projects.find(item => item.id === id) || { meta: { tags: [] } };
 
-const createProjectsResponse = (patternId: string) => ({
+const createProjectsResponse = (fileId: string) => ({
   name: 'Figma Test Patterns',
   files: [
     {
-      key: patternId
+      key: fileId
     }
   ]
 });
 
-const createProjectFilesResponse = (patternId: string) => ({
+const createProjectFilesResponse = (patternId: string, nodeId: string) => ({
   document: {
     sharedPluginData: {
-      [`jpmSaltPattern.${patternId}`]: {
+      [patternId]: {
         description: `some description for ${patternId}`,
         link: 'some link',
         name: patternId,
-        node: 'X:Y',
+        nodeId,
         embedLink: 'some embed link',
         tags: 'some-tag1,some-tag2',
         version: 'some version'
@@ -72,17 +73,17 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
   title: patternId,
   description: `some description for ${patternId}`,
   layout: 'DetailTechnical',
-  route: `/prefixdir/jpmsaltpattern_${patternId}`,
-  fullPath: `/prefixdir/jpmsaltpattern_${patternId}.json`,
+  route: `/prefixdir/${patternId}`.toLowerCase(),
+  fullPath: `/prefixdir/${patternId}.json`.toLowerCase(),
   tags: ['some-tag1', 'some-tag2'],
   ...data,
   data: {
     description: `some description for ${patternId}`,
     embedLink: 'some embed link',
     link: 'some link',
-    node: 'X:Y',
+    nodeId: '2:0',
     name: patternId,
-    patternId: `jpmSaltPattern.${patternId}`,
+    patternId: patternId,
     source: 'FIGMA',
     tags: 'some-tag1,some-tag2',
     version: 'some version',
@@ -93,17 +94,29 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
 
 const successHandlers = [
   // Projects
-  rest.get('https://myfigma.com/:project_id/*', (req, res, ctx) => {
+  rest.get('https://myfigma.com/getproject/:project_id/*', (req, res, ctx) => {
     const { project_id } = req.params;
-    const pattern = project_id === '888' ? 'pattern1' : 'pattern2';
-    return res(ctx.status(200), ctx.json(createProjectsResponse(pattern)));
+    const fileId = project_id === '888' ? 'file888' : 'file999';
+    return res(ctx.status(200), ctx.json(createProjectsResponse(fileId)));
   }),
-  // Patterns
-  rest.get('https://myfigma.com/pattern1', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern1')));
+  // Files
+  rest.get('https://myfigma.com/getfile/:file_id', (req, res, ctx) => {
+    const { file_id } = req.params;
+    const pattern =
+      file_id === 'file888' ? 'jpmSaltPattern_888_pattern1' : 'jpmSaltPattern_999_pattern2';
+    return res(ctx.status(200), ctx.json(createProjectFilesResponse(pattern, '2:0')));
   }),
-  rest.get('https://myfigma.com/pattern2', (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createProjectFilesResponse('pattern2')));
+  // Thumbnails
+  rest.get('https://myfigma.com/generatethumb/:project_id', (req, res, ctx) => {
+    const { project_id } = req.params;
+    const url = new URL(req.url);
+    const nodeId = url.searchParams.get('ids') as string;
+    return res(
+      ctx.status(200),
+      ctx.json({
+        images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
+      })
+    );
   })
 ];
 describe('GIVEN a Figma Source ', () => {
@@ -121,18 +134,28 @@ describe('GIVEN a Figma Source ', () => {
       const source$: Observable<FigmaPage[]> = Source.create(options, { schedule });
       source$.pipe(take(1)).subscribe({
         next: result => {
-          expect(result[0]).toEqual(
-            createExpectedResult('pattern1', {
-              ...getProjectById(888).meta,
-              tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
-            })
-          );
-          expect(result[1]).toEqual(
-            createExpectedResult('pattern2', {
-              ...getProjectById(999).meta,
-              tags: ['some-tag1', 'some-tag2', ...getProjectById(999).meta.tags]
-            })
-          );
+          const meta0: Record<string, any> = {
+            ...getProjectById(888).meta,
+            tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
+          };
+          meta0.data = {
+            ...meta0.data,
+            thumbnailUrl: `/thumbnail/file888/2:0`,
+            fileId: 'file888',
+            projectId: '888'
+          };
+          expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_888_pattern1', meta0));
+          const meta1: Record<string, any> = {
+            ...getProjectById(999).meta,
+            tags: ['some-tag1', 'some-tag2', ...getProjectById(999).meta.tags]
+          };
+          meta1.data = {
+            ...meta1.data,
+            fileId: 'file999',
+            thumbnailUrl: `/thumbnail/file999/2:0`,
+            projectId: '999'
+          };
+          expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_999_pattern2', meta1));
         },
         complete: () => done()
       });
