@@ -1,4 +1,3 @@
-import React from 'react';
 import classnames from 'clsx';
 import { escapeRegExp, ComboBox, ComboBoxProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';

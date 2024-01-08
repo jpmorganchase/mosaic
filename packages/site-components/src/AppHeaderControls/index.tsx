@@ -1,4 +1,3 @@
-import React from 'react';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { useRouter } from 'next/navigation';

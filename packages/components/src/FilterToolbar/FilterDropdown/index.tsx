@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import classnames from 'clsx';
 import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';

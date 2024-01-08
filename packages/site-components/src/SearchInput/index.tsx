@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Input, Button } from '@salt-ds/core';
 import { Icon } from '@jpmorganchase/mosaic-components';
+
 
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
 import { Icon } from '@jpmorganchase/mosaic-components';
 

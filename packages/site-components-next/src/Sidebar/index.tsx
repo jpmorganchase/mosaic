@@ -1,4 +1,3 @@
-import * as React from 'react';
 import type { loadPage } from '@jpmorganchase/mosaic-loaders';
 import { PageNavigation as UI } from '@jpmorganchase/mosaic-site-components';
 import type { Breadcrumb } from '@jpmorganchase/mosaic-types';

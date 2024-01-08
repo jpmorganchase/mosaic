@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { SaltProvider } from '@salt-ds/core';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { ssrClassName } from '@jpmorganchase/mosaic-theme';
@@ -28,10 +28,7 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
 
   return (
     <SaltProvider mode={hasHydrated ? colorMode : 'light'}>
-      <div className={classnames(ssrClassname, className)}>
-        {children}
-        <div data-mosaic-id="portal-root" />
-      </div>
+      <div className={classnames(ssrClassname, className)}>{children}</div>
     </SaltProvider>
   );
 }

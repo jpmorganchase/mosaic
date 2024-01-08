@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { loadSharedConfig } from '@jpmorganchase/mosaic-loaders';
 import { Footer as UI } from '@jpmorganchase/mosaic-site-components';
 

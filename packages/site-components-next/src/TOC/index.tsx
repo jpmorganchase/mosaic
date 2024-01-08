@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { loadPage } from '@jpmorganchase/mosaic-loaders';
 import { TableOfContents as UI, type TOCItem } from '@jpmorganchase/mosaic-site-components';
 

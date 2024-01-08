@@ -1,4 +1,3 @@
-import React from 'react';
 import { VerticalNavigation } from './VerticalNavigation';
 
 export type PageNavigationItem = {

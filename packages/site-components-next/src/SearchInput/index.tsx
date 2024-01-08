@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { SearchInput as UI } from '@jpmorganchase/mosaic-site-components';
 import { loadMosaicData } from '@jpmorganchase/mosaic-loaders';
 import { SearchConfig, SearchIndex } from '@jpmorganchase/mosaic-types';

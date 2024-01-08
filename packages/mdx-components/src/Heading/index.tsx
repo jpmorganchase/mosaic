@@ -1,4 +1,3 @@
-import React from 'react';
 import classnames from 'clsx';
 import { Typography } from '@jpmorganchase/mosaic-components';
 import { heading } from '@jpmorganchase/mosaic-theme';
@@ -11,7 +10,7 @@ const createHeading =
       <Typography
         className={classnames(heading({ variant, context: 'markdown' }), className)}
         component={component}
-        role={'heading'}
+        role="heading"
         {...props}
       >
         {children}

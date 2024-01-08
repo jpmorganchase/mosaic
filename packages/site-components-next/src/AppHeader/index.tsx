@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { Suspense } from 'react';
 import { loadSharedConfig } from '@jpmorganchase/mosaic-loaders';
 import { AppHeader as UI } from '@jpmorganchase/mosaic-site-components';
 import type { TabsLinkItem, TabsMenu, TabsMenuButtonItem } from '@jpmorganchase/mosaic-components';
@@ -128,9 +128,10 @@ export async function AppHeader({ path }: { path: string }) {
 
   return (
     <UI homeLink={homeLink} logo={logo} menu={tabsMenu} title={title}>
-      <React.Suspense fallback={<div>Loading Search</div>}>
+      <Suspense fallback={<div>Loading Search</div>}>
+        {/* @ts-expect-error Server Component */}
         <SearchInput />
-      </React.Suspense>
+      </Suspense>
     </UI>
   );
 }

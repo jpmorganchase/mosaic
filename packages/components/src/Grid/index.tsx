@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, Ref } from 'react';
+import { forwardRef, ReactNode, Ref } from 'react';
 import classnames from 'clsx';
 
 import styles from './styles.css';

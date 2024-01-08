@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { TileContentLabel } from '../TileContentLabel';
 import { TileLink } from '../TileLink';
 import type { GridItemSize } from '../Grid';

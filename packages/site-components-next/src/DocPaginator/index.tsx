@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { loadPage } from '@jpmorganchase/mosaic-loaders';
 import { DocPaginator as UI } from '@jpmorganchase/mosaic-site-components';
 

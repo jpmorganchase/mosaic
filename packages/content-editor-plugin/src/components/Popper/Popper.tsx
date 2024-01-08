@@ -1,4 +1,4 @@
-import React, { forwardRef, HTMLAttributes, ReactNode } from 'react';
+import { forwardRef, HTMLAttributes, ReactNode } from 'react';
 import { Portal, useWindow } from '@salt-ds/lab';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import classnames from 'clsx';
