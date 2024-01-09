@@ -7,7 +7,7 @@ import {
   SubMenu,
   ProSidebarProvider
 } from 'react-pro-sidebar';
-import { link } from '@jpmorganchase/mosaic-theme';
+import { link, vars } from '@jpmorganchase/mosaic-theme';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import type { SidebarItem } from '@jpmorganchase/mosaic-types';
@@ -30,41 +30,30 @@ const createMenuItemStyles = colorMode => ({
     backgroundColor: 'inherit'
   },
   button: ({ active }) => {
-    let buttonStyle: ElementStyles = {
-      paddingRight: 'var(--mosaic-space-horizontal-x4)'
+    const buttonStyle: ElementStyles = {
+      paddingRight: vars.space.horizontal.x4
     };
+
     return {
       ...buttonStyle,
       ':disabled': {
         backgroundColor: 'unset',
-        color:
-          colorMode === 'light'
-            ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
-            : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
+        color: `var(--mosaic-color-${colorMode}-navigable-selectableLink-unselectedLabel)`
       },
       ':hover': {
-        backgroundColor:
-          colorMode === 'light'
-            ? 'var(--mosaic-color-light-neutral-background-emphasis)'
-            : 'var(--mosaic-color-dark-neutral-background-emphasis)'
+        backgroundColor: `var(--mosaic-color-${colorMode}-neutral-background-emphasis)`
       },
-      fontWeight: active ? 'var(--mosaic-fontWeight-semibold)' : 'var(--mosaic-fontWeight-regular)',
+      fontWeight: active ? vars.fontWeight.semibold : vars.fontWeight.regular,
       borderLeft: active
-        ? colorMode === 'light'
-          ? '4px solid var(--mosaic-color-light-navigable-selectableLink-selected)'
-          : '4px solid var(--mosaic-color-dark-navigable-selectableLink-selected)'
+        ? `4px solid var(--mosaic-color-${colorMode}-navigable-selectableLink-selected)`
         : '4px solid transparent',
       color: active
-        ? colorMode === 'light'
-          ? 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
-          : 'var(--mosaic-color-dark-navigable-selectableLink-selectedLabel)'
-        : colorMode === 'light'
-        ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
-        : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
+        ? `var(--mosaic-color-${colorMode}-navigable-selectableLink-selectedLabel)`
+        : `var(--mosaic-color-${colorMode}-navigable-selectableLink-unselectedLabel)`
     };
   },
   label: {
-    marginRight: 'var(--mosaic-space-horizontal-x4)'
+    marginRight: vars.space.horizontal.x4
   }
 });
 
@@ -77,7 +66,7 @@ const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
   if (href === selectedNodeId) {
     return <div {...rest} />;
   }
-  return <Link href={href} variant={'component'} {...rest} />;
+  return <Link href={href} variant="component" {...rest} />;
 };
 
 const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
@@ -97,7 +86,7 @@ const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
         <MenuItem
           active={selectedNodeId === item.id}
           className={link({ variant: 'selectable' })}
-          component={<Link href={item.data?.link} variant={'component'} />}
+          component={<Link href={item.data?.link} variant="component" />}
           key={item.id}
         >
           {item.name}
@@ -114,6 +103,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
 }) => {
   const { colorMode } = useColorMode();
   const menuItemStyles = createMenuItemStyles(colorMode);
+
   return (
     <ProSidebarProvider>
       <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="100%" {...rest}>
