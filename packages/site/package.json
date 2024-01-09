@@ -13,6 +13,7 @@
   "types": "dist/index.d.ts",
   "style": "dist/index.css",
   "scripts": {
+    "analyze": "ANALYZE=true yarn build",
     "clean": "rm -fr public/.tmp .next",
     "build": "next build",
     "export:static": "yarn mosaic export:static",
@@ -48,6 +49,7 @@
     "next-auth": "^4.24.5"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "14.0.0",
     "@next/eslint-plugin-next": "^14.0.0",
     "@next/mdx": "^14.0.0",
     "@playwright/test": "^1.33.0",

@@ -1,5 +1,9 @@
 const withMDX = require('@next/mdx')();
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true'
+});
+
 const nextConfig = {
   experimental: {
     mdxRs: true
@@ -26,4 +30,4 @@ const nextConfig = {
   env: {}
 };
 
-module.exports = withMDX(nextConfig);
+module.exports = withBundleAnalyzer(withMDX(nextConfig));
