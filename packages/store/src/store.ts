@@ -29,6 +29,7 @@ const storeMiddlewares = stateCreatorFn =>
   devtools(
     persist<StoreState, [], [], PeristedStoreState>(stateCreatorFn, {
       name: 'mosaic-theme-pref',
+      skipHydration: true,
       partialize: (state: StoreState) => ({
         colorMode: state.colorMode
       })
