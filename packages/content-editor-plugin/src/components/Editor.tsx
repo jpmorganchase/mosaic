@@ -39,7 +39,7 @@ const initialConfig = {
   theme
 };
 
-interface EditorProps extends PreviewPluginProps {
+export interface EditorProps extends PreviewPluginProps {
   content: string;
   persistUrl?: string;
   user?: any;

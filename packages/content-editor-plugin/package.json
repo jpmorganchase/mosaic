@@ -56,6 +56,7 @@
     "@lexical/utils": "^0.11.1",
     "@lexical/markdown": "^0.11.1",
     "@vanilla-extract/css": "^1.6.0",
+    "client-only": "^0.0.1",
     "clsx": "^2.0.0",
     "gray-matter": "^4.0.3",
     "lexical": "^0.11.1",

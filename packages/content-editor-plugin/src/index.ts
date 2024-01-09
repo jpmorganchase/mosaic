@@ -1,4 +1,6 @@
-import Editor from './components/Editor';
+import 'client-only';
+
+import { Editor } from './LazyEditor';
 import { EditorControls } from './components/EditorControls';
 import useContentEditor, { usePageState } from './store';
 
