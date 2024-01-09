@@ -11,7 +11,6 @@ export default {
     paragraph({ variant: 'paragraph2' })
   ]),
   layerLayout: style({
-    background: 'inherit !important',
     padding: '0px',
     margin: '0px'
   }),
@@ -27,17 +26,18 @@ export default {
     {
       selectors: {
         ['.saltButton.&']: {
-          position: 'absolute'
+          position: 'absolute',
+          top: '10px'
         }
       }
     },
     button({ variant: 'square' })
   ]),
   leftCloseButton: style({
-    right: '0px'
+    right: '10px'
   }),
   rightCloseButton: style({
-    left: '0px'
+    left: '10px'
   }),
   openLeft: animation({ variant: 'leftSlideIn' }),
   closeLeft: animation({ variant: 'leftSlideOut' }),

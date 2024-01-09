@@ -29,15 +29,7 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
     setOpen(!open);
   };
 
-  const [isClient] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   // Close drawer whenever a page loads
-  //   setOpen(false);
-  //   setIsClient(true);
-  // }, [route]);
-
-  const portalRoot = isClient ? document.querySelector('[data-mosaic-id="portal-root"]') : null;
+  const portalRoot = document.querySelector('[data-mosaic-id="portal-root"]');
   return (
     <>
       <div ref={triggerRef}>
