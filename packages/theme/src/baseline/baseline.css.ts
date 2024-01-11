@@ -1,5 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css';
-import { ssrClassName } from '../index';
+import { config } from '../config';
 
 globalStyle('html, body', {
   fontFamily: 'Open Sans',
@@ -41,6 +41,6 @@ globalStyle('li > p', {
   display: 'inline'
 });
 
-globalStyle(`.${ssrClassName} svg, .${ssrClassName} img`, {
+globalStyle(`.${config.ssrClassName} svg, .${config.ssrClassName} img`, {
   display: 'none'
 });

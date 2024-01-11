@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { SaltProvider } from '@salt-ds/core';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
-import { ssrClassName } from '@jpmorganchase/mosaic-theme';
+import { config } from '@jpmorganchase/mosaic-theme';
 
 import classnames from 'clsx';
 
@@ -24,7 +24,7 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const { colorMode } = useColorMode();
 
-  const ssrClassname = hasHydrated ? undefined : ssrClassName;
+  const ssrClassname = hasHydrated ? undefined : config.ssrClassName;
 
   return (
     <SaltProvider mode={hasHydrated ? colorMode : 'light'}>
