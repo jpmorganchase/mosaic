@@ -59,7 +59,7 @@
     "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
-    "@vanilla-extract/esbuild-plugin": "^2.0.0",
+    "@vanilla-extract/esbuild-plugin": "^2.3.1",
     "concurrently": "^7.1.0",
     "del-cli": "^4.0.1",
     "esbuild": "^0.19.11",
