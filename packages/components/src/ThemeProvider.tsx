@@ -27,7 +27,7 @@ export function ThemeProvider({ className, children }: ThemeProviderProps) {
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 
   return (
-    <SaltProvider mode={hasHydrated ? colorMode : 'light'}>
+    <SaltProvider enableStyleInjection={false} mode={hasHydrated ? colorMode : 'light'}>
       <div className={classnames(ssrClassname, className)}>
         {children}
         <div data-mosaic-id="portal-root" />
