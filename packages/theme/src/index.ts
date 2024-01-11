@@ -21,6 +21,7 @@ export * from './componentExample';
 export * from './config';
 export * from './feature';
 export * from './grid';
+export * from './gutter/index.css';
 export * from './hero';
 export * from './impact';
 export * from './link';
@@ -32,7 +33,7 @@ export * from './story';
 export * from './table';
 export * from './tag';
 export * from './thematicBreak';
-export * from './typography';
+export * from './typography/index.css';
 export * from './responsive/responsiveStyle';
 export type { SpaceVars } from './responsive/vars.css';
 

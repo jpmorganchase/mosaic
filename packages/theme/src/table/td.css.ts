@@ -4,7 +4,7 @@ import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
 import { responsiveConditions, responsiveSprinkles } from '../responsive';
-import { paragraph } from '../typography';
+import { paragraph } from '../typography/index.css';
 
 export const tdSizeProperties = defineProperties({
   conditions: responsiveConditions,

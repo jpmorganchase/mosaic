@@ -2,7 +2,7 @@ import { style } from '@vanilla-extract/css';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { responsiveSprinkles } from '../responsive';
-import { paragraph } from '../typography';
+import { paragraph } from '../typography/index.css';
 
 export const th = recipe({
   base: style([

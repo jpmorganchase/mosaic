@@ -1,8 +1,10 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { vars } from '../vars.css';
-import { marginProperties, paddingProperties, responsiveSprinkles } from '../responsive';
+import { responsiveSprinkles } from '../responsive';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const subtitleProperties = defineProperties({
   properties: {
@@ -25,11 +27,7 @@ const subtitleProperties = defineProperties({
   }
 });
 
-export const subtitleSprinkles = createSprinkles(
-  subtitleProperties,
-  marginProperties,
-  paddingProperties
-);
+export const subtitleSprinkles = createSprinkles(subtitleProperties);
 
 export type SubtitleSprinkles = Parameters<typeof subtitleSprinkles>[0];
 
