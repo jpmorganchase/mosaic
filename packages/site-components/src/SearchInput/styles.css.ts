@@ -23,6 +23,9 @@ export default {
       display: ['none', 'none', 'flex', 'flex']
     })
   ]),
+  input: style({
+    minWidth: 200
+  }),
   popper: style([
     style({
       zIndex: POPPER_Z_INDEX,
