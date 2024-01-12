@@ -33,7 +33,7 @@ export * from './story';
 export * from './table';
 export * from './tag';
 export * from './thematicBreak';
-export * from './typography/index.css';
+export * from './typography';
 export * from './responsive/responsiveStyle';
 export type { SpaceVars } from './responsive/vars.css';
 

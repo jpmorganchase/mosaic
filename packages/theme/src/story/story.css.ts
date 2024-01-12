@@ -1,7 +1,7 @@
 import { styleVariants } from '@vanilla-extract/css';
 
 import { responsiveSprinkles } from '../responsive';
-import { heading, paragraph, subtitle } from '../typography/index.css';
+import { heading, paragraph, subtitle } from '../typography';
 import { borderSprinkles } from '../border';
 import { vars } from '../vars.css';
 

@@ -8,7 +8,7 @@ import {
   linkColorSprinkles,
   selectableLinkColorSprinkles
 } from '../color';
-import { textDecorationSprinkles } from '../typography/index.css';
+import { textDecorationSprinkles } from '../typography';
 
 export const link = recipe({
   variants: {

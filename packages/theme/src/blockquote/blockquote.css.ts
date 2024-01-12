@@ -3,7 +3,7 @@ import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { responsiveSprinkles } from '../responsive';
 import { siteBorder } from '../border';
-import { heading } from '../typography/index.css';
+import { heading } from '../typography';
 
 export const blockquote = recipe({
   variants: {

@@ -1,6 +1,6 @@
-import path from 'path';
 import glob from 'fast-glob';
 import esbuild from 'esbuild';
+import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
 import publicImageResolverPlugin from './publicImageResolver.js';
 
@@ -8,46 +8,55 @@ const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
-const onEndPlugin = {
+const buildEndPlugin = () => ({
   name: 'on-end',
   setup(build) {
     build.onEnd(({ errors = [] }) => {
       if (errors.length) {
-        console.error(`build failed for ${packageName}:`, errors);
+        console.error(`🛠️  - failed for: ${packageName} ❌`, errors);
+      } else if (watchEnabled) {
+        console.log(`🛠️ - succeeded for: ${packageName} ✅,  👀 for changes...`);
       } else {
-        console.log(`build succeeded for ${packageName}:`);
+        console.log(`🛠️ - succeeded for: ${packageName} ✅`);
       }
     });
   }
+});
+
+const entries = glob.sync(['src/index.ts', 'src/baseline/index.ts', 'src/salt/index.ts'], {
+  dot: true
+});
+
+const esbuildConfig = {
+  entryPoints: entries,
+  loader: {
+    '.jpg': 'dataurl',
+    '.png': 'dataurl',
+    '.svg': 'text'
+  },
+  outdir: './dist',
+  bundle: true,
+  sourcemap: true,
+  splitting: true,
+  minify: true,
+  format: 'esm',
+  target: ['es2022'],
+  plugins: [
+    nodeExternalsPlugin(),
+    vanillaExtractPlugin({}),
+    buildEndPlugin(),
+    publicImageResolverPlugin
+  ],
+  external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*']
 };
 
 try {
-  const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {
-    dot: true
-  });
-  const context = await esbuild.context({
-    entryPoints: entries,
-    loader: {
-      '.jpg': 'dataurl',
-      '.png': 'dataurl',
-      '.svg': 'text'
-    },
-    outdir: 'dist',
-    bundle: true,
-    splitting: true,
-    sourcemap: false,
-    minify: true,
-    format: 'esm',
-    target: ['esnext'],
-    external: ['react', 'react-dom'],
-    plugins: [publicImageResolverPlugin, vanillaExtractPlugin(), onEndPlugin]
-  });
-  await context.rebuild();
   if (watchEnabled) {
+    const context = await esbuild.context(esbuildConfig);
     await context.watch();
+  } else {
+    await esbuild.build(esbuildConfig);
   }
-  await context.serve();
-  context.dispose();
 } catch (e) {
   if (e.errors && e.errors.length > 0) {
     console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);
