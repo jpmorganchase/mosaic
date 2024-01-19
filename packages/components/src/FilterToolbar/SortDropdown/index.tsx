@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import classnames from 'clsx';
 import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';
@@ -22,6 +22,7 @@ export function FilterSortDropdown({
   source = defaultSource,
   ...rest
 }: FilterSortDropdownProps) {
+  const id = useId();
   const dispatch = useToolbarDispatch();
   const { sort = source[0] } = useToolbarState();
   const [, setIsOpen] = useState(false);
@@ -35,6 +36,7 @@ export function FilterSortDropdown({
   return (
     <Dropdown
       className={classnames(className, styles.root)}
+      id={id}
       itemToString={itemToString}
       onOpenChange={setIsOpen}
       onSelectionChange={handleSelect}

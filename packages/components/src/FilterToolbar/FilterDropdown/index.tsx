@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useId } from 'react';
 import classnames from 'clsx';
 import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
 import { Icon } from '../../Icon';
@@ -29,6 +29,7 @@ export function FilterDropdown({
   source = [],
   ...rest
 }: FilterDropdownProps) {
+  const id = useId();
   const dispatch = useToolbarDispatch();
   const { filters = [] } = useToolbarState();
   const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +40,7 @@ export function FilterDropdown({
   };
   return (
     <Dropdown<string, 'multiple'>
+      id={id}
       aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
       className={classnames(className, styles.root)}
       itemToString={itemToString}
