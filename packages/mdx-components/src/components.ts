@@ -109,7 +109,6 @@ export {
   VideoPlayer,
   View
 } from '@jpmorganchase/mosaic-components';
-export * from './FormattedContent';
 export * from './markdownElements';
 export * from './typography';
 

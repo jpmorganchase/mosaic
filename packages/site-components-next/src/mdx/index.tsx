@@ -1,5 +1,6 @@
+import type { MDXComponents } from 'mdx/types';
+
 import {
-  a,
   Accordion,
   AccordionDetails,
   AccordionSection,
@@ -27,8 +28,6 @@ import {
   Cards,
   ComponentExample,
   DataTable,
-  em,
-  EditionFilterView,
   EditionTileLink,
   Eyebrow,
   Feature,
@@ -47,13 +46,6 @@ import {
   FilterResultCount,
   Grid,
   GridBase,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  hr,
   H0,
   H1,
   H2,
@@ -67,7 +59,6 @@ import {
   Icon,
   Impact,
   Impacts,
-  li,
   Label,
   Link,
   LinkBase,
@@ -75,9 +66,7 @@ import {
   LinkText,
   Links,
   ListItem,
-  ol,
   OrderedList,
-  p,
   P1,
   P2,
   P3,
@@ -85,7 +74,6 @@ import {
   P5,
   P6,
   PageFilterView,
-  pre,
   Pre,
   SecondaryNavbar,
   SectionHeading,
@@ -120,7 +108,6 @@ import {
   TileLink,
   tr,
   Tr,
-  ul,
   UnorderedList,
   View,
   ViewStack,
@@ -128,8 +115,12 @@ import {
   Watermark
 } from '@jpmorganchase/mosaic-mdx-components';
 
+import { EditionFilterView } from '../EditionFilterView';
+
+import { mdxElements } from './elements';
+
 export const mdxComponents = {
-  a,
+  ...mdxElements,
   Accordion,
   AccordionDetails,
   AccordionSection,
@@ -157,8 +148,7 @@ export const mdxComponents = {
   Cards,
   ComponentExample,
   DataTable,
-  em,
-  Emphasis: em,
+  Emphasis: mdxElements.em,
   EditionFilterView,
   EditionTileLink,
   Eyebrow,
@@ -178,13 +168,6 @@ export const mdxComponents = {
   FilterResultCount,
   Grid,
   GridBase,
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
-  hr,
   H0,
   H1,
   H2,
@@ -198,7 +181,6 @@ export const mdxComponents = {
   Icon,
   Impact,
   Impacts,
-  li,
   Label,
   Link,
   LinkBase,
@@ -206,9 +188,7 @@ export const mdxComponents = {
   LinkText,
   Links,
   ListItem,
-  ol,
   OrderedList,
-  p,
   P1,
   P2,
   P3,
@@ -216,7 +196,6 @@ export const mdxComponents = {
   P5,
   P6,
   PageFilterView,
-  pre,
   Pre,
   SecondaryNavbar,
   SectionHeading,
@@ -252,10 +231,9 @@ export const mdxComponents = {
   TileLink,
   tr,
   Tr,
-  ul,
   UnorderedList,
   View,
   VideoPlayer,
   ViewStack,
   Watermark
-};
+} as unknown as MDXComponents;

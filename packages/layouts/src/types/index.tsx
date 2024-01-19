@@ -3,19 +3,18 @@ import type { LinkType } from '@jpmorganchase/mosaic-site-components';
 import { FooterProps } from '@jpmorganchase/mosaic-site-components';
 
 export type LayoutProps = {
-  AppHeaderComponent: any;
-  BreadcrumbsComponent: any;
-  FooterComponent: any;
-  DocPaginatorComponent: any;
-  SecondarySidebarComponent: any;
-  PrimarySidebarComponent: any;
+  AppHeaderComponent: ReactNode;
+  BreadcrumbsComponent: ReactNode;
+  FooterComponent: ReactNode;
+  DocPaginatorComponent: ReactNode;
+  SecondarySidebarComponent: ReactNode;
+  PrimarySidebarComponent: ReactNode;
   children?: ReactNode;
   className?: string;
   ToCProps?: {
     items: any;
   };
   SidebarProps?: Pick<FooterProps, 'helpLinks'>;
-
   NextPrevLinksProps?: {
     next?: LinkType;
     prev?: LinkType;

@@ -21,7 +21,7 @@ export const Newsletter: React.FC<NewsletterProps> = ({
   return (
     <LayoutColumns PrimarySidebar={Sidebar} Footer={FooterComponent} SecondarySidebar={null}>
       {children}
-      <DocPaginatorComponent linkSuffix="Post" />
+      {DocPaginatorComponent}
     </LayoutColumns>
   );
 };

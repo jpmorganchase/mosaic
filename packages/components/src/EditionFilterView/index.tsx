@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import classnames from 'clsx';
 
 import { FilterResultCount, FilterView } from '../FilterView';
@@ -38,7 +38,7 @@ export type Edition = {
   group?: string;
   link: string;
   publicationDate: string;
-  formattedDescription?: string;
+  formattedDescription?: ReactNode;
   title?: string;
 };
 

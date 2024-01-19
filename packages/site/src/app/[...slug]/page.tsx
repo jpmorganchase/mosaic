@@ -2,18 +2,25 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { loadPage } from '@jpmorganchase/mosaic-loaders';
 
+import { type PreviewAction, preview } from '@jpmorganchase/mosaic-site-components-next';
+import { MDXContent, mdxComponents } from '@jpmorganchase/mosaic-site-components-next';
+
 import { Body } from './Body';
-import { compile } from '../../mdx/compile';
+
+const previewAction: PreviewAction = async options => {
+  'use server';
+
+  return preview({ ...options, components: mdxComponents });
+};
 
 export default async function Page({ params: { slug } }) {
   const route = `/${slug.join('/')}`;
   const { source = '', data = {} } = await loadPage(route);
-  const content = await compile({ source, data });
 
   return (
-    <Suspense fallback={content}>
-      <Body source={source} meta={data}>
-        {content}
+    <Suspense fallback={null}>
+      <Body source={source} meta={data} previewAction={previewAction}>
+        <MDXContent source={source} data={data} components={mdxComponents} />
       </Body>
     </Suspense>
   );

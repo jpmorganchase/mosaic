@@ -39,7 +39,8 @@ const esbuildConfig = {
   format: 'esm',
   target: ['es2022'],
   plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({}), buildEndPlugin()],
-  external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*']
+  external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*'],
+  platform: packageName === '@jpmorganchase/mosaic-site-components-next' ? 'node' : 'browser'
 };
 
 try {

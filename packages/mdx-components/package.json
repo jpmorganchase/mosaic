@@ -45,8 +45,7 @@
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.62",
     "clsx": "^2.0.0",
     "hoist-non-react-statics": "^3.3.2",
-    "prism-react-renderer": "^1.1.1",
-    "react-markdown": "^6.0.2"
+    "prism-react-renderer": "^1.1.1"
   },
   "peerDependencies": {
     "@types/react": "^18.2.46",

@@ -38,7 +38,11 @@ export default async function Layout({ params: { slug }, children }) {
             layout={metadata.layout}
             FooterComponent={<Footer path={route} />}
             DocPaginatorComponent={
-              <DocPaginator linkSuffix="Page" path={route} loader={loadPage} />
+              <DocPaginator
+                linkSuffix={metadata.layout === 'Newsletter' ? 'Post' : 'Page'}
+                path={route}
+                loader={loadPage}
+              />
             }
             PrimarySidebarComponent={<Sidebar path={route} loader={loadPage} />}
             SecondarySidebarComponent={<TableOfContents path={route} loader={loadPage} />}

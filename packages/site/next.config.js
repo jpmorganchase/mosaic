@@ -1,5 +1,3 @@
-const withMDX = require('@next/mdx')();
-
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true'
 });
@@ -30,4 +28,4 @@ const nextConfig = {
   env: {}
 };
 
-module.exports = withBundleAnalyzer(withMDX(nextConfig));
+module.exports = withBundleAnalyzer(nextConfig);

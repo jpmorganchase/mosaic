@@ -1,5 +1,12 @@
 import { SiteState } from '@jpmorganchase/mosaic-loaders';
-import { compile } from './compile';
+import { compile, type CompileOptions } from './compile';
+import { mdxComponents } from '../mdx';
+
+export type PreviewActionOptions = {
+  source: string;
+  data?: Partial<SiteState>;
+  components?: CompileOptions['components'];
+};
 
 /**
  *
@@ -9,14 +16,11 @@ import { compile } from './compile';
  * so want to show them in toasts and not redirect to the main error page
  */
 export async function preview({
-  source,
-  data = {}
-}: {
-  source: string;
-  data?: Partial<SiteState>;
-}) {
+  components = mdxComponents,
+  ...restOptions
+}: PreviewActionOptions) {
   try {
-    const result = await compile({ source, data });
+    const result = await compile({ ...restOptions, components });
     return { result };
   } catch (e) {
     if (e instanceof Error) {
@@ -29,3 +33,5 @@ export async function preview({
     throw e;
   }
 }
+
+export type PreviewAction = typeof preview;
