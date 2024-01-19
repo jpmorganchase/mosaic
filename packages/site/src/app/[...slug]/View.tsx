@@ -17,7 +17,7 @@ export interface ViewProps {
 export function View({ children, layout, ...rest }) {
   const { pageState } = useContentEditor();
 
-  const LayoutComponent = pageState !== 'EDIT' ? getLayoutComponent(layout) : layouts?.Edit;
+  const LayoutComponent = pageState === 'VIEW' ? getLayoutComponent(layout) : layouts?.Edit;
 
   return <LayoutComponent {...rest}>{children}</LayoutComponent>;
 }
