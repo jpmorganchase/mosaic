@@ -86,6 +86,11 @@ import {
   ViewStackProps
 } from '@jpmorganchase/mosaic-components';
 
+import {
+  OpenAPI as MosaicOpenAPI,
+  type OpenAPIProps
+} from '@jpmorganchase/mosaic-open-api-component';
+
 import { withMarkdownSpacing } from './withMarkdownSpacing';
 
 export {
@@ -145,6 +150,7 @@ export const LinkButton = withMarkdownSpacing<LinkButtonProps>(MosaicLinkButton)
 export const LinkText = withMarkdownSpacing<LinkTextProps>(MosaicLinkText);
 export const Links = withMarkdownSpacing<LinksProps>(MosaicLinks);
 export const ListItem = withMarkdownSpacing<ListItemProps>(MosaicListItem);
+export const OpenAPI = withMarkdownSpacing<OpenAPIProps>(MosaicOpenAPI);
 export const OrderedList = withMarkdownSpacing<OrderedListProps>(MosaicOrderedList);
 export const Tag = withMarkdownSpacing<TagProps>(MosaicTag);
 export const SecondaryNavbar = withMarkdownSpacing<SecondaryNavbarProps>(MosaicSecondaryNavbar);

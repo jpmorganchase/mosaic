@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.62",
+    "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.62",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.62",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.62",
     "clsx": "^2.0.0",
