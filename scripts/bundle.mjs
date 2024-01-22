@@ -38,7 +38,11 @@ const esbuildConfig = {
   minify: true,
   format: 'esm',
   target: ['es2022'],
-  plugins: [nodeExternalsPlugin(), vanillaExtractPlugin({}), buildEndPlugin()],
+  plugins: [
+    nodeExternalsPlugin({ allowList: ['swagger-ui-react/swagger-ui.css'] }),
+    vanillaExtractPlugin({}),
+    buildEndPlugin()
+  ],
   external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*'],
   platform: packageName === '@jpmorganchase/mosaic-site-components-next' ? 'node' : 'browser'
 };

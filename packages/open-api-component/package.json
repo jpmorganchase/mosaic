@@ -23,6 +23,9 @@
       "default": "./dist/index.js"
     }
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "npm-run-all --parallel build:*",
     "build:bundle": "node ../../scripts/bundle.mjs",
@@ -42,7 +45,7 @@
     "@vanilla-extract/sprinkles": "^1.6.1",
     "@vanilla-extract/recipes": "^0.5.1",
     "@types/swagger-ui-react": "^4.18.0",
-    "swagger-ui-react": "^5.0.0",
+    "swagger-ui-react": "^5.11.0",
     "clsx": "^2.0.0",
     "deepmerge": "^2.0.1",
     "lodash-es": "^4.17.21",

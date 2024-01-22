@@ -64,7 +64,6 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
 
   useEffect(() => {
     if (pathname && size?.width) {
-      console.log('UPDATING');
       updateSelection(pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
