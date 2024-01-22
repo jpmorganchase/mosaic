@@ -11,7 +11,6 @@ export * from './Drawer';
 export * from './Footer';
 export * from './Link';
 export * from './Image';
-export * from './NavigationEvents';
 export * from './PageNavigation';
 export * from './SearchInput';
 export * from './SessionProvider';

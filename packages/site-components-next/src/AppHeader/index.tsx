@@ -124,6 +124,7 @@ export async function AppHeader({ path }: { path: string }) {
   const sharedConfig = await loadSharedConfig(path);
   const headerConfig = sharedConfig?.header;
   const { homeLink, logo, menu: menuItems = [], title } = headerConfig || {};
+
   const tabsMenu = createTabsMenu(menuItems);
 
   return (
