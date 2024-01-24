@@ -17,7 +17,7 @@ test('updates the toolbar sort state when a filter is removed', () => {
   const pills = screen.getAllByTestId('pill');
   expect(pills.length).toEqual(3);
   // action
-  fireEvent.click(pills[1].querySelector('button'));
+  fireEvent.click(pills[1]);
   // assert
   expect(handleStateChangeMock).toHaveBeenCalledWith({
     filters: ['Filter 1', 'Filter 3'],
