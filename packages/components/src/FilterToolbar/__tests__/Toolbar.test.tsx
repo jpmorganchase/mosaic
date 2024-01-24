@@ -117,7 +117,7 @@ it('remove a filter with the pills', async () => {
   renderToolbar({ filters: ['Filter 2', 'Filter 3'], sort: 'Sort 3' }, handleStateChangeMock);
   // action
   const pills = screen.getAllByTestId('pill');
-  await userEvent.click(pills[0].querySelector('button'));
+  await userEvent.click(pills[0]);
   // assert
   expect(handleStateChangeMock).toHaveBeenCalledWith({
     filters: ['Filter 3'],

@@ -96,7 +96,7 @@ test('can use pagination', async () => {
   // check we show the expected number of items
   expect(displayedProducts.length).toEqual(5);
   // check we show the expected number of pages
-  expect(screen.queryAllByLabelText(/^Page [12345]$/).length).toBe(5);
+  expect(screen.queryAllByLabelText(/^Page [12345] of 5/).length).toBe(5);
   // check the initial first and last displayed items are the expected items
   expect(displayedProducts[0].id).toBe(view[0].title);
   expect(displayedProducts[displayedProducts.length - 1].id).toBe(view[4].title);

@@ -4,7 +4,7 @@ import {
   Paginator,
   Pagination as SaltPagination,
   PaginationProps as SaltPaginationProps
-} from '@salt-ds/lab';
+} from '@salt-ds/core';
 
 import styles from './styles.css';
 

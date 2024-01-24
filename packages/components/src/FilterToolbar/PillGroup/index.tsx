@@ -1,9 +1,10 @@
 import React from 'react';
-import { Pill } from '@salt-ds/lab';
+import { Pill } from '@salt-ds/core';
 import classnames from 'clsx';
 
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';
 import styles from './styles.css';
+import { Icon } from '../../Icon';
 
 export interface FilterPillGroupProps {
   /** Additional class name for root class override */
@@ -25,10 +26,10 @@ export const FilterPillGroup: React.FC<React.PropsWithChildren<FilterPillGroupPr
         <Pill
           data-mosaic-testid="pill"
           key={`pill-${item}`}
-          label={item}
-          onDelete={() => handleDeletePill(itemIndex)}
-          variant="closable"
-        />
+          onClick={() => handleDeletePill(itemIndex)}
+        >
+          {item} <Icon name="close" />
+        </Pill>
       ))}
     </div>
   );
