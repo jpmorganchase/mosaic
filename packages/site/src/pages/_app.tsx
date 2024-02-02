@@ -1,6 +1,4 @@
 import { AppProps } from 'next/app';
-import Head from 'next/head';
-import { PT_Mono, Open_Sans } from 'next/font/google';
 import {
   BaseUrlProvider,
   Image,
@@ -17,18 +15,7 @@ import { SessionProvider } from 'next-auth/react';
 import classnames from 'clsx';
 
 import { MyAppProps } from '../types/mosaic';
-
-const ptMono = PT_Mono({
-  weight: '400',
-  variable: '--salt-typography-fontFamily-code',
-  display: 'swap',
-  subsets: ['latin']
-});
-const openSans = Open_Sans({
-  subsets: ['latin'],
-  variable: '--salt-typography-fontFamily',
-  display: 'swap'
-});
+import { HeadWithFontStyles } from '../components/HeadWithFontStyles';
 
 const components = mosaicComponents;
 const layoutComponents = mosaicLayouts;
@@ -41,8 +28,8 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
   return (
     <SessionProvider>
       <StoreProvider value={createStore()}>
-        <Metadata Component={Head} />
-        <ThemeProvider className={classnames(themeClassName, ptMono.variable, openSans.variable)}>
+        <Metadata Component={HeadWithFontStyles} />
+        <ThemeProvider className={classnames(themeClassName)}>
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>

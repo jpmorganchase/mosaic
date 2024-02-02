@@ -1,8 +1,11 @@
 import { globalStyle } from '@vanilla-extract/css';
 import { ssrClassName } from '../index';
 
+const fallbackFontFamily =
+  '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
+
 globalStyle('html, body', {
-  fontFamily: 'Open Sans',
+  fontFamily: `var(--salt-typography-fontFamily, ${fallbackFontFamily})`,
   margin: 0,
   padding: 0,
   height: '100%'
