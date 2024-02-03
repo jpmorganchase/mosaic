@@ -1,19 +1,24 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { setupServer } from 'msw/node';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 
 import { PersistDialog } from '../index';
 import { usePageState } from '../../../store';
 import { nodes } from '../../../nodes';
-import { postSaveContentSuccessHandler } from './handlers';
+import useWorkflowFeed from '../../../hooks/useWorkflowFeed';
 
 jest.mock('../../../store', () => ({
   ...jest.requireActual('../../../store'),
   __esModule: true,
   usePageState: jest.fn()
 }));
+
+const mockSendWorkflowProgressMessage = jest.fn();
+jest.mock('../../../hooks/useWorkflowFeed');
+jest
+  .mocked(useWorkflowFeed)
+  .mockReturnValue({ sendWorkflowProgressMessage: mockSendWorkflowProgressMessage });
 
 const setPageStateSpy = jest.fn();
 const setErrorMessageSpy = jest.fn();
@@ -23,8 +28,6 @@ jest.mock('@lexical/markdown', () => ({
   ...jest.requireActual('@lexical/markdown'),
   $convertToMarkdownString: jest.fn().mockReturnValue('## Test Markdown')
 }));
-
-const server = setupServer();
 
 const renderPersistDialog = (props = { meta: mockMeta }) => {
   render(
@@ -38,18 +41,12 @@ const renderPersistDialog = (props = { meta: mockMeta }) => {
 
 describe('GIVEN a PersistEditDialog', () => {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'error' });
-
     jest.mocked(usePageState).mockReturnValue({
       pageState: 'SAVING',
       setErrorMessage: setErrorMessageSpy,
       setPageState: setPageStateSpy,
       errorMessage: undefined
     });
-  });
-
-  afterAll(() => {
-    server.close();
   });
 
   test('THEN the dialog is open when SAVING', () => {

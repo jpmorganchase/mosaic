@@ -6,7 +6,8 @@ const moduleNameMapper = {
     '<rootDir>/__mocks__/file-stub.js',
   '@jpmorganchase/mosaic-components': '<rootDir>/packages/components/dist/index.js',
   '@jpmorganchase/mosaic-store': '<rootDir>/packages/store/dist/index.js',
-  '@jpmorganchase/mosaic-theme': '<rootDir>/packages/theme/dist/index.js'
+  '@jpmorganchase/mosaic-theme': '<rootDir>/packages/theme/dist/index.js',
+  '^lodash-es$': 'lodash'
 };
 
 module.exports = {

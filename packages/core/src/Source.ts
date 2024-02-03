@@ -11,6 +11,7 @@ import type {
   Plugin,
   PluginErrors,
   PluginModuleDefinition,
+  SendSourceWorkflowMessage,
   Serialiser,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
@@ -134,6 +135,7 @@ export default class Source {
   }
 
   async requestNamespaceSourceUpdate(
+    namespaceSourceDesc: string,
     updatedSourceFilesystem: IVolumeImmutable,
     sharedFilesystem: IVolumeImmutable,
     globalConfig: MutableData<unknown>
@@ -157,8 +159,11 @@ export default class Source {
       );
     }
     if (shouldInvokeAfterUpdate === true) {
+      console.log(
+        `[Mosaic][Source] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
+      );
       this.filesystem.unfreeze();
-      await this.invokeAfterUpdate(sharedFilesystem, globalConfig);
+      await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
       this.filesystem.freeze();
       this.filesystem.clearCache();
     }
@@ -177,9 +182,9 @@ export default class Source {
     this.#serialisers.push(...serialisers);
   }
 
-  async invokeAfterUpdate(sharedFilesystem, globalConfig) {
+  async invokeAfterUpdate(sharedFilesystem, globalConfig, lifecycleMethod = 'afterUpdate') {
     const initTime = new Date().getTime();
-    await this.#pluginApi.afterUpdate(this.filesystem.asRestricted(), {
+    await this.#pluginApi[lifecycleMethod](this.filesystem.asRestricted(), {
       globalFilesystem: this.#globalFilesystem,
       sharedFilesystem,
       globalConfig,
@@ -192,7 +197,7 @@ export default class Source {
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {
       console.warn(
-        `Lifecycle phase 'afterUpdate' for source '${this.id.description}' took ${
+        `Lifecycle phase '${lifecycleMethod}' for source '${this.id.description}' took ${
           timeTaken / 1000
         }s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
@@ -240,32 +245,41 @@ export default class Source {
     return isFileInSource;
   }
 
-  async triggerWorkflow(name: string, filePath: string, data: unknown) {
+  triggerWorkflow(
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data: unknown
+  ) {
     const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
 
     if (foundWorkflows.length === 0) {
-      return {
-        error: `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`
-      };
+      sendWorkflowProgressMessage(
+        `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`,
+        'ERROR'
+      );
+      return;
     }
 
     if (foundWorkflows.length > 1) {
-      return {
-        error: `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`
-      };
+      sendWorkflowProgressMessage(
+        `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`,
+        'ERROR'
+      );
+      return;
     }
 
     const triggeredWorkflow = foundWorkflows[0];
 
     if (triggeredWorkflow) {
-      return triggeredWorkflow.action(
+      triggeredWorkflow.action(
+        sendWorkflowProgressMessage,
         this.#mergedOptions,
         triggeredWorkflow.options,
         filePath,
         data
       );
     }
-    return false;
   }
 
   trackPluginErrors(errors: PluginErrors, lifecycleMethod: string) {

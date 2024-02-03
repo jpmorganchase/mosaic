@@ -57,7 +57,7 @@ export function Body({ components = {}, type, ...props }) {
         components={components}
         PreviewComponent={MDXRemoteWithErrorBoundary}
         previewUrl={process.env.NEXT_PUBLIC_MOSAIC_IBCE_PREVIEW_URL}
-        persistUrl={process.env.NEXT_PUBLIC_MOSAIC_IBCE_PERSIST_URL}
+        persistUrl={process.env.NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL}
       />
     );
   }

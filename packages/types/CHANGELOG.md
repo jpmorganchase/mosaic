@@ -1,5 +1,75 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.62
+
+## 0.1.0-beta.61
+
+### Patch Changes
+
+- cec89401: add `pluginTimeout` (20 secs) to fastify to prevent loading timeout
+
+## 0.1.0-beta.60
+
+### Patch Changes
+
+- a3da0830: New Readme Source
+
+  This source pulls a single Readme.md from a remote Source repo.
+  Typically used for third-party repos which exist already or don't want to
+  create a full document hierachy and use `@jpmorganchase/mosaic-source-git-repo`.
+  By pulling a single page, we can add metadata to that page via the source's config.
+  It's also more performant as we do not need to pull a whole source repo.
+
+## 0.1.0-beta.59
+
+## 0.1.0-beta.58
+
+## 0.1.0-beta.57
+
+### Patch Changes
+
+- d214d112: Add catch-all default exports for
+
+  - `@jpmorganchase/mosaic-store`
+  - `@jpmorganchase/mosaic-theme`
+  - `@jpmorganchase/mosaic-workflows`
+
+  This resolves an issue when running tests from an external repo which depends on these packages
+
+## 0.1.0-beta.56
+
+### Patch Changes
+
+- 6d30e29f: Add new Storybook source
+
+  Storybook stories can be extracted from Storybook and embedded into Mosaic pages.
+
+  The stories are extracted based on a configured filter or matching tags.
+
+  With a page created for each Story, the author can create a dynamic index of matching stories.
+
+  eg. An index of patterns which match a specific tag
+
+## 0.1.0-beta.55
+
+## 0.1.0-beta.54
+
+## 0.1.0-beta.53
+
+### Patch Changes
+
+- d7098baa: ### Feature
+
+  Add new `afterNamespaceSourceUpdate` plugin lifecycle method.
+
+  This method is identical to `afterUpdate` but will **only** run if the `shouldUpdateNamespaceSources` lifecycle method returns `true`.
+
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- 9ad7418c: Use a websocket for workflows
+
 ## 0.1.0-beta.51
 
 ## 0.1.0-beta.50

@@ -1,5 +1,179 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.62
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.62
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.62
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.62
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.62
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.62
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.62
+- @jpmorganchase/mosaic-theme@0.1.0-beta.62
+
+## 0.1.0-beta.61
+
+### Patch Changes
+
+- cec89401: add `pluginTimeout` (20 secs) to fastify to prevent loading timeout
+- Updated dependencies [cec89401]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.61
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.61
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.61
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.61
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.61
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.61
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.61
+
+## 0.1.0-beta.60
+
+### Patch Changes
+
+- a3da0830: New Readme Source
+
+  This source pulls a single Readme.md from a remote Source repo.
+  Typically used for third-party repos which exist already or don't want to
+  create a full document hierachy and use `@jpmorganchase/mosaic-source-git-repo`.
+  By pulling a single page, we can add metadata to that page via the source's config.
+  It's also more performant as we do not need to pull a whole source repo.
+
+- Updated dependencies [a3da0830]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.60
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.60
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.60
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.60
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.60
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.60
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.60
+
+## 0.1.0-beta.59
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.59
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.59
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.59
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.59
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.59
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.59
+- @jpmorganchase/mosaic-theme@0.1.0-beta.59
+
+## 0.1.0-beta.58
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.58
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.58
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.58
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.58
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.58
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.58
+- @jpmorganchase/mosaic-theme@0.1.0-beta.58
+
+## 0.1.0-beta.57
+
+### Patch Changes
+
+- d214d112: Add catch-all default exports for
+
+  - `@jpmorganchase/mosaic-store`
+  - `@jpmorganchase/mosaic-theme`
+  - `@jpmorganchase/mosaic-workflows`
+
+  This resolves an issue when running tests from an external repo which depends on these packages
+
+- Updated dependencies [d214d112]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.57
+  - @jpmorganchase/mosaic-components@0.1.0-beta.57
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.57
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.57
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.57
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.57
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.57
+
+## 0.1.0-beta.56
+
+### Patch Changes
+
+- 6d30e29f: Add new Storybook source
+
+  Storybook stories can be extracted from Storybook and embedded into Mosaic pages.
+
+  The stories are extracted based on a configured filter or matching tags.
+
+  With a page created for each Story, the author can create a dynamic index of matching stories.
+
+  eg. An index of patterns which match a specific tag
+
+- Updated dependencies [6d30e29f]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.56
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.56
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.56
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.56
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.56
+
+## 0.1.0-beta.55
+
+### Minor Changes
+
+- 3dd27378: Upgraded Salt packages to:
+
+  @salt-ds/core@1.11.0
+  @salt-ds/lab@1.0.0-alpha.20
+  @salt-ds/icons@1.7.0
+  @salt-ds/theme@1.9.0
+
+### Patch Changes
+
+- Updated dependencies [3dd27378]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.55
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.55
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.55
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.55
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.55
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.55
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.55
+
+## 0.1.0-beta.54
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.54
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.54
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.54
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.54
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.54
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.54
+- @jpmorganchase/mosaic-theme@0.1.0-beta.54
+
+## 0.1.0-beta.53
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.53
+- @jpmorganchase/mosaic-labs-components@0.1.0-beta.53
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.53
+- @jpmorganchase/mosaic-layouts@0.1.0-beta.53
+- @jpmorganchase/mosaic-open-api-component@0.1.0-beta.53
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.53
+- @jpmorganchase/mosaic-theme@0.1.0-beta.53
+
+## 0.1.0-beta.52
+
+### Patch Changes
+
+- Updated dependencies [9ad7418c]
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.52
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.52
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.52
+  - @jpmorganchase/mosaic-components@0.1.0-beta.52
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.52
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.52
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.52
+
 ## 0.1.0-beta.51
 
 ### Patch Changes

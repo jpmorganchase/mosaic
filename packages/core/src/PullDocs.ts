@@ -6,7 +6,8 @@ import {
   MosaicConfig,
   SourceModuleDefinition,
   PluginModuleDefinition,
-  IUnionVolume
+  IUnionVolume,
+  SendSourceWorkflowMessage
 } from '@jpmorganchase/mosaic-types';
 import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
@@ -107,8 +108,13 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
-  async triggerWorkflow(name: string, filePath: string, data) {
-    return this.#sourceManager.triggerWorkflow(name, filePath, data);
+  triggerWorkflow(
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data
+  ) {
+    this.#sourceManager.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FormField, SearchInput as SaltSearchInput } from '@salt-ds/lab';
+import { Input, Button } from '@salt-ds/core';
+import { Icon } from '@jpmorganchase/mosaic-components';
 import { useSearchData } from './useSearchData';
-
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
@@ -14,6 +14,7 @@ export function SearchInput() {
   const [listVisibility, setListVisibility] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = e => {
     setSearchTerm(e.target.value);
@@ -25,6 +26,7 @@ export function SearchInput() {
   const handleClear = useCallback(() => {
     setSearchTerm('');
     setSearchResults([]);
+    inputRef.current?.focus();
   }, [searchTerm, searchResults]);
 
   const handleInputFocus = () => {
@@ -55,14 +57,21 @@ export function SearchInput() {
 
   return (
     <div className={styles.root} ref={wrapperRef}>
-      <FormField style={{ minWidth: 200 }}>
-        <SaltSearchInput
-          value={searchTerm}
-          onChange={handleSearch}
-          onClear={handleClear}
-          onFocus={handleInputFocus}
-        />
-      </FormField>
+      <Input
+        aria-label="Search"
+        startAdornment={<Icon name="search" />}
+        endAdornment={
+          searchTerm.length > 0 && (
+            <Button variant="secondary" aria-label="Clear input" onClick={handleClear}>
+              <Icon aria-hidden name="close" />
+            </Button>
+          )
+        }
+        value={searchTerm}
+        onChange={handleSearch}
+        onFocus={handleInputFocus}
+        ref={inputRef}
+      />
       {searchTerm.length > 0 && listVisibility && (
         <ResultsList searchResults={searchResults} handleClear={handleClear} query={searchTerm} />
       )}

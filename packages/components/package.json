@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-components",
   "description": "Mosaic - UI Components",
-  "version": "0.1.0-beta.51",
+  "version": "0.1.0-beta.62",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -19,7 +19,8 @@
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "node": "./dist/index.js"
+      "node": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
@@ -40,17 +41,17 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.51",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.51",
-    "@salt-ds/core": "^1.8.1",
-    "@salt-ds/lab": "1.0.0-alpha.16",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.62",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.62",
+    "@salt-ds/core": "^1.11.0",
+    "@salt-ds/lab": "1.0.0-alpha.20",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/sprinkles": "^1.3.0",
     "@vanilla-extract/recipes": "^0.2.1",
     "clsx": "^2.0.0",
     "deepmerge": "^2.0.1",
     "hoist-non-react-statics": "^3.3.2",
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "prism-react-renderer": "^1.1.1",
     "react-live": "^2.2.3",
     "react-markdown": "^6.0.2",

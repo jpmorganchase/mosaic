@@ -4,6 +4,7 @@ import type {
   IVolumeImmutable,
   IVolumeMutable,
   PluginModuleDefinition,
+  SendSourceWorkflowMessage,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
   SourceSchedule
@@ -61,15 +62,20 @@ export default class SourceManager {
     return () => this.#handlers.delete(handler);
   }
 
-  async triggerWorkflow(name: string, filePath: string, data: unknown): Promise<unknown> {
+  async triggerWorkflow(
+    sendWorkflowProgressMessage: SendSourceWorkflowMessage,
+    name: string,
+    filePath: string,
+    data: unknown
+  ) {
     for (const source of this.#sources.values()) {
       // eslint-disable-next-line no-await-in-loop
       if (await source.isOwner(filePath)) {
-        const result = await source.triggerWorkflow(name, filePath, data);
-        return result;
+        source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
+        return;
       }
     }
-    return 'Workflow not found';
+    sendWorkflowProgressMessage(`Workflow ${name} not found`, 'ERROR');
   }
 
   getSource(name: string) {
@@ -241,20 +247,21 @@ export default class SourceManager {
 
   #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
     // Notify other frozen sources that share this sources namespace that something has changed.
+    const sourcesToUpdate = Array.from(this.#sources.values()).filter(
+      existingSource =>
+        existingSource !== source &&
+        existingSource.filesystem.frozen &&
+        existingSource.namespace === source.namespace
+    );
+
     return Promise.all(
-      Array.from(this.#sources.values()).map(existingSource => {
-        if (
-          existingSource !== source &&
-          existingSource.filesystem.frozen &&
-          existingSource.namespace === source.namespace
-        ) {
-          return existingSource.requestNamespaceSourceUpdate(
-            immutableSourceFilesystem,
-            this.#sharedFilesystem,
-            this.#globalConfig
-          );
-        }
-        return existingSource;
+      sourcesToUpdate.map(async sourceToUpdate => {
+        await sourceToUpdate.requestNamespaceSourceUpdate(
+          source.id.description,
+          immutableSourceFilesystem,
+          this.#sharedFilesystem,
+          this.#globalConfig
+        );
       })
     );
   }

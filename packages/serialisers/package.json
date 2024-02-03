@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-serialisers",
-  "version": "0.1.0-beta.51",
+  "version": "0.1.0-beta.62",
   "author": "",
   "description": "Mosaic serializers for core file system",
   "license": "Apache-2.0",
@@ -11,7 +11,8 @@
     "./mdx": {
       "types": "./dist/mdx.d.ts",
       "import": "./dist/mdx.js",
-      "node": "./dist/mdx.js"
+      "node": "./dist/mdx.js",
+      "default": "./dist/index.js"
     },
     "./json": {
       "types": "./dist/json.d.ts",
@@ -49,7 +50,7 @@
     "rxjs": "^7.5.5"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.51",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.62",
     "gray-matter": "^4.0.3"
   }
 }

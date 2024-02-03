@@ -1,6 +1,9 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
 import path from 'node:path';
+import md5 from 'md5';
+import websocket from '@fastify/websocket';
+import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
 export interface FastifyMosaicAdminPluginOptions {
   prefix?: string;
@@ -14,47 +17,66 @@ export interface WorkflowRequestBodyType {
   name: string;
 }
 
-function mosaicWorkflows(fastify: FastifyInstance, _options, next) {
+async function mosaicWorkflows(fastify: FastifyInstance, _options) {
+  await fastify.register(websocket);
   const { fs, core } = fastify.mosaic;
 
   /**
    * Run a workflow
    */
-  fastify.post(
-    '/workflows',
-    async (req: FastifyRequest<{ Body: WorkflowRequestBodyType }>, reply: FastifyReply) => {
-      try {
-        const { route: routeReq, name, ...restParams } = req.body;
+  fastify.get('/workflows', { websocket: true }, (connection /* SocketStream */) => {
+    connection.socket.on('message', async message => {
+      if (connection.socket.OPEN) {
+        try {
+          const {
+            type,
+            route: routeReq,
+            name,
+            user,
+            ...restParams
+          } = JSON.parse(message.toString());
 
-        if (!name) {
-          reply.header('Content-Type', 'application/text');
-          throw new Error('Workflow name is required');
-        }
+          if (!name) {
+            connection.socket.send(
+              JSON.stringify({ status: 'ERROR', message: 'Workflow name is required' })
+            );
+          }
 
-        if (await fs.promises.exists(routeReq)) {
-          const route = (await fs.promises.stat(routeReq)).isDirectory()
-            ? path.posix.join(routeReq, 'index')
-            : routeReq;
-          const pagePath = (await fs.promises.realpath(route)) as string;
-          const result = await core.triggerWorkflow(name, pagePath, { ...restParams });
-          reply.header('Content-Type', 'application/json');
-          reply.send(result);
-        } else {
-          reply.header('Content-Type', 'application/text');
-          reply.status(404).send(`${routeReq} not found`);
+          if (!user) {
+            connection.socket.send(
+              JSON.stringify({ status: 'ERROR', message: 'Workflow must be run for a user' })
+            );
+          }
+
+          const channel = md5(`${user.sid.toLowerCase()} - ${name.toLowerCase()}`);
+
+          const sendWorkflowProgressMessage: SendSourceWorkflowMessage = (info, status) =>
+            connection.socket.send(JSON.stringify({ status, message: info, channel }));
+
+          if (await fs.promises.exists(routeReq)) {
+            const route = (await fs.promises.stat(routeReq)).isDirectory()
+              ? path.posix.join(routeReq, 'index')
+              : routeReq;
+            const pagePath = (await fs.promises.realpath(route)) as string;
+            core.triggerWorkflow(sendWorkflowProgressMessage, name, pagePath, {
+              user,
+              ...restParams
+            });
+            sendWorkflowProgressMessage(`Workflow ${name} has started`, 'SUCCESS');
+          } else {
+            sendWorkflowProgressMessage(`${routeReq} not found`, 'ERROR');
+          }
+        } catch (e) {
+          console.error(e);
+          connection.socket.send(JSON.stringify({ status: 'ERROR', message: 'e.message' }));
         }
-      } catch (e) {
-        console.error(e);
-        reply.status(500).send(e.message);
       }
-    }
-  );
-
-  next();
+    });
+  });
 }
 
 /**
- * Fastify plugin that adds support for the Mosaic Admin API routes
+ * Fastify plugin that adds support for the Mosaic Workflows
  * https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/admin/index
  */
 export default fp(mosaicWorkflows, {

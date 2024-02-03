@@ -44,6 +44,19 @@ export default deepmerge(siteConfig, {
         prefixDir: 'mosaic', // root path used for namespace
         extensions: ['.mdx'] // extensions of content which should be pulled
       }
+    },
+    /**
+     * Tags examples require multiple sources
+     */
+    {
+      disabled: process.env.NODE_ENV !== 'development',
+      modulePath: '@jpmorganchase/mosaic-source-local-folder',
+      namespace: 'mosaic',
+      options: {
+        rootDir: '../../docs-tags',
+        prefixDir: 'mosaic/products',
+        extensions: ['.mdx']
+      }
     }
   ]
 });

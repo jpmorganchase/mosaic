@@ -1,0 +1,19 @@
+---
+title: Tags Test
+layout: DetailTechnical
+data:
+  in-stock:
+    $tag: in-stock#/data
+  out-of-stock:
+    $tag: out-of-stock#/data
+---
+
+# {meta.title}
+
+## In Stock
+
+<PageFilterView view={meta.data['in-stock']} />
+
+## Out of Stock
+
+<PageFilterView view={meta.data['out-of-stock']} />

@@ -1,6 +1,6 @@
 import { recipes } from '@jpmorganchase/mosaic-theme';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
-import flowImpl from 'lodash/flow';
+import { flow as flowImpl } from 'lodash-es';
 
 type SortViewByDate = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;
 type SortValueCallback = (item: { [key: string]: string }) => string;

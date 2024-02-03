@@ -6,11 +6,10 @@ import {
   RangeSelection,
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { useFloatingUI } from '@salt-ds/core';
-import { Input } from '@salt-ds/lab';
+import { useFloatingUI, Input } from '@salt-ds/core';
 import { useDismiss, useInteractions } from '@floating-ui/react';
 
 import styles from './LinkEditor.css';
@@ -119,7 +118,7 @@ export function LinkEditor() {
           endAdornment={<SaveAdornment onSave={handleSave} />}
           ref={inputRef}
           value={linkUrl}
-          onChange={event => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setLinkUrl(event.target.value);
           }}
           onKeyDown={event => {

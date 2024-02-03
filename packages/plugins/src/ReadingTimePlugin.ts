@@ -1,38 +1,53 @@
+import path from 'node:path';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import { escapeRegExp } from 'lodash-es';
 import getReadingTime from 'reading-time';
 import markdown from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import type { Node } from 'unist';
 
+const createPageTest = (ignorePages, pageExtensions) => {
+  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+};
+
 type LeafNode = Node & {
   value?: string;
 };
 
-interface ReadingTimePluginPage extends Page {
+export interface ReadingTimePluginPage extends Page {
   readingTime?: ReturnType<typeof getReadingTime>;
 }
 
 /**
- * Calculates reading time for pages and adds to frontmatter
+ * Calculates reading time of MDX pages and adds to frontmatter
  */
 const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
-  async $afterSource(pages) {
+  async $afterSource(pages, { ignorePages, pageExtensions }) {
     const processor = unified().use(markdown);
-    for (const page of pages) {
-      const tree: Node = await processor.parse(page.content);
-      let textContent = '';
 
-      visit(
-        tree,
-        node => node.type === 'text' || node.type === 'code',
-        (node: LeafNode) => {
-          textContent += node.value;
+    if (pageExtensions.includes('.mdx')) {
+      for (const page of pages) {
+        const isNonHiddenPage = createPageTest(ignorePages, ['.mdx']);
+        if (!isNonHiddenPage(page.fullPath)) {
+          continue;
         }
-      );
-      page.readingTime = getReadingTime(textContent);
-    }
+        const tree: Node = await processor.parse(page.content);
+        let textContent = '';
 
+        visit(
+          tree,
+          node => node.type === 'text' || node.type === 'code',
+          (node: LeafNode) => {
+            textContent += node.value;
+          }
+        );
+        page.readingTime = getReadingTime(textContent);
+      }
+    }
     return pages;
   }
 };

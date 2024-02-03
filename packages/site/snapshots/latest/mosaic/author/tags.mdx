@@ -1,0 +1,178 @@
+---
+title: Tags
+layout: DetailTechnical
+sidebar:
+  priority: 3
+data:
+  in-stock:
+    - name: Product A
+  out-of-stock:
+    - name: Product B
+lastModified: 1699975774029
+fullPath: /mosaic/author/tags.mdx
+route: /mosaic/author/tags
+breadcrumbs:
+  - label: Mosaic
+    path: /mosaic/index
+    id: /mosaic/index.mdx
+  - label: Author
+    path: /mosaic/author/index
+    id: /mosaic/author/index.mdx
+  - label: Tags
+    path: /mosaic/author/tags
+    id: /mosaic/author/tags.mdx
+readingTime:
+  text: 1 min read
+  minutes: 0.855
+  time: 51300
+  words: 171
+tableOfContents:
+  - level: 2
+    id: tagging-a-page
+    text: Tagging a page
+  - level: 2
+    id: subscribing-to-a-tag
+    text: Subscribing to a tag
+  - level: 3
+    id: example
+    text: Example
+navigation:
+  prev:
+    title: Refs
+    route: /mosaic/author/refs
+  next:
+    title: Fragments
+    route: /mosaic/author/fragments
+sidebarData:
+  - id: /mosaic/author/index
+    fullPath: /mosaic/author/index.mdx
+    name: Author
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/index
+    childNodes: []
+  - id: /mosaic/author/markdown-syntax
+    fullPath: /mosaic/author/markdown-syntax.mdx
+    name: Markdown Syntax
+    priority: 5
+    data:
+      level: 2
+      link: /mosaic/author/markdown-syntax
+    childNodes: []
+  - id: /mosaic/author/frontmatter
+    fullPath: /mosaic/author/frontmatter.mdx
+    name: Frontmatter
+    priority: 4
+    data:
+      level: 2
+      link: /mosaic/author/frontmatter
+    childNodes: []
+  - id: /mosaic/author/aliases
+    fullPath: /mosaic/author/aliases.mdx
+    name: Aliases
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/aliases
+    childNodes: []
+  - id: /mosaic/author/refs
+    fullPath: /mosaic/author/refs.mdx
+    name: Refs
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/refs
+    childNodes: []
+  - id: /mosaic/author/tags
+    fullPath: /mosaic/author/tags.mdx
+    name: Tags
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/tags
+    childNodes: []
+  - id: /mosaic/author/fragments
+    fullPath: /mosaic/author/fragments.mdx
+    name: Fragments
+    priority: 2
+    data:
+      level: 2
+      link: /mosaic/author/fragments
+    childNodes: []
+  - id: /mosaic/author/ui-components
+    fullPath: /mosaic/author/ui-components.mdx
+    name: UI Components
+    priority: 2
+    data:
+      level: 2
+      link: /mosaic/author/ui-components
+    childNodes: []
+  - id: /mosaic/author/sidebars
+    fullPath: /mosaic/author/sidebars.mdx
+    name: Sidebar Configuration
+    data:
+      level: 2
+      link: /mosaic/author/sidebars
+    childNodes: []
+---
+# {meta.title}
+
+Tags are very similar to [Refs](./refs) with one very important distinction: Tags work **across multiple sources**.
+
+In Mosaic, each source has it's own filesystem which are then merged together to form a union of all source filesystems. It is in this union filesystem that tags are applied and not to the individual source filesystem that the tag was defined on.
+
+<Callout variant="warning">
+  Tags are slower to apply than refs. Multiple sources need to run and update before tagged data
+  will be resolved. If possible, stick to refs and only use tags when dealing with multiple sources.
+</Callout>
+
+## Tagging a page
+
+To tag a page, add a `tags` property to the page frontmatter. For example, the Product A page is tagged with "in-stock":
+
+```
+---
+title: Product A
+description: Mosaic Product A
+layout: ProductDiscover
+tags:
+  - in-stock
+data:
+  name:
+    $ref: '#/title'
+---
+```
+
+<Callout>`tags` is always an array</Callout>
+
+## Subscribing to a tag
+
+To subscribe to a tag, use the `$tag` property. For example, the Products page has subscribed to the `data` property of pages tagged with `in-stock`.
+
+```
+---
+title: Products
+data:
+  in-stock:
+    $tag: in-stock#/data
+---
+```
+
+<Callout>
+  A `$tag` can provide a path to a specific piece of metadata on tagged pages, just like a ref.
+</Callout>
+
+### Example
+
+This page has subscribed to `in-stock` and `out-of-stock` tags and is displaying them using 2 Mosaic `PageFilterView` components.
+
+Both the Product A and Product B pages are part of a different source than this page.
+
+#### In Stock
+
+<PageFilterView view={meta.data['in-stock']} />
+
+#### Out of Stock
+
+<PageFilterView view={meta.data['out-of-stock']} />

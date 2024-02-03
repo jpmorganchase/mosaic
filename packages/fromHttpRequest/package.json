@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-from-http-request",
-  "version": "0.1.0-beta.51",
+  "version": "0.1.0-beta.62",
   "author": "",
   "description": "Utility package to turn HTTP fetch requests to observables.  This package can be deleted when node 18 is used.",
   "license": "Apache-2.0",
@@ -11,7 +11,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "node": "./dist/index.js"
+      "node": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "engines": {
@@ -32,6 +33,7 @@
   },
   "dependencies": {
     "event-target-polyfill": "^0.0.3",
+    "fast-content-type-parse": "^1.1.0",
     "rxjs": "^7.5.5",
     "node-fetch": "^2.6.2",
     "yet-another-abortcontroller-polyfill": "0.0.4"

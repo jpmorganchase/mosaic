@@ -2,7 +2,7 @@ import React from 'react';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es';
 
 import transformers from '../transformers';
 import { useContentEditor } from '../index';
