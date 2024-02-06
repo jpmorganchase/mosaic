@@ -1,11 +1,12 @@
 ---
-title: Lifecycle Events
+title: Storybook Source
 layout: DetailTechnical
 sidebar:
-  priority: 1
-lastModified: 1701790133885
-fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-route: /mosaic/configure/plugins/lifecycle/index
+  priority: 5
+  label: Storybook
+lastModified: 1701879581947
+fullPath: /mosaic/configure/sources/storybook-source.mdx
+route: /mosaic/configure/sources/storybook-source
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +14,34 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Plugins
-    path: /mosaic/configure/plugins/index
-    id: /mosaic/configure/plugins/index.mdx
-  - label: Lifecycle Events
-    path: /mosaic/configure/plugins/lifecycle/index
-    id: /mosaic/configure/plugins/lifecycle/index.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index
+    id: /mosaic/configure/sources/index.mdx
+  - label: Storybook
+    path: /mosaic/configure/sources/storybook-source
+    id: /mosaic/configure/sources/storybook-source.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.235
-  time: 14100
-  words: 47
-tableOfContents: []
+  text: 2 min read
+  minutes: 1.56
+  time: 93600
+  words: 312
+tableOfContents:
+  - level: 2
+    id: installation
+    text: Installation
+  - level: 2
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-local-folder-source-definition
+    text: Example Local Folder Source Definition
 navigation:
   prev:
-    title: Plugins
-    route: /mosaic/configure/plugins/index
+    title: Readme Source
+    route: /mosaic/configure/sources/storybook-readme
   next:
-    title: $afterSource
-    route: /mosaic/configure/plugins/lifecycle/after-source
+    title: Source Schedules
+    route: /mosaic/configure/sources/schedules
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -381,22 +391,70 @@ sidebarData:
           link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
-# Plugin lifecycle
+# {meta.title}
 
-The plugin lifecycle is triggered when a source emits content.
+The Storybook source is used to pull individual stories from Storybook, based on tags.
 
-Each Mosaic source has its own worker thread and plugin lifecycle events that start with a `$` will execute inside the worker thread.
-All other lifecycle events will execute in the main Mosaic process.
+The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
 
-The 5 lifecycle events are:
+For each matching story, a page is created in the Mosaic file-system.
 
-1.  [$afterSource](./after-source)
-2.  [$beforeSend](./before-send)
-3.  [afterUpdate](./after-update)
-4.  [shouldClearCache](./should-clear-cache)
-5.  [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+*   additional Mosaic tags can be added to each page using `additionalTags`
+*   additional Mosaic metadata can be added to each page using `additionalData`
 
-<Callout variant="caution">
-  Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to
-  avoid holding up the main thread.
-</Callout>
+This information can be used to create a dynamic index of stories from Storybook.
+
+## Installation
+
+`yarn add @jpmorganchase/mosaic-source-storybook`
+
+## Configuration
+
+The Storybook source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
+
+The `stories` option is an array of Storybook urls that are used as Sources.
+Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
+
+If specified, `additionalTags` and `additionalData` can be added to any matching pages.
+
+| Property        | Description            | Required |
+| --------------- | ---------------------- | -------- |
+| options.stories | array of story configs | Yes      |
+
+`stories` is an array of Storybooks that you want to pull stories from
+
+| Property       | Description                              | Required |
+| -------------- | ---------------------------------------- | -------- |
+| url            | url of the storybook                     | Yes      |
+| description    | description of the storybook stories     | Yes      |
+| filter         | RegExp filter to match on                | No       |
+| filterTags     | Array of Storybook tags to match on      | No       |
+| additionalTags | additional tags to add to the stories    | No       |
+| additionalData | additional data to add to matching pages | No       |
+
+### Example Local Folder Source Definition
+
+```
+sources: [
+    {
+      disabled: process.env.NODE_ENV !== 'development',
+      modulePath: '@jpmorganchase/mosaic-source-storybook',
+      namespace: 'salt',
+      options: {
+        prefixDir: '/salt/internal/community-index/story-navigation',
+        stories: [
+          {
+            url: 'https://storybook.saltdesignsystem.com',
+            description: 'Navigation patterns created in the Salt Labs',
+            additionalData: {
+                someAdditionalData: 'some-value' // can be any additional metadata you want added to the page's meta.data
+            },
+            additionalTags: ['salt-pattern-navigation'],
+            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+          }
+        ]
+      }
+    }
+]
+```

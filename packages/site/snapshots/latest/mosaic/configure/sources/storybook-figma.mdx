@@ -1,11 +1,12 @@
 ---
-title: Lifecycle Events
+title: Figma Source
 layout: DetailTechnical
 sidebar:
-  priority: 1
-lastModified: 1701790133885
-fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-route: /mosaic/configure/plugins/lifecycle/index
+  priority: 5
+  label: Figma
+lastModified: 1704367663982
+fullPath: /mosaic/configure/sources/storybook-figma.mdx
+route: /mosaic/configure/sources/storybook-figma
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +14,34 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Plugins
-    path: /mosaic/configure/plugins/index
-    id: /mosaic/configure/plugins/index.mdx
-  - label: Lifecycle Events
-    path: /mosaic/configure/plugins/lifecycle/index
-    id: /mosaic/configure/plugins/lifecycle/index.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index
+    id: /mosaic/configure/sources/index.mdx
+  - label: Figma
+    path: /mosaic/configure/sources/storybook-figma
+    id: /mosaic/configure/sources/storybook-figma.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.235
-  time: 14100
-  words: 47
-tableOfContents: []
+  text: 2 min read
+  minutes: 1.595
+  time: 95700
+  words: 319
+tableOfContents:
+  - level: 2
+    id: installation
+    text: Installation
+  - level: 2
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-figma-source-definition
+    text: Example Figma Source Definition
 navigation:
   prev:
-    title: Plugins
-    route: /mosaic/configure/plugins/index
+    title: Sources
+    route: /mosaic/configure/sources/index
   next:
-    title: $afterSource
-    route: /mosaic/configure/plugins/lifecycle/after-source
+    title: Readme Source
+    route: /mosaic/configure/sources/storybook-readme
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -381,22 +391,73 @@ sidebarData:
           link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
-# Plugin lifecycle
+# {meta.title}
 
-The plugin lifecycle is triggered when a source emits content.
+The Figma source is used to pull individual design patterns from Figma projects.
+The source subscribes to Figma project groups, then extracts from project files, tagged patterns.
 
-Each Mosaic source has its own worker thread and plugin lifecycle events that start with a `$` will execute inside the worker thread.
-All other lifecycle events will execute in the main Mosaic process.
+A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
+(Refer to the JPM Figma plugin for more details - a current Q4 2023 deliverable)
 
-The 5 lifecycle events are:
+For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
+Additional Mosaic metadata can be added, to each created page, using `meta`
+For instance we could add metadata which defines which product owns a particular pattern and then
+group patterns based on owner.
 
-1.  [$afterSource](./after-source)
-2.  [$beforeSend](./before-send)
-3.  [afterUpdate](./after-update)
-4.  [shouldClearCache](./should-clear-cache)
-5.  [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+## Installation
 
-<Callout variant="caution">
-  Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to
-  avoid holding up the main thread.
-</Callout>
+`yarn add @jpmorganchase/mosaic-source-figma`
+
+## Configuration
+
+The Figma source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
+
+| Property   | Description                       | Required |
+| ---------- | --------------------------------- | -------- |
+| prefixDir  | path to store figma patterns      | Yes      |
+| figmaToken | figma access token                | Yes      |
+| projects   | array of projects to subscribe to | Yes      |
+| endpoints  | figma endpoints                   | Yes      |
+
+Each project is configured from the `projects` array.
+
+| Property      | Description                                   | Required |
+| ------------- | --------------------------------------------- | -------- |
+| id            | numerical id of the subscribed project group  | Yes      |
+| meta          | metadata to add to each of the projects pages | Yes      |
+| patternPrefix | prefix to add to all pages created            | Yes      |
+
+`endpoints` defined the Figma REST API endpoints.
+
+| Property   | Description                                               | Required |
+| ---------- | --------------------------------------------------------- | -------- |
+| getProject | url to return a list of projects within the project group | Yes      |
+| getFile    | url to return a project file                              | Yes      |
+
+### Example Figma Source Definition
+
+```
+sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-figma',
+      namespace: 'some-namespace',
+      options: {
+        proxyEndpoint: 'http://path/to/optional/proxy',
+        prefixDir: '/some/path/to/where/you/store/pattern/pages',
+        figmaToken: process.env.FIGMA_TOKEN,
+        projects: [{
+          id: 99999,
+          patternPrefix: 'yourPrefix',
+          meta: {
+            owner: 'some-owner'
+          }
+        }],
+        endpoints: {
+          getFile: 'https://api.figma.com/v1/files/:file_id?plugin_data=shared',
+          getProject: 'https://api.figma.com/v1/projects/:project_id/files'
+        }
+      }
+    }
+]
+```

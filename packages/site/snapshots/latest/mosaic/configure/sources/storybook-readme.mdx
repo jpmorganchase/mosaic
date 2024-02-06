@@ -1,11 +1,12 @@
 ---
-title: Lifecycle Events
+title: Readme Source
 layout: DetailTechnical
 sidebar:
-  priority: 1
-lastModified: 1701790133885
-fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-route: /mosaic/configure/plugins/lifecycle/index
+  priority: 5
+  label: Readme Files
+lastModified: 1704367663982
+fullPath: /mosaic/configure/sources/storybook-readme.mdx
+route: /mosaic/configure/sources/storybook-readme
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -13,25 +14,34 @@ breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Plugins
-    path: /mosaic/configure/plugins/index
-    id: /mosaic/configure/plugins/index.mdx
-  - label: Lifecycle Events
-    path: /mosaic/configure/plugins/lifecycle/index
-    id: /mosaic/configure/plugins/lifecycle/index.mdx
+  - label: Sources
+    path: /mosaic/configure/sources/index
+    id: /mosaic/configure/sources/index.mdx
+  - label: Readme Files
+    path: /mosaic/configure/sources/storybook-readme
+    id: /mosaic/configure/sources/storybook-readme.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.235
-  time: 14100
-  words: 47
-tableOfContents: []
+  text: 2 min read
+  minutes: 1.285
+  time: 77100
+  words: 257
+tableOfContents:
+  - level: 2
+    id: installation
+    text: Installation
+  - level: 2
+    id: configuration
+    text: Configuration
+  - level: 3
+    id: example-readme-source-definition
+    text: Example Readme Source Definition
 navigation:
   prev:
-    title: Plugins
-    route: /mosaic/configure/plugins/index
+    title: Figma Source
+    route: /mosaic/configure/sources/storybook-figma
   next:
-    title: $afterSource
-    route: /mosaic/configure/plugins/lifecycle/after-source
+    title: Storybook Source
+    route: /mosaic/configure/sources/storybook-source
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -381,22 +391,66 @@ sidebarData:
           link: /mosaic/configure/plugins/toc-plugin
         childNodes: []
 ---
-# Plugin lifecycle
+# {meta.title}
 
-The plugin lifecycle is triggered when a source emits content.
+The Readme source is used to pull individual `Readme.md` text files from repositories.
+This is a lighter weight version of a Git repository resource, which just pulls a single file,
+rather the whole contents of the repo.
 
-Each Mosaic source has its own worker thread and plugin lifecycle events that start with a `$` will execute inside the worker thread.
-All other lifecycle events will execute in the main Mosaic process.
+For each retrieved readme, a page is created in the Mosaic file-system.
+Additional Mosaic metadata can be added, to each created page, using `meta`
+For instance we could add metadata which defines which product owns a particular `Readme.md` and then
+group this page, with others, based on owner.
 
-The 5 lifecycle events are:
+## Installation
 
-1.  [$afterSource](./after-source)
-2.  [$beforeSend](./before-send)
-3.  [afterUpdate](./after-update)
-4.  [shouldClearCache](./should-clear-cache)
-5.  [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+`yarn add @jpmorganchase/mosaic-source-readme`
 
-<Callout variant="caution">
-  Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to
-  avoid holding up the main thread.
-</Callout>
+## Configuration
+
+The Readme source is an [`HttpSource`](./https-source) and shares the same base configuration.
+
+| Property    | Description           | Required |
+| ----------- | --------------------- | -------- |
+| accessToken | request access token  | Yes      |
+| prefixDir   | path to store pages   | Yes      |
+| readme      | array of readme files | Yes      |
+
+Each readme is configured from the `readme` array.
+
+| Property        | Description                  | Required |
+| --------------- | ---------------------------- | -------- |
+| contentTemplate | template for content of page | No       |
+| name            | page name used in route      | Yes      |
+| readmeUrl       | url of readme                | Yes      |
+| meta            | metadata for page            | Yes      |
+
+### Example Readme Source Definition
+
+```
+   sources: [
+   {
+      modulePath: '@jpmorganchase/mosaic-source-readme',
+      namespace: 'your-namespace',
+      schedule: { checkIntervalMins: 0.25, initialDelayMs: 0 },
+      options: {
+         prefixDir: '/salt/community-index/readme',
+         accessToken: 'Bearer your-access-token',
+         readme: [
+         {
+            name: 'your-mosaic-page-name',
+            readmeUrl: 'https://some/repo/url/readme.md',
+            contentTemplate: `a template which replaces ::content:: with the content`,
+            meta: {
+              layout: 'DetailTechnical',
+              title: 'Your Page Title',
+              tags: ['your-tag-if-required'],
+              description: 'A description for your readme',
+              data: {
+                 repoUrl:  'https://some/repo/url',
+              }
+            }
+         }]
+     }
+   }]
+```

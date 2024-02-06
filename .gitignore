@@ -13,8 +13,6 @@ next-env.d.ts
 **/dist-labs/
 **/.tmp/**
 tsconfig.tsbuildinfo
-**/public/search-data.json
-**/public/sitemap.xml
 
 # Deployment
 packages/rig
