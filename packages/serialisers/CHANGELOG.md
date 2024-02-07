@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-serialisers
 
+## 0.1.0-beta.63
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-types@0.1.0-beta.63
+
 ## 0.1.0-beta.62
 
 ### Patch Changes
