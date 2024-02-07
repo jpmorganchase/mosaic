@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-source-local-folder
 
+## 0.1.0-beta.63
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.63
+- @jpmorganchase/mosaic-types@0.1.0-beta.63
+
 ## 0.1.0-beta.62
 
 ### Patch Changes
