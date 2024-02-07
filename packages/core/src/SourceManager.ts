@@ -1,4 +1,4 @@
-import { merge } from 'lodash-es';
+import { isArray, mergeWith } from 'lodash-es';
 import type {
   IUnionVolume,
   IVolumeImmutable,
@@ -143,7 +143,18 @@ export default class SourceManager {
           try {
             this.#globalConfig.setData(
               Array.from(this.#sources.values()).reduce(
-                (mergedConfig, { config }) => merge(mergedConfig, config?.data || {}),
+                (mergedConfig, { config }) =>
+                  mergeWith(
+                    mergedConfig,
+                    config?.data || {},
+                    function customizer(objValue, srcValue) {
+                      if (isArray(objValue)) {
+                        // Lodash's default behaviour is to merge array indexes, rather than concatenate arrays
+                        return objValue.concat(srcValue || []);
+                      }
+                      return undefined;
+                    }
+                  ),
                 {}
               ),
               true

@@ -1,7 +1,7 @@
 ---
 title: SiteMapPlugin
 layout: DetailOverview
-lastModified: 1699883563212
+lastModified: 1707318148594
 fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
 route: /mosaic/configure/plugins/site-map-plugin
 breadcrumbs:
@@ -19,9 +19,9 @@ breadcrumbs:
     id: /mosaic/configure/plugins/site-map-plugin.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.64
-  time: 38400
-  words: 128
+  minutes: 0.8
+  time: 48000
+  words: 160
 tableOfContents:
   - level: 2
     id: priority
@@ -32,6 +32,9 @@ tableOfContents:
   - level: 2
     id: adding-to-mosaic
     text: Adding to Mosaic
+  - level: 2
+    id: visualiser
+    text: Visualiser
 navigation:
   prev:
     title: SidebarPlugin
@@ -117,6 +120,30 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
+      - id: /mosaic/configure/sources/storybook-figma
+        fullPath: /mosaic/configure/sources/storybook-figma.mdx
+        name: Figma
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/storybook-figma
+        childNodes: []
+      - id: /mosaic/configure/sources/storybook-readme
+        fullPath: /mosaic/configure/sources/storybook-readme.mdx
+        name: Readme Files
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/storybook-readme
+        childNodes: []
+      - id: /mosaic/configure/sources/storybook-source
+        fullPath: /mosaic/configure/sources/storybook-source.mdx
+        name: Storybook
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/storybook-source
+        childNodes: []
       - id: /mosaic/configure/sources/schedules
         fullPath: /mosaic/configure/sources/schedules.mdx
         name: Schedules
@@ -400,3 +427,15 @@ plugins: [
   // other plugins
 ];
 ```
+
+## Visualiser
+
+To visualise your sitemap you can combine this plugin with the `Sitemap` component provided by `@jpmorganchase/mosaic-sitemap-component`.
+
+Rendering the `Sitemap` component will render a tree view of your sitemap.
+
+```
+<Sitemap />
+```
+
+Have a look at this site's pages, [here](/mosaic/sitemap).
