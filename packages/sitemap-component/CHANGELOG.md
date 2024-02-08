@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.64
+
+### Patch Changes
+
+- e7fa108a: light/dark theming support for sitemap component
+  - @jpmorganchase/mosaic-components@0.1.0-beta.64
+
 ## 0.1.0-beta.63
 
 ### Patch Changes
