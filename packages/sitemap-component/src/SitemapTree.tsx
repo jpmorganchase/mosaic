@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@salt-ds/core';
 import { useToolbarState } from '@jpmorganchase/mosaic-components';
 
-import { drawTree } from './drawTree';
+import drawTree from './drawTree';
 import styles from './styles.css';
 import { SitemapToolbar } from './SitemapToolbar';
 
@@ -84,8 +84,6 @@ export const SitemapTree: React.FC<SitemapTreeProps> = ({
     d3.select(containerRef.current).html('');
     d3.select(containerRef.current).append(() =>
       drawTree(d3, createSitemap(routes), {
-        label: node => node.label,
-        link: node => node.link,
         width: 1152
       }).node()
     );
