@@ -81,6 +81,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   const { sendWorkflowProgressMessage } = useWorkflowFeed(
+    open,
     handleErrorMessage,
     handleSuccessMessage,
     handleCompleteMessage
