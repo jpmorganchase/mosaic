@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.65
+
 ## 0.1.0-beta.64
 
 ## 0.1.0-beta.63
