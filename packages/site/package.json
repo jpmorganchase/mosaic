@@ -42,6 +42,8 @@
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.64",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.64",
     "@philpl/buble": "^0.19.7",
+    "@salt-ds/core": "^1.15.0",
+    "@salt-ds/lab": "1.0.0-alpha.28",
     "@types/react": "^18.0.26",
     "next": "^13.4.1",
     "next-auth": "^4.24.5"
