@@ -7,6 +7,7 @@ const moduleNameMapper = {
   '@jpmorganchase/mosaic-components': '<rootDir>/packages/components/dist/index.js',
   '@jpmorganchase/mosaic-store': '<rootDir>/packages/store/dist/index.js',
   '@jpmorganchase/mosaic-theme': '<rootDir>/packages/theme/dist/index.js',
+  '^d3$': '<rootDir>/node_modules/d3/dist/d3.min.js',
   '^lodash-es$': 'lodash'
 };
 
@@ -23,6 +24,7 @@ module.exports = {
     '<rootDir>/packages/components',
     '<rootDir>/packages/content-editor-plugin',
     '<rootDir>/packages/site-components',
+    '<rootDir>/packages/sitemap-component',
     '<rootDir>/packages/store'
   ]
 };

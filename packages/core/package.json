@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-core",
-  "version": "0.1.0-beta.62",
+  "version": "0.1.0-beta.64",
   "author": "",
   "description": "Mosaic core file system",
   "license": "Apache-2.0",
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
-    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.62",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.62",
-    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.62",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.62",
+    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.64",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.64",
+    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.64",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.64",
     "md5": "*",
     "unionfs": "^4.4.0",
     "lodash-es": "^4.17.21",

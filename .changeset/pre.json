@@ -28,7 +28,8 @@
     "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14",
     "@jpmorganchase/mosaic-source-storybook": "0.1.0-beta.55",
     "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58",
-    "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59"
+    "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59",
+    "@jpmorganchase/mosaic-sitemap-component": "0.1.0-beta.62"
   },
   "changesets": [
     "afraid-ways-teach",
@@ -51,6 +52,7 @@
     "fair-chairs-lay",
     "famous-mirrors-type",
     "fast-bulldogs-grab",
+    "few-avocados-allow",
     "fifty-chairs-happen",
     "five-poets-pay",
     "four-cups-watch",
@@ -86,6 +88,7 @@
     "nervous-cougars-sparkle",
     "ninety-coins-fetch",
     "ninety-teachers-lick",
+    "polite-trees-invent",
     "poor-students-tickle",
     "popular-cows-deny",
     "proud-chefs-applaud",

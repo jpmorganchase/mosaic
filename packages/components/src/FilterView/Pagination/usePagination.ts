@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, SyntheticEvent } from 'react';
 
 interface UsePaginationProps {
   itemsPerPage: number;
@@ -15,7 +15,7 @@ export function usePagination({ itemsPerPage, displayedCount }: UsePaginationPro
   const pageCount = Math.ceil(displayedCount / itemsPerPage);
 
   const onPageChange = useCallback(
-    (newPage: number) => {
+    (_: SyntheticEvent, newPage: number) => {
       setPage(newPage);
     },
     [setPage]

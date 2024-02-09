@@ -1,5 +1,43 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.64
+
+### Patch Changes
+
+- Updated dependencies [e7fa108a]
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.64
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.64
+  - @jpmorganchase/mosaic-components@0.1.0-beta.64
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.64
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.64
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.64
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.64
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.64
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.64
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.64
+  - @jpmorganchase/mosaic-store@0.1.0-beta.64
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.64
+
+## 0.1.0-beta.63
+
+### Patch Changes
+
+- 680eb0eb: - add `@jpmorganchase/mosaic-sitemap-component`, a visualiser for `sitemap.xml`
+  - fix bug in call to `setData` from `addSource` that merges rather than concatenates arrays
+- Updated dependencies [680eb0eb]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.63
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.63
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.63
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.63
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.63
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.63
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.63
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.63
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.63
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.63
+  - @jpmorganchase/mosaic-store@0.1.0-beta.63
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.63
+
 ## 0.1.0-beta.62
 
 ### Patch Changes

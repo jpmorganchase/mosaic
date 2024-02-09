@@ -1,5 +1,21 @@
 # @jpmorganchase/mosaic-source-storybook
 
+## 0.1.0-beta.64
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.64
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.64
+- @jpmorganchase/mosaic-types@0.1.0-beta.64
+
+## 0.1.0-beta.63
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.63
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.63
+- @jpmorganchase/mosaic-types@0.1.0-beta.63
+
 ## 0.1.0-beta.62
 
 ### Patch Changes
