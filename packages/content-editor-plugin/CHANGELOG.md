@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.65
+
+### Patch Changes
+
+- abe4f6c8: Fix: Content Editor Websocket
+
+  Reduce the risk of the websocket connection from closing due to editing/reviewing for a long period.
+
+  The websocket connection is now established when the _save_ button is clicked rather than the _edit_ button.
+
+  - @jpmorganchase/mosaic-components@0.1.0-beta.65
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.65
+
 ## 0.1.0-beta.64
 
 ### Patch Changes
