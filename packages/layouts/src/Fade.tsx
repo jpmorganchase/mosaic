@@ -25,7 +25,7 @@ export const Fade: React.FC<FadeProps> = ({ children, duration, in: inProp, styl
     opacity: 0
   };
   return (
-    <Transition nodeRef={nodeRef} in={inProp} timeout={duration} unmountOnExit>
+    <Transition nodeRef={nodeRef} in={inProp} timeout={duration ?? 0} unmountOnExit>
       {state => (
         <div
           ref={nodeRef}

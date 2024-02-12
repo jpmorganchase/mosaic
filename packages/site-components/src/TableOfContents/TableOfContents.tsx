@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash-es';
 import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
+import { useId } from '@salt-ds/core';
 
 import { TableOfContentsItem } from './TableOfContentsItem';
 import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';
@@ -93,16 +94,16 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
+  const captionId = useId();
+
   return items.length ? (
-    <nav>
-      <Caption1>On this page</Caption1>
-      <ul aria-label="Table of contents" className={styles.list} role="tree">
-        {items.map((item, i) => (
-          <TableOfContentsItem
-            current={selectedHeading}
-            item={item}
-            key={`TableOfContentsItem_${i}`}
-          />
+    <nav aria-labelledby={captionId}>
+      <Caption1 id={captionId}>On this page</Caption1>
+      <ul className={styles.list}>
+        {items.map(item => (
+          <li key={item.id}>
+            <TableOfContentsItem current={selectedHeading} item={item} />
+          </li>
         ))}
       </ul>
     </nav>
