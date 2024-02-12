@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.66
+
+### Patch Changes
+
+- 127ba397: Fix missing timeout error
+- Updated dependencies [127ba397]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.66
+  - @jpmorganchase/mosaic-components@0.1.0-beta.66
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.66
+  - @jpmorganchase/mosaic-store@0.1.0-beta.66
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.66
+
 ## 0.1.0-beta.65
 
 ### Patch Changes
