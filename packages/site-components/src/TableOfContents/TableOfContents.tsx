@@ -1,7 +1,6 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useId } from 'react';
 import { throttle } from 'lodash-es';
 import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
-import { useId } from '@salt-ds/core';
 
 import { TableOfContentsItem } from './TableOfContentsItem';
 import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';
@@ -97,7 +96,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
   const captionId = useId();
 
   return items.length ? (
-    <nav aria-labelledby={captionId}>
+    <nav data-testid="table-of-contents" aria-labelledby={captionId}>
       <Caption1 id={captionId}>On this page</Caption1>
       <ul className={styles.list}>
         {items.map(item => (

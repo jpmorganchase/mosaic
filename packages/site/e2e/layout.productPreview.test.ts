@@ -33,6 +33,6 @@ test.describe('GIVEN a page with the `ProductPreview` Layout', () => {
 
   test('THEN there is **NO** table of contents', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/product-preview');
-    await expect(page.locator("ul[aria-label='Table of contents']")).toHaveCount(0);
+    await expect(page.locator("nav[data-testid='table-of-contents']")).toHaveCount(0);
   });
 });
