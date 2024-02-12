@@ -2,7 +2,7 @@
   "name": "@jpmorganchase/mosaic-open-api-component",
   "license": "Apache-2.0",
   "description": "Mosaic - Open API Component",
-  "version": "0.1.0-beta.65",
+  "version": "0.1.0-beta.66",
   "author": "",
   "repository": {
     "type": "git",
@@ -36,8 +36,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.65",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.65",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.66",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.66",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/sprinkles": "^1.3.0",
     "@vanilla-extract/recipes": "^0.2.1",
