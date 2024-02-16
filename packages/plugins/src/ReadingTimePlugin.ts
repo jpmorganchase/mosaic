@@ -41,7 +41,7 @@ const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
         visit(
           tree,
           node => node.type === 'text' || node.type === 'code',
-          (node: LeafNode) => {
+          function (node: LeafNode) {
             textContent += node.value;
           }
         );

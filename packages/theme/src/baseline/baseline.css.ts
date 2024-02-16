@@ -16,7 +16,7 @@ globalStyle('*', {
   boxSizing: 'border-box'
 });
 
-globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre', {
+globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre, figure', {
   margin: 0,
   fontFamily: 'inherit'
 });

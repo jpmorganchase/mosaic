@@ -11,5 +11,3 @@ import '@jpmorganchase/mosaic-components/index.css';
 import '@jpmorganchase/mosaic-mdx-components/index.css';
 import '@jpmorganchase/mosaic-content-editor-plugin/index.css';
 import '@jpmorganchase/mosaic-open-api-component/index.css';
-
-import 'prismjs/themes/prism.css';

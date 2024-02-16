@@ -11,8 +11,8 @@ import {
   li,
   ol,
   p,
-  pre,
-  ul
+  ul,
+  inlineCode
 } from '@jpmorganchase/mosaic-mdx-components';
 import type { MDXComponents } from 'mdx/types';
 
@@ -29,6 +29,6 @@ export const mdxElements = {
   li,
   ol,
   p,
-  pre,
-  ul
+  ul,
+  code: inlineCode
 } as unknown as MDXComponents;

@@ -43,8 +43,7 @@ const esbuildConfig = {
     vanillaExtractPlugin({}),
     buildEndPlugin()
   ],
-  external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*'],
-  platform: packageName === '@jpmorganchase/mosaic-site-components-next' ? 'node' : 'browser'
+  external: ['react', 'react-dom', 'next/*', '@jpmorganchase/mosaic-*']
 };
 
 try {

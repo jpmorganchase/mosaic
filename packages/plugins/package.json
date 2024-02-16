@@ -56,16 +56,16 @@
     "react-docgen-typescript": "^2.2.2",
     "react-pro-sidebar": "^1.0.0",
     "reading-time": "^1.5.0",
-    "remark": "^14.0.2",
-    "remark-directive": "^2.0.1",
-    "remark-gfm": "^3.0.1",
-    "remark-mdx": "^2.1.5",
-    "remark-parse": "^10.0.1",
-    "remark-stringify": "^10.0.2",
+    "remark": "^15.0.1",
+    "remark-directive": "^3.0.0",
+    "remark-gfm": "^4.0.0",
+    "remark-mdx": "^3.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
     "rxjs": "^7.5.5",
-    "unified": "^10.1.2",
-    "unist-util-visit": "^4.1.1",
+    "unified": "^11.0.4",
+    "unist-util-visit": "^5.0.0",
     "uuid": "^7.0.3",
-    "vfile-reporter": "^7.0.5"
+    "vfile-reporter": "^8.1.0"
   }
 }
