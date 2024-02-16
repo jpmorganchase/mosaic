@@ -4,7 +4,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig = {
   experimental: {
-    mdxRs: true
+    mdxRs: true,
+    serverComponentsExternalPackages: ['@daviereid/next-mdx-remote']
   },
   reactStrictMode: true,
   output: process.env.GENERATE_STATIC_PARAMS_URL ? 'export' : 'standalone',
