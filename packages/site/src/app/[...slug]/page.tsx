@@ -2,10 +2,20 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { loadPage } from '@jpmorganchase/mosaic-loaders';
 
-import { type PreviewAction, preview } from '@jpmorganchase/mosaic-site-components-next';
-import { MDXContent, mdxComponents } from '@jpmorganchase/mosaic-site-components-next';
+import {
+  LiveCode,
+  MDXContent,
+  mdxComponents,
+  type PreviewAction,
+  preview
+} from '@jpmorganchase/mosaic-site-components-next';
 
 import { Body } from './Body';
+
+const components = {
+  ...mdxComponents,
+  LiveCode
+};
 
 const previewAction: PreviewAction = async options => {
   'use server';
@@ -20,7 +30,7 @@ export default async function Page({ params: { slug } }) {
   return (
     <Suspense fallback={null}>
       <Body source={source} meta={data} previewAction={previewAction}>
-        <MDXContent source={source} data={data} components={mdxComponents} />
+        <MDXContent source={source} data={data} components={components} />
       </Body>
     </Suspense>
   );

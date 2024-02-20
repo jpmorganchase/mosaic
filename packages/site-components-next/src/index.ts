@@ -10,5 +10,6 @@ export * from './Sidebar';
 export * from './TOC';
 export * from './mdx';
 export * from './MDXContent';
+export * from './LiveCode';
 
 export { compile, type CompileAction, preview, type PreviewAction };
