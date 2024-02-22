@@ -31,6 +31,7 @@ export function TableOfContentsItem({ item, current }: { item: Item; current?: s
         active={selected}
         href={`#${item.id}`}
         onClick={handleItemClick}
+        level={item.level ?? 0}
       >
         {stripMarkdownLinks(item.text)}
       </NavigationItem>

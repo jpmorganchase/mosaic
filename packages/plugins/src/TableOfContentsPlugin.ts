@@ -43,7 +43,8 @@ const TableOfContentsPlugin: PluginType<TableOfContentsPluginPage, TableOfConten
           .map(validHeading => {
             const text = parsePageHeading(page, validHeading.value);
             return {
-              level: validHeading.depth,
+              depth: validHeading.depth,
+              level: validHeading.depth - minRank,
               id: slugger.slug(text),
               text
             };
