@@ -9,7 +9,6 @@ import {
   HttpSourceResponseTransformerType
 } from '@jpmorganchase/mosaic-source-http';
 
-import createFigmaPage from './transformer.js';
 import type {
   FigmaPage,
   GenerateThumbnailResponse,
@@ -46,6 +45,19 @@ export const schema = baseSchema.merge(
 );
 
 export type FigmaSourceOptions = z.infer<typeof schema>;
+
+const createFigmaPage = (pageData: Partial<FigmaPage>, prefixDir: string) => {
+  const { data: { name, description, patternId } = {} } = pageData;
+  const route = `${prefixDir}/${patternId}`.replace(/\./g, '_').toLowerCase();
+  const figmaPage: Partial<FigmaPage> = {
+    title: name,
+    description,
+    route,
+    fullPath: `${route}.json`,
+    content: ``
+  };
+  return { ...figmaPage, ...pageData } as FigmaPage;
+};
 
 const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
   create(options, sourceConfig) {
@@ -110,20 +122,20 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
         if (patternId.indexOf(patternPrefix) === 0) {
           /** Figma provided metadata */
+          const { tags: tagsCSV, ...patternData } = sharedPluginData[patternId];
+          const tags = tagsCSV?.split(',') || [];
           const figmaProvidedMetadata: Partial<FigmaPage> = {
+            tags,
             data: {
               patternId,
-              ...sharedPluginData[patternId]
+              ...patternData
             }
           };
           const sourceProvidedMetadata = transformerOptions[index].meta;
-
-          const figmaPageMeta = sourceProvidedMetadata
-            ? deepmerge<FigmaPage, Record<string, unknown>>(
-                figmaProvidedMetadata,
-                sourceProvidedMetadata || {}
-              )
-            : figmaProvidedMetadata;
+          const figmaPageMeta = deepmerge<FigmaPage, Partial<FigmaPage>>(
+            figmaProvidedMetadata,
+            sourceProvidedMetadata || {}
+          );
           return [...figmaPagesResult, createFigmaPage(figmaPageMeta, prefixDir)];
         }
         return figmaPagesResult;

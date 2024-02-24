@@ -12,7 +12,6 @@ The Figma source is used to pull individual design patterns from Figma projects.
 The source subscribes to Figma project groups, then extracts from project files, tagged patterns.
 
 A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
-(Refer to the JPM Figma plugin for more details - a current Q4 2023 deliverable)
 
 For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
 Additional Mosaic metadata can be added, to each created page, using `meta`
@@ -45,10 +44,11 @@ Each project is configured from the `projects` array.
 
 `endpoints` defined the Figma REST API endpoints.
 
-| Property   | Description                                               | Required |
-| ---------- | --------------------------------------------------------- | -------- |
-| getProject | url to return a list of projects within the project group | Yes      |
-| getFile    | url to return a project file                              | Yes      |
+| Property          | Description                                               | Required |
+| ----------------- | --------------------------------------------------------- | -------- |
+| getProject        | url to return a list of projects within the project group | Yes      |
+| getFile           | url to return a project file                              | Yes      |
+| generateThumbnail | url to generate a thumbnail for the shared Figma node     | Yes      |
 
 ### Example Figma Source Definition
 
@@ -65,12 +65,16 @@ sources: [
           id: 99999,
           patternPrefix: 'yourPrefix',
           meta: {
-            owner: 'some-owner'
+            tags: [ 'some-tag'],
+            data: {
+               owner: 'some-owner'
+            }
           }
         }],
         endpoints: {
           getFile: 'https://api.figma.com/v1/files/:file_id?plugin_data=shared',
-          getProject: 'https://api.figma.com/v1/projects/:project_id/files'
+          getProject: 'https://api.figma.com/v1/projects/:project_id/files',
+          generateThumbnail: 'https://api.figma.com/v1/images/:project_id?ids=:node_id'
         }
       }
     }

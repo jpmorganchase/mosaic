@@ -72,7 +72,6 @@ const createProjectFilesResponse = (patternId: string, nodeId: string) => ({
 const createExpectedResult = (patternId: string, data: Record<string, any>) => ({
   title: patternId,
   description: `some description for ${patternId}`,
-  layout: 'DetailTechnical',
   route: `/prefixdir/${patternId}`.toLowerCase(),
   fullPath: `/prefixdir/${patternId}.json`.toLowerCase(),
   tags: ['some-tag1', 'some-tag2'],
@@ -84,8 +83,6 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
     nodeId: '2:0',
     name: patternId,
     patternId: patternId,
-    source: 'FIGMA',
-    tags: 'some-tag1,some-tag2',
     version: 'some version',
     ...data.data
   },
