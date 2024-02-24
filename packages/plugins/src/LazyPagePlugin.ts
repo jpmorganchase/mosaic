@@ -4,7 +4,7 @@ import fsExtra from 'fs-extra';
 import { escapeRegExp } from 'lodash-es';
 import path from 'path';
 import { TDataOut } from 'memfs';
-import { mergePageContent } from './utils/mergePageConent.js';
+import { mergePageContent } from './utils/mergePageContent.js';
 
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
