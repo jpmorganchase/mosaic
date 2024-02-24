@@ -6,8 +6,7 @@ export type StoryConfig = {
   description: string;
   filter?: RegExp;
   filterTags?: string[];
-  additionalData?: Record<string, any>;
-  additionalTags?: string[];
+  meta?: Partial<StorybookPage>;
 };
 
 /** Storybook API response */
@@ -31,14 +30,11 @@ export type StorybookPageData = {
   kind: string;
   name: string;
   story: string;
-  source: 'STORYBOOK';
 };
 
 /** Page created by the Source for each Storybook story */
 export type StorybookPage = {
-  content: string;
   description?: string;
-  layout: string;
   data: StorybookPageData;
   tags?: string[];
 } & Page;
