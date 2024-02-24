@@ -70,7 +70,6 @@ const $TagPlugin: PluginType<TagPluginPage, unknown, TagPluginConfigData> = {
         // Symlink every `tag` item to '/.tags' folder
         if (meta.tags?.length) {
           config.setTags(page.fullPath, meta.tags);
-          delete meta.tags;
         }
 
         // Find any references to $tag
