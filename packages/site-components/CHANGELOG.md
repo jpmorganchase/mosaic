@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.68
+
+### Patch Changes
+
+- 579a8be5: Fixed hydration issues with table of contents
+  - @jpmorganchase/mosaic-components@0.1.0-beta.68
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.68
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.68
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.68
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.68
+  - @jpmorganchase/mosaic-store@0.1.0-beta.68
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.68
+
 ## 0.1.0-beta.67
 
 ### Patch Changes
