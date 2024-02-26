@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.67
+
 ## 0.1.0-beta.66
 
 ### Patch Changes

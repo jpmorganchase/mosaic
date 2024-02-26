@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- 6abf1910: Fixed table of contents indentation
+- 30e2f038: Align source APIs for Figma, Storybook and Readme
+
+  Updates to related sources so that have consistent APIs.
+
+  - `tags` is now visible in the `meta`, previously deleted
+  - use `meta.tags` rather than rely on a CSV copy in `meta.data.tags`
+  - move un-neccessary `meta.data` to config (e.g `source`)
+  - removed `additionalTags` and `additionalData` from Storybook source and use `meta` instead
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.67
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.67
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.67
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.67
+  - @jpmorganchase/mosaic-types@0.1.0-beta.67
+
 ## 0.1.0-beta.66
 
 ### Patch Changes
