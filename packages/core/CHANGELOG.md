@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- Updated dependencies [6abf1910]
+- Updated dependencies [30e2f038]
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.67
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.67
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.67
+  - @jpmorganchase/mosaic-types@0.1.0-beta.67
+
 ## 0.1.0-beta.66
 
 ### Patch Changes
