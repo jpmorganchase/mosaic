@@ -74,7 +74,7 @@ const createExpectedResult = (index: number) => ({
   title: `TestComponent/SomePath/Component-${index} - Component ${index} Name`,
   route: `prefixDir/component${index}Id`,
   fullPath: `prefixDir/component${index}Id.json`,
-  tags: ['tag-1', 'tag-2', `some-additional-tag-${index}`],
+  tags: [`some-additional-tag-${index}`],
   data: {
     id: `component${index}Id`,
     description: `some description ${index}`,
@@ -134,8 +134,8 @@ describe('GIVEN a Storybook Source ', () => {
           expect(result[1]).toEqual(createExpectedResult(4));
 
           const result5 = createExpectedResult(5);
-          result5.tags = ['tag-1', 'tag-2']; // no additional tags added for test case 5
-          delete result5.data.owner; // no additional data added for this 1
+          delete result5.tags; // no tags data added for this result5
+          delete result5.data.owner; // no additional data added for result5
           expect(result[2]).toEqual(result5);
         },
         complete: () => done()

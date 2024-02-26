@@ -57,14 +57,13 @@ const transformStorybookPages = (
     if (filterTags && filterTags.some(filterTag => story.tags.indexOf(filterTag) >= 0)) {
       return result;
     }
-    const { id, kind, name, tags, story: storyName } = story;
+    const { id, kind, name, story: storyName } = story;
     const title = `${kind} - ${name}`;
     const route = `${prefixDir}/${id}`;
     let storyPageMeta: StorybookPage = {
       title,
       route,
       fullPath: `${route}.json`,
-      tags,
       data: {
         id,
         description,
