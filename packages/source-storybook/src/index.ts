@@ -8,8 +8,8 @@ import {
   createProxyAgent
 } from '@jpmorganchase/mosaic-source-http';
 
-import createStorybookPages from './transformer.js';
-import { StoriesResponseJSON, StorybookPage } from './types/index.js';
+import { StoriesResponseJSON, StorybookPage, StoryConfig } from './types/index.js';
+import deepmerge from 'deepmerge';
 
 const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
@@ -25,8 +25,9 @@ export const schema = baseSchema.merge(
           description: z.string(),
           url: z.string(),
           proxyEndpoint: z.string().url().optional(),
-          additionalData: z.object({}).passthrough().optional(),
-          additionalTags: z.array(z.string()).optional(),
+          meta: z
+            .object({ tags: z.array(z.string()).optional(), data: z.object({}).passthrough() })
+            .optional(),
           filter: z
             .any()
             .transform(val => new RegExp(val))
@@ -39,6 +40,45 @@ export const schema = baseSchema.merge(
 );
 
 export type StorybookSourceOptions = z.infer<typeof schema>;
+
+const transformStorybookPages = (
+  storyJSON: StoriesResponseJSON,
+  prefixDir: string,
+  index: number,
+  storyConfig: StoryConfig[]
+): StorybookPage[] => {
+  const { meta = {}, description, filter, filterTags, url: storybookUrl } = storyConfig[index];
+  const storyIds = Object.keys(storyJSON.stories);
+  return storyIds.reduce<StorybookPage[]>((result, storyId) => {
+    const story = storyJSON.stories[storyId];
+    if (filter && !filter.test(story.kind)) {
+      return result;
+    }
+    if (filterTags && filterTags.some(filterTag => story.tags.indexOf(filterTag) >= 0)) {
+      return result;
+    }
+    const { id, kind, name, story: storyName } = story;
+    const title = `${kind} - ${name}`;
+    const route = `${prefixDir}/${id}`;
+    let storyPageMeta: StorybookPage = {
+      title,
+      route,
+      fullPath: `${route}.json`,
+      data: {
+        id,
+        description,
+        kind,
+        link: `${storybookUrl}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
+        name,
+        story: storyName
+      }
+    };
+    if (meta) {
+      storyPageMeta = deepmerge<StorybookPage, Partial<StorybookPage>>(storyPageMeta, meta);
+    }
+    return [...result, storyPageMeta];
+  }, []);
+};
 
 const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
   create(options, sourceConfig) {
@@ -75,7 +115,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
         prefixDir,
         ...restOptions,
         configuredRequests,
-        transformer: createStorybookPages,
+        transformer: transformStorybookPages,
         transformerOptions: storiesConfig
       },
       sourceConfig
