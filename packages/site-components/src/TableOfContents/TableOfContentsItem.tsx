@@ -25,16 +25,14 @@ export function TableOfContentsItem({ item, current }: { item: Item; current?: s
   };
 
   return (
-    <li>
-      <NavigationItem
-        orientation="vertical"
-        active={selected}
-        href={`#${item.id}`}
-        onClick={handleItemClick}
-        level={item.level}
-      >
-        {stripMarkdownLinks(item.text)}
-      </NavigationItem>
-    </li>
+    <NavigationItem
+      orientation="vertical"
+      active={selected}
+      href={`#${item.id}`}
+      onClick={handleItemClick}
+      level={item.level}
+    >
+      {stripMarkdownLinks(item.text)}
+    </NavigationItem>
   );
 }
