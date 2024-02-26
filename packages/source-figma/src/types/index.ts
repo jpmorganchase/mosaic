@@ -49,7 +49,7 @@ export type FigmaPageData = {
   embedLink: string;
   nodeId: string;
   link: string;
-  thumbnailUrl?: string;
+  contentUrl?: string;
 };
 
 /** Figma page */

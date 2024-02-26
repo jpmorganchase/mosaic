@@ -159,7 +159,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
         );
         if (pageForNode) {
-          pageForNode.data.thumbnailUrl = response.images[thumbnailNodeId];
+          pageForNode.data.contentUrl = response.images[thumbnailNodeId];
         }
       });
       return transformerOptions.pages;
