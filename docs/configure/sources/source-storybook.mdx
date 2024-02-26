@@ -39,13 +39,15 @@ If specified, `additionalTags` and `additionalData` can be added to any matching
 
 `stories` is an array of Storybooks that you want to pull stories from
 
-| Property    | Description                              | Required |
-| ----------- | ---------------------------------------- | -------- |
-| url         | url of the storybook                     | Yes      |
-| description | description of the storybook stories     | Yes      |
-| filter      | RegExp filter to match on                | No       |
-| filterTags  | Array of Storybook tags to match on      | No       |
-| meta        | additional data to add to matching pages | No       |
+| Property        | Description                                           | Required |
+| --------------- | ----------------------------------------------------- | -------- |
+| storiesUrl      | url of the storybook's `stories.json`                 | Yes      |
+| storyUrlPrefix  | prefix url of the storybook deployment                | Yes      |
+| description     | description of the storybook stories                  | Yes      |
+| storyUrlPrefix  | root url of each story (will use `url`, if undefined) | No       |
+| filter          | RegExp filter to match on                             | No       |
+| filterTags      | Array of Storybook tags to match on                   | No       |
+| meta            | additional data to add to matching pages              | No       |
 
 ### Example Local Folder Source Definition
 
@@ -58,7 +60,8 @@ sources: [
         prefixDir: '/salt/internal/community-index/story-navigation',
         stories: [
           {
-            url: 'https://storybook.saltdesignsystem.com',
+            storiesUrl: 'https://storybook.saltdesignsystem.com/stories.json',
+            storyUrlPrefix: 'https://storybook.saltdesignsystem.com',
             description: 'Navigation patterns created in the Salt Labs',
             meta: { // can be any additional metadata you want added to the page's meta.data
               tags: ['some-tag'],
