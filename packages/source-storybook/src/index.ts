@@ -23,7 +23,7 @@ export const schema = baseSchema.merge(
       .array(
         z.object({
           description: z.string(),
-          storiesUrl: z.string().url(),
+          storiesUrl: z.string().url().optional(),
           storyUrlPrefix: z.string().url(),
           proxyEndpoint: z.string().url().optional(),
           meta: z
@@ -94,7 +94,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
     } = parsedOptions;
 
     const configuredRequests = storiesConfig.map(config => {
-      const { storiesUrl, proxyEndpoint } = config;
+      const { storiesUrl, storyUrlPrefix, proxyEndpoint } = config;
       let agent;
       const headers = requestHeaders ? (requestHeaders as HeadersInit) : undefined;
 
@@ -102,8 +102,8 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
         console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`);
         agent = createProxyAgent(proxyEndpoint);
       }
-
-      return new Request(storiesUrl, {
+      const url = storiesUrl || `${storyUrlPrefix}/stories.json`;
+      return new Request(url, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         agent,
