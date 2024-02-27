@@ -137,7 +137,7 @@ describe('GIVEN a Figma Source ', () => {
           };
           meta0.data = {
             ...meta0.data,
-            thumbnailUrl: `/thumbnail/file888/2:0`,
+            contentUrl: `/thumbnail/file888/2:0`,
             fileId: 'file888',
             projectId: '888'
           };
@@ -149,7 +149,7 @@ describe('GIVEN a Figma Source ', () => {
           meta1.data = {
             ...meta1.data,
             fileId: 'file999',
-            thumbnailUrl: `/thumbnail/file999/2:0`,
+            contentUrl: `/thumbnail/file999/2:0`,
             projectId: '999'
           };
           expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_999_pattern2', meta1));

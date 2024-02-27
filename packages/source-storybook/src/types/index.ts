@@ -2,7 +2,8 @@ import type { Page } from '@jpmorganchase/mosaic-types';
 
 /** Storybook Source config - added to mosaic.config.mjs **/
 export type StoryConfig = {
-  url: string;
+  storiesUrl?: string;
+  storyUrlPrefix: string;
   description: string;
   filter?: RegExp;
   filterTags?: string[];
@@ -25,6 +26,7 @@ export type StoriesResponseJSON = {
 /** Storybook page data */
 export type StorybookPageData = {
   id: string;
+  contentUrl: string;
   description: string;
   link: string;
   kind: string;

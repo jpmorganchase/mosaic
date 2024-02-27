@@ -16,7 +16,8 @@ const options: StorybookSourceOptions = {
   stories: [
     {
       description: 'some description 1',
-      url: 'https://api.endpoint.com/1',
+      storiesUrl: 'https://api.endpoint.com/1',
+      storyUrlPrefix: 'https://storybook.endpoint.com/1',
       meta: { tags: ['some-additional-tag-1'], data: { owner: 'some owner 1' } },
       filter: /TestComponent\/SomePath\/Component/
     },
@@ -25,7 +26,8 @@ const options: StorybookSourceOptions = {
      */
     {
       description: 'some description 2',
-      url: 'https://api.endpoint.com/2',
+      storiesUrl: 'https://api.endpoint.com/2',
+      storyUrlPrefix: 'https://storybook.endpoint.com/2',
       meta: { tags: ['some-additional-tag-2'], data: { owner: 'some owner 2' } },
       filterTags: ['tag-2']
     },
@@ -34,13 +36,15 @@ const options: StorybookSourceOptions = {
      */
     {
       description: 'some description 3',
-      url: 'https://api.endpoint.com/3',
+      storiesUrl: 'https://api.endpoint.com/3',
+      storyUrlPrefix: 'https://storybook.endpoint.com/3',
       meta: { tags: ['some-additional-tag-3'], data: { owner: 'some owner 3' } },
       filter: /IgnoredComponent\/SomePath\/Component/
     },
     {
       description: 'some description 4',
-      url: 'https://api.endpoint.com/4',
+      storiesUrl: 'https://api.endpoint.com/4',
+      storyUrlPrefix: 'https://storybook.endpoint.com/4',
       meta: { tags: ['some-additional-tag-4'], data: { owner: 'some owner 4' } },
       filter: /TestComponent\/SomePath\/Component/
     },
@@ -49,7 +53,8 @@ const options: StorybookSourceOptions = {
      */
     {
       description: 'some description 5',
-      url: 'https://api.endpoint.com/5',
+      storiesUrl: 'https://api.endpoint.com/5',
+      storyUrlPrefix: 'https://storybook.endpoint.com/5',
       filter: /TestComponent\/SomePath\/Component/
     }
   ]
@@ -77,9 +82,10 @@ const createExpectedResult = (index: number) => ({
   tags: [`some-additional-tag-${index}`],
   data: {
     id: `component${index}Id`,
+    contentUrl: `https://storybook.endpoint.com/${index}/iframe.html?id=component${index}Id&viewMode=story&shortcuts=false&singleStory=true`,
     description: `some description ${index}`,
     kind: `TestComponent/SomePath/Component-${index}`,
-    link: `https://api.endpoint.com/${index}/iframe.html?id=component${index}Id&viewMode=story&shortcuts=false&singleStory=true`,
+    link: `https://storybook.endpoint.com/${index}?id=component${index}Id`,
     name: `Component ${index} Name`,
     owner: `some owner ${index}`,
     story: `Docs ${index}`
@@ -87,19 +93,19 @@ const createExpectedResult = (index: number) => ({
 });
 
 const successHandlers = [
-  rest.get(`${options.stories[0].url}/stories.json`, (_req, res, ctx) => {
+  rest.get(options.stories[0].storiesUrl, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(1)));
   }),
-  rest.get(`${options.stories[1].url}/stories.json`, (_req, res, ctx) => {
+  rest.get(options.stories[1].storiesUrl, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(2)));
   }),
-  rest.get(`${options.stories[2].url}/stories.json`, (_req, res, ctx) => {
+  rest.get(options.stories[2].storiesUrl, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(3)));
   }),
-  rest.get(`${options.stories[3].url}/stories.json`, (_req, res, ctx) => {
+  rest.get(options.stories[3].storiesUrl, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(4)));
   }),
-  rest.get(`${options.stories[4].url}/stories.json`, (_req, res, ctx) => {
+  rest.get(options.stories[4].storiesUrl, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(createResponse(5)));
   })
 ];

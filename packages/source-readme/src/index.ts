@@ -55,7 +55,6 @@ const transformReadmePage = (
       title,
       description,
       readmeUrl,
-      repoUrl: '',
       link: route
     },
     content: updatedContent

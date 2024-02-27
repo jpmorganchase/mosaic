@@ -23,7 +23,8 @@ export const schema = baseSchema.merge(
       .array(
         z.object({
           description: z.string(),
-          url: z.string(),
+          storiesUrl: z.string().url().optional(),
+          storyUrlPrefix: z.string().url(),
           proxyEndpoint: z.string().url().optional(),
           meta: z
             .object({ tags: z.array(z.string()).optional(), data: z.object({}).passthrough() })
@@ -47,7 +48,7 @@ const transformStorybookPages = (
   index: number,
   storyConfig: StoryConfig[]
 ): StorybookPage[] => {
-  const { meta = {}, description, filter, filterTags, url: storybookUrl } = storyConfig[index];
+  const { meta = {}, description, filter, filterTags, storyUrlPrefix } = storyConfig[index];
   const storyIds = Object.keys(storyJSON.stories);
   return storyIds.reduce<StorybookPage[]>((result, storyId) => {
     const story = storyJSON.stories[storyId];
@@ -68,7 +69,8 @@ const transformStorybookPages = (
         id,
         description,
         kind,
-        link: `${storybookUrl}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
+        contentUrl: `${storyUrlPrefix}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
+        link: `${storyUrlPrefix}?id=${id}`,
         name,
         story: storyName
       }
@@ -92,16 +94,16 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
     } = parsedOptions;
 
     const configuredRequests = storiesConfig.map(config => {
-      const { url, proxyEndpoint } = config;
+      const { storiesUrl, storyUrlPrefix, proxyEndpoint } = config;
       let agent;
       const headers = requestHeaders ? (requestHeaders as HeadersInit) : undefined;
 
       if (proxyEndpoint) {
-        console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${url}`);
+        console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`);
         agent = createProxyAgent(proxyEndpoint);
       }
-
-      return new Request(`${url}/stories.json`, {
+      const url = storiesUrl || `${storyUrlPrefix}/stories.json`;
+      return new Request(url, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         agent,
