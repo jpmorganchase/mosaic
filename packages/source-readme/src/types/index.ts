@@ -5,7 +5,6 @@ export type ReadmePageData = {
   title: string;
   description: string;
   link: string;
-  repoUrl: string;
   readmeUrl: string;
 };
 

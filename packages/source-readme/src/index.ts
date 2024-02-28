@@ -36,7 +36,7 @@ export const schema = baseSchema.merge(
   })
 );
 
-const createReadmePage = (
+const transformReadmePage = (
   content: string,
   prefixDir: string,
   index: number,
@@ -46,11 +46,9 @@ const createReadmePage = (
   const { title, description } = meta;
   const route = `${prefixDir}/${name}`;
   const updatedContent = contentTemplate.replace('::content::', content);
-  const sourceMeta: Omit<Partial<ReadmePage>, 'data'> & {
-    data: { title: string; description: string; readmeUrl: string; link: string };
-  } = {
+  const sourceMeta: Partial<ReadmePage> = {
     title,
-    description,
+    description: '',
     route,
     fullPath: `${route}.mdx`,
     data: {
@@ -62,7 +60,7 @@ const createReadmePage = (
     content: updatedContent
   };
   const configMeta = meta as Partial<ReadmePage>;
-  const readmePage = deepmerge<typeof sourceMeta, ReadmePage>(sourceMeta, configMeta);
+  const readmePage = deepmerge<ReadmePage, Partial<ReadmePage>>(sourceMeta, configMeta);
   return [readmePage];
 };
 
@@ -104,7 +102,7 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
         prefixDir,
         ...restOptions,
         configuredRequests,
-        transformer: createReadmePage,
+        transformer: transformReadmePage,
         transformerOptions: readmeConfig
       },
       sourceConfig

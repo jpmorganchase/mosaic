@@ -1,5 +1,60 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.69
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.69
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.69
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.69
+- @jpmorganchase/mosaic-store@0.1.0-beta.69
+- @jpmorganchase/mosaic-theme@0.1.0-beta.69
+
+## 0.1.0-beta.68
+
+### Patch Changes
+
+- Updated dependencies [579a8be5]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.68
+  - @jpmorganchase/mosaic-components@0.1.0-beta.68
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.68
+  - @jpmorganchase/mosaic-store@0.1.0-beta.68
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.68
+
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- Updated dependencies [6abf1910]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.67
+  - @jpmorganchase/mosaic-components@0.1.0-beta.67
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.67
+  - @jpmorganchase/mosaic-store@0.1.0-beta.67
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.67
+
+## 0.1.0-beta.66
+
+### Patch Changes
+
+- 127ba397: Fix missing timeout error
+- Updated dependencies [127ba397]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.66
+  - @jpmorganchase/mosaic-components@0.1.0-beta.66
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.66
+  - @jpmorganchase/mosaic-store@0.1.0-beta.66
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.66
+
+## 0.1.0-beta.65
+
+### Patch Changes
+
+- Updated dependencies [abe4f6c8]
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.65
+  - @jpmorganchase/mosaic-components@0.1.0-beta.65
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.65
+  - @jpmorganchase/mosaic-store@0.1.0-beta.65
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.65
+
 ## 0.1.0-beta.64
 
 ### Patch Changes

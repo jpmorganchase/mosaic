@@ -1,11 +1,10 @@
 import React from 'react';
-import classnames from 'clsx';
-import { Caption2, Caption3 } from '@jpmorganchase/mosaic-components';
+import { NavigationItem } from '@salt-ds/core';
 
-import styles from './styles.css';
 import { stripMarkdownLinks } from './utils';
+import type { Item } from './TableOfContents';
 
-export function TableOfContentsItem({ item, current }) {
+export function TableOfContentsItem({ item, current }: { item: Item; current?: string }) {
   const selected = item.id === current;
 
   const handleItemClick = e => {
@@ -25,18 +24,15 @@ export function TableOfContentsItem({ item, current }) {
     }
   };
 
-  const ItemTextComponent = selected ? Caption2 : Caption3;
   return (
-    <li
-      aria-checked={selected}
-      aria-label={item.text}
-      aria-level={1}
-      className={classnames(styles.item, styles[`level${item.level}`])}
-      data-selected={!!selected}
+    <NavigationItem
+      orientation="vertical"
+      active={selected}
+      href={`#${item.id}`}
       onClick={handleItemClick}
-      tabIndex={-1}
+      level={item.level}
     >
-      <ItemTextComponent>{stripMarkdownLinks(item.text)}</ItemTextComponent>
-    </li>
+      {stripMarkdownLinks(item.text)}
+    </NavigationItem>
   );
 }

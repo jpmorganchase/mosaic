@@ -1,5 +1,40 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.69
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.69
+- @jpmorganchase/mosaic-theme@0.1.0-beta.69
+
+## 0.1.0-beta.68
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.68
+- @jpmorganchase/mosaic-theme@0.1.0-beta.68
+
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.67
+- @jpmorganchase/mosaic-theme@0.1.0-beta.67
+
+## 0.1.0-beta.66
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.66
+- @jpmorganchase/mosaic-theme@0.1.0-beta.66
+
+## 0.1.0-beta.65
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.65
+- @jpmorganchase/mosaic-theme@0.1.0-beta.65
+
 ## 0.1.0-beta.64
 
 ### Patch Changes

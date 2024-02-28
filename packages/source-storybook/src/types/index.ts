@@ -2,12 +2,12 @@ import type { Page } from '@jpmorganchase/mosaic-types';
 
 /** Storybook Source config - added to mosaic.config.mjs **/
 export type StoryConfig = {
-  url: string;
+  storiesUrl?: string;
+  storyUrlPrefix: string;
   description: string;
   filter?: RegExp;
   filterTags?: string[];
-  additionalData?: Record<string, any>;
-  additionalTags?: string[];
+  meta?: Partial<StorybookPage>;
 };
 
 /** Storybook API response */
@@ -26,19 +26,17 @@ export type StoriesResponseJSON = {
 /** Storybook page data */
 export type StorybookPageData = {
   id: string;
+  contentUrl: string;
   description: string;
   link: string;
   kind: string;
   name: string;
   story: string;
-  source: 'STORYBOOK';
 };
 
 /** Page created by the Source for each Storybook story */
 export type StorybookPage = {
-  content: string;
   description?: string;
-  layout: string;
   data: StorybookPageData;
   tags?: string[];
 } & Page;

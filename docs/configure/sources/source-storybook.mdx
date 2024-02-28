@@ -41,31 +41,34 @@ If specified, `additionalTags` and `additionalData` can be added to any matching
 
 | Property       | Description                              | Required |
 | -------------- | ---------------------------------------- | -------- |
-| url            | url of the storybook                     | Yes      |
+| storyUrlPrefix | prefix url of the storybook deployment   | Yes      |
 | description    | description of the storybook stories     | Yes      |
+| storiesUrl     | url of the storybook's `stories.json`    | No       |
 | filter         | RegExp filter to match on                | No       |
 | filterTags     | Array of Storybook tags to match on      | No       |
-| additionalTags | additional tags to add to the stories    | No       |
-| additionalData | additional data to add to matching pages | No       |
+| meta           | additional data to add to matching pages | No       |
 
 ### Example Local Folder Source Definition
 
 ```
 sources: [
     {
-      disabled: process.env.NODE_ENV !== 'development',
       modulePath: '@jpmorganchase/mosaic-source-storybook',
       namespace: 'salt',
       options: {
         prefixDir: '/salt/internal/community-index/story-navigation',
         stories: [
           {
-            url: 'https://storybook.saltdesignsystem.com',
+            storiesUrl: 'https://storybook.saltdesignsystem.com/stories.json',
+            storyUrlPrefix: 'https://storybook.saltdesignsystem.com',
             description: 'Navigation patterns created in the Salt Labs',
-            additionalData: {
-                someAdditionalData: 'some-value' // can be any additional metadata you want added to the page's meta.data
+            meta: { // can be any additional metadata you want added to the page's meta.data
+              tags: ['some-tag'],
+              data: {
+                owner: 'Salt',
+                source: 'STORYBOOK'
+              }
             },
-            additionalTags: ['salt-pattern-navigation'],
             filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
           }
         ]

@@ -7,7 +7,7 @@ import deepmerge from 'deepmerge';
 
 import normaliseRefs from './utils/normaliseRefs.js';
 import PluginError from './utils/PluginError.js';
-import { mergePageContent } from './utils/mergePageConent.js';
+import { mergePageContent } from './utils/mergePageContent.js';
 
 const isWindows = /^win/.test(os.platform());
 const windowsDrivePattern = /^([a-z]):/i;

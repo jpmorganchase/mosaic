@@ -1,5 +1,53 @@
 # @jpmorganchase/mosaic-source-readme
 
+## 0.1.0-beta.69
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.69
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.69
+- @jpmorganchase/mosaic-types@0.1.0-beta.69
+
+## 0.1.0-beta.68
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.68
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.68
+- @jpmorganchase/mosaic-types@0.1.0-beta.68
+
+## 0.1.0-beta.67
+
+### Patch Changes
+
+- 30e2f038: Align source APIs for Figma, Storybook and Readme
+
+  Updates to related sources so that have consistent APIs.
+
+  - `tags` is now visible in the `meta`, previously deleted
+  - use `meta.tags` rather than rely on a CSV copy in `meta.data.tags`
+  - move un-neccessary `meta.data` to config (e.g `source`)
+  - removed `additionalTags` and `additionalData` from Storybook source and use `meta` instead
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.67
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.67
+  - @jpmorganchase/mosaic-types@0.1.0-beta.67
+
+## 0.1.0-beta.66
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.66
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.66
+- @jpmorganchase/mosaic-types@0.1.0-beta.66
+
+## 0.1.0-beta.65
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.65
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.65
+- @jpmorganchase/mosaic-types@0.1.0-beta.65
+
 ## 0.1.0-beta.64
 
 ### Patch Changes
