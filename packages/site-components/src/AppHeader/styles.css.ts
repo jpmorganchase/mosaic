@@ -15,6 +15,13 @@ export default {
       marginRight: ['x6']
     })
   ]),
+  logoImage: style({
+    selectors: {
+      '[data-mode=dark] &': {
+        filter: 'invert(1)'
+      }
+    }
+  }),
   logoContainer: style([
     {
       fontSize: vars.fontSize.s50,

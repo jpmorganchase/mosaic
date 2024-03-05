@@ -50,7 +50,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [],
           <Link className={styles.logoContainer} href={homeLink} variant="component">
             {logo && (
               <Logo>
-                <LogoImage src={logo} alt="" />
+                <LogoImage className={styles.logoImage} src={logo} alt="homepage" />
                 <Text>{title}</Text>
               </Logo>
             )}
