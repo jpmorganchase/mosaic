@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.70
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.70
+- @jpmorganchase/mosaic-theme@0.1.0-beta.70
+
 ## 0.1.0-beta.69
 
 ### Patch Changes
