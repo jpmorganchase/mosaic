@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.70
+
+### Patch Changes
+
+- Updated dependencies [dca7f2dc]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.70
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.70
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.70
+  - @jpmorganchase/mosaic-components@0.1.0-beta.70
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.70
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.70
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.70
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.70
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.70
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.70
+  - @jpmorganchase/mosaic-store@0.1.0-beta.70
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.70
+
 ## 0.1.0-beta.69
 
 ### Patch Changes

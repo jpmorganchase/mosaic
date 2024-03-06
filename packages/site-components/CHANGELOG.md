@@ -1,5 +1,22 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.70
+
+### Patch Changes
+
+- dca7f2dc: Fix logo color in dark mode
+
+  The intention is that we use a `.svg` for logo, when you toggle to dark mode
+  the colors are inverted.
+
+  - @jpmorganchase/mosaic-components@0.1.0-beta.70
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.70
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.70
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.70
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.70
+  - @jpmorganchase/mosaic-store@0.1.0-beta.70
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.70
+
 ## 0.1.0-beta.69
 
 ### Patch Changes
