@@ -1,12 +1,12 @@
 ---
-title: Storybook Source
+title: Figma Source
 layout: DetailTechnical
 sidebar:
   priority: 5
-  label: Storybook
-lastModified: 1701863022167
-fullPath: /mosaic/configure/sources/storybook-source.mdx
-route: /mosaic/configure/sources/storybook-source
+  label: Figma
+lastModified: 1710290347582
+fullPath: /mosaic/configure/sources/source-figma.mdx
+route: /mosaic/configure/sources/source-figma
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -17,14 +17,14 @@ breadcrumbs:
   - label: Sources
     path: /mosaic/configure/sources/index
     id: /mosaic/configure/sources/index.mdx
-  - label: Storybook
-    path: /mosaic/configure/sources/storybook-source
-    id: /mosaic/configure/sources/storybook-source.mdx
+  - label: Figma
+    path: /mosaic/configure/sources/source-figma
+    id: /mosaic/configure/sources/source-figma.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.56
-  time: 93600
-  words: 312
+  minutes: 1.64
+  time: 98400
+  words: 328
 tableOfContents:
   - depth: 2
     level: 0
@@ -36,15 +36,15 @@ tableOfContents:
     text: Configuration
   - depth: 3
     level: 1
-    id: example-local-folder-source-definition
-    text: Example Local Folder Source Definition
+    id: example-figma-source-definition
+    text: Example Figma Source Definition
 navigation:
   prev:
-    title: Readme Source
-    route: /mosaic/configure/sources/storybook-readme
+    title: Sources
+    route: /mosaic/configure/sources/index
   next:
-    title: Source Schedules
-    route: /mosaic/configure/sources/schedules
+    title: Readme Source
+    route: /mosaic/configure/sources/source-readme
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -123,29 +123,29 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
-      - id: /mosaic/configure/sources/storybook-figma
-        fullPath: /mosaic/configure/sources/storybook-figma.mdx
+      - id: /mosaic/configure/sources/source-figma
+        fullPath: /mosaic/configure/sources/source-figma.mdx
         name: Figma
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-figma
+          link: /mosaic/configure/sources/source-figma
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-readme
-        fullPath: /mosaic/configure/sources/storybook-readme.mdx
+      - id: /mosaic/configure/sources/source-readme
+        fullPath: /mosaic/configure/sources/source-readme.mdx
         name: Readme Files
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-readme
+          link: /mosaic/configure/sources/source-readme
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-source
-        fullPath: /mosaic/configure/sources/storybook-source.mdx
+      - id: /mosaic/configure/sources/source-storybook
+        fullPath: /mosaic/configure/sources/source-storybook.mdx
         name: Storybook
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-source
+          link: /mosaic/configure/sources/source-storybook
         childNodes: []
       - id: /mosaic/configure/sources/schedules
         fullPath: /mosaic/configure/sources/schedules.mdx
@@ -396,67 +396,74 @@ sidebarData:
 ---
 # {meta.title}
 
-The Storybook source is used to pull individual stories from Storybook, based on tags.
+The Figma source is used to pull individual design patterns from Figma projects.
+The source subscribes to Figma project groups, then extracts from project files, tagged patterns.
 
-The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
+A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
 
-For each matching story, a page is created in the Mosaic file-system.
-
-*   additional Mosaic tags can be added to each page using `additionalTags`
-*   additional Mosaic metadata can be added to each page using `additionalData`
-
-This information can be used to create a dynamic index of stories from Storybook.
+For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
+Additional Mosaic metadata can be added, to each created page, using `meta`
+For instance we could add metadata which defines which product owns a particular pattern and then
+group patterns based on owner.
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-storybook`
+`yarn add @jpmorganchase/mosaic-source-figma`
 
 ## Configuration
 
-The Storybook source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The Figma source is an [`HttpSource`](./https-source) and shares the same base configuration.
 The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
-The `stories` option is an array of Storybook urls that are used as Sources.
-Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
+| Property   | Description                       | Required |
+| ---------- | --------------------------------- | -------- |
+| prefixDir  | path to store figma patterns      | Yes      |
+| figmaToken | figma access token                | Yes      |
+| projects   | array of projects to subscribe to | Yes      |
+| endpoints  | figma endpoints                   | Yes      |
 
-If specified, `additionalTags` and `additionalData` can be added to any matching pages.
+Each project is configured from the `projects` array.
 
-| Property        | Description            | Required |
-| --------------- | ---------------------- | -------- |
-| options.stories | array of story configs | Yes      |
+| Property      | Description                                   | Required |
+| ------------- | --------------------------------------------- | -------- |
+| id            | numerical id of the subscribed project group  | Yes      |
+| meta          | metadata to add to each of the projects pages | Yes      |
+| patternPrefix | prefix to add to all pages created            | Yes      |
 
-`stories` is an array of Storybooks that you want to pull stories from
+`endpoints` defined the Figma REST API endpoints.
 
-| Property       | Description                              | Required |
-| -------------- | ---------------------------------------- | -------- |
-| url            | url of the storybook                     | Yes      |
-| description    | description of the storybook stories     | Yes      |
-| filter         | RegExp filter to match on                | No       |
-| filterTags     | Array of Storybook tags to match on      | No       |
-| additionalTags | additional tags to add to the stories    | No       |
-| additionalData | additional data to add to matching pages | No       |
+| Property          | Description                                               | Required |
+| ----------------- | --------------------------------------------------------- | -------- |
+| getProject        | url to return a list of projects within the project group | Yes      |
+| getFile           | url to return a project file                              | Yes      |
+| generateThumbnail | url to generate a thumbnail for the shared Figma node     | Yes      |
 
-### Example Local Folder Source Definition
+### Example Figma Source Definition
 
 ```
 sources: [
     {
-      disabled: process.env.NODE_ENV !== 'development',
-      modulePath: '@jpmorganchase/mosaic-source-storybook',
-      namespace: 'salt',
+      modulePath: '@jpmorganchase/mosaic-source-figma',
+      namespace: 'some-namespace',
       options: {
-        prefixDir: '/salt/internal/community-index/story-navigation',
-        stories: [
-          {
-            url: 'https://storybook.saltdesignsystem.com',
-            description: 'Navigation patterns created in the Salt Labs',
-            additionalData: {
-                someAdditionalData: 'some-value' // can be any additional metadata you want added to the page's meta.data
-            },
-            additionalTags: ['salt-pattern-navigation'],
-            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+        proxyEndpoint: 'http://path/to/optional/proxy',
+        prefixDir: '/some/path/to/where/you/store/pattern/pages',
+        figmaToken: process.env.FIGMA_TOKEN,
+        projects: [{
+          id: 99999,
+          patternPrefix: 'yourPrefix',
+          meta: {
+            tags: [ 'some-tag'],
+            data: {
+               owner: 'some-owner'
+            }
           }
-        ]
+        }],
+        endpoints: {
+          getFile: 'https://api.figma.com/v1/files/:file_id?plugin_data=shared',
+          getProject: 'https://api.figma.com/v1/projects/:project_id/files',
+          generateThumbnail: 'https://api.figma.com/v1/images/:project_id?ids=:node_id'
+        }
       }
     }
 ]

@@ -1,12 +1,12 @@
 ---
-title: Figma Source
+title: Readme Source
 layout: DetailTechnical
 sidebar:
   priority: 5
-  label: Figma
-lastModified: 1705053214567
-fullPath: /mosaic/configure/sources/storybook-figma.mdx
-route: /mosaic/configure/sources/storybook-figma
+  label: Readme Files
+lastModified: 1710290347582
+fullPath: /mosaic/configure/sources/source-readme.mdx
+route: /mosaic/configure/sources/source-readme
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -17,14 +17,14 @@ breadcrumbs:
   - label: Sources
     path: /mosaic/configure/sources/index
     id: /mosaic/configure/sources/index.mdx
-  - label: Figma
-    path: /mosaic/configure/sources/storybook-figma
-    id: /mosaic/configure/sources/storybook-figma.mdx
+  - label: Readme Files
+    path: /mosaic/configure/sources/source-readme
+    id: /mosaic/configure/sources/source-readme.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.595
-  time: 95700
-  words: 319
+  minutes: 1.26
+  time: 75600
+  words: 252
 tableOfContents:
   - depth: 2
     level: 0
@@ -36,15 +36,15 @@ tableOfContents:
     text: Configuration
   - depth: 3
     level: 1
-    id: example-figma-source-definition
-    text: Example Figma Source Definition
+    id: example-readme-source-definition
+    text: Example Readme Source Definition
 navigation:
   prev:
-    title: Sources
-    route: /mosaic/configure/sources/index
+    title: Figma Source
+    route: /mosaic/configure/sources/source-figma
   next:
-    title: Readme Source
-    route: /mosaic/configure/sources/storybook-readme
+    title: Storybook Source
+    route: /mosaic/configure/sources/source-storybook
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -123,29 +123,29 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
-      - id: /mosaic/configure/sources/storybook-figma
-        fullPath: /mosaic/configure/sources/storybook-figma.mdx
+      - id: /mosaic/configure/sources/source-figma
+        fullPath: /mosaic/configure/sources/source-figma.mdx
         name: Figma
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-figma
+          link: /mosaic/configure/sources/source-figma
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-readme
-        fullPath: /mosaic/configure/sources/storybook-readme.mdx
+      - id: /mosaic/configure/sources/source-readme
+        fullPath: /mosaic/configure/sources/source-readme.mdx
         name: Readme Files
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-readme
+          link: /mosaic/configure/sources/source-readme
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-source
-        fullPath: /mosaic/configure/sources/storybook-source.mdx
+      - id: /mosaic/configure/sources/source-storybook
+        fullPath: /mosaic/configure/sources/source-storybook.mdx
         name: Storybook
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-source
+          link: /mosaic/configure/sources/source-storybook
         childNodes: []
       - id: /mosaic/configure/sources/schedules
         fullPath: /mosaic/configure/sources/schedules.mdx
@@ -396,71 +396,61 @@ sidebarData:
 ---
 # {meta.title}
 
-The Figma source is used to pull individual design patterns from Figma projects.
-The source subscribes to Figma project groups, then extracts from project files, tagged patterns.
+The Readme source is used to pull individual `Readme.md` text files from repositories.
+This is a lighter weight version of a Git repository resource, which just pulls a single file,
+rather the whole contents of the repo.
 
-A Figma pattern tag is defined within a Figma project's `sharedPluginData`.
-(Refer to the JPM Figma plugin for more details - a current Q4 2023 deliverable)
-
-For each retrieved/tagged pattern, a page is created in the Mosaic file-system.
+For each retrieved readme, a page is created in the Mosaic file-system.
 Additional Mosaic metadata can be added, to each created page, using `meta`
-For instance we could add metadata which defines which product owns a particular pattern and then
-group patterns based on owner.
+For instance we could add metadata which defines which product owns a particular `Readme.md` and then
+group this page, with others, based on owner.
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-figma`
+`yarn add @jpmorganchase/mosaic-source-readme`
 
 ## Configuration
 
-The Figma source is an [`HttpSource`](./https-source) and shares the same base configuration.
-The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
+The Readme source is an [`HttpSource`](./https-source) and shares the same base configuration.
 
-| Property   | Description                       | Required |
-| ---------- | --------------------------------- | -------- |
-| prefixDir  | path to store figma patterns      | Yes      |
-| figmaToken | figma access token                | Yes      |
-| projects   | array of projects to subscribe to | Yes      |
-| endpoints  | figma endpoints                   | Yes      |
+| Property    | Description           | Required |
+| ----------- | --------------------- | -------- |
+| accessToken | request access token  | Yes      |
+| prefixDir   | path to store pages   | Yes      |
+| readme      | array of readme files | Yes      |
 
-Each project is configured from the `projects` array.
+Each readme is configured from the `readme` array.
 
-| Property      | Description                                   | Required |
-| ------------- | --------------------------------------------- | -------- |
-| id            | numerical id of the subscribed project group  | Yes      |
-| meta          | metadata to add to each of the projects pages | Yes      |
-| patternPrefix | prefix to add to all pages created            | Yes      |
+| Property        | Description                  | Required |
+| --------------- | ---------------------------- | -------- |
+| contentTemplate | template for content of page | No       |
+| name            | page name used in route      | Yes      |
+| readmeUrl       | url of readme                | Yes      |
+| meta            | metadata for page            | Yes      |
 
-`endpoints` defined the Figma REST API endpoints.
-
-| Property   | Description                                               | Required |
-| ---------- | --------------------------------------------------------- | -------- |
-| getProject | url to return a list of projects within the project group | Yes      |
-| getFile    | url to return a project file                              | Yes      |
-
-### Example Figma Source Definition
+### Example Readme Source Definition
 
 ```
-sources: [
-    {
-      modulePath: '@jpmorganchase/mosaic-source-figma',
-      namespace: 'some-namespace',
+   sources: [
+   {
+      modulePath: '@jpmorganchase/mosaic-source-readme',
+      namespace: 'your-namespace',
+      schedule: { checkIntervalMins: 0.25, initialDelayMs: 0 },
       options: {
-        proxyEndpoint: 'http://path/to/optional/proxy',
-        prefixDir: '/some/path/to/where/you/store/pattern/pages',
-        figmaToken: process.env.FIGMA_TOKEN,
-        projects: [{
-          id: 99999,
-          patternPrefix: 'yourPrefix',
-          meta: {
-            owner: 'some-owner'
-          }
-        }],
-        endpoints: {
-          getFile: 'https://api.figma.com/v1/files/:file_id?plugin_data=shared',
-          getProject: 'https://api.figma.com/v1/projects/:project_id/files'
-        }
-      }
-    }
-]
+         prefixDir: '/salt/community-index/readme',
+         accessToken: 'Bearer your-access-token',
+         readme: [
+         {
+            name: 'your-mosaic-page-name',
+            readmeUrl: 'https://some/repo/url/readme.md',
+            contentTemplate: `a template which replaces ::content:: with the content`,
+            meta: {
+              layout: 'DetailTechnical',
+              title: 'Your Page Title',
+              tags: ['your-tag-if-required'],
+              description: 'A description for your readme'
+            }
+         }]
+     }
+   }]
 ```
