@@ -1,14 +1,7 @@
 import path from 'path';
-import { escapeRegExp } from 'lodash-es';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import PluginError from './utils/PluginError.js';
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-}
+import { createPageTest } from './utils/createPageTest.js';
 
 interface AliasPluginPage extends Page {
   aliases?: string[];

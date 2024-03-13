@@ -1,14 +1,7 @@
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { escapeRegExp } from 'lodash-es';
-import path from 'path';
 import PluginError from './utils/PluginError.js';
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-}
+import { createPageTest } from './utils/createPageTest.js';
 
 /**
  * Plugin that creates aliases without the file extension for every page emitted by the source.

@@ -26,6 +26,6 @@ module.exports = {
   ],
   transformIgnorePatterns: [
     // Ignore node_modules except for the following packages (required to run Plugin tests)
-    '/node_modules/(?!(unified|bail|trough|vfile.*|unist.*|remark.*|micromark.*|.*character-reference.*|estree-util.*|ccount|.*mdast.*|is-.*|.*entities.*)/)'
+    '/node_modules/(?!(unified|bail|trough|vfile.*|unist.*|remark.*|micromark.*|.*character-reference.*|estree-util.*|ccount|.*mdast.*|is-.*|.*entities.*|zwitch|longest-streak)/)'
   ]
 };

@@ -64,7 +64,8 @@
     "remark-stringify": "^10.0.2",
     "rxjs": "^7.5.5",
     "unified": "^10.1.2",
-    "unist-util-visit": "^4.1.1",
+    "unist-util-visit": "^5.0.0",
+    "mdast-util-directive": "^3.0.0",
     "uuid": "^7.0.3",
     "vfile-reporter": "^7.0.5"
   }

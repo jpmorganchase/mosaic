@@ -1,99 +1,57 @@
-import path from 'path';
-import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { escapeRegExp } from 'lodash-es';
+import path from 'node:path';
+import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkDirective from 'remark-directive';
-import { visitParents } from 'unist-util-visit-parents';
+import { visit } from 'unist-util-visit';
+import type { Content, Root } from 'mdast';
 import PluginError from './utils/PluginError.js';
+import { createPageTest } from './utils/createPageTest.js';
 
-interface FragmentPluginPage {
-  fullPath: string;
-  content: string;
-}
+function processFragments(
+  tree: Root,
+  pages: Page[],
+  isNonHiddenPage: (path: string) => boolean,
+  fullPath: string
+) {
+  visit(tree, (node, index, parent) => {
+    if (
+      node.type === 'containerDirective' ||
+      node.type === 'leafDirective' ||
+      node.type === 'textDirective'
+    ) {
+      if (node.name !== 'fragment') return;
+      const attributes = node.attributes ?? {};
+      const { src } = attributes;
 
-const createPageTest = (ignorePages, pageExtensions) => {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-};
+      if (!src) {
+        console.error("Fragment directive requires a 'src' attribute. Skipping.");
+        return;
+      }
 
-function getFullPath(fullPath: string, relativePath: string): string {
-  const pathSegments = fullPath.split('/');
-  const relativeSegments = relativePath.split('/');
-
-  pathSegments.pop();
-
-  for (const segment of relativeSegments) {
-    if (segment === '..') {
-      pathSegments.pop();
-    } else if (segment !== '.') {
-      pathSegments.push(segment);
-    }
-  }
-  return pathSegments.join('/');
-}
-
-async function processTree(tree, serialiser, mutableFilesystem, fullPath, isNonHiddenPage) {
-  const nodesToProcess = [];
-
-  visitParents(tree, (node, ancestors) => {
-    if (node.type === 'code') {
-      return;
-    }
-
-    const match = node.name === 'fragment' && node.attributes.src;
-    if (match) {
-      const parent = ancestors[ancestors.length - 1];
-      const index = parent.children.indexOf(node);
-      nodesToProcess.push({ node, parent, index });
+      const fragmentFullPath = path.posix.join(path.dirname(fullPath), src);
+      const isHidden = !isNonHiddenPage(fragmentFullPath);
+      const fragmentPage = pages.find(page => page.fullPath === fragmentFullPath);
+      if (isHidden || !fragmentPage) {
+        console.warn(`Invalid file reference: '${node.attributes.src}'. Skipping.`);
+      } else {
+        // Create a new node with the content from fragmentPage.content
+        const newNode: Content = {
+          type: 'html',
+          value: fragmentPage.content
+        };
+        // Replace the original node with the newNode in the tree
+        parent.children.splice(index, 1, newNode);
+      }
     }
   });
-
-  for (const { node, parent, index } of nodesToProcess) {
-    const fragmentFullPath = getFullPath(fullPath, node.attributes.src);
-    if (!isNonHiddenPage(fragmentFullPath)) {
-      console.warn(`Invalid file reference: '${node.attributes.src}'. Skipping.`);
-    } else {
-      const fragmentPage = await serialiser.deserialise(
-        fragmentFullPath,
-        await mutableFilesystem.promises.readFile(fragmentFullPath)
-      );
-
-      // Create a new node with the content from fragmentPage.content
-      const newNode = {
-        type: 'html',
-        value: fragmentPage.content
-      };
-
-      // Replace the original node with the newNode in the tree
-      parent.children.splice(index, 1, newNode);
-    }
-  }
-  return tree;
 }
 
-const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
-  async $beforeSend(mutableFilesystem, { serialiser, ignorePages, pageExtensions }) {
-    const pages = await Promise.all(
-      (
-        (await mutableFilesystem.promises.glob('**', {
-          onlyFiles: true,
-          ignore: ignorePages.map(ignore => `**/${ignore}`),
-          cwd: '/'
-        })) as string[]
-      ).map(async pagePath => {
-        const deserialisedPage = await serialiser.deserialise(
-          pagePath,
-          await mutableFilesystem.promises.readFile(pagePath)
-        );
-        return deserialisedPage;
-      })
-    );
+const processor = remark().use(remarkMdx).use(remarkDirective);
 
+const FragmentPlugin: PluginType = {
+  async $afterSource(pages, { ignorePages, pageExtensions }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
-
     for (const page of pages) {
       try {
         const { fullPath } = page;
@@ -101,27 +59,15 @@ const FragmentPlugin: PluginType<FragmentPluginPage, unknown, unknown> = {
           continue;
         }
 
-        const tree = remark().use(remarkMdx).use(remarkDirective).parse(page.content);
-        const processedTree = await processTree(
-          tree,
-          serialiser,
-          mutableFilesystem,
-          fullPath,
-          isNonHiddenPage
-        );
-
-        page.content = remark()
-          .data('settings', { fences: true })
-          .use(remarkMdx)
-          .use(remarkDirective)
-          .stringify(processedTree);
-
-        const updatedFileData = await serialiser.serialise(fullPath, page);
-        await mutableFilesystem.promises.writeFile(fullPath, updatedFileData);
+        const tree = processor.parse(page.content);
+        processFragments(tree, pages, isNonHiddenPage, page.fullPath);
+        page.content = processor.stringify(tree);
       } catch (e) {
         throw new PluginError(e.message, page.fullPath);
       }
     }
+
+    return pages;
   }
 };
 
