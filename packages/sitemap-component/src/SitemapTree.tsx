@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@salt-ds/core';
-import { useToolbarState } from '@jpmorganchase/mosaic-components';
+import { useToolbarState, ToolbarProvider } from '@jpmorganchase/mosaic-components';
 
 import drawTree from './drawTree';
 import styles from './styles.css';
@@ -64,7 +64,7 @@ function getAllNamespaces(routes): string[] {
   }, []);
 }
 
-export const SitemapTree: React.FC<SitemapTreeProps> = ({
+export const Sitemap: React.FC<SitemapTreeProps> = ({
   d3,
   href = '/sitemap.xml',
   initialNamespaceFilters = [],
@@ -173,5 +173,16 @@ export const SitemapTree: React.FC<SitemapTreeProps> = ({
       </div>
       <div ref={containerRef} />
     </div>
+  );
+};
+
+export const SitemapTree: React.FC<SitemapTreeProps> = ({
+  initialNamespaceFilters = [],
+  ...props
+}) => {
+  return (
+    <ToolbarProvider initialState={{ filters: initialNamespaceFilters }}>
+      <Sitemap {...props} />
+    </ToolbarProvider>
   );
 };
