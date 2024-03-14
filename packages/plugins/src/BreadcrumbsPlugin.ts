@@ -1,15 +1,8 @@
 import path from 'node:path';
-import { escapeRegExp } from 'lodash-es';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import PluginError from './utils/PluginError.js';
+import { createPageTest } from './utils/createPageTest.js';
 import { SidebarPluginPage } from './SidebarPlugin.js';
-
-const createPageTest = (ignorePages, pageExtensions) => {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-};
 
 export type Breadcrumb = { label: string; path: string; id: string };
 

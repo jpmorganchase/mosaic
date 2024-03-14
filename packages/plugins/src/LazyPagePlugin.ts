@@ -1,17 +1,10 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import fsExtra from 'fs-extra';
-import { escapeRegExp } from 'lodash-es';
 import path from 'path';
 import { TDataOut } from 'memfs';
 import { mergePageContent } from './utils/mergePageContent.js';
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-}
+import { createPageTest } from './utils/createPageTest.js';
 
 function createFileGlob(url, pageExtensions) {
   if (pageExtensions.length === 1) {

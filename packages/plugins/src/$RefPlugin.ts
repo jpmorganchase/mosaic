@@ -1,6 +1,5 @@
-import path from 'node:path';
 import os from 'node:os';
-import { reduce, omit, escapeRegExp } from 'lodash-es';
+import { reduce, omit } from 'lodash-es';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import deepmerge from 'deepmerge';
@@ -8,6 +7,7 @@ import deepmerge from 'deepmerge';
 import normaliseRefs from './utils/normaliseRefs.js';
 import PluginError from './utils/PluginError.js';
 import { mergePageContent } from './utils/mergePageContent.js';
+import { createPageTest } from './utils/createPageTest.js';
 
 const isWindows = /^win/.test(os.platform());
 const windowsDrivePattern = /^([a-z]):/i;
@@ -64,13 +64,6 @@ const findKeys = (obj, targetProp, pathParts: string[] = []): [string[], string]
     },
     []
   );
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-}
 
 interface RefsPluginConfigData {
   refs: { [key: string]: { $$path: string[]; $$value: string }[] };

@@ -1,15 +1,9 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { flatten, escapeRegExp } from 'lodash-es';
+import { flatten } from 'lodash-es';
 import deepmerge from 'deepmerge';
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-}
+import { createPageTest } from './utils/createPageTest.js';
 
 function createFileGlob(url, pageExtensions) {
   if (pageExtensions.length === 1) {

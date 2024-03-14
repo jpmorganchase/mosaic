@@ -5,7 +5,7 @@ import getReadingTime from 'reading-time';
 import markdown from 'remark-parse';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
-import type { Node } from 'unist';
+import type { Literal, Node } from 'unist';
 
 const createPageTest = (ignorePages, pageExtensions) => {
   const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
@@ -14,37 +14,33 @@ const createPageTest = (ignorePages, pageExtensions) => {
     !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
 };
 
-type LeafNode = Node & {
-  value?: string;
-};
-
 export interface ReadingTimePluginPage extends Page {
   readingTime?: ReturnType<typeof getReadingTime>;
 }
+
+function isValid(node: Node): node is Literal {
+  return node.type === 'text' || node.type === 'code';
+}
+
+const processor = unified().use(markdown);
 
 /**
  * Calculates reading time of MDX pages and adds to frontmatter
  */
 const ReadingTimePlugin: PluginType<ReadingTimePluginPage> = {
   async $afterSource(pages, { ignorePages, pageExtensions }) {
-    const processor = unified().use(markdown);
-
     if (pageExtensions.includes('.mdx')) {
       for (const page of pages) {
         const isNonHiddenPage = createPageTest(ignorePages, ['.mdx']);
         if (!isNonHiddenPage(page.fullPath)) {
           continue;
         }
-        const tree: Node = await processor.parse(page.content);
+        const tree = processor.parse(page.content);
         let textContent = '';
 
-        visit(
-          tree,
-          node => node.type === 'text' || node.type === 'code',
-          (node: LeafNode) => {
-            textContent += node.value;
-          }
-        );
+        visit(tree, isValid, (node: Literal) => {
+          textContent += node.value;
+        });
         page.readingTime = getReadingTime(textContent);
       }
     }
