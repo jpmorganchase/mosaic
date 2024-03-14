@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.71
+
+### Patch Changes
+
+- d79533a2: `initialNamespaceFilters` should filter the initial Sitemap view
+  - @jpmorganchase/mosaic-components@0.1.0-beta.71
+
 ## 0.1.0-beta.70
 
 ### Patch Changes
