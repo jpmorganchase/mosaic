@@ -48,23 +48,25 @@ export const SitemapToolbar: React.FC<SitemapToolbarProps> = ({
       {!loading ? (
         <>
           <Caption2 className={styles.pageCount}>Number of pages: {pageCount}</Caption2>
-          <Dropdown<string, 'multiple'>
-            aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
-            className={styles.filterDropdown}
-            onOpenChange={setIsOpen}
-            onSelectionChange={handleSelect}
-            selected={filters}
-            selectionStrategy="multiple"
-            source={namespaces}
-            triggerComponent={
-              <span className={styles.filterDropdownTriggerRoot}>
-                <Icon name="filter" />
-                <DropdownButton label={defaultButtonLabel(filters)} />
-              </span>
-            }
-            width={200}
-            {...rest}
-          />
+          {namespaces?.length >= 1 ? (
+            <Dropdown<string, 'multiple'>
+              aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
+              className={styles.filterDropdown}
+              onOpenChange={setIsOpen}
+              onSelectionChange={handleSelect}
+              selected={filters}
+              selectionStrategy="multiple"
+              source={namespaces}
+              triggerComponent={
+                <span className={styles.filterDropdownTriggerRoot}>
+                  <Icon name="filter" />
+                  <DropdownButton label={defaultButtonLabel(filters)} />
+                </span>
+              }
+              width={200}
+              {...rest}
+            />
+          ) : null}
         </>
       ) : null}
     </div>
