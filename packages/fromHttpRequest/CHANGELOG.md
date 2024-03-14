@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-from-http-request
 
+## 0.1.0-beta.71
+
 ## 0.1.0-beta.70
 
 ## 0.1.0-beta.69
