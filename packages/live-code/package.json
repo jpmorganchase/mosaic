@@ -39,6 +39,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.62",
     "react-live-runner": "^1.0.5"
   },
   "peerDependencies": {

@@ -52,3 +52,8 @@ export * from './useLockBodyScroll';
 export * from './useOutsideClick';
 export * from './useSize';
 export * from './useSpacing';
+
+export * from './Toolbar';
+export * from './Toolbar/ToolbarButton';
+export * from './Toolbar/ToolbarSepartor';
+export * from './Tooltray';
