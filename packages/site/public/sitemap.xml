@@ -280,17 +280,17 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/storybook-figma</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-figma</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/storybook-readme</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-readme</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/storybook-source</loc>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-storybook</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>

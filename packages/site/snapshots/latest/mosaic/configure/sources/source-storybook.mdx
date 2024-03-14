@@ -1,12 +1,12 @@
 ---
-title: Readme Source
+title: Storybook Source
 layout: DetailTechnical
 sidebar:
   priority: 5
-  label: Readme Files
-lastModified: 1705053214568
-fullPath: /mosaic/configure/sources/storybook-readme.mdx
-route: /mosaic/configure/sources/storybook-readme
+  label: Storybook
+lastModified: 1710290347587
+fullPath: /mosaic/configure/sources/source-storybook.mdx
+route: /mosaic/configure/sources/source-storybook
 breadcrumbs:
   - label: Mosaic
     path: /mosaic/index
@@ -17,14 +17,14 @@ breadcrumbs:
   - label: Sources
     path: /mosaic/configure/sources/index
     id: /mosaic/configure/sources/index.mdx
-  - label: Readme Files
-    path: /mosaic/configure/sources/storybook-readme
-    id: /mosaic/configure/sources/storybook-readme.mdx
+  - label: Storybook
+    path: /mosaic/configure/sources/source-storybook
+    id: /mosaic/configure/sources/source-storybook.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.285
-  time: 77100
-  words: 257
+  minutes: 1.57
+  time: 94200
+  words: 314
 tableOfContents:
   - depth: 2
     level: 0
@@ -36,15 +36,15 @@ tableOfContents:
     text: Configuration
   - depth: 3
     level: 1
-    id: example-readme-source-definition
-    text: Example Readme Source Definition
+    id: example-local-folder-source-definition
+    text: Example Local Folder Source Definition
 navigation:
   prev:
-    title: Figma Source
-    route: /mosaic/configure/sources/storybook-figma
+    title: Readme Source
+    route: /mosaic/configure/sources/source-readme
   next:
-    title: Storybook Source
-    route: /mosaic/configure/sources/storybook-source
+    title: Source Schedules
+    route: /mosaic/configure/sources/schedules
 sidebarData:
   - id: /mosaic/configure/index
     fullPath: /mosaic/configure/index.mdx
@@ -123,29 +123,29 @@ sidebarData:
       level: 3
       link: /mosaic/configure/sources/index
     childNodes:
-      - id: /mosaic/configure/sources/storybook-figma
-        fullPath: /mosaic/configure/sources/storybook-figma.mdx
+      - id: /mosaic/configure/sources/source-figma
+        fullPath: /mosaic/configure/sources/source-figma.mdx
         name: Figma
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-figma
+          link: /mosaic/configure/sources/source-figma
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-readme
-        fullPath: /mosaic/configure/sources/storybook-readme.mdx
+      - id: /mosaic/configure/sources/source-readme
+        fullPath: /mosaic/configure/sources/source-readme.mdx
         name: Readme Files
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-readme
+          link: /mosaic/configure/sources/source-readme
         childNodes: []
-      - id: /mosaic/configure/sources/storybook-source
-        fullPath: /mosaic/configure/sources/storybook-source.mdx
+      - id: /mosaic/configure/sources/source-storybook
+        fullPath: /mosaic/configure/sources/source-storybook.mdx
         name: Storybook
         priority: 5
         data:
           level: 3
-          link: /mosaic/configure/sources/storybook-source
+          link: /mosaic/configure/sources/source-storybook
         childNodes: []
       - id: /mosaic/configure/sources/schedules
         fullPath: /mosaic/configure/sources/schedules.mdx
@@ -396,64 +396,71 @@ sidebarData:
 ---
 # {meta.title}
 
-The Readme source is used to pull individual `Readme.md` text files from repositories.
-This is a lighter weight version of a Git repository resource, which just pulls a single file,
-rather the whole contents of the repo.
+The Storybook source is used to pull individual stories from Storybook, based on tags.
 
-For each retrieved readme, a page is created in the Mosaic file-system.
-Additional Mosaic metadata can be added, to each created page, using `meta`
-For instance we could add metadata which defines which product owns a particular `Readme.md` and then
-group this page, with others, based on owner.
+The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
+
+For each matching story, a page is created in the Mosaic file-system.
+
+*   additional Mosaic tags can be added to each page using `additionalTags`
+*   additional Mosaic metadata can be added to each page using `additionalData`
+
+This information can be used to create a dynamic index of stories from Storybook.
 
 ## Installation
 
-`yarn add @jpmorganchase/mosaic-source-readme`
+`yarn add @jpmorganchase/mosaic-source-storybook`
 
 ## Configuration
 
-The Readme source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The Storybook source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
-| Property    | Description           | Required |
-| ----------- | --------------------- | -------- |
-| accessToken | request access token  | Yes      |
-| prefixDir   | path to store pages   | Yes      |
-| readme      | array of readme files | Yes      |
+The `stories` option is an array of Storybook urls that are used as Sources.
+Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
 
-Each readme is configured from the `readme` array.
+If specified, `additionalTags` and `additionalData` can be added to any matching pages.
 
-| Property        | Description                  | Required |
-| --------------- | ---------------------------- | -------- |
-| contentTemplate | template for content of page | No       |
-| name            | page name used in route      | Yes      |
-| readmeUrl       | url of readme                | Yes      |
-| meta            | metadata for page            | Yes      |
+| Property        | Description            | Required |
+| --------------- | ---------------------- | -------- |
+| options.stories | array of story configs | Yes      |
 
-### Example Readme Source Definition
+`stories` is an array of Storybooks that you want to pull stories from
+
+| Property       | Description                              | Required |
+| -------------- | ---------------------------------------- | -------- |
+| storyUrlPrefix | prefix url of the storybook deployment   | Yes      |
+| description    | description of the storybook stories     | Yes      |
+| storiesUrl     | url of the storybook's `stories.json`    | No       |
+| filter         | RegExp filter to match on                | No       |
+| filterTags     | Array of Storybook tags to match on      | No       |
+| meta           | additional data to add to matching pages | No       |
+
+### Example Local Folder Source Definition
 
 ```
-   sources: [
-   {
-      modulePath: '@jpmorganchase/mosaic-source-readme',
-      namespace: 'your-namespace',
-      schedule: { checkIntervalMins: 0.25, initialDelayMs: 0 },
+sources: [
+    {
+      modulePath: '@jpmorganchase/mosaic-source-storybook',
+      namespace: 'salt',
       options: {
-         prefixDir: '/salt/community-index/readme',
-         accessToken: 'Bearer your-access-token',
-         readme: [
-         {
-            name: 'your-mosaic-page-name',
-            readmeUrl: 'https://some/repo/url/readme.md',
-            contentTemplate: `a template which replaces ::content:: with the content`,
-            meta: {
-              layout: 'DetailTechnical',
-              title: 'Your Page Title',
-              tags: ['your-tag-if-required'],
-              description: 'A description for your readme',
+        prefixDir: '/salt/internal/community-index/story-navigation',
+        stories: [
+          {
+            storiesUrl: 'https://storybook.saltdesignsystem.com/stories.json',
+            storyUrlPrefix: 'https://storybook.saltdesignsystem.com',
+            description: 'Navigation patterns created in the Salt Labs',
+            meta: { // can be any additional metadata you want added to the page's meta.data
+              tags: ['some-tag'],
               data: {
-                 repoUrl:  'https://some/repo/url',
+                owner: 'Salt',
+                source: 'STORYBOOK'
               }
-            }
-         }]
-     }
-   }]
+            },
+            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+          }
+        ]
+      }
+    }
+]
 ```
