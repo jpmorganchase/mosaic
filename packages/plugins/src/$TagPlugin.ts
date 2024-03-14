@@ -85,7 +85,7 @@ const $TagPlugin: PluginType<TagPluginPage, unknown, TagPluginConfigData> = {
             config.setGlobalRef(
               page.fullPath,
               ref.$$path,
-              `${path.posix.join('/.tags', tag, '**')}#${fragment}`
+              `${path.posix.join('/.tags', tag, '**', '*')}#${fragment}`
             );
           });
           config.setData({ subscribedTags: Array.from(tags) });
