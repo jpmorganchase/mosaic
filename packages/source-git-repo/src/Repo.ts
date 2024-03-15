@@ -348,7 +348,11 @@ export default class Repo {
         console.debug(
           `[Mosaic] Creating linked worktree repo '${this.#name} branch '${this.#branch}'`
         );
-        await spawn('git', ['worktree', 'add', '-f', this.#dir, this.#branch], this.#cloneRootDir);
+        await spawn(
+          'git',
+          ['worktree', 'add', '-f', this.#dir, this.#branch, `${this.#remote}/${this.#branch}`],
+          this.#cloneRootDir
+        );
       } else {
         console.debug(
           `[Mosaic] Re-using linked worktree repo '${this.#name} branch '${this.#branch}'`
