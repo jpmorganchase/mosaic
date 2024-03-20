@@ -3,7 +3,8 @@ import md5 from 'md5';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
-import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import { DialogHeader, DialogContent, DialogActions } from '@salt-ds/core';
+import { ButtonBar } from '@salt-ds/lab';
 import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 import { useEditorUser, usePageState } from '../../store';
@@ -119,9 +120,10 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={open} status={error ? 'error' : state}>
-      <DialogTitle className={style.title}>
-        {!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
-      </DialogTitle>
+      <DialogHeader
+        className={style.title}
+        header={!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
+      />
       <DialogContent>
         {(isRaising || error) && !prHref && <PersistStatus error={error} progress={progress} />}
         <Info isRaising={isRaising} prHref={prHref} error={error} />

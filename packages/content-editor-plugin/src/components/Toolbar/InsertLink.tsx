@@ -2,8 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import { Input, FormField, FormFieldLabel, FormFieldHelperText } from '@salt-ds/core';
-import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import {
+  Input,
+  FormField,
+  FormFieldLabel,
+  FormFieldHelperText,
+  DialogContent,
+  DialogActions,
+  DialogHeader
+} from '@salt-ds/core';
+import { ButtonBar } from '@salt-ds/lab';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
 import { ToolbarButton } from './ToolbarButton';
@@ -112,7 +120,7 @@ export const InsertLinkDialog = () => {
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={isInsertingLink}>
-      <DialogTitle>Insert Link</DialogTitle>
+      <DialogHeader header="Insert Link" />
       <DialogContent>
         <div className={styles.fullWidth}>
           <FormField validationStatus={errors?.url ? 'error' : undefined}>
