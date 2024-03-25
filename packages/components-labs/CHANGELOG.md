@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-labs-components
 
+## 0.1.0-beta.72
+
+### Patch Changes
+
+- e5d14ab4: Upgraded Salt packages to:
+
+  @salt-ds/core@1.22.0
+  @salt-ds/lab@1.0.0-alpha.38
+  @salt-ds/theme@1.13.1
+
+- Updated dependencies [e5d14ab4]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.72
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.72
+
 ## 0.1.0-beta.71
 
 ### Patch Changes
