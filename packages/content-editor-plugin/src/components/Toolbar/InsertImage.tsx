@@ -105,7 +105,7 @@ export const InsertImage = () => {
 
       <Dialog onOpenChange={handleOpenChange} open={isOpen}>
         <form onSubmit={handleSubmit} noValidate>
-          <DialogHeader header="Insert image" />
+          <DialogHeader header="Insert Image" />
           <DialogContent>
             <div className={styles.fullWidth}>
               <FormField validationStatus={errors?.url ? 'error' : undefined}>
