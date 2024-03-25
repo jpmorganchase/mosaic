@@ -2,8 +2,16 @@ import React, { useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { string, object } from 'yup';
-import { Input, FormField, FormFieldLabel, FormFieldHelperText } from '@salt-ds/core';
-import { ButtonBar, DialogTitle, DialogContent, DialogActions } from '@salt-ds/lab';
+import {
+  Input,
+  FormField,
+  FormFieldLabel,
+  FormFieldHelperText,
+  DialogHeader,
+  DialogContent,
+  DialogActions
+} from '@salt-ds/core';
+import { ButtonBar } from '@salt-ds/lab';
 
 import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
@@ -97,7 +105,7 @@ export const InsertImage = () => {
 
       <Dialog onOpenChange={handleOpenChange} open={isOpen}>
         <form onSubmit={handleSubmit} noValidate>
-          <DialogTitle>Insert Image</DialogTitle>
+          <DialogHeader header="Insert Image" />
           <DialogContent>
             <div className={styles.fullWidth}>
               <FormField validationStatus={errors?.url ? 'error' : undefined}>

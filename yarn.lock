@@ -2842,10 +2842,21 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz#8be36a1f66f3265389e90b5f9c9962146758f728"
   integrity sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==
 
-"@salt-ds/core@^1.15.0":
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.15.0.tgz#78a73a7ed9a14a415901be70630da9c88e6291a4"
-  integrity sha512-G94HLvu19CEQTc3LQjzpl5uoBPZQQX0Yupj9lJw9qaQexxmaUl+ueWz/7jX1j6zmlNmPJyLqVimQzLET+ugUPw==
+"@salt-ds/core@^1.21.0":
+  version "1.21.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.21.0.tgz#1c3da51270a50e827cbd3cac3b5d3ba13f8e6b24"
+  integrity sha512-qtbwJs5x1zVJo9oKvXXqPi/nU7nUp3TY/l0EE+xz1xDj2vpDIxT8p/ShVvMThgCsD1zs+1OQMPuG17RUMKD4qw==
+  dependencies:
+    "@floating-ui/react" "^0.26.5"
+    "@salt-ds/icons" "^1.9.1"
+    "@salt-ds/styles" "^0.2.1"
+    "@salt-ds/window" "^0.1.1"
+    clsx "^2.0.0"
+
+"@salt-ds/core@^1.22.0":
+  version "1.22.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.22.0.tgz#90f1816f9c2db0fa0f4ff62bf73549bfb7986ede"
+  integrity sha512-JKriQ9hZaSyw+j6WwiqzjJ2vIXBUUxEbS1bp0hqfi/sW8pAN+MFaeCCrAI1PuvEcrsr6ishaPaORZJkTocMIcg==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@salt-ds/icons" "^1.9.1"
@@ -2862,15 +2873,40 @@
     "@salt-ds/window" "^0.1.1"
     clsx "^2.0.0"
 
-"@salt-ds/lab@1.0.0-alpha.28":
-  version "1.0.0-alpha.28"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.28.tgz#b4d04b0b1537972db6274b579b91f57f099ea701"
-  integrity sha512-R4l8gSMi1F57w0lOnUl2YG1KOsIxaQCn0BDttKCTCZupYluwf854+5taL7uBNNhYQ/tEaS4FYBmTd2oDTmCPEA==
+"@salt-ds/lab@1.0.0-alpha.37":
+  version "1.0.0-alpha.37"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.37.tgz#7618842c4e0e9cda4118c6656b0b4667d8da480d"
+  integrity sha512-81xIWoF2Krq6/koDIRRf2yEOlEe8pt5kQPzTWWCM+/9g/b/CED9TBpuRi1ayEkUZjQ3EeeZ1mxoSRDcqksRwZA==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@fluentui/react-overflow" "^9.0.19"
     "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "^1.15.0"
+    "@salt-ds/core" "^1.21.0"
+    "@salt-ds/icons" "^1.9.1"
+    "@salt-ds/styles" "^0.2.1"
+    "@salt-ds/window" "^0.1.1"
+    "@types/react-window" "^1.8.2"
+    aria-hidden "^1.1.1"
+    attr-accept "^2.0.0"
+    clipboard-copy "^4.0.1"
+    clsx "^2.0.0"
+    compute-scroll-into-view "^3.0.0"
+    deepmerge "^4.2.2"
+    no-scroll "^2.1.1"
+    react-color "^2.19.3"
+    react-window "^1.8.6"
+    rifm "^0.12.0"
+    tinycolor2 "^1.4.2"
+
+"@salt-ds/lab@1.0.0-alpha.38":
+  version "1.0.0-alpha.38"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.38.tgz#3ea49a903bfcf735e11fb65e89aba45fe638cec0"
+  integrity sha512-JPtR6q/DEfjwO1wFRDU8GJyNdggCNLt715UIc9odvg1nkS2mg/hylAbIeFbOexHZO0RiOlNqh9sePInvvIEcIQ==
+  dependencies:
+    "@floating-ui/react" "^0.26.5"
+    "@fluentui/react-overflow" "^9.0.19"
+    "@internationalized/date" "^3.0.0"
+    "@salt-ds/core" "^1.22.0"
     "@salt-ds/icons" "^1.9.1"
     "@salt-ds/styles" "^0.2.1"
     "@salt-ds/window" "^0.1.1"
@@ -2892,10 +2928,10 @@
   resolved "https://registry.yarnpkg.com/@salt-ds/styles/-/styles-0.2.1.tgz#d6fc1bee5a8d3931cba4ec8baa14f1ad3d7582a4"
   integrity sha512-/GYQLY+ILzGyd2/KndCmoEfLw/t3pcYwihJn3ofe4yd6nhLYHPkvl4TXXzq6NnfD3NHmQWnWh3jQicLsYcvdXg==
 
-"@salt-ds/theme@^1.11.0":
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.11.0.tgz#c33b5992a1c701b62a2464f3a58b5c8526eba455"
-  integrity sha512-420StY/TIfxQSQfolfy6QPhiw+6dnns8lLWNOpOvNIYeJHMXFq3gcq1qd1MqY82U6GoZRXS3daXEtsMZ2Dzxpw==
+"@salt-ds/theme@^1.13.1":
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.13.1.tgz#abbf81ec8b99a6e85b4d21ac8ddbb935105c0450"
+  integrity sha512-LqlkWE2TJgkCCUbhRdp6okKX+tJAwuoZKCOX9zIuFXBQcsiOOTgr2M5euqpC1t+Dq3V8AUdgoV+6NI5Lb1YR4g==
 
 "@salt-ds/window@^0.1.1":
   version "0.1.1"
