@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-git-repo
 
+## 0.1.0-beta.72
+
+### Patch Changes
+
+- a36a7571: Ensure that new git worktrees use the same `remote` and `branch` that the git source is configured to use.
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.72
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.72
+  - @jpmorganchase/mosaic-types@0.1.0-beta.72
+
 ## 0.1.0-beta.71
 
 ### Patch Changes
