@@ -29,6 +29,9 @@
     "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
     "dev": "node ../../scripts/bundle.js watch"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

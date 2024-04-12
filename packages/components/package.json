@@ -23,6 +23,9 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm-run-all --parallel build:*",
     "build:types": "tsc",
