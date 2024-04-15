@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.73
+
+### Patch Changes
+
+- de00c017: Added the files package.json field to all of the packages to prevent unnecessary files being published.
+- Updated dependencies [de00c017]
+  - @jpmorganchase/mosaic-store@0.1.0-beta.73
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.73
+  - @jpmorganchase/mosaic-types@0.1.0-beta.73
+
 ## 0.1.0-beta.72
 
 ### Patch Changes
