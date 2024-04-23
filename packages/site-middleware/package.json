@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-site-middleware",
-  "version": "0.1.0-beta.72",
+  "version": "0.1.0-beta.73",
   "license": "Apache-2.0",
   "description": "Mosaic - Site middleware",
   "repository": {
@@ -20,6 +20,9 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
@@ -33,9 +36,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.256.0",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.72",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.72",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.72",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.73",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.73",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.73",
     "@types/mdast": "^3.0.0",
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
