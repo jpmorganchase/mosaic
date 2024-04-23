@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React from 'react';
 import { Text } from '@salt-ds/core';
 import { Logo, LogoImage } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
@@ -17,8 +17,6 @@ export type AppHeaderProps = {
   title?: string;
 };
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
 const createDrawerMenu = menu =>
   menu.reduce((result, item) => {
     const parsedItem = {
@@ -34,13 +32,9 @@ const createDrawerMenu = menu =>
   }, []);
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
-  const [showDrawer, setShowDrawer] = useState(false);
   const breakpoint = useBreakpoint();
   const { route } = useRoute();
-
-  useIsomorphicLayoutEffect(() => {
-    setShowDrawer(breakpoint === 'mobile' || breakpoint === 'tablet');
-  }, [breakpoint]);
+  const showDrawer = breakpoint === 'mobile' || breakpoint === 'tablet';
 
   return (
     <>
