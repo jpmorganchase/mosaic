@@ -41,7 +41,7 @@
     "fast-glob": "^3.2.7"
   },
   "dependencies": {
-    "@salt-ds/icons": "^1.9.1",
+    "@salt-ds/icons": "^1.11.1",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/css-utils": "^0.1.1",
     "@vanilla-extract/sprinkles": "^1.3.0",
