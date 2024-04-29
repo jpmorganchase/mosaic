@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-site-preset-styles",
-  "version": "0.1.0-beta.73",
+  "version": "0.1.0-beta.74",
   "license": "Apache-2.0",
   "description": "Mosaic - Preset styles",
   "author": "",
@@ -32,13 +32,13 @@
   "dependencies": {
     "@salt-ds/theme": "^1.14.0",
     "@salt-ds/icons": "^1.11.1",
-    "@jpmorganchase/mosaic-components": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-site-components": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-layouts": "0.1.0-beta.73",
-    "@jpmorganchase/mosaic-theme": "0.1.0-beta.73",
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-site-components": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-layouts": "0.1.0-beta.74",
+    "@jpmorganchase/mosaic-theme": "0.1.0-beta.74",
     "prismjs": "^1.23.0"
   },
   "peerDependencies": {}

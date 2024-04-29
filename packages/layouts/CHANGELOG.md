@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.74
+
+### Patch Changes
+
+- 2d4e5616: Pipped Salt DS to @salt-ds/core 1.26.0
+- Updated dependencies [2d4e5616]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.74
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.74
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.74
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.74
+  - @jpmorganchase/mosaic-store@0.1.0-beta.74
+
 ## 0.1.0-beta.73
 
 ### Patch Changes
