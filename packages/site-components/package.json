@@ -51,7 +51,7 @@
     "@jpmorganchase/mosaic-site-middleware": "^0.1.0-beta.73",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.73",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.73",
-    "@salt-ds/lab": "1.0.0-alpha.37",
+    "@salt-ds/lab": "1.0.0-alpha.42",
     "@types/mdast": "^3.0.0",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/recipes": "^0.2.1",
