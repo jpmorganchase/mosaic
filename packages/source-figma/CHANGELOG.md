@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-source-figma
 
+## 0.1.0-beta.74
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.74
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.74
+- @jpmorganchase/mosaic-types@0.1.0-beta.74
+
 ## 0.1.0-beta.73
 
 ### Patch Changes
