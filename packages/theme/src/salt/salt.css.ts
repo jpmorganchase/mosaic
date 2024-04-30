@@ -65,12 +65,12 @@ createGlobalTheme('.saltMenuButtonTrigger', menuButtonTriggerVars, {
 });
 
 export const shadowVars = createGlobalThemeContract({
-  shadow0: '--salt-shadow-0',
-  shadow1: '--salt-shadow-1',
-  shadow2: '--salt-shadow-2',
-  shadow3: '--salt-shadow-3',
-  shadow4: '--salt-shadow-4',
-  shadow5: '--salt-shadow-5'
+  shadow0: 'none',
+  shadow1: '--salt-shadow-100',
+  shadow2: '--salt-shadow-200',
+  shadow3: '--salt-shadow-300',
+  shadow4: '--salt-shadow-400',
+  shadow5: '--salt-shadow-500'
 });
 
 createGlobalTheme(`${lightMode},${darkMode}`, shadowVars);
