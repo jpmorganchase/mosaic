@@ -10,7 +10,7 @@ export default {
     maxWidth: '100%',
     height: 'auto',
     overflow: 'visible',
-    stroke: 'var(--salt-palette-track-border)',
+    stroke: 'var(--salt-color-gray-90)',
     fontFamily: 'sans-serif',
     fontSize: 10
   }),
