@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.75
+
+### Patch Changes
+
+- Updated dependencies [ffc03a18]
+- Updated dependencies [fd6d715d]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.75
+
 ## 0.1.0-beta.74
 
 ### Patch Changes

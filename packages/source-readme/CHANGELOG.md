@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-source-readme
 
+## 0.1.0-beta.75
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.75
+- @jpmorganchase/mosaic-source-http@0.1.0-beta.75
+- @jpmorganchase/mosaic-types@0.1.0-beta.75
+
 ## 0.1.0-beta.74
 
 ### Patch Changes

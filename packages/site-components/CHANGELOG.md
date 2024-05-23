@@ -1,5 +1,20 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.75
+
+### Patch Changes
+
+- fd6d715d: - Tactical fix to remove `react-pro-sidebar` and replace with Salt's `NavigationItem`. We will remove this local `NavigationItem` once Salt merges it's own PR.
+- Updated dependencies [ffc03a18]
+- Updated dependencies [fd6d715d]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.75
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.75
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.75
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.75
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.75
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.75
+  - @jpmorganchase/mosaic-store@0.1.0-beta.75
+
 ## 0.1.0-beta.74
 
 ### Patch Changes
