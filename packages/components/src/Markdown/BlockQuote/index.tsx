@@ -1,7 +1,5 @@
 import React from 'react';
 import classnames from 'clsx';
-
-import { P2 } from '../../Typography';
 import styles from './index.css';
 
 export interface BlockQuoteProps extends React.HTMLProps<HTMLDivElement> {}
@@ -10,12 +8,16 @@ export const BlockQuote: React.FC<React.PropsWithChildren<BlockQuoteProps>> = ({
   children,
   className
 }) => {
-  const rawChildren =
-    React.isValidElement(children) && children.props ? children.props.children : children;
+  const styledChildren = React.Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, { ...child.props, className: styles.content });
+    }
+    return child;
+  });
   return (
-    <div className={classnames(className, styles.root)}>
+    <blockquote className={classnames(className, styles.root)}>
       <div className={styles.watermark} />
-      <P2>{rawChildren}</P2>
-    </div>
+      {styledChildren}
+    </blockquote>
   );
 };
