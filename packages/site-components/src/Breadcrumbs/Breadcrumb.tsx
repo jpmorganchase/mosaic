@@ -11,7 +11,7 @@ export interface BreadcrumbProps {
 }
 
 // TODO replace with Salt Breadcrumb when it supports an API that can customize Links
-export const Breadcrumb = forwardRef<HTMLLinkElement, BreadcrumbProps>(function Breadcrumb(
+export const Breadcrumb = forwardRef<HTMLAnchorElement, BreadcrumbProps>(function Breadcrumb(
   { children, isCurrentLevel, ...props },
   ref
 ) {
