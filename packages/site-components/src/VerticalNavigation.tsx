@@ -1,10 +1,8 @@
-import React from 'react';
-import { ElementStyles, Sidebar as SidebarPro, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
-import { link } from '@jpmorganchase/mosaic-theme';
-import { Icon, Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem, useColorMode } from '@jpmorganchase/mosaic-store';
-export { ProSidebarProvider as SidebarProvider } from 'react-pro-sidebar';
-export { useProSidebar as useSidebar } from 'react-pro-sidebar';
+import React, { MouseEventHandler, useState } from 'react';
+import { StackLayout } from '@salt-ds/core';
+import { NavigationItem, NavigationItemRenderProps } from './NavigationItem';
+import { Link } from '@jpmorganchase/mosaic-components';
+import { SidebarItem } from '@jpmorganchase/mosaic-store';
 
 export type VerticalNavigationProps = {
   /** Set<String> of IDs to display as expanded */
@@ -15,102 +13,98 @@ export type VerticalNavigationProps = {
   menu: SidebarItem[];
 };
 
-const MenuIcon = ({ open }) => <Icon name={open ? 'chevronDown' : 'chevronRight'} />;
-
-const createMenuItemStyles = colorMode => ({
-  subMenuContent: {
-    backgroundColor: 'inherit'
-  },
-  button: ({ active }) => {
-    let buttonStyle: ElementStyles = {
-      paddingRight: 'var(--mosaic-space-horizontal-x4)'
-    };
-    return {
-      ...buttonStyle,
-      ':disabled': {
-        backgroundColor: 'unset',
-        color:
-          colorMode === 'light'
-            ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
-            : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
-      },
-      ':hover': {
-        backgroundColor:
-          colorMode === 'light'
-            ? 'var(--mosaic-color-light-neutral-background-emphasis)'
-            : 'var(--mosaic-color-dark-neutral-background-emphasis)'
-      },
-      fontWeight: active ? 'var(--mosaic-fontWeight-semibold)' : 'var(--mosaic-fontWeight-regular)',
-      borderLeft: active
-        ? colorMode === 'light'
-          ? '4px solid var(--mosaic-color-light-navigable-selectableLink-selected)'
-          : '4px solid var(--mosaic-color-dark-navigable-selectableLink-selected)'
-        : '4px solid transparent',
-      color: active
-        ? colorMode === 'light'
-          ? 'var(--mosaic-color-light-navigable-selectableLink-selectedLabel)'
-          : 'var(--mosaic-color-dark-navigable-selectableLink-selectedLabel)'
-        : colorMode === 'light'
-        ? 'var(--mosaic-color-light-navigable-selectableLink-unselectedLabel)'
-        : 'var(--mosaic-color-dark-navigable-selectableLink-unselectedLabel)'
-    };
-  },
-  label: {
-    marginRight: 'var(--mosaic-space-horizontal-x4)'
-  }
-});
-
-const rootStyles = {
-  width: '100%',
-  borderRightWidth: '0px'
+const renderItem: React.FC<NavigationItemRenderProps<HTMLButtonElement | HTMLAnchorElement>> = ({
+  href,
+  elementProps
+}) => {
+  return <Link variant={'component'} {...elementProps} href={href} />;
 };
 
-const SubMenuLink = ({ href, selectedNodeId, ...rest }) => {
-  if (href === selectedNodeId) {
-    return <div {...rest} />;
-  }
-  return <Link href={href} variant={'component'} {...rest} />;
-};
+const renderNavigationItem = (
+  item: SidebarItem,
+  selectedNodeId: string | undefined,
+  expandedNodeIds: string[],
+  setExpanded: React.Dispatch<React.SetStateAction<string[]>>,
+  level: number
+) => {
+  const {
+    id,
+    name,
+    childNodes,
+    data: { link }
+  } = item;
+  const isActive =
+    !!selectedNodeId &&
+    (selectedNodeId === id ||
+      (!expandedNodeIds.includes(id) &&
+        childNodes?.some(childNode => childNode.id === selectedNodeId)));
+  const isExpanded = expandedNodeIds.includes(id);
 
-const renderMenu = (menu, expandedNodeIds, selectedNodeId) =>
-  menu.reduce((result, item) => {
-    const menuItem =
-      item?.childNodes?.length > 0 ? (
-        <SubMenu
-          active={selectedNodeId === item.id && selectedNodeId !== undefined}
-          component={<SubMenuLink href={item.data?.link} selectedNodeId={selectedNodeId} />}
-          defaultOpen={expandedNodeIds?.has(item.id)}
-          key={item.id}
-          label={item.name}
+  const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
+    event.stopPropagation();
+    if (!expandedNodeIds.includes(id)) {
+      setExpanded([...expandedNodeIds, id]);
+    } else {
+      setExpanded(expandedNodeIds.filter(expandedNodeId => expandedNodeId !== id));
+    }
+  };
+  return (
+    <li key={id}>
+      <NavigationItem
+        href={link}
+        active={isActive}
+        orientation="vertical"
+        onExpand={handleExpand}
+        parent={!!childNodes?.length}
+        render={renderItem}
+        expanded={isExpanded}
+        level={level}
+      >
+        {name}
+      </NavigationItem>
+      {isExpanded ? (
+        <StackLayout
+          as="ul"
+          gap="var(--salt-size-border)"
+          style={{
+            width: 250,
+            listStyle: 'none',
+            paddingLeft: 0
+          }}
         >
-          {renderMenu(item.childNodes, expandedNodeIds, selectedNodeId)}
-        </SubMenu>
-      ) : (
-        <MenuItem
-          active={selectedNodeId === item.id}
-          className={link({ variant: 'selectable' })}
-          component={<Link href={item.data?.link} variant={'component'} />}
-          key={item.id}
-        >
-          {item.name}
-        </MenuItem>
-      );
-    return [...result, menuItem];
-  }, []);
+          {childNodes?.map(childItem => {
+            return renderNavigationItem(
+              childItem,
+              selectedNodeId,
+              expandedNodeIds,
+              setExpanded,
+              level + 1
+            );
+          })}
+        </StackLayout>
+      ) : null}
+    </li>
+  );
+};
 
 export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   menu,
-  expandedNodeIds,
-  selectedNodeId,
-  ...rest
+  expandedNodeIds: currentRouteNodeIds = [],
+  selectedNodeId
 }) => {
-  const colorMode = useColorMode();
-  const menuItemStyles = createMenuItemStyles(colorMode);
+  const [expandedNodeIds, setExpanded] = useState<string[]>([...currentRouteNodeIds]);
+
   return (
-    <SidebarPro backgroundColor="inherit" rootStyles={rootStyles} width="100%" {...rest}>
-      <Menu renderExpandIcon={MenuIcon} menuItemStyles={menuItemStyles}>
-        {renderMenu(menu, expandedNodeIds, selectedNodeId)}
-      </Menu>
-    </SidebarPro>
+    <nav>
+      <StackLayout
+        as="ul"
+        gap="var(--salt-size-border)"
+        style={{ width: 250, listStyle: 'none', paddingLeft: 0 }}
+      >
+        {menu.map(item =>
+          renderNavigationItem(item, selectedNodeId, expandedNodeIds, setExpanded, 0)
+        )}
+      </StackLayout>
+    </nav>
   );
 };

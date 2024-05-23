@@ -3,15 +3,15 @@ import React, { forwardRef, Ref } from 'react';
 import { useLinkComponent } from '../LinkProvider';
 import { hasProtocol } from '../utils/hasProtocol';
 
-export interface LinkBaseProps extends Omit<React.HTMLProps<HTMLLinkElement>, 'ref'> {
+export interface LinkBaseProps extends Omit<React.HTMLProps<HTMLAnchorElement>, 'ref'> {
   /** Children */
   children?: React.ReactNode;
   /** Additional class name for root class override */
   className?: string;
 }
 
-export const LinkBase = forwardRef<HTMLLinkElement, LinkBaseProps>(
-  (props, ref: Ref<HTMLLinkElement>) => {
+export const LinkBase = forwardRef<HTMLAnchorElement, LinkBaseProps>(
+  (props, ref: Ref<HTMLAnchorElement>) => {
     const { children, href, ...rest } = props;
     const LinkComponent = useLinkComponent();
     const isInternal = !hasProtocol(href);
