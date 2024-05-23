@@ -38,7 +38,6 @@ export const watermark = recipe({
         selectors: {
           '&:before': {
             content: 'open-quote',
-            color: vars.color.unknown,
             fontSize: '3em',
             position: 'absolute',
             left: '0.25em',

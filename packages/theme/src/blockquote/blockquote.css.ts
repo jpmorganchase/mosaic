@@ -2,7 +2,6 @@ import { style } from '@vanilla-extract/css';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { responsiveSprinkles } from '../responsive';
-import { siteBorder } from '../border';
 import { heading } from '../typography';
 
 export const blockquote = recipe({
@@ -12,12 +11,11 @@ export const blockquote = recipe({
         {
           width: '100%',
           fontStyle: 'italic',
+          marginLeft: '-1em',
           position: 'relative'
         },
-        siteBorder({ variant: 'unknown', borderLeftWidth: 'thick' }),
         heading({ variant: 'heading2' }),
         responsiveSprinkles({
-          marginLeft: ['x2', 'x2', 'x2', 'x2'],
           paddingLeft: ['x25', 'x25', 'x25', 'x25']
         })
       ])
