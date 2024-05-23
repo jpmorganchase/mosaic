@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.75
+
+### Patch Changes
+
+- ffc03a18: fix styling on BlockQuote
+
 ## 0.1.0-beta.74
 
 ### Patch Changes

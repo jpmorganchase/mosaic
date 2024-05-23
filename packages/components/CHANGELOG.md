@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.75
+
+### Patch Changes
+
+- ffc03a18: fix styling on BlockQuote
+- fd6d715d: - Tactical fix to remove `react-pro-sidebar` and replace with Salt's `NavigationItem`. We will remove this local `NavigationItem` once Salt merges it's own PR.
+- Updated dependencies [ffc03a18]
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.75
+  - @jpmorganchase/mosaic-store@0.1.0-beta.75
+
 ## 0.1.0-beta.74
 
 ### Patch Changes
