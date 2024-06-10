@@ -3,43 +3,43 @@ import BreadcrumbsPlugin, { BreadcrumbsPluginPage } from '../BreadcrumbsPlugin';
 const pages: BreadcrumbsPluginPage[] = [
   {
     fullPath: '/FolderA/index.mdx',
-    route: 'route/folderA/index',
+    route: '/route/folderA/index',
     title: 'Folder A Index',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/pageA.mdx',
-    route: 'route/folderA/pageA',
+    route: '/route/folderA/pageA',
     title: 'Folder A Page A',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/pageB.mdx',
-    route: 'route/folderA/pageB',
+    route: '/route/folderA/pageB',
     title: 'Folder A Page B',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/index.mdx',
-    route: 'route/folderA/subfolderA/index',
+    route: '/route/folderA/subfolderA/index',
     title: 'Subfolder A Index',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/PageA.mdx',
-    route: 'route/folderA/subfolderA/pageA',
+    route: '/route/folderA/subfolderA/pageA',
     title: 'Subfolder A Page A',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/PageB.mdx',
-    route: 'route/folderA/subfolderA/pageB',
+    route: '/route/folderA/subfolderA/pageB',
     title: 'Subfolder A Page B',
     layout: 'DetailOverview'
   },
   {
     fullPath: '/FolderA/SubfolderA/PageB.mdx',
-    route: 'route/folderA/subfolderA/pageB',
+    route: '/route/folderA/subfolderA/pageB',
     title: 'Subfolder A Page B',
     layout: 'DetailOverview',
     breadcrumbs: [
@@ -60,13 +60,13 @@ const pages: BreadcrumbsPluginPage[] = [
 const mutableFsPages = [
   {
     fullPath: '/FolderA/SubfolderA/SubfolderB/index.mdx',
-    route: 'route/folderA/subfolderA/SubfolderB/index',
+    route: '/route/folderA/subfolderA/SubfolderB/index',
     title: 'Subfolder A Subfolder B Index',
     layout: 'DetailOverview',
     breadcrumbs: [
       {
         label: 'Subfolder B Index',
-        path: 'route/folderA/subfolderA/SubfolderB/index',
+        path: '/route/folderA/subfolderA/SubfolderB/index',
         id: '/FolderA/SubfolderA/SubfolderB/index.mdx'
       }
     ]
@@ -130,21 +130,11 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
     test('THEN breadcrumbs are added', async () => {
       const breadcrumbs = (updatedPages && updatedPages[4].breadcrumbs) || [];
 
-      expect(breadcrumbs.length).toBe(3);
+      expect(breadcrumbs.length).toBe(1);
       expect(breadcrumbs[0]).toEqual({
-        label: 'Folder A Index',
-        path: 'route/folderA/index',
-        id: '/FolderA/index.mdx'
-      });
-      expect(breadcrumbs[1]).toEqual({
         label: 'Subfolder A Index',
-        path: 'route/folderA/subfolderA/index',
+        path: '/route/folderA/subfolderA/index',
         id: '/FolderA/SubfolderA/index.mdx'
-      });
-      expect(breadcrumbs[2]).toEqual({
-        label: 'Subfolder A Page A',
-        path: 'route/folderA/subfolderA/pageA',
-        id: '/FolderA/SubfolderA/PageA.mdx'
       });
     });
 
@@ -180,7 +170,6 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
    * 3. to read the page from the mutable fs again
    *
    */
-
   describe('AND WHEN `afterNamespaceSourceUpdate` is called', () => {
     let serialiseMock = jest.fn();
     beforeEach(async () => {
@@ -210,18 +199,13 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
       expect(serialiseMock.mock.calls[0][0]).toEqual('/FolderA/SubfolderA/SubfolderB/index.mdx');
       expect(serialiseMock.mock.calls[0][1].breadcrumbs).toEqual([
         {
-          label: 'Folder A Index',
-          path: 'route/folderA/index',
-          id: '/FolderA/index.mdx'
-        },
-        {
           label: 'Subfolder A Index',
-          path: 'route/folderA/subfolderA/index',
+          path: '/route/folderA/subfolderA/index',
           id: '/FolderA/SubfolderA/index.mdx'
         },
         {
           label: 'Subfolder B Index',
-          path: 'route/folderA/subfolderA/SubfolderB/index',
+          path: '/route/folderA/subfolderA/SubfolderB/index',
           id: '/FolderA/SubfolderA/SubfolderB/index.mdx'
         }
       ]);

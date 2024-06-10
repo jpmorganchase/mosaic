@@ -18,7 +18,7 @@ test.describe('GIVEN a page with the `Edit` Layout', () => {
 
   test('THEN there is **NO** sidebar', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/edit');
-    await expect(page.getByTestId('ps-sidebar-root-test-id')).toHaveCount(0);
+    await expect(page.getByTestId('vertical-navigation')).toHaveCount(0);
   });
 
   test('THEN there is **NO** Doc Paginator', async ({ page }) => {

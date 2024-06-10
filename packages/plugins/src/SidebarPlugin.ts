@@ -1,9 +1,16 @@
 import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { sidebarSortConfigSchema, type SortConfig } from '@jpmorganchase/mosaic-schemas';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, escapeRegExp } from 'lodash-es';
 
-import { type SidebarDataNode, sortSidebarData } from './utils/sortSidebarData.js';
+import {
+  isDataNode,
+  isGroupNode,
+  type SidebarData,
+  type SidebarDataNode,
+  type SidebarGroupNode,
+  sortSidebarData
+} from './utils/sortSidebarData.js';
 
 function createFileGlob(patterns, pageExtensions) {
   if (Array.isArray(patterns)) {
@@ -75,6 +82,7 @@ interface SidebarPluginConfigData {
 export interface SidebarPluginPage extends Page {
   sidebar?: {
     label?: string;
+    groupLabel?: string;
   };
   sharedConfig: {
     sidebar: {
@@ -96,6 +104,18 @@ interface SidebarPluginOptions {
   rootDirGlob: string;
 }
 
+const createPageTest = (ignorePages, pageExtensions) => {
+  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
+  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
+  return file =>
+    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+};
+
+/**
+ * Directories create groups of pages, the index.mdx file within that group is assigned GROUP_DEFAULT_PRIORITY
+ * to ensure it comes first. This can be overriden by the metadata to move the position of the default page.
+ */
+const GROUP_DEFAULT_PRIORITY = 999;
 /**
  * Sorts the pages in a folder by priority and then exports a JSON file with the
  * sidebar tree from that directory downwards and adds sidebar data into frontmatter for each page.
@@ -107,6 +127,24 @@ interface SidebarPluginOptions {
  */
 const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, SidebarPluginConfigData> =
   {
+    async $afterSource(pages, { ignorePages, pageExtensions }) {
+      if (pageExtensions.includes('.mdx')) {
+        for (const page of pages) {
+          const isNonHiddenPage = createPageTest(ignorePages, ['.mdx']);
+          if (!isNonHiddenPage(page.fullPath)) {
+            continue;
+          }
+          let sidebar = {
+            label: page.title,
+            groupLabel: page?.sidebar?.label || page.title,
+            ...page?.sidebar
+          };
+          page.sidebar = sidebar;
+        }
+      }
+      return pages;
+    },
+
     async $beforeSend(
       mutableFilesystem,
       { config, serialiser, ignorePages, pageExtensions },
@@ -165,45 +203,47 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           }
 
           const priority = page.sidebar?.priority;
-          const id = page.route;
-          const isGroup = /\/index$/.test(page.route);
+          const isGroupDefaultPage = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
-          const level = getPageLevel(page);
-          const newChildNode: SidebarDataNode = {
-            id,
+
+          let newChildNode: SidebarDataNode = {
+            id: page.route,
+            kind: 'data',
             fullPath: page.fullPath,
             name,
-            priority,
-            data: { level, link: page.route },
-            childNodes: []
+            priority: isGroupDefaultPage ? priority | GROUP_DEFAULT_PRIORITY : priority,
+            data: { level: getPageLevel(page), link: page.route }
           };
 
-          if (!isGroup && sortConfigPages[`${path.posix.dirname(page.fullPath)}`] !== undefined) {
-            const fieldData = getSortFieldData(
-              page,
-              sortConfigPages[`${path.posix.dirname(page.fullPath)}`]
-            );
+          const currentChildNodes = Object.prototype.hasOwnProperty.call(result, groupPath)
+            ? result[groupPath].childNodes
+            : [];
+
+          let newGroupNode: Partial<SidebarGroupNode> = {
+            ...result[groupPath],
+            id: path.posix.dirname(page.route),
+            kind: 'group',
+            childNodes: [...currentChildNodes, newChildNode]
+          };
+
+          if (isGroupDefaultPage) {
+            newGroupNode = {
+              ...newGroupNode,
+              name: page.sidebar?.groupLabel || name,
+              priority
+            };
+          }
+
+          if (!isGroupDefaultPage && sortConfigPages[groupPath] !== undefined) {
+            const fieldData = getSortFieldData(page, sortConfigPages[groupPath]);
 
             newChildNode.sharedSortConfig = {
-              ...sortConfigPages[`${path.posix.dirname(page.fullPath)}`],
+              ...sortConfigPages[groupPath],
               fieldData
             };
           }
 
-          if (isGroup) {
-            result[groupPath] = {
-              ...newChildNode,
-              ...result[groupPath]
-            };
-          } else {
-            const childNodes = Object.prototype.hasOwnProperty.call(result, groupPath)
-              ? result[groupPath].childNodes
-              : [];
-            result[groupPath] = {
-              ...result[groupPath],
-              childNodes: [...childNodes, newChildNode]
-            };
-          }
+          result[groupPath] = newGroupNode;
           return result;
         }, {});
       }
@@ -244,49 +284,77 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         });
       }
 
-      const createNavigationRefs = (currPage, prevPage, nextPage) => {
+      const createNavigationRefs = (rootDir, currPage, prevPage, nextPage) => {
         if (prevPage) {
           config.setRef(currPage, ['navigation', 'prev', 'title', '$ref'], `${prevPage}#/title`);
           config.setRef(currPage, ['navigation', 'prev', 'route', '$ref'], `${prevPage}#/route`);
+          const parentPath = path.posix.dirname(prevPage);
+          if (parentPath !== rootDir) {
+            config.setRef(
+              currPage,
+              ['navigation', 'prev', 'group', '$ref'],
+              `${parentPath}#/sidebar/groupLabel`
+            );
+          }
         }
         if (nextPage) {
           config.setRef(currPage, ['navigation', 'next', 'title', '$ref'], `${nextPage}#/title`);
           config.setRef(currPage, ['navigation', 'next', 'route', '$ref'], `${nextPage}#/route`);
+          const parentPath = path.posix.dirname(nextPage);
+          if (parentPath !== rootDir) {
+            config.setRef(
+              currPage,
+              ['navigation', 'next', 'group', '$ref'],
+              `${parentPath}#/sidebar/groupLabel`
+            );
+          }
         }
       };
 
-      function addNavigationToFrontmatter(pages) {
-        let prevParentPage, nextParentPage;
-
-        const getLastPage = pages => {
-          if (pages[pages.length - 1].childNodes?.length) {
-            return getLastPage(pages[pages.length - 1].childNodes);
+      function addNavigationToFrontmatter(pages, rootDir) {
+        const getRelativeDataNode = (
+          node: SidebarData,
+          position: 'previous' | 'next'
+        ): SidebarDataNode => {
+          let targetNode = node;
+          if (isGroupNode(node)) {
+            targetNode = node.childNodes[position === 'previous' ? node.childNodes.length - 1 : 0];
           }
-          return pages[pages.length - 1];
+          return isGroupNode(targetNode) ? getRelativeDataNode(targetNode, position) : targetNode;
         };
-        const lastPage = getLastPage(pages);
-        const isFirstPage = page => page === pages[0];
-        const isLastPage = page => page === lastPage;
+        const isLastPage = page => {
+          const lastPage = getRelativeDataNode(pages, 'previous');
+          return page === lastPage;
+        };
 
+        let prevParentPage = [];
+        let nextParentPage = [];
         function recursiveAddNavigation(pages) {
+          let nextPage: SidebarDataNode, prevPage: SidebarDataNode;
           pages.forEach((page, pageIndex) => {
-            const { fullPath: currPage } = page;
-            let prevPage, nextPage;
-            prevPage = prevParentPage;
-            prevParentPage = isFirstPage(page) ? undefined : pages[pageIndex].fullPath;
-            if (page.childNodes?.length) {
-              nextPage = page.childNodes[0].fullPath;
-              nextParentPage =
-                pageIndex < pages.length - 1 ? pages[pageIndex + 1].fullPath : nextParentPage;
-            } else if (pageIndex < pages.length - 1) {
-              nextPage = pages[pageIndex + 1].fullPath;
+            if (isLastPage(page)) {
+              nextPage = undefined;
+            } else if (pageIndex === pages.length - 1) {
+              nextPage = nextParentPage.pop();
             } else {
-              nextPage = isLastPage(page) ? undefined : nextParentPage;
+              nextPage = getRelativeDataNode(pages[pageIndex + 1], 'next');
             }
-            if (currPage !== undefined) {
-              createNavigationRefs(currPage, prevPage, nextPage);
+            if (pageIndex === 0) {
+              prevPage = prevParentPage.pop();
+            } else {
+              prevPage = getRelativeDataNode(pages[pageIndex - 1], 'previous');
             }
-            recursiveAddNavigation(page.childNodes);
+            if (isDataNode(page)) {
+              createNavigationRefs(rootDir, page.fullPath, prevPage?.fullPath, nextPage?.fullPath);
+            } else {
+              if (nextPage) {
+                nextParentPage.push(nextPage);
+              }
+              if (prevPage) {
+                prevParentPage.push(prevPage);
+              }
+              recursiveAddNavigation(page.childNodes);
+            }
           });
         }
         recursiveAddNavigation(pages);
@@ -300,21 +368,12 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
 
       const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
 
-      function moveRootPageDown(pagesByPriority) {
-        const rootPage = pagesByPriority[0];
-        const pagesWithRootMovedDown = rootPage.childNodes;
-        pagesWithRootMovedDown.unshift(rootPage);
-        rootPage.childNodes = [];
-        return pagesWithRootMovedDown;
-      }
-
       await Promise.all(
         rootUserJourneys.map(async rootDir => {
           const sidebarFilePath = path.posix.join(String(rootDir), filename);
           const pages = await createPageList(rootDir);
           const includedPages = pages.filter(page => removeExcludedPages(page));
           const groupMap = createGroupMap(includedPages);
-
           const sidebarData = linkGroupMap(groupMap, rootDir);
           if (sidebarData[0] === undefined) {
             console.warn(
@@ -325,13 +384,16 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             );
             return;
           }
-          const sortedSidebarData = sortSidebarData(sidebarData);
-          addNavigationToFrontmatter(sortedSidebarData);
-          const pagesWithRootMovedDown = moveRootPageDown(sortedSidebarData);
-          await mutableFilesystem.promises.writeFile(
-            sidebarFilePath,
-            JSON.stringify({ pages: pagesWithRootMovedDown })
-          );
+          const sortedRootSidebar = sortSidebarData(sidebarData);
+          addNavigationToFrontmatter(sortedRootSidebar, rootDir);
+          if (isGroupNode(sortedRootSidebar[0])) {
+            await mutableFilesystem.promises.writeFile(
+              sidebarFilePath,
+              JSON.stringify({ pages: sortedRootSidebar[0].childNodes })
+            );
+          } else {
+            console.warn(`[Mosaic] SidebarPlugin - Unable to sort Sidebar grouping for ${rootDir}`);
+          }
           addSidebarDataToFrontmatter(pages, rootDir);
         })
       );

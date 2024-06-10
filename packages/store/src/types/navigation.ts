@@ -6,6 +6,8 @@ export type NavigationLink = {
   title: string;
   /** page route */
   route: string;
+  /** parent group */
+  group?: string;
 };
 
 /**

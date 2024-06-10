@@ -7,12 +7,17 @@ export function useSidebar() {
   const menu = useStore(state => state.sidebarData) || [];
   const { route } = useRoute();
   const { breadcrumbs } = useBreadcrumbs();
+
   return {
     menu,
     selectedNodeId: route,
-    expandedNodeIds: getIds(breadcrumbs)
+    selectedGroupIds: getIds(breadcrumbs)
   };
 }
 function getIds(breadcrumbs: Breadcrumb[]) {
-  return new Set(breadcrumbs.map(({ id }) => id.substr(0, id.lastIndexOf('.'))));
+  const pathIds = breadcrumbs.reduce<string[]>(
+    (result, { id }) => [...result, id.replace(/\/[^\/]*$/, '')],
+    []
+  );
+  return new Set(pathIds);
 }

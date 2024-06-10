@@ -22,11 +22,14 @@ test.describe('GIVEN a page with the `DetailTechnical` Layout', () => {
 
   test('THEN there is a sidebar', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/detail-technical');
-    await expect(page.getByTestId('ps-sidebar-root-test-id')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Test', exact: true })).toBeVisible();
-    // await expect(page.getByRole('link', { name: 'Layouts', exact: true })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Refs Test' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Aliases Test', exact: true })).toBeVisible();
+    await expect(page.getByTestId('vertical-navigation')).toBeVisible();
+    await expect(page.getByLabel('change page')).toHaveCount(1);
+    await expect(page.getByText('Test', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('expand')).toHaveCount(4);
+    await expect(page.getByText('Layouts', { exact: true })).toBeVisible();
+    await expect(page.getByText('Refs Test', { exact: true })).toBeVisible();
+    await expect(page.getByText('Aliases Test', { exact: true })).toBeVisible();
+    await expect(page.getByText('Tags Test', { exact: true })).toBeVisible();
   });
 
   test('THEN there is a Doc Paginator', async ({ page }) => {

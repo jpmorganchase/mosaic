@@ -6,13 +6,30 @@ interface SortConfigWithValue extends SortConfig {
 }
 
 export interface SidebarDataNode {
+  kind: 'data';
   id: string;
   fullPath: string;
   name: string;
   priority?: number;
   data: { level: number; link: string };
-  childNodes: SidebarDataNode[];
   sharedSortConfig?: SortConfigWithValue;
+}
+
+export type SidebarData = SidebarDataNode | SidebarGroupNode;
+
+export interface SidebarGroupNode {
+  id: string;
+  kind: 'group';
+  childNodes: SidebarData[];
+  name: string;
+  priority?: number;
+}
+
+export function isGroupNode(node: SidebarDataNode | SidebarGroupNode): node is SidebarGroupNode {
+  return node.kind === 'group';
+}
+export function isDataNode(node: SidebarDataNode | SidebarGroupNode): node is SidebarDataNode {
+  return node.kind === 'data';
 }
 
 const isNumber = (fieldData: FieldData): fieldData is number => typeof fieldData === 'number';
@@ -30,30 +47,34 @@ function doSort(a: FieldData, b: FieldData) {
   return 0;
 }
 
-function sortBySharedSortConfig(pageA: SidebarDataNode, pageB: SidebarDataNode) {
-  if (pageA.sharedSortConfig === undefined || pageB.sharedSortConfig === undefined) {
+function sortBySharedSortConfig(nodeA: SidebarData, nodeB: SidebarData) {
+  if (!isDataNode(nodeA) || !isDataNode(nodeB)) {
     return 0;
   }
-
-  if (pageA.sharedSortConfig?.arrange === 'asc') {
-    return doSort(pageA.sharedSortConfig.fieldData, pageB.sharedSortConfig.fieldData);
+  if (nodeA.sharedSortConfig === undefined || nodeB.sharedSortConfig === undefined) {
+    return 0;
   }
-
-  return doSort(pageB.sharedSortConfig.fieldData, pageA.sharedSortConfig.fieldData);
+  if (nodeA.sharedSortConfig?.arrange === 'asc') {
+    return doSort(nodeA.sharedSortConfig.fieldData, nodeB.sharedSortConfig.fieldData);
+  }
+  return doSort(nodeB.sharedSortConfig.fieldData, nodeA.sharedSortConfig.fieldData);
 }
 
-export function sortSidebarData(sidebarData: SidebarDataNode[]) {
-  const pagesByPriority = sidebarData.map(page => {
-    if (page.childNodes?.length > 1) {
-      const sortedChildNodes = page.childNodes.sort(
+export function sortSidebarData(sidebarData: SidebarData[]) {
+  const pagesByPriority = sidebarData.map(group => {
+    if (!isGroupNode(group)) {
+      return group;
+    }
+    if (group?.childNodes?.length > 1) {
+      const sortedChildNodes = group.childNodes.sort(
         (pageA, pageB) =>
           (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1) ||
           sortBySharedSortConfig(pageA, pageB)
       );
-      sortSidebarData(page.childNodes);
-      return { ...page, childNodes: sortedChildNodes };
+      sortSidebarData(group.childNodes);
+      return { ...group, childNodes: sortedChildNodes };
     }
-    return page;
+    return group;
   });
   return pagesByPriority;
 }
