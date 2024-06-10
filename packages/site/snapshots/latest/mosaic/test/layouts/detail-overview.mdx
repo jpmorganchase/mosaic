@@ -30,13 +30,18 @@ navigation:
   prev:
     title: Detail Highlight Test Page
     route: /mosaic/test/layouts/detail-highlight
+    group: Layouts
   next:
     title: Detail Technical Test Page
     route: /mosaic/test/layouts/detail-technical
-lastModified: 1692105866942
+    group: Layouts
+lastModified: 1700475661349
 fullPath: /mosaic/test/layouts/detail-overview.mdx
 route: /mosaic/test/layouts/detail-overview
 sharedConfig: *ref_0
+sidebar:
+  label: Detail Overview Test Page
+  groupLabel: Detail Overview Test Page
 readingTime:
   text: 2 min read
   minutes: 1.725
@@ -65,113 +70,133 @@ tableOfContents:
     text: Heading 4
 sidebarData:
   - id: /mosaic/test/index
+    kind: data
     fullPath: /mosaic/test/index.mdx
     name: Test
-    priority: 3
+    priority: 999
     data:
       level: 2
       link: /mosaic/test/index
-    childNodes: []
-  - id: /mosaic/test/layouts/index
-    fullPath: /mosaic/test/layouts/index.mdx
-    name: Layouts
-    priority: 3
-    data:
-      level: 3
-      link: /mosaic/test/layouts/index
+  - id: /mosaic/test/layouts
+    kind: group
     childNodes:
+      - id: /mosaic/test/layouts/index
+        kind: data
+        fullPath: /mosaic/test/layouts/index.mdx
+        name: Layouts
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/test/layouts/index
       - id: /mosaic/test/layouts/detail-highlight
+        kind: data
         fullPath: /mosaic/test/layouts/detail-highlight.mdx
         name: Detail Highlight Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/detail-highlight
-        childNodes: []
       - id: /mosaic/test/layouts/detail-overview
+        kind: data
         fullPath: /mosaic/test/layouts/detail-overview.mdx
         name: Detail Overview Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/detail-overview
-        childNodes: []
       - id: /mosaic/test/layouts/detail-technical
+        kind: data
         fullPath: /mosaic/test/layouts/detail-technical.mdx
         name: Detail Technical Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/detail-technical
-        childNodes: []
       - id: /mosaic/test/layouts/edit
+        kind: data
         fullPath: /mosaic/test/layouts/edit.mdx
         name: Edit Layout
         data:
           level: 3
           link: /mosaic/test/layouts/edit
-        childNodes: []
       - id: /mosaic/test/layouts/full-width
+        kind: data
         fullPath: /mosaic/test/layouts/full-width.mdx
         name: Full Width Layout
         data:
           level: 3
           link: /mosaic/test/layouts/full-width
-        childNodes: []
       - id: /mosaic/test/layouts/landing
+        kind: data
         fullPath: /mosaic/test/layouts/landing.mdx
         name: Landing Layout Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/landing
-        childNodes: []
       - id: /mosaic/test/layouts/newsletter
+        kind: data
         fullPath: /mosaic/test/layouts/newsletter.mdx
         name: Newsletter Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/newsletter
-        childNodes: []
       - id: /mosaic/test/layouts/product-discover
+        kind: data
         fullPath: /mosaic/test/layouts/product-discover.mdx
         name: Product Discover Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/product-discover
-        childNodes: []
       - id: /mosaic/test/layouts/product-preview
+        kind: data
         fullPath: /mosaic/test/layouts/product-preview.mdx
         name: Product Preview Test Page
         data:
           level: 3
           link: /mosaic/test/layouts/product-preview
-        childNodes: []
-  - id: /mosaic/test/refs/index
-    fullPath: /mosaic/test/refs/index.mdx
-    name: Refs Test
+    name: Layouts
     priority: 3
-    data:
-      level: 3
-      link: /mosaic/test/refs/index
+  - id: /mosaic/test/refs
+    kind: group
     childNodes:
+      - id: /mosaic/test/refs/index
+        kind: data
+        fullPath: /mosaic/test/refs/index.mdx
+        name: Refs Test
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/test/refs/index
       - id: /mosaic/test/refs/data
+        kind: data
         fullPath: /mosaic/test/refs/data.mdx
         name: Refs Data
         data:
           level: 3
           link: /mosaic/test/refs/data
-        childNodes: []
-  - id: /mosaic/test/aliases/index
-    fullPath: /mosaic/test/aliases/index.mdx
+    name: Refs Test
+    priority: 3
+  - id: /mosaic/test/aliases
+    kind: group
+    childNodes:
+      - id: /mosaic/test/aliases/index
+        kind: data
+        fullPath: /mosaic/test/aliases/index.mdx
+        name: Aliases Test
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/test/aliases/index
     name: Aliases Test
-    data:
-      level: 3
-      link: /mosaic/test/aliases/index
-    childNodes: []
-  - id: /mosaic/test/tags/index
-    fullPath: /mosaic/test/tags/index.mdx
+  - id: /mosaic/test/tags
+    kind: group
+    childNodes:
+      - id: /mosaic/test/tags/index
+        kind: data
+        fullPath: /mosaic/test/tags/index.mdx
+        name: Tags Test
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/test/tags/index
     name: Tags Test
-    data:
-      level: 3
-      link: /mosaic/test/tags/index
-    childNodes: []
 ---
 ## {meta.title}
 
