@@ -5,8 +5,8 @@ import { Link } from '@jpmorganchase/mosaic-components';
 import { SidebarItem } from '@jpmorganchase/mosaic-store';
 
 export type VerticalNavigationProps = {
-  /** Set<String> of IDs to display as expanded */
-  expandedNodeIds?: Set<string>;
+  /** Selected item groups ids to expand */
+  selectedGroupIds?: Set<string>;
   /** String ID of the selected item */
   selectedNodeId?: string;
   /** Navigation item data */
@@ -15,46 +15,52 @@ export type VerticalNavigationProps = {
 
 const renderItem: React.FC<NavigationItemRenderProps<HTMLButtonElement | HTMLAnchorElement>> = ({
   href,
+  isParent,
   elementProps
 }) => {
+  if (isParent) {
+    return <button {...elementProps} />;
+  }
   return <Link variant={'component'} {...elementProps} href={href} />;
 };
 
 const renderNavigationItem = (
   item: SidebarItem,
   selectedNodeId: string | undefined,
-  expandedNodeIds: string[],
-  setExpanded: React.Dispatch<React.SetStateAction<string[]>>,
+  expandedGroupIds: Set<string>,
+  selectedGroupIds: Set<string>,
+  setExpanded: React.Dispatch<React.SetStateAction<Set<string>>>,
   level: number
 ) => {
-  const {
-    id,
-    name,
-    childNodes,
-    data: { link }
-  } = item;
-  const isActive =
-    !!selectedNodeId &&
-    (selectedNodeId === id ||
-      (!expandedNodeIds.includes(id) &&
-        childNodes?.some(childNode => childNode.id === selectedNodeId)));
-  const isExpanded = expandedNodeIds.includes(id);
+  const { id, kind, name } = item;
+  const isGroup = kind === 'group';
+
+  const link = !isGroup ? item?.data?.link : undefined;
+
+  const childNodes = isGroup ? item.childNodes : undefined;
+  const isExpanded = isGroup ? expandedGroupIds.has(id) : false;
+  const containsSelectedNode = selectedGroupIds.has(id);
+  const isActive = selectedNodeId === id || (!isExpanded && containsSelectedNode);
 
   const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
     event.stopPropagation();
-    if (!expandedNodeIds.includes(id)) {
-      setExpanded([...expandedNodeIds, id]);
+    if (!expandedGroupIds.has(id)) {
+      setExpanded(new Set([...expandedGroupIds, id]));
     } else {
-      setExpanded(expandedNodeIds.filter(expandedNodeId => expandedNodeId !== id));
+      const filteredArray = Array.from(expandedGroupIds).filter(
+        expandedNodeId => expandedNodeId !== id
+      );
+      setExpanded(new Set<string>(filteredArray));
     }
   };
+
   return (
     <li key={id}>
       <NavigationItem
         href={link}
         active={isActive}
         orientation="vertical"
-        onExpand={handleExpand}
+        onExpand={isGroup ? handleExpand : undefined}
         parent={!!childNodes?.length}
         render={renderItem}
         expanded={isExpanded}
@@ -76,7 +82,8 @@ const renderNavigationItem = (
             return renderNavigationItem(
               childItem,
               selectedNodeId,
-              expandedNodeIds,
+              expandedGroupIds,
+              selectedGroupIds,
               setExpanded,
               level + 1
             );
@@ -89,20 +96,34 @@ const renderNavigationItem = (
 
 export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
   menu,
-  expandedNodeIds: currentRouteNodeIds = [],
+  selectedGroupIds = new Set(),
   selectedNodeId
 }) => {
-  const [expandedNodeIds, setExpanded] = useState<string[]>([...currentRouteNodeIds]);
+  const [expandedGroupIds, setExpandedGroupIds] = useState(selectedGroupIds);
+  const [prevSelectedNodeId, setPreviousSelectedNodeId] = useState(selectedNodeId);
+  if (prevSelectedNodeId !== selectedNodeId) {
+    const uniqueSet = new Set([...expandedGroupIds, ...selectedGroupIds]);
+    setExpandedGroupIds(uniqueSet);
+    setPreviousSelectedNodeId(selectedNodeId);
+  }
 
   return (
     <nav>
       <StackLayout
+        data-testid="vertical-navigation"
         as="ul"
         gap="var(--salt-size-border)"
         style={{ width: 250, listStyle: 'none', paddingLeft: 0 }}
       >
         {menu.map(item =>
-          renderNavigationItem(item, selectedNodeId, expandedNodeIds, setExpanded, 0)
+          renderNavigationItem(
+            item,
+            selectedNodeId,
+            expandedGroupIds,
+            selectedGroupIds,
+            setExpandedGroupIds,
+            0
+          )
         )}
       </StackLayout>
     </nav>

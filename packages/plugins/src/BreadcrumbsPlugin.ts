@@ -26,37 +26,41 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
         continue;
       }
       try {
-        const breadcrumbs: Array<Breadcrumb> = [];
-        let currentPage = page;
-        let parentDir = path.posix.normalize(path.posix.dirname(currentPage.fullPath));
-        const maxBreadcrumbCount = page.fullPath.split('/').length;
-
-        while (currentPage !== undefined && breadcrumbs.length < maxBreadcrumbCount) {
-          breadcrumbs.unshift({
-            label: currentPage.sidebar?.label || currentPage.title,
-            path: currentPage.route,
-            id: currentPage.fullPath
-          });
-
-          currentPage = pages.find(
-            // eslint-disable-next-line @typescript-eslint/no-loop-func
-            item => item.fullPath === path.posix.join(parentDir, options.indexPageName)
-          );
-          if (currentPage) {
-            parentDir = path.posix.dirname(path.posix.join(String(currentPage.fullPath), '..'));
-          }
-        }
-
+        const pathParts = page.fullPath.replace(/^[/]/, '').split('/');
+        const topAndTailedPath = pathParts.slice(1, -1);
+        const breadcrumbs = topAndTailedPath.reduce<Breadcrumb[]>(
+          (result, _pathPart, partIndex) => {
+            const breadcrumbRoot = `/${pathParts[0]}`;
+            const breadcrumbPath = path.join(
+              breadcrumbRoot,
+              ...topAndTailedPath.slice(0, topAndTailedPath.length - partIndex),
+              options.indexPageName
+            );
+            const breadcrumbPage = pages.find(
+              // eslint-disable-next-line @typescript-eslint/no-loop-func
+              item => item.fullPath === breadcrumbPath
+            );
+            if (breadcrumbPage) {
+              result.unshift({
+                label:
+                  breadcrumbPage.sidebar?.groupLabel ||
+                  breadcrumbPage.sidebar?.label ||
+                  breadcrumbPage.title,
+                path: breadcrumbPage.route,
+                id: breadcrumbPage.fullPath
+              });
+            }
+            return result;
+          },
+          []
+        );
         if (!page.breadcrumbs) {
-          // filter out any duplicate breadcrumbs
-          const map = new Map(breadcrumbs.map(crumb => [crumb.id, crumb]));
-          page.breadcrumbs = [...map.values()];
+          page.breadcrumbs = breadcrumbs;
         }
       } catch (e) {
         throw new PluginError(e.message, page.fullPath);
       }
     }
-
     return pages;
   },
   async afterNamespaceSourceUpdate(

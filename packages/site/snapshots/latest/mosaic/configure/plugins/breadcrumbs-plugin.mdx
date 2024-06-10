@@ -1,22 +1,19 @@
 ---
 title: BreadcrumbsPlugin
 layout: DetailOverview
-lastModified: 1697636130669
+lastModified: 1718016109334
 fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
 route: /mosaic/configure/plugins/breadcrumbs-plugin
 breadcrumbs:
-  - label: Mosaic
-    path: /mosaic/index
-    id: /mosaic/index.mdx
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
   - label: Plugins
     path: /mosaic/configure/plugins/index
     id: /mosaic/configure/plugins/index.mdx
-  - label: BreadcrumbsPlugin
-    path: /mosaic/configure/plugins/breadcrumbs-plugin
-    id: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
+sidebar:
+  label: BreadcrumbsPlugin
+  groupLabel: BreadcrumbsPlugin
 readingTime:
   text: 1 min read
   minutes: 0.96
@@ -39,243 +36,277 @@ navigation:
   prev:
     title: $AliasPlugin
     route: /mosaic/configure/plugins/alias-plugin
+    group: Plugins
   next:
     title: BrokenLinksPlugin
     route: /mosaic/configure/plugins/broken-links-plugin
+    group: Plugins
 sidebarData:
   - id: /mosaic/configure/index
+    kind: data
     fullPath: /mosaic/configure/index.mdx
     name: Configure
-    priority: 4
+    priority: 999
     data:
       level: 2
       link: /mosaic/configure/index
-    childNodes: []
-  - id: /mosaic/configure/modes/index
-    fullPath: /mosaic/configure/modes/index.mdx
-    name: Modes of operation
-    priority: 4
-    data:
-      level: 3
-      link: /mosaic/configure/modes/index
+  - id: /mosaic/configure/modes
+    kind: group
     childNodes:
+      - id: /mosaic/configure/modes/index
+        kind: data
+        fullPath: /mosaic/configure/modes/index.mdx
+        name: Modes of operation
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/configure/modes/index
       - id: /mosaic/configure/modes/active
+        kind: data
         fullPath: /mosaic/configure/modes/active.mdx
         name: Active mode
         data:
           level: 3
           link: /mosaic/configure/modes/active
-        childNodes: []
       - id: /mosaic/configure/modes/snapshot-file
+        kind: data
         fullPath: /mosaic/configure/modes/snapshot-file.mdx
         name: Snapshot file mode
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-        childNodes: []
       - id: /mosaic/configure/modes/snapshot-s3
+        kind: data
         fullPath: /mosaic/configure/modes/snapshot-s3.mdx
         name: Snapshot AWS/S3 mode
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-s3
-        childNodes: []
-  - id: /mosaic/configure/theme/index
-    fullPath: /mosaic/configure/theme/index.mdx
-    name: Theming Your Site
+    name: Modes of operation
     priority: 4
-    data:
-      level: 3
-      link: /mosaic/configure/theme/index
+  - id: /mosaic/configure/theme
+    kind: group
     childNodes:
+      - id: /mosaic/configure/theme/index
+        kind: data
+        fullPath: /mosaic/configure/theme/index.mdx
+        name: Theming Your Site
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/configure/theme/index
       - id: /mosaic/configure/theme/custom-css
+        kind: data
         fullPath: /mosaic/configure/theme/custom-css.mdx
         name: Custom CSS
         priority: 3
         data:
           level: 3
           link: /mosaic/configure/theme/custom-css
-        childNodes: []
       - id: /mosaic/configure/theme/custom-components
+        kind: data
         fullPath: /mosaic/configure/theme/custom-components.mdx
         name: Custom Components
         priority: 2
         data:
           level: 3
           link: /mosaic/configure/theme/custom-components
-        childNodes: []
-  - id: /mosaic/configure/admin/index
-    fullPath: /mosaic/configure/admin/index.mdx
+    name: Theming Your Site
+    priority: 4
+  - id: /mosaic/configure/admin
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/admin/index
+        kind: data
+        fullPath: /mosaic/configure/admin/index.mdx
+        name: Admin
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/configure/admin/index
     name: Admin
     priority: 3
-    data:
-      level: 3
-      link: /mosaic/configure/admin/index
-    childNodes: []
-  - id: /mosaic/configure/sources/index
-    fullPath: /mosaic/configure/sources/index.mdx
-    name: Sources
-    priority: 3
-    data:
-      level: 3
-      link: /mosaic/configure/sources/index
+  - id: /mosaic/configure/sources
+    kind: group
     childNodes:
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/source-figma
+        kind: data
         fullPath: /mosaic/configure/sources/source-figma.mdx
         name: Figma
         priority: 5
         data:
           level: 3
           link: /mosaic/configure/sources/source-figma
-        childNodes: []
       - id: /mosaic/configure/sources/source-readme
+        kind: data
         fullPath: /mosaic/configure/sources/source-readme.mdx
         name: Readme Files
         priority: 5
         data:
           level: 3
           link: /mosaic/configure/sources/source-readme
-        childNodes: []
       - id: /mosaic/configure/sources/source-storybook
+        kind: data
         fullPath: /mosaic/configure/sources/source-storybook.mdx
         name: Storybook
         priority: 5
         data:
           level: 3
           link: /mosaic/configure/sources/source-storybook
-        childNodes: []
       - id: /mosaic/configure/sources/schedules
+        kind: data
         fullPath: /mosaic/configure/sources/schedules.mdx
         name: Schedules
         priority: 4
         data:
           level: 3
           link: /mosaic/configure/sources/schedules
-        childNodes: []
       - id: /mosaic/configure/sources/local-folder-source
+        kind: data
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
         name: Local Folder Source
         priority: 3
         data:
           level: 3
           link: /mosaic/configure/sources/local-folder-source
-        childNodes: []
       - id: /mosaic/configure/sources/git-repo-source
+        kind: data
         fullPath: /mosaic/configure/sources/git-repo-source.mdx
         name: Git Repo Source
         priority: 2
         data:
           level: 3
           link: /mosaic/configure/sources/git-repo-source
-        childNodes: []
       - id: /mosaic/configure/sources/http-source
+        kind: data
         fullPath: /mosaic/configure/sources/http-source.mdx
         name: HTTP Source
         priority: 1
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
-        childNodes: []
-  - id: /mosaic/configure/layouts/index
-    fullPath: /mosaic/configure/layouts/index.mdx
-    name: Layouts
-    priority: 2
-    data:
-      level: 3
-      link: /mosaic/configure/layouts/index
+    name: Sources
+    priority: 3
+  - id: /mosaic/configure/layouts
+    kind: group
     childNodes:
+      - id: /mosaic/configure/layouts/index
+        kind: data
+        fullPath: /mosaic/configure/layouts/index.mdx
+        name: Layouts
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/index
       - id: /mosaic/configure/layouts/detail-highlight
+        kind: data
         fullPath: /mosaic/configure/layouts/detail-highlight.mdx
         name: Detail Highlight
         data:
           level: 3
           link: /mosaic/configure/layouts/detail-highlight
-        childNodes: []
       - id: /mosaic/configure/layouts/detail-overview
+        kind: data
         fullPath: /mosaic/configure/layouts/detail-overview.mdx
         name: Detail Overview
         data:
           level: 3
           link: /mosaic/configure/layouts/detail-overview
-        childNodes: []
       - id: /mosaic/configure/layouts/detail-technical
+        kind: data
         fullPath: /mosaic/configure/layouts/detail-technical.mdx
         name: Detail Technical
         data:
           level: 3
           link: /mosaic/configure/layouts/detail-technical
-        childNodes: []
       - id: /mosaic/configure/layouts/landing
+        kind: data
         fullPath: /mosaic/configure/layouts/landing.mdx
         name: Landing Layout
         data:
           level: 3
           link: /mosaic/configure/layouts/landing
-        childNodes: []
       - id: /mosaic/configure/layouts/product-discover
+        kind: data
         fullPath: /mosaic/configure/layouts/product-discover.mdx
         name: Product Discover Layout
         data:
           level: 3
           link: /mosaic/configure/layouts/product-discover
-        childNodes: []
       - id: /mosaic/configure/layouts/product-preview
+        kind: data
         fullPath: /mosaic/configure/layouts/product-preview.mdx
         name: Product Preview Layout
         data:
           level: 3
           link: /mosaic/configure/layouts/product-preview
-        childNodes: []
-  - id: /mosaic/configure/plugins/index
-    fullPath: /mosaic/configure/plugins/index.mdx
-    name: Plugins
-    priority: 1
-    data:
-      level: 3
-      link: /mosaic/configure/plugins/index
+    name: Layouts
+    priority: 2
+  - id: /mosaic/configure/plugins
+    kind: group
     childNodes:
-      - id: /mosaic/configure/plugins/lifecycle/index
-        fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-        name: Lifecycle Events
-        priority: 1
+      - id: /mosaic/configure/plugins/index
+        kind: data
+        fullPath: /mosaic/configure/plugins/index.mdx
+        name: Plugins
+        priority: 999
         data:
-          level: 4
-          link: /mosaic/configure/plugins/lifecycle/index
+          level: 3
+          link: /mosaic/configure/plugins/index
+      - id: /mosaic/configure/plugins/lifecycle
+        kind: group
         childNodes:
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 999
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
           - id: /mosaic/configure/plugins/lifecycle/after-source
+            kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
             name: $afterSource
             priority: 5
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/after-source
-            childNodes: []
           - id: /mosaic/configure/plugins/lifecycle/before-send
+            kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
             name: $beforeSend
             priority: 4
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/before-send
-            childNodes: []
           - id: /mosaic/configure/plugins/lifecycle/after-update
+            kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
             name: afterUpdate
             priority: 3
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/after-update
-            childNodes: []
           - id: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/should-clear-cache.mdx
             name: shouldClearCache
             priority: 2
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/should-clear-cache
-            childNodes: []
           - id: >-
               /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            kind: data
             fullPath: >-
               /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
             name: shouldUpdateNamespaceSources
@@ -284,112 +315,115 @@ sidebarData:
               level: 4
               link: >-
                 /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
-            childNodes: []
+        name: Lifecycle Events
+        priority: 1
       - id: /mosaic/configure/plugins/alias-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/alias-plugin.mdx
         name: $AliasPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/alias-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/breadcrumbs-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
         name: BreadcrumbsPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/breadcrumbs-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/broken-links-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
         name: BrokenLinksPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/broken-links-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/codemod-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/codemod-plugin.mdx
         name: $CodeModPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/codemod-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/lazy-page-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
         name: LazyPagePlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
         name: PagesWithoutFileExtPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/pages-wthout-extensions-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/public-assets-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
         name: PublicAssetsPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/public-assets-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/reading-time-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/reading-time-plugin.mdx
         name: ReadingTimePlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/reading-time-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/ref-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/ref-plugin.mdx
         name: $RefPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/ref-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/search-index-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
         name: SearchIndexPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/search-index-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/shared-config-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/shared-config-plugin.mdx
         name: SharedConfigPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/shared-config-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/sidebar-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
         name: SidebarPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/sidebar-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/site-map-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
         name: SiteMapPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/site-map-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/tag-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/tag-plugin.mdx
         name: $TagPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/tag-plugin
-        childNodes: []
       - id: /mosaic/configure/plugins/toc-plugin
+        kind: data
         fullPath: /mosaic/configure/plugins/toc-plugin.mdx
         name: TableOfContentsPlugin
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
-        childNodes: []
+    name: Plugins
+    priority: 1
 ---
 # {meta.title}
 
@@ -397,7 +431,7 @@ The `BreadcrumbsPlugin` is responsible for generating the data needed to show br
 
 Should a page already have a `breadcrumbs` property in it's metadata then it is respected and not overwritten.
 
-If a page has a `sidebar.label` property in it's metadata then this is used as the label for the breadcrumb, otherwise the page `tile` is used.
+If a page has a `sidebar.groupLabel` property in it's metadata then this is used as the label for the breadcrumb, otherwise the page `title` is used.
 
 When the `BreadcrumbsPlugin` is traversing up directories, it needs to know what page in the directory represents the *breadcrumb* for that directory. It is recommended to use the `index` page for this but the page to use is a configurable option of the breadcrumbs plugin.
 

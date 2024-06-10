@@ -13,6 +13,25 @@ A page can add a `sidebar` property to its [frontmatter](./frontmatter) to chang
 
 To rearrange pages in the sidebar or to apply a different label to a page you can specify the following in the page frontmatter:
 
+### Sidebar group label
+
+A sidebar group when expanded will reveal the pages contained within the group.
+Each group has a default page, `index.mdx`, which is the default for the group and any breadcrumb link.
+
+The`index.mdx` can define a `groupLabel` which defines the name of the sidebar group.
+If no _groupLabel_ is defined, sidebar group labels will be defined by either _label_ or _title_.
+
+To specify the label of the default page, refer to [Sidebar label](./Sidebar label)
+
+```yaml
+---
+title: Sidebar Configuration
+layout: DetailTechnical
+sidebar:
+  groupLabel: Group label
+---
+```
+
 ### Sidebar label
 
 By default the _title_ of a page is used in the sidebar as the label but this can be changed to another label using page frontmatter.

@@ -1,23 +1,22 @@
-import { type SidebarDataNode, sortSidebarData } from '../sortSidebarData.js';
+import { SidebarData, sortSidebarData } from '../sortSidebarData.js';
 
 describe('GIVEN the sortSidebarData comparator', () => {
   describe('WHEN pages have a shared sort config', () => {
     describe('AND WHEN sorting by a date in descending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -27,11 +26,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -41,11 +40,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -55,11 +54,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -73,30 +72,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting by a date in ascending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -106,11 +106,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -120,11 +120,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -134,11 +134,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'date',
@@ -152,30 +152,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting by a number in descending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -185,11 +186,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -199,11 +200,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -213,11 +214,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -231,30 +232,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting by a number in ascending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -264,11 +266,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -278,11 +280,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -292,11 +294,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'number',
@@ -310,30 +312,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting by a string in descending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -343,11 +346,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -357,11 +360,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -371,11 +374,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -389,30 +392,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('31 Oct 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('01 Jan 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting by a string in ascending order', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -422,11 +426,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -436,11 +440,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -450,11 +454,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -468,30 +472,31 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        }
       });
     });
 
     describe('AND WHEN sorting, priority trumps shared sort config', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -501,11 +506,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: 10,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -515,11 +520,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -529,11 +534,11 @@ describe('GIVEN the sortSidebarData comparator', () => {
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
               data: { level: 3, link: '/id' },
-              childNodes: [],
               sharedSortConfig: {
                 field: 'field',
                 dataType: 'string',
@@ -547,56 +552,57 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN the sidebar nodes are ordered correctly', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('01 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('01 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        }
       });
     });
   });
 
   describe('AND WHEN there is **NO** shared sort config', () => {
     describe('WHEN sorted', () => {
-      const data: SidebarDataNode[] = [
+      const data: SidebarData[] = [
         {
           id: 'index',
-          fullPath: 'fullPath',
+          kind: 'group',
           name: 'index page',
           priority: undefined,
-          data: { level: 3, link: '/index' },
           childNodes: [
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '01 Jan 2023 Newsletter',
               priority: undefined,
-              data: { level: 3, link: '/id' },
-              childNodes: []
+              data: { level: 3, link: '/id' }
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '05 May 2023 Newsletter',
               priority: undefined,
-              data: { level: 3, link: '/id' },
-              childNodes: []
+              data: { level: 3, link: '/id' }
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '03 Jan 2023 Newsletter',
               priority: undefined,
-              data: { level: 3, link: '/id' },
-              childNodes: []
+              data: { level: 3, link: '/id' }
             },
             {
               id: 'id',
+              kind: 'data',
               fullPath: 'fullPath',
               name: '31 Oct 2023 Newsletter',
               priority: undefined,
-              data: { level: 3, link: '/id' },
-              childNodes: []
+              data: { level: 3, link: '/id' }
             }
           ]
         }
@@ -604,11 +610,13 @@ describe('GIVEN the sortSidebarData comparator', () => {
 
       test('THEN no sorting is applied', () => {
         const sorted = sortSidebarData(data);
-
-        expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
-        expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
-        expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        expect(sorted[0].kind).toEqual('group');
+        if (sorted[0].kind === 'group') {
+          expect(sorted[0].childNodes[0].name).toEqual('01 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[1].name).toEqual('05 May 2023 Newsletter');
+          expect(sorted[0].childNodes[2].name).toEqual('03 Jan 2023 Newsletter');
+          expect(sorted[0].childNodes[3].name).toEqual('31 Oct 2023 Newsletter');
+        }
       });
     });
   });
