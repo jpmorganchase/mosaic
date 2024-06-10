@@ -1,5 +1,26 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.76
+
+### Patch Changes
+
+- 727fcd54: feat: align to Salt Vertical Navigation pattern
+
+  - groups now expand and collapse and do not select a route
+  - sidebar group label can be defined through frontmatter `sidebar.groupLabel`
+  - breadcrumbs do not display the root page
+  - pagination now steps through all pages within the user journey
+  - paginator buttons show the group, as well as the page title
+
+- Updated dependencies [727fcd54]
+  - @jpmorganchase/mosaic-store@0.1.0-beta.76
+  - @jpmorganchase/mosaic-components@0.1.0-beta.76
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.76
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.76
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.76
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.76
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.76
+
 ## 0.1.0-beta.75
 
 ### Patch Changes
