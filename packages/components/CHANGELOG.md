@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.76
+
+### Patch Changes
+
+- Updated dependencies [727fcd54]
+  - @jpmorganchase/mosaic-store@0.1.0-beta.76
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.76
+
 ## 0.1.0-beta.75
 
 ### Patch Changes
