@@ -112,7 +112,7 @@ const createPageTest = (ignorePages, pageExtensions) => {
 };
 
 /**
- * Directories create groups of pages, the index.mdx file within that group is assigned GROUP_DEFAULT_PRIORITY
+ * Directories create groups of pages, the index file within that group is assigned GROUP_DEFAULT_PRIORITY
  * to ensure it comes first. This can be overriden by the metadata to move the position of the default page.
  */
 const GROUP_DEFAULT_PRIORITY = 999;
@@ -127,20 +127,18 @@ const GROUP_DEFAULT_PRIORITY = 999;
  */
 const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, SidebarPluginConfigData> =
   {
-    async $afterSource(pages, { ignorePages, pageExtensions }) {
-      if (pageExtensions.includes('.mdx')) {
-        for (const page of pages) {
-          const isNonHiddenPage = createPageTest(ignorePages, ['.mdx']);
-          if (!isNonHiddenPage(page.fullPath)) {
-            continue;
-          }
-          let sidebar = {
-            label: page.title,
-            groupLabel: page?.sidebar?.label || page.title,
-            ...page?.sidebar
-          };
-          page.sidebar = sidebar;
+    async $afterSource(pages, { ignorePages = [], pageExtensions = [] }) {
+      for (const page of pages) {
+        const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
+        if (!isNonHiddenPage(page.fullPath)) {
+          continue;
         }
+        let sidebar = {
+          label: page.title,
+          groupLabel: page?.sidebar?.label || page.title,
+          ...page?.sidebar
+        };
+        page.sidebar = sidebar;
       }
       return pages;
     },
@@ -211,7 +209,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             kind: 'data',
             fullPath: page.fullPath,
             name,
-            priority: isGroupDefaultPage ? priority | GROUP_DEFAULT_PRIORITY : priority,
+            priority: isGroupDefaultPage ? priority || GROUP_DEFAULT_PRIORITY : priority,
             data: { level: getPageLevel(page), link: page.route }
           };
 

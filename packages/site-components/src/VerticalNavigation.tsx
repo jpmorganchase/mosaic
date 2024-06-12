@@ -2,7 +2,7 @@ import React, { MouseEventHandler, useState } from 'react';
 import { StackLayout } from '@salt-ds/core';
 import { NavigationItem, NavigationItemRenderProps } from './NavigationItem';
 import { Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem } from '@jpmorganchase/mosaic-store';
+import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-store';
 
 export type VerticalNavigationProps = {
   /** Selected item groups ids to expand */
@@ -34,14 +34,21 @@ const renderNavigationItem = (
 ) => {
   const { id, kind, name } = item;
   const isGroup = kind === 'group';
-
-  const link = !isGroup ? item?.data?.link : undefined;
-
+  const hasSinglePageInGroup = isGroup && item.childNodes.length === 1;
+  const singlePageInGroup: SidebarNode | undefined =
+    hasSinglePageInGroup && item.childNodes[0].kind === 'data' ? item.childNodes[0] : undefined;
+  let link;
+  if (singlePageInGroup) {
+    link = singlePageInGroup?.data?.link;
+  } else if (!isGroup) {
+    link = item?.data?.link;
+  }
   const childNodes = isGroup ? item.childNodes : undefined;
   const isExpanded = isGroup ? expandedGroupIds.has(id) : false;
   const containsSelectedNode = selectedGroupIds.has(id);
-  const isActive = selectedNodeId === id || (!isExpanded && containsSelectedNode);
-
+  const isActive =
+    selectedNodeId === id || ((!isExpanded || singlePageInGroup) && containsSelectedNode);
+  const shouldRenderAsParent = !link;
   const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
     event.stopPropagation();
     if (!expandedGroupIds.has(id)) {
@@ -60,15 +67,15 @@ const renderNavigationItem = (
         href={link}
         active={isActive}
         orientation="vertical"
-        onExpand={isGroup ? handleExpand : undefined}
-        parent={!!childNodes?.length}
+        onExpand={shouldRenderAsParent ? handleExpand : undefined}
+        parent={shouldRenderAsParent}
         render={renderItem}
         expanded={isExpanded}
         level={level}
       >
         {name}
       </NavigationItem>
-      {isExpanded ? (
+      {shouldRenderAsParent && isExpanded ? (
         <StackLayout
           as="ul"
           gap="var(--salt-size-border)"
