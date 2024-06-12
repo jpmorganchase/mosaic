@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.77
+
+### Patch Changes
+
+- 3cc2ea94: handle Vertical Navigation edge cases
+
+  - Vertical Navigation groups containing single pages should render as links rather than expandable rows
+  - configured page extensions were ignored by page filter
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.77
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.77
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.77
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.77
+  - @jpmorganchase/mosaic-types@0.1.0-beta.77
+
 ## 0.1.0-beta.76
 
 ### Patch Changes
