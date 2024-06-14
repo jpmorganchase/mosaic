@@ -31,5 +31,5 @@
     "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59",
     "@jpmorganchase/mosaic-sitemap-component": "0.1.0-beta.62"
   },
-  "changesets": ["nervous-comics-hug"]
+  "changesets": ["big-rules-poke", "nervous-comics-hug"]
 }
