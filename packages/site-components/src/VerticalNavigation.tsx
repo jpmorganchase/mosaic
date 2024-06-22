@@ -47,7 +47,9 @@ const renderNavigationItem = (
   const isExpanded = isGroup ? expandedGroupIds.has(id) : false;
   const containsSelectedNode = selectedGroupIds.has(id);
   const isActive =
-    selectedNodeId === id || ((!isExpanded || singlePageInGroup) && containsSelectedNode);
+    selectedNodeId === id ||
+    ((!isExpanded || singlePageInGroup) &&
+      (containsSelectedNode || selectedNodeId?.includes(item.id)));
   const shouldRenderAsParent = !link;
   const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
     event.stopPropagation();
@@ -85,16 +87,16 @@ const renderNavigationItem = (
             paddingLeft: 0
           }}
         >
-          {childNodes?.map(childItem => {
-            return renderNavigationItem(
+          {childNodes?.map(childItem =>
+            renderNavigationItem(
               childItem,
               selectedNodeId,
               expandedGroupIds,
               selectedGroupIds,
               setExpanded,
               level + 1
-            );
-          })}
+            )
+          )}
         </StackLayout>
       ) : null}
     </li>
