@@ -1,6 +1,6 @@
 import React from 'react';
 import classnames from 'clsx';
-import { ContentStatus } from '@salt-ds/lab';
+import { Text, StatusIndicator, StackLayout } from '@salt-ds/core';
 
 import styles from './styles.css';
 
@@ -10,7 +10,12 @@ export interface FilterNoResultsProps {
 }
 
 export function DefaultNoResults() {
-  return <ContentStatus message="No Results Found" status="info" />;
+  return (
+    <StackLayout gap={3} align="center">
+      <StatusIndicator status="info" size={2} />
+      <Text>No Results Found</Text>
+    </StackLayout>
+  );
 }
 
 export const FilterNoResults: React.FC<React.PropsWithChildren<FilterNoResultsProps>> = ({

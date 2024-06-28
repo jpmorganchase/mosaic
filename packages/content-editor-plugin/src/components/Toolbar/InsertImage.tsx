@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogActions
 } from '@salt-ds/core';
-import { ButtonBar } from '@salt-ds/lab';
 
 import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
@@ -124,12 +123,10 @@ export const InsertImage = () => {
             </div>
           </DialogContent>
           <DialogActions>
-            <ButtonBar>
-              <Button onClick={handleClose}>Cancel</Button>
-              <Button variant="cta" type="submit">
-                Insert
-              </Button>
-            </ButtonBar>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button variant="cta" type="submit">
+              Insert
+            </Button>
           </DialogActions>
         </form>
       </Dialog>

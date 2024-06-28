@@ -1,5 +1,5 @@
-import React from 'react';
-import { Dropdown, SelectionChangeHandler } from '@salt-ds/lab';
+import React, { SyntheticEvent } from 'react';
+import { Dropdown, Option } from '@salt-ds/core';
 import { $createCodeNode } from '@lexical/code';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';
@@ -106,7 +106,8 @@ export function InsertBlockDropdown({
     }
   };
 
-  const handleSelect: SelectionChangeHandler<BlockSourceType, 'default'> = (_event, item) => {
+  const handleSelect = (_event: SyntheticEvent, items: BlockSourceType[]) => {
+    const item = items[0];
     if (!item) {
       return;
     }
@@ -120,15 +121,15 @@ export function InsertBlockDropdown({
 
   const selectedBlockSourceIndex = source.findIndex(item => item.type === blockSourceType);
   return (
-    <Dropdown
-      ListProps={{
-        width: 200
-      }}
-      defaultSelected={source[selectedBlockSourceIndex]}
-      itemToString={itemToString}
+    <Dropdown<BlockSourceType>
+      defaultSelected={[source[selectedBlockSourceIndex]]}
+      valueToString={itemToString}
       onSelectionChange={handleSelect}
-      source={source}
-      width={132}
-    />
+      style={{ width: 132 }}
+    >
+      {source.map(item => (
+        <Option value={item} key={item.name} />
+      ))}
+    </Dropdown>
   );
 }

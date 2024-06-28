@@ -16,52 +16,41 @@ import {
 } from '@lexical/table';
 import { useFloatingUI } from '@salt-ds/core';
 import { useDismiss, useInteractions } from '@floating-ui/react';
-import {
-  ArrowDownIcon,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ArrowUpIcon,
-  DeleteIcon,
-  DeleteSolidIcon
-} from '@salt-ds/icons';
-import type { MenuDescriptor } from '@salt-ds/lab';
 
 import { Popper } from '../components/Popper/Popper';
-import { ActionMenu, ActionMenuSource } from '../components/ActionMenu/ActionMenu';
+import { ActionMenu, ActionMenuItem, ActionMenuSource } from '../components/ActionMenu/ActionMenu';
 import styles from './TableActionMenuPlugin.css';
 
-const initialSource: ActionMenuSource = {
-  menuItems: [
-    {
-      title: 'Insert Row Above',
-      icon: ArrowUpIcon
-    },
-    {
-      title: 'Insert Row Below',
-      icon: ArrowDownIcon
-    },
-    {
-      title: 'Insert Column Left',
-      icon: ArrowLeftIcon
-    },
-    {
-      title: 'Insert Column Right',
-      icon: ArrowRightIcon
-    },
-    {
-      title: 'Delete Row',
-      icon: DeleteIcon
-    },
-    {
-      title: 'Delete Column',
-      icon: DeleteIcon
-    },
-    {
-      title: 'Delete Table',
-      icon: DeleteSolidIcon
-    }
-  ]
-};
+const menuItems: ActionMenuSource = [
+  {
+    title: 'Insert Row Above',
+    icon: 'arrowUp'
+  },
+  {
+    title: 'Insert Row Below',
+    icon: 'arrowDown'
+  },
+  {
+    title: 'Insert Column Left',
+    icon: 'arrowLeft'
+  },
+  {
+    title: 'Insert Column Right',
+    icon: 'arrowRight'
+  },
+  {
+    title: 'Delete Row',
+    icon: 'delete'
+  },
+  {
+    title: 'Delete Column',
+    icon: 'delete'
+  },
+  {
+    title: 'Delete Table',
+    icon: 'deleteSolid'
+  }
+];
 
 interface TableActionMenuProps {
   editor: LexicalEditor;
@@ -70,7 +59,7 @@ interface TableActionMenuProps {
 }
 
 function TableActionMenu({ editor, tableCellNode, onComplete }: TableActionMenuProps) {
-  const handleMenuSelect = (item: MenuDescriptor | null) => {
+  const handleMenuSelect = (item: ActionMenuItem) => {
     if (!item) {
       return;
     }
@@ -174,7 +163,7 @@ function TableActionMenu({ editor, tableCellNode, onComplete }: TableActionMenuP
     });
   }, [editor, tableCellNode, onComplete]);
 
-  return <ActionMenu initialSource={initialSource} onItemClick={handleMenuSelect} />;
+  return <ActionMenu items={menuItems} onItemClick={handleMenuSelect} />;
 }
 
 export function TableActionMenuPlugin() {

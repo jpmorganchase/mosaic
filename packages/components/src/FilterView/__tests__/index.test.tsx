@@ -29,11 +29,8 @@ function renderFilterView(props = {}) {
       {...props}
     >
       <FilterView.ResultCount />
-      <FilterView.SortDropdown ListProps={{ 'data-mosaic-testid': 'sort-dropdown' }} />
-      <FilterView.FilterDropdown
-        ListProps={{ 'data-mosaic-testid': 'filter-dropdown' }}
-        source={['Product A', 'Product B', 'Product C']}
-      />
+      <FilterView.SortDropdown />
+      <FilterView.FilterDropdown source={['Product A', 'Product B', 'Product C']} />
     </FilterView>
   );
 }
@@ -44,7 +41,7 @@ test('can filter the view', async () => {
   const dropdownButton = getByText('All');
   // action
   await userEvent.click(dropdownButton);
-  const productA = within(screen.getByTestId('filter-dropdown')).getByText('Product B');
+  const productA = within(screen.getByRole('listbox')).getByText('Product B');
   await userEvent.click(productA);
   // assert
   expect(getByLabelText('result count').textContent).toEqual('1 Result Displayed');
@@ -63,7 +60,7 @@ test('can sort the view', async () => {
   // action
   const dropdownButton = getByText('A-Z');
   await userEvent.click(dropdownButton);
-  const sortZA = within(screen.getByTestId('sort-dropdown')).getByText('Descending Z-A');
+  const sortZA = within(screen.getByRole('listbox')).getByText('Descending Z-A');
   await userEvent.click(sortZA);
   // assert
   displayedProducts = getAllByTestId('product');
@@ -77,7 +74,7 @@ test('renders no results when filter returns an empty view', async () => {
   const dropdownButton = getByText('All');
   // action
   await userEvent.click(dropdownButton);
-  const productC = within(screen.getByTestId('filter-dropdown')).getByText('Product C');
+  const productC = within(screen.getByRole('listbox')).getByText('Product C');
   await userEvent.click(productC);
   // assert
   expect(queryByLabelText('Product A')).not.toBeInTheDocument();

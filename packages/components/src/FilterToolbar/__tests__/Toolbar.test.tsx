@@ -9,12 +9,10 @@ function renderToolbar(initialState, onStateChange) {
       <label>Another component</label>
       <FilterToolbar.PillGroup />
       <FilterToolbar.SortDropdown
-        ListProps={{ 'data-mosaic-testid': 'sort-dropdown' }}
         itemToString={item => `Item ${item}`}
         source={['Sort 1', 'Sort 2', 'Sort 3']}
       />
       <FilterToolbar.FilterDropdown
-        ListProps={{ 'data-mosaic-testid': 'filter-dropdown' }}
         itemToString={item => `Item ${item}`}
         source={['Filter 1', 'Filter 2', 'Filter 3']}
       />
@@ -30,8 +28,8 @@ test('updates the toolbar sort state', async () => {
   // action
   await userEvent.click(dropdownSortButton);
   // assert
-  expect(within(screen.getByTestId('sort-dropdown')).getAllByRole('option').length).toEqual(3);
-  const sort2 = within(screen.getByTestId('sort-dropdown')).getByText('Item Sort 2');
+  expect(within(screen.getByRole('listbox')).getAllByRole('option').length).toEqual(3);
+  const sort2 = within(screen.getByRole('listbox')).getByText('Item Sort 2');
   // action
   await userEvent.click(sort2);
   // assert
@@ -50,9 +48,9 @@ it('updates the toolbar filter state', async () => {
   const dropdownFilterButton = getByText('All');
   await userEvent.click(dropdownFilterButton);
   // assert
-  expect(within(screen.getByTestId('filter-dropdown')).getAllByRole('option').length).toEqual(4);
+  expect(within(screen.getByRole('listbox')).getAllByRole('option').length).toEqual(4);
   // action
-  const option2 = within(screen.getByTestId('filter-dropdown')).getByText('Item Filter 2');
+  const option2 = within(screen.getByRole('listbox')).getByText('Item Filter 2');
   await userEvent.click(option2);
   // assert
   expect(handleStateChangeMock).toHaveBeenCalledWith({
@@ -61,7 +59,7 @@ it('updates the toolbar filter state', async () => {
     hasStateChanged: true
   });
   // action
-  const option3 = within(screen.getByTestId('filter-dropdown')).getByText('Item Filter 3');
+  const option3 = within(screen.getByRole('listbox')).getByText('Item Filter 3');
   await userEvent.click(option3);
   // assert
   expect(handleStateChangeMock).toHaveBeenLastCalledWith({
@@ -81,7 +79,7 @@ it('remove a filter with the dropdown', async () => {
   // action
   const dropdownFilterButton = getByText('2 Items Selected');
   await userEvent.click(dropdownFilterButton);
-  const option2 = within(screen.getByTestId('filter-dropdown')).getByText('Item Filter 2');
+  const option2 = within(screen.getByRole('listbox')).getByText('Item Filter 2');
   await userEvent.click(option2);
   // assert
   expect(handleStateChangeMock).toHaveBeenCalledWith({
@@ -101,7 +99,7 @@ it('clears all filters', async () => {
   // action
   const dropdownFilterButton = getByText('2 Items Selected');
   await userEvent.click(dropdownFilterButton);
-  const clearAllOption = within(screen.getByTestId('filter-dropdown')).getByText('Item Clear all');
+  const clearAllOption = within(screen.getByRole('listbox')).getByText('Item Clear all');
   await userEvent.click(clearAllOption);
   // assert
   expect(handleStateChangeMock).toHaveBeenCalledWith({

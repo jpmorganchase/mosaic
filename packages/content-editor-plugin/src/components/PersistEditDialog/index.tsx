@@ -4,7 +4,6 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
 import { DialogHeader, DialogContent, DialogActions } from '@salt-ds/core';
-import { ButtonBar } from '@salt-ds/lab';
 import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 import { useEditorUser, usePageState } from '../../store';
@@ -134,18 +133,16 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <ButtonBar>
-          <Button disabled={isRaising} onClick={handleClose}>
-            {!prHref ? 'Cancel' : 'Done'}
-          </Button>
-          <Button
-            disabled={persistUrl === undefined || isRaising || prHref !== null}
-            onClick={handleRaisePr}
-            variant="cta"
-          >
-            Raise Pull Request
-          </Button>
-        </ButtonBar>
+        <Button disabled={isRaising} onClick={handleClose}>
+          {!prHref ? 'Cancel' : 'Done'}
+        </Button>
+        <Button
+          disabled={persistUrl === undefined || isRaising || prHref !== null}
+          onClick={handleRaisePr}
+          variant="cta"
+        >
+          Raise Pull Request
+        </Button>
       </DialogActions>
     </Dialog>
   );

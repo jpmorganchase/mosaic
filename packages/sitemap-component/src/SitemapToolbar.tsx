@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Dropdown, DropdownButton, SelectionChangeHandler } from '@salt-ds/lab';
+import React, { SyntheticEvent } from 'react';
+import { Dropdown, Option } from '@salt-ds/core';
 import {
   useToolbarDispatch,
   useToolbarState,
@@ -39,8 +39,7 @@ export const SitemapToolbar: React.FC<SitemapToolbarProps> = ({
 }: SitemapToolbarProps) => {
   const dispatch = useToolbarDispatch();
   const { filters = [] } = useToolbarState();
-  const [isOpen, setIsOpen] = useState(false);
-  const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) =>
+  const handleSelect = (_e: SyntheticEvent, selectedItems: string[]) =>
     dispatch({ type: 'setFilters', value: selectedItems });
 
   return (
@@ -49,23 +48,23 @@ export const SitemapToolbar: React.FC<SitemapToolbarProps> = ({
         <>
           <Caption2 className={styles.pageCount}>Number of pages: {pageCount}</Caption2>
           {namespaces?.length >= 1 ? (
-            <Dropdown<string, 'multiple'>
-              aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
+            <Dropdown
+              startAdornment={<Icon name="filter" />}
+              value={defaultButtonLabel(filters)}
+              aria-label="Filters"
               className={styles.filterDropdown}
-              onOpenChange={setIsOpen}
               onSelectionChange={handleSelect}
               selected={filters}
-              selectionStrategy="multiple"
-              source={namespaces}
-              triggerComponent={
-                <span className={styles.filterDropdownTriggerRoot}>
-                  <Icon name="filter" />
-                  <DropdownButton label={defaultButtonLabel(filters)} />
-                </span>
-              }
-              width={200}
+              multiselect
+              style={{ width: 200 }}
               {...rest}
-            />
+            >
+              {namespaces.map(namespace => (
+                <Option key={namespace} value={namespace}>
+                  {namespace}
+                </Option>
+              ))}
+            </Dropdown>
           ) : null}
         </>
       ) : null}
