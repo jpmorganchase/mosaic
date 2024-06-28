@@ -1,33 +1,49 @@
-import React from 'react';
+import React, { ChangeEvent, SyntheticEvent, useState } from 'react';
 import classnames from 'clsx';
-import { escapeRegExp, ComboBox, ComboBoxProps, SelectionChangeHandler } from '@salt-ds/lab';
+import { ComboBox, Option, ComboBoxProps } from '@salt-ds/core';
 import { Icon } from '../../Icon';
 
 import { useToolbarDispatch } from '../ToolbarProvider';
-import styles from '../SortDropdown/styles.css';
+import styles from './styles.css';
 
-export interface FilterSearchProps extends ComboBoxProps<string, 'deselectable'> {}
+const regExp = /[.*+?^${}()|[\]\\]/g;
+
+function escapeRegExp(string: string): string {
+  return string.replace(regExp, '\\$&');
+}
+
+export interface FilterSearchProps extends ComboBoxProps {
+  source: string[];
+}
 
 export function FilterSearch({ className, source = [], ...rest }: FilterSearchProps) {
   const dispatch = useToolbarDispatch();
+  const [value, setValue] = useState('');
 
   // TODO convert to multiselect once Salt supports Multiselect from a ComboBox
-  const handleSelect: SelectionChangeHandler<string, 'deselectable'> = (_e, item) => {
-    const value = item === null ? [] : [item];
-    dispatch({ type: 'setFilters', value });
+  const handleSelect = (_e: SyntheticEvent, newSelected: string[]) => {
+    dispatch({ type: 'setFilters', value: newSelected });
   };
-  const getFilterRegex: (text: string) => RegExp = value =>
-    new RegExp(`\\b(${escapeRegExp(value)})`, 'gi');
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+  };
 
   return (
     <ComboBox
-      InputProps={{ startAdornment: <Icon name="filter" /> }}
+      startAdornment={<Icon name="filter" />}
       className={classnames(className, styles.root)}
-      getFilterRegex={getFilterRegex}
       onSelectionChange={handleSelect}
-      source={source}
-      width={200}
+      value={value}
+      onChange={handleChange}
+      style={{ width: 200 }}
       {...rest}
-    />
+    >
+      {source
+        .filter(item => item.match(new RegExp(`\\b(${escapeRegExp(value)})`, 'gi')))
+        .map(item => (
+          <Option value={item} key={item} />
+        ))}
+    </ComboBox>
   );
 }

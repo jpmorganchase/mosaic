@@ -1,8 +1,6 @@
-import React, { useMemo, useState } from 'react';
-import classnames from 'clsx';
-import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
+import React, { SyntheticEvent, useMemo } from 'react';
+import { Dropdown, DropdownProps, Option } from '@salt-ds/core';
 import { Icon } from '../../Icon';
-import styles from './styles.css';
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';
 
 const defaultButtonLabel = (selectedItems: string[] | undefined) => {
@@ -15,9 +13,12 @@ const defaultButtonLabel = (selectedItems: string[] | undefined) => {
   return `${selectedItems.length} Items Selected`;
 };
 
-export interface FilterDropdownProps extends DropdownProps<string, 'multiple'> {
+export interface FilterDropdownProps extends DropdownProps {
   /** Callback to translate the selected list item to a Button label */
   labelButton?: (selectedItems: string[] | undefined) => string;
+  /** Dropdown list source */
+  source?: string[];
+  itemToString?: DropdownProps['valueToString'];
 }
 
 const CLEAR_ALL = 'Clear all';
@@ -31,32 +32,27 @@ export function FilterDropdown({
 }: FilterDropdownProps) {
   const dispatch = useToolbarDispatch();
   const { filters = [] } = useToolbarState();
-  const [isOpen, setIsOpen] = useState(false);
   const listItems = useMemo(() => (source.length > 1 ? [...source, CLEAR_ALL] : source), [source]);
-  const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) => {
+  const handleSelect = (_e: SyntheticEvent, selectedItems: string[]) => {
     const nextSelectedItems: string[] = selectedItems.includes(CLEAR_ALL) ? [] : selectedItems;
     dispatch({ type: 'setFilters', value: nextSelectedItems });
   };
   return (
-    <Dropdown<string, 'multiple'>
-      aria-label={isOpen ? 'close filters menu' : 'open filters menu'}
-      className={classnames(className, styles.root)}
-      itemToString={itemToString}
-      onOpenChange={setIsOpen}
+    <Dropdown
+      aria-label="Filters"
+      className={className}
+      valueToString={itemToString}
+      value={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
+      startAdornment={<Icon name="filter" />}
       onSelectionChange={handleSelect}
       selected={filters}
-      selectionStrategy="multiple"
-      source={listItems}
-      triggerComponent={
-        <span className={styles.triggerRoot}>
-          <Icon name="filter" />
-          <DropdownButton
-            label={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
-          />
-        </span>
-      }
-      width={200}
+      multiselect
+      style={{ width: 200 }}
       {...rest}
-    />
+    >
+      {listItems.map(item => (
+        <Option value={item} key={item} />
+      ))}
+    </Dropdown>
   );
 }

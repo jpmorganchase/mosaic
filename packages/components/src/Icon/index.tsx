@@ -1,5 +1,8 @@
 import React from 'react';
 import { icons, IconNames } from '@jpmorganchase/mosaic-theme';
+import classnames from 'clsx';
+
+import styles from './styles.css';
 
 export interface IconProps {
   /** Additional class name for root class override. */
@@ -43,7 +46,7 @@ export const Icon: React.FC<React.PropsWithChildren<IconProps>> = ({
   const IconComponent = icons[currentIconName];
   const iconSize = typeof size === 'string' ? iconSizeMap[size] : size;
   return (
-    <span className={className} {...rest}>
+    <span className={classnames(styles.root, className)} {...rest}>
       <IconComponent size={iconSize} />
     </span>
   );

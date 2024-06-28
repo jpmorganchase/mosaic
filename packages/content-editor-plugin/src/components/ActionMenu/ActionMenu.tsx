@@ -1,26 +1,36 @@
 import React from 'react';
-import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
-import { Icon } from '@jpmorganchase/mosaic-components';
+import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
+import { Icon, Button } from '@jpmorganchase/mosaic-components';
+import { IconNames } from '@jpmorganchase/mosaic-theme';
 
-import type { CascadingMenuProps } from '@salt-ds/lab';
+export type ActionMenuItem = {
+  title: string;
+  icon: IconNames;
+};
 
-export type ActionMenuSource = MenuDescriptor;
+export type ActionMenuSource = ActionMenuItem[];
 
 interface ActionMenuProps {
-  initialSource: CascadingMenuProps['initialSource'];
-  onItemClick: CascadingMenuProps['onItemClick'];
+  items: ActionMenuSource;
+  onItemClick: (item: ActionMenuItem) => void;
 }
 
-export function ActionMenu({ initialSource, onItemClick }: ActionMenuProps) {
+export function ActionMenu({ items, onItemClick }: ActionMenuProps) {
   return (
-    <MenuButton
-      hideCaret
-      CascadingMenuProps={{
-        initialSource,
-        onItemClick
-      }}
-    >
-      <Icon name="menu" />
-    </MenuButton>
+    <Menu>
+      <MenuTrigger>
+        <Button variant="secondary" aria-label="Actions">
+          <Icon name="menu" aria-hidden />
+        </Button>
+      </MenuTrigger>
+      <MenuPanel>
+        {items.map(item => (
+          <MenuItem key={item.title} onClick={() => onItemClick(item)}>
+            <Icon name={item.icon} />
+            {item.title}
+          </MenuItem>
+        ))}
+      </MenuPanel>
+    </Menu>
   );
 }

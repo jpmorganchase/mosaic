@@ -1,10 +1,11 @@
 import React, { FC, KeyboardEvent, MouseEvent } from 'react';
-import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
+import { Menu, MenuItem, MenuPanel, MenuTrigger, Button } from '@salt-ds/core';
 import classnames from 'clsx';
 
 import styles from './tabsMenuButton.css';
-import { TabsLinkItem } from './TabsLink';
-import { TabMenuItemType } from './index';
+import type { TabsLinkItem } from './TabsLink';
+import type { TabMenuItemType } from './index';
+import { Icon } from '../Icon';
 
 export interface TabsMenuButtonItem {
   /**
@@ -14,7 +15,7 @@ export interface TabsMenuButtonItem {
   /** Collection of link options */
   links: TabsLinkItem[];
   /** Callback when Tab is selected */
-  onSelect: (event: MouseEvent | KeyboardEvent, sourceItem: MenuDescriptor) => void;
+  onSelect: (event: MouseEvent | KeyboardEvent, sourceItem: TabsLinkItem) => void;
   /** Title of Tab */
   title: string;
   /** Type of Tab */
@@ -28,14 +29,20 @@ export interface TabsMenuButtonProps {
 }
 
 export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, item }) => (
-  <MenuButton
-    className={classnames([className, styles.root])}
-    CascadingMenuProps={{
-      initialSource: { menuItems: item.links },
-      onItemClick: (sourceItem, event) => item.onSelect(event, sourceItem)
-    }}
-  >
-    <span>{item.title || item.label}</span>
-    {children}
-  </MenuButton>
+  <Menu>
+    <MenuTrigger>
+      <Button variant="secondary" className={classnames([className, styles.root])}>
+        <span>{item.title || item.label}</span>
+        {children}
+        <Icon name="chevronDown" aria-hidden />
+      </Button>
+    </MenuTrigger>
+    <MenuPanel>
+      {item.links.map(link => (
+        <MenuItem key={link.title || link.label} onClick={event => item.onSelect(event, link)}>
+          {link.title || link.label}
+        </MenuItem>
+      ))}
+    </MenuPanel>
+  </Menu>
 );

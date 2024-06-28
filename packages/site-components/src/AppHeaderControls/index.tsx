@@ -1,7 +1,6 @@
 import React from 'react';
-import { Icon, Link } from '@jpmorganchase/mosaic-components';
-import { MenuButton, MenuDescriptor } from '@salt-ds/lab';
-import { useRouter } from 'next/router';
+import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
+import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
@@ -21,7 +20,6 @@ function toUpperFirst(str) {
 }
 
 export const AppHeaderControls: React.FC = () => {
-  const router = useRouter();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
 
@@ -52,24 +50,16 @@ export const AppHeaderControls: React.FC = () => {
     });
   }
   if (isLoginEnabled && isLoggedIn) {
-    actionMenuOptions = [...actionMenuOptions, { title: 'Logout', link: '/api/auth/signout' }];
-  }
-  function handleMenuSelect(selectedMenuItem) {
-    if (selectedMenuItem?.link) {
-      if (selectedMenuItem.title.toLowerCase() === 'logout') {
-        window.location.href = selectedMenuItem.link;
-      } else {
-        router.push(selectedMenuItem.link);
+    actionMenuOptions = [
+      ...actionMenuOptions,
+      {
+        title: 'Logout',
+        onSelect: () => {
+          window.location.href = '/api/auth/signout';
+        }
       }
-    } else if (selectedMenuItem?.onSelect) {
-      selectedMenuItem.onSelect();
-    }
+    ];
   }
-
-  const initialSource: MenuDescriptor = {
-    menuItems: actionMenuOptions
-  };
-
   return (
     <div className={styles.root}>
       {isLoginEnabled && <EditorControls enabled={isLoggedIn} />}
@@ -90,18 +80,18 @@ export const AppHeaderControls: React.FC = () => {
           )}
         </div>
       )}
-      <MenuButton
-        CascadingMenuProps={{
-          initialSource,
-          onItemClick: handleMenuSelect,
-          rootPlacement: 'bottom-end'
-        }}
-        className={styles.menuButton}
-        hideCaret
-        key={`${colorMode} - ${pageState} - ${isLoggedIn ? 'in' : 'out'}`}
-      >
-        <Icon aria-label="select an action" name="microMenu" />
-      </MenuButton>
+      <Menu placement="bottom-end">
+        <MenuTrigger>
+          <Button className={styles.menuButton} aria-label="Select an action" variant="secondary">
+            <Icon aria-hidden name="microMenu" />
+          </Button>
+        </MenuTrigger>
+        <MenuPanel>
+          {actionMenuOptions.map(option => (
+            <MenuItem onClick={option.onSelect}>{option.title}</MenuItem>
+          ))}
+        </MenuPanel>
+      </Menu>
     </div>
   );
 };
