@@ -16,6 +16,7 @@ export default {
           justifyContent: 'center',
           fontWeight: 'inherit'
         },
+        // Removes the "active" styling from button so there's less visual change
         [`${darkMode} [aria-expanded="true"][aria-haspopup="menu"].&`]: {
           background: 'inherit',
           color: vars.color.dark.navigable.selectableLink.unselectedLabel
