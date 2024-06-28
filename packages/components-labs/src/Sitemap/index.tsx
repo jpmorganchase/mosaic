@@ -1,7 +1,6 @@
-import React, { RefObject, useEffect, useRef, useState } from 'react';
+import React, { RefObject, SyntheticEvent, useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Spinner } from '@salt-ds/core';
-import { Dropdown, DropdownButton, SelectionChangeHandler } from '@salt-ds/lab';
+import { Spinner, Dropdown, Option } from '@salt-ds/core';
 import warning from 'warning';
 import { Icon, Caption2 } from '@jpmorganchase/mosaic-components';
 
@@ -19,6 +18,8 @@ export interface SitemapProps {
   initialNamespaceFilters?: string[];
 }
 
+const dottedFileFilter = (pagePath: string) => /\/[^.]*$/.test(pagePath);
+
 const filterPaths = (slugs: string[], namespaceFilters: string[]) => {
   const namespaceFilter = (pagePath: string) => {
     if (!namespaceFilters.length) {
@@ -35,21 +36,6 @@ const filterPaths = (slugs: string[], namespaceFilters: string[]) => {
     dottedFileFilter(pagePath) && namespaceFilter(pagePath);
   const filteredPaths = slugs.filter(customFilter);
   return filteredPaths;
-};
-
-const drawSitemap = (filteredPaths: string[], containerRef: RefObject<HTMLDivElement>) => {
-  if (!containerRef?.current) {
-    throw new Error('no container ref defined for sitemap');
-  }
-
-  d3.select(containerRef.current).html('');
-  d3.select(containerRef.current).append(() =>
-    drawTree(parseFileSystem(filteredPaths), {
-      label: node => node.name.substring(node.name.lastIndexOf('/') + 1),
-      link: node => node.link,
-      width: 1152
-    }).node()
-  );
 };
 
 type FileSystemBase = {
@@ -108,7 +94,20 @@ const parseFileSystem = (fileSystem: any) => {
     .parentId((data: FileSystemItem) => data.parent)(hierachyData);
 };
 
-const dottedFileFilter = (pagePath: string) => /\/[^.]*$/.test(pagePath);
+const drawSitemap = (filteredPaths: string[], containerRef: RefObject<HTMLDivElement>) => {
+  if (!containerRef?.current) {
+    throw new Error('no container ref defined for sitemap');
+  }
+
+  d3.select(containerRef.current).html('');
+  d3.select(containerRef.current).append(() =>
+    drawTree(parseFileSystem(filteredPaths), {
+      label: node => node.name.substring(node.name.lastIndexOf('/') + 1),
+      link: node => node.link,
+      width: 1152
+    }).node()
+  );
+};
 
 const filterButtonLabel = (selectedItems: string[] | undefined) => {
   if (!selectedItems || selectedItems.length === 0) {
@@ -130,7 +129,6 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const dataRef = useRef<string[]>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [, setIsOpen] = useState(false);
   const [error, setError] = useState<string>();
   const [namespaceFilters, setNamespaceFilters] = useState<string[]>(initialNamespaceFilters);
   const [namespaces, setNamespaces] = useState<string[]>([]);
@@ -182,7 +180,7 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
     }
   }, [href, namespaceFilters]);
 
-  const handleSelect: SelectionChangeHandler<string, 'multiple'> = (_e, selectedItems) => {
+  const handleSelect = (_e: SyntheticEvent, selectedItems: string[]) => {
     setNamespaceFilters(selectedItems);
   };
 
@@ -193,18 +191,18 @@ export const Sitemap: React.FC<React.PropsWithChildren<SitemapProps>> = ({
           <>
             <Caption2 className={styles.pageCount}>Number of pages: {pageCount}</Caption2>
             <Dropdown
-              triggerComponent={
-                <DropdownButton
-                  IconComponent={DropdownIcon}
-                  label={filterButtonLabel(namespaceFilters)}
-                />
-              }
-              width={200}
-              onOpenChange={setIsOpen}
+              startAdornment={<DropdownIcon />}
+              value={filterButtonLabel(namespaceFilters)}
+              style={{ width: 200 }}
               onSelectionChange={handleSelect}
-              selectionStrategy="multiple"
-              source={namespaces}
-            />
+              multiselect
+            >
+              {namespaces.map(namespace => (
+                <Option key={namespace} value={namespace}>
+                  {namespace}
+                </Option>
+              ))}
+            </Dropdown>
           </>
         ) : null}
       </div>

@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles, link } from '@jpmorganchase/mosaic-theme';
+import { link, darkMode, lightMode, vars } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style([
@@ -13,13 +13,27 @@ export default {
           letterSpacing: 'inherit',
           textTransform: 'inherit',
           textDecoration: 'none',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          fontWeight: 'inherit'
+        },
+        [`${darkMode} [aria-expanded="true"][aria-haspopup="menu"].&`]: {
+          background: 'inherit',
+          color: vars.color.dark.navigable.selectableLink.unselectedLabel
+        },
+        [`${darkMode} [aria-expanded="true"][aria-haspopup="menu"].&:hover`]: {
+          background: vars.color.dark.neutral.background.emphasis,
+          color: vars.color.dark.navigable.selectableLink.unselectedLabel
+        },
+        [`${lightMode} [aria-expanded="true"][aria-haspopup="menu"].&`]: {
+          background: 'inherit',
+          color: vars.color.light.navigable.selectableLink.unselectedLabel
+        },
+        [`${lightMode} [aria-expanded="true"][aria-haspopup="menu"].&:hover`]: {
+          background: vars.color.light.neutral.background.emphasis,
+          color: vars.color.light.navigable.selectableLink.unselectedLabel
         }
       }
     },
-    responsiveSprinkles({
-      paddingX: ['x2', 'x2', 'x2', 'x2']
-    }),
     link({ variant: 'selectable' })
   ])
 };

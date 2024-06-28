@@ -11,7 +11,6 @@ import {
   DialogActions,
   DialogHeader
 } from '@salt-ds/core';
-import { ButtonBar } from '@salt-ds/lab';
 import { $getSelection, $isRangeSelection } from 'lexical';
 
 import { ToolbarButton } from './ToolbarButton';
@@ -136,12 +135,10 @@ export const InsertLinkDialog = () => {
         </div>
       </DialogContent>
       <DialogActions>
-        <ButtonBar>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="cta" onClick={handleSubmit}>
-            Insert
-          </Button>
-        </ButtonBar>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="cta" onClick={handleSubmit}>
+          Insert
+        </Button>
       </DialogActions>
     </Dialog>
   );

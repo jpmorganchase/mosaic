@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
-import classnames from 'clsx';
-import { Dropdown, DropdownButton, DropdownProps, SelectionChangeHandler } from '@salt-ds/lab';
+import React, { SyntheticEvent, useState } from 'react';
+import { Dropdown, Option, DropdownProps } from '@salt-ds/core';
 import { Icon } from '../../Icon';
-import styles from './styles.css';
 import { useToolbarDispatch, useToolbarState } from '../ToolbarProvider';
 import { itemToLabel as defaultItemToLabel, source as defaultSource } from './defaultSort';
 
-type PartialDropdownProps = Omit<DropdownProps<string, 'default'>, 'source'>;
+type PartialDropdownProps = DropdownProps;
 
 export interface FilterSortDropdownProps extends PartialDropdownProps {
   /** Callback to translate the selected list item to a Button label */
   labelButton?: (selectedItem: string | undefined) => string;
   /** Dropdown list source */
   source?: string[];
+  itemToString?: DropdownProps['valueToString'];
 }
 
 export function FilterSortDropdown({
@@ -26,28 +25,27 @@ export function FilterSortDropdown({
   const { sort = source[0] } = useToolbarState();
   const [, setIsOpen] = useState(false);
 
-  const handleSelect: SelectionChangeHandler<string, 'default'> = (_e, selectedItem) => {
-    if (selectedItem) {
-      dispatch({ type: 'setSort', value: selectedItem });
+  const handleSelect = (_e: SyntheticEvent, selectedItem: string[]) => {
+    if (selectedItem[0]) {
+      dispatch({ type: 'setSort', value: selectedItem[0] });
     }
   };
 
   return (
     <Dropdown
-      className={classnames(className, styles.root)}
-      itemToString={itemToString}
+      startAdornment={<Icon name="swap" />}
+      className={className}
+      valueToString={itemToString}
+      value={labelButton ? labelButton(sort) : sort}
       onOpenChange={setIsOpen}
       onSelectionChange={handleSelect}
-      selected={sort}
-      source={source}
-      triggerComponent={
-        <span className={styles.triggerRoot}>
-          <Icon name="swap" />
-          <DropdownButton label={labelButton ? labelButton(sort) : sort} />
-        </span>
-      }
-      width={150}
+      selected={[sort]}
+      style={{ width: 150 }}
       {...rest}
-    />
+    >
+      {source.map(item => (
+        <Option value={item} key={item} />
+      ))}
+    </Dropdown>
   );
 }

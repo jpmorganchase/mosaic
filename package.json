@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
+    "build:packages": "turbo run build --filter=!@jpmorganchase/mosaic-site",
     "build": "turbo run build",
     "clean": "turbo run clean",
     "copy:rig:images": "cp -r ./assets/[!.]* ./packages/rig/public/img",
