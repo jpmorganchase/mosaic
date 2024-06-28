@@ -13,10 +13,10 @@ test('renders a sort dropdown', async () => {
     </ToolbarProvider>
   );
   // assert
-  expect(getAllByRole('option').length).toEqual(1);
+  expect(getAllByRole('combobox').length).toEqual(1);
   // action
   const dropdownButton = getByText('Sort 1');
   fireEvent.click(dropdownButton);
   // assert
-  await waitFor(() => expect(getAllByRole('option').length).toEqual(4));
+  await waitFor(() => expect(getAllByRole('option').length).toEqual(3));
 });
