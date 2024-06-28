@@ -13,10 +13,10 @@ test('renders a filter dropdown', async () => {
     </ToolbarProvider>
   );
   // assert
-  expect(getAllByRole('option').length).toEqual(1);
+  expect(getAllByRole('combobox').length).toEqual(1);
   // action
   const dropdownButton = getByText('All');
   fireEvent.click(dropdownButton);
   // assert
-  await waitFor(() => expect(getAllByRole('option').length).toEqual(5));
+  await waitFor(() => expect(getAllByRole('option').length).toEqual(4));
 });
