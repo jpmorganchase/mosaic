@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { SaltProvider } from '@salt-ds/core';
+import { SaltProvider, UNSTABLE_SaltProviderNext } from '@salt-ds/core';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { ssrClassName } from '@jpmorganchase/mosaic-theme';
 
@@ -18,20 +18,24 @@ const useHasHydrated = () => {
 interface ThemeProviderProps {
   className?: string;
   children?: ReactNode;
+  /** Enables Salt theme next */
+  themeNext?: boolean;
 }
 
-export function ThemeProvider({ className, children }: ThemeProviderProps) {
+export function ThemeProvider({ className, themeNext, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 
+  const ChosenSaltProvider = themeNext ? UNSTABLE_SaltProviderNext : SaltProvider;
+
   return (
-    <SaltProvider mode={hasHydrated ? colorMode : 'light'}>
+    <ChosenSaltProvider mode={hasHydrated ? colorMode : 'light'}>
       <div className={classnames(ssrClassname, className)}>
         {children}
         <div data-mosaic-id="portal-root" />
       </div>
-    </SaltProvider>
+    </ChosenSaltProvider>
   );
 }
