@@ -46,11 +46,13 @@ export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, pr
         {prev && (
           <TileBase border className={styles.tile}>
             <Link className={styles.link} href={prev.route} endIcon="none">
-              <P6>Previous {linkSuffix}</P6>
-              <Icon className={classnames(styles.icon, styles.iconPrev)} name="chevronLeft" />
-              <P3 className={classnames(styles.linkText)}>
-                {prev.group ? `${prev.group} / ${prev.title}` : prev.title}
-              </P3>
+              <span>
+                <P6>Previous {linkSuffix}</P6>
+                <Icon className={classnames(styles.icon, styles.iconPrev)} name="chevronLeft" />
+                <P3 className={classnames(styles.linkText)}>
+                  {prev.group ? `${prev.group} / ${prev.title}` : prev.title}
+                </P3>
+              </span>
             </Link>
           </TileBase>
         )}
@@ -59,11 +61,13 @@ export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, pr
         {next && (
           <TileBase border className={classnames(styles.tile, styles.nextLink)}>
             <Link className={styles.link} href={next.route} endIcon="none">
-              <P6>Next {linkSuffix}</P6>
-              <Icon className={classnames(styles.icon, styles.iconNext)} name="chevronRight" />
-              <P3 className={classnames(styles.linkText)}>
-                {next.group ? `${next.group} / ${next.title}` : next.title}
-              </P3>
+              <span>
+                <P6>Next {linkSuffix}</P6>
+                <Icon className={classnames(styles.icon, styles.iconNext)} name="chevronRight" />
+                <P3 className={classnames(styles.linkText)}>
+                  {next.group ? `${next.group} / ${next.title}` : next.title}
+                </P3>
+              </span>
             </Link>
           </TileBase>
         )}
