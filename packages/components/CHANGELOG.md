@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.79
+
+### Minor Changes
+
+- 244ed5c3: Added `themeNext` to `ThemeProvider` to enable Salt theme next provider
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-store@0.1.0-beta.79
+- @jpmorganchase/mosaic-theme@0.1.0-beta.79
+
 ## 0.1.0-beta.78
 
 ### Patch Changes
