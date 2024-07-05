@@ -117,10 +117,30 @@ const successHandlers = [
 
 const multiHandlers = [
   // Projects
-  rest.get('https://myfigma.com/getproject/:project_id/*', (_, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createProjectsResponse(['file888', 'file999'])));
+  rest.get('https://myfigma.com/getproject/:project_id/*', (req, res, ctx) => {
+    const { project_id } = req.params;
+    const fileIds = project_id === '888' ? ['file111', 'file222'] : [];
+    return res(ctx.status(200), ctx.json(createProjectsResponse(fileIds)));
   }),
-  ...successHandlers
+  // Files
+  rest.get('https://myfigma.com/getfile/:file_id', (req, res, ctx) => {
+    const { file_id } = req.params;
+    const title = file_id.toString().replace('file', '');
+    const pattern = `jpmSaltPattern_${title}_pattern1`;
+    return res(ctx.status(200), ctx.json(createProjectFilesResponse(pattern, '2:0')));
+  }),
+  // Thumbnails
+  rest.get('https://myfigma.com/generatethumb/:project_id', (req, res, ctx) => {
+    const { project_id } = req.params;
+    const url = new URL(req.url);
+    const nodeId = url.searchParams.get('ids') as string;
+    return res(
+      ctx.status(200),
+      ctx.json({
+        images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
+      })
+    );
+  })
 ];
 
 describe('GIVEN a Figma Source ', () => {
@@ -178,22 +198,23 @@ describe('GIVEN a Figma Source ', () => {
           };
           meta0.data = {
             ...meta0.data,
-            contentUrl: `/thumbnail/file888/2:0`,
-            fileId: 'file888',
+            contentUrl: `/thumbnail/file111/2:0`,
+            fileId: 'file111',
             projectId: '888'
           };
-          expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_888_pattern1', meta0));
+          expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_111_pattern1', meta0));
+
           const meta1: Record<string, any> = {
-            ...getProjectById(999).meta,
-            tags: ['some-tag1', 'some-tag2', ...getProjectById(999).meta.tags]
+            ...getProjectById(888).meta,
+            tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
           };
           meta1.data = {
             ...meta1.data,
-            fileId: 'file999',
-            contentUrl: `/thumbnail/file999/2:0`,
-            projectId: '999'
+            fileId: 'file222',
+            contentUrl: `/thumbnail/file222/2:0`,
+            projectId: '888'
           };
-          expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_999_pattern2', meta1));
+          expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_222_pattern1', meta1));
         },
         complete: () => done()
       });
