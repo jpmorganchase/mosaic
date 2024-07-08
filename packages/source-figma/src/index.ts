@@ -72,13 +72,15 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       requestHeaders: requestHeadersParam
     } = parsedOptions;
 
-    const projectEndpoints = projects.reduce<Record<string, string>>((result, project) => {
+    const projectEndpoints: Record<string, string> = {};
+    const projectById: Record<string, typeof projects[number]> = {};
+
+    projects.forEach(project => {
       const projectId = project.id.toString();
-      return {
-        ...result,
-        [projectId]: endpoints.getProject.replace(':project_id', projectId)
-      };
-    }, {});
+
+      projectEndpoints[projectId] = endpoints.getProject.replace(':project_id', projectId);
+      projectById[projectId] = project;
+    });
 
     const projectsTransformer: HttpSourceResponseTransformerType<
       ProjectsResponse,
@@ -109,6 +111,9 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       }, []);
     };
 
+    const getPatternPrefix = (metadata: Record<string, any>) =>
+      projectById[metadata?.data?.projectId].patternPrefix ?? null;
+
     const projectFilesTransformer = (
       response: ProjectFilesResponse,
       _prefixDir: string,
@@ -118,7 +123,8 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       const {
         document: { sharedPluginData }
       } = response;
-      const { patternPrefix } = projects[index];
+      const sourceProvidedMetadata = transformerOptions[index].meta ?? {};
+      const patternPrefix = getPatternPrefix(sourceProvidedMetadata);
       return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
         if (patternId.indexOf(patternPrefix) === 0) {
           /** Figma provided metadata */
@@ -131,7 +137,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
               ...patternData
             }
           };
-          const sourceProvidedMetadata = transformerOptions[index].meta;
+
           const figmaPageMeta = deepmerge<FigmaPage, Partial<FigmaPage>>(
             figmaProvidedMetadata,
             sourceProvidedMetadata || {}
@@ -216,7 +222,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         );
 
         const thumbnailRequestUrls = Object.keys(thumbnailNodes).map(fileId => {
-          let generateThumbnailUrl = endpoints.generateThumbnail.replace(':project_id', fileId);
+          const generateThumbnailUrl = endpoints.generateThumbnail.replace(':project_id', fileId);
           return generateThumbnailUrl.replace(':node_id', thumbnailNodes[fileId].join(','));
         });
         return createHttpSource<GenerateThumbnailResponse, FigmaPage>({
