@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.80
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.80
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.80
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.80
+- @jpmorganchase/mosaic-store@0.1.0-beta.80
+- @jpmorganchase/mosaic-theme@0.1.0-beta.80
+
 ## 0.1.0-beta.79
 
 ### Patch Changes

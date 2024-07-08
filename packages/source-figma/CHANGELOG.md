@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-figma
 
+## 0.1.0-beta.80
+
+### Patch Changes
+
+- 1c5a9674: Fixed projects with multiple files not working.
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.80
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.80
+  - @jpmorganchase/mosaic-types@0.1.0-beta.80
+
 ## 0.1.0-beta.79
 
 ### Patch Changes

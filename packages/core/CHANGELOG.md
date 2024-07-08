@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.80
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-plugins@0.1.0-beta.80
+- @jpmorganchase/mosaic-schemas@0.1.0-beta.80
+- @jpmorganchase/mosaic-serialisers@0.1.0-beta.80
+- @jpmorganchase/mosaic-types@0.1.0-beta.80
+
 ## 0.1.0-beta.79
 
 ### Patch Changes
