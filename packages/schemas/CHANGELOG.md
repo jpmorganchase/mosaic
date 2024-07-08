@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-schemas
 
+## 0.1.0-beta.80
+
 ## 0.1.0-beta.79
 
 ## 0.1.0-beta.78
