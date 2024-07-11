@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.81
+
 ## 0.1.0-beta.80
 
 ## 0.1.0-beta.79
