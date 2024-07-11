@@ -96,14 +96,14 @@ const createExpectedResult = (index: number) => ({
   fullPath: `prefixDir/component${index}Id.json`,
   tags: [`some-additional-tag-${index}`],
   data: {
+    type: 'story',
     id: `component${index}Id`,
     contentUrl: `https://storybook.endpoint.com/${index}/iframe.html?id=component${index}Id&viewMode=story&shortcuts=false&singleStory=true`,
     description: `some description ${index}`,
-    kind: `TestComponent/SomePath/Component-${index}`,
+    title: `TestComponent/SomePath/Component-${index}`,
     link: `https://storybook.endpoint.com/${index}?id=component${index}Id`,
     name: `Component ${index} Name`,
-    owner: `some owner ${index}`,
-    story: `Docs ${index}`
+    owner: `some owner ${index}`
   }
 });
 
