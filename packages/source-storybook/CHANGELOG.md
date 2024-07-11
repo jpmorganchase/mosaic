@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-storybook
 
+## 0.1.0-beta.81
+
+### Patch Changes
+
+- 5e0b006e: Fix storybook source not working with index.json
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.81
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.81
+  - @jpmorganchase/mosaic-types@0.1.0-beta.81
+
 ## 0.1.0-beta.80
 
 ### Patch Changes
