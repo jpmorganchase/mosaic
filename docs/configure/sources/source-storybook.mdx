@@ -10,7 +10,7 @@ sidebar:
 
 The Storybook source is used to pull individual stories from Storybook, based on tags.
 
-The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
+The Mosaic source will filter your Storybook's stories, based on `title` or `tags`.
 
 For each matching story, a page is created in the Mosaic file-system.
 
@@ -29,7 +29,7 @@ The Storybook source is an [`HttpSource`](./https-source) and shares the same ba
 The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
 The `stories` option is an array of Storybook urls that are used as Sources.
-Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
+Each story is matched on `title` using the `filter` Regexp (or by `filterTags`).
 
 If specified, `additionalTags` and `additionalData` can be added to any matching pages.
 
@@ -69,10 +69,26 @@ sources: [
                 source: 'STORYBOOK'
               }
             },
-            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook title
           }
         ]
       }
     }
 ]
+```
+
+### Example story metadata format
+
+```
+{
+  "type": "story",
+  "id": "folder--story-1",
+  "name": "Story 1",
+  "title": "Folder/Story 1",
+  "importPath": "./folder/story-1.stories.tsx",
+  "tags": [
+    "dev",
+    "test"
+  ]
+}
 ```

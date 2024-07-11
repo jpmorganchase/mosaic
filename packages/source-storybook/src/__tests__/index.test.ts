@@ -60,17 +60,32 @@ const options: StorybookSourceOptions = {
   ]
 };
 
-const createResponse = (index: number) => ({
+const createStoriesResponse = (index: number) => ({
+  v: 3,
   stories: {
     [`component${index}`]: {
       id: `component${index}Id`,
-      title: `Component ${index} Title`,
       name: `Component ${index} Name`,
+      title: `TestComponent/SomePath/Component-${index}`,
       importPath: `./some-path/to/component-${index}`,
       tags: ['tag-1', 'tag-2'],
-      storiesImports: [],
       kind: `TestComponent/SomePath/Component-${index}`,
-      story: `Docs ${index}`
+      story: `Docs ${index}`,
+      parameters: {}
+    }
+  }
+});
+
+const createIndexResponse = (index: number) => ({
+  v: 5,
+  entries: {
+    [`component${index}`]: {
+      type: `story`,
+      id: `component${index}Id`,
+      name: `Component ${index} Name`,
+      title: `TestComponent/SomePath/Component-${index}`,
+      importPath: `./some-path/to/component-${index}`,
+      tags: ['tag-1', 'tag-2']
     }
   }
 });
@@ -81,32 +96,32 @@ const createExpectedResult = (index: number) => ({
   fullPath: `prefixDir/component${index}Id.json`,
   tags: [`some-additional-tag-${index}`],
   data: {
+    type: 'story',
     id: `component${index}Id`,
     contentUrl: `https://storybook.endpoint.com/${index}/iframe.html?id=component${index}Id&viewMode=story&shortcuts=false&singleStory=true`,
     description: `some description ${index}`,
-    kind: `TestComponent/SomePath/Component-${index}`,
+    title: `TestComponent/SomePath/Component-${index}`,
     link: `https://storybook.endpoint.com/${index}?id=component${index}Id`,
     name: `Component ${index} Name`,
-    owner: `some owner ${index}`,
-    story: `Docs ${index}`
+    owner: `some owner ${index}`
   }
 });
 
 const successHandlers = [
   rest.get(options.stories[0].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createResponse(1)));
+    return res(ctx.status(200), ctx.json(createStoriesResponse(1)));
   }),
   rest.get(options.stories[1].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createResponse(2)));
+    return res(ctx.status(200), ctx.json(createIndexResponse(2)));
   }),
   rest.get(options.stories[2].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createResponse(3)));
+    return res(ctx.status(200), ctx.json(createStoriesResponse(3)));
   }),
   rest.get(options.stories[3].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createResponse(4)));
+    return res(ctx.status(200), ctx.json(createIndexResponse(4)));
   }),
   rest.get(options.stories[4].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createResponse(5)));
+    return res(ctx.status(200), ctx.json(createStoriesResponse(5)));
   })
 ];
 

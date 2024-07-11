@@ -7,9 +7,10 @@ import {
   httpSourceCreatorSchema,
   createProxyAgent
 } from '@jpmorganchase/mosaic-source-http';
+import deepmerge from 'deepmerge';
 
 import { StoriesResponseJSON, StorybookPage, StoryConfig } from './types/index.js';
-import deepmerge from 'deepmerge';
+import { normalizeStorybookJson } from './stories.js';
 
 const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the stories object,
@@ -49,30 +50,35 @@ const transformStorybookPages = (
   storyConfig: StoryConfig[]
 ): StorybookPage[] => {
   const { meta = {}, description, filter, filterTags, storyUrlPrefix } = storyConfig[index];
-  const storyIds = Object.keys(storyJSON.stories);
+  const normalizedJson = normalizeStorybookJson(storyJSON);
+  const storyIds = Object.keys(normalizedJson.entries);
   return storyIds.reduce<StorybookPage[]>((result, storyId) => {
-    const story = storyJSON.stories[storyId];
-    if (filter && !filter.test(story.kind)) {
+    const story = normalizedJson.entries[storyId];
+    const { id, type, name, title: storyTitle, tags } = story;
+    if (filter && !filter.test(storyTitle)) {
       return result;
     }
-    if (filterTags && filterTags.some(filterTag => story.tags.indexOf(filterTag) >= 0)) {
+    if (
+      filterTags &&
+      filterTags.some(filterTag => Array.isArray(tags) && tags.indexOf(filterTag) >= 0)
+    ) {
       return result;
     }
-    const { id, kind, name, story: storyName } = story;
-    const title = `${kind} - ${name}`;
+
+    const title = `${storyTitle} - ${name}`;
     const route = `${prefixDir}/${id}`;
     let storyPageMeta: StorybookPage = {
       title,
       route,
       fullPath: `${route}.json`,
       data: {
+        type,
         id,
-        description,
-        kind,
-        contentUrl: `${storyUrlPrefix}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
-        link: `${storyUrlPrefix}?id=${id}`,
         name,
-        story: storyName
+        title: storyTitle,
+        description,
+        contentUrl: `${storyUrlPrefix}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
+        link: `${storyUrlPrefix}?id=${id}`
       }
     };
     if (meta) {
@@ -102,7 +108,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
         console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`);
         agent = createProxyAgent(proxyEndpoint);
       }
-      const url = storiesUrl || `${storyUrlPrefix}/stories.json`;
+      const url = storiesUrl || `${storyUrlPrefix}/index.json`;
       return new Request(url, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
