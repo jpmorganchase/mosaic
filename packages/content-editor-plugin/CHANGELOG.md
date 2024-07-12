@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.82
+
+### Patch Changes
+
+- Updated dependencies [fb689099]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.82
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.82
+
 ## 0.1.0-beta.81
 
 ### Patch Changes
