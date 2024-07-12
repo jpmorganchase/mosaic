@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.82
+
+### Patch Changes
+
+- fb689099: Fixed links not having a gap between the text and icon.
+  - @jpmorganchase/mosaic-store@0.1.0-beta.82
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.82
+
 ## 0.1.0-beta.81
 
 ### Patch Changes

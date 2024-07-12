@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-storybook
 
+## 0.1.0-beta.82
+
+### Patch Changes
+
+- d094e302: Fixed storybook-source outputting invalid Storybook links.
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.82
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.82
+  - @jpmorganchase/mosaic-types@0.1.0-beta.82
+
 ## 0.1.0-beta.81
 
 ### Patch Changes
