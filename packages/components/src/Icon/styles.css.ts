@@ -2,6 +2,6 @@ import { style } from '@vanilla-extract/css';
 
 export default {
   root: style({
-    display: 'flex'
+    display: 'inline-flex'
   })
 };
