@@ -1,5 +1,5 @@
 import React, { forwardRef, ReactNode } from 'react';
-import { Link } from '@jpmorganchase/mosaic-components';
+import { Icon, Link } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';
 
@@ -7,22 +7,27 @@ export interface BreadcrumbProps {
   children?: ReactNode;
   href?: string;
   isCurrentLevel?: boolean;
-  overflowLabel?: string;
+  hideSeparator?: boolean;
 }
 
-// TODO replace with Salt Breadcrumb when it supports an API that can customize Links
 export const Breadcrumb = forwardRef<HTMLAnchorElement, BreadcrumbProps>(function Breadcrumb(
-  { children, isCurrentLevel, ...props },
+  { children, isCurrentLevel, href, hideSeparator },
   ref
 ) {
   return (
-    <li className={styles.wrapper}>
+    <li className={styles.breadcrumb}>
       {isCurrentLevel ? (
-        <span>{children}</span>
+        <>
+          {!hideSeparator && <Icon name="chevronRight" aria-hidden />}
+          <span>{children}</span>
+        </>
       ) : (
-        <Link endIcon="none" ref={ref} variant="regular" {...props}>
-          {children}
-        </Link>
+        <>
+          <Link endIcon="none" ref={ref} variant="regular" href={href}>
+            {children}
+          </Link>
+          {!hideSeparator && <Icon name="chevronRight" aria-hidden />}
+        </>
       )}
     </li>
   );

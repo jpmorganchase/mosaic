@@ -88,7 +88,9 @@ export const AppHeaderControls: React.FC = () => {
         </MenuTrigger>
         <MenuPanel>
           {actionMenuOptions.map(option => (
-            <MenuItem onClick={option.onSelect}>{option.title}</MenuItem>
+            <MenuItem key={option.title} onClick={option.onSelect}>
+              {option.title}
+            </MenuItem>
           ))}
         </MenuPanel>
       </Menu>
