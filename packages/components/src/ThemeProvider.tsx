@@ -16,13 +16,20 @@ const useHasHydrated = () => {
 };
 
 interface ThemeProviderProps {
+  /** Applies to `SaltProvider` `theme` prop */
+  themeClassName?: string;
   className?: string;
   children?: ReactNode;
   /** Enables Salt theme next */
   themeNext?: boolean;
 }
 
-export function ThemeProvider({ className, themeNext, children }: ThemeProviderProps) {
+export function ThemeProvider({
+  themeClassName,
+  className,
+  themeNext,
+  children
+}: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
@@ -31,7 +38,7 @@ export function ThemeProvider({ className, themeNext, children }: ThemeProviderP
   const ChosenSaltProvider = themeNext ? UNSTABLE_SaltProviderNext : SaltProvider;
 
   return (
-    <ChosenSaltProvider mode={hasHydrated ? colorMode : 'light'}>
+    <ChosenSaltProvider mode={hasHydrated ? colorMode : 'light'} theme={themeClassName}>
       <div className={classnames(ssrClassname, className)}>
         {children}
         <div data-mosaic-id="portal-root" />
