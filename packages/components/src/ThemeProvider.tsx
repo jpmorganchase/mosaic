@@ -1,7 +1,7 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { SaltProvider, UNSTABLE_SaltProviderNext } from '@salt-ds/core';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { ssrClassName } from '@jpmorganchase/mosaic-theme';
+import { SaltProvider, UNSTABLE_SaltProviderNext } from '@salt-ds/core';
+import React, { type ReactNode, useEffect, useState } from 'react';
 
 import classnames from 'clsx';
 

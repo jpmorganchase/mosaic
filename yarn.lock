@@ -2737,6 +2737,17 @@
     "@salt-ds/window" "^0.1.1"
     clsx "^2.0.0"
 
+"@salt-ds/core@^1.32.0":
+  version "1.32.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.32.0.tgz#099e644b6f5bc024b5ab03f85e4227b23a70108e"
+  integrity sha512-GqVVBP3eVv+iNyQTEdjcxmXNcGYySLshaPZAxOhr3uUkAGFdj/PlZYQ5FanogGmf9P8yGE36YCStd3rMDsmxZA==
+  dependencies:
+    "@floating-ui/react" "^0.26.5"
+    "@salt-ds/icons" "^1.12.1"
+    "@salt-ds/styles" "^0.2.1"
+    "@salt-ds/window" "^0.1.1"
+    clsx "^2.0.0"
+
 "@salt-ds/icons@^1.12.1":
   version "1.12.1"
   resolved "https://registry.yarnpkg.com/@salt-ds/icons/-/icons-1.12.1.tgz#817844b1102ae8b2c90bf1bae632de02a684ffd4"
