@@ -23,11 +23,11 @@ const ptMono = PT_Mono({
   weight: '400',
   display: 'swap',
   subsets: ['latin'],
-  variable: '--salt-typography-fontFamily:'
+  variable: '--salt-typography-fontFamily-ptMono'
 });
 const openSans = Open_Sans({
   subsets: ['latin'],
-  variable: '--salt-typography-fontFamily-code',
+  variable: '--salt-typography-fontFamily-openSans',
   display: 'swap'
 });
 
@@ -43,7 +43,7 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
     <SessionProvider>
       <StoreProvider value={createStore()}>
         <Metadata Component={Head} />
-        <ThemeProvider className={classnames(themeClassName, ptMono.variable, openSans.variable)}>
+        <ThemeProvider themeClassName={classnames(themeClassName, ptMono.variable, openSans.variable)}>
           <BaseUrlProvider>
             <ImageProvider value={Image}>
               <LinkProvider value={Link}>

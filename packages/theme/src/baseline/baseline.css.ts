@@ -2,7 +2,7 @@ import { globalStyle } from '@vanilla-extract/css';
 import { ssrClassName } from '../index';
 
 globalStyle('html, body', {
-  fontFamily: 'Open Sans',
+  fontFamily: 'var(--salt-text-fontFamily, "Open Sans")',
   margin: 0,
   padding: 0,
   height: '100%'
