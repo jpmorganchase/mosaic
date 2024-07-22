@@ -2726,10 +2726,10 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz#8be36a1f66f3265389e90b5f9c9962146758f728"
   integrity sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg==
 
-"@salt-ds/core@^1.32.0":
-  version "1.32.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.32.0.tgz#099e644b6f5bc024b5ab03f85e4227b23a70108e"
-  integrity sha512-GqVVBP3eVv+iNyQTEdjcxmXNcGYySLshaPZAxOhr3uUkAGFdj/PlZYQ5FanogGmf9P8yGE36YCStd3rMDsmxZA==
+"@salt-ds/core@^1.33.0":
+  version "1.33.0"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.33.0.tgz#ccf0e5cec01f46b047fcde74d8efe956d7cf417a"
+  integrity sha512-L58s5qKp7crkRcPYvXOzyesswDGcSEy04DBvY4xjU/xeYmCd6AM0wS10ZxBJap/up1GFqqACbgV9W/xgZjvTxw==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@salt-ds/icons" "^1.12.1"
@@ -2746,15 +2746,15 @@
     "@salt-ds/window" "^0.1.1"
     clsx "^2.0.0"
 
-"@salt-ds/lab@1.0.0-alpha.49":
-  version "1.0.0-alpha.49"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.49.tgz#55de8a068ecd0c70c09f02f411b98454fc7083a5"
-  integrity sha512-vKExhnJO3ABqtBhPC+q58KoLXSn0S1+g2kI4OF2lqWr8tvAwDxWK01kTc1jDnyl3OsEsBKD8dqB1t4yfPkgEEw==
+"@salt-ds/lab@1.0.0-alpha.50":
+  version "1.0.0-alpha.50"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.50.tgz#b414f258ba345eccf2a2c6c1ca43ff556d321840"
+  integrity sha512-KKy/H+1oSWNFFmdRT3BuijVJgALA94khRqAjbovPcMcsYC3Cmgfn0b7xxT1A+dzVbtHErFxyj2niUE5tlct0uw==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@fluentui/react-overflow" "^9.0.19"
     "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "^1.32.0"
+    "@salt-ds/core" "^1.33.0"
     "@salt-ds/icons" "^1.12.1"
     "@salt-ds/styles" "^0.2.1"
     "@salt-ds/window" "^0.1.1"
