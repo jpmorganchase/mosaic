@@ -1,5 +1,17 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.83
+
+### Minor Changes
+
+- 24551c8d: Added `themeClassName` to `ThemeProvider` to apply `theme` to `SaltProvider`
+
+### Patch Changes
+
+- 8e96ed0c: Updated Salt packages.
+  - @jpmorganchase/mosaic-store@0.1.0-beta.83
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.83
+
 ## 0.1.0-beta.82
 
 ### Patch Changes

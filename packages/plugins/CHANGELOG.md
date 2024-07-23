@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.83
+
+### Patch Changes
+
+- 182a4307: Fixed BreadcrumbsPlugin not working on Windows.
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.83
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.83
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.83
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.83
+  - @jpmorganchase/mosaic-types@0.1.0-beta.83
+
 ## 0.1.0-beta.82
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-labs-components",
-  "version": "0.1.0-beta.82",
+  "version": "0.1.0-beta.83",
   "license": "Apache-2.0",
   "description": "Mosaic - Labs components",
   "repository": {
@@ -44,8 +44,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.82",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.82",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.83",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.83",
     "@salt-ds/core": "^1.33.0",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/recipes": "^0.2.1",
