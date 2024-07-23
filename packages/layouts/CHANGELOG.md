@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.83
+
+### Patch Changes
+
+- 8e96ed0c: Updated Salt packages.
+- Updated dependencies [24551c8d]
+- Updated dependencies [8e96ed0c]
+- Updated dependencies [182a4307]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.83
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.83
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.83
+  - @jpmorganchase/mosaic-store@0.1.0-beta.83
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.83
+
 ## 0.1.0-beta.82
 
 ### Patch Changes

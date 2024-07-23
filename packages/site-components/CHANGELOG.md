@@ -1,5 +1,25 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.83
+
+### Minor Changes
+
+- 182a4307: Refactor Breadcrumbs to remove usage of lab components.
+  Fixed non-unique key error in AppHeaderControls.
+
+### Patch Changes
+
+- 8e96ed0c: Updated Salt packages.
+- Updated dependencies [24551c8d]
+- Updated dependencies [8e96ed0c]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.83
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.83
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.83
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.83
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.83
+  - @jpmorganchase/mosaic-store@0.1.0-beta.83
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.83
+
 ## 0.1.0-beta.82
 
 ### Patch Changes

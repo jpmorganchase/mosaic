@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.83
+
+### Patch Changes
+
+- 8e96ed0c: Updated Salt packages.
+- Updated dependencies [24551c8d]
+- Updated dependencies [8e96ed0c]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.83
+
 ## 0.1.0-beta.82
 
 ### Patch Changes
