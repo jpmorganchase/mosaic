@@ -408,15 +408,6 @@
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-update-namespace-sources</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
-	</url>,	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/producta</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/productb</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
 	</url>
 
 </urlset>

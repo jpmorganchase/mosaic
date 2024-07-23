@@ -22,10 +22,11 @@ test.describe('GIVEN a page with the `DetailOverview` Layout', () => {
 
   test('THEN there is a sidebar', async ({ page }) => {
     await page.goto('/mosaic/test/layouts/detail-overview');
-    await expect(page.getByTestId('vertical-navigation')).toBeVisible();
-    await expect(page.getByLabel('change page')).toHaveCount(3);
+    const navigation = page.getByTestId('vertical-navigation');
+    await expect(navigation).toBeVisible();
+    await expect(navigation.locator(page.getByRole('link'))).toHaveCount(3);
     await expect(page.getByText('Test', { exact: true })).toBeVisible();
-    await expect(page.getByLabel('expand')).toHaveCount(2);
+    await expect(navigation.locator(page.getByRole('button'))).toHaveCount(2);
     await expect(page.getByText('Layouts', { exact: true })).toBeVisible();
     await expect(page.getByText('Refs Test', { exact: true })).toBeVisible();
     await expect(page.getByText('Aliases Test', { exact: true })).toBeVisible();

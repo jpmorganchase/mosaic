@@ -3,8 +3,6 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import { VerticalNavigation } from '../VerticalNavigation';
 
-jest.mock('@salt-ds/core/dist-es/navigation-item/NavigationItem.css.js', () => {});
-
 describe('GIVEN a VerticalNavigation', () => {
   it('THEN it should render a link when a group contains < 2 pages and be active when on its subroute', () => {
     const singlePageInGroupMenu = [
@@ -33,10 +31,8 @@ describe('GIVEN a VerticalNavigation', () => {
     );
     // assert
     expect(screen.getByText('Group', { exact: true })).toBeVisible();
-    expect(screen.queryByRole('link', { name: 'change page' })).toHaveClass(
-      'saltNavigationItem-active'
-    );
-    expect(screen.queryByLabelText('expand')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Group' })).toHaveClass('saltNavigationItem-active');
+    expect(screen.queryByRole('link', { name: 'Option 1' })).not.toBeInTheDocument();
   });
 
   it('THEN it should render a group when it contains > 2 pages', () => {
@@ -73,7 +69,7 @@ describe('GIVEN a VerticalNavigation', () => {
     );
     // assert
     expect(screen.getByText('Group', { exact: true })).toBeVisible();
-    expect(screen.queryByRole('button', { name: 'expand' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Group' })).toBeInTheDocument();
     const links = screen.getAllByRole('link');
     expect(within(links[0]).getByText('Option 1')).toBeInTheDocument();
     expect(within(links[1]).getByText('Option 2')).toBeInTheDocument();
@@ -113,7 +109,7 @@ describe('GIVEN a VerticalNavigation', () => {
     );
     // assert
     expect(screen.getByText('Group', { exact: true })).toBeVisible();
-    expect(screen.queryByLabelText('expand')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Group' })).toBeInTheDocument();
     const links = screen.getAllByRole('link');
     expect(links.length).toEqual(2);
     expect(within(links[0]).getByText('Option 1')).toBeInTheDocument();
@@ -154,9 +150,9 @@ describe('GIVEN a VerticalNavigation', () => {
     );
     // assert
     expect(screen.getByText('Group', { exact: true })).toBeVisible();
-    expect(screen.queryByLabelText('expand')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Group' })).toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    await userEvents.click(screen.getByLabelText('expand'));
+    await userEvents.click(screen.getByRole('button', { name: 'Group' }));
     // action - expand row
     await waitFor(() => expect(screen.queryAllByRole('link').length).toEqual(2));
     // assert
@@ -170,7 +166,7 @@ describe('GIVEN a VerticalNavigation', () => {
     );
     await waitFor(() => expect(screen.queryAllByRole('link').length).toEqual(2));
     // action - collapse row
-    await userEvents.click(screen.getByLabelText('expand'));
+    await userEvents.click(screen.getByRole('button', { name: 'Group' }));
     // assert
     await waitFor(() => expect(screen.queryAllByRole('link').length).toEqual(0));
   });

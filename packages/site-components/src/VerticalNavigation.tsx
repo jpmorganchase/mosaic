@@ -1,6 +1,5 @@
 import React, { MouseEventHandler, useState } from 'react';
-import { StackLayout } from '@salt-ds/core';
-import { NavigationItem, NavigationItemRenderProps } from './NavigationItem';
+import { StackLayout, NavigationItem, NavigationItemProps } from '@salt-ds/core';
 import { Link } from '@jpmorganchase/mosaic-components';
 import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-store';
 
@@ -13,15 +12,11 @@ export type VerticalNavigationProps = {
   menu: SidebarItem[];
 };
 
-const renderItem: React.FC<NavigationItemRenderProps<HTMLButtonElement | HTMLAnchorElement>> = ({
-  href,
-  isParent,
-  elementProps
-}) => {
-  if (isParent) {
-    return <button {...elementProps} />;
+const renderItem: NavigationItemProps['render'] = ({ href, ...rest }) => {
+  if (href) {
+    return <Link variant="component" {...rest} href={href} />;
   }
-  return <Link variant={'component'} {...elementProps} href={href} />;
+  return <button {...rest} />;
 };
 
 const renderNavigationItem = (
