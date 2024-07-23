@@ -31,7 +31,7 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
         const breadcrumbs = topAndTailedPath.reduce<Breadcrumb[]>(
           (result, _pathPart, partIndex) => {
             const breadcrumbRoot = `/${pathParts[0]}`;
-            const breadcrumbPath = path.join(
+            const breadcrumbPath = path.posix.join(
               breadcrumbRoot,
               ...topAndTailedPath.slice(0, topAndTailedPath.length - partIndex),
               options.indexPageName
