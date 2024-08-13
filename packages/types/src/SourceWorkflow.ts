@@ -5,7 +5,7 @@ export type SourceWorkflowAction<TSourceOptions, TOptions> = (
   ...args: any[]
 ) => Promise<unknown>;
 
-export type SourceWorkflow<TSourceOptions = unknown, TOptions = unknown> = {
+export type SourceWorkflow<TSourceOptions = unknown, TOptions = Record<string, unknown>> = {
   name: string;
   options?: TOptions;
   action: SourceWorkflowAction<TSourceOptions, TOptions>;
