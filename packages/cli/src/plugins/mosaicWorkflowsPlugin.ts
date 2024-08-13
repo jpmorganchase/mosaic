@@ -48,7 +48,8 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
             );
           }
 
-          const channel = md5(`${user.sid.toLowerCase()} - ${name.toLowerCase()}`);
+          const userId = user.id || user.sid;
+          const channel = md5(`${userId.toLowerCase()} - ${name.toLowerCase()}`);
 
           const sendWorkflowProgressMessage: SendSourceWorkflowMessage = (info, status) =>
             connection.socket.send(JSON.stringify({ status, message: info, channel }));
@@ -68,7 +69,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
           }
         } catch (e) {
           console.error(e);
-          connection.socket.send(JSON.stringify({ status: 'ERROR', message: 'e.message' }));
+          connection.socket.send(JSON.stringify({ status: 'ERROR', message: e.message }));
         }
       }
     });

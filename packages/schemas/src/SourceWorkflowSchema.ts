@@ -8,7 +8,7 @@ export const sourceWorkflowSchema = z.object({
   /**
    * Workflow config options
    */
-  options: z.unknown(),
+  options: z.record(z.string(), z.unknown()),
   /**
    * action to run when workflow is triggered
    */
