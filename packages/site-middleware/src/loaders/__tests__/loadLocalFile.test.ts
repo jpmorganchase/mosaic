@@ -26,7 +26,7 @@ describe('GIVEN loadLocalFile', () => {
   test('THEN it throws and error when the local file does not exist', async () => {
     // assert
     await expect(loadLocalFile('some/non-existent/mynamespace/mydir')).rejects.toThrow(
-      /ENOENT: no such file or directory, stat 'some\/non-existent\/mynamespace\/mydir'/
+      "ENOENT: no such file or directory, stat 'some/non-existent/mynamespace/mydir'"
     );
   });
   test('THEN it loads the index file if a directory is requested', async () => {
