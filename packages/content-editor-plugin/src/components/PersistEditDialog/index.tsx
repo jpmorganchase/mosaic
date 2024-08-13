@@ -72,7 +72,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
   };
 
   const handleCompleteMessage = message => {
-    setPrHref(message.message?.links?.self[0]?.href);
+    setPrHref(message.message?.links?.self[0]?.href || message);
     setIsRaising(false);
   };
 
