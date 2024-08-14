@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-components",
   "description": "Mosaic - UI Components",
-  "version": "0.1.0-beta.83",
+  "version": "0.1.0-beta.84",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -44,8 +44,8 @@
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.83",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.83",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.84",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.84",
     "@salt-ds/core": "^1.33.0",
     "@salt-ds/lab": "1.0.0-alpha.50",
     "@vanilla-extract/css": "^1.6.0",
