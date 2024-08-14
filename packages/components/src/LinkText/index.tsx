@@ -1,4 +1,4 @@
-import React, { forwardRef, isValidElement, ReactNode, Ref } from 'react';
+import React, { ComponentPropsWithRef, forwardRef, isValidElement, ReactNode, Ref } from 'react';
 import classnames from 'clsx';
 import { Icon, IconProps } from '../Icon';
 
@@ -90,26 +90,21 @@ export const LinkText = forwardRef<HTMLSpanElement, LinkTextProps>(
       className: styles.icon
     });
 
-    let enhancedChildren: ReactNode = null;
+    let enhancedChildren: ReactNode = children;
     const childrenClassName = classnames(className, styles.root, {
       [styles.document]: variant === 'document',
       [styles.regular]: variant === 'regular',
       [styles.disabled]: disabled
     });
-    if (typeof children === 'string') {
-      enhancedChildren = children;
-    } else if (isValidElement(children)) {
-      const child = React.Children.only(children) as React.ReactElement<{
-        className: string;
-        ref: Ref<HTMLSpanElement>;
-      }>;
+    if (isValidElement<ComponentPropsWithRef<'span'>>(children)) {
+      const child = React.Children.only(children);
       enhancedChildren = React.cloneElement(child, {
         className: classnames(child.props.className, childrenClassName),
         ref
       });
     }
     return (
-      <span className={classnames(className)} ref={ref} {...rest}>
+      <span className={className} ref={ref} {...rest}>
         {startIconAdornment}
         <span className={childrenClassName} data-dp-hover={!disabled && hovered}>
           {enhancedChildren}
