@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-components
 
+## 0.1.0-beta.84
+
+### Patch Changes
+
+- 49cbe9fd: Fix Link sometimes removing text children.
+  - @jpmorganchase/mosaic-store@0.1.0-beta.84
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.84
+
 ## 0.1.0-beta.83
 
 ### Minor Changes
