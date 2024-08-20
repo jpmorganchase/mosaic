@@ -11,7 +11,7 @@ import {
 import { shadow } from './shadow';
 import { vars } from './vars.css';
 
-export const ssrClassName = 'mosaic-ssr';
+export * from './ssrClassName';
 export { themeClassName, vars } from './vars.css';
 export * from './animation';
 export * from './blockquote';
