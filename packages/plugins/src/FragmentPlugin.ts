@@ -3,10 +3,20 @@ import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
 import remarkDirective from 'remark-directive';
+import type { Node } from 'unist';
 import { visit } from 'unist-util-visit';
-import type { Content, Root } from 'mdast';
+import type { RootContent, Root } from 'mdast';
+import { TextDirective, LeafDirective, ContainerDirective } from 'mdast-util-directive';
 import PluginError from './utils/PluginError.js';
 import { createPageTest } from './utils/createPageTest.js';
+
+function isDirective(node: Node): node is TextDirective | LeafDirective | ContainerDirective {
+  return (
+    node.type === 'containerDirective' ||
+    node.type === 'leafDirective' ||
+    node.type === 'textDirective'
+  );
+}
 
 function processFragments(
   tree: Root,
@@ -15,11 +25,7 @@ function processFragments(
   fullPath: string
 ) {
   visit(tree, (node, index, parent) => {
-    if (
-      node.type === 'containerDirective' ||
-      node.type === 'leafDirective' ||
-      node.type === 'textDirective'
-    ) {
+    if (isDirective(node)) {
       if (node.name !== 'fragment') return;
       const attributes = node.attributes ?? {};
       const { src } = attributes;
@@ -36,7 +42,7 @@ function processFragments(
         console.warn(`Invalid file reference: '${node.attributes.src}'. Skipping.`);
       } else {
         // Create a new node with the content from fragmentPage.content
-        const newNode: Content = {
+        const newNode: RootContent = {
           type: 'html',
           value: fragmentPage.content
         };
