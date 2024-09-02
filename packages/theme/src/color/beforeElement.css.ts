@@ -1,7 +1,7 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 import { vars } from '../vars.css';
-import { darkMode, lightMode } from './lightMode';
+import { darkMode, lightMode } from './modes';
 
 export const beforeElementColorProperties = defineProperties({
   conditions: {

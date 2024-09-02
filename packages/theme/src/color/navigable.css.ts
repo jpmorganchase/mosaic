@@ -2,50 +2,71 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
-import { darkMode, lightMode, lightModeConditions } from './lightMode';
+import {
+  darkMode,
+  lightMode,
+  lightModeInteractiveCondition,
+  darkModeInteractiveCondition
+} from './modes';
 
-export const linkColorProperties = defineProperties({
-  conditions: {
-    ...lightModeConditions,
-    lightModeHover: { selector: `${lightMode} &:hover, ${lightMode} &[data-dp-hover="true"]` },
-    darkModeHover: { selector: `${darkMode} &:hover, ${darkMode} &[data-dp-hover="true"]` },
-    lightModeDisabled: { selector: `${lightMode} &:disabled` },
-    darkModeDisabled: { selector: `${darkMode} &:disabled` }
-  },
+export const lightLinkColorProperties = defineProperties({
+  conditions: lightModeInteractiveCondition,
   defaultCondition: 'lightMode',
   properties: {
-    color: [
-      ...Object.values(vars.color.light.navigable.link),
-      ...Object.values(vars.color.dark.navigable.link)
-    ]
+    color: [...Object.values(vars.color.light.navigable.link)]
   }
 });
-export const linkColorSprinkles = createSprinkles(linkColorProperties);
-export type LinkColorSprinkles = Parameters<typeof linkColorSprinkles>[0];
+export const lightLinkColorSprinkles = createSprinkles(lightLinkColorProperties);
+export type LightLinkColorSprinkles = Parameters<typeof lightLinkColorSprinkles>[0];
 
-export const selectableLinkColorProperties = defineProperties({
+export const darkLinkColorProperties = defineProperties({
+  conditions: darkModeInteractiveCondition,
+  defaultCondition: 'darkMode',
+  properties: {
+    color: [...Object.values(vars.color.dark.navigable.link)]
+  }
+});
+export const darkLinkColorSprinkles = createSprinkles(darkLinkColorProperties);
+export type DarkLinkColorSprinkles = Parameters<typeof darkLinkColorSprinkles>[0];
+
+export const lightSelectableLinkColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
-    lightModeHover: { selector: `${lightMode} &:hover, ${lightMode} &[data-dp-hover="true"]` },
-    darkModeHover: { selector: `${darkMode} &:hover, ${darkMode} &[data-dp-hover="true"]` },
-    lightModeSelected: { selector: `${lightMode} &[data-dp-selected="true"]` },
-    darkModeSelected: { selector: `${darkMode} &[data-dp-selected="false"]` },
-    lightModeDisabled: { selector: `${lightMode} &:disabled` },
-    darkModeDisabled: { selector: `${darkMode} &:disabled` }
+    ...lightModeInteractiveCondition,
+    lightModeSelected: { selector: `${lightMode} &[data-dp-selected="true"]` }
   },
   defaultCondition: 'lightMode',
   properties: {
     color: [
       vars.color.light.navigable.selectableLink.selectedLabel,
-      vars.color.light.navigable.selectableLink.unselectedLabel,
-      vars.color.dark.navigable.selectableLink.selectedLabel,
-      vars.color.dark.navigable.selectableLink.unselectedLabel
+      vars.color.light.navigable.selectableLink.unselectedLabel
     ],
     backgroundColor: [
       vars.color.light.neutral.background.emphasis,
       vars.color.light.navigable.selectableLink.selected,
       vars.color.light.navigable.selectableLink.hover,
-      vars.color.light.navigable.selectableLink.unselected,
+      vars.color.light.navigable.selectableLink.unselected
+    ]
+  }
+});
+export const lightSelectableLinkColorSprinkles = createSprinkles(
+  lightSelectableLinkColorProperties
+);
+export type LightSelectableLinkColorSprinkles = Parameters<
+  typeof lightSelectableLinkColorSprinkles
+>[0];
+
+export const darkSelectableLinkColorProperties = defineProperties({
+  conditions: {
+    ...darkModeInteractiveCondition,
+    darkModeSelected: { selector: `${darkMode} &[data-dp-selected="true"]` }
+  },
+  defaultCondition: 'darkMode',
+  properties: {
+    color: [
+      vars.color.dark.navigable.selectableLink.selectedLabel,
+      vars.color.dark.navigable.selectableLink.unselectedLabel
+    ],
+    backgroundColor: [
       vars.color.dark.neutral.background.emphasis,
       vars.color.dark.navigable.selectableLink.selected,
       vars.color.dark.navigable.selectableLink.hover,
@@ -53,93 +74,139 @@ export const selectableLinkColorProperties = defineProperties({
     ]
   }
 });
-export const selectableLinkColorSprinkles = createSprinkles(selectableLinkColorProperties);
-export type SelectableLinkColorSprinkles = Parameters<typeof selectableLinkColorSprinkles>[0];
+export const darkSelectableLinkColorSprinkles = createSprinkles(darkSelectableLinkColorProperties);
+export type DarkSelectableLinkColorSprinkles = Parameters<
+  typeof darkSelectableLinkColorSprinkles
+>[0];
 
-export const documentLinkColorProperties = defineProperties({
+export const lightDocumentLinkColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
-    lightModeHover: { selector: `${lightMode} &:hover, ${lightMode} &[data-dp-hover="true"]` },
-    darkModeHover: { selector: `${darkMode} &:hover, ${darkMode} &[data-dp-hover="true"]` },
-    lightModeVisited: { selector: `${lightMode} &:visited` },
-    darkModeVisited: { selector: `${darkMode} &:visited` },
-    lightModeDisabled: { selector: `${lightMode} &:disabled` },
-    darkModeDisabled: { selector: `${darkMode} &:disabled` }
+    ...lightModeInteractiveCondition,
+    lightModeVisited: { selector: `${lightMode} &:visited` }
   },
   defaultCondition: 'lightMode',
   properties: {
-    color: [
-      ...Object.values(vars.color.light.navigable.documentLink),
-      ...Object.values(vars.color.dark.navigable.documentLink)
-    ]
+    color: [...Object.values(vars.color.light.navigable.documentLink)]
   }
 });
 
-export const documentLinkColorSprinkles = createSprinkles(documentLinkColorProperties);
-export type DocumentLinkColorSprinkles = Parameters<typeof documentLinkColorSprinkles>[0];
+export const lightDocumentLinkColorSprinkles = createSprinkles(lightDocumentLinkColorProperties);
+export type LightDocumentLinkColorSprinkles = Parameters<typeof lightDocumentLinkColorSprinkles>[0];
 
-export const headingLinkColorProperties = defineProperties({
+export const darkDocumentLinkColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
-    lightModeHover: { selector: `${lightMode} &:hover, ${lightMode} &[data-dp-hover="true"]` },
-    darkModeHover: { selector: `${darkMode} &:hover, ${darkMode} &[data-dp-hover="true"]` },
-    lightModeVisited: { selector: `${lightMode} &:visited` },
-    darkModeVisited: { selector: `${darkMode} &:visited` },
-    lightModeDisabled: { selector: `${lightMode} &:disabled` },
-    darkModeDisabled: { selector: `${darkMode} &:disabled` }
+    ...darkModeInteractiveCondition,
+    darkModeVisited: { selector: `${darkMode} &:visited` }
+  },
+  defaultCondition: 'darkMode',
+  properties: {
+    color: [...Object.values(vars.color.dark.navigable.documentLink)]
+  }
+});
+
+export const darkDocumentLinkColorSprinkles = createSprinkles(darkDocumentLinkColorProperties);
+export type DarkDocumentLinkColorSprinkles = Parameters<typeof darkDocumentLinkColorSprinkles>[0];
+
+export const lightHeadingLinkColorProperties = defineProperties({
+  conditions: {
+    ...lightModeInteractiveCondition,
+    lightModeVisited: { selector: `${lightMode} &:visited` }
   },
   defaultCondition: 'lightMode',
   properties: {
-    color: [
-      ...Object.values(vars.color.light.navigable.headingLink),
-      ...Object.values(vars.color.dark.navigable.headingLink)
-    ]
+    color: [...Object.values(vars.color.light.navigable.headingLink)]
   }
 });
 
-export const headingLinkColorSprinkles = createSprinkles(headingLinkColorProperties);
-export type HeadingLinkColorSprinkles = Parameters<typeof headingLinkColorSprinkles>[0];
+export const lightHeadingLinkColorSprinkles = createSprinkles(lightHeadingLinkColorProperties);
+export type LightHeadingLinkColorSprinkles = Parameters<typeof lightHeadingLinkColorSprinkles>[0];
 
-export const selectableLinkColor = recipe({
+export const darkHeadingLinkColorProperties = defineProperties({
+  conditions: {
+    ...darkModeInteractiveCondition,
+    darkModeVisited: { selector: `${darkMode} &:visited` }
+  },
+  defaultCondition: false,
+  properties: {
+    color: [...Object.values(vars.color.dark.navigable.headingLink)]
+  }
+});
+
+export const darkHeadingLinkColorSprinkles = createSprinkles(darkHeadingLinkColorProperties);
+export type DarkHeadingLinkColorSprinkles = Parameters<typeof darkHeadingLinkColorSprinkles>[0];
+
+export const lightSelectableLinkColor = recipe({
   variants: {
     variant: {
-      selected: selectableLinkColorSprinkles({
+      selected: lightSelectableLinkColorSprinkles({
         backgroundColor: {
-          lightModeSelected: vars.color.light.navigable.selectableLink.selected,
+          lightModeSelected: vars.color.light.navigable.selectableLink.selected
+        }
+      }),
+      selectedLabel: lightSelectableLinkColorSprinkles({
+        color: {
+          lightMode: vars.color.light.navigable.selectableLink.selectedLabel
+        }
+      }),
+      hover: lightSelectableLinkColorSprinkles({
+        backgroundColor: {
+          lightModeHover: vars.color.light.navigable.selectableLink.hover
+        }
+      }),
+      backgroundHover: lightSelectableLinkColorSprinkles({
+        backgroundColor: {
+          lightModeHover: vars.color.light.neutral.background.emphasis
+        }
+      }),
+      unselected: lightSelectableLinkColorSprinkles({
+        backgroundColor: {
+          lightMode: vars.color.light.navigable.selectableLink.unselected
+        }
+      }),
+      unSelectedLabel: lightSelectableLinkColorSprinkles({
+        color: {
+          lightMode: vars.color.light.navigable.selectableLink.unselectedLabel
+        }
+      })
+    }
+  }
+});
+export type LightSelectableLinkColorVariants = RecipeVariants<typeof lightSelectableLinkColor>;
+
+export const darkSelectableLinkColor = recipe({
+  variants: {
+    variant: {
+      selected: darkSelectableLinkColorSprinkles({
+        backgroundColor: {
           darkModeSelected: vars.color.dark.navigable.selectableLink.selected
         }
       }),
-      selectedLabel: selectableLinkColorSprinkles({
+      selectedLabel: darkSelectableLinkColorSprinkles({
         color: {
-          lightMode: vars.color.light.navigable.selectableLink.selectedLabel,
           darkMode: vars.color.dark.navigable.selectableLink.selectedLabel
         }
       }),
-      hover: selectableLinkColorSprinkles({
+      hover: darkSelectableLinkColorSprinkles({
         backgroundColor: {
-          lightModeHover: vars.color.light.navigable.selectableLink.hover,
           darkModeHover: vars.color.dark.navigable.selectableLink.hover
         }
       }),
-      backgroundHover: selectableLinkColorSprinkles({
+      backgroundHover: darkSelectableLinkColorSprinkles({
         backgroundColor: {
-          lightModeHover: vars.color.light.neutral.background.emphasis,
           darkModeHover: vars.color.dark.neutral.background.emphasis
         }
       }),
-      unselected: selectableLinkColorSprinkles({
+      unselected: darkSelectableLinkColorSprinkles({
         backgroundColor: {
-          lightMode: vars.color.light.navigable.selectableLink.unselected,
           darkMode: vars.color.dark.navigable.selectableLink.unselected
         }
       }),
-      unSelectedLabel: selectableLinkColorSprinkles({
+      unSelectedLabel: darkSelectableLinkColorSprinkles({
         color: {
-          lightMode: vars.color.light.navigable.selectableLink.unselectedLabel,
           darkMode: vars.color.dark.navigable.selectableLink.unselectedLabel
         }
       })
     }
   }
 });
-export type SelectableLinkColorVariants = RecipeVariants<typeof selectableLinkColor>;
+export type DarkSelectableLinkColorVariants = RecipeVariants<typeof darkSelectableLinkColor>;

@@ -1,11 +1,11 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 import { vars } from '../vars.css';
-import { darkMode, lightMode, lightModeConditions } from './lightMode';
+import { darkMode, lightMode, bothModeConditions } from './modes';
 
 export const ctaColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
+    ...bothModeConditions,
     lightModeHover: { selector: `${lightMode} &:hover` },
     darkModeHover: { selector: `${darkMode} &:hover` },
     lightModeActive: { selector: `${lightMode} &:active` },
@@ -63,7 +63,7 @@ export type CtaColorVariants = RecipeVariants<typeof ctaColor>;
 
 export const primaryColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
+    ...bothModeConditions,
     lightModeHover: { selector: `${lightMode} &:hover` },
     darkModeHover: { selector: `${darkMode} &:hover` },
     lightModeActive: { selector: `${lightMode} &:active` },
@@ -120,7 +120,7 @@ export type PrimaryColorVariants = RecipeVariants<typeof primaryColor>;
 
 export const secondaryColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
+    ...bothModeConditions,
     lightModeHover: { selector: `${lightMode} &:hover` },
     darkModeHover: { selector: `${darkMode} &:hover` },
     lightModeActive: { selector: `${lightMode} &:active` },
