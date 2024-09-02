@@ -1,10 +1,9 @@
 import { $createLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
-import { $wrapNodes } from '@lexical/selection';
 import {
-  $createParagraphNode,
   $createTextNode,
   $getSelection,
+  $insertNodes,
   $isRangeSelection,
   $isTextNode,
   COMMAND_PRIORITY_EDITOR,
@@ -40,7 +39,8 @@ function useMarkdownLinkPlugin() {
             const linkTextNode = $createTextNode(text);
             linkTextNode.setFormat(selection.focus.getNode().getFormat());
             linkNode.append(linkTextNode);
-            $wrapNodes(selection, () => linkNode, $createParagraphNode());
+            $insertNodes([linkNode]);
+            linkNode.selectEnd();
           }
         }
       });

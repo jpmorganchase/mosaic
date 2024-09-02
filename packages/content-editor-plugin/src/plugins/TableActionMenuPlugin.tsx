@@ -3,7 +3,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $getSelection, $isRangeSelection, LexicalEditor } from 'lexical';
 import {
   $deleteTableColumn,
-  $getElementGridForTableNode,
+  $getElementForTableNode,
   $getTableCellNodeFromLexicalNode,
   $getTableColumnIndexFromTableCellNode,
   $getTableNodeFromLexicalNodeOrThrow,
@@ -115,7 +115,7 @@ function TableActionMenu({ editor, tableCellNode, onComplete }: TableActionMenuP
         if ($isTableCellNode(tableCellNode)) {
           const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
           const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
-          const grid = $getElementGridForTableNode(editor, tableNode);
+          const grid = $getElementForTableNode(editor, tableNode);
 
           $insertTableRow(tableNode, tableRowIndex, shouldInsertAfter, 1, grid);
         }
@@ -132,7 +132,7 @@ function TableActionMenu({ editor, tableCellNode, onComplete }: TableActionMenuP
         if ($isTableCellNode(tableCellNode)) {
           const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
           const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
-          const grid = $getElementGridForTableNode(editor, tableNode);
+          const grid = $getElementForTableNode(editor, tableNode);
 
           $insertTableColumn(tableNode, tableColumnIndex, shouldInsertAfter, 1, grid);
         }

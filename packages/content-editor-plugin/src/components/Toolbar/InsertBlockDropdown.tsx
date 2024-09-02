@@ -3,7 +3,7 @@ import { Dropdown, Option } from '@salt-ds/core';
 import { $createCodeNode } from '@lexical/code';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';
-import { $wrapNodes } from '@lexical/selection';
+import { $setBlocksType } from '@lexical/selection';
 import { $createParagraphNode, $getSelection, $isRangeSelection, LexicalEditor } from 'lexical';
 
 interface BlockSourceType {
@@ -44,7 +44,7 @@ export function InsertBlockDropdown({
         const selection = $getSelection();
 
         if ($isRangeSelection(selection)) {
-          $wrapNodes(selection, () => $createParagraphNode());
+          $setBlocksType(selection, () => $createParagraphNode());
         }
       });
     }
@@ -56,7 +56,7 @@ export function InsertBlockDropdown({
         const selection = $getSelection();
 
         if ($isRangeSelection(selection)) {
-          $wrapNodes(selection, () => $createHeadingNode(item.type as HeadingTagType));
+          $setBlocksType(selection, () => $createHeadingNode(item.type as HeadingTagType));
         }
       });
     }
@@ -80,7 +80,7 @@ export function InsertBlockDropdown({
         const selection = $getSelection();
 
         if ($isRangeSelection(selection)) {
-          $wrapNodes(selection, () => $createQuoteNode());
+          $setBlocksType(selection, () => $createQuoteNode());
         }
       });
     }
@@ -93,7 +93,7 @@ export function InsertBlockDropdown({
 
         if ($isRangeSelection(selection)) {
           if (selection.isCollapsed()) {
-            $wrapNodes(selection, () => $createCodeNode());
+            $setBlocksType(selection, () => $createCodeNode());
           } else {
             const textContent = selection.getTextContent();
             const codeNode = $createCodeNode();
