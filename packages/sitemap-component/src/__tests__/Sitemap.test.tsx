@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { Sitemap } from '../index';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 fetch.disableMocks();
 
@@ -25,8 +25,8 @@ const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  </urlset>   
 `;
 
-const xmlHandler = rest.get('https://mysite.com/sitemap.xml', (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.text(sitemap));
+const xmlHandler = http.get('https://mysite.com/sitemap.xml', () => {
+  return HttpResponse.text(sitemap);
 });
 
 describe('GIVEN a Sitemap view', () => {

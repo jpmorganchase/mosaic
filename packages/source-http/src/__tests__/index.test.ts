@@ -1,11 +1,10 @@
 import { Observable, of, take } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 import type { Page } from '@jpmorganchase/mosaic-types';
 
 import Source, { createHttpSource } from '../index.js';
-import { fromDynamicImport } from '../fromDynamicImport.js';
 import { createProxyAgent } from '../proxyAgent.js';
 
 jest.mock('../fromDynamicImport', () => ({
@@ -56,14 +55,14 @@ const configuredRequestsOptions = {
 };
 
 export const successHandlers = [
-  rest.get(options.endpoints[0], (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ name: 'Alice' }));
+  http.get(options.endpoints[0], () => {
+    return HttpResponse.json({ name: 'Alice' });
   }),
-  rest.get(options.endpoints[1], (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ name: 'Bob' }));
+  http.get(options.endpoints[1], () => {
+    return HttpResponse.json({ name: 'Bob' });
   }),
-  rest.get(options.endpoints[2], (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ name: 'Eve' }));
+  http.get(options.endpoints[2], () => {
+    return HttpResponse.json({ name: 'Eve' });
   })
 ];
 
@@ -113,14 +112,14 @@ describe('GIVEN an HTTP Source ', () => {
     const server = setupServer();
     beforeAll(() => {
       server.use(
-        rest.get(options.endpoints[0], (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ name: 'Alice' }));
+        http.get(options.endpoints[0], () => {
+          return HttpResponse.json({ name: 'Alice' });
         }),
-        rest.get(options.endpoints[1], (_req, res, ctx) => {
-          return res(ctx.status(404));
+        http.get(options.endpoints[1], () => {
+          return new HttpResponse(null, { status: 404 });
         }),
-        rest.get(options.endpoints[2], (_req, res, ctx) => {
-          return res(ctx.status(500));
+        http.get(options.endpoints[2], () => {
+          return new HttpResponse(null, { status: 500 });
         })
       );
       server.listen({ onUnhandledRequest: 'warn' });
@@ -219,14 +218,14 @@ describe('GIVEN the createHttpSource function ', () => {
     const server = setupServer();
     beforeAll(() => {
       server.use(
-        rest.get(options.endpoints[0], (_req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ name: 'Alice' }));
+        http.get(options.endpoints[0], () => {
+          return HttpResponse.json({ name: 'Alice' });
         }),
-        rest.get(options.endpoints[1], (_req, res, ctx) => {
-          return res(ctx.status(404));
+        http.get(options.endpoints[1], () => {
+          return new HttpResponse(null, { status: 404 });
         }),
-        rest.get(options.endpoints[2], (_req, res, ctx) => {
-          return res(ctx.status(500));
+        http.get(options.endpoints[2], () => {
+          return new HttpResponse(null, { status: 500 });
         })
       );
       server.listen({ onUnhandledRequest: 'warn' });
@@ -285,8 +284,8 @@ describe('GIVEN the createHttpSource function ', () => {
     const server = setupServer();
     beforeAll(() => {
       server.use(
-        rest.get('*', (req, res, ctx) => {
-          return res(ctx.status(200), ctx.json({ name: `David ${req.url}` }));
+        http.get('*', info => {
+          return HttpResponse.json({ name: `David ${info.request.url}` });
         })
       );
       server.listen({ onUnhandledRequest: 'warn' });

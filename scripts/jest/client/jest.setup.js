@@ -25,3 +25,5 @@ global.cancelIdleCallback = function cancelIdleCallback(callbackID) {
 };
 
 require('jest-fetch-mock').enableMocks();
+
+global.TextEncoder = require('util').TextEncoder;
