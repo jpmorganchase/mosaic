@@ -16,7 +16,7 @@ type ActionMenuItem = {
 };
 
 function toUpperFirst(str) {
-  return `${str.substr(0, 1).toUpperCase()}${str.toLowerCase().substr(1)}`;
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 }
 
 export const AppHeaderControls: React.FC = () => {
@@ -69,7 +69,7 @@ export const AppHeaderControls: React.FC = () => {
           {isLoggedIn ? (
             <UserProfile
               avatarUrl={session?.user?.image || ''}
-              firstName={toUpperFirst(session?.user?.name)}
+              firstName={toUpperFirst(session?.user?.name || '')}
               prefixText="Welcome, "
             />
           ) : (
