@@ -26,5 +26,8 @@ module.exports = {
     '<rootDir>/packages/site-components',
     '<rootDir>/packages/sitemap-component',
     '<rootDir>/packages/store'
-  ]
+  ],
+  testEnvironmentOptions: {
+    customExportConditions: ['']
+  }
 };

@@ -1,6 +1,6 @@
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { StorybookPage } from '../types/index.js';
 
 import Source, { StorybookSourceOptions } from '../index.js';
@@ -108,20 +108,20 @@ const createExpectedResult = (index: number) => ({
 });
 
 const successHandlers = [
-  rest.get(options.stories[0].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createStoriesResponse(1)));
+  http.get(options.stories[0].storiesUrl!, () => {
+    return HttpResponse.json(createStoriesResponse(1));
   }),
-  rest.get(options.stories[1].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createIndexResponse(2)));
+  http.get(options.stories[1].storiesUrl!, () => {
+    return HttpResponse.json(createIndexResponse(2));
   }),
-  rest.get(options.stories[2].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createStoriesResponse(3)));
+  http.get(options.stories[2].storiesUrl!, () => {
+    return HttpResponse.json(createStoriesResponse(3));
   }),
-  rest.get(options.stories[3].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createIndexResponse(4)));
+  http.get(options.stories[3].storiesUrl!, () => {
+    return HttpResponse.json(createIndexResponse(4));
   }),
-  rest.get(options.stories[4].storiesUrl, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(createStoriesResponse(5)));
+  http.get(options.stories[4].storiesUrl!, () => {
+    return HttpResponse.json(createIndexResponse(5));
   })
 ];
 

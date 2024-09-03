@@ -1,5 +1,5 @@
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 import { fromHttpRequest, isErrorResponse } from '../fromHttpRequest.js';
 
@@ -12,24 +12,24 @@ interface Data {
   sid: string;
 }
 
-const successfulRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.json({ name: 'David', sid: 'some id' }));
+const successfulRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.json({ name: 'David', sid: 'some id' });
 });
 
-const notOKHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(404));
+const notOKHandler = http.get(testUrl, () => {
+  return new HttpResponse(null, { status: 404 });
 });
 
-const errorHandler = rest.get(testUrl, (_req, _res, _ctx) => {
+const errorHandler = http.get(testUrl, () => {
   throw new Error('Bad stuff happened');
 });
 
-const successfulTextContentTypeRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.text('David'));
+const successfulTextContentTypeRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.text('David');
 });
 
-const successfulDefaultContentTypeRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.body(JSON.stringify({ name: 'David', sid: 'some id' })));
+const successfulDefaultContentTypeRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.json({ name: 'David', sid: 'some id' });
 });
 
 const server = setupServer();

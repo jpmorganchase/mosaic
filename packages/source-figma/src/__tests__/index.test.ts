@@ -1,6 +1,6 @@
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { FigmaPage } from '../types/index.js';
 
 import Source from '../index.js';
@@ -89,57 +89,51 @@ const createExpectedResult = (patternId: string, data: Record<string, any>) => (
 
 const successHandlers = [
   // Projects
-  rest.get('https://myfigma.com/getproject/:project_id/*', (req, res, ctx) => {
-    const { project_id } = req.params;
+  http.get('https://myfigma.com/getproject/:project_id/*', info => {
+    const { project_id } = info.params;
     const fileId = project_id === '888' ? ['file888'] : ['file999'];
-    return res(ctx.status(200), ctx.json(createProjectsResponse(fileId)));
+    return HttpResponse.json(createProjectsResponse(fileId));
   }),
   // Files
-  rest.get('https://myfigma.com/getfile/:file_id', (req, res, ctx) => {
-    const { file_id } = req.params;
+  http.get('https://myfigma.com/getfile/:file_id', info => {
+    const { file_id } = info.params;
     const pattern =
       file_id === 'file888' ? 'jpmSaltPattern_888_pattern1' : 'jpmSaltPattern_999_pattern2';
-    return res(ctx.status(200), ctx.json(createProjectFilesResponse(pattern, '2:0')));
+    return HttpResponse.json(createProjectFilesResponse(pattern, '2:0'));
   }),
   // Thumbnails
-  rest.get('https://myfigma.com/generatethumb/:project_id', (req, res, ctx) => {
-    const { project_id } = req.params;
-    const url = new URL(req.url);
+  http.get('https://myfigma.com/generatethumb/:project_id', info => {
+    const { project_id } = info.params;
+    const url = new URL(info.request.url);
     const nodeId = url.searchParams.get('ids') as string;
-    return res(
-      ctx.status(200),
-      ctx.json({
-        images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
-      })
-    );
+    return HttpResponse.json({
+      images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
+    });
   })
 ];
 
 const multiHandlers = [
   // Projects
-  rest.get('https://myfigma.com/getproject/:project_id/*', (req, res, ctx) => {
-    const { project_id } = req.params;
+  http.get('https://myfigma.com/getproject/:project_id/*', info => {
+    const { project_id } = info.params;
     const fileIds = project_id === '888' ? ['file111', 'file222'] : [];
-    return res(ctx.status(200), ctx.json(createProjectsResponse(fileIds)));
+    return HttpResponse.json(createProjectsResponse(fileIds));
   }),
   // Files
-  rest.get('https://myfigma.com/getfile/:file_id', (req, res, ctx) => {
-    const { file_id } = req.params;
+  http.get('https://myfigma.com/getfile/:file_id', info => {
+    const { file_id } = info.params;
     const title = file_id.toString().replace('file', '');
     const pattern = `jpmSaltPattern_${title}_pattern1`;
-    return res(ctx.status(200), ctx.json(createProjectFilesResponse(pattern, '2:0')));
+    return HttpResponse.json(createProjectFilesResponse(pattern, '2:0'));
   }),
   // Thumbnails
-  rest.get('https://myfigma.com/generatethumb/:project_id', (req, res, ctx) => {
-    const { project_id } = req.params;
-    const url = new URL(req.url);
+  http.get('https://myfigma.com/generatethumb/:project_id', info => {
+    const { project_id } = info.params;
+    const url = new URL(info.request.url);
     const nodeId = url.searchParams.get('ids') as string;
-    return res(
-      ctx.status(200),
-      ctx.json({
-        images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
-      })
-    );
+    return HttpResponse.json({
+      images: { [nodeId]: `/thumbnail/${project_id}/${nodeId}` }
+    });
   })
 ];
 

@@ -1,6 +1,6 @@
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { ReadmePage } from '../types/index.js';
 
 import Source from '../index.js';
@@ -66,11 +66,11 @@ const createExpectedResult = (index: number) => ({
 });
 
 const successHandlers = [
-  rest.get('https://some/url/for/readme1.md', (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.text(createResponse(1)));
+  http.get('https://some/url/for/readme1.md', () => {
+    return HttpResponse.text(createResponse(1));
   }),
-  rest.get('https://some/url/for/readme2.md', (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.text(createResponse(2)));
+  http.get('https://some/url/for/readme2.md', () => {
+    return HttpResponse.text(createResponse(2));
   })
 ];
 
