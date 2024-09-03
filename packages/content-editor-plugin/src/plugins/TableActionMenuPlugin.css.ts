@@ -1,9 +1,9 @@
-import { lightModeConditions, vars } from '@jpmorganchase/mosaic-theme';
+import { bothModeConditions, vars } from '@jpmorganchase/mosaic-theme';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 export const outlineProperties = defineProperties({
   conditions: {
-    ...lightModeConditions
+    ...bothModeConditions
   },
   defaultCondition: 'lightMode',
   properties: {

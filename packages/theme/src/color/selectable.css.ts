@@ -2,11 +2,11 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
-import { darkMode, lightMode, lightModeConditions } from './lightMode';
+import { darkMode, lightMode, bothModeConditions } from './modes';
 
 export const selectableColorProperties = defineProperties({
   conditions: {
-    ...lightModeConditions,
+    ...bothModeConditions,
     lightModeHover: { selector: `${lightMode} &:hover` },
     darkModeHover: { selector: `${darkMode} &:hover` },
     lightModeSelected: { selector: `${lightMode} &[data-dp-selected="true"]` },

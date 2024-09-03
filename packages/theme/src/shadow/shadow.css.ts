@@ -1,11 +1,11 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { lightModeConditions } from '../color';
+import { bothModeConditions } from '../color';
 import { vars } from '../vars.css';
 
 export const shadowProperties = defineProperties({
-  conditions: lightModeConditions,
+  conditions: bothModeConditions,
   defaultCondition: ['lightMode', 'darkMode'],
   properties: {
     boxShadow: [

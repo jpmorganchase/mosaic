@@ -1,5 +1,5 @@
 import { createGlobalTheme, createGlobalThemeContract } from '@vanilla-extract/css';
-import { darkMode, lightMode } from '../color/lightMode';
+import { darkMode, lightMode } from '../color/modes';
 
 export const colorVars = createGlobalThemeContract({
   white: '--salt-color-white',
