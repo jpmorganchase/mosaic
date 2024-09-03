@@ -1,3 +1,4 @@
+import { describe, expect, it, beforeAll, afterAll, afterEach } from 'vitest';
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
@@ -125,42 +126,49 @@ const successHandlers = [
   })
 ];
 
+const server = setupServer(...successHandlers);
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterAll(() => {
+  server.close();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
 describe('GIVEN a Storybook Source ', () => {
   describe('WHEN a fetch is successful', () => {
-    const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
+    it('should filter results from all stories into 1 array', () =>
+      new Promise<void>(done => {
+        const source$: Observable<StorybookPage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            // 5 stories, 1 filtered by `filter` and another by `filterTags`
+            expect(result.length).toEqual(options.stories.length - 2);
+          },
+          complete: () => done()
+        });
+      }));
 
-    it('should filter results from all stories into 1 array', done => {
-      const source$: Observable<StorybookPage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          // 5 stories, 1 filtered by `filter` and another by `filterTags`
-          expect(result.length).toEqual(options.stories.length - 2);
-        },
-        complete: () => done()
-      });
-    });
+    it('should return pages for matching filter', () =>
+      new Promise<void>(done => {
+        const source$: Observable<StorybookPage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            expect(result[0]).toEqual(createExpectedResult(1));
+            expect(result[1]).toEqual(createExpectedResult(4));
 
-    it('should return pages for matching filter', done => {
-      const source$: Observable<StorybookPage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result[0]).toEqual(createExpectedResult(1));
-          expect(result[1]).toEqual(createExpectedResult(4));
-
-          const result5 = createExpectedResult(5);
-          delete result5.tags; // no tags data added for this result5
-          delete result5.data.owner; // no additional data added for result5
-          expect(result[2]).toEqual(result5);
-        },
-        complete: () => done()
-      });
-    });
+            const result5 = createExpectedResult(5);
+            delete result5.tags; // no tags data added for this result5
+            delete result5.data.owner; // no additional data added for result5
+            expect(result[2]).toEqual(result5);
+          },
+          complete: () => done()
+        });
+      }));
   });
 });

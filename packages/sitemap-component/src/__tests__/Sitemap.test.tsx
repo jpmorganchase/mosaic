@@ -1,10 +1,9 @@
+import { describe, it, beforeAll, afterAll, expect, afterEach } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Sitemap } from '../index';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
-
-fetch.disableMocks();
 
 const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
@@ -25,29 +24,31 @@ const sitemap = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
  </urlset>   
 `;
 
-const xmlHandler = http.get('https://mysite.com/sitemap.xml', () => {
-  return HttpResponse.text(sitemap);
+const server = setupServer(
+  http.get('https://mysite.com/sitemap.xml', () => {
+    return HttpResponse.text(sitemap);
+  })
+);
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterAll(() => {
+  server.close();
+});
+
+afterEach(() => {
+  server.resetHandlers();
 });
 
 describe('GIVEN a Sitemap view', () => {
-  const server = setupServer();
-  beforeAll(() => {
-    server.use(xmlHandler);
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
-  afterAll(() => {
-    server.close();
-  });
-
   it('THEN it a tree view from a sitemap.xml', async () => {
     // arrange
     render(<Sitemap href="https://mysite.com/sitemap.xml" />);
 
-    // assert
-    await waitFor(() => {
-      expect(screen.getByText('mosaic')).toBeInTheDocument();
-      expect(screen.getByText('pageA')).toBeInTheDocument();
-      expect(screen.getByText('pageB')).toBeInTheDocument();
-    });
+    expect(await screen.findByText('mosaic')).toBeInTheDocument();
+    expect(await screen.findByText('pageA')).toBeInTheDocument();
+    expect(await screen.findByText('pageB')).toBeInTheDocument();
   });
 });

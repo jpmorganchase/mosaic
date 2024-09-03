@@ -1,13 +1,11 @@
+import { describe, expect, test, beforeEach, afterEach, vi, MockedFunction } from 'vitest';
 import { debounce } from 'lodash-es';
 
 import SourceManager from '../SourceManager';
 import Source from '../Source';
 
-jest.mock('../Source');
-jest.mock('lodash-es');
-// jest.mock('../worker/helpers/plugins', () => async (plugins, _fs) => {
-//   return async (_, input) => input;
-// });
+vi.mock('../Source');
+vi.mock('lodash-es');
 
 function scheduleOnUpdateCallback(message) {
   setTimeout(() => {
@@ -23,18 +21,18 @@ function scheduleOnStartCallback() {
 }
 
 function getOnStartCallback() {
-  const onStartCallbackCalls = (Source.prototype.onStart as jest.MockedFunction<any>).mock.calls;
+  const onStartCallbackCalls = (Source.prototype.onStart as MockedFunction<any>).mock.calls;
   return onStartCallbackCalls[onStartCallbackCalls.length - 1][0];
 }
 
 function getLastUpdateCallback() {
-  const onUpdateCallbackCalls = (Source.prototype.onUpdate as jest.MockedFunction<any>).mock.calls;
+  const onUpdateCallbackCalls = (Source.prototype.onUpdate as MockedFunction<any>).mock.calls;
   return onUpdateCallbackCalls[onUpdateCallbackCalls.length - 1][0];
 }
 
 describe('GIVEN SourceManager', () => {
   beforeEach(() => {
-    (debounce as jest.MockedFunction<any>).mockImplementation(
+    (debounce as MockedFunction<any>).mockImplementation(
       callback =>
         (...args) =>
           setTimeout(() => callback(...args))
@@ -72,28 +70,28 @@ describe('GIVEN SourceManager', () => {
     let sourceManager: SourceManager;
 
     beforeEach(() => {
-      jest.spyOn(Source.prototype, 'onExit').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onError').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onUpdate').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onStart').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'stop').mockReturnValue(jest.fn());
+      vi.spyOn(Source.prototype, 'onExit').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onError').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onUpdate').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onStart').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'stop').mockReturnValue(vi.fn());
 
       sourceManager = new SourceManager({}, {});
     });
 
     afterEach(() => {
-      (Source.prototype.stop as jest.MockedFunction<any>).mockReset();
-      (Source.prototype.onStart as jest.MockedFunction<any>).mockReset();
+      (Source.prototype.stop as MockedFunction<any>).mockReset();
+      (Source.prototype.onStart as MockedFunction<any>).mockReset();
     });
 
     test('THEN calling `destroyAll` should stop all sources', async () => {
-      (Source.prototype as jest.MockedFunction<any>).id = '1';
+      (Source.prototype as MockedFunction<any>).id = '1';
       scheduleOnStartCallback();
       await sourceManager.addSource({ modulePath: '1', name: '1' }, {});
-      (Source.prototype as jest.MockedFunction<any>).id = '2';
+      (Source.prototype as MockedFunction<any>).id = '2';
       scheduleOnStartCallback();
       await sourceManager.addSource({ modulePath: '2', name: '2' }, {});
-      (Source.prototype as jest.MockedFunction<any>).id = '3';
+      (Source.prototype as MockedFunction<any>).id = '3';
       scheduleOnStartCallback();
       await sourceManager.addSource({ modulePath: '3', name: '3' }, {});
       sourceManager.destroyAll();
@@ -134,26 +132,26 @@ describe('GIVEN SourceManager', () => {
   describe('WHEN adding a source', () => {
     let sourceManager: SourceManager;
 
-    afterEach(() => {});
     beforeEach(() => {
       Source.prototype.constructorSpy.mockReset();
       sourceManager = new SourceManager({}, {});
-      jest.spyOn(Source.prototype, 'onExit').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onError').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onUpdate').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'onStart').mockReturnValue(jest.fn());
-      jest.spyOn(Source.prototype, 'stop').mockClear();
+      vi.spyOn(Source.prototype, 'onExit').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onError').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onUpdate').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'onStart').mockReturnValue(vi.fn());
+      vi.spyOn(Source.prototype, 'stop').mockClear();
     });
     describe('AND the source changes', () => {
       describe("AND the source hasn't initialised yet", () => {
         test('THEN `onSourceUpdate` should not be called and an error should be thrown', async () => {
-          const onSourceUpdateSpy = jest.fn();
+          const onSourceUpdateSpy = vi.fn();
           sourceManager.onSourceUpdate(onSourceUpdateSpy);
           const sourceCreatorPromise = sourceManager.addSource(
             { name: 'source', modulePath: 'source-module' },
             {}
           );
-          const onUpdateCallbackCalls = (Source.prototype.onUpdate as jest.MockedFunction<any>).mock
+
+          const onUpdateCallbackCalls = (Source.prototype.onUpdate as MockedFunction<any>).mock
             .calls;
           const latestOnUpdateCallback = onUpdateCallbackCalls[onUpdateCallbackCalls.length - 1][0];
           expect(latestOnUpdateCallback).toBeDefined();
@@ -164,7 +162,7 @@ describe('GIVEN SourceManager', () => {
       });
 
       test('THEN `onSourceUpdate` should be called', async () => {
-        const onSourceUpdateSpy = jest.fn();
+        const onSourceUpdateSpy = vi.fn();
         sourceManager.onSourceUpdate(onSourceUpdateSpy);
 
         scheduleOnUpdateCallback('message');
@@ -177,7 +175,7 @@ describe('GIVEN SourceManager', () => {
       });
 
       test('THEN `onSourceUpdate` should be called with a filesystem', async () => {
-        const onSourceUpdateSpy = jest.fn();
+        const onSourceUpdateSpy = vi.fn();
         sourceManager.onSourceUpdate(onSourceUpdateSpy);
         scheduleOnStartCallback();
         await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
@@ -231,12 +229,11 @@ describe('GIVEN SourceManager', () => {
 
     describe('AND an error is thrown or an early exit occurs', () => {
       beforeEach(() => {
-        jest.spyOn(Source.prototype, 'onError').mockImplementation(() => jest.fn());
+        vi.spyOn(Source.prototype, 'onError').mockImplementation(() => vi.fn());
       });
       test('THEN an error should be reported for any early exit, as a rejected promise', async () => {
         setTimeout(() => {
-          const onExitCallbackCalls = (Source.prototype.onExit as jest.MockedFunction<any>).mock
-            .calls;
+          const onExitCallbackCalls = (Source.prototype.onExit as MockedFunction<any>).mock.calls;
           const latestOnExitCallback = onExitCallbackCalls[onExitCallbackCalls.length - 1][0];
           latestOnExitCallback();
         });
@@ -248,8 +245,7 @@ describe('GIVEN SourceManager', () => {
       });
       test('THEN the error should be reported in a rejected promise', async () => {
         setTimeout(() => {
-          const onErrorCallbackCalls = (Source.prototype.onError as jest.MockedFunction<any>).mock
-            .calls;
+          const onErrorCallbackCalls = (Source.prototype.onError as MockedFunction<any>).mock.calls;
           const latestOnErrorCallback = onErrorCallbackCalls[onErrorCallbackCalls.length - 1][0];
           latestOnErrorCallback(new Error('some error'));
         });
@@ -260,7 +256,7 @@ describe('GIVEN SourceManager', () => {
     });
 
     test('THEN it should call `start` on the Source', async () => {
-      jest.spyOn(Source.prototype, 'start');
+      vi.spyOn(Source.prototype, 'start');
       scheduleOnStartCallback();
       await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
       expect(Source.prototype.start).toHaveBeenCalled();

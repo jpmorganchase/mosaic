@@ -1,3 +1,4 @@
+import { expect, describe, test, vi, beforeEach, afterEach } from 'vitest';
 import type { Page } from '@jpmorganchase/mosaic-types';
 import PagesWithoutFileExtPlugin from '../PagesWithoutFileExtPlugin';
 
@@ -14,7 +15,7 @@ const pages: Page[] = [
   }
 ];
 
-const setAliasesSpy = jest.fn();
+const setAliasesSpy = vi.fn();
 const config = { setAliases: setAliasesSpy };
 
 describe('GIVEN the PagesWithoutFileExtPlugin', () => {
@@ -33,7 +34,7 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
         (await $afterSource?.(pages, { config, ignorePages, pageExtensions }, {})) || [];
     });
     afterEach(() => {
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     });
     test('THEN aliases are created for each page', async () => {
       expect(setAliasesSpy).toBeCalledTimes(pages.length);
@@ -59,7 +60,7 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
         (await $afterSource?.(pages, { config, ignorePages, pageExtensions }, {})) || [];
     });
     afterEach(() => {
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     });
     test('THEN  **NO** aliases are set', async () => {
       expect(setAliasesSpy).toBeCalledTimes(0);
@@ -76,7 +77,7 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
         (await $afterSource?.(pages, { config, ignorePages, pageExtensions }, {})) || [];
     });
     afterEach(() => {
-      jest.resetAllMocks();
+      vi.resetAllMocks();
     });
     test('THEN  **NO** aliases are set', async () => {
       expect(setAliasesSpy).toBeCalledTimes(1);

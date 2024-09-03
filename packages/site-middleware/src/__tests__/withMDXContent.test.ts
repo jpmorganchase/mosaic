@@ -1,14 +1,17 @@
+import { describe, expect, test, vi, beforeAll, afterAll } from 'vitest';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@aws-sdk/util-stream';
 import { Readable } from 'stream';
-import { default as fetchMock, disableFetchMocks, enableFetchMocks } from 'jest-fetch-mock';
+import createFetchMock from 'vitest-fetch-mock';
 
 const mockFs = require('mock-fs');
 
 import { withMDXContent } from '../withMDXContent';
 
-jest.mock('../compileMdx.js', () => ({
+const fetchMock = createFetchMock(vi);
+
+vi.mock('../compileMdx.js', () => ({
   compileMDX: async (value: string) => Promise.resolve(value)
 }));
 
@@ -83,11 +86,11 @@ describe('GIVEN withMDXContent', () => {
 
   describe('WHEN dynamic Mosaic mode is set', () => {
     beforeAll(() => {
-      enableFetchMocks();
+      fetchMock.enableMocks();
       fetchMock.mockOnce('my content');
     });
     afterAll(() => {
-      disableFetchMocks();
+      fetchMock.disableMocks();
     });
     test('THEN content is fetched from the data source', async () => {
       // arrange

@@ -31,7 +31,7 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
           if (await fs.promises.exists(path.join(req.url, 'index'))) {
             // Don't do an actual redirect - just send the URL as the response
             reply.header('Content-Type', 'application/json');
-            reply.status(302).send({ redirect: path.join(req.url, 'index') });
+            reply.status(302).send({ redirect: path.posix.join(req.url, 'index') });
           } else {
             reply.status(404);
           }

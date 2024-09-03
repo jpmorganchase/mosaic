@@ -1,3 +1,4 @@
+import { expect, describe, test, vi, beforeEach } from 'vitest';
 import BreadcrumbsPlugin, { BreadcrumbsPluginPage } from '../BreadcrumbsPlugin';
 
 const pages: BreadcrumbsPluginPage[] = [
@@ -73,36 +74,32 @@ const mutableFsPages = [
   }
 ];
 
-let writeFileMock = jest.fn();
+let writeFileMock = vi.fn();
 const volume = {
   promises: {
-    exists: jest.fn(),
-    glob: jest.fn().mockResolvedValue(mutableFsPages.map(page => page.fullPath)),
-    mkdir: jest.fn(),
-    readdir: jest.fn(),
-    readFile: jest.fn(value =>
-      Promise.resolve(mutableFsPages.find(page => page.fullPath === value))
-    ),
-    realpath: jest.fn(),
-    stat: jest.fn(),
-    symlink: jest.fn(),
-    unlink: jest.fn(),
+    exists: vi.fn(),
+    glob: vi.fn().mockResolvedValue(mutableFsPages.map(page => page.fullPath)),
+    mkdir: vi.fn(),
+    readdir: vi.fn(),
+    readFile: vi.fn(value => Promise.resolve(mutableFsPages.find(page => page.fullPath === value))),
+    realpath: vi.fn(),
+    stat: vi.fn(),
+    symlink: vi.fn(),
+    unlink: vi.fn(),
     writeFile: writeFileMock
   }
 };
 const globalVolume = {
   promises: {
-    exists: jest.fn().mockResolvedValue(true),
-    glob: jest.fn().mockResolvedValue(pages.map(page => page.fullPath)),
-    mkdir: jest.fn(),
-    readdir: jest.fn(),
-    readFile: jest.fn(value =>
-      Promise.resolve(mutableFsPages.find(page => page.fullPath === value))
-    ),
-    realpath: jest.fn(),
-    stat: jest.fn(),
-    symlink: jest.fn(),
-    unlink: jest.fn(),
+    exists: vi.fn().mockResolvedValue(true),
+    glob: vi.fn().mockResolvedValue(pages.map(page => page.fullPath)),
+    mkdir: vi.fn(),
+    readdir: vi.fn(),
+    readFile: vi.fn(value => Promise.resolve(mutableFsPages.find(page => page.fullPath === value))),
+    realpath: vi.fn(),
+    stat: vi.fn(),
+    symlink: vi.fn(),
+    unlink: vi.fn(),
     writeFile: writeFileMock
   }
 };
@@ -171,7 +168,7 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
    *
    */
   describe('AND WHEN `afterNamespaceSourceUpdate` is called', () => {
-    let serialiseMock = jest.fn();
+    let serialiseMock = vi.fn();
     beforeEach(async () => {
       const afterNamespaceSourceUpdate = BreadcrumbsPlugin.afterNamespaceSourceUpdate;
 
@@ -182,7 +179,7 @@ describe('GIVEN the BreadcrumbsPlugin', () => {
           ignorePages: ['sidebar.json'],
           pageExtensions: ['.mdx'],
           serialiser: {
-            deserialise: jest
+            deserialise: vi
               .fn()
               .mockResolvedValueOnce(mutableFsPages[0])
               .mockResolvedValueOnce(pages[3])

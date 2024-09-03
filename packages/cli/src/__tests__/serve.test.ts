@@ -1,3 +1,4 @@
+import { describe, expect, test, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import serve, { server } from '../serve';
 
@@ -42,23 +43,23 @@ const mosaicConfig: MosaicConfig = {
 };
 
 const mockFilesystemJSON = { '/file/path': { title: 'test 1' } };
-const mockStopSourceFn = jest.fn().mockResolvedValue(true);
-const mockAddSourceFn = jest.fn();
-const mockTriggerWorkflowFn = jest.fn();
-const mockRestartSourceFn = jest.fn().mockResolvedValue(true);
-const mockListSourcesFn = jest
+const mockStopSourceFn = vi.fn().mockResolvedValue(true);
+const mockAddSourceFn = vi.fn();
+const mockTriggerWorkflowFn = vi.fn();
+const mockRestartSourceFn = vi.fn().mockResolvedValue(true);
+const mockListSourcesFn = vi
   .fn()
   .mockResolvedValue(mosaicConfig.sources.map((source, index) => ({ index, ...source })));
 
-const mockExistsFn = jest.fn();
-const mockStatFn = jest.fn();
-const mockRealpathFn = jest.fn();
-const mockReadFileFn = jest.fn();
-const mockScopeFn = jest.fn();
+const mockExistsFn = vi.fn();
+const mockStatFn = vi.fn();
+const mockRealpathFn = vi.fn();
+const mockReadFileFn = vi.fn();
+const mockScopeFn = vi.fn();
 
 const mockFileSystem = {
   scope: mockScopeFn,
-  toJSON: jest.fn().mockReturnValue(mockFilesystemJSON),
+  toJSON: vi.fn().mockReturnValue(mockFilesystemJSON),
   promises: {
     exists: mockExistsFn,
     stat: mockStatFn,
@@ -67,10 +68,10 @@ const mockFileSystem = {
   }
 };
 
-jest.mock('@jpmorganchase/mosaic-core', () => {
-  return jest.fn().mockImplementation(() => {
+vi.mock('@jpmorganchase/mosaic-core', () => ({
+  default: vi.fn().mockImplementation(() => {
     return {
-      start: jest.fn(),
+      start: vi.fn(),
       addSource: mockAddSourceFn,
       restartSource: mockRestartSourceFn,
       stopSource: mockStopSourceFn,
@@ -78,8 +79,8 @@ jest.mock('@jpmorganchase/mosaic-core', () => {
       triggerWorkflow: mockTriggerWorkflowFn,
       filesystem: mockFileSystem
     };
-  });
-});
+  })
+}));
 
 describe('GIVEN the serve command', () => {
   beforeAll(async () => {
@@ -375,7 +376,7 @@ describe('GIVEN the serve command', () => {
     test('THEN the workflow is run if the page exists', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockResolvedValueOnce(false) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockResolvedValueOnce(false) });
       mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
       const response = await server.inject({
         method: 'POST',
@@ -406,7 +407,7 @@ describe('GIVEN the serve command', () => {
     test('THEN the workflow is run for index page if directory path is provided', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path/index');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValue(true) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValue(true) });
       mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
       const response = await server.inject({
         method: 'POST',
@@ -482,7 +483,7 @@ describe('GIVEN the serve command', () => {
     test('THEN an MDX page is returned if it exists', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path.mdx');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(false) });
       mockReadFileFn.mockResolvedValueOnce('Some page content');
 
       const response = await server.inject({
@@ -503,7 +504,7 @@ describe('GIVEN the serve command', () => {
     test('THEN an JSON page is returned if it exists', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path.json');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(false) });
       mockReadFileFn.mockResolvedValueOnce({ content: 'some content' });
 
       const response = await server.inject({
@@ -524,7 +525,7 @@ describe('GIVEN the serve command', () => {
     test('THEN an XML page is returned if it exists', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(false) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(false) });
       mockReadFileFn.mockResolvedValueOnce('some xml');
 
       const response = await server.inject({
@@ -545,7 +546,7 @@ describe('GIVEN the serve command', () => {
     test('THEN index pages are redirected if found', async () => {
       mockExistsFn.mockResolvedValue(true);
       mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(true) });
       mockReadFileFn.mockResolvedValueOnce('some xml');
 
       const response = await server.inject({
@@ -564,7 +565,7 @@ describe('GIVEN the serve command', () => {
     test('THEN pages return 404 if not found', async () => {
       mockExistsFn.mockResolvedValueOnce(false);
       mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(true) });
       mockReadFileFn.mockResolvedValueOnce('some xml');
 
       const response = await server.inject({
@@ -580,7 +581,7 @@ describe('GIVEN the serve command', () => {
     test('THEN index pages return 404 if not found', async () => {
       mockExistsFn.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
       mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(true) });
       mockReadFileFn.mockResolvedValueOnce('some xml');
 
       const response = await server.inject({
@@ -596,7 +597,7 @@ describe('GIVEN the serve command', () => {
     test('THEN returns a 500 if an error occurs', async () => {
       mockExistsFn.mockRejectedValueOnce(new Error('oopsy'));
       mockRealpathFn.mockResolvedValueOnce('/file/path.xml');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: jest.fn().mockReturnValueOnce(true) });
+      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValueOnce(true) });
       mockReadFileFn.mockResolvedValueOnce('some xml');
 
       const response = await server.inject({

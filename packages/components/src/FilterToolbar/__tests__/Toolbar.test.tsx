@@ -1,3 +1,4 @@
+import { expect, it, test, vi } from 'vitest';
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -22,7 +23,7 @@ function renderToolbar(initialState, onStateChange) {
 
 test('updates the toolbar sort state', async () => {
   // arrange
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   const { getByText } = renderToolbar({ filters: [], sort: 'Sort 3' }, handleStateChangeMock);
   const dropdownSortButton = getByText('Sort 3');
   // action
@@ -42,7 +43,7 @@ test('updates the toolbar sort state', async () => {
 
 it('updates the toolbar filter state', async () => {
   // arrange
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   const { getByText } = renderToolbar({ filters: [], sort: 'Sort 3' }, handleStateChangeMock);
   // action
   const dropdownFilterButton = getByText('All');
@@ -71,7 +72,7 @@ it('updates the toolbar filter state', async () => {
 
 it('remove a filter with the dropdown', async () => {
   // arrange
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   const { getByText } = renderToolbar(
     { filters: ['Filter 2', 'Filter 3'], sort: 'Sort 3' },
     handleStateChangeMock
@@ -91,7 +92,7 @@ it('remove a filter with the dropdown', async () => {
 
 it('clears all filters', async () => {
   // arrange
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   const { getByText } = renderToolbar(
     { filters: ['Filter 2', 'Filter 3'], sort: 'Sort 3' },
     handleStateChangeMock
@@ -111,7 +112,7 @@ it('clears all filters', async () => {
 
 it('remove a filter with the pills', async () => {
   // arrange
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   renderToolbar({ filters: ['Filter 2', 'Filter 3'], sort: 'Sort 3' }, handleStateChangeMock);
   // action
   const pills = screen.getAllByTestId('pill');

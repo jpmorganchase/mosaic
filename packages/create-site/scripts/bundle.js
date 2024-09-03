@@ -1,4 +1,3 @@
-const fs = require('fs-extra');
 const esbuild = require('esbuild');
 
 const args = process.argv.slice(2);
@@ -44,5 +43,6 @@ try {
     console.error(e.warnings);
     console.groupEnd();
   }
-  return process.exit(1);
+
+  process.exit(1);
 }

@@ -1,11 +1,12 @@
+import { vi, describe, expect, test, beforeEach, afterEach } from 'vitest';
 import { Page } from '@jpmorganchase/mosaic-types';
-import SharedConfigPlugin from '../SharedConfigPlugin';
+import SharedConfigPlugin from '../SharedConfigPlugin.js';
 
-jest.mock('node:crypto', () => {
-  return {
-    randomUUID: jest.fn(() => '123')
-  };
-});
+vi.mock('node:crypto', () => ({
+  default: {
+    randomUUID: vi.fn(() => '123')
+  }
+}));
 
 type SharedConfigPage = Page & { sharedConfig?: any };
 /**
@@ -115,26 +116,26 @@ const pagesWithoutSharedConfig: SharedConfigPage[] = [
   }
 ];
 
-let setDataMock = jest.fn();
-let setAliasesMock = jest.fn();
-let setRefMock = jest.fn();
-let writeFileMock = jest.fn();
+let setDataMock = vi.fn();
+let setAliasesMock = vi.fn();
+let setRefMock = vi.fn();
+let writeFileMock = vi.fn();
 const volume = {
   promises: {
-    exists: jest.fn(),
-    glob: jest.fn().mockResolvedValue([
+    exists: vi.fn(),
+    glob: vi.fn().mockResolvedValue([
       pages[0].fullPath, // Folder A Index
       pages[3].fullPath, // Subfolder A Index
       pages[5].fullPath, // Subfolder B Index
       pages[6].fullPath // Subfolder D Index
     ]),
-    mkdir: jest.fn(),
-    readdir: jest.fn(),
-    readFile: jest.fn(value => Promise.resolve(pages.find(page => page.fullPath === value))),
-    realpath: jest.fn(),
-    stat: jest.fn(),
-    symlink: jest.fn(),
-    unlink: jest.fn(),
+    mkdir: vi.fn(),
+    readdir: vi.fn(),
+    readFile: vi.fn(value => Promise.resolve(pages.find(page => page.fullPath === value))),
+    realpath: vi.fn(),
+    stat: vi.fn(),
+    symlink: vi.fn(),
+    unlink: vi.fn(),
     writeFile: writeFileMock
   }
 };
@@ -285,7 +286,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
             setAliases: setAliasesMock
           },
           serialiser: {
-            deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+            deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
           },
           ignorePages: [],
           pageExtensions: []
@@ -344,7 +345,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
               setAliases: setAliasesMock
             },
             serialiser: {
-              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+              deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
             },
             globalConfig: { data: {} },
             ignorePages: [],
@@ -371,7 +372,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
               setAliases: setAliasesMock
             },
             serialiser: {
-              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+              deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
             },
             globalConfig: {
               data: { applyNamespaceSharedConfig: { ['another-ns']: { data: 'data' } } }
@@ -404,7 +405,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
               setAliases: setAliasesMock
             },
             serialiser: {
-              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+              deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
             },
             globalConfig: {
               data: {
@@ -443,15 +444,15 @@ describe('GIVEN the SharedConfigPlugin', () => {
     describe('AND WHEN there is namespace shared config to apply for the namespace AND the rootPath is **NOT** part of this source', () => {
       const sharedFilesystem = {
         promises: {
-          exists: jest.fn(),
-          mkdir: jest.fn(),
-          readdir: jest.fn(),
-          readFile: jest.fn(),
-          realpath: jest.fn(),
-          stat: jest.fn(),
-          symlink: jest.fn(),
-          unlink: jest.fn(),
-          writeFile: jest.fn()
+          exists: vi.fn(),
+          mkdir: vi.fn(),
+          readdir: vi.fn(),
+          readFile: vi.fn(),
+          realpath: vi.fn(),
+          stat: vi.fn(),
+          symlink: vi.fn(),
+          unlink: vi.fn(),
+          writeFile: vi.fn()
         }
       };
       beforeEach(async () => {
@@ -470,7 +471,7 @@ describe('GIVEN the SharedConfigPlugin', () => {
               setAliases: setAliasesMock
             },
             serialiser: {
-              deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+              deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
             },
             globalConfig: {
               data: {

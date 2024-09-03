@@ -1,5 +1,6 @@
+import { describe, expect, it } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { Label } from '../index';
 
 describe('GIVEN a Label with no tooltip', () =>
@@ -22,6 +23,6 @@ describe('GIVEN a Label with a tooltip', () =>
 
     // assert
     expect(screen.getByText('My Label')).toBeInTheDocument();
-    const label = screen.getByLabelText('My Tooltip Label');
+    expect(screen.getByLabelText('My Tooltip Label')).toBeInTheDocument();
     expect(screen.getByText('My Tooltip')).toBeInTheDocument();
   }));
