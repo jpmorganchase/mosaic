@@ -83,8 +83,6 @@ const Editor: FC<EditorProps> = ({
     setFocused(false);
   };
 
-  console.log(markdown);
-
   return (
     <LexicalComposer
       initialConfig={{
