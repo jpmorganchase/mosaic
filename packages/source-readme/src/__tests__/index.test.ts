@@ -1,3 +1,4 @@
+import { describe, expect, beforeAll, afterAll, it, afterEach } from 'vitest';
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
@@ -74,26 +75,32 @@ const successHandlers = [
   })
 ];
 
+const server = setupServer(...successHandlers);
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterAll(() => {
+  server.close();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
 describe('GIVEN a Figma Source ', () => {
   describe('WHEN a fetch is successful', () => {
-    const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
-
-    it('should return pages', done => {
-      const source$: Observable<ReadmePage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result[0]).toEqual(createExpectedResult(1));
-          expect(result[1]).toEqual(createExpectedResult(2));
-        },
-        complete: () => done()
-      });
-    });
+    it('should return pages', () =>
+      new Promise<void>(done => {
+        const source$: Observable<ReadmePage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            expect(result[0]).toEqual(createExpectedResult(1));
+            expect(result[1]).toEqual(createExpectedResult(2));
+          },
+          complete: () => done()
+        });
+      }));
   });
 });

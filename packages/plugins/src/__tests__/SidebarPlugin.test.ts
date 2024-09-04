@@ -1,3 +1,4 @@
+import { describe, expect, test, vi } from 'vitest';
 import path from 'path';
 import SidebarPlugin from '../SidebarPlugin';
 
@@ -90,19 +91,19 @@ const folderBSidebarContents = {
 describe('GIVEN the SidebarPlugin', () => {
   test('THEN it should use the `$beforeSend` lifecycle event', async () => {
     // arrange
-    let setRefMock = jest.fn();
-    let writeFileMock = jest.fn();
+    let setRefMock = vi.fn();
+    let writeFileMock = vi.fn();
     const volume = {
       promises: {
-        exists: jest.fn().mockResolvedValue(true),
-        glob: jest
+        exists: vi.fn().mockResolvedValue(true),
+        glob: vi
           .fn()
           .mockResolvedValueOnce(['/folderA', '/folderB'])
           .mockResolvedValueOnce(folderAPages)
           .mockResolvedValueOnce(folderBPages),
-        mkdir: jest.fn(),
-        readdir: jest.fn(),
-        readFile: jest.fn(value =>
+        mkdir: vi.fn(),
+        readdir: vi.fn(),
+        readFile: vi.fn(value =>
           Promise.resolve({
             fullPath: value,
             route: `route${value.replace(/\..*$/, '')}`,
@@ -113,10 +114,10 @@ describe('GIVEN the SidebarPlugin', () => {
             layout: 'some layout'
           })
         ),
-        realpath: jest.fn(),
-        stat: jest.fn(),
-        symlink: jest.fn(),
-        unlink: jest.fn(),
+        realpath: vi.fn(),
+        stat: vi.fn(),
+        symlink: vi.fn(),
+        unlink: vi.fn(),
         writeFile: writeFileMock
       }
     };
@@ -130,7 +131,7 @@ describe('GIVEN the SidebarPlugin', () => {
           setRef: setRefMock
         },
         serialiser: {
-          deserialise: jest.fn().mockImplementation((_path, value) => Promise.resolve(value))
+          deserialise: vi.fn().mockImplementation((_path, value) => Promise.resolve(value))
         },
         ignorePages: [],
         pageExtensions: []

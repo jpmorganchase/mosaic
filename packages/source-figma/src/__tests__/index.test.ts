@@ -1,3 +1,4 @@
+import { describe, expect, it, afterAll, afterEach, beforeAll } from 'vitest';
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
@@ -137,81 +138,89 @@ const multiHandlers = [
   })
 ];
 
+const server = setupServer();
+
+afterAll(() => {
+  server.close();
+});
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
 describe('GIVEN a Figma Source ', () => {
   describe('WHEN a fetch is successful', () => {
-    const server = setupServer();
+    it('should return the 2 patterns for the 2 subscribed projects', () =>
+      new Promise<void>(done => {
+        server.resetHandlers(...successHandlers);
 
-    afterAll(() => {
-      server.close();
-    });
+        const source$: Observable<FigmaPage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            const meta0: Record<string, any> = {
+              ...getProjectById(888).meta,
+              tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
+            };
+            meta0.data = {
+              ...meta0.data,
+              contentUrl: `/thumbnail/file888/2:0`,
+              fileId: 'file888',
+              projectId: '888'
+            };
+            expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_888_pattern1', meta0));
+            const meta1: Record<string, any> = {
+              ...getProjectById(999).meta,
+              tags: ['some-tag1', 'some-tag2', ...getProjectById(999).meta.tags]
+            };
+            meta1.data = {
+              ...meta1.data,
+              fileId: 'file999',
+              contentUrl: `/thumbnail/file999/2:0`,
+              projectId: '999'
+            };
+            expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_999_pattern2', meta1));
+          },
+          complete: () => done()
+        });
+      }));
 
-    it('should return the 2 patterns for the 2 subscribed projects', done => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
+    it('should support multiple files', () =>
+      new Promise<void>(done => {
+        server.resetHandlers(...multiHandlers);
 
-      const source$: Observable<FigmaPage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          const meta0: Record<string, any> = {
-            ...getProjectById(888).meta,
-            tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
-          };
-          meta0.data = {
-            ...meta0.data,
-            contentUrl: `/thumbnail/file888/2:0`,
-            fileId: 'file888',
-            projectId: '888'
-          };
-          expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_888_pattern1', meta0));
-          const meta1: Record<string, any> = {
-            ...getProjectById(999).meta,
-            tags: ['some-tag1', 'some-tag2', ...getProjectById(999).meta.tags]
-          };
-          meta1.data = {
-            ...meta1.data,
-            fileId: 'file999',
-            contentUrl: `/thumbnail/file999/2:0`,
-            projectId: '999'
-          };
-          expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_999_pattern2', meta1));
-        },
-        complete: () => done()
-      });
-    });
+        const source$: Observable<FigmaPage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            const meta0: Record<string, any> = {
+              ...getProjectById(888).meta,
+              tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
+            };
+            meta0.data = {
+              ...meta0.data,
+              contentUrl: `/thumbnail/file111/2:0`,
+              fileId: 'file111',
+              projectId: '888'
+            };
+            expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_111_pattern1', meta0));
 
-    it('should support multiple files', done => {
-      server.use(...multiHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-
-      const source$: Observable<FigmaPage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          const meta0: Record<string, any> = {
-            ...getProjectById(888).meta,
-            tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
-          };
-          meta0.data = {
-            ...meta0.data,
-            contentUrl: `/thumbnail/file111/2:0`,
-            fileId: 'file111',
-            projectId: '888'
-          };
-          expect(result[0]).toEqual(createExpectedResult('jpmSaltPattern_111_pattern1', meta0));
-
-          const meta1: Record<string, any> = {
-            ...getProjectById(888).meta,
-            tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
-          };
-          meta1.data = {
-            ...meta1.data,
-            fileId: 'file222',
-            contentUrl: `/thumbnail/file222/2:0`,
-            projectId: '888'
-          };
-          expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_222_pattern1', meta1));
-        },
-        complete: () => done()
-      });
-    });
+            const meta1: Record<string, any> = {
+              ...getProjectById(888).meta,
+              tags: ['some-tag1', 'some-tag2', ...getProjectById(888).meta.tags]
+            };
+            meta1.data = {
+              ...meta1.data,
+              fileId: 'file222',
+              contentUrl: `/thumbnail/file222/2:0`,
+              projectId: '888'
+            };
+            expect(result[1]).toEqual(createExpectedResult('jpmSaltPattern_222_pattern1', meta1));
+          },
+          complete: () => done()
+        });
+      }));
   });
 });

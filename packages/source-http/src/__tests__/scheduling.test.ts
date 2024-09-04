@@ -1,18 +1,17 @@
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { Observable, NEVER, of } from 'rxjs';
 import { take, concatWith } from 'rxjs/operators';
 import { TestScheduler } from 'rxjs/testing';
 import type { Page } from '@jpmorganchase/mosaic-types';
 
-jest.mock('@jpmorganchase/mosaic-from-http-request', () => ({
-  ...jest.requireActual('@jpmorganchase/mosaic-from-http-request'),
-  __esModule: true,
-  fromHttpRequest: jest.fn().mockImplementation((url: string) => of(['response']))
+vi.mock('@jpmorganchase/mosaic-from-http-request', async importOriginal => ({
+  ...(await importOriginal()),
+  fromHttpRequest: vi.fn().mockImplementation((url: string) => of(['response']))
 }));
 
-jest.mock('../fromDynamicImport', () => ({
-  ...jest.requireActual('../fromDynamicImport'),
-  __esModule: true,
-  fromDynamicImport: jest
+vi.mock('../fromDynamicImport', async importOriginal => ({
+  ...(await importOriginal()),
+  fromDynamicImport: vi
     .fn()
     .mockImplementation((modulePath: string) => of({ transformer: mockTransformer }))
 }));

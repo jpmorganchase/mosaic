@@ -60,5 +60,5 @@ esbuild
       console.error(e.warnings);
       console.groupEnd();
     }
-    return process.exit(1);
+    process.exit(1);
   });

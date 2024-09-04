@@ -1,3 +1,4 @@
+import { describe, expect, test, vi, beforeAll, afterAll } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { createWrapper } from './test-utils/utils';
@@ -140,10 +141,10 @@ describe('GIVEN the `useAppHeader` hook', () => {
     describe('AND WHEN invalid menu items are provided', () => {
       let consoleError;
       beforeAll(() => {
-        consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
       });
       afterAll(() => {
-        jest.restoreAllMocks();
+        vi.restoreAllMocks();
       });
       test('THEN no menu items are returned', () => {
         const { result } = renderHook(() => useAppHeader(), {

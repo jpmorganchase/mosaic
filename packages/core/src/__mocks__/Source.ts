@@ -1,14 +1,15 @@
-const constructorSpy = jest.fn();
+import { vi } from 'vitest';
+const constructorSpy = vi.fn();
 
 class Source {
   constructor(...args) {
     constructorSpy(...args);
     this.filesystem = {
-      asReadOnly: jest.fn(),
-      clearCache: jest.fn(),
-      freeze: jest.fn(),
-      fromJSON: jest.fn(),
-      reset: jest.fn(),
+      asReadOnly: vi.fn(),
+      clearCache: vi.fn(),
+      freeze: vi.fn(),
+      fromJSON: vi.fn(),
+      reset: vi.fn(),
       symlinksFromJSON: () =>
         new Promise(resolve => {
           setTimeout(resolve);
@@ -19,18 +20,18 @@ class Source {
   }
 }
 
-Source.prototype.onError = jest.fn();
-Source.prototype.onExit = jest.fn();
-Source.prototype.onStart = jest.fn();
-Source.prototype.onUpdate = jest.fn();
+Source.prototype.onError = vi.fn();
+Source.prototype.onExit = vi.fn();
+Source.prototype.onStart = vi.fn();
+Source.prototype.onUpdate = vi.fn();
 Source.prototype.invokeAfterUpdate = () =>
   new Promise(resolve => {
     setTimeout(resolve);
   });
-Source.prototype.requestCacheClear = jest.fn();
-Source.prototype.start = jest.fn();
-Source.prototype.stop = jest.fn();
-Source.prototype.use = jest.fn();
+Source.prototype.requestCacheClear = vi.fn();
+Source.prototype.start = vi.fn();
+Source.prototype.stop = vi.fn();
+Source.prototype.use = vi.fn();
 Source.prototype.constructorSpy = constructorSpy;
 
 export default Source;

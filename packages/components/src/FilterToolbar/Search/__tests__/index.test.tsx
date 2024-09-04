@@ -1,3 +1,4 @@
+import { test, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
@@ -6,8 +7,8 @@ import { ToolbarProvider } from '../../ToolbarProvider';
 import { FilterSearch } from '../index';
 
 test('updates the toolbar filters state when Filter 2 is selected', async () => {
-  const source = ['Filter 1', 'Filter 2', 'Filter 3'];
-  const handleStateChangeMock = jest.fn();
+  const source = ['Filter 1', 'Filter 2', 'Filter  3'];
+  const handleStateChangeMock = vi.fn();
   // arrange
   const { getByTestId } = render(
     <ToolbarProvider onStateChange={handleStateChangeMock}>

@@ -5,7 +5,8 @@
     "noImplicitAny": false,
     "strictNullChecks": false,
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "lib": ["es2022", "dom"]
   },
   "include": ["src"],
   "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*", "src/__mocks__/**/*"]

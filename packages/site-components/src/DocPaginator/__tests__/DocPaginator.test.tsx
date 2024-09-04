@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import React, { PropsWithChildren } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';

@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { calculateBestIndex, getBestMatch, highlightMatch } from '../searchUtils';
 import type { Index, Match } from '../searchUtils';
 

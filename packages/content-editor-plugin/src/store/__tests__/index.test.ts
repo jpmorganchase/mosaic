@@ -1,3 +1,4 @@
+import { describe, expect, test, beforeAll } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 
 import useStore, {
@@ -28,7 +29,7 @@ describe('GIVEN the Content Editor store', () => {
     test('THEN the error message is undefined', () => {
       expect(currentState.errorMessage).toEqual(undefined);
     });
-    test('THEN isInsertlingLink is false', () => {
+    test('THEN isInsertingLink is false', () => {
       expect(currentState.isInsertingLink).toEqual(false);
     });
     test('THEN there is a setter for pageState', () => {
@@ -65,14 +66,17 @@ describe('GIVEN the Content Editor store', () => {
   describe('AND WHEN startEditing is called ', () => {
     test('THEN editing is started', async () => {
       const { result } = renderHook(() => useStore());
+      expect(result.current.pageState).toEqual('VIEW');
       act(() => result.current.startEditing());
       expect(result.current.pageState).toEqual('EDIT');
     });
   });
 
   describe('AND WHEN stopEditing is called', () => {
-    test('THEN editing is stopped', () => {
+    test('THEN editing is stopped', async () => {
       const { result } = renderHook(() => useStore());
+      act(() => result.current.startEditing());
+      expect(result.current.pageState).toEqual('EDIT');
       act(() => result.current.stopEditing());
       expect(result.current.pageState).toEqual('VIEW');
       expect(result.current.previewContent).toBeUndefined();
@@ -111,13 +115,13 @@ describe('GIVEN the Content Editor store', () => {
       const { result } = renderHook(() => usePreviewContent());
 
       expect(result.current).toBeUndefined();
-      await act(() => setPreviewContent('some content'));
+      act(() => setPreviewContent('some content'));
       expect(result.current).toEqual('some content');
     });
   });
 
   describe('GIVEN the useSetContent hook', () => {
-    test('WHEN called updates the previewContent', () => {
+    test('WHEN called updates the previewContent', async () => {
       const { result } = renderHook(() => useSetContent());
       expect(useStore.getState().previewContent).toBeUndefined();
 
@@ -132,7 +136,7 @@ describe('GIVEN the Content Editor store', () => {
       expect(result.current.pageState).toEqual('VIEW');
       expect(result.current.setPageState).toBeDefined();
     });
-    test('WHEN called provides the error message and an updater', () => {
+    test('WHEN called provides the error message and an updater', async () => {
       const { result } = renderHook(() => usePageState());
       expect(result.current.errorMessage).toBeUndefined();
       act(() => result.current.setErrorMessage('an error'));
@@ -146,7 +150,7 @@ describe('GIVEN the Content Editor store', () => {
       expect(result.current.user).toEqual(undefined);
       expect(result.current.setUser).toBeDefined();
     });
-    test('AND when updater is called, user is updated', () => {
+    test('AND when updater is called, user is updated', async () => {
       const user = { sid: 'S12345', displayName: 'name', email: 'email@domain.com' };
       const { result } = renderHook(() => useEditorUser());
       expect(result.current.user).toEqual(undefined);
@@ -161,7 +165,7 @@ describe('GIVEN the Content Editor store', () => {
       expect(result.current.isInsertingLink).toEqual(false);
       expect(result.current.setIsInsertingLink).toBeDefined();
     });
-    test('AND when updater is called, isInsertingLink is updated', () => {
+    test('AND when updater is called, isInsertingLink is updated', async () => {
       const { result } = renderHook(() => useIsInsertingLink());
       expect(result.current.isInsertingLink).toEqual(false);
       act(() => result.current.setIsInsertingLink(true));

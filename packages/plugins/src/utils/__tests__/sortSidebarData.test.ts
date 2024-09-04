@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { SidebarData, sortSidebarData } from '../sortSidebarData.js';
 
 describe('GIVEN the sortSidebarData comparator', () => {

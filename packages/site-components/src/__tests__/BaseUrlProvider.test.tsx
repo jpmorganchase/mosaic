@@ -1,10 +1,11 @@
+import { describe, expect, test, vi } from 'vitest';
 import React from 'react';
 import { renderHook } from '@testing-library/react';
 
 import { BaseUrlProvider, useResolveRelativeUrl } from '../BaseUrlProvider';
 
-jest.mock('@jpmorganchase/mosaic-store', () => ({
-  useRoute: jest.fn(() => ({ route: '/a/b/c' }))
+vi.mock('@jpmorganchase/mosaic-store', () => ({
+  useRoute: vi.fn(() => ({ route: '/a/b/c' }))
 }));
 
 const ProviderWrapper: React.FC = ({ children }) => (
