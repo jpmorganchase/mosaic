@@ -42,7 +42,7 @@
     "serve:snapshot:s3": "turbo run serve:snapshot:s3 --filter=@jpmorganchase/mosaic-site",
     "serve": "turbo run serve --filter=@jpmorganchase/mosaic-site",
     "start": "turbo run start --filter=@jpmorganchase/mosaic-site",
-    "test:client": "vitest --project=client --watch",
+    "test:client": "vitest --project=client",
     "test:server": "vitest --project=server",
     "test": "vitest --coverage",
     "docker:volume": "docker container create --name docs-copy -v docs:/docs mosaic-fs && docker cp ./docs docs-copy:/ && docker rm docs-copy",
