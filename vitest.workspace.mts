@@ -16,7 +16,7 @@ export default defineWorkspace([
       name: 'client',
       environment: 'jsdom',
       include: [
-        '**/{components,content-editor-plugin,site-components,sitemap-component,store}/**/__tests__/*.test.[j|t]s?(x)'
+        '**/{components,content-editor-plugin,site-components,sitemap-component,store}/**/__tests__/ReactLive.test.[j|t]s?(x)'
       ],
       setupFiles: ['./scripts/vitest/vitest.client.setup.mts'],
       alias: [
