@@ -43,7 +43,7 @@ async function readMosaicConfig(mosaicConfigPath) {
     await init({ silent: true });
   }
   try {
-    const nodeModulesPathRegexp = /(.*\/node_modules\/)/;
+    const nodeModulesPathRegexp = /(.*[/\\]node_modules[/\\])/;
     const nodeModulesPathMatches = __filename.match(nodeModulesPathRegexp);
     process.env.NODE_PATH = `${process.env.NODE_PATH}${path.delimiter}${nodeModulesPathMatches[1]}`;
     require('module').Module._initPaths();
