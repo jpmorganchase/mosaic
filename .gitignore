@@ -16,6 +16,7 @@ tsconfig.tsbuildinfo
 
 # Deployment
 packages/rig
+packages/site/public/images
 
 # Test Results
 coverage
