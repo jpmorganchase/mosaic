@@ -30,7 +30,7 @@ const siteConfig = {
       options: {
         srcDir: `../../docs`,
         outputDir: './public/images/mosaic',
-        assetSubDirs: ['images'],
+        assetSubDirs: ['**/images'],
         imagesPrefix: '/images'
       }
     }

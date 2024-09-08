@@ -45,12 +45,12 @@ This plugin runs with a priority of -1 so it runs _after_ most other plugins.
 
 ## Options
 
-| Property     | Description                                                                        | Default    |
-| ------------ | ---------------------------------------------------------------------------------- | ---------- |
-| srcDir       | The path where pages reside **after** cloning or when running locally              | './docs'   |
-| outputDir    | There path to your site's public images directory where you want to put the images | './public' |
-| assetSubDirs | An array of sub-directory names that contain assets                                | ['images'] |
-| imagesPrefix | The prefix that is added to all new paths                                          | '/images'  |
+| Property     | Description                                                                        | Default       |
+| ------------ | ---------------------------------------------------------------------------------- | ------------- |
+| srcDir       | The path where pages reside **after** cloning or when running locally              | './docs'      |
+| outputDir    | There path to your site's public images directory where you want to put the images | './public'    |
+| assetSubDirs | An array of subdirectory globs that could contain assets                           | ['**/images'] |
+| imagesPrefix | The prefix that is added to all new paths                                          | '/images'     |
 
 ## Adding to Mosaic
 

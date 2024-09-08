@@ -9,7 +9,7 @@ describe('GIVEN the LocalImagePlugin', () => {
   describe('afterUpdate', () => {
     const srcDir = '/src';
     const outputDir = './public';
-    const assetSubDirs = ['images'];
+    const assetSubDirs = ['**/images'];
 
     beforeEach(() => {
       mockFs({
@@ -72,7 +72,6 @@ describe('GIVEN the LocalImagePlugin', () => {
   describe('$afterSource', () => {
     const srcDir = '/src';
     const outputDir = './public';
-    const assetSubDirs = ['images'];
     const pages = [
       // relative path `.` - should re-map URL to public images
       {
@@ -131,7 +130,7 @@ describe('GIVEN the LocalImagePlugin', () => {
           ignorePages,
           pageExtensions: ['.txt']
         },
-        { assetSubDirs, srcDir, outputDir }
+        { srcDir, outputDir }
       );
       expect(result).toEqual(pages);
     });
@@ -140,7 +139,7 @@ describe('GIVEN the LocalImagePlugin', () => {
       const result = await DocumentAssetsPlugin.$afterSource(
         pages,
         { ignorePages, pageExtensions },
-        { assetSubDirs, srcDir, outputDir }
+        { srcDir, outputDir }
       );
       expect(result.length).toEqual(7);
       expect(result[0].content).toBe('![alt text](/images/namespace/subdir1/images/image1.png)\n');

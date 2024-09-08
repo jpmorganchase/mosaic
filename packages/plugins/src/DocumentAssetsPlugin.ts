@@ -11,8 +11,8 @@ import { VFile } from 'vfile';
 
 interface DocumentAssetsPluginOptions {
   /**
-   * A collection of subdirectory names that contain assets, referenced by pages in the associated parent directory
-   * @default: ['images']
+   * An array of subdirectory globs that could contain assets
+   * @default: ['**\/images']
    */
   assetSubDirs?: string[];
   /**
@@ -39,11 +39,6 @@ function isUrl(assetPath: string): boolean {
   return false;
 }
 
-function isRelativePath(assetPath: string): boolean {
-  const relativePathRegExp = /^(\.{1,2}\/)+/;
-  return relativePathRegExp.test(assetPath);
-}
-
 const createPageTest = (ignorePages: string[], pageExtensions: string[]) => {
   const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
   const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
@@ -60,7 +55,8 @@ function remarkRewriteImagePaths(newPrefix: string) {
           // Absolute URL or path, do nothing
           return;
         } else {
-          const assetPath = isRelativePath(node.url) ? node.url : `./${node.url}`;
+          const isRelativePath = !isUrl(node.url) && !path.isAbsolute(node.url);
+          const assetPath = isRelativePath ? node.url : `./${node.url}`;
           const resolvedPath = path.resolve(path.dirname(newPrefix), assetPath);
           node.url = resolvedPath;
         }
@@ -78,7 +74,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
     _mutableFileSystem,
     _helpers,
     {
-      assetSubDirs = ['images'],
+      assetSubDirs = [path.join('**', 'images')],
       srcDir = path.join(process.cwd(), 'docs'),
       outputDir = `${path.sep}public`
     }
@@ -89,12 +85,12 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
     for (const assetSubDir of assetSubDirs) {
       let globbedImageDirs;
       try {
-        globbedImageDirs = await glob(path.join('**', assetSubDir), {
+        globbedImageDirs = await glob(assetSubDir, {
           cwd: srcDir,
           onlyDirectories: true
         });
       } catch (err) {
-        console.error(`Error globbing for subdirectory ${assetSubDir} in ${srcDir}:`, err);
+        console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
         continue;
       }
 
@@ -108,7 +104,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
         let rootSrcDir = srcDir;
         let rootOutputDir = outputDir;
         try {
-          if (isRelativePath(rootSrcDir)) {
+          if (!path.isAbsolute(rootSrcDir)) {
             rootSrcDir = path.resolve(path.join(process.cwd(), srcDir));
           }
           globbedPath = path.join(rootSrcDir, globbedImageDir);
@@ -117,7 +113,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
           console.error(`Error reading directory ${globbedPath}:`, err);
           continue;
         }
-        if (isRelativePath(rootOutputDir)) {
+        if (!path.isAbsolute(rootOutputDir)) {
           rootOutputDir = path.resolve(path.join(process.cwd(), outputDir));
         }
 
