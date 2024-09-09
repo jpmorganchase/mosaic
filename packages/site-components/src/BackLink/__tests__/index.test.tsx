@@ -1,14 +1,10 @@
+import { describe, expect, test } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
 import { BackLink } from '../index';
 
 describe('GIVEN a BackLink', () => {
-  global.ResizeObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn()
-  }));
   test('THEN the children are rendered', () => {
     // arrange
     render(<BackLink label="LABEL" link="https://www.test.com/" />);

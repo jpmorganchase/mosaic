@@ -1,15 +1,15 @@
+import { describe, expect, test, beforeEach, vi, Mock, MockedFunction } from 'vitest';
 import PullDocs from '../PullDocs';
 import SourceManager from '../SourceManager';
 import UnionVolume from '../filesystems/UnionVolume';
 import MutableVolume from '../filesystems/MutableVolume';
 import { MosaicConfig } from '@jpmorganchase/mosaic-schemas';
 
-jest.mock('../SourceManager');
+vi.mock('../SourceManager');
 
-jest.mock('@jpmorganchase/mosaic-schemas', () => ({
-  ...jest.requireActual('@jpmorganchase/mosaic-schemas'),
-  __esModule: true,
-  validateMosaicSchema: jest.fn().mockImplementation((_schema, config) => config)
+vi.mock('@jpmorganchase/mosaic-schemas', async importOriginal => ({
+  ...(await importOriginal()),
+  validateMosaicSchema: vi.fn().mockImplementation((_schema, config) => config)
 }));
 
 const mockConfig: MosaicConfig = {
@@ -38,7 +38,7 @@ describe('GIVEN PullDocs', () => {
     let pullDocs;
 
     beforeEach(() => {
-      (SourceManager as jest.Mock<SourceManager>).mockReset();
+      (SourceManager as Mock<SourceManager>).mockReset();
 
       pullDocs = new PullDocs({
         ...mockConfig,
@@ -124,11 +124,11 @@ describe('GIVEN PullDocs', () => {
 
       describe('AND a source changes', () => {
         test('THEN onSourceUpdate should be called', () => {
-          const onSourceUpdateSpy = jest.fn();
+          const onSourceUpdateSpy = vi.fn();
           pullDocs.onSourceUpdate(onSourceUpdateSpy);
 
           const onSourceUpdateCallback = (
-            SourceManager.prototype.onSourceUpdate as jest.MockedFunction<any>
+            SourceManager.prototype.onSourceUpdate as MockedFunction<any>
           ).mock.calls[0][0];
           onSourceUpdateCallback();
           expect(onSourceUpdateSpy).toHaveBeenCalled();

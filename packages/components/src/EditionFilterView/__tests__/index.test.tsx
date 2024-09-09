@@ -1,14 +1,10 @@
+import { describe, expect, test } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 
 import { EditionFilterView } from '../index';
 
-describe('GIVEN an EditionaFilterView', () => {
-  global.ResizeObserver = jest.fn().mockImplementation(() => ({
-    observe: jest.fn(),
-    unobserve: jest.fn(),
-    disconnect: jest.fn()
-  }));
+describe('GIVEN an EditionFilterView', () => {
   const singleGroupView = [1, 2].map(index => ({
     eyebrow: `EYEBROW${index}`,
     group: 'SINGLE_GROUP',

@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-create-site",
-  "version": "0.1.0-beta.84",
+  "version": "0.1.0-beta.85",
   "license": "Apache-2.0",
   "description": "Mosaic - Create Site CLI",
   "repository": {
@@ -25,12 +25,10 @@
     "src"
   ],
   "dependencies": {
-    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.84",
+    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.85",
     "@types/inquirer": "^8.2.4",
     "@types/node": "^18.7.19",
     "commander": "^9.4.0",
-    "resolve": "^1.22.1",
-    "resolve-global": "^1.0.0",
     "node-plop": "^0.31.0"
   }
 }

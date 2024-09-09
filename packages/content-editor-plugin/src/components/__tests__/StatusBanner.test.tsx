@@ -1,10 +1,11 @@
+import { describe, expect, test, vi } from 'vitest';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import * as store from '../../store';
 import StatusBanner from '../StatusBanner';
 
-jest.mock('../../store');
+vi.mock('../../store');
 
 describe('GIVEN a StatusBanner ', () => {
   const { usePageState } = store;

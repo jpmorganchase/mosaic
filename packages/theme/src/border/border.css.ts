@@ -1,5 +1,5 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
-import { darkMode, lightMode } from '../color/lightMode';
+import { darkMode, lightMode } from '../color/modes';
 
 import { vars } from '../vars.css';
 

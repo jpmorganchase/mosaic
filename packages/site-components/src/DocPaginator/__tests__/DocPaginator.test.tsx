@@ -1,8 +1,9 @@
+import { describe, expect, test } from 'vitest';
 import React, { PropsWithChildren } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import mockRouter from 'next-router-mock';
-import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider';
+import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider/next-13.5';
 import NextLink from 'next/link';
 import { LinkProvider } from '@jpmorganchase/mosaic-components';
 

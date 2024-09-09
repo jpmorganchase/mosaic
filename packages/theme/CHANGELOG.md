@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.85
+
+### Patch Changes
+
+- e6104310: Reduce the size of the baseline CSS file
+
 ## 0.1.0-beta.84
 
 ## 0.1.0-beta.83

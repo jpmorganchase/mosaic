@@ -1,7 +1,21 @@
-import React, { ReactElement } from 'react';
-import ReactMarkdown from 'react-markdown';
+import React from 'react';
+import ReactMarkdown, { Components } from 'react-markdown';
 
-import { getMarkdownElements } from './Markdown';
+import { getMarkdownElements } from './Markdown/markdownElements';
+
+type SupportedComponents = Pick<
+  Components,
+  'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'em' | 'strong' | 'ul' | 'ol' | 'li'
+> & {
+  listItem: SupportedComponents['li'];
+  emphasis: SupportedComponents['em'];
+};
+
+type FormattedContentProps = {
+  className?: string;
+  children: string;
+  components?: SupportedComponents;
+};
 
 const {
   h1: H1,
@@ -18,26 +32,7 @@ const {
   strong: Strong
 } = getMarkdownElements();
 
-type FormattedContentProps = {
-  className?: string;
-  children: string;
-  components?: {
-    h1?: () => ReactElement;
-    h2?: () => ReactElement;
-    h3?: () => ReactElement;
-    h4?: () => ReactElement;
-    h5?: () => ReactElement;
-    h6?: () => ReactElement;
-    p?: () => ReactElement;
-    em?: () => ReactElement;
-    strong?: () => ReactElement;
-    ul?: () => ReactElement;
-    ol?: () => ReactElement;
-    li?: () => ReactElement;
-  };
-};
-
-const renderers = {
+const renderers: SupportedComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   h1: ({ node, ...props }) => <H1 {...props} />,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

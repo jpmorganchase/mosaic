@@ -2,10 +2,10 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
-import { lightModeConditions } from './lightMode';
+import { bothModeConditions } from './modes';
 
 export const brandColorProperties = defineProperties({
-  conditions: lightModeConditions,
+  conditions: bothModeConditions,
   defaultCondition: ['lightMode', 'darkMode'],
   properties: {
     color: [...Object.values(vars.color.light.brand), ...Object.values(vars.color.dark.brand)],

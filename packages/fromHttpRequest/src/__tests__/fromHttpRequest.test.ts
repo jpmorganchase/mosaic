@@ -1,9 +1,10 @@
+import { describe, it, expect, afterEach, beforeEach, beforeAll, afterAll, vi } from 'vitest';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 import { fromHttpRequest, isErrorResponse } from '../fromHttpRequest.js';
 
-const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
+const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 const testUrl = 'http://host.test.com';
 
@@ -12,79 +13,49 @@ interface Data {
   sid: string;
 }
 
-const successfulRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.json({ name: 'David', sid: 'some id' }));
+const successfulRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.json({ name: 'David', sid: 'some id' });
 });
 
-const notOKHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(404));
+const notOKHandler = http.get(testUrl, () => {
+  return new HttpResponse(null, { status: 404 });
 });
 
-const errorHandler = rest.get(testUrl, (_req, _res, _ctx) => {
-  throw new Error('Bad stuff happened');
+const errorHandler = http.get(testUrl, () => {
+  return HttpResponse.error();
 });
 
-const successfulTextContentTypeRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.text('David'));
+const successfulTextContentTypeRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.text('David');
 });
 
-const successfulDefaultContentTypeRequestHandler = rest.get(testUrl, (_req, res, ctx) => {
-  return res(ctx.status(200), ctx.body(JSON.stringify({ name: 'David', sid: 'some id' })));
+const successfulDefaultContentTypeRequestHandler = http.get(testUrl, () => {
+  return HttpResponse.json({ name: 'David', sid: 'some id' });
 });
 
 const server = setupServer();
 
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+  consoleErrorMock.mockRestore();
+});
+
 describe('GIVEN a fromHttpRequest helper ', () => {
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'warn' });
-  });
-
-  afterEach(() => {
-    server.resetHandlers();
-  });
-
-  afterAll(() => {
-    server.close();
-    consoleErrorMock.mockRestore();
-  });
-
   describe('WHEN a successful request is made', () => {
     beforeEach(() => {
-      server.use(successfulRequestHandler);
+      server.resetHandlers(successfulRequestHandler);
     });
-    it('JSON is returned', done => {
-      const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
-
-      fromHttpRequest$.subscribe({
-        next: response => {
-          expect(response).toEqual({ name: 'David', sid: 'some id' });
-        },
-        complete: () => done()
-      });
-    });
-
-    describe('AND WHEN a text content-type header is found', () => {
-      beforeEach(() => {
-        server.use(successfulTextContentTypeRequestHandler);
-      });
-      it('TEXT is returned', done => {
-        const fromHttpRequest$ = fromHttpRequest<string>(testUrl);
-
-        fromHttpRequest$.subscribe({
-          next: response => {
-            expect(response).toEqual('David');
-          },
-          complete: () => done()
-        });
-      });
-    });
-
-    describe('AND WHEN a **NO** content-type header is found', () => {
-      beforeEach(() => {
-        server.use(successfulDefaultContentTypeRequestHandler);
-      });
-      it('JSON is returned', done => {
-        const fromHttpRequest$ = fromHttpRequest<string>(testUrl);
+    it('JSON is returned', () =>
+      new Promise<void>(done => {
+        const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
 
         fromHttpRequest$.subscribe({
           next: response => {
@@ -92,43 +63,78 @@ describe('GIVEN a fromHttpRequest helper ', () => {
           },
           complete: () => done()
         });
+      }));
+
+    describe('AND WHEN a text content-type header is found', () => {
+      beforeEach(() => {
+        server.resetHandlers(successfulTextContentTypeRequestHandler);
       });
+      it('TEXT is returned', () =>
+        new Promise<void>(done => {
+          const fromHttpRequest$ = fromHttpRequest<string>(testUrl);
+
+          fromHttpRequest$.subscribe({
+            next: response => {
+              expect(response).toEqual('David');
+            },
+            complete: () => done()
+          });
+        }));
+    });
+
+    describe('AND WHEN a **NO** content-type header is found', () => {
+      beforeEach(() => {
+        server.resetHandlers(successfulDefaultContentTypeRequestHandler);
+      });
+      it('JSON is returned', () =>
+        new Promise<void>(done => {
+          const fromHttpRequest$ = fromHttpRequest<string>(testUrl);
+
+          fromHttpRequest$.subscribe({
+            next: response => {
+              expect(response).toEqual({ name: 'David', sid: 'some id' });
+            },
+            complete: () => done()
+          });
+        }));
     });
   });
 
   describe('WHEN the fetch throws an error', () => {
     beforeEach(() => {
-      server.use(errorHandler);
+      server.resetHandlers(errorHandler);
     });
-    it('An Error Response is returned', done => {
-      const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
+    it('An Error Response is returned', () =>
+      new Promise<void>(done => {
+        const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
 
-      fromHttpRequest$.subscribe({
-        next: response => {
-          expect(response).toEqual({
-            error: true,
-            message: 'request to http://host.test.com/ failed, reason: Bad stuff happened'
-          });
-        },
-        complete: () => done()
-      });
-    });
+        fromHttpRequest$.subscribe({
+          next: response => {
+            expect(response).toEqual({
+              error: true,
+              message: 'Failed to fetch'
+            });
+          },
+          complete: () => done()
+        });
+      }));
   });
 
   describe('WHEN a unsuccessful request is made', () => {
     beforeEach(() => {
-      server.use(notOKHandler);
+      server.resetHandlers(notOKHandler);
     });
-    it('An ErrorResponse is returned', done => {
-      const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
+    it('An ErrorResponse is returned', () =>
+      new Promise<void>(done => {
+        const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
 
-      fromHttpRequest$.subscribe({
-        next: response => {
-          expect(response).toEqual({ error: true, message: 'Error 404' });
-        },
-        complete: () => done()
-      });
-    });
+        fromHttpRequest$.subscribe({
+          next: response => {
+            expect(response).toEqual({ error: true, message: 'Error 404' });
+          },
+          complete: () => done()
+        });
+      }));
   });
 });
 

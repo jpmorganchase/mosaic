@@ -1,11 +1,14 @@
+import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { AwsStub, mockClient } from 'aws-sdk-client-mock';
-import { sdkStreamMixin } from '@aws-sdk/util-stream';
+import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
-import { default as fetchMock, disableFetchMocks, enableFetchMocks } from 'jest-fetch-mock';
-const mockFs = require('mock-fs');
+import createFetchMock from 'vitest-fetch-mock';
+import { vol, fs } from 'memfs';
 
 import { withSharedConfig } from '../withSharedConfig';
+
+const fetchMock = createFetchMock(vi);
 
 declare var process: {
   env: {
@@ -85,14 +88,15 @@ describe('GIVEN withSharedConfig', () => {
     let savedEnv = process.env;
     beforeEach(() => {
       process.env = { MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
-      mockFs({
+      vol.fromNestedJSON({
         'some/snapshots/mynamespace/mydir': {
           'shared-config.json': '{"config": { "someValue": true }}'
         }
       });
+      vi.mock('fs', () => ({ default: fs }));
     });
     afterEach(() => {
-      mockFs.restore();
+      vol.reset();
       process.env = savedEnv;
     });
 
@@ -120,14 +124,14 @@ describe('GIVEN withSharedConfig', () => {
 
   describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
-      enableFetchMocks();
+      fetchMock.enableMocks();
       fetchMock.mockResponses(
         [JSON.stringify({ config: { someValue: true } }), { status: 200 }],
         ['', { status: 404 }]
       );
     });
     afterAll(() => {
-      disableFetchMocks();
+      fetchMock.disableMocks();
     });
     test('THEN shared-config is fetched from the data source', async () => {
       // arrange

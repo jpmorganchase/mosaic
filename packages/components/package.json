@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-components",
   "description": "Mosaic - UI Components",
-  "version": "0.1.0-beta.84",
+  "version": "0.1.0-beta.85",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -36,16 +36,13 @@
     "dev": "node ../../scripts/bundle.js watch"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.0.0",
     "react": "^18.2.0",
     "del-cli": "^4.0.1",
     "typescript": "^4.8.3"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.84",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.84",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.85",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.85",
     "@salt-ds/core": "^1.33.0",
     "@salt-ds/lab": "1.0.0-alpha.50",
     "@vanilla-extract/css": "^1.6.0",
@@ -57,7 +54,7 @@
     "lodash-es": "^4.17.21",
     "prism-react-renderer": "^1.1.1",
     "react-live": "^2.2.3",
-    "react-markdown": "^6.0.2",
+    "react-markdown": "^9.0.0",
     "react-responsive-carousel": "3.2.10",
     "react-table": "^7.8.0",
     "swagger-ui-react": "^5.0.0",

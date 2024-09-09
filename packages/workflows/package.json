@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-workflows",
-  "version": "0.1.0-beta.84",
+  "version": "0.1.0-beta.85",
   "description": "Mosaic workflows for core file system",
   "license": "Apache-2.0",
   "author": "",
@@ -15,7 +15,7 @@
     }
   },
   "engines": {
-    "node": ">=16.10.0 || >=18.0.0"
+    "node": ">=18.0.0 || >=20.0.0"
   },
   "files": [
     "dist"
@@ -34,9 +34,11 @@
     "@types/uuid": "^8.3.4"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.84",
-    "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.84",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.84",
+    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.85",
+    "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.85",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.85",
+    "@octokit/core": "^6.1.2",
+    "undici" : "^6.19.5",
     "uuid": "^7.0.3"
   }
 }

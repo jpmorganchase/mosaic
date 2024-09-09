@@ -1,5 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css';
-import { ssrClassName } from '../index';
+import { ssrClassName } from '../ssrClassName';
 
 globalStyle('html, body', {
   fontFamily: 'var(--salt-text-fontFamily, "Open Sans")',

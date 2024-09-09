@@ -1,3 +1,4 @@
+import { describe, beforeAll, test, expect, afterAll } from 'vitest';
 import { getSnapshotS3Config } from '../index.js';
 describe('GIVEN getS3Config', () => {
   describe('WHEN valid config is defined', () => {

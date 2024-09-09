@@ -1,6 +1,6 @@
 import { createGlobalTheme, createGlobalThemeContract, globalStyle } from '@vanilla-extract/css';
 import { horizontal } from '../responsive/vars.css';
-import { lightMode, darkMode } from '../color/lightMode';
+import { lightMode, darkMode } from '../color/modes';
 import { fontWeightVars } from '../typography/vars.css';
 import { colorVars as mosaicColorVars } from '../color/vars.css';
 

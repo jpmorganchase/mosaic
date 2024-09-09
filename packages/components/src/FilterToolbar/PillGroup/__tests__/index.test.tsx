@@ -1,3 +1,4 @@
+import { test, expect, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 
@@ -7,7 +8,7 @@ import { FilterPillGroup } from '../index';
 test('updates the toolbar sort state when a filter is removed', () => {
   // arrange
   const filters = ['Filter 1', 'Filter 2', 'Filter 3'];
-  const handleStateChangeMock = jest.fn();
+  const handleStateChangeMock = vi.fn();
   render(
     <ToolbarProvider initialState={{ filters }} onStateChange={handleStateChangeMock}>
       <FilterPillGroup />

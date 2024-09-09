@@ -5,7 +5,7 @@ import { Avatar } from '@salt-ds/core';
 import styles from './styles.css';
 
 function toUpperFirst(str) {
-  return `${str.substr(0, 1).toUpperCase()}${str.toLowerCase().substr(1)}`;
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 }
 
 export function UserProfile({

@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 

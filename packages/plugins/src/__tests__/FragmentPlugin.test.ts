@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import FragmentPlugin from '../FragmentPlugin.js';
 import { Page } from '@jpmorganchase/mosaic-types';
 

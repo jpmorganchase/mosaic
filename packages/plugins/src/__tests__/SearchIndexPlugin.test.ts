@@ -1,8 +1,9 @@
+import { describe, expect, beforeEach, test, vi } from 'vitest';
 import { optimizeContentForSearch, parseKeys } from '../SearchIndexPlugin';
 
 describe('GIVEN the SearchIndexPlugin', () => {
   beforeEach(async () => {
-    console.error = jest.fn();
+    console.error = vi.fn();
   });
 
   describe('AND WHEN `parseKeys` is called', () => {

@@ -2,10 +2,10 @@ import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
-import { backgroundColorSprinkles, lightModeConditions } from '../color';
+import { backgroundColorSprinkles, bothModeConditions } from '../color';
 
 export const innerBackgroundProperties = defineProperties({
-  conditions: lightModeConditions,
+  conditions: bothModeConditions,
   defaultCondition: ['lightMode', 'darkMode'],
   properties: {
     backgroundColor: [
@@ -18,7 +18,7 @@ export const innerBackgroundSprinkles = createSprinkles(innerBackgroundPropertie
 export type InnerBackgroundSprinkles = Parameters<typeof innerBackgroundSprinkles>[0];
 
 export const outerBackgroundProperties = defineProperties({
-  conditions: lightModeConditions,
+  conditions: bothModeConditions,
   defaultCondition: ['lightMode', 'darkMode'],
   properties: {
     backgroundColor: [

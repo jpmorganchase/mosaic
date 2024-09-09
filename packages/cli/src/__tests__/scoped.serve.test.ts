@@ -1,3 +1,4 @@
+import { describe, expect, test, beforeAll, afterAll, vi } from 'vitest';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import serve, { server } from '../serve';
 
@@ -41,20 +42,20 @@ const mosaicConfig: MosaicConfig = {
   ]
 };
 
-const mockScopeFn = jest.fn();
+const mockScopeFn = vi.fn();
 
 const mockFileSystem = {
   scope: mockScopeFn
 };
 
-jest.mock('@jpmorganchase/mosaic-core', () => {
-  return jest.fn().mockImplementation(() => {
+vi.mock('@jpmorganchase/mosaic-core', () => ({
+  default: vi.fn().mockImplementation(() => {
     return {
-      start: jest.fn(),
+      start: vi.fn(),
       filesystem: mockFileSystem
     };
-  });
-});
+  })
+}));
 
 describe('GIVEN the serve command with a scope', () => {
   beforeAll(async () => {

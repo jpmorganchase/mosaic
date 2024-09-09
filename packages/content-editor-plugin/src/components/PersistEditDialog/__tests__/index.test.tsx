@@ -1,3 +1,4 @@
+import { describe, expect, test, vi, beforeAll } from 'vitest';
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,32 +9,24 @@ import { usePageState } from '../../../store';
 import { nodes } from '../../../nodes';
 import useWorkflowFeed from '../../../hooks/useWorkflowFeed';
 
-jest.mock('../../../store', () => ({
-  ...jest.requireActual('../../../store'),
-  __esModule: true,
-  usePageState: jest.fn()
+vi.mock('../../../store', async importOriginal => ({
+  ...(await importOriginal()),
+  usePageState: vi.fn()
 }));
 
-const mockSendWorkflowProgressMessage = jest.fn();
-jest.mock('../../../hooks/useWorkflowFeed');
-jest
-  .mocked(useWorkflowFeed)
-  .mockReturnValue({ sendWorkflowProgressMessage: mockSendWorkflowProgressMessage });
+const mockSendWorkflowProgressMessage = vi.fn();
+vi.mock('../../../hooks/useWorkflowFeed');
+vi.mocked(useWorkflowFeed).mockReturnValue({
+  sendWorkflowProgressMessage: mockSendWorkflowProgressMessage
+});
 
-const setPageStateSpy = jest.fn();
-const setErrorMessageSpy = jest.fn();
+const setPageStateSpy = vi.fn();
+const setErrorMessageSpy = vi.fn();
 const mockMeta = { sourceId: 'source-1', route: 'route' };
-
-jest.mock('@lexical/markdown', () => ({
-  ...jest.requireActual('@lexical/markdown'),
-  $convertToMarkdownString: jest.fn().mockReturnValue('## Test Markdown')
-}));
 
 const renderPersistDialog = (props = { meta: mockMeta }) => {
   render(
-    <LexicalComposer
-      initialConfig={{ namespace: 'persist-dialog-test', nodes, onError: jest.fn() }}
-    >
+    <LexicalComposer initialConfig={{ namespace: 'persist-dialog-test', nodes, onError: vi.fn() }}>
       <PersistDialog {...props} />
     </LexicalComposer>
   );
@@ -41,7 +34,7 @@ const renderPersistDialog = (props = { meta: mockMeta }) => {
 
 describe('GIVEN a PersistEditDialog', () => {
   beforeAll(() => {
-    jest.mocked(usePageState).mockReturnValue({
+    vi.mocked(usePageState).mockReturnValue({
       pageState: 'SAVING',
       setErrorMessage: setErrorMessageSpy,
       setPageState: setPageStateSpy,

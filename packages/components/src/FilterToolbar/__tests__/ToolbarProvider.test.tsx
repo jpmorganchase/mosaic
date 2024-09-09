@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import React, { useEffect } from 'react';
 import { render } from '@testing-library/react';
 

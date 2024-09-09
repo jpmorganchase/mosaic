@@ -1,18 +1,19 @@
-const actualZustand = jest.requireActual('zustand');
+import { vi, afterEach } from 'vitest';
+
+const actualZustand = await vi.importActual<typeof import('zustand')>('zustand');
 
 const actualCreate = actualZustand.create;
 
-const stores = new Set<Function>();
+const stores = new Set<() => unknown>();
 
-const create: typeof actualCreate = createState => {
+const create = ((createState: any) => {
   const store = actualCreate(createState);
   const initialState = store.getState();
   stores.add(() => store.setState(initialState, true));
 
   return store;
-};
+}) as typeof actualCreate;
 
-// eslint-disable-next-line no-undef
 afterEach(() => {
   stores.forEach(resetFn => resetFn());
 });

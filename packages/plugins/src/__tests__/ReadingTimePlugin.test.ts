@@ -1,4 +1,4 @@
-import type { Page } from '@jpmorganchase/mosaic-types';
+import { expect, describe, test, beforeEach } from 'vitest';
 import ReadingTimePlugin, { type ReadingTimePluginPage } from '../ReadingTimePlugin';
 
 let updatedPages: ReadingTimePluginPage[] = [];

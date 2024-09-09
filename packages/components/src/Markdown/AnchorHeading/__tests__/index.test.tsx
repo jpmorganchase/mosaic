@@ -1,3 +1,4 @@
+import { describe, expect, test, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
@@ -20,12 +21,12 @@ describe('GIVEN an AnchoredHeading', () => {
       // arrange
       let clipboardData = ''; // initalizing clipboard data so it can be used in testing
       const mockClipboard = {
-        writeText: jest.fn(data => {
+        writeText: vi.fn(data => {
           clipboardData = data;
         }),
-        readText: jest.fn(() => clipboardData)
+        readText: vi.fn(() => clipboardData)
       };
-      (global.navigator as any).clipboard = mockClipboard;
+      vi.stubGlobal('navigator', { clipboard: mockClipboard });
 
       const TestHeading = withAnchorHeading(Heading.H1);
       render(

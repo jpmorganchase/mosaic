@@ -126,8 +126,6 @@ export default class SourceManager {
 
       source.use(this.#plugins, this.#serialisers);
 
-      await source.start();
-
       source.onUpdate(async ({ pages, symlinks }) => {
         if (!sourceActive) {
           reject(
@@ -235,6 +233,8 @@ export default class SourceManager {
         initOrStartTime = new Date().getTime();
         resolve(source);
       });
+
+      await source.start();
     });
   }
 

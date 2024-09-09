@@ -1,6 +1,7 @@
+import { describe, expect, beforeAll, afterAll, it, afterEach } from 'vitest';
 import { Observable, take } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { ReadmePage } from '../types/index.js';
 
 import Source from '../index.js';
@@ -66,34 +67,40 @@ const createExpectedResult = (index: number) => ({
 });
 
 const successHandlers = [
-  rest.get('https://some/url/for/readme1.md', (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.text(createResponse(1)));
+  http.get('https://some/url/for/readme1.md', () => {
+    return HttpResponse.text(createResponse(1));
   }),
-  rest.get('https://some/url/for/readme2.md', (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.text(createResponse(2)));
+  http.get('https://some/url/for/readme2.md', () => {
+    return HttpResponse.text(createResponse(2));
   })
 ];
 
+const server = setupServer(...successHandlers);
+
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+afterAll(() => {
+  server.close();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
 describe('GIVEN a Figma Source ', () => {
   describe('WHEN a fetch is successful', () => {
-    const server = setupServer();
-    beforeAll(() => {
-      server.use(...successHandlers);
-      server.listen({ onUnhandledRequest: 'warn' });
-    });
-    afterAll(() => {
-      server.close();
-    });
-
-    it('should return pages', done => {
-      const source$: Observable<ReadmePage[]> = Source.create(options, { schedule });
-      source$.pipe(take(1)).subscribe({
-        next: result => {
-          expect(result[0]).toEqual(createExpectedResult(1));
-          expect(result[1]).toEqual(createExpectedResult(2));
-        },
-        complete: () => done()
-      });
-    });
+    it('should return pages', () =>
+      new Promise<void>(done => {
+        const source$: Observable<ReadmePage[]> = Source.create(options, { schedule });
+        source$.pipe(take(1)).subscribe({
+          next: result => {
+            expect(result[0]).toEqual(createExpectedResult(1));
+            expect(result[1]).toEqual(createExpectedResult(2));
+          },
+          complete: () => done()
+        });
+      }));
   });
 });

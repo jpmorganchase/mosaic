@@ -1,11 +1,12 @@
+import { describe, expect, test, vi, beforeEach, afterEach, MockedFunction } from 'vitest';
 import EventEmitter from 'events';
 
 import WorkerSubscription, { EVENT } from '../WorkerSubscription';
 import Source from '../Source';
 
-jest.mock('../WorkerSubscription');
-jest.mock('plugin', () => ({}), { virtual: true });
-jest.mock('../plugin/createPluginAPI.js');
+vi.mock('../WorkerSubscription');
+vi.mock('plugin', () => ({}));
+vi.mock('../plugin/createPluginAPI.js');
 
 const utf8Encoder = new TextEncoder();
 
@@ -149,7 +150,7 @@ describe('GIVEN Source', () => {
         { primary: true }
       );
       source.use([]);
-      (WorkerSubscription as jest.MockedFunction<any>).mockClear();
+      (WorkerSubscription as MockedFunction<any>).mockClear();
     });
 
     test('THEN the child worker should be created', async () => {
@@ -168,20 +169,20 @@ describe('GIVEN Source', () => {
   });
 
   describe('WHEN calling `stop`', () => {
-    let source;
-    let workerSubscriptionSingletonMock;
+    let source: Source;
+    let workerSubscriptionSingletonMock: typeof WorkerSubscription;
 
     afterEach(() => {
-      (WorkerSubscription as jest.MockedFunction<any>).mockRestore();
+      (WorkerSubscription as MockedFunction<any>).mockRestore();
     });
     beforeEach(async () => {
       workerSubscriptionSingletonMock = {
-        stop: jest.fn(),
+        stop: vi.fn(),
         closed: false,
         on() {},
         once() {}
       };
-      (WorkerSubscription as jest.MockedFunction<any>).mockImplementation(
+      (WorkerSubscription as MockedFunction<any>).mockImplementation(
         () => workerSubscriptionSingletonMock
       );
       source = new Source({
@@ -207,45 +208,49 @@ describe('GIVEN Source', () => {
     const workerHandlers: {
       exit: (code: number) => void;
       start: () => void;
-      message: (data) => void;
+      message: (data: unknown) => void;
       error: (error: Error) => void;
     } = {
-      exit: null,
-      start: null,
-      message: null,
-      error: null
+      exit: () => {},
+      start: () => {},
+      message: () => {},
+      error: () => {}
     };
-    let source;
+    let source: Source;
 
     afterEach(() => {
-      (WorkerSubscription.prototype.on as jest.MockedFunction<any>).mockRestore();
-      (WorkerSubscription.prototype.once as jest.MockedFunction<any>).mockRestore();
+      (WorkerSubscription.prototype.on as MockedFunction<any>).mockRestore();
+      (WorkerSubscription.prototype.once as MockedFunction<any>).mockRestore();
     });
     beforeEach(async () => {
-      const eventMap = {
+      const eventMap: Record<keyof EVENT, 'message' | 'exit' | 'error' | 'start'> = {
         [EVENT.UPDATE]: 'message',
         [EVENT.EXIT]: 'exit',
         [EVENT.ERROR]: 'error',
         [EVENT.START]: 'start'
       };
-      jest
-        .spyOn(WorkerSubscription.prototype, 'on')
-        .mockImplementation(function on(event: EVENT, handler) {
-          workerHandlers[eventMap[event]] = handler;
-          return this as EventEmitter;
-        } as any);
-      jest
-        .spyOn(WorkerSubscription.prototype, 'once')
-        .mockImplementation(function on(event: EVENT, handler) {
-          workerHandlers[eventMap[event]] = handler;
-          return this as EventEmitter;
-        } as any);
+      vi.spyOn(WorkerSubscription.prototype, 'on').mockImplementation(function on(
+        this: EventEmitter,
+        event: EVENT,
+        handler: () => {}
+      ) {
+        workerHandlers[eventMap[event]] = handler;
+        return this;
+      } as any);
+      vi.spyOn(WorkerSubscription.prototype, 'once').mockImplementation(function on(
+        this: EventEmitter,
+        event: EVENT,
+        handler: () => {}
+      ) {
+        workerHandlers[eventMap[event]] = handler;
+        return this;
+      } as any);
 
       source = new Source({
         modulePath: 'plugin',
         namespace: 'test-namespace'
       });
-      source.filesystem.reset = jest.fn();
+      source.filesystem.reset = vi.fn();
 
       await source.start();
     });
@@ -256,26 +261,26 @@ describe('GIVEN Source', () => {
         expect(source.filesystem).toEqual(null);
       });
       test('THEN the worker should remove listeners on exit', () => {
-        jest.spyOn(EventEmitter.prototype, 'removeAllListeners');
+        vi.spyOn(EventEmitter.prototype, 'removeAllListeners');
         workerHandlers.exit(1);
         expect(EventEmitter.prototype.removeAllListeners).toHaveBeenCalled();
       });
       test('THEN start handler should only fire once', () => {
-        const startSpy = jest.fn();
+        const startSpy = vi.fn();
         source.onStart(startSpy);
         workerHandlers.start();
         workerHandlers.start();
         expect(startSpy).toHaveBeenCalledTimes(1);
       });
       test('THEN exit handler should only fire once', () => {
-        const exitSpy = jest.fn();
+        const exitSpy = vi.fn();
         source.onExit(exitSpy);
         workerHandlers.exit(0);
         workerHandlers.exit(0);
         expect(exitSpy).toHaveBeenCalledTimes(1);
       });
       test('THEN error handler should only fire once', () => {
-        const errorSpy = jest.fn();
+        const errorSpy = vi.fn();
         source.onError(errorSpy);
         workerHandlers.error(new Error('an exception that should only trigger an event once'));
         workerHandlers.error(new Error('an exception that should only trigger an event once'));
@@ -285,7 +290,7 @@ describe('GIVEN Source', () => {
 
     describe('AND event handlers are attached', () => {
       test('THEN the update handler should return a cleanup function', async () => {
-        const updateSpy = jest.fn();
+        const updateSpy = vi.fn();
         const cleanup = source.onUpdate(updateSpy);
         cleanup();
         workerHandlers.message({ data: utf8Encoder.encode("{ key : 'test' }"), type: 'message' });
@@ -293,7 +298,7 @@ describe('GIVEN Source', () => {
         expect(updateSpy).not.toHaveBeenCalled();
       });
       test('THEN the error handler should return a cleanup function', async () => {
-        const errorSpy = jest.fn();
+        const errorSpy = vi.fn();
         const cleanup = source.onError(errorSpy);
         cleanup();
         workerHandlers.error(new Error('something broke'));
@@ -301,7 +306,7 @@ describe('GIVEN Source', () => {
         expect(errorSpy).not.toHaveBeenCalled();
       });
       test('THEN the update handler should be fired on a message', async () => {
-        const updateSpy = jest.fn();
+        const updateSpy = vi.fn();
         source.onUpdate(updateSpy);
         workerHandlers.message({
           data: { content: ['test'], meta: {}, data: { testValue: 'someValue' } },
@@ -316,10 +321,10 @@ describe('GIVEN Source', () => {
       });
 
       test('THEN the exit handler should unsubscribe all other handlers', () => {
-        const exitSpy = jest.fn();
-        const errorSpy = jest.fn();
-        const updateSpy = jest.fn();
-        const startSpy = jest.fn();
+        const exitSpy = vi.fn();
+        const errorSpy = vi.fn();
+        const updateSpy = vi.fn();
+        const startSpy = vi.fn();
         source.onError(errorSpy);
         source.onExit(exitSpy);
         source.onStart(startSpy);
@@ -335,14 +340,14 @@ describe('GIVEN Source', () => {
       });
 
       test('THEN the start handler should be fired when a worker received a start event', () => {
-        const startSpy = jest.fn();
+        const startSpy = vi.fn();
         source.onStart(startSpy);
         workerHandlers.start();
         expect(startSpy).toHaveBeenCalledTimes(1);
       });
 
       test('THEN the exit handler should be fired when the exit event emits', () => {
-        const exitSpy = jest.fn();
+        const exitSpy = vi.fn();
         source.onExit(exitSpy);
         workerHandlers.exit(1);
         expect(exitSpy).toHaveBeenCalledTimes(1);
@@ -350,7 +355,7 @@ describe('GIVEN Source', () => {
 
       test('THEN the error handler should be fired on an error', () => {
         const error = new Error('something broke');
-        const errorSpy = jest.fn();
+        const errorSpy = vi.fn();
         source.onError(errorSpy);
         workerHandlers.error(error);
         expect(errorSpy).toHaveBeenCalledWith(error);
@@ -360,8 +365,8 @@ describe('GIVEN Source', () => {
 
   describe('WHEN workflows are triggered', () => {
     let source: Source;
-    const actionSpy = jest.fn();
-    const sendWorkflowProgressMessageSpy = jest.fn();
+    const actionSpy = vi.fn();
+    const sendWorkflowProgressMessageSpy = vi.fn();
     beforeEach(async () => {
       source = new Source(
         {
