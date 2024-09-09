@@ -41,7 +41,6 @@
     "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.85",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.85",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.85",
-    "@philpl/buble": "^0.19.7",
     "@salt-ds/core": "^1.33.0",
     "@salt-ds/lab": "1.0.0-alpha.50",
     "@types/react": "^18.0.26",
