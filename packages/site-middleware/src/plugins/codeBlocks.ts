@@ -9,7 +9,7 @@ import { type MdxJsxFlowElementHast } from 'mdast-util-mdx-jsx';
 import { propertiesToMdxJsxAttributes } from 'hast-util-properties-to-mdx-jsx-attributes';
 
 /**
- * Modified from: https://github.com/remcohaszing/remark-mdx-code-meta
+ * Modified from: https://github.com/remcohaszing/rehype-mdx-code-props/blob/main/src/rehype-mdx-code-props.ts
  *
  * Custom meta parser for codefences that have extra params. e.g.
  * ```jsx filename="hello.jsx"
@@ -24,7 +24,7 @@ import { propertiesToMdxJsxAttributes } from 'hast-util-properties-to-mdx-jsx-at
  */
 export const transformer: Transformer<Root> = ast => {
   visitParents(ast, 'element', (node, ancestors) => {
-    if (node.tagName !== 'code' && node.tagName !== 'pre') {
+    if (node.tagName !== 'code') {
       return;
     }
 
@@ -53,7 +53,7 @@ export const transformer: Transformer<Root> = ast => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     parent = ancestors.at(-2)!;
 
-    // // Limit eval to just basic strings that start with "meta."
+    // Limit eval to just basic strings that start with "meta."
     // const isEval =
     //   /(^| )eval(="true"| |$)/.test(meta) && /^meta\.[a-z0-9_[\].$"']+$/i.test(child.value);
     //

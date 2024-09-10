@@ -1,8 +1,12 @@
-import { style } from '@vanilla-extract/css';
+import { style, globalStyle } from '@vanilla-extract/css';
 import { backgroundColor, foregroundColor, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 const root = style({
   position: 'relative'
+});
+
+globalStyle(`${root} pre[class*=language-]`, {
+  textShadow: 'none'
 });
 
 export default {

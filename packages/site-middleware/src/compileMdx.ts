@@ -11,8 +11,8 @@ export async function compileMDX(
 ) {
   const mdxSource = await serialize(content, {
     mdxOptions: {
-      rehypePlugins: [rehypeSlug, ...remarkPlugins],
-      remarkPlugins: [codeBlocks, remarkGfm, ...rehypePlugins]
+      rehypePlugins: [codeBlocks, rehypeSlug, ...remarkPlugins],
+      remarkPlugins: [remarkGfm, ...rehypePlugins]
     },
     parseFrontmatter
   });
