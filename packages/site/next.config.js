@@ -3,6 +3,11 @@ const webpack = require('webpack');
 module.exports = {
   reactStrictMode: true,
   swcMinify: true,
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': ['**/.next/cache/webpack']
+    }
+  },
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
     '@jpmorganchase/mosaic-content-editor-plugin',

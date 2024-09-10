@@ -21,3 +21,4 @@ LICENSE
 .dockerignore
 Dockerfile
 Dockerfile.*
+.vercelignore
