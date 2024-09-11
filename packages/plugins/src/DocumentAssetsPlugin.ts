@@ -79,14 +79,27 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
       outputDir = `${path.sep}public`
     }
   ) {
+    const resolvedCwd = path.resolve(process.cwd());
+    const resolvedSrcDir = path.resolve(srcDir);
+    const resolvedOutputDir = path.resolve(outputDir);
+    if (!resolvedOutputDir.startsWith(resolvedCwd)) {
+      throw new Error(`outputDir must be within the current working directory: ${outputDir}`);
+    }
     await fsExtra.ensureDir(srcDir);
     await fsExtra.ensureDir(outputDir);
 
     for (const assetSubDir of assetSubDirs) {
+      const resolvedAssetSubDir = path.resolve(resolvedSrcDir, assetSubDir);
+      if (!resolvedAssetSubDir.startsWith(resolvedSrcDir)) {
+        console.log('ERROR 3');
+
+        throw new Error(`Asset subdirectory must be within srcDir: ${srcDir}`);
+      }
+
       let globbedImageDirs;
       try {
         globbedImageDirs = await glob(assetSubDir, {
-          cwd: srcDir,
+          cwd: resolvedSrcDir,
           onlyDirectories: true
         });
       } catch (err) {

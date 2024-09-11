@@ -1,4 +1,4 @@
-import { expect, describe, test, afterEach, beforeEach, vi } from 'vitest';
+import { expect, describe, test, afterEach, vi, beforeEach } from 'vitest';
 
 import fsExtra from 'fs-extra';
 import mockFs from 'mock-fs';
@@ -7,13 +7,14 @@ import DocumentAssetsPlugin from '../DocumentAssetsPlugin';
 
 describe('GIVEN the LocalImagePlugin', () => {
   describe('afterUpdate', () => {
-    const srcDir = '/src';
+    const srcDir = './src';
     const outputDir = './public';
     const assetSubDirs = ['**/images'];
 
     beforeEach(() => {
+      vi.spyOn(process, 'cwd').mockReturnValue('/mocked/cwd');
       mockFs({
-        '/src': {
+        '/mocked/cwd/src': {
           images: {
             'image1.png': 'file content',
             'image2.jpg': 'file content'
@@ -24,8 +25,8 @@ describe('GIVEN the LocalImagePlugin', () => {
     });
 
     afterEach(() => {
+      vi.clearAllMocks();
       mockFs.restore();
-      vi.restoreAllMocks();
     });
 
     test('should process image directories and call symlink with correct arguments', async () => {
@@ -35,8 +36,8 @@ describe('GIVEN the LocalImagePlugin', () => {
 
       const outputPathImage1 = path.join(process.cwd(), outputDir, 'images', 'image1.png');
       const outputPathImage2 = path.join(process.cwd(), outputDir, 'images', 'image2.jpg');
-      const srcPathImage1 = path.join(srcDir, 'images', 'image1.png');
-      const srcPathImage2 = path.join(srcDir, 'images', 'image2.jpg');
+      const srcPathImage1 = path.join(process.cwd(), srcDir, 'images', 'image1.png');
+      const srcPathImage2 = path.join(process.cwd(), srcDir, 'images', 'image2.jpg');
 
       // assert that symlink was called with correct arguments
       expect(symlinkMock).toHaveBeenCalledWith(srcPathImage1, outputPathImage1);
@@ -58,7 +59,7 @@ describe('GIVEN the LocalImagePlugin', () => {
       await DocumentAssetsPlugin.afterUpdate(null, null, { assetSubDirs, srcDir, outputDir });
 
       const outputPathImage2 = path.join(process.cwd(), outputDir, 'images', 'image2.jpg');
-      const srcPathImage2 = path.join(srcDir, 'images', 'image2.jpg');
+      const srcPathImage2 = path.join(process.cwd(), srcDir, 'images', 'image2.jpg');
 
       // assert that a single error does not break the plugin
       expect(console.error).toHaveBeenCalledWith(
@@ -66,6 +67,17 @@ describe('GIVEN the LocalImagePlugin', () => {
         expect.any(Error)
       );
       expect(symlinkMock).toHaveBeenCalledWith(srcPathImage2, outputPathImage2);
+    });
+
+    test('should throw an error if outputDir is not below process.cwd()', async () => {
+      const options = {
+        srcDir: './docs',
+        outputDir: '/outside/cwd/public'
+      };
+
+      await expect(DocumentAssetsPlugin.afterUpdate({}, {}, options)).rejects.toThrow(
+        'outputDir must be within the current working directory'
+      );
     });
   });
 

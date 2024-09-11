@@ -62,9 +62,9 @@ plugins: [
     modulePath: '@jpmorganchase/mosaic-plugins/DocumentAssetsPlugin',
     priority: -1,
     options: {
-      srcDir: '../../docs',
+      srcDir: `../../docs`,
       outputDir: './public/images/mosaic',
-      assetSubDirs: ['images'],
+      assetSubDirs: ['**/images'],
       imagesPrefix: '/images'
     }
   }
