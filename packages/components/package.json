@@ -53,7 +53,7 @@
     "hoist-non-react-statics": "^3.3.2",
     "lodash-es": "^4.17.21",
     "prism-react-renderer": "^1.1.1",
-    "react-live": "^2.2.3",
+    "react-live": "^4.0.0",
     "react-markdown": "^9.0.0",
     "react-responsive-carousel": "3.2.10",
     "react-table": "^7.8.0",
