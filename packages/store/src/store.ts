@@ -53,6 +53,7 @@ function getDefaultInitialState(): DefaultSiteState {
 }
 
 const StoreContext = createContext<typeof store | undefined>(undefined);
+StoreContext.displayName = 'StoreContext';
 const StoreProvider = StoreContext.Provider;
 
 const storeMiddlewares = stateCreatorFn =>

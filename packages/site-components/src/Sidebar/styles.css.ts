@@ -6,7 +6,7 @@ export default {
     {
       zIndex: 3,
       flexGrow: 0,
-      width: '300px'
+      minWidth: '300px'
     },
     sidebar.container
   ]),
