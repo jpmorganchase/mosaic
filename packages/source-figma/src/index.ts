@@ -63,14 +63,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
   create(options, sourceConfig) {
     const parsedOptions = validateMosaicSchema(schema, options);
 
-    const {
-      endpoints,
-      projects,
-      figmaToken,
-      proxyEndpoint,
-      prefixDir,
-      requestHeaders: requestHeadersParam
-    } = parsedOptions;
+    const { endpoints, projects, figmaToken, prefixDir, ...rest } = parsedOptions;
 
     const projectEndpoints: Record<string, string> = {};
     const projectById: Record<string, typeof projects[number]> = {};
@@ -120,9 +113,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       index: number,
       transformerOptions: ProjectsTransformerResult[]
     ) => {
-      const {
-        document: { sharedPluginData }
-      } = response;
+      const { document: { sharedPluginData = {} } = {} } = response;
       const sourceProvidedMetadata = transformerOptions[index].meta ?? {};
       const patternPrefix = getPatternPrefix(sourceProvidedMetadata);
       return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
@@ -174,13 +165,13 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
     const projects$ = createHttpSource<ProjectsResponse, ProjectsTransformerResult>(
       {
         endpoints: Object.values(projectEndpoints),
+        prefixDir,
+        ...rest,
         requestHeaders: {
           'Content-Type': 'application/json',
           'X-FIGMA-TOKEN': figmaToken,
-          ...requestHeadersParam
+          ...rest.requestHeaders
         },
-        proxyEndpoint,
-        prefixDir,
         transformer: projectsTransformer,
         transformerOptions: { projectIds: Object.keys(projectEndpoints) }
       },
@@ -193,13 +184,13 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
 
         return createHttpSource<ProjectFilesResponse, FigmaPage>({
           endpoints: fileUrls,
+          prefixDir,
+          ...rest,
           requestHeaders: {
             'Content-Type': 'application/json',
             'X-FIGMA-TOKEN': figmaToken,
-            ...requestHeadersParam
+            ...rest.requestHeaders
           },
-          proxyEndpoint,
-          prefixDir,
           transformer: projectFilesTransformer,
           transformerOptions: projectFiles
         });
@@ -227,13 +218,13 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         });
         return createHttpSource<GenerateThumbnailResponse, FigmaPage>({
           endpoints: thumbnailRequestUrls,
+          prefixDir,
+          ...rest,
           requestHeaders: {
             'Content-Type': 'application/json',
             'X-FIGMA-TOKEN': figmaToken,
-            ...requestHeadersParam
+            ...rest.requestHeaders
           },
-          proxyEndpoint,
-          prefixDir,
           transformer: generateThumbnailTransformer,
           transformerOptions: { fileIds: Object.keys(thumbnailNodes), pages: figmaPages }
         });
