@@ -1,0 +1,73 @@
+---
+title: DocumentAssetsPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `DocumentAssetsPlugin` is responsible for copying assets from a document sub-directory to the public folder of your site. This is particularly useful for co-locating images within your document structure and referencing them from documents using relative paths.
+
+## Co-locating Images
+
+A common use case is to store images within the same directory structure as your documents. This allows you to reference images using relative paths.
+
+For example, to load an image (`mosaic.jpg`) from a sub-directory called `images`, relative to the document's path, you can use the following Markdown:
+
+```markdown
+![alt text](./images/mosaic.jpg)
+```
+
+This will render the image as follows:
+![alt text](./images/mosaic.jpg)
+
+## Centralized Image Directory
+
+Alternatively, if you prefer to store all your images in a common parent directory, you can reference them using a relative path that navigates up the directory structure.
+
+For example, to load an image from a common parent directory, you can use:
+
+```
+![alt text](../../images/mosaic.jpg)
+```
+
+## Handling Absolute Paths and URLs
+
+The plugin ignores image paths that start with a leading slash (/) or are fully qualified URLs. This ensures that only relative paths are processed and copied to the public folder.
+
+```
+![alt text](/images/mosaic.jpg)
+![alt text](https://www.saltdesignsystem.com/img/hero_image.svg)
+```
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs _after_ most other plugins.
+
+## Options
+
+| Property     | Description                                                                        | Default       |
+| ------------ | ---------------------------------------------------------------------------------- | ------------- |
+| srcDir       | The path where pages reside **after** cloning or when running locally              | './docs'      |
+| outputDir    | There path to your site's public images directory where you want to put the images | './public'    |
+| assetSubDirs | An array of subdirectory globs that could contain assets                           | ['**/images'] |
+| imagesPrefix | The prefix that is added to all new paths                                          | '/images'     |
+
+## Adding to Mosaic
+
+This plugin is **not** included in the mosaic config shipped by the Mosaic standard generator so it must be added manually to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/DocumentAssetsPlugin',
+    priority: -1,
+    options: {
+      srcDir: `../../docs`,
+      outputDir: './public/images/mosaic',
+      assetSubDirs: ['**/images'],
+      imagesPrefix: '/images'
+    }
+  }
+  // other plugins
+];
+```

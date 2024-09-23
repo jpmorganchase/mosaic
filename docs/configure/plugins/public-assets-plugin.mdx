@@ -7,11 +7,11 @@ layout: DetailOverview
 
 The `PublicAssetsPlugin` is responsible for finding "assets" in the Mosaic filesystem and copying them to another directory.
 
-Typical usecase is for copying `sitemap.xml` and `search-data.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
+Typical use-case is for copying `sitemap.xml` and `search-data.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
 
 ## Priority
 
-This plugin runs with no special priority.
+This plugin runs with a priority of -1 so it runs _after_ most other plugins.
 
 ## Options
 

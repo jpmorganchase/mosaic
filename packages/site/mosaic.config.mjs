@@ -23,6 +23,16 @@ const siteConfig = {
         outputDir: './public',
         assets: ['sitemap.xml', 'search-data.json']
       }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/DocumentAssetsPlugin',
+      priority: -1,
+      options: {
+        srcDir: `../../docs`,
+        outputDir: './public/images/mosaic',
+        assetSubDirs: ['**/images'],
+        imagesPrefix: '/images'
+      }
     }
   ]
 };

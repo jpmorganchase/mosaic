@@ -35,7 +35,8 @@
     "directory": "packages/plugins"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13"
+    "@types/fs-extra": "^9.0.13",
+    "mock-fs": "^5.2.0"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^10.1.0",
