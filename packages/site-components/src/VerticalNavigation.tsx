@@ -117,7 +117,7 @@ export const VerticalNavigation: React.FC<VerticalNavigationProps> = ({
         data-testid="vertical-navigation"
         as="ul"
         gap="var(--salt-size-border)"
-        style={{ width: 250, listStyle: 'none', paddingLeft: 0 }}
+        style={{ minWidth: 250, listStyle: 'none', paddingLeft: 0 }}
       >
         {menu.map(item =>
           renderNavigationItem(
