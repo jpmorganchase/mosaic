@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- bb1189a1: Fixed link style CSS is generated against both light and dark modes. Fixed #640.
+
 ## 0.1.0-beta.85
 
 ### Patch Changes

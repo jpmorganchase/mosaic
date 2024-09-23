@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- 9124a6c0: Add displayName for `StoreContext`
+
 ## 0.1.0-beta.85
 
 ## 0.1.0-beta.84

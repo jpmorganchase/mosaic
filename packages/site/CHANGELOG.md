@@ -1,5 +1,35 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- b8361977: Feat: add GithubPullRequestWorkflow
+
+  This workflow requires a [fine-grained github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) so that the github rest API can be used to create Pull Requests.
+
+- 89245d87: Add DocumentAssetPlugin
+
+  The `DocumentAssetsPlugin` is responsible for copying assets from a document sub-directory to the public folder of your site. This is particularly useful for co-locating images within your document structure and referencing them from documents using relative paths.
+
+- bb1189a1: Fixed link style CSS is generated against both light and dark modes. Fixed #640.
+- Updated dependencies [9124a6c0]
+- Updated dependencies [9124a6c0]
+- Updated dependencies [b8361977]
+- Updated dependencies [bb1189a1]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.86
+  - @jpmorganchase/mosaic-store@0.1.0-beta.86
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.86
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.86
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.86
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.86
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.86
+  - @jpmorganchase/mosaic-components@0.1.0-beta.86
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.86
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.86
+
 ## 0.1.0-beta.85
 
 ### Patch Changes
