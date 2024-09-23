@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-workflows
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- b8361977: Feat: add GithubPullRequestWorkflow
+
+  This workflow requires a [fine-grained github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) so that the github rest API can be used to create Pull Requests.
+
+- Updated dependencies [b8361977]
+  - @jpmorganchase/mosaic-types@0.1.0-beta.86
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.86
+
 ## 0.1.0-beta.85
 
 ### Patch Changes

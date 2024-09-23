@@ -1,5 +1,20 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- 89245d87: Add DocumentAssetPlugin
+
+  The `DocumentAssetsPlugin` is responsible for copying assets from a document sub-directory to the public folder of your site. This is particularly useful for co-locating images within your document structure and referencing them from documents using relative paths.
+
+- Updated dependencies [b8361977]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.86
+  - @jpmorganchase/mosaic-types@0.1.0-beta.86
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.86
+
 ## 0.1.0-beta.85
 
 ### Patch Changes

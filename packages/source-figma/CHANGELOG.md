@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-source-figma
 
+## 0.1.0-beta.86
+
+### Patch Changes
+
+- 749b3268: fix Figma source JSON issue
+
+  If a Figma page did not defined `sharedPluginData` then the Figma source would break
+
+- Updated dependencies [b8361977]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.86
+  - @jpmorganchase/mosaic-types@0.1.0-beta.86
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.86
+
 ## 0.1.0-beta.85
 
 ### Patch Changes
