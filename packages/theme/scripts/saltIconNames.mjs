@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const typesPath = path.join(process.cwd(), 'types/saltIconNames.d.ts');
 
@@ -13,7 +13,7 @@ ${iconItems.join('\n')};
 `;
 }
 
-const saltIconNames = {
+export const saltIconNames = {
   name: 'iconEnum',
   setup(build) {
     const icons = [];
@@ -31,5 +31,3 @@ const saltIconNames = {
     });
   }
 };
-
-module.exports = saltIconNames;

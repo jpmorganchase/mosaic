@@ -1,9 +1,9 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'node:path';
+import fs from 'node:fs';
 
 const publicPath = path.join(process.cwd(), 'src/assets');
 
-const publicImageResolver = {
+export const publicImageResolver = {
   name: 'imagePlugin',
   setup(build) {
     build.onResolve({ filter: /^img_/ }, args => ({
@@ -18,5 +18,3 @@ const publicImageResolver = {
     });
   }
 };
-
-module.exports = publicImageResolver;
