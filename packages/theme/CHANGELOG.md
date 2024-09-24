@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.87
+
+### Patch Changes
+
+- dca2d049: Added type:module to the package.json
+
 ## 0.1.0-beta.86
 
 ### Patch Changes
