@@ -9,6 +9,7 @@
     "url": "git@github.com:jpmorganchase/mosaic.git",
     "directory": "packages/theme"
   },
+  "type": "module",
   "types": "./dist/index.d.ts",
   "style": "./dist/index.css",
   "exports": {
