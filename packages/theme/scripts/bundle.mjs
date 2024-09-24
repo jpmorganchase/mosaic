@@ -1,10 +1,9 @@
-const path = require('path');
-const esbuild = require('esbuild');
-const { vanillaExtractPlugin } = require('@vanilla-extract/esbuild-plugin');
-const glob = require('fast-glob');
+import esbuild from 'esbuild';
+import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
+import glob from 'fast-glob';
 
-const publicImageResolver = require('./publicImageResolver');
-const saltIconNames = require('./saltIconNames');
+import { publicImageResolver } from './publicImageResolver.mjs';
+import { saltIconNames } from './saltIconNames.mjs';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
