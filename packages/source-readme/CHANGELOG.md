@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-source-readme
 
+## 0.1.0-beta.87
+
+### Patch Changes
+
+- Updated dependencies [14942195]
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.87
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.87
+  - @jpmorganchase/mosaic-types@0.1.0-beta.87
+
 ## 0.1.0-beta.86
 
 ### Patch Changes

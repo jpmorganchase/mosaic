@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-types
 
+## 0.1.0-beta.87
+
 ## 0.1.0-beta.86
 
 ### Patch Changes

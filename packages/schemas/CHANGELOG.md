@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-schemas
 
+## 0.1.0-beta.87
+
+### Patch Changes
+
+- 14942195: - switch the default behaviour of schema validation to exit on error
+  - improve logging of schema validation errors to prevent silent failures
+
 ## 0.1.0-beta.86
 
 ### Patch Changes
