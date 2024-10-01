@@ -5,7 +5,7 @@ import mockFs from 'mock-fs';
 import path from 'path';
 import DocumentAssetsPlugin from '../DocumentAssetsPlugin';
 
-describe('GIVEN the LocalImagePlugin', () => {
+describe('GIVEN the DocumentAssetsPlugin', () => {
   describe('afterUpdate', () => {
     const srcDir = './src';
     const outputDir = './public';
@@ -126,6 +126,12 @@ describe('GIVEN the LocalImagePlugin', () => {
         fullPath: '/path/to/page7.mdx',
         route: '/namespace/page7',
         content: '![alt text](https://www.saltdesignsystem.com/img/hero_image.svg)'
+      },
+      // MDX with both image and JSX element - JSX should not be changed
+      {
+        fullPath: '/path/to/page8.mdx',
+        route: '/namespace/page8',
+        content: '![alt text](./images/image8.png)\n\n<Text>Some Text</Text>'
       }
     ];
     const ignorePages = ['/path/to/ignore.mdx'];
@@ -153,7 +159,7 @@ describe('GIVEN the LocalImagePlugin', () => {
         { ignorePages, pageExtensions },
         { srcDir, outputDir }
       );
-      expect(result.length).toEqual(7);
+      expect(result.length).toEqual(8);
       expect(result[0].content).toBe('![alt text](/images/namespace/subdir1/images/image1.png)\n');
       expect(result[1].content).toBe('![alt text](/images/namespace/subdir1/images/image2.png)\n');
       expect(result[2].content).toBe('![alt text](/images/namespace/images/image3.jpg)\n');
@@ -162,6 +168,9 @@ describe('GIVEN the LocalImagePlugin', () => {
       expect(result[5].content).toBe('![alt text](images/image6.png)');
       expect(result[6].content).toBe(
         '![alt text](https://www.saltdesignsystem.com/img/hero_image.svg)\n'
+      );
+      expect(result[7].content).toBe(
+        `![alt text](/images/namespace/images/image8.png)\n\n<Text>Some Text</Text>\n`
       );
     });
   });

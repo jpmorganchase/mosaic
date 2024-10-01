@@ -6,6 +6,7 @@ import { escapeRegExp } from 'lodash-es';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import remarkParse from 'remark-parse';
+import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import { VFile } from 'vfile';
 
@@ -165,6 +166,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
 
       const processor = unified()
         .use(remarkParse)
+        .use(remarkMdx)
         .use(remarkRewriteImagePaths, path.join(imagesPrefix, page.route))
         .use(remarkStringify);
       await processor
