@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.88
+
 ## 0.1.0-beta.87
 
 ### Patch Changes
