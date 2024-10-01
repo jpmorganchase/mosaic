@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.88
+
+### Patch Changes
+
+- 738940d9: added `remark-mdx` to `DocumentAssetsPlugin`
+
+  when parsing JSX, it was escaping JSX elements it considered un-safe, because it thought they were html
+
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.88
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.88
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.88
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.88
+  - @jpmorganchase/mosaic-types@0.1.0-beta.88
+
 ## 0.1.0-beta.87
 
 ### Patch Changes
