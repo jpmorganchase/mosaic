@@ -29,6 +29,10 @@ interface SearchIndexPluginOptions {
   maxLineCount?: number;
   keys?: string[];
   relevancy?: SearchRelevancy;
+  /**
+   * An array of glob patterns to exclude pages from the search index.
+   */
+  filter?: string[];
 }
 
 interface Optimization {
@@ -145,13 +149,13 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
   async $beforeSend(
     mutableFilesystem,
     { config, serialiser, ignorePages },
-    { maxLineLength, maxLineCount, keys: optionKeys }
+    { maxLineLength, maxLineCount, keys: optionKeys, filter }
   ) {
     const pages = await Promise.all(
       (
         (await mutableFilesystem.promises.glob('**', {
           onlyFiles: true,
-          ignore: ignorePages.map(ignore => `**/${ignore}`),
+          ignore: ignorePages.map(ignore => `**/${ignore}`).concat(filter),
           cwd: '/'
         })) as string[]
       ).map(async pagePath => {
