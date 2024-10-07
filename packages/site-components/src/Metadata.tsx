@@ -17,7 +17,9 @@ export const Metadata: React.FC<MetadataProps> = ({ Component = 'head' }) => {
       {meta.title && <title>{meta.title}</title>}
       {meta.description && <meta name="description" content={meta.description} />}
       {session?.user?.image && <link as="image" href={session.user.image} rel="preload" />}
-      {meta.breadcrumbs && <meta content={JSON.stringify(meta.breadcrumbs)} name="breadcrumbs" />}
+      {Array.isArray(meta.breadcrumbs) && meta.breadcrumbs.length > 0 && (
+        <meta content={JSON.stringify(meta.breadcrumbs)} name="breadcrumbs" />
+      )}
     </Component>
   );
 };
