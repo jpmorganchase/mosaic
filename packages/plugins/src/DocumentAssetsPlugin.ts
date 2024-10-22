@@ -97,22 +97,17 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
 
       let globbedImageDirs;
       try {
-        await fsExtra.access(resolvedSrcDir);
         globbedImageDirs = await glob(assetSubDir, {
           cwd: resolvedSrcDir,
           onlyDirectories: true
         });
-      } catch (err) {
-        if (err.code === 'ENOENT') {
-          console.warn(`Warning: Directory ${resolvedSrcDir} does not exist.`);
-        } else {
-          console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
-          throw err;
+        if (globbedImageDirs.length === 0) {
+          console.warn(`Warning: No entries found for ${assetSubDir}. It may not exist.`);
+          continue;
         }
-      }
-
-      if (!globbedImageDirs || globbedImageDirs?.length === 0) {
-        continue;
+      } catch (err) {
+        console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
+        throw err;
       }
 
       await fsExtra.ensureDir(outputDir);
