@@ -86,8 +86,6 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
     if (!resolvedOutputDir.startsWith(resolvedCwd)) {
       throw new Error(`outputDir must be within the current working directory: ${outputDir}`);
     }
-    await fsExtra.ensureDir(srcDir);
-    await fsExtra.ensureDir(outputDir);
 
     for (const assetSubDir of assetSubDirs) {
       const resolvedAssetSubDir = path.resolve(resolvedSrcDir, assetSubDir);
@@ -99,19 +97,25 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
 
       let globbedImageDirs;
       try {
+        await fsExtra.access(resolvedSrcDir);
         globbedImageDirs = await glob(assetSubDir, {
           cwd: resolvedSrcDir,
           onlyDirectories: true
         });
       } catch (err) {
-        console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
+        if (err.code === 'ENOENT') {
+          console.warn(`Warning: Directory ${resolvedSrcDir} does not exist.`);
+        } else {
+          console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
+          throw err;
+        }
+      }
+
+      if (!globbedImageDirs || globbedImageDirs?.length === 0) {
         continue;
       }
 
-      if (globbedImageDirs?.length === 0) {
-        continue;
-      }
-
+      await fsExtra.ensureDir(outputDir);
       for (const globbedImageDir of globbedImageDirs) {
         let imageFiles;
         let globbedPath;
