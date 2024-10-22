@@ -1,5 +1,18 @@
 # @jpmorganchase/mosaic-site-components
 
+## 0.1.0-beta.89
+
+### Patch Changes
+
+- 948e5194: Fixed pages with breadcrumbs having an empty breadcrumb meta
+  - @jpmorganchase/mosaic-components@0.1.0-beta.89
+  - @jpmorganchase/mosaic-labs-components@0.1.0-beta.89
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.89
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.89
+  - @jpmorganchase/mosaic-site-middleware@0.1.0-beta.89
+  - @jpmorganchase/mosaic-store@0.1.0-beta.89
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.89
+
 ## 0.1.0-beta.88
 
 ### Patch Changes
