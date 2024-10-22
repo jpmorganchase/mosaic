@@ -9,6 +9,7 @@ import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import { VFile } from 'vfile';
+import PluginError from './utils/PluginError.js';
 
 interface DocumentAssetsPluginOptions {
   /**
@@ -84,15 +85,16 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
     const resolvedSrcDir = path.resolve(srcDir);
     const resolvedOutputDir = path.resolve(outputDir);
     if (!resolvedOutputDir.startsWith(resolvedCwd)) {
-      throw new Error(`outputDir must be within the current working directory: ${outputDir}`);
+      throw new PluginError(
+        'outputDir must be within the current working directory',
+        resolvedOutputDir
+      );
     }
 
     for (const assetSubDir of assetSubDirs) {
       const resolvedAssetSubDir = path.resolve(resolvedSrcDir, assetSubDir);
       if (!resolvedAssetSubDir.startsWith(resolvedSrcDir)) {
-        console.log('ERROR 3');
-
-        throw new Error(`Asset subdirectory must be within srcDir: ${srcDir}`);
+        throw new PluginError('asset subdirectory must be within srcDir', resolvedAssetSubDir);
       }
 
       let globbedImageDirs;
@@ -107,7 +109,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
         }
       } catch (err) {
         console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
-        throw err;
+        throw new PluginError(err.message, assetSubDir);
       }
 
       await fsExtra.ensureDir(outputDir);
