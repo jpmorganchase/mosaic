@@ -9,6 +9,7 @@ import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import { VFile } from 'vfile';
+import PluginError from './utils/PluginError.js';
 
 interface DocumentAssetsPluginOptions {
   /**
@@ -84,17 +85,16 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
     const resolvedSrcDir = path.resolve(srcDir);
     const resolvedOutputDir = path.resolve(outputDir);
     if (!resolvedOutputDir.startsWith(resolvedCwd)) {
-      throw new Error(`outputDir must be within the current working directory: ${outputDir}`);
+      throw new PluginError(
+        'outputDir must be within the current working directory',
+        resolvedOutputDir
+      );
     }
-    await fsExtra.ensureDir(srcDir);
-    await fsExtra.ensureDir(outputDir);
 
     for (const assetSubDir of assetSubDirs) {
       const resolvedAssetSubDir = path.resolve(resolvedSrcDir, assetSubDir);
       if (!resolvedAssetSubDir.startsWith(resolvedSrcDir)) {
-        console.log('ERROR 3');
-
-        throw new Error(`Asset subdirectory must be within srcDir: ${srcDir}`);
+        throw new PluginError('asset subdirectory must be within srcDir', resolvedAssetSubDir);
       }
 
       let globbedImageDirs;
@@ -103,15 +103,16 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
           cwd: resolvedSrcDir,
           onlyDirectories: true
         });
+        if (globbedImageDirs.length === 0) {
+          console.warn(`Warning: No entries found for ${assetSubDir}. It may not exist.`);
+          continue;
+        }
       } catch (err) {
         console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
-        continue;
+        throw new PluginError(err.message, assetSubDir);
       }
 
-      if (globbedImageDirs?.length === 0) {
-        continue;
-      }
-
+      await fsExtra.ensureDir(outputDir);
       for (const globbedImageDir of globbedImageDirs) {
         let imageFiles;
         let globbedPath;
