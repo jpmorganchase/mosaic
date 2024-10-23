@@ -57,9 +57,9 @@ function remarkRewriteImagePaths(newPrefix: string) {
           // Absolute URL or path, do nothing
           return;
         } else {
-          const isRelativePath = !isUrl(node.url) && !path.isAbsolute(node.url);
+          const isRelativePath = !isUrl(node.url) && !path.posix.isAbsolute(node.url);
           const assetPath = isRelativePath ? node.url : `./${node.url}`;
-          const resolvedPath = path.resolve(path.dirname(newPrefix), assetPath);
+          const resolvedPath = path.posix.resolve(path.posix.dirname(newPrefix), assetPath);
           node.url = resolvedPath;
         }
       }
@@ -151,11 +151,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
       }
     }
   },
-  async $afterSource(
-    pages,
-    { ignorePages, pageExtensions },
-    { imagesPrefix = `${path.sep}images` }
-  ) {
+  async $afterSource(pages, { ignorePages, pageExtensions }, { imagesPrefix = `/images` }) {
     if (!pageExtensions.includes('.mdx')) {
       return pages;
     }
@@ -168,7 +164,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
       const processor = unified()
         .use(remarkParse)
         .use(remarkMdx)
-        .use(remarkRewriteImagePaths, path.join(imagesPrefix, page.route))
+        .use(remarkRewriteImagePaths, path.posix.join(imagesPrefix, page.route))
         .use(remarkStringify);
       await processor
         .process(page.content)
