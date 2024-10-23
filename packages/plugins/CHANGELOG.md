@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-plugins
 
+## 0.1.0-beta.90
+
+### Patch Changes
+
+- adfb33a7: Fixed DocumentAssetsPlugin not working on Windows
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.90
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.90
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.90
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.90
+  - @jpmorganchase/mosaic-types@0.1.0-beta.90
+
 ## 0.1.0-beta.89
 
 ### Patch Changes
