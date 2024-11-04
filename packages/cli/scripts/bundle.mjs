@@ -1,36 +1,33 @@
-const esbuild = require('esbuild');
+import glob from 'fast-glob';
+import esbuild from 'esbuild';
+import { nodeExternalsPlugin } from 'esbuild-node-externals';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
-const watchConfig = watchEnabled
-  ? {
-      onRebuild(error, result) {
-        if (error) console.error(`watch build failed for ${packageName}:`, error);
-        else console.log(`watch build succeeded for ${packageName}:`, result);
-      }
-    }
-  : false;
-
 try {
-  esbuild.build({
-    entryPoints: ['src/create.ts', 'src/init.ts'],
-    bundle: false,
-    outdir: 'dist',
+  const context = await esbuild.context({
+    entryPoints: glob.sync(['src/**/*.ts?(x)', 'src/*.ts?(x)'], {
+      ignore: ['**/__tests__', 'src/labs']
+    }),
+    outdir: './dist',
     outExtension: { '.js': '.mjs' },
-    platform: 'node',
+    bundle: true,
+    sourcemap: false,
+    splitting: true,
+    minify: true,
     format: 'esm',
-    watch: watchConfig
-  });
-  esbuild.build({
-    entryPoints: ['src/index.ts'],
-    bundle: false,
-    outdir: 'dist',
+    target: ['es2022', 'node18'],
     platform: 'node',
-    format: 'cjs',
-    watch: watchConfig
+    plugins: [nodeExternalsPlugin()]
   });
+  await context.rebuild();
+  if (watchEnabled) {
+    await context.watch();
+  }
+  await context.serve();
+  context.dispose();
 } catch (e) {
   if (e.errors && e.errors.length > 0) {
     console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);
@@ -43,6 +40,5 @@ try {
     console.error(e.warnings);
     console.groupEnd();
   }
-
   process.exit(1);
 }

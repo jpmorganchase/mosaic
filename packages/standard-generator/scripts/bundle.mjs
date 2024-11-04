@@ -1,21 +1,12 @@
-const fs = require('fs-extra');
-const esbuild = require('esbuild');
+import fs from 'fs-extra';
+import esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
-const watchConfig = watchEnabled
-  ? {
-      onRebuild(error, result) {
-        if (error) console.error(`watch build failed for ${packageName}:`, error);
-        else console.log(`watch build succeeded for ${packageName}:`, result);
-      }
-    }
-  : false;
-
 try {
-  esbuild.build({
+  const context = await esbuild.context({
     entryPoints: ['src/fs.config.js', 'src/generator.config.js', 'src/generator.js'],
     bundle: false,
     outdir: 'dist',
@@ -30,9 +21,14 @@ try {
           });
         }
       }
-    ],
-    watch: watchConfig
+    ]
   });
+  await context.rebuild();
+  if (watchEnabled) {
+    await context.watch();
+  }
+  await context.serve();
+  context.dispose();
 } catch (e) {
   if (e.errors && e.errors.length > 0) {
     console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);

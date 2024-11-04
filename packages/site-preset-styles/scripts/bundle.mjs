@@ -1,36 +1,37 @@
 import esbuild from 'esbuild';
-import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
-import glob from 'fast-glob';
-
-import { publicImageResolver } from './publicImageResolver.mjs';
 
 const args = process.argv.slice(2);
 const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
 try {
-  const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {
-    dot: true
-  });
-
   const context = await esbuild.context({
-    entryPoints: entries,
-    loader: {
-      '.jpg': 'dataurl',
-      '.png': 'dataurl',
-      '.svg': 'text'
-    },
-    outdir: 'dist',
+    entryPoints: ['src/index.js'],
     bundle: true,
-    splitting: true,
-    sourcemap: false,
-    minify: true,
-    format: 'esm',
-    target: ['esnext'],
-    external: ['react', 'react-dom'],
-    plugins: [publicImageResolver, vanillaExtractPlugin()]
+    loader: {
+      '.png': 'dataurl',
+      '.woff': 'dataurl',
+      '.woff2': 'dataurl',
+      '.eot': 'dataurl',
+      '.ttf': 'dataurl',
+      '.svg': 'dataurl'
+    },
+    outdir: './dist',
+    plugins: [
+      {
+        name: 'on-end',
+        setup(build) {
+          build.onEnd(({ errors = [] }) => {
+            if (errors.length) {
+              console.error(`build failed for ${packageName}:`, errors);
+            } else {
+              console.log(`build succeeded for ${packageName}:`);
+            }
+          });
+        }
+      }
+    ]
   });
-
   await context.rebuild();
   if (watchEnabled) {
     await context.watch();
