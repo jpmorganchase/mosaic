@@ -1,4 +1,3 @@
-import React from 'react';
 import { Caption1, Caption2, Link } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';

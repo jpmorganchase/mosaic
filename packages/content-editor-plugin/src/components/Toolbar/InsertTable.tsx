@@ -1,4 +1,4 @@
-import React, { ReactElement, FC, ReactNode, MouseEventHandler, useRef, useState } from 'react';
+import { ReactElement, FC, ReactNode, MouseEventHandler, useRef, useState } from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { INSERT_TABLE_COMMAND } from '@lexical/table';

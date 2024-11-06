@@ -1,4 +1,4 @@
-import React, { type Ref, type ReactNode, forwardRef } from 'react';
+import { type Ref, type ReactNode, forwardRef } from 'react';
 import classnames from 'clsx';
 import { Button as SaltButton, ButtonProps as SaltButtonProps } from '@salt-ds/core';
 import { button as buttonStyles } from '@jpmorganchase/mosaic-theme';

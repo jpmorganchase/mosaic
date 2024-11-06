@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { MDXRemote } from 'next-mdx-remote';
 import { ErrorBoundary, useErrorBoundary } from 'react-error-boundary';
 import { useContentEditor, Editor } from '@jpmorganchase/mosaic-content-editor-plugin';

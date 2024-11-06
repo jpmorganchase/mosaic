@@ -1,4 +1,4 @@
-import React, { ComponentType, FC, useRef, useState } from 'react';
+import { ComponentType, FC, useRef, useState } from 'react';
 import classnames from 'clsx';
 import matter from 'gray-matter';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';

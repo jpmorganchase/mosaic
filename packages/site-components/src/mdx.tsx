@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pre, getMarkdownComponents, withMarkdownSpacing } from '@jpmorganchase/mosaic-components';
 import type { PreProps } from '@jpmorganchase/mosaic-components';
 import { getLabMarkdownComponents } from '@jpmorganchase/mosaic-labs-components';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Banner, BannerContent } from '@salt-ds/core';
 
 import { usePageState } from '../store';

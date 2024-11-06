@@ -1,4 +1,4 @@
-import React, { FC, ReactNode } from 'react';
+import { FC, ReactNode } from 'react';
 import classnames from 'clsx';
 import { P2, P6 } from '@jpmorganchase/mosaic-components';
 

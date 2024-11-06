@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import classnames from 'clsx';
 import { Avatar } from '@salt-ds/core';
 

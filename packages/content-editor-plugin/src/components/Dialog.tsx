@@ -1,4 +1,3 @@
-import React from 'react';
 import { Dialog as SaltDialog, type DialogProps as SaltDialogProps } from '@salt-ds/core';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import classnames from 'clsx';

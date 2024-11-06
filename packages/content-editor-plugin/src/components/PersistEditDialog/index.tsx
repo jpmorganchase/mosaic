@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
 import md5 from 'md5';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';

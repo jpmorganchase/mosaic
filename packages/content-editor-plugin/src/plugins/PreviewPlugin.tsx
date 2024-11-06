@@ -1,4 +1,3 @@
-import React from 'react';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';

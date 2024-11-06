@@ -1,4 +1,3 @@
-import React from 'react';
 import { Hero } from '@jpmorganchase/mosaic-components';
 
 export function Page404() {

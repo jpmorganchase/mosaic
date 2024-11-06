@@ -202,7 +202,7 @@ export default class Repo {
   ) {
     const updatedFilesGen = updatedFilesGenerator(this, disableAutoPullChanges);
 
-    let intervalId: NodeJS.Timer | null = setInterval(async () => {
+    let intervalId: NodeJS.Timeout | null = setInterval(async () => {
       try {
         if (this.#cloned) {
           const { value: updatedFiles } = await updatedFilesGen.next();
