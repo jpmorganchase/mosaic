@@ -1,7 +1,8 @@
-import React from 'react';
+'use client';
+import { FC } from 'react';
 import * as SaltIcons from '@salt-ds/icons';
 import type { IconProps as SaltIconProps } from '@salt-ds/icons';
-import type { saltIconNames } from '../../types/saltIconNames';
+import type { saltIconNames } from '../types/saltIconNames';
 
 const {
   DEFAULT_ICON_SIZE: DEDEFAULT_ICON_SIZE,
@@ -10,7 +11,7 @@ const {
   ...allIcons
 } = SaltIcons;
 
-export type IconMap = Record<string, React.FC<SaltIconProps>>;
+export type IconMap = Record<string, FC<SaltIconProps>>;
 
 /** Add any additional icons here */
 const additionalIcons: IconMap = {};

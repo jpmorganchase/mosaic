@@ -23,7 +23,6 @@ export * from './config';
 export * from './feature';
 export * from './grid';
 export * from './hero';
-export * from './icon';
 export * from './impact';
 export * from './link';
 export * from './list';

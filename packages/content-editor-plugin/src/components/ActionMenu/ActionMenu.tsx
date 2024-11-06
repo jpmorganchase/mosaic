@@ -1,6 +1,6 @@
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
 import { Icon, Button } from '@jpmorganchase/mosaic-components';
-import { IconNames } from '@jpmorganchase/mosaic-theme';
+import { IconNames } from '@jpmorganchase/mosaic-icons';
 
 export type ActionMenuItem = {
   title: string;

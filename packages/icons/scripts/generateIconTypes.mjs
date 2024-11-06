@@ -9,7 +9,7 @@ try {
   await esbuild.build({
     entryPoints: glob.sync(['../../node_modules/@salt-ds/icons/dist-es/components/*.js']),
     bundle: false,
-    outdir: 'dist',
+    outdir: '.tmp',
     plugins: [saltIconNames]
   });
 } catch (e) {
