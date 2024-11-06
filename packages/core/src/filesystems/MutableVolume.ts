@@ -13,7 +13,7 @@ export default class MutableVolume extends FileSystemRestricted implements IVolu
   }
 
   asRestricted() {
-    return new FileSystemRestricted(this.#vfs, super.namespace);
+    return new FileSystemRestricted(this.#vfs, this.namespace);
   }
 
   freeze() {

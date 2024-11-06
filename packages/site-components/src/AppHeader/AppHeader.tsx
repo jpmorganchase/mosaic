@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 import { Text } from '@salt-ds/core';
 import { Logo, LogoImage } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
@@ -31,7 +31,7 @@ const createDrawerMenu = menu =>
     return [...result, parsedItem];
   }, []);
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
+export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
   const breakpoint = useBreakpoint();
   const { route } = useRoute();
   const showDrawer = breakpoint === 'mobile' || breakpoint === 'tablet';

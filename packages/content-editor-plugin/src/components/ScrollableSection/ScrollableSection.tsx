@@ -1,11 +1,11 @@
-import React, { Ref, forwardRef } from 'react';
+import { ReactNode, Ref, forwardRef } from 'react';
 import classnames from 'clsx';
 
 import styles from './ScrollableSection.css';
 
 interface ScrollableSectionProps {
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const ScrollableSection = forwardRef(function ScrollableSection(

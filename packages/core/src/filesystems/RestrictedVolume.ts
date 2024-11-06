@@ -8,18 +8,18 @@ import ImmutableFileSystem from './ImmutableVolume.js';
  */
 class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMutable {
   #vfs: IFileAccess;
+  declare promises: any;
 
   constructor(vfs, namespace) {
     super(vfs, namespace);
     this.#vfs = vfs;
+    this.promises = create(this.promises, {
+      unlink: target => this.#vfs.unlink(target),
+      symlink: (target, alias, type) => this.#vfs.symlink(target, alias, type),
+      writeFile: (file, data) => this.#vfs.writeFile(file, data),
+      mkdir: (dir, options) => this.#vfs.mkdir(dir, options)
+    });
   }
-
-  promises = create(this.promises, {
-    unlink: target => this.#vfs.unlink(target),
-    symlink: (target, alias, type) => this.#vfs.symlink(target, alias, type),
-    writeFile: (file, data) => this.#vfs.writeFile(file, data),
-    mkdir: (dir, options) => this.#vfs.mkdir(dir, options)
-  });
 
   /**
    * Do not use this method on restricted volumes, as it may disrupt the read/cache flow of files.
@@ -41,7 +41,7 @@ class RestrictedVolume extends ImmutableFileSystem implements IVolumePartiallyMu
   }
 
   asReadOnly() {
-    return new ImmutableFileSystem(this.#vfs, super.namespace);
+    return new ImmutableFileSystem(this.#vfs, this.namespace);
   }
 }
 

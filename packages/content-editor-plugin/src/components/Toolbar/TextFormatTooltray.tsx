@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import classnames from 'clsx';
 import {
   FORMAT_TEXT_COMMAND,

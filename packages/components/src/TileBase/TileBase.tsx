@@ -28,8 +28,6 @@ export interface TileBaseProps {
   onSelect?: (event: React.KeyboardEvent | React.MouseEvent) => void;
   /** The children components of the Tile component */
   children?: React.ReactNode;
-  /** Ref */
-  ref?: Ref<HTMLDivElement>;
   /** aria role */
   role?: string;
   /** Tile size */
@@ -152,7 +150,7 @@ export const TileBaseComponent: FC<TileBaseComponentProps> = function TileBase({
   );
 };
 
-export const TileBase: FC<TileBaseProps> = forwardRef((props, ref: Ref<HTMLDivElement>) => (
+export const TileBase = forwardRef<HTMLDivElement, TileBaseProps>((props, ref) => (
   <TileStateProvider>
     <TileBaseComponent {...props} tileRef={ref} />
   </TileStateProvider>

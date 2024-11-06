@@ -11,18 +11,17 @@ export default class UnionVolume extends MutableVolume implements IUnionVolume {
   constructor(vfs, namespace) {
     super(vfs, namespace);
     this.#vfs = vfs;
+    this.promises = create(this.promises, {
+      readFile: (file, options) => {
+        if (options?.includeConflicts) {
+          return this.#vfs.readFile(file, options) as Promise<TDataOut[]>;
+        }
+        return this.#vfs.readFile(file) as Promise<TDataOut>;
+      }
+    });
   }
 
-  promises = create(this.promises, {
-    readFile: (file, options) => {
-      if (options?.includeConflicts) {
-        return this.#vfs.readFile(file, options) as Promise<TDataOut[]>;
-      }
-      return this.#vfs.readFile(file) as Promise<TDataOut>;
-    }
-  });
-
   scope(namespaces: string[]) {
-    return new UnionVolume(this.#vfs.scope(namespaces), super.namespace);
+    return new UnionVolume(this.#vfs.scope(namespaces), this.namespace);
   }
 }

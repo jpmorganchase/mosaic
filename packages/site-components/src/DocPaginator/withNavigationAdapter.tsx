@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigation } from '@jpmorganchase/mosaic-store';
 
 export const withNavigationAdapter =

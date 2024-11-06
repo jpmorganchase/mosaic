@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { canUseDOM } from './canUseDOM';
 
 export function BrowserOnly({

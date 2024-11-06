@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, KeyboardEvent } from 'react';
 import { useRouter } from 'next/router';
 import classnames from 'clsx';
 import { Caption6, P4, P6 } from '@jpmorganchase/mosaic-components';
@@ -43,8 +43,8 @@ function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
     onSelect(result);
   };
 
-  const handleKeySelection = e => {
-    if (e.keyCode === (13 || 32)) {
+  const handleKeySelection = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === 'Space') {
       onSelect(result);
     }
   };

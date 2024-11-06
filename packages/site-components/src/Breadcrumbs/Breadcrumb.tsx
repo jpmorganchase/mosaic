@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Icon, Link } from '@jpmorganchase/mosaic-components';
 
 import styles from './styles.css';

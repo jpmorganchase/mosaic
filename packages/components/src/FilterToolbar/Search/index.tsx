@@ -1,4 +1,4 @@
-import React, { ChangeEvent, SyntheticEvent, useState } from 'react';
+import { ChangeEvent, SyntheticEvent, useState } from 'react';
 import classnames from 'clsx';
 import { ComboBox, Option, ComboBoxProps } from '@salt-ds/core';
 import { Icon } from '../../Icon';

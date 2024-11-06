@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavigationItem } from '@salt-ds/core';
 
 import { stripMarkdownLinks } from './utils';

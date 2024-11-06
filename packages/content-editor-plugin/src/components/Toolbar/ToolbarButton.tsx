@@ -1,4 +1,4 @@
-import React, { forwardRef, Ref } from 'react';
+import { forwardRef, Ref } from 'react';
 import classnames from 'clsx';
 import { Button, type ButtonProps, Label } from '@jpmorganchase/mosaic-components';
 

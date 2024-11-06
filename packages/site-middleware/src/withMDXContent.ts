@@ -87,7 +87,7 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
   context: GetServerSidePropsContext
 ) => {
   const { resolvedUrl } = context;
-  const mosaicMode = context.res.getHeader('X-Mosaic-Mode' || 'active') as MosaicMode;
+  const mosaicMode = (context.res.getHeader('X-Mosaic-Mode') || 'active') as MosaicMode;
   const extname = path.extname(resolvedUrl);
   const pathname = stripParams(resolvedUrl);
   // Any urls which are not prefixed, will default to MDX

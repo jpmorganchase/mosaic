@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Mermaid, MermaidProps } from 'mdx-mermaid/lib/Mermaid';
 import warning from 'warning';
 
