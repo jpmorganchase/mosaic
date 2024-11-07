@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'clsx';
 import { LayerLayout } from '@salt-ds/lab';
@@ -27,14 +27,18 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   const handleNavigationToggle = () => {
     setOpen(!open);
   };
+  const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
 
-  const portalRoot = document.querySelector('[data-mosaic-id="portal-root"]');
+  useEffect(() => {
+    setPortalElement(document.querySelector<HTMLElement>('[data-mosaic-id="portal-root"]'));
+  }, []);
+
   return (
     <>
       <div ref={triggerRef}>
         <TriggerElement open={open} onClick={handleNavigationToggle} />
       </div>
-      {portalRoot
+      {portalElement
         ? createPortal(
             <div className={styles.root}>
               <LayerLayout
@@ -62,7 +66,7 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
                 {children}
               </LayerLayout>
             </div>,
-            portalRoot
+            portalElement
           )
         : null}
     </>

@@ -1,54 +1,22 @@
 import path from 'path';
-import matter from 'gray-matter';
-import type { SafeParseError } from 'zod';
-import { activeEnvSchema } from '@jpmorganchase/mosaic-schemas';
 import type { SharedConfig } from '@jpmorganchase/mosaic-store';
+import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 
 import type { LoaderPage } from './types/index.js';
+import { loadActiveContent, loadActiveMosaicData } from './loadActiveContent';
+import { loadSnapshotFileContent, loadSnapshotFileMosaicData } from './loadSnapshotFileContent';
 
+export { LoadPageError } from './LoadPageError';
 export * from './types/index.js';
 
-const normalizePageUrl = (url: string): string => (/\/index$/.test(url) ? `${url}.mdx` : url);
-
-type ActiveModeUrlEnv = {
-  MOSAIC_ACTIVE_MODE_URL: string;
-};
-
-export class LoadPageError extends Error {
-  statusCode: number;
-  constructor({ message, statusCode }: { message: string; statusCode: number }) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
-
-const getFSRootUrl = (): string => {
-  const env = activeEnvSchema.safeParse(process.env);
-  if (!env.success) {
-    const { error } = env as SafeParseError<ActiveModeUrlEnv>;
-    error.issues.forEach(issue => {
-      console.error(
-        `Missing process.env.${issue.path.join()} environment variable required to load pages`
-      );
-    });
-    throw new LoadPageError({
-      message: `Environment variables missing to load pages`,
-      statusCode: 500
-    });
-  }
-  return env.data.MOSAIC_ACTIVE_MODE_URL;
-};
-
 export const loadMosaicData = async <T>(url: string): Promise<T> => {
-  const fsRootUrl = getFSRootUrl();
-  const dataUrl = new URL(url, fsRootUrl);
-  const response = await fetch(dataUrl);
+  const mode: MosaicMode = (process.env.MOSAIC_MODE || 'active') as MosaicMode;
 
-  if (!response.ok) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error(`Failed to fetch mosaic data @ ${dataUrl}`);
+  if (mode === 'snapshot-file') {
+    return loadSnapshotFileMosaicData(url);
   }
-  return response.json();
+
+  return loadActiveMosaicData(url);
 };
 
 export const loadSharedConfig = async (route: string): Promise<SharedConfig | undefined> => {
@@ -58,20 +26,11 @@ export const loadSharedConfig = async (route: string): Promise<SharedConfig | un
 };
 
 export const loadPage = async (route: string): Promise<LoaderPage> => {
-  const fsRootUrl = getFSRootUrl();
-  const pageUrl = normalizePageUrl(`${fsRootUrl}${route}`);
-  const response = await fetch(pageUrl);
-  if (response.status === 302) {
-    const { redirect } = await response.json();
-    return loadPage(redirect);
+  const mode: MosaicMode = (process.env.MOSAIC_MODE || 'active') as MosaicMode;
+
+  if (mode === 'snapshot-file') {
+    return loadSnapshotFileContent(route);
   }
-  if (response.ok) {
-    const source = await response.text();
-    const { content, data } = matter(source);
-    return { source: content, data };
-  }
-  throw new LoadPageError({
-    message: `Could not load page : ${pageUrl} ${response.status}/${response.statusText}`,
-    statusCode: 404
-  });
+
+  return loadActiveContent(route);
 };
