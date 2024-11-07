@@ -9,7 +9,3 @@ export type SharedConfig = {
   /** Sidebar props */
   sidebar?: Pick<FooterSlice, 'helpLinks'>;
 };
-
-export type SharedConfigSlice = {
-  sharedConfig?: SharedConfig;
-};

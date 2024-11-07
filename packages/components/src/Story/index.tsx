@@ -1,8 +1,8 @@
 import React from 'react';
 import classnames from 'clsx';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
 import { LinkButton } from '../LinkButton';
-import { useImageComponent } from '../ImageProvider';
 import styles from './styles.css';
 
 export interface StoryProps {

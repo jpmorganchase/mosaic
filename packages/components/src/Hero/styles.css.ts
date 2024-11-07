@@ -91,7 +91,7 @@ export default {
 
   lastLink: responsiveSprinkles({ marginRight: ['none', 'none', 'none', 'none'] }),
   link: responsiveSprinkles({ marginRight: ['x6', 'x6', 'x6', 'x6'] }),
-  links: style([
+  children: style([
     style({
       display: 'flex'
     }),

@@ -30,11 +30,3 @@ export interface SidebarGroup {
 }
 
 export type SidebarItem = SidebarNode | SidebarGroup;
-
-/**
- *  [[`SidebarSlice`]] specifies sidebar content
- */
-export type SidebarSlice = {
-  /** Sidebar items */
-  sidebarData: SidebarItem[];
-};

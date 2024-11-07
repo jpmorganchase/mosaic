@@ -4,7 +4,6 @@ import classnames from 'clsx';
 
 import styles from './tabsMenuButton.css';
 import type { TabsLinkItem } from './TabsLink';
-import type { TabMenuItemType } from './index';
 import { Icon } from '../Icon';
 
 export interface TabsMenuButtonItem {
@@ -19,7 +18,7 @@ export interface TabsMenuButtonItem {
   /** Title of Tab */
   title: string;
   /** Type of Tab */
-  type: TabMenuItemType.MENU;
+  type: 'menu';
 }
 
 export interface TabsMenuButtonProps {

@@ -31,7 +31,7 @@ export function ThemeProvider({
   children
 }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
-  const colorMode = useColorMode();
+  const { colorMode } = useColorMode();
 
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 

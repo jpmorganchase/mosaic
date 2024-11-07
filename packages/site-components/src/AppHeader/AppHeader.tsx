@@ -1,9 +1,8 @@
-import { FC } from 'react';
+import { FC, ReactNode } from 'react';
 import { Text } from '@salt-ds/core';
 import { Logo, LogoImage } from '@salt-ds/lab';
 import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
-import { useRoute } from '@jpmorganchase/mosaic-store';
 
 import { AppHeaderControls } from '../AppHeaderControls';
 import { AppHeaderDrawer } from '../AppHeaderDrawer';
@@ -11,6 +10,7 @@ import { AppHeaderTabs } from '../AppHeaderTabs';
 import styles from './styles.css';
 
 export type AppHeaderProps = {
+  children?: ReactNode;
   homeLink?: string;
   logo?: string;
   menu?: TabsMenu;
@@ -31,9 +31,8 @@ const createDrawerMenu = menu =>
     return [...result, parsedItem];
   }, []);
 
-export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
+export const AppHeader: FC<AppHeaderProps> = ({ children, homeLink, logo, menu = [], title }) => {
   const breakpoint = useBreakpoint();
-  const { route } = useRoute();
   const showDrawer = breakpoint === 'mobile' || breakpoint === 'tablet';
 
   return (
@@ -50,8 +49,8 @@ export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title
             )}
           </Link>
         )}
-        {!showDrawer && <AppHeaderTabs key={route} menu={menu} />}
-        <AppHeaderControls />
+        {!showDrawer && <AppHeaderTabs menu={menu} />}
+        <AppHeaderControls>{children}</AppHeaderControls>
       </div>
     </>
   );

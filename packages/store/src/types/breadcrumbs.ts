@@ -11,11 +11,3 @@ export type Breadcrumb = {
   /** Breadcrumb label */
   label: string;
 };
-
-/**
- *  [[`BreadcrumbsSlice`]] is the associated [[`Breadcrumb`]] items
- */
-export type BreadcrumbsSlice = {
-  /** Path described in breadcrumbs */
-  breadcrumbs: Breadcrumb[];
-};

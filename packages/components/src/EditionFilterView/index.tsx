@@ -1,10 +1,9 @@
-import React from 'react';
+import { ReactNode, FC } from 'react';
 import classnames from 'clsx';
 
 import { FilterResultCount, FilterView } from '../FilterView';
 import { FilterDropdown, FilterSortDropdown } from '../FilterToolbar';
 import { EditionTileLink } from '../EditionTileLink';
-import { FormattedContent } from '../FormattedContent';
 import styles from './styles.css';
 
 export const createCustomFilter = (view, filters) =>
@@ -38,7 +37,7 @@ export type Edition = {
   group?: string;
   link: string;
   publicationDate: string;
-  formattedDescription?: string;
+  formattedDescription?: ReactNode;
   title?: string;
 };
 
@@ -60,11 +59,7 @@ export type EditionFilterViewProps = {
 
 export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item, itemIndex) => (
   <EditionTileLink
-    description={
-      item.formattedDescription ? (
-        <FormattedContent>{item.formattedDescription}</FormattedContent>
-      ) : null
-    }
+    description={item.formattedDescription ? item.formattedDescription : null}
     eyebrow={item.eyebrow}
     image={item.image}
     key={`editionTile-${itemIndex}`}
@@ -72,7 +67,7 @@ export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item
     title={item.title}
   />
 );
-export const EditionFilterView: React.FC<React.PropsWithChildren<EditionFilterViewProps>> = ({
+export const EditionFilterView: FC<EditionFilterViewProps> = ({
   className,
   ItemRenderer = DefaultEditionFilterViewRenderer,
   view,

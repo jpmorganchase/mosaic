@@ -55,14 +55,16 @@
     "@lexical/utils": "^0.17.1",
     "@lexical/markdown": "^0.17.1",
     "@vanilla-extract/css": "^1.6.0",
+    "client-only": "^0.0.1",
     "clsx": "^2.0.0",
     "gray-matter": "^4.0.3",
     "lexical": "^0.17.1",
     "react-split": "^2.0.14",
     "lodash-es": "^4.17.21",
     "md5": "*",
+    "use-debounce": "^10.0.0",
     "yup": "^0.32.9",
-    "zustand": "^4.1.1"
+    "zustand": "^4.5.5"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",

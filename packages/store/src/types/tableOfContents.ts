@@ -9,11 +9,3 @@ export type TableOfContentsItem = {
   /** The heading text */
   text: string;
 };
-
-/**
- *  [[`TableOfContentsSlice`]] defines the table of contents for a page
- */
-export type TableOfContentsSlice = {
-  /** Path described in breadcrumbs */
-  tableOfContents: TableOfContentsItem[];
-};
