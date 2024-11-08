@@ -1,4 +1,4 @@
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { SessionProvider, ThemeProvider, Page404 } from '@jpmorganchase/mosaic-site-components';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 

@@ -33,6 +33,7 @@
     "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.89",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.89",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.89",
+    "deepmerge": "^4.2.2",
     "rxjs": "^7.5.5",
     "zod": "^3.22.3"
   },

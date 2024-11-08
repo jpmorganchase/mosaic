@@ -32,7 +32,7 @@
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "react": "^18.2.0",
+    "react": "^18.3.0",
     "del-cli": "^4.0.1",
     "typescript": "^5.2.2"
   },
@@ -41,12 +41,14 @@
     "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.89",
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.89",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.89",
+    "@vanilla-extract/css": "^1.6.0",
     "clsx": "^2.0.0",
-    "hoist-non-react-statics": "^3.3.2"
+    "hoist-non-react-statics": "^3.3.2",
+    "next": "^14.0.0"
   },
   "peerDependencies": {
     "@types/react": "^18.2.46",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
   }
 }

@@ -1,4 +1,4 @@
-import { compileMDX } from '@daviereid/next-mdx-remote/rsc';
+import { compileMDX } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypePrettyCode, { type Options } from 'rehype-pretty-code';

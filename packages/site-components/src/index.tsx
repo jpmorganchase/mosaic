@@ -22,5 +22,3 @@ export * from './UserProfile';
 export * from './VerticalNavigation';
 export * from './404';
 export * from './500';
-
-export { default as components } from './mdx';

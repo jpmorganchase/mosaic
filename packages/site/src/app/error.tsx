@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import classnames from 'classnames';
+import classnames from 'clsx';
 import { Page500, SessionProvider, ThemeProvider } from '@jpmorganchase/mosaic-site-components';
 import { Button } from '@jpmorganchase/mosaic-components';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
