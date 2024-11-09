@@ -12,11 +12,9 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <main>
-          <StoreProvider LinkComponent={Link} ImageComponent={Image}>
-            {children}
-          </StoreProvider>
-        </main>
+        <StoreProvider LinkComponent={Link} ImageComponent={Image}>
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );

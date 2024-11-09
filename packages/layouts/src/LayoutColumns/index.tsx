@@ -17,10 +17,10 @@ export const LayoutColumns = ({
 }) => (
   <div className={styles.root}>
     <div className={styles.sidebar}>{PrimarySidebar && <Sidebar>{PrimarySidebar}</Sidebar>}</div>
-    <main className={styles.main}>
+    <div className={styles.main}>
       {children}
       {Footer && Footer}
-    </main>
+    </div>
     <div className={styles.toc}>
       {SecondarySidebar ? <Sidebar sticky>{SecondarySidebar}</Sidebar> : null}
     </div>

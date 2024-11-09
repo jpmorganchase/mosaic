@@ -11,7 +11,7 @@ export async function Sidebar({ path, loader }: { path: string; loader: typeof l
   const props = {
     menu: data?.sidebarData || [],
     selectedNodeId: data?.route,
-    expandedNodeIds: getIds(data?.breadcrumbs || [])
+    selectedGroupIds: getIds(data?.breadcrumbs || [])
   };
 
   return <UI {...props} />;

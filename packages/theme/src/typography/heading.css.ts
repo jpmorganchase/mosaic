@@ -1,13 +1,11 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { vars } from '../vars.css';
-import {
-  marginProperties,
-  paddingProperties,
-  responsiveConditions,
-  responsiveSprinkles
-} from '../responsive';
+import { spaceVars } from '../responsive/vars.css';
+import { responsiveConditions, responsiveSprinkles } from '../responsive';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const headingProperties = defineProperties({
   conditions: responsiveConditions,
@@ -39,11 +37,7 @@ const headingProperties = defineProperties({
   }
 });
 
-export const headingSprinkles = createSprinkles(
-  headingProperties,
-  marginProperties,
-  paddingProperties
-);
+export const headingSprinkles = createSprinkles(headingProperties);
 
 export type HeadingSprinkles = Parameters<typeof headingSprinkles>[0];
 
@@ -110,7 +104,7 @@ export const heading = recipe({
         context: 'markdown'
       },
       style: {
-        marginTop: vars.space.vertical.none
+        marginTop: spaceVars.vertical.none
       }
     },
     {
@@ -119,7 +113,7 @@ export const heading = recipe({
         context: 'markdown'
       },
       style: {
-        marginTop: vars.space.vertical.none
+        marginTop: spaceVars.vertical.none
       }
     },
     {
@@ -128,7 +122,7 @@ export const heading = recipe({
         context: 'markdown'
       },
       style: {
-        marginTop: vars.space.vertical.x13
+        marginTop: spaceVars.vertical.x13
       }
     },
     {
@@ -137,7 +131,7 @@ export const heading = recipe({
         context: 'markdown'
       },
       style: {
-        marginTop: vars.space.vertical.x10
+        marginTop: spaceVars.vertical.x10
       }
     },
     {
@@ -146,7 +140,7 @@ export const heading = recipe({
         context: 'markdown'
       },
       style: {
-        marginTop: vars.space.vertical.x10
+        marginTop: spaceVars.vertical.x10
       }
     }
   ],

@@ -40,11 +40,12 @@ const renderNavigationItem = (
   }
   const childNodes = isGroup ? item.childNodes : undefined;
   const isExpanded = isGroup ? expandedGroupIds.has(id) : false;
-  const containsSelectedNode = selectedGroupIds.has(id);
+  const containsSelectedNode = isGroup && selectedGroupIds.has(id);
   const isActive =
     selectedNodeId === id ||
     ((!isExpanded || singlePageInGroup) &&
       (containsSelectedNode || selectedNodeId?.includes(item.id)));
+
   const shouldRenderAsParent = !link;
   const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
     event.stopPropagation();

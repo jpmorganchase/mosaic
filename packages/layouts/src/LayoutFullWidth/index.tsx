@@ -15,7 +15,7 @@ export const LayoutFullWidth: React.FC<LayoutFullWidthProps> = ({
   className
 }) => (
   <div className={classnames(styles.root, className)}>
-    <main>{children}</main>
+    <div>{children}</div>
     {Footer && Footer}
   </div>
 );

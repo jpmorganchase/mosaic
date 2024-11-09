@@ -40,11 +40,11 @@ export const loadSnapshotFileMosaicData = async <T>(url: string): Promise<T> => 
 export const loadSnapshotFileContent = async (route: string): Promise<LoaderPage> => {
   const fsRootUrl = getFSRootUrl();
   const pageUrl = normalizePageUrl(route);
-  const filePath = path.posix.join(process.cwd(), fsRootUrl, pageUrl);
+  const filePath = path.join(process.cwd(), fsRootUrl, pageUrl);
   try {
     let localPath = filePath;
     if ((await fs.stat(filePath)).isDirectory()) {
-      localPath = path.posix.join(localPath, 'index');
+      localPath = path.join(localPath, 'index');
     }
     const realPath = await fs.realpath(localPath);
     const source = await fs.readFile(realPath, 'utf-8');

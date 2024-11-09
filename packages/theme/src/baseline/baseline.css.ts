@@ -1,5 +1,5 @@
 import { globalStyle } from '@vanilla-extract/css';
-import { ssrClassName } from '../ssrClassName';
+import { config } from '../config';
 
 globalStyle('html, body', {
   fontFamily: 'var(--salt-text-fontFamily, "Open Sans")',
@@ -16,7 +16,7 @@ globalStyle('*', {
   boxSizing: 'border-box'
 });
 
-globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre', {
+globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre, figure', {
   margin: 0,
   fontFamily: 'inherit'
 });
@@ -41,6 +41,6 @@ globalStyle('li > p', {
   display: 'inline'
 });
 
-globalStyle(`.${ssrClassName} svg, .${ssrClassName} img`, {
+globalStyle(`.${config.ssrClassName} svg, .${config.ssrClassName} img`, {
   display: 'none'
 });

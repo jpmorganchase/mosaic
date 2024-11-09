@@ -1,8 +1,10 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { vars } from '../vars.css';
-import { marginProperties, paddingProperties, responsiveSprinkles } from '../responsive';
+import { responsiveSprinkles } from '../responsive';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const eyebrowProperties = defineProperties({
   properties: {
@@ -20,11 +22,7 @@ const eyebrowProperties = defineProperties({
   }
 });
 
-export const eyebrowSprinkles = createSprinkles(
-  eyebrowProperties,
-  marginProperties,
-  paddingProperties
-);
+export const eyebrowSprinkles = createSprinkles(eyebrowProperties);
 
 export type EyebrowSprinkles = Parameters<typeof eyebrowSprinkles>[0];
 
