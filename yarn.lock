@@ -1407,12 +1407,12 @@
   dependencies:
     mute-stream "^1.0.0"
 
-"@internationalized/date@^3.0.0":
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.0.2.tgz#1566a0bcbd82dce4dd54a5b26456bb701068cb89"
-  integrity sha512-9V1IxesP6ASZj/hYyOXOC4yPJvidbbStyWQKLCQSqhhKACMOXoo+BddXZJy47ju9mqOMpWdrJ2rTx4yTxK9oag==
+"@internationalized/date@^3.5.5":
+  version "3.5.6"
+  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.5.6.tgz#0833c2fa75efb3573f4e3bf10e3895f1019e87dd"
+  integrity sha512-jLxQjefH9VI5P9UQuqB6qNKnvFt1Ky1TPIzHGsIlCi7sZZoMR8SdYbBGRvM0y+Jtb+ez4ieBzmiAUcpmPYpyOw==
   dependencies:
-    "@swc/helpers" "^0.4.14"
+    "@swc/helpers" "^0.5.0"
 
 "@isaacs/cliui@^8.0.2":
   version "8.0.2"
@@ -2025,10 +2025,10 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.10.4.tgz#427d5549943a9c6fce808e39ea64dbe60d4047f1"
   integrity sha512-WJgX9nzTqknM393q1QJDJmoW28kUfEnybeTfVNcNAPnIx210RXm2DiXiHzfNPJNIUUb1tJnz/l4QGtJ30PgWmA==
 
-"@salt-ds/core@^1.33.0":
-  version "1.33.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.33.0.tgz#ccf0e5cec01f46b047fcde74d8efe956d7cf417a"
-  integrity sha512-L58s5qKp7crkRcPYvXOzyesswDGcSEy04DBvY4xjU/xeYmCd6AM0wS10ZxBJap/up1GFqqACbgV9W/xgZjvTxw==
+"@salt-ds/core@^1.37.1":
+  version "1.37.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/core/-/core-1.37.1.tgz#2b6326e75089de1915e1bfe05a2824d8e8d00da9"
+  integrity sha512-ubg5el+es9PrvwhaXucx2lRnuAs2dgPKSga+EArcLZlCKMW+ufMztaPOjIvIx5sDfDMhJscxaTlL8Ci4JbhGPA==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@salt-ds/icons" "^1.12.1"
@@ -2045,15 +2045,15 @@
     "@salt-ds/window" "^0.1.1"
     clsx "^2.0.0"
 
-"@salt-ds/lab@1.0.0-alpha.50":
-  version "1.0.0-alpha.50"
-  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.50.tgz#b414f258ba345eccf2a2c6c1ca43ff556d321840"
-  integrity sha512-KKy/H+1oSWNFFmdRT3BuijVJgALA94khRqAjbovPcMcsYC3Cmgfn0b7xxT1A+dzVbtHErFxyj2niUE5tlct0uw==
+"@salt-ds/lab@1.0.0-alpha.54":
+  version "1.0.0-alpha.54"
+  resolved "https://registry.yarnpkg.com/@salt-ds/lab/-/lab-1.0.0-alpha.54.tgz#02ee0b5e9c6423b28f5ba5d2d525f0f3210813d3"
+  integrity sha512-0llS9rMiS7vDeEsxmqDDehVqm0Z6vXd/8rNxNhbJ7hP5jk6oKaBIi2MkuqPOUnevLOcG9s54AL+asy2nHouvvg==
   dependencies:
     "@floating-ui/react" "^0.26.5"
     "@fluentui/react-overflow" "^9.0.19"
-    "@internationalized/date" "^3.0.0"
-    "@salt-ds/core" "^1.33.0"
+    "@internationalized/date" "^3.5.5"
+    "@salt-ds/core" "^1.37.1"
     "@salt-ds/icons" "^1.12.1"
     "@salt-ds/styles" "^0.2.1"
     "@salt-ds/window" "^0.1.1"
@@ -2075,10 +2075,10 @@
   resolved "https://registry.yarnpkg.com/@salt-ds/styles/-/styles-0.2.1.tgz#d6fc1bee5a8d3931cba4ec8baa14f1ad3d7582a4"
   integrity sha512-/GYQLY+ILzGyd2/KndCmoEfLw/t3pcYwihJn3ofe4yd6nhLYHPkvl4TXXzq6NnfD3NHmQWnWh3jQicLsYcvdXg==
 
-"@salt-ds/theme@^1.19.0":
-  version "1.19.0"
-  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.19.0.tgz#aa619fe1e1248a3780b87d4341f4496bfb5fe84f"
-  integrity sha512-POe6ca1cHCQe3ehBrSdG79pKB+Zg0EAsNE4D292xxoSpoRSR0I6EtWQ8KM+nrscuZNu0FXHG9rLh8/y9zVBWcg==
+"@salt-ds/theme@^1.23.0":
+  version "1.23.1"
+  resolved "https://registry.yarnpkg.com/@salt-ds/theme/-/theme-1.23.1.tgz#c2fe8eda0c4dc3602e0cbd5f6573c75e97028cb9"
+  integrity sha512-LSSlY/jrOQbYVptL92hC4gu8eyagLDFBWQwXeQVJrLIqGBYaEciUJqUdNh9QhAyGlXAWCE6JvT2bUKWRIsOKUw==
 
 "@salt-ds/window@^0.1.1":
   version "0.1.1"
@@ -2934,6 +2934,13 @@
   version "0.4.14"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.4.14.tgz#1352ac6d95e3617ccb7c1498ff019654f1e12a74"
   integrity sha512-4C7nX/dvpzB7za4Ql9K81xK3HPxCpHMgwTZVyf+9JQ6VUbn9jjZVN7/Nkdz/Ugzs2CSjqnL/UPXroiVBVHUWUw==
+  dependencies:
+    tslib "^2.4.0"
+
+"@swc/helpers@^0.5.0":
+  version "0.5.13"
+  resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.5.13.tgz#33e63ff3cd0cade557672bd7888a39ce7d115a8c"
+  integrity sha512-UoKGxQ3r5kYI9dALKJapMmuK+1zWM/H17Z1+iwnNmzcJRnfFuevZs375TA5rW31pu4BS4NoSy1fRsexDXfWn5w==
   dependencies:
     tslib "^2.4.0"
 
