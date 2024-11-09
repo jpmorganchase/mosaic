@@ -122,7 +122,7 @@ export function InsertBlockDropdown({
   const selectedBlockSourceIndex = source.findIndex(item => item.type === blockSourceType);
   return (
     <Dropdown<BlockSourceType>
-      defaultSelected={[source[selectedBlockSourceIndex]]}
+      selected={[source[selectedBlockSourceIndex]]}
       valueToString={itemToString}
       onSelectionChange={handleSelect}
       style={{ width: 132 }}
