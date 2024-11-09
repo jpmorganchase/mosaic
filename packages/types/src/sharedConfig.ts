@@ -1,5 +1,5 @@
-import type { AppHeaderSlice } from './appHeader';
-import type { FooterSlice } from './footer';
+import type { AppHeaderSlice } from './appHeader.js';
+import type { FooterSlice } from './footer.js';
 
 export type SharedConfig = {
   /** Footer props */

@@ -1,4 +1,4 @@
-import { SearchIndexSlice } from './searchIndex';
+import { SearchConfig, SearchIndex } from './searchIndex.js';
 
 /**
  *  [[`MenuItemType`]] defines the type of App header Menu items
@@ -26,18 +26,6 @@ export interface MenuLinksItem {
 }
 
 /**
- *  [[`MenuLinksItem`]] defines a menu of links and includes a type
- */
-export interface AppHeaderMenuLinksItem {
-  /** Collection of link options */
-  links: MenuLinkItem[];
-  /** Title of Tab */
-  title: string;
-  /** Type of Tab */
-  type: MenuItemType.MENU;
-}
-
-/**
  *  [[`MenuLinkItem`]] define a menu link
  */
 export interface MenuLinkItem {
@@ -46,18 +34,6 @@ export interface MenuLinkItem {
   /** Title of Tab */
   title?: string;
   /** Type of MenuLinkItem */
-  type: MenuItemType.LINK;
-}
-
-/**
- *  [[`MenuLinkItem`]] define a menu link and include a type
- */
-export interface AppHeaderMenuLinkItem {
-  /** URL linked by Tab */
-  link: string;
-  /** Title of Tab */
-  title?: string;
-  /** Type of Tab */
   type: MenuItemType.LINK;
 }
 
@@ -76,5 +52,8 @@ export type AppHeaderSlice = {
   /** Search namespace, suffix used on env variable `process.env.SEARCH_ENDPOINT` to filter search results to a specific namespace. */
   searchNamespace?: string;
   /** Search index, created by SearchIndexPlugin */
-  searchIndex?: SearchIndexSlice;
+  searchIndex?: {
+    searchIndex?: SearchIndex;
+    searchConfig?: SearchConfig;
+  };
 };

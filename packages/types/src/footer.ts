@@ -1,4 +1,4 @@
-import { HelpLinks } from './helpLinks';
+import { HelpLinks } from './helpLinks.js';
 
 /**
  *  [[`FooterSlice`]] specifies the footer props

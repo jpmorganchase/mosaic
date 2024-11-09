@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Input, Button } from '@salt-ds/core';
 import { Icon } from '@jpmorganchase/mosaic-components';
-import type { SearchConfig, SearchIndex } from '@jpmorganchase/mosaic-store';
+import type { SearchConfig, SearchIndex } from '@jpmorganchase/mosaic-types';
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';

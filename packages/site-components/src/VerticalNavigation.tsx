@@ -1,7 +1,7 @@
 import React, { MouseEventHandler, useState } from 'react';
 import { StackLayout, NavigationItem, NavigationItemProps } from '@salt-ds/core';
 import { Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-store';
+import type { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-types';
 
 export type VerticalNavigationProps = {
   /** Selected item groups ids to expand */

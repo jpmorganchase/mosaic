@@ -14,8 +14,3 @@ export type SearchConfig = {
   threshold?: number;
   keys?: string[] | { name: string; weight: number }[];
 };
-
-export type SearchIndexSlice = {
-  searchIndex?: SearchIndex;
-  searchConfig?: SearchConfig;
-};

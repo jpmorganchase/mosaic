@@ -1,7 +1,6 @@
 'use client';
 
 export * from './store';
-export * from './types';
 export * from './StoreProvider';
 export * from './useStore';
 export * from './useColorMode';

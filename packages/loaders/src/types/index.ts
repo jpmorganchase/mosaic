@@ -6,7 +6,7 @@ import type {
   SharedConfig,
   SidebarItem,
   TableOfContentsItem
-} from '@jpmorganchase/mosaic-store';
+} from '@jpmorganchase/mosaic-types';
 
 export type SiteState = {
   /** Path described in breadcrumbs */

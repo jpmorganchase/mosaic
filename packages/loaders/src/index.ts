@@ -1,6 +1,5 @@
 import path from 'path';
-import type { SharedConfig } from '@jpmorganchase/mosaic-store';
-import type { MosaicMode } from '@jpmorganchase/mosaic-types';
+import type { MosaicMode, SharedConfig } from '@jpmorganchase/mosaic-types';
 
 import type { LoaderPage } from './types/index.js';
 import { loadActiveContent, loadActiveMosaicData } from './loadActiveContent';

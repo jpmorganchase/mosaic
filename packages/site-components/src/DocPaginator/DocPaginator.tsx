@@ -1,10 +1,9 @@
 import React from 'react';
-import { Link, P6, P3, TileBase, Icon } from '@jpmorganchase/mosaic-components';
 import classnames from 'clsx';
+import { Link, P6, P3, TileBase, Icon } from '@jpmorganchase/mosaic-components';
+import type { NavigationLink } from '@jpmorganchase/mosaic-types';
 
 import styles from './styles.css';
-
-import { NavigationLink } from '@jpmorganchase/mosaic-store';
 
 export interface DocPaginatorProps {
   /** Link label suffix */

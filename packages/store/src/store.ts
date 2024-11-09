@@ -2,7 +2,7 @@ import type { ElementType } from 'react';
 import { createStore as createZustandStore } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
-import type { ColorMode } from './types/colorMode';
+import type { ColorMode } from './useColorMode';
 
 export type StoreState = {
   colorMode: ColorMode;
