@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-icons",
   "description": "Mosaic - Icons",
-  "version": "0.1.0-beta.89",
+  "version": "0.1.0-beta.90",
   "author": "",
   "license": "Apache-2.0",
   "repository": {
@@ -39,7 +39,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.89",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.90",
     "@salt-ds/core": "^1.33.0"
   },
   "peerDependencies": {
