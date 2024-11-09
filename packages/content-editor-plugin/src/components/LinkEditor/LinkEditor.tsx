@@ -1,12 +1,5 @@
-import { mergeRegister } from '@lexical/utils';
-import {
-  $getSelection,
-  $isRangeSelection,
-  COMMAND_PRIORITY_LOW,
-  RangeSelection,
-  SELECTION_CHANGE_COMMAND
-} from 'lexical';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { $getSelection, $isRangeSelection, RangeSelection } from 'lexical';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useFloatingUI, Input } from '@salt-ds/core';
@@ -20,7 +13,6 @@ import { getSelectedNode } from '../../utils/getSelectedNode';
 
 export function LinkEditor() {
   const [editor] = useLexicalComposerContext();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [isEdit, setIsEdit] = useState(false);
   const [lastSelection, setLastSelection] = useState<RangeSelection | null>(null);
@@ -67,22 +59,11 @@ export function LinkEditor() {
 
   useEffect(
     () =>
-      mergeRegister(
-        editor.registerUpdateListener(({ editorState }) => {
-          editorState.read(() => {
-            updateLinkEditor();
-          });
-        }),
-
-        editor.registerCommand(
-          SELECTION_CHANGE_COMMAND,
-          () => {
-            updateLinkEditor();
-            return true;
-          },
-          COMMAND_PRIORITY_LOW
-        )
-      ),
+      editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          updateLinkEditor();
+        });
+      }),
     [editor, updateLinkEditor]
   );
 
@@ -116,7 +97,6 @@ export function LinkEditor() {
       ) : (
         <Input
           endAdornment={<SaveAdornment onSave={handleSave} />}
-          ref={inputRef}
           value={linkUrl}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             setLinkUrl(event.target.value);
