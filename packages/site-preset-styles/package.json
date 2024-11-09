@@ -41,8 +41,7 @@
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-layouts": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-theme": "0.1.0-beta.89",
-    "@jpmorganchase/mosaic-mdx-components": "0.1.0-beta.89",
-    "prismjs": "^1.23.0"
+    "@jpmorganchase/mosaic-mdx-components": "0.1.0-beta.89"
   },
   "peerDependencies": {}
 }
