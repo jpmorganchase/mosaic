@@ -1,8 +1,10 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { marginProperties, paddingProperties, responsiveSprinkles } from '../responsive';
-import { vars } from '../vars.css';
+import { responsiveSprinkles } from '../responsive';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const actionProperties = defineProperties({
   properties: {
@@ -31,11 +33,7 @@ const actionProperties = defineProperties({
   }
 });
 
-export const actionSprinkles = createSprinkles(
-  actionProperties,
-  marginProperties,
-  paddingProperties
-);
+export const actionSprinkles = createSprinkles(actionProperties);
 
 export type ActionSprinkles = Parameters<typeof actionSprinkles>[0];
 

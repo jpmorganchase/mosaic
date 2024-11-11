@@ -21,6 +21,7 @@
     "src"
   ],
   "dependencies": {
-    "dotenv-load": "^2.0.1"
+    "dotenv-load": "^2.0.1",
+    "fs-extra": "^10.1.0"
   }
 }

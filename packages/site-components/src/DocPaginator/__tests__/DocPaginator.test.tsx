@@ -1,19 +1,19 @@
 import { describe, expect, test } from 'vitest';
-import React, { PropsWithChildren } from 'react';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
 import mockRouter from 'next-router-mock';
 import { MemoryRouterProvider } from 'next-router-mock/MemoryRouterProvider/next-13.5';
 import NextLink from 'next/link';
-import { LinkProvider } from '@jpmorganchase/mosaic-components';
+import { StoreProvider, StoreProviderProps } from '@jpmorganchase/mosaic-store';
 
 import { DocPaginator } from '../DocPaginator';
 
 describe('GIVEN a DocPaginator', () => {
-  const wrapper: PropsWithChildren<LinkProvider> = ({ children }) => (
-    <LinkProvider value={NextLink}>
+  const wrapper: StoreProviderProps = ({ children }) => (
+    <StoreProvider LinkComponent={NextLink}>
       <MemoryRouterProvider>{children}</MemoryRouterProvider>
-    </LinkProvider>
+    </StoreProvider>
   );
 
   test('can change to the next page', async () => {

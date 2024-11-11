@@ -30,8 +30,10 @@
     "esbuild-node-externals": "^1.0.2"
   },
   "dependencies": {
-    "@salt-ds/theme": "^1.19.0",
+    "@salt-ds/theme": "^1.23.0",
     "@salt-ds/icons": "^1.12.1",
+    "@salt-ds/core": "^1.37.1",
+    "@salt-ds/lab": "1.0.0-alpha.54",
     "@jpmorganchase/mosaic-components": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-labs-components": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.89",
@@ -39,7 +41,7 @@
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-layouts": "0.1.0-beta.89",
     "@jpmorganchase/mosaic-theme": "0.1.0-beta.89",
-    "prismjs": "^1.23.0"
+    "@jpmorganchase/mosaic-mdx-components": "0.1.0-beta.89"
   },
   "peerDependencies": {}
 }

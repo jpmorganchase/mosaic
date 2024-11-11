@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { hasProtocol, TabsBase, TabMenuItemType } from '@jpmorganchase/mosaic-components';
+import { useRouter, usePathname } from 'next/navigation';
+import { hasProtocol, TabsBase } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@jpmorganchase/mosaic-components';
 
 import { useWindowResize, Size } from './useWindowResize';
@@ -12,7 +12,7 @@ function resolveSelectedIndex(menu, itemPath) {
   let longestMatch = 0;
   for (let i = 0; i < menu.length; i++) {
     const item: TabsMenuButtonItem | TabsLinkItem = menu[i];
-    if (item.type === TabMenuItemType.MENU) {
+    if (item.type === 'menu') {
       // eslint-disable-next-line no-restricted-syntax
       for (const { link: subLink } of item.links) {
         // If menu link matches the current route - we can return this index
@@ -31,11 +31,15 @@ function resolveSelectedIndex(menu, itemPath) {
       if (item.link === itemPath) {
         return i;
       }
+
+      // remove "/index" from the end of the item link
+      const indexTrimmedLinkPath = item.link.slice(0, -'/index'.length);
+
       // If current item is contained within part of route (e.g. /case-studies when route is /case-studies/item)
       // and the link will be the longest matching one we've seen so far (longest means closest match)
-      if (itemPath.startsWith(item.link) && item.link.length > longestMatch) {
+      if (itemPath.startsWith(indexTrimmedLinkPath) && indexTrimmedLinkPath.length > longestMatch) {
         selectedIndex = i;
-        longestMatch = item.link.length;
+        longestMatch = indexTrimmedLinkPath.length;
       }
     }
   }
@@ -44,6 +48,7 @@ function resolveSelectedIndex(menu, itemPath) {
 
 export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
   const router = useRouter();
+  const pathname = usePathname();
   const size: Size = useWindowResize();
   const getSelectedTabIndex = React.useCallback(
     itemPath => resolveSelectedIndex(menu, itemPath),
@@ -57,23 +62,12 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
     setSelectionIndex(currentSelection);
   };
 
-  const handleRouteChangeComplete = (newRoute: string) => updateSelection(newRoute);
-
   useEffect(() => {
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (router.asPath && size?.width) {
-      updateSelection(router.asPath);
+    if (pathname && size?.width) {
+      updateSelection(pathname);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, size]);
+  }, [pathname, size]);
 
   const handleMenuSelect = (_event, sourceItem) => {
     const { link } = sourceItem as TabsLinkItem;
@@ -84,7 +78,7 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
     }
   };
   const linkedMenu = menu.map(menuItem => {
-    if (menuItem.type === TabMenuItemType.MENU) {
+    if (menuItem.type === 'menu') {
       return { ...menuItem, onSelect: handleMenuSelect };
     }
     return menuItem;

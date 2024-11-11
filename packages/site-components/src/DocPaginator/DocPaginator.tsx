@@ -1,11 +1,9 @@
-import React, { useEffect } from 'react';
-import { Link, P6, P3, TileBase, Icon } from '@jpmorganchase/mosaic-components';
+import React from 'react';
 import classnames from 'clsx';
-import { useRouter } from 'next/router';
+import { Link, P6, P3, TileBase, Icon } from '@jpmorganchase/mosaic-components';
+import type { NavigationLink } from '@jpmorganchase/mosaic-types';
 
 import styles from './styles.css';
-
-import { NavigationLink } from '@jpmorganchase/mosaic-store';
 
 export interface DocPaginatorProps {
   /** Link label suffix */
@@ -17,29 +15,6 @@ export interface DocPaginatorProps {
 }
 
 export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, prev }) => {
-  const router = useRouter();
-
-  const handleRouteChangeComplete = () => {
-    setTimeout(() => {
-      if (window.pageYOffset > 0) {
-        window.scroll({
-          top: 0,
-          left: 0,
-          behavior: 'smooth'
-        });
-      }
-    }, 300);
-  };
-
-  useEffect(() => {
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className={styles.root}>
       <div className={styles.left}>

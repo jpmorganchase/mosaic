@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
 
-import { TabMenuItemType } from './index';
 import styles from './styles.css';
 
 export interface TabsButtonItem {
@@ -13,7 +12,7 @@ export interface TabsButtonItem {
   /** Title of Tab */
   title: string;
   /** Type of Tab */
-  type: TabMenuItemType.BUTTON;
+  type: 'button';
 }
 
 interface TabButtonProps {

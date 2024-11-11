@@ -7,6 +7,15 @@ import type {
   SourceSchedule
 } from '@jpmorganchase/mosaic-schemas';
 
+export * from './appHeader.js';
+export * from './breadcrumbs.js';
+export * from './footer.js';
+export * from './helpLinks.js';
+export * from './navigation.js';
+export * from './searchIndex.js';
+export * from './sharedConfig.js';
+export * from './sidebar.js';
+export * from './tableOfContents.js';
 export * from './Content.js';
 export * from './IFileAccess.js';
 export * from './Meta.js';

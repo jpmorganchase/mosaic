@@ -1,12 +1,11 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
 import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
+import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
-import { SearchInput } from '../SearchInput';
 import styles from './styles.css';
 
 type ActionMenuItem = {
@@ -19,15 +18,13 @@ function toUpperFirst(str) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 }
 
-export const AppHeaderControls: React.FC = () => {
-  const colorMode = useColorMode();
-  const { setColorMode } = useStoreActions();
+export const AppHeaderControls: React.FC<{ children?: ReactNode }> = ({ children }) => {
+  const { colorMode, setColorMode } = useColorMode();
 
   const { data: session } = useSession();
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
   const isLoggedIn = session != null;
   const { pageState, startEditing, stopEditing } = useContentEditor();
-  const { searchEnabled } = useSearchIndex();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -63,7 +60,7 @@ export const AppHeaderControls: React.FC = () => {
   return (
     <div className={styles.root}>
       {isLoginEnabled && <EditorControls enabled={isLoggedIn} />}
-      {searchEnabled && <SearchInput />}
+      {children}
       {isLoginEnabled && (
         <div className={styles.userInfo}>
           {isLoggedIn ? (

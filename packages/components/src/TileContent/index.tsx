@@ -1,5 +1,6 @@
 import React, { FC, forwardRef, ReactNode, Ref } from 'react';
 import classnames from 'clsx';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
 import { useTileState } from '../TileBase';
 import styles, {
@@ -11,7 +12,6 @@ import styles, {
   titleRecipe
 } from './styles.css';
 import { Size } from '../common/types';
-import { useImageComponent } from '../ImageProvider';
 
 export type TileContentClassesType = {
   action?: string;

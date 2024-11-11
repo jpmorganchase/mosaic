@@ -157,6 +157,7 @@ You can use Mosaic components with referenced data as well. Below we are using t
 <Tiles>
   {meta.data.modes.map(mode => (
     <TileContent
+      key={mode}
       title={mode}
       description={`Documentation about ${mode} of Mosaic`}
       eyebrow="Mosaic"

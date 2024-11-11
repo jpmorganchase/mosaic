@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Menu, MenuItem, MenuPanel, MenuTrigger } from '@salt-ds/core';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 

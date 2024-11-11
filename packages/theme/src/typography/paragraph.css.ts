@@ -1,8 +1,10 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
 
-import { vars } from '../vars.css';
-import { marginProperties, paddingProperties, responsiveSprinkles } from '../responsive';
+import { responsiveSprinkles } from '../responsive';
+import { fontSizeVars, fontWeightVars } from './vars.css';
+
+const vars = { fontSize: fontSizeVars, fontWeight: fontWeightVars };
 
 const paragraphProperties = defineProperties({
   properties: {
@@ -29,11 +31,7 @@ const paragraphProperties = defineProperties({
   }
 });
 
-export const paragraphSprinkles = createSprinkles(
-  paragraphProperties,
-  marginProperties,
-  paddingProperties
-);
+export const paragraphSprinkles = createSprinkles(paragraphProperties);
 
 export type ParagraphSprinkles = Parameters<typeof paragraphSprinkles>[0];
 

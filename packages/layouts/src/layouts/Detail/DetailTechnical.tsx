@@ -1,28 +1,20 @@
 import React from 'react';
 import { HelpLinks } from '@jpmorganchase/mosaic-components';
-import {
-  AppHeader,
-  DocPaginator,
-  BackLink,
-  Breadcrumbs,
-  Footer,
-  TableOfContents,
-  PageNavigation
-} from '@jpmorganchase/mosaic-site-components';
+import { BackLink } from '@jpmorganchase/mosaic-site-components';
 
-import { LayoutBase } from '../../LayoutBase';
 import { LayoutColumns } from '../../LayoutColumns';
 import type { LayoutProps } from '../../types';
 import styles from './styles.css';
 
 export const DetailTechnical: React.FC<LayoutProps> = ({
   BackLinkProps,
-  FooterProps,
+  FooterComponent,
+  DocPaginatorComponent,
+  SecondarySidebarComponent,
+  PrimarySidebarComponent,
   SidebarProps,
   children
 }) => {
-  const Header = <AppHeader />;
-
   const PrimarySidebar = (
     <>
       {BackLinkProps && (
@@ -30,24 +22,19 @@ export const DetailTechnical: React.FC<LayoutProps> = ({
           <BackLink {...BackLinkProps} />
         </header>
       )}
-      <PageNavigation />
+      {PrimarySidebarComponent}
       {SidebarProps?.helpLinks && <HelpLinks subTitle="Need help?" {...SidebarProps.helpLinks} />}
     </>
   );
 
-  const SecondarySidebar = <TableOfContents />;
-
   return (
-    <LayoutBase Header={Header}>
-      <LayoutColumns
-        PrimarySidebar={PrimarySidebar}
-        SecondarySidebar={SecondarySidebar}
-        Footer={<Footer {...FooterProps} />}
-      >
-        <Breadcrumbs />
-        {children}
-        <DocPaginator />
-      </LayoutColumns>
-    </LayoutBase>
+    <LayoutColumns
+      PrimarySidebar={PrimarySidebar}
+      SecondarySidebar={SecondarySidebarComponent}
+      Footer={FooterComponent}
+    >
+      {children}
+      {DocPaginatorComponent}
+    </LayoutColumns>
   );
 };

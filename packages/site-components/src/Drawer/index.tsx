@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'clsx';
-import { useRoute } from '@jpmorganchase/mosaic-store';
 import { LayerLayout } from '@salt-ds/lab';
 import styles from './styles.css';
 import { Button, Icon, useOutsideClick } from '@jpmorganchase/mosaic-components';
@@ -25,27 +24,21 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useOutsideClick(triggerRef, () => setOpen(false));
 
-  const { route } = useRoute();
-
   const handleNavigationToggle = () => {
     setOpen(!open);
   };
-
-  const [isClient, setIsClient] = useState<boolean>(false);
+  const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    // Close drawer whenever a page loads
-    setOpen(false);
-    setIsClient(true);
-  }, [route]);
+    setPortalElement(document.querySelector<HTMLElement>('[data-mosaic-id="portal-root"]'));
+  }, []);
 
-  const portalRoot = isClient ? document.querySelector('[data-mosaic-id="portal-root"]') : null;
   return (
     <>
       <div ref={triggerRef}>
         <TriggerElement open={open} onClick={handleNavigationToggle} />
       </div>
-      {portalRoot
+      {portalElement
         ? createPortal(
             <div className={styles.root}>
               <LayerLayout
@@ -73,7 +66,7 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
                 {children}
               </LayerLayout>
             </div>,
-            portalRoot
+            portalElement
           )
         : null}
     </>

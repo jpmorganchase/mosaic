@@ -1,8 +1,8 @@
 import React from 'react';
 import classnames from 'clsx';
+import { useImageComponent } from '@jpmorganchase/mosaic-store';
 
 import styles from './styles.css';
-import { useImageComponent } from '../ImageProvider';
 
 export interface ImpactProps {
   /** Additional class name for root class override */

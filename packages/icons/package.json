@@ -40,10 +40,10 @@
   },
   "dependencies": {
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.89",
-    "@salt-ds/core": "^1.33.0"
+    "@salt-ds/icons": "^1.12.1"
   },
   "peerDependencies": {
     "@types/react": "^18.2.46",
-    "react": "^18.2.0"
+    "react": "^18.3.0"
   }
 }

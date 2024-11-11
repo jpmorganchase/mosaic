@@ -46,11 +46,9 @@
     "url": "git@github.com:jpmorganchase/mosaic.git",
     "directory": "packages/serialisers"
   },
-  "devDependencies": {
-    "rxjs": "^7.5.5"
-  },
   "dependencies": {
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.89",
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "memfs": "^3.4.12"
   }
 }

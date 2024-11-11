@@ -1,70 +1,55 @@
+import React from 'react';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';
-import { debounce } from 'lodash-es';
+import { useDebouncedCallback } from 'use-debounce';
 
 import transformers from '../transformers';
-import { useContentEditor } from '../index';
+import useContentEditor from '../store/index';
 
-interface SourceResponse {
-  source: { compiledSource: string; frontmatter: any; scope: any };
+export interface SourceResponse {
+  result?: React.ReactNode;
   error?: string;
-  exception?: string;
 }
 
-async function fetchSource(previewUrl: string, markdown: string) {
-  const response = await fetch(previewUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ mode: 'markdown', text: markdown })
-  });
-
-  const data = (await response.json()) as SourceResponse;
-  return data;
+export interface PreviewPluginProps {
+  onChange: ({
+    source,
+    data
+  }: {
+    source: string;
+    data: Record<string, unknown>;
+  }) => Promise<SourceResponse>;
+  meta: Record<string, unknown>;
 }
 
 function usePreview(onContentChange: (markdown: string) => void) {
-  const handleContentChange = debounce(onContentChange, 250, { maxWait: 500 });
-
-  const onChange = (editorState: EditorState) => {
+  const onChange = useDebouncedCallback((editorState: EditorState) => {
     editorState.read(() => {
       const markdown = $convertToMarkdownString(transformers);
       if (markdown) {
-        handleContentChange(markdown);
+        onContentChange(markdown);
       }
     });
-  };
+  }, 400);
 
   return { onChange };
 }
 
-interface PreviewPluginProps {
-  previewUrl: string;
-}
-
-export const PreviewPlugin = ({ previewUrl }: PreviewPluginProps) => {
-  const { setErrorMessage, setPreviewContent } = useContentEditor();
-
+export const PreviewPlugin = ({ onChange: onChangeProp, meta }: PreviewPluginProps) => {
+  const { setPreviewContent, setErrorMessage } = useContentEditor();
   const handleContentChange = async (content: string) => {
-    try {
-      if (content) {
-        const data = await fetchSource(previewUrl, content);
-        if (!data.error && data?.source) {
-          setPreviewContent(data.source);
-        } else {
-          setErrorMessage(`${data.error?.toUpperCase()}: ${data?.exception}`);
-        }
-      }
-    } catch (e) {
-      if (e instanceof Error) {
-        setErrorMessage(`MDX Error: ${e.message}`);
+    if (content) {
+      const previewResponse = await onChangeProp({ source: content, data: meta });
+
+      if (previewResponse.error) {
+        setErrorMessage(`MDX Error: ${previewResponse.error}`);
+      } else {
+        setPreviewContent(previewResponse.result);
       }
     }
   };
 
   const { onChange } = usePreview(handleContentChange);
-
   return <OnChangePlugin onChange={onChange} ignoreSelectionChange />;
 };

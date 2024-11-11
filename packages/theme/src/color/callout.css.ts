@@ -1,5 +1,5 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
-import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
+import { recipe } from '@vanilla-extract/recipes';
 
 import { vars } from '../vars.css';
 import { bothModeConditions } from './modes';
@@ -16,7 +16,6 @@ export const calloutColorProperties = defineProperties({
   }
 });
 export const calloutColorSprinkles = createSprinkles(calloutColorProperties);
-export type CalloutColorSprinkles = Parameters<typeof calloutColorSprinkles>[0];
 export const calloutColor = recipe({
   variants: {
     variant: {
@@ -53,42 +52,3 @@ export const calloutColor = recipe({
     }
   }
 });
-export type CalloutColorVariants = RecipeVariants<typeof calloutColor>;
-
-export const calloutBackgroundColor = recipe({
-  variants: {
-    variant: {
-      note: calloutColorSprinkles({
-        backgroundColor: {
-          lightMode: vars.color.light.callout.note,
-          darkMode: vars.color.dark.callout.note
-        }
-      }),
-      important: calloutColorSprinkles({
-        backgroundColor: {
-          lightMode: vars.color.light.callout.important,
-          darkMode: vars.color.dark.callout.important
-        }
-      }),
-      tip: calloutColorSprinkles({
-        backgroundColor: {
-          lightMode: vars.color.light.callout.tip,
-          darkMode: vars.color.dark.callout.tip
-        }
-      }),
-      caution: calloutColorSprinkles({
-        backgroundColor: {
-          lightMode: vars.color.light.callout.caution,
-          darkMode: vars.color.dark.callout.caution
-        }
-      }),
-      warning: calloutColorSprinkles({
-        backgroundColor: {
-          lightMode: vars.color.light.callout.warning,
-          darkMode: vars.color.dark.callout.warning
-        }
-      })
-    }
-  }
-});
-export type CalloutBackgroundColorVariants = RecipeVariants<typeof calloutBackgroundColor>;

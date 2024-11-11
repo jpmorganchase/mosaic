@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Input, Button } from '@salt-ds/core';
 import { Icon } from '@jpmorganchase/mosaic-components';
-import { useSearchData } from './useSearchData';
+import type { SearchConfig, SearchIndex } from '@jpmorganchase/mosaic-types';
 import { performSearch } from './searchUtils';
 import { ResultsList } from './Results';
 import type { SearchResults } from './Results';
 import styles from './styles.css';
 
-export function SearchInput() {
-  const { searchIndex, searchConfig } = useSearchData();
+export interface SearchInputProps {
+  searchConfig?: SearchConfig;
+  searchIndex?: SearchIndex;
+}
+
+export function SearchInput({ searchIndex, searchConfig }: SearchInputProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResults>([]);
   const [listVisibility, setListVisibility] = useState(false);
@@ -54,6 +58,10 @@ export function SearchInput() {
       document.removeEventListener('keydown', handleEsc);
     };
   }, []);
+
+  if (!searchConfig || !searchIndex) {
+    return null;
+  }
 
   return (
     <div className={styles.root} ref={wrapperRef}>

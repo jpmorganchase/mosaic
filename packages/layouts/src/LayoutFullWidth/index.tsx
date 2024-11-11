@@ -4,7 +4,7 @@ import classnames from 'clsx';
 import styles from './styles.css';
 
 export interface LayoutFullWidthProps {
-  Footer?: React.ReactElement;
+  Footer?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -15,7 +15,7 @@ export const LayoutFullWidth: React.FC<LayoutFullWidthProps> = ({
   className
 }) => (
   <div className={classnames(styles.root, className)}>
-    <main>{children}</main>
+    <div>{children}</div>
     {Footer && Footer}
   </div>
 );

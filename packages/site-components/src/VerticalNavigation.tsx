@@ -1,7 +1,7 @@
 import React, { MouseEventHandler, useState } from 'react';
 import { StackLayout, NavigationItem, NavigationItemProps } from '@salt-ds/core';
 import { Link } from '@jpmorganchase/mosaic-components';
-import { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-store';
+import type { SidebarItem, SidebarNode } from '@jpmorganchase/mosaic-types';
 
 export type VerticalNavigationProps = {
   /** Selected item groups ids to expand */
@@ -40,11 +40,12 @@ const renderNavigationItem = (
   }
   const childNodes = isGroup ? item.childNodes : undefined;
   const isExpanded = isGroup ? expandedGroupIds.has(id) : false;
-  const containsSelectedNode = selectedGroupIds.has(id);
+  const containsSelectedNode = isGroup && selectedGroupIds.has(id);
   const isActive =
     selectedNodeId === id ||
     ((!isExpanded || singlePageInGroup) &&
       (containsSelectedNode || selectedNodeId?.includes(item.id)));
+
   const shouldRenderAsParent = !link;
   const handleExpand: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement> = event => {
     event.stopPropagation();

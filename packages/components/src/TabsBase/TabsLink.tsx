@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 
 import { Link } from '../Link';
-import { TabMenuItemType } from './index';
 import styles from './styles.css';
 
 export interface TabsLinkItem {
@@ -14,7 +13,7 @@ export interface TabsLinkItem {
   /** Title of Tab */
   title?: string;
   /** Type of Tab */
-  type: TabMenuItemType.LINK;
+  type: 'link';
 }
 
 export interface TabsLinkProps {

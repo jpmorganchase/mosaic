@@ -29,6 +29,10 @@ const rootGridProperties = defineProperties({
 
 const rootGridSprinkles = createSprinkles(rootGridProperties);
 
+const responsiveGridArea = responsiveSprinkles({
+  display: ['none', 'none', 'flex', 'flex']
+});
+
 const styles = {
   root: style([
     style({
@@ -66,18 +70,23 @@ const styles = {
     marginRight: 'auto',
     marginLeft: 'auto'
   }),
-  sidebar: style({
-    gridArea: 'layout-column-sidebar',
-    position: 'sticky',
-    top: `${config.appHeader.height}px`,
-    display: 'flex'
-  }),
-  toc: style({
-    gridArea: 'layout-column-toc',
-    position: 'sticky',
-    top: `${config.appHeader.height}px`,
-    maxWidth: '500px'
-  }),
+  sidebar: style([
+    style({
+      gridArea: 'layout-column-sidebar',
+      position: 'sticky',
+      top: `${config.appHeader.height}px`
+    }),
+    responsiveGridArea
+  ]),
+  toc: style([
+    style({
+      gridArea: 'layout-column-toc',
+      position: 'sticky',
+      top: `${config.appHeader.height}px`,
+      maxWidth: '500px'
+    }),
+    responsiveGridArea
+  ]),
 
   toggleButton: style([
     {
