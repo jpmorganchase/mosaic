@@ -155,7 +155,7 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
             className={styles.slider}
             min={0}
             max={durationSeconds}
-            value={timeNowSeconds}
+            value={[timeNowSeconds]}
             onChange={handleSliderInput}
           />
           <Caption6> {durationString}</Caption6>

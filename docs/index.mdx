@@ -1,6 +1,13 @@
 ---
 title: Mosaic
-layout: Landing
+description: Build powerful documentation sites using our NEW scalable solution, watch this space for more developments
+layout: BrandLanding
+data:
+  hero:
+    image: /img/hero.png
+    links:
+      - label: Get started
+        url: /
 sharedConfig:
   header:
     homeLink: /mosaic/index
@@ -17,40 +24,159 @@ sharedConfig:
       - title: Publish
         link: /mosaic/publish/index
   footer:
-    description: Coming soon
-    title: Mosaic BETA
-    href: /mosaic
+    copyright: © 2024 JPMorgan Chase & Co. All rights Reserved
+    sitemap:
+      - title: About us
+        links:
+          - label: Link 1
+            link: /
+          - label: Link 2
+            link: /
+          - label: Link 3
+            link: /
+          - label: Link 4
+            link: /
+      - title: Community
+        links:
+          - label: Link 1
+            link: /
+          - label: Link 2
+            link: /
+          - label: Link 3
+            link: /
+          - label: Link 4
+            link: /
+          - label: Link 5
+            link: /
+          - label: Link 6
+            link: /
+      - title: Community
+        links:
+          - label: Link 1
+            link: /
+          - label: Link 2
+            link: /
+          - label: Link 3
+            link: /
+          - label: Link 4
+            link: /
+          - label: Link 5
+            link: /
 ---
 
-<Hero
-  description="Build powerful documentation sites using our NEW scalable solution, watch this space for more developments"
-  eyebrow="Mosaic is currently in BETA"
-  image="/img/hero.png"
-  title="Mosaic"
-  variant="fullWidth"
+<QuickLinks
+  links={[
+    {
+      url: '/salt',
+      title: 'Components',
+      preview:
+        'Access accessible, well-documented UI components with design specs for J.P. Morgan employees.'
+    },
+    {
+      url: '/salt',
+      title: 'Patterns',
+      preview:
+        'Utilize adaptable patterns to solve business challenges with detailed examples and guidance.'
+    },
+    {
+      url: '/salt',
+      title: 'Foundations',
+      preview: 'Apply core principles for a cohesive and user-friendly design language.'
+    },
+    {
+      url: '/salt',
+      title: 'UITK migration',
+      preview: 'Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    }
+  ]}
 />
 
-True to its name, Mosaic brings together several concepts—including content, design and technical infrastructure—to deliver a unified website experience that is truly greater than the sum of its individual parts.
+<ArticlesSection
+  title="Latest news and updates"
+  description="Stay informed with the latest news, blog articles, sprint reports, and updates from the Salt Design System."
+  action={{ label: 'View all', url: '/salt' }}
+  articles={[
+    {
+      timestamp: 'Today',
+      title: 'Article 1',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    },
+    {
+      timestamp: 'Today',
+      title: 'Article 2',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    },
+    {
+      timestamp: 'Today',
+      title: 'Article 3',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    },
+    {
+      timestamp: 'Today',
+      title: 'Article 4',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    },
+    {
+      timestamp: 'Today',
+      title: 'Article 5',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    },
+    {
+      timestamp: 'Today',
+      title: 'Article 66',
+      preview: ' Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    }
+  ]}
+/>
 
-With Mosaic, you can:
+<SignUpSection
+  title="Subscribe to our newsletter"
+  description="Get the latest news. Figma updates, and blog posts straight to your inbox. Don't miss out!"
+  link={{ label: 'Sign up', href: '/salt' }}
+/>
 
-<Cards>
-  <Card step="01" title="Content Aggregator">
-    Don't move your content where it does not belong. Compose content from remote data sources which
-    are pulled at runtime by our content aggregator.
-  </Card>
-  <Card step="02" title="Fully Customisable">
-    Visualize your content with your own theme, layouts and components or use the Mosaic Design
-    language.
-  </Card>
-  <Card step="03" title="Easily Extended">
-    Extend the existing code and add your own content source types through our simple plugin
-    architecture.
-  </Card>
-  <Card step="04" title="Hybrid Deployment">
-    Publish your content through Server Side Rendering (SSR) or generate a snapshot of your content
-    and serve it as a Statically Generated Site (SGS).
-  </Card>
-</Cards>
+<ContentWithImage
+  image=""
+  title="What to expect"
+  image="/img/product.png"
+  link={{ label: 'Learn more about Salt', href: '/' }}
+>
+  - Point 1 - Point 2 - Point 3 - Point 4 - Point 5
+</ContentWithImage>
 
-Creating a website has never been so easy!
+<MetricSection
+  title="Impact"
+  description="Discover the significant impact of the Salt Design System through key metrics an achievements."
+  action={{ label: 'See OKRs', url: '/okrs' }}
+  metrics={[
+    { metric: '90%', description: '80% parity' },
+    { metric: '~$28M', description: 'Estimated cost savings' },
+    { metric: '4', description: 'Design systems replaced' }
+  ]}
+/>
+
+<QuickLinks
+  title="Resources"
+  links={[
+    {
+      url: '/salt',
+      title: 'Brand resource',
+      preview: 'Lorem ipsum dolor sit ametamet, consectetur adipiscing elit.'
+    },
+    {
+      url: '/salt',
+      title: 'Business Pattern Index',
+      preview: 'Lorem ipsum dolor sit ametamet, consectetur adipiscing elit.'
+    },
+    {
+      url: '/salt',
+      title: 'Figma Libraries',
+      preview: 'Lorem ipsum dolor sit ametamet, consectetur adipiscing elit.'
+    },
+    {
+      url: '/salt',
+      title: 'Github',
+      preview: 'Lorem ipsum dolor sit ametamet. consectetur adipiscing elit.'
+    }
+  ]}
+/>

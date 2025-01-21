@@ -57,3 +57,4 @@ export * from './useLockBodyScroll';
 export * from './useOutsideClick';
 export * from './useSize';
 export * from './useSpacing';
+export * from './SaltAligned';

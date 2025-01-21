@@ -126,7 +126,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
           className={styles.slider}
           min={0}
           max={durationSeconds}
-          value={timeNowSeconds}
+          value={[timeNowSeconds]}
           onChange={handleSliderInput}
         />
         <Caption6>{durationString}</Caption6>

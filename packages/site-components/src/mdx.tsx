@@ -7,6 +7,9 @@ import type { OpenAPIProps } from '@jpmorganchase/mosaic-open-api-component';
 import { Home } from './Home';
 import { Image } from './Image';
 import type { ImageProps } from './Image';
+import { type QuickLinksProps, QuickLinks } from './QuickLinks';
+import { type MetricSectionProps, MetricSection } from './MetricSection';
+import { type ArticlesSectionProps, ArticlesSection } from './ArticlesSection';
 
 const components = {
   ...getMarkdownComponents(),
@@ -14,7 +17,10 @@ const components = {
   Home,
   img: withMarkdownSpacing<ImageProps>(Image),
   pre: withMarkdownSpacing<PreProps>(props => <Pre {...props} CodeBlockProps={{ components }} />),
-  OpenAPI: withMarkdownSpacing<OpenAPIProps>(OpenAPI)
+  OpenAPI: withMarkdownSpacing<OpenAPIProps>(OpenAPI),
+  QuickLinks: withMarkdownSpacing<QuickLinksProps>(QuickLinks),
+  MetricSection: withMarkdownSpacing<MetricSectionProps>(MetricSection),
+  ArticlesSection: withMarkdownSpacing<ArticlesSectionProps>(ArticlesSection)
 };
 
 export default components;
