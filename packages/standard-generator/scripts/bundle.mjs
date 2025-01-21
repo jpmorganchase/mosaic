@@ -23,12 +23,12 @@ try {
       }
     ]
   });
-  await context.rebuild();
   if (watchEnabled) {
     await context.watch();
+  } else {
+    await context.rebuild();
+    await context.dispose();
   }
-  await context.serve();
-  context.dispose();
 } catch (e) {
   if (e.errors && e.errors.length > 0) {
     console.group(`!!!!!!! ${packageName} build errors !!!!!!!`);
