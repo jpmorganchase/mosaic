@@ -6,3 +6,4 @@ export * from './Newsletter';
 export * from './Product';
 export * from './PythonDoc';
 export * from './TypeDoc';
+export * from './BrandLanding';

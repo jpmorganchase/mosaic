@@ -48,6 +48,12 @@ import type { FilterViewProps, FilterResultCountProps, FilterNoResultsProps } fr
 import { HelpLinks } from '../HelpLinks';
 import type { HelpLinksProps } from '../HelpLinks';
 import { Hero } from '../Hero';
+import {
+  SignUpSection,
+  type SignUpSectionProps,
+  ContentWithImage,
+  type ContentWithImageProps
+} from '../SaltAligned';
 import { Impact } from '../Impact';
 import type { ImpactProps } from '../Impact';
 import { Impacts } from '../Impacts';
@@ -113,6 +119,8 @@ export const getMarkdownComponents = () => {
     AccordionSummary,
     AudioPlayer,
     Button,
+    SignUpSection: withMarkdownSpacing<SignUpSectionProps>(SignUpSection),
+    ContentWithImage: withMarkdownSpacing<ContentWithImageProps>(ContentWithImage),
     Callout: withMarkdownSpacing<CalloutProps>(Callout),
     Card: withMarkdownSpacing<CardProps>(Card),
     Cards: withMarkdownSpacing<CardsProps>(Cards),
