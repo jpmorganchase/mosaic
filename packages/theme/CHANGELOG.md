@@ -1,5 +1,7 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.90
+
 ## 0.1.0-beta.89
 
 ## 0.1.0-beta.88
