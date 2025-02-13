@@ -102,7 +102,7 @@ const createExpectedResult = (index: number) => ({
     contentUrl: `https://storybook.endpoint.com/${index}/iframe.html?id=component${index}Id&viewMode=story&shortcuts=false&singleStory=true`,
     description: `some description ${index}`,
     title: `TestComponent/SomePath/Component-${index}`,
-    link: `https://storybook.endpoint.com/${index}?path=/story/component${index}Id`,
+    link: `https://storybook.endpoint.com/${index}/index.html?path=/story/component${index}Id`,
     name: `Component ${index} Name`,
     owner: `some owner ${index}`
   }
