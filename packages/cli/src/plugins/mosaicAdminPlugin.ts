@@ -177,7 +177,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
  * https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/admin/index
  */
 export default fp(mosaicAdmin, {
-  fastify: '4.x',
+  fastify: '5.x',
   name: 'fastify-mosaic-admin',
   dependencies: ['fastify-mosaic']
 });

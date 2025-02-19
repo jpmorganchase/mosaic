@@ -65,6 +65,6 @@ declare module 'fastify' {
 }
 
 export default fp(fastifyMosaic, {
-  fastify: '4.x',
+  fastify: '5.x',
   name: 'fastify-mosaic'
 });

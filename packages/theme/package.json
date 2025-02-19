@@ -36,8 +36,8 @@
     "dev": "node ./scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "@vanilla-extract/esbuild-plugin": "^2.3.11",
-    "esbuild": "0.23.1",
+    "@vanilla-extract/esbuild-plugin": "^2.3.15",
+    "esbuild": "0.25.0",
     "typescript": "^5.0.0",
     "fast-glob": "^3.2.7"
   },

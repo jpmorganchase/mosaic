@@ -24,9 +24,9 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
   /**
    * Run a workflow
    */
-  fastify.get('/workflows', { websocket: true }, (connection /* SocketStream */) => {
-    connection.socket.on('message', async message => {
-      if (connection.socket.OPEN) {
+  fastify.get('/workflows', { websocket: true }, (socket /* SocketStream */) => {
+    socket.on('message', async message => {
+      if (socket.OPEN) {
         try {
           const {
             type,
@@ -37,13 +37,11 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
           } = JSON.parse(message.toString());
 
           if (!name) {
-            connection.socket.send(
-              JSON.stringify({ status: 'ERROR', message: 'Workflow name is required' })
-            );
+            socket.send(JSON.stringify({ status: 'ERROR', message: 'Workflow name is required' }));
           }
 
           if (!user) {
-            connection.socket.send(
+            socket.send(
               JSON.stringify({ status: 'ERROR', message: 'Workflow must be run for a user' })
             );
           }
@@ -52,7 +50,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
           const channel = md5(`${userId.toLowerCase()} - ${name.toLowerCase()}`);
 
           const sendWorkflowProgressMessage: SendSourceWorkflowMessage = (info, status) =>
-            connection.socket.send(JSON.stringify({ status, message: info, channel }));
+            socket.send(JSON.stringify({ status, message: info, channel }));
 
           if (await fs.promises.exists(routeReq)) {
             const route = (await fs.promises.stat(routeReq)).isDirectory()
@@ -69,7 +67,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
           }
         } catch (e) {
           console.error(e);
-          connection.socket.send(JSON.stringify({ status: 'ERROR', message: e.message }));
+          socket.send(JSON.stringify({ status: 'ERROR', message: e.message }));
         }
       }
     });
@@ -81,7 +79,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
  * https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/admin/index
  */
 export default fp(mosaicWorkflows, {
-  fastify: '4.x',
+  fastify: '5.x',
   name: 'fastify-mosaic-workflows',
   dependencies: ['fastify-mosaic']
 });
