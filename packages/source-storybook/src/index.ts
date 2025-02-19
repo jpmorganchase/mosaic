@@ -78,7 +78,7 @@ const transformStorybookPages = (
         title: storyTitle,
         description,
         contentUrl: `${storyUrlPrefix}/iframe.html?id=${id}&viewMode=story&shortcuts=false&singleStory=true`,
-        link: `${storyUrlPrefix}?path=/${type}/${id}`
+        link: `${storyUrlPrefix}/index.html?path=/${type}/${id}`
       }
     };
     if (meta) {
