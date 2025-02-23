@@ -1,9 +1,13 @@
 import { expect, describe, test, afterEach, vi, beforeEach } from 'vitest';
 
-import fsExtra from 'fs-extra';
-import mockFs from 'mock-fs';
+import { fs, vol } from 'memfs';
 import path from 'path';
 import DocumentAssetsPlugin from '../DocumentAssetsPlugin';
+
+vi.mock('fs', () => ({
+  default: fs
+}));
+vi.mock('fs/promises', () => ({ default: fs.promises }));
 
 describe('GIVEN the DocumentAssetsPlugin', () => {
   describe('afterUpdate', () => {
@@ -13,7 +17,7 @@ describe('GIVEN the DocumentAssetsPlugin', () => {
 
     beforeEach(() => {
       vi.spyOn(process, 'cwd').mockReturnValue('/mocked/cwd');
-      mockFs({
+      vol.fromNestedJSON({
         '/mocked/cwd/src': {
           images: {
             'image1.png': 'file content',
@@ -26,33 +30,28 @@ describe('GIVEN the DocumentAssetsPlugin', () => {
 
     afterEach(() => {
       vi.clearAllMocks();
-      mockFs.restore();
+      vol.reset();
     });
 
     test('should process image directories and call symlink with correct arguments', async () => {
-      const symlinkMock = vi.spyOn(fsExtra, 'symlink').mockResolvedValue(undefined);
-
       await DocumentAssetsPlugin.afterUpdate(null, null, { assetSubDirs, srcDir, outputDir });
 
       const outputPathImage1 = path.join(process.cwd(), outputDir, 'images', 'image1.png');
       const outputPathImage2 = path.join(process.cwd(), outputDir, 'images', 'image2.jpg');
-      const srcPathImage1 = path.join(process.cwd(), srcDir, 'images', 'image1.png');
-      const srcPathImage2 = path.join(process.cwd(), srcDir, 'images', 'image2.jpg');
+      const srcPathImage1 = path.posix.join(process.cwd(), srcDir, 'images', 'image1.png');
+      const srcPathImage2 = path.posix.join(process.cwd(), srcDir, 'images', 'image2.jpg');
 
-      // assert that symlink was called with correct arguments
-      expect(symlinkMock).toHaveBeenCalledWith(srcPathImage1, outputPathImage1);
-      expect(symlinkMock).toHaveBeenCalledWith(srcPathImage2, outputPathImage2);
+      expect(await fs.promises.realpath(outputPathImage1)).toEqual(srcPathImage1);
+      expect(await fs.promises.realpath(outputPathImage2)).toEqual(srcPathImage2);
     });
 
     test('should handle errors gracefully and continue processing other files', async () => {
-      const symlinkMock = vi
-        .spyOn(fsExtra, 'symlink')
-        .mockImplementationOnce((src: fsExtra.PathLike, _dest) => {
-          if (`${src}`.includes('image1.png')) {
-            throw new Error('Symlink error');
-          }
-          return Promise.resolve();
-        });
+      const symlinkMock = vi.spyOn(fs.promises, 'symlink').mockImplementationOnce((src, _dest) => {
+        if (`${src}`.includes('image1.png')) {
+          throw new Error('Symlink error');
+        }
+        return Promise.resolve();
+      });
 
       console.error = vi.fn();
 

@@ -37,11 +37,7 @@
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.89",
     "rxjs": "^7.5.5",
     "deepmerge": "^4.2.2",
-    "fs-extra": "^9.1.0",
     "lodash-es": "^4.17.21",
     "zod": "^3.22.3"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^9.0.13"
   }
 }

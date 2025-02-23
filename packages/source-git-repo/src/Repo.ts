@@ -1,6 +1,6 @@
 import cp from 'child_process';
 import path from 'path';
-import fs from 'fs-extra';
+import fs from 'fs/promises';
 
 const gitChangeType = {
   A: 'add',
@@ -104,7 +104,7 @@ async function* updatedFilesGenerator(
 
 async function doesPreviousCloneExist(repo: string, dir: string) {
   try {
-    if (!(await fs.promises.stat(path.join(dir, '.git')))) {
+    if (!(await fs.stat(path.join(dir, '.git')))) {
       return false;
     }
     // Output will look something like:
@@ -333,7 +333,15 @@ export default class Repo {
     try {
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
         console.debug(`[Mosaic] Creating main worktree for repo '${this.#name}'`);
-        await fs.emptyDir(this.#cloneRootDir);
+
+        //Empty the directory before cloning
+        try {
+          const items = await fs.readdir(this.#cloneRootDir);
+          await Promise.all(items.map(item => fs.rm(path.join(this.#cloneRootDir, item))));
+        } catch {
+          await fs.mkdir(this.#cloneRootDir, { recursive: true });
+        }
+
         await spawn(
           'git',
           ['clone', this.#repo, '--no-checkout', `--origin=${this.#remote}`],

@@ -4,12 +4,18 @@ import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
 import createFetchMock from 'vitest-fetch-mock';
-
-const mockFs = require('mock-fs');
+import { fs, vol } from 'memfs';
 
 import { withMDXContent } from '../withMDXContent';
 
 const fetchMock = createFetchMock(vi);
+
+vi.mock('fs', () => ({
+  default: fs
+}));
+vi.mock('fs/promises', () => ({
+  default: fs.promises
+}));
 
 vi.mock('../compileMdx.js', () => ({
   compileMDX: async (value: string) => Promise.resolve(value)
@@ -63,14 +69,14 @@ describe('GIVEN withMDXContent', () => {
     let savedEnv = process.env;
     beforeAll(() => {
       process.env = { ...process.env, MOSAIC_SNAPSHOT_DIR: '/some/snapshots' };
-      mockFs({
+      vol.fromNestedJSON({
         'some/snapshots/mynamespace/mydir': {
           'mypage.mdx': 'my content'
         }
       });
     });
     afterAll(() => {
-      mockFs.restore();
+      vol.reset();
       process.env = savedEnv;
     });
 

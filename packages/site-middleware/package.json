@@ -31,7 +31,6 @@
   "devDependencies": {
     "aws-sdk-client-mock": "^2.0.1",
     "vitest-fetch-mock": "^0.3.0",
-    "mock-fs": "^5.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {

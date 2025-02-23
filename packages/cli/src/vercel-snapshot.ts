@@ -1,6 +1,6 @@
 import path from 'path';
 import { globby } from 'globby';
-import fsExtra from 'fs-extra';
+import fs from 'fs';
 
 /**
  * When deploying a mosaic site to vercel, snapshot files are ignored resulting in a 404 when a page is accessed from the site.
@@ -24,7 +24,7 @@ export async function updateTraceFile(config, options) {
     const snapshotDir = options.out;
     const snapshotName = options.name ?? new Date().toISOString();
 
-    if (!fsExtra.existsSync(buildDir)) {
+    if (!fs.existsSync(buildDir)) {
       console.warn(
         '[Mosaic] unable to update nextjs trace file.  Build the site before generating the snapshot'
       );
@@ -37,7 +37,7 @@ export async function updateTraceFile(config, options) {
       onlyFiles: true
     });
 
-    const data = JSON.parse(await fsExtra.promises.readFile(nftFilePath, 'utf-8'));
+    const data = JSON.parse(await fs.promises.readFile(nftFilePath, 'utf-8'));
 
     // Add the snapshot file paths to the nft trace
     paths.forEach(snapshotFile => {
@@ -48,6 +48,6 @@ export async function updateTraceFile(config, options) {
       data.files.push(newEntry);
     });
 
-    await fsExtra.promises.writeFile(nftFilePath, JSON.stringify(data));
+    await fs.promises.writeFile(nftFilePath, JSON.stringify(data));
   }
 }

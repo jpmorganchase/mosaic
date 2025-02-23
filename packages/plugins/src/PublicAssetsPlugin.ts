@@ -1,7 +1,6 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import path from 'node:path';
-import fs from 'node:fs';
-import fsExtra from 'fs-extra';
+import fs from 'node:fs/promises';
 
 interface PublicAssetsPluginOptions {
   /**
@@ -22,7 +21,7 @@ interface PublicAssetsPluginOptions {
 const PublicAssetsPlugin: PluginType<Page, PublicAssetsPluginOptions> = {
   async afterUpdate(_, { sharedFilesystem }, { assets = [], outputDir = './public' }) {
     if (assets.length > 0) {
-      await fsExtra.ensureDir(outputDir);
+      await fs.mkdir(outputDir, { recursive: true });
 
       await Promise.all(
         assets.map(async asset => {
@@ -35,10 +34,7 @@ const PublicAssetsPlugin: PluginType<Page, PublicAssetsPluginOptions> = {
             await Promise.all(
               allFiles.map(async file => {
                 const data = await sharedFilesystem.promises.readFile(file);
-                await fs.promises.writeFile(
-                  path.posix.join(path.posix.resolve(outputDir), file),
-                  data
-                );
+                await fs.writeFile(path.posix.join(path.posix.resolve(outputDir), file), data);
               })
             );
           }
