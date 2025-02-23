@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'fs';
 import esbuild from 'esbuild';
 
 const args = process.argv.slice(2);
@@ -17,7 +17,7 @@ try {
         name: 'copy-additional-files',
         setup(build) {
           build.onEnd(() => {
-            fs.copySync('./src/templates', './dist/templates', { overwrite: true });
+            fs.cpSync('./src/templates', './dist/templates', { force: true, recursive: true });
           });
         }
       }

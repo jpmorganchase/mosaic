@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import deepmerge from 'deepmerge';
-import fsExtra from 'fs-extra';
 import MosaicCore from '@jpmorganchase/mosaic-core';
 
 export default async function build(config, targetDir, options) {
@@ -15,7 +14,15 @@ export default async function build(config, targetDir, options) {
   const scope = options.scope && options.scope.split(',');
   const mosaic = new MosaicCore(config);
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
-  await fsExtra.emptyDir(pathDir);
+
+  // Clear out the target directory
+  try {
+    const items = await fs.promises.readdir(pathDir);
+    await Promise.all(items.map(item => fs.promises.rm(path.join(pathDir, item))));
+  } catch {
+    await fs.promises.mkdir(pathDir, { recursive: true });
+  }
+
   await mosaic.start();
   // If `scope` arg was used, scope the filesystem to those namespaces
   const filesystem = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
@@ -64,7 +71,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
             if (target.startsWith('/.tags')) {
               continue;
             }
-            await fsExtra.ensureDir(path.join(pathDir, path.dirname(alias)));
+            await fs.promises.mkdir(path.join(pathDir, path.dirname(alias)), { recursive: true });
 
             try {
               const exists = !!(await fs.promises.stat(path.join(pathDir, alias)));

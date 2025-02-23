@@ -1,5 +1,5 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import fsExtra from 'fs-extra';
+import fs from 'fs';
 import glob from 'fast-glob';
 import path from 'path';
 import { escapeRegExp } from 'lodash-es';
@@ -101,7 +101,8 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
       try {
         globbedImageDirs = await glob(assetSubDir, {
           cwd: resolvedSrcDir,
-          onlyDirectories: true
+          onlyDirectories: true,
+          fs
         });
         if (globbedImageDirs.length === 0) {
           console.warn(`Warning: No entries found for ${assetSubDir}. It may not exist.`);
@@ -112,7 +113,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
         throw new PluginError(err.message, assetSubDir);
       }
 
-      await fsExtra.ensureDir(outputDir);
+      await fs.promises.mkdir(outputDir, { recursive: true });
       for (const globbedImageDir of globbedImageDirs) {
         let imageFiles;
         let globbedPath;
@@ -123,7 +124,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
             rootSrcDir = path.resolve(path.join(process.cwd(), srcDir));
           }
           globbedPath = path.join(rootSrcDir, globbedImageDir);
-          imageFiles = await fsExtra.promises.readdir(globbedPath);
+          imageFiles = await fs.promises.readdir(globbedPath);
         } catch (err) {
           console.error(`Error reading directory ${globbedPath}:`, err);
           continue;
@@ -138,10 +139,13 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
             const fullImageSrcPath = path.join(rootSrcDir, imageSrcPath);
             const fullImageDestPath = path.join(rootOutputDir, imageSrcPath);
 
-            await fsExtra.mkdir(path.dirname(fullImageDestPath), { recursive: true });
-            const symlinkAlreadyExists = await fsExtra.pathExists(fullImageDestPath);
+            await fs.promises.mkdir(path.dirname(fullImageDestPath), { recursive: true });
+            const symlinkAlreadyExists = await fs.promises
+              .access(fullImageDestPath)
+              .then(() => true)
+              .catch(() => false);
             if (!symlinkAlreadyExists) {
-              await fsExtra.symlink(fullImageSrcPath, fullImageDestPath);
+              await fs.promises.symlink(fullImageSrcPath, fullImageDestPath);
               console.log(`Symlink created: ${fullImageSrcPath} -> ${fullImageDestPath}`);
             }
           } catch (error) {

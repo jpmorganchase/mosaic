@@ -1,6 +1,5 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import fs from 'fs';
-import fsExtra from 'fs-extra';
+import fs from 'fs/promises';
 import path from 'path';
 import { TDataOut } from 'memfs';
 import { mergePageContent } from './utils/mergePageContent.js';
@@ -34,7 +33,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
           if (config.data.hddPaths?.[pagePath]) {
             const page = await serialiser.deserialise(
               pagePath,
-              await fs.promises.readFile(config.data.hddPaths[pagePath])
+              await fs.readFile(config.data.hddPaths[pagePath])
             );
 
             const mergedPage = mergePageContent<LazyPagePluginPage, LazyPagePluginPage>(
@@ -69,15 +68,15 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
     });
 
     const baseDir = path.join(process.cwd(), options.cacheDir || '.mosaic-lazy-page-plugin-cache');
-    await fsExtra.ensureDir(baseDir);
+    await fs.mkdir(baseDir, { recursive: true });
     for (const filePath of allPages) {
       const rawPage = await mutableFilesystem.promises.readFile(String(filePath));
       const page = await serialiser.deserialise(String(filePath), rawPage);
       originalDiskSize += rawPage.length;
-      await fs.promises.mkdir(path.dirname(path.join(baseDir, String(filePath))), {
+      await fs.mkdir(path.dirname(path.join(baseDir, String(filePath))), {
         recursive: true
       });
-      await fs.promises.writeFile(
+      await fs.writeFile(
         path.join(baseDir, String(filePath)),
         await serialiser.serialise(String(filePath), page)
       );

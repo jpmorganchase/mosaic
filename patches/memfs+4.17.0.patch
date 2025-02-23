@@ -1,0 +1,33 @@
+diff --git a/node_modules/memfs/lib/index.d.ts b/node_modules/memfs/lib/index.d.ts
+index 1a71a64..9b4d934 100644
+--- a/node_modules/memfs/lib/index.d.ts
++++ b/node_modules/memfs/lib/index.d.ts
+@@ -1,6 +1,6 @@
+ import Stats from './Stats';
+ import Dirent from './Dirent';
+-import { Volume as _Volume, StatWatcher, FSWatcher, IWriteStream, DirectoryJSON, NestedDirectoryJSON } from './volume';
++import { Volume as _Volume, StatWatcher, FSWatcher, IWriteStream, DirectoryJSON, NestedDirectoryJSON, IRealpathOptions, IMkdirOptions, IReaddirOptions, IStatOptions,TData, TMode } from './volume';
+ import { constants } from './constants';
+ import type { FsPromisesApi } from './node/types';
+ import type * as misc from './node/types/misc';
+@@ -20,6 +20,20 @@ export interface IFs extends _Volume {
+ }
+ export declare function createFsFromVolume(vol: _Volume): IFs;
+ export declare const fs: IFs;
++
++
++export {
++    IRealpathOptions,
++    IMkdirOptions,
++    IReaddirOptions,
++    IStatOptions,
++    TData,
++    TMode,
++    _Volume
++};
++export * from './Dirent';
++export * from './Stats';
++export * from './encoding';
+ /**
+  * Creates a new file system instance.
+  *

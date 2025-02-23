@@ -4,7 +4,7 @@ import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
 import createFetchMock from 'vitest-fetch-mock';
-const mockFs = require('mock-fs');
+import { fs, vol } from 'memfs';
 
 import { withSearchIndex } from '../withSearchIndex';
 
@@ -19,6 +19,12 @@ declare var process: {
 };
 
 const fetchMock = createFetchMock(vi);
+
+vi.mock('fs', () => ({
+  default: fs
+}));
+
+vi.mock('fs/promises', () => ({ default: fs.promises }));
 
 describe('GIVEN withSearchIndex', () => {
   describe('WHEN snapshot-s3 Mosaic mode is set', () => {
@@ -108,7 +114,7 @@ describe('GIVEN withSearchIndex', () => {
     });
     test('THEN reads search-index from a local file', async () => {
       // arrange
-      mockFs({
+      vol.fromNestedJSON({
         'some/snapshots/': {
           'search-data-condensed.json': '{ "someValue": true }',
           'search-config.json': '{ "someConfigValue": true }'
@@ -123,7 +129,7 @@ describe('GIVEN withSearchIndex', () => {
       expect(content).toEqual({
         props: { searchConfig: { someConfigValue: true }, searchIndex: { someValue: true } }
       });
-      mockFs.restore();
+      vol.reset();
     });
     test('THEN does not throw for a non-existent search-index', async () => {
       // arrange
