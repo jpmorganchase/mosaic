@@ -1,7 +1,6 @@
-import type { TDataOut } from 'memfs';
-
 import type { SerialiserModuleDefinition } from './index.js';
 import type { Page } from './Page.js';
+import type { TDataOut } from './Volume.js';
 
 /**
  * Serialisers are a form of plugin that tells Mosaic how to turn a file from/to a storable form for the filesystem
