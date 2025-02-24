@@ -157,7 +157,7 @@ describe('GIVEN SourceManager', () => {
           expect(latestOnUpdateCallback).toBeDefined();
           latestOnUpdateCallback('message');
 
-          expect(() => sourceCreatorPromise).rejects.toThrow('message');
+          await expect(() => sourceCreatorPromise).rejects.toThrow('message');
         });
       });
 

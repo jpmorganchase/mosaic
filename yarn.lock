@@ -1286,6 +1286,13 @@
     fastify-plugin "^5.0.0"
     ws "^8.16.0"
 
+"@fetch-mock/vitest@^0.2.10":
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/@fetch-mock/vitest/-/vitest-0.2.10.tgz#cc3734a3abf74d47ed376806b5a11850d1382e1e"
+  integrity sha512-KRuo+2JXVpDWCuSBQiaZlU8KGR2KcJm4Wfz+Y2ahJusacl9iQH0oFt26kyoWFSHyaD/njh0MGP9oyxAuUNx2PA==
+  dependencies:
+    fetch-mock "^12.4.0"
+
 "@floating-ui/core@^1.0.0":
   version "1.6.3"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.6.3.tgz#5e7bb92843f47fd1d8dcb9b3cc3c243aaed54f95"
@@ -3603,6 +3610,11 @@
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@types/github-slugger/-/github-slugger-1.3.0.tgz#16ab393b30d8ae2a111ac748a015ac05a1fc5524"
   integrity sha1-Fqs5OzDYrioRGsdIoBWsBaH8VSQ=
+
+"@types/glob-to-regexp@^0.4.4":
+  version "0.4.4"
+  resolved "https://registry.yarnpkg.com/@types/glob-to-regexp/-/glob-to-regexp-0.4.4.tgz#409e71290253203185b1ea8a3d6ea406a4bdc902"
+  integrity sha512-nDKoaKJYbnn1MZxUY0cA1bPmmgZbg0cTq7Rh13d0KWYNOiKbqoR+2d89SnRPszGh7ROzSwZ/GOjZ4jPbmmZ6Eg==
 
 "@types/hast@^2.0.0":
   version "2.3.4"
@@ -6928,6 +6940,17 @@ fault@^1.0.0:
   dependencies:
     format "^0.2.0"
 
+fetch-mock@^12.4.0:
+  version "12.4.0"
+  resolved "https://registry.yarnpkg.com/fetch-mock/-/fetch-mock-12.4.0.tgz#85a5d7145521cc62a9ede429e58276d82b81747e"
+  integrity sha512-qW5NIJpz915Tnt9NUkJDvhmurR32AU0AuEHfYN2eevD0kXVosDqVLVBdpSlF8SDw/pYgbvryYtFUfN924/twTA==
+  dependencies:
+    "@types/glob-to-regexp" "^0.4.4"
+    dequal "^2.0.3"
+    glob-to-regexp "^0.4.1"
+    is-subset-of "^3.1.10"
+    regexparam "^3.0.0"
+
 figures@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-3.2.0.tgz#625c18bd293c604dc4a8ddb2febf0c88341746af"
@@ -7255,6 +7278,11 @@ glob-parent@^5.1.2, glob-parent@~5.1.2:
   integrity sha1-hpgyxYA0/mikCTwX3BXoNA2EAcQ=
   dependencies:
     is-glob "^4.0.1"
+
+glob-to-regexp@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz#c75297087c851b9a578bd217dd59a92f59fe546e"
+  integrity sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==
 
 glob@10.3.10:
   version "10.3.10"
@@ -8205,6 +8233,13 @@ is-subdir@^1.1.1:
   integrity sha512-2AT6j+gXe/1ueqbW6fLZJiIw3F8iXGJtt0yDrZaBhAZEG1raiTxKWU+IPqMCzQAXOUCKdA4UDMgacKH25XG2Cw==
   dependencies:
     better-path-resolve "1.0.0"
+
+is-subset-of@^3.1.10:
+  version "3.1.10"
+  resolved "https://registry.yarnpkg.com/is-subset-of/-/is-subset-of-3.1.10.tgz#d3f4331b9ca288318fae92ad5d953241b6f7b00b"
+  integrity sha512-avvaYgVmYWyaZ1NDFiv4y9JGkrE2je3op1Po4VYKKJKR8H2qVPsg1GZuuXl5elCTxTlwAIsrAjWAs4BVrISFRw==
+  dependencies:
+    typedescriptor "3.0.2"
 
 is-symbol@^1.0.2, is-symbol@^1.0.3:
   version "1.0.4"
@@ -11285,6 +11320,11 @@ regexp.prototype.flags@^1.5.2:
     es-errors "^1.3.0"
     set-function-name "^2.0.1"
 
+regexparam@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/regexparam/-/regexparam-3.0.0.tgz#1673e09d41cb7fd41eaafd4040a6aa90daa0a21a"
+  integrity sha512-RSYAtP31mvYLkAHrOlh25pCNQ5hWnT106VukGaaFfuJrZFkGRX5GhUAdPqpSDXxOhA2c4akmRuplv1mRqnBn6Q==
+
 regexpp@^3.1.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-3.2.0.tgz#0425a2768d8f23bad70ca4b90461fa2f1213e1b2"
@@ -12989,6 +13029,11 @@ typed-array-length@^1.0.6:
     is-typed-array "^1.1.13"
     possible-typed-array-names "^1.0.0"
 
+typedescriptor@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/typedescriptor/-/typedescriptor-3.0.2.tgz#9ad1715bc2be1cf063d5acbc4cd4bfc96d644225"
+  integrity sha512-hyVbaCUd18UiXk656g/imaBLMogpdijIEpnhWYrSda9rhvO4gOU16n2nh7xG5lv/rjumnZzGOdz0CEGTmFe0fQ==
+
 types-ramda@^0.29.4:
   version "0.29.4"
   resolved "https://registry.yarnpkg.com/types-ramda/-/types-ramda-0.29.4.tgz#8d9b51df2e550a05cedab541cc75dcd72972c625"
@@ -13358,11 +13403,6 @@ vite-node@3.0.6:
     rollup "^4.30.1"
   optionalDependencies:
     fsevents "~2.3.3"
-
-vitest-fetch-mock@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/vitest-fetch-mock/-/vitest-fetch-mock-0.4.3.tgz#0c361e6e2821f8ac213165155536303a99597257"
-  integrity sha512-PhuEh+9HCsXFMRPUJilDL7yVDFufoxqk7ze+CNks64UGlfFXaJTn1bLABiNlEc0u25RERXQGj0Tm+M9i6UY9HQ==
 
 vitest@^3.0.0:
   version "3.0.6"

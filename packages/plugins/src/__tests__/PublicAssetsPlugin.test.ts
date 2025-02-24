@@ -12,7 +12,10 @@ const vol = Volume.fromJSON({
 });
 
 const sharedFilesystem = createFsFromVolume(vol);
-sharedFilesystem.promises.glob = vi.fn().mockResolvedValue(['/sitemap.xml']);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('GIVEN the PublicAssetsPlugin', () => {
   test('THEN it should use the `afterUpdate` lifecycle event', () => {
@@ -35,7 +38,7 @@ describe('GIVEN the PublicAssetsPlugin', () => {
 
   describe('AND WHEN assets are **NOT** found', () => {
     beforeEach(() => {
-      vi.resetAllMocks();
+      sharedFilesystem.promises.glob = vi.fn().mockResolvedValue([]);
     });
     test('THEN nothing is copied', async () => {
       await PublicAssetsPlugin?.afterUpdate(vol, { sharedFilesystem }, { assets: ['unknown.xml'] });
@@ -46,7 +49,6 @@ describe('GIVEN the PublicAssetsPlugin', () => {
 
   describe('AND WHEN the output directory is changed', () => {
     beforeEach(() => {
-      vi.resetAllMocks();
       sharedFilesystem.promises.glob = vi.fn().mockResolvedValue(['/sitemap.xml']);
     });
     test('THEN the provided output directory is used', async () => {
@@ -64,9 +66,6 @@ describe('GIVEN the PublicAssetsPlugin', () => {
   });
 
   describe('AND WHEN no assets are provided', () => {
-    beforeEach(() => {
-      vi.resetAllMocks();
-    });
     test('THEN nothing is copied', async () => {
       await PublicAssetsPlugin?.afterUpdate(vol, { sharedFilesystem }, { assets: [] });
 

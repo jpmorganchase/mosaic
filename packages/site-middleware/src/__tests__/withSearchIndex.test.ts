@@ -3,7 +3,7 @@ import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s
 import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
-import createFetchMock from 'vitest-fetch-mock';
+import fetchMock from '@fetch-mock/vitest';
 import { fs, vol } from 'memfs';
 
 import { withSearchIndex } from '../withSearchIndex';
@@ -17,8 +17,6 @@ declare var process: {
     MOSAIC_SNAPSHOT_DIR?: string;
   };
 };
-
-const fetchMock = createFetchMock(vi);
 
 vi.mock('fs', () => ({
   default: fs
@@ -146,16 +144,15 @@ describe('GIVEN withSearchIndex', () => {
 
   describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
-      fetchMock.enableMocks();
-      fetchMock.mockResponses(
-        [JSON.stringify({ someValue: true }), { status: 200 }],
-        [JSON.stringify({ someConfigValue: true }), { status: 200 }],
-        ['', { status: 404 }],
-        ['', { status: 404 }]
-      );
+      fetchMock.mockGlobal();
+      fetchMock
+        .once('*', JSON.stringify({ someValue: true }))
+        .once('*', JSON.stringify({ someConfigValue: true }))
+        .once('*', 404)
+        .once('*', 404);
     });
     afterAll(() => {
-      fetchMock.disableMocks();
+      fetchMock.unmockGlobal();
     });
     test('THEN search-index is fetched from the data source', async () => {
       // arrange
