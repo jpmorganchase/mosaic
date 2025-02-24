@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.90
+
+### Patch Changes
+
+- Updated dependencies [61180b78]
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.90
+
 ## 0.1.0-beta.89
 
 ### Patch Changes

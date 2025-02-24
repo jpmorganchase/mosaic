@@ -1,5 +1,22 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 0.1.0-beta.90
+
+### Minor Changes
+
+- 61180b78: Removed `@jpmorganchase/mosaic-labs-components`.
+
+### Patch Changes
+
+- Updated dependencies [e2821e10]
+- Updated dependencies [61180b78]
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.90
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.90
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.90
+  - @jpmorganchase/mosaic-components@0.1.0-beta.90
+  - @jpmorganchase/mosaic-open-api-component@0.1.0-beta.90
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.90
+
 ## 0.1.0-beta.89
 
 ### Patch Changes

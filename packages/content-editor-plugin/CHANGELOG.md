@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.90
+
+### Patch Changes
+
+- e2821e10: - Fixed LinkEditor not working when editing existing links.
+  - Fixed InsertBlockDropdown not updating correctly.
+  - @jpmorganchase/mosaic-components@0.1.0-beta.90
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.90
+
 ## 0.1.0-beta.89
 
 ### Patch Changes
