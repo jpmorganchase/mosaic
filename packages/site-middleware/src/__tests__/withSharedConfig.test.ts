@@ -3,12 +3,10 @@ import { GetObjectCommand, HeadObjectCommand, S3Client } from '@aws-sdk/client-s
 import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
-import createFetchMock from 'vitest-fetch-mock';
+import fetchMock from '@fetch-mock/vitest';
 import { vol, fs } from 'memfs';
 
 import { withSharedConfig } from '../withSharedConfig';
-
-const fetchMock = createFetchMock(vi);
 
 declare var process: {
   env: {
@@ -124,14 +122,11 @@ describe('GIVEN withSharedConfig', () => {
 
   describe('WHEN active Mosaic mode is set', () => {
     beforeAll(() => {
-      fetchMock.enableMocks();
-      fetchMock.mockResponses(
-        [JSON.stringify({ config: { someValue: true } }), { status: 200 }],
-        ['', { status: 404 }]
-      );
+      fetchMock.mockGlobal();
+      fetchMock.once('*', JSON.stringify({ config: { someValue: true } })).once('*', 404);
     });
     afterAll(() => {
-      fetchMock.disableMocks();
+      fetchMock.unmockGlobal();
     });
     test('THEN shared-config is fetched from the data source', async () => {
       // arrange

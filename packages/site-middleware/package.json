@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "aws-sdk-client-mock": "^2.0.1",
-    "vitest-fetch-mock": "^0.4.3",
+    "@fetch-mock/vitest": "^0.2.10",
     "typescript": "^5.0.0"
   },
   "dependencies": {

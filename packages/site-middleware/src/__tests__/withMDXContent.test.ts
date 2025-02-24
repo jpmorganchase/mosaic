@@ -3,12 +3,10 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { AwsStub, mockClient } from 'aws-sdk-client-mock';
 import { sdkStreamMixin } from '@smithy/util-stream';
 import { Readable } from 'stream';
-import createFetchMock from 'vitest-fetch-mock';
+import fetchMock from '@fetch-mock/vitest';
 import { fs, vol } from 'memfs';
 
 import { withMDXContent } from '../withMDXContent';
-
-const fetchMock = createFetchMock(vi);
 
 vi.mock('fs', () => ({
   default: fs
@@ -92,11 +90,11 @@ describe('GIVEN withMDXContent', () => {
 
   describe('WHEN dynamic Mosaic mode is set', () => {
     beforeAll(() => {
-      fetchMock.enableMocks();
-      fetchMock.mockOnce('my content');
+      fetchMock.mockGlobal();
+      fetchMock.once('*', 'my content');
     });
     afterAll(() => {
-      fetchMock.disableMocks();
+      fetchMock.unmockGlobal();
     });
     test('THEN content is fetched from the data source', async () => {
       // arrange
