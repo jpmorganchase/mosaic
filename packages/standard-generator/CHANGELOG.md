@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-standard-generator
 
+## 0.1.0-beta.90
+
+### Minor Changes
+
+- 61180b78: Removed `@jpmorganchase/mosaic-labs-components`.
+
 ## 0.1.0-beta.89
 
 ## 0.1.0-beta.88
