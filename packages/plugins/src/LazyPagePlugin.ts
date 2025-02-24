@@ -1,7 +1,6 @@
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType, TDataOut } from '@jpmorganchase/mosaic-types';
 import fs from 'fs/promises';
 import path from 'path';
-import { TDataOut } from 'memfs';
 import { mergePageContent } from './utils/mergePageContent.js';
 import { createPageTest } from './utils/createPageTest.js';
 

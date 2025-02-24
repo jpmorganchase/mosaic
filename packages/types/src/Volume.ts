@@ -1,18 +1,10 @@
-import type {
-  DirectoryJSON,
-  IRealpathOptions,
-  IMkdirOptions,
-  IReaddirOptions,
-  IStatOptions,
-  TData,
-  TMode,
-  TDataOut,
-  Dirent,
-  Stats,
-  TStatNumber
-} from 'memfs';
-import type { PathLike, symlink } from 'fs';
+import type { DirectoryJSON, IFs } from 'memfs';
+import type { PathLike } from 'fs';
 import type { Options, Pattern, Entry } from 'fast-glob';
+
+type TDataOut = string | Buffer;
+
+export type { TDataOut };
 
 /**
  * Volumes are lightweight decorators which wrap `FileAccess` and limit access to the underlying API for different use-cases
@@ -24,17 +16,12 @@ export interface IVolume {
   toJSON(): DirectoryJSON;
   symlinksToJSON(): { [key: string]: { target: string; type: string }[] };
   fromJSON?(json: DirectoryJSON): void;
-  promises: {
+  promises: Pick<
+    IFs['promises'],
+    'mkdir' | 'readdir' | 'readFile' | 'realpath' | 'stat' | 'symlink' | 'unlink' | 'writeFile'
+  > & {
     exists(file: PathLike): Promise<boolean>;
     glob(pattern: Pattern, options?: Options): Promise<string[] | Entry[]>;
-    mkdir(dir: PathLike, options?: TMode | IMkdirOptions): Promise<void>;
-    readdir(dir: PathLike, options?: string | IReaddirOptions): Promise<TDataOut[] | Dirent[]>;
-    readFile(file: PathLike): Promise<TDataOut>;
-    realpath(target: string, options?: string | IRealpathOptions): Promise<TDataOut>;
-    stat(file: PathLike, options?: IStatOptions): Promise<Stats<TStatNumber>>;
-    symlink(target: PathLike, alias: PathLike, type?: symlink.Type): Promise<void>;
-    unlink(target: PathLike): Promise<void>;
-    writeFile(file: PathLike, data: TData): Promise<void>;
   };
 }
 export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJSON'> {

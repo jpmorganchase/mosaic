@@ -1,6 +1,6 @@
 import { create } from 'lodash-es';
-import { TDataOut } from 'memfs';
-import type { IUnionVolume } from '@jpmorganchase/mosaic-types';
+
+import type { IUnionVolume, TDataOut } from '@jpmorganchase/mosaic-types';
 
 import type UnionFileAccess from './UnionFileAccess.js';
 import MutableVolume from './MutableVolume.js';

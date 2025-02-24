@@ -1,9 +1,11 @@
 import path from 'node:path';
 import glob from 'fast-glob';
 import { PathLike } from 'node:fs';
-import { createFsFromVolume, DirectoryJSON, IRealpathOptions, _Volume, TDataOut } from 'memfs';
+import { createFsFromVolume, DirectoryJSON, vol } from 'memfs';
 
-import type { IFileAccess } from '@jpmorganchase/mosaic-types';
+import type { IFileAccess, TDataOut } from '@jpmorganchase/mosaic-types';
+
+type _Volume = typeof vol;
 
 export default class FileAccess implements IFileAccess {
   #adapter: _Volume;
@@ -83,7 +85,7 @@ export default class FileAccess implements IFileAccess {
     return this.#frozen;
   }
 
-  realpath(target, options?: string | IRealpathOptions) {
+  realpath(target, options) {
     return this.#adapter.promises.realpath(target, options);
   }
 

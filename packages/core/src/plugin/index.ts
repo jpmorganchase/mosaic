@@ -1,12 +1,11 @@
-import type { TDataOut } from 'memfs';
-
 import type {
   IVolumeMutable,
   Page,
   Plugin,
   PluginModuleDefinition,
   Serialiser,
-  TrackPluginErrorCallback
+  TrackPluginErrorCallback,
+  TDataOut
 } from '@jpmorganchase/mosaic-types';
 
 import loadPlugins from './createPluginAPI.js';
