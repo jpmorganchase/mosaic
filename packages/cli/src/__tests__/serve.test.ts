@@ -104,6 +104,17 @@ describe('GIVEN the serve command', () => {
     expect(server.mosaic.fs).toBeDefined();
   });
 
+  describe('AND WHEN server healthcheck is requested', async () => {
+    test('THEN the server responds with a 200 OK', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/actuator/keepalive'
+      });
+      expect(response.statusCode).toEqual(200);
+      expect(response.payload).toEqual('OK');
+    });
+  });
+
   describe('AND WHEN using the Admin APIs', () => {
     test('THEN the config Admin API returns the mosaic config', async () => {
       const response = await server.inject({

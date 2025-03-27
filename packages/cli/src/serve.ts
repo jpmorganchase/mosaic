@@ -25,11 +25,11 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
     enableSourcePush: config.enableSourcePush
   });
 
-   // intentionally unused request parameter
+  // intentionally unused request parameter
   server.get('/actuator/keepalive', async (_request, reply) => {
     return reply.code(200).send('OK');
   });
-  
+
   server.use(cors());
 
   /**
