@@ -1,13 +1,9 @@
 ---
-title: shouldUpdateNamespaceSources
+title: DocumentAssetsPlugin
 layout: DetailOverview
-sidebar:
-  label: shouldUpdateNamespaceSources
-  groupLabel: shouldUpdateNamespaceSources
-  priority: 1
-lastModified: 1745483718277
-fullPath: /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
-route: /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+lastModified: 1745483718263
+fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+route: /mosaic/configure/plugins/document-assets-plugin
 breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
@@ -15,27 +11,47 @@ breadcrumbs:
   - label: Plugins
     path: /mosaic/configure/plugins/index
     id: /mosaic/configure/plugins/index.mdx
-  - label: Lifecycle Events
-    path: /mosaic/configure/plugins/lifecycle/index
-    id: /mosaic/configure/plugins/lifecycle/index.mdx
+sidebar:
+  label: DocumentAssetsPlugin
+  groupLabel: DocumentAssetsPlugin
 readingTime:
   text: 2 min read
-  minutes: 1.02
-  time: 61200
-  words: 204
+  minutes: 1.565
+  time: 93900
+  words: 313
 tableOfContents:
   - depth: 2
     level: 0
-    id: helpers
-    text: Helpers
+    id: co-locating-images
+    text: Co-locating Images
+  - depth: 2
+    level: 0
+    id: centralized-image-directory
+    text: Centralized Image Directory
+  - depth: 2
+    level: 0
+    id: handling-absolute-paths-and-urls
+    text: Handling Absolute Paths and URLs
+  - depth: 2
+    level: 0
+    id: priority
+    text: Priority
+  - depth: 2
+    level: 0
+    id: options
+    text: Options
+  - depth: 2
+    level: 0
+    id: adding-to-mosaic
+    text: Adding to Mosaic
 navigation:
   prev:
-    title: Lifecycle Events
-    route: /mosaic/configure/plugins/lifecycle/index
-    group: Lifecycle Events
+    title: $CodeModPlugin
+    route: /mosaic/configure/plugins/codemod-plugin
+    group: Plugins
   next:
-    title: $AliasPlugin
-    route: /mosaic/configure/plugins/alias-plugin
+    title: LazyPagePlugin
+    route: /mosaic/configure/plugins/lazy-page-plugin
     group: Plugins
 sidebarData:
   - id: /mosaic/configure/index
@@ -430,25 +446,69 @@ sidebarData:
 ---
 # {meta.title}
 
-The fifth lifecycle event to trigger overall and the third to trigger inside the main Mosaic process.
+The `DocumentAssetsPlugin` is responsible for copying assets from a document sub-directory to the public folder of your site. This is particularly useful for co-locating images within your document structure and referencing them from documents using relative paths.
 
-It is called every time *any* source emits new pages and should return a boolean to indicate if **other sources that share the same [source namespace](../../sources/index#source-namespace)** should re-run `afterUpdate`.
+## Co-locating Images
 
-The `shouldUpdateNamespaceSources` lifecycle event is called with:
+A common use case is to store images within the same directory structure as your documents. This allows you to reference images using relative paths.
 
-* updatedSourceFilesystem - Immutable filesystem for the source that changed i.e, not the source filesystem
-* helpers - an object with useful methods
-* options - the options specified for the plugin in the mosaic config file
+For example, to load an image (`mosaic.jpg`) from a sub-directory called `images`, relative to the document's path, you can use the following Markdown:
 
-## Helpers
+```markdown
+![alt text](./images/mosaic.jpg)
+```
 
-The helpers provided with this lifecycle event are listed in the table below.
+This will render the image as follows:
+![alt text](/images/mosaic/configure/plugins/images/mosaic.jpg)
 
-| Property         | Description                                                                                                                                                         |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| serialiser       | A matching `Serialiser` for serialising/deserialising pages when reading/writing to the filesystem                                                                  |
-| config           | An immutable object for reading data from other lifecycle phases of all plugins for this source in the child process for this plugin. Shared only with this source. |
-| globalFilesystem | Immutable union filesystem instance with all source's pages (and symlinks applied)                                                                                  |
-| pageExtensions   | A collection of pageExtensions the source is using                                                                                                                  |
-| ignorePages      | A collection of page globs that are to be ignored for this source                                                                                                   |
-| namespace        | The namespace of the source running the plugin                                                                                                                      |
+## Centralized Image Directory
+
+Alternatively, if you prefer to store all your images in a common parent directory, you can reference them using a relative path that navigates up the directory structure.
+
+For example, to load an image from a common parent directory, you can use:
+
+```
+![alt text](../../images/mosaic.jpg)
+```
+
+## Handling Absolute Paths and URLs
+
+The plugin ignores image paths that start with a leading slash (/) or are fully qualified URLs. This ensures that only relative paths are processed and copied to the public folder.
+
+```
+![alt text](/images/mosaic.jpg)
+![alt text](https://www.saltdesignsystem.com/img/hero_image.svg)
+```
+
+## Priority
+
+This plugin runs with a priority of -1 so it runs *after* most other plugins.
+
+## Options
+
+| Property     | Description                                                                        | Default       |
+| ------------ | ---------------------------------------------------------------------------------- | ------------- |
+| srcDir       | The path where pages reside **after** cloning or when running locally              | './docs'      |
+| outputDir    | There path to your site's public images directory where you want to put the images | './public'    |
+| assetSubDirs | An array of subdirectory globs that could contain assets                           | \['\*\*/images'] |
+| imagesPrefix | The prefix that is added to all new paths                                          | '/images'     |
+
+## Adding to Mosaic
+
+This plugin is **not** included in the mosaic config shipped by the Mosaic standard generator so it must be added manually to the `plugins` collection:
+
+```js
+plugins: [
+  {
+    modulePath: '@jpmorganchase/mosaic-plugins/DocumentAssetsPlugin',
+    priority: -1,
+    options: {
+      srcDir: `../../docs`,
+      outputDir: './public/images/mosaic',
+      assetSubDirs: ['**/images'],
+      imagesPrefix: '/images'
+    }
+  }
+  // other plugins
+];
+```

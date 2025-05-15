@@ -5,7 +5,7 @@ sidebar:
   label: Storybook
   groupLabel: Storybook
   priority: 5
-lastModified: 1709310919280
+lastModified: 1745483718291
 fullPath: /mosaic/configure/sources/source-storybook.mdx
 route: /mosaic/configure/sources/source-storybook
 breadcrumbs:
@@ -17,9 +17,9 @@ breadcrumbs:
     id: /mosaic/configure/sources/index.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.57
-  time: 94200
-  words: 314
+  minutes: 1.675
+  time: 100500
+  words: 335
 tableOfContents:
   - depth: 2
     level: 0
@@ -33,6 +33,10 @@ tableOfContents:
     level: 1
     id: example-local-folder-source-definition
     text: Example Local Folder Source Definition
+  - depth: 3
+    level: 1
+    id: example-story-metadata-format
+    text: Example story metadata format
 navigation:
   prev:
     title: Readme Source
@@ -47,7 +51,7 @@ sidebarData:
     kind: data
     fullPath: /mosaic/configure/index.mdx
     name: Configure
-    priority: 999
+    priority: 4
     data:
       level: 2
       link: /mosaic/configure/index
@@ -58,7 +62,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/modes/index.mdx
         name: Modes of operation
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/modes/index
@@ -92,7 +96,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/theme/index.mdx
         name: Theming Your Site
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/theme/index
@@ -121,7 +125,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/admin/index.mdx
         name: Admin
-        priority: 999
+        priority: 3
         data:
           level: 3
           link: /mosaic/configure/admin/index
@@ -130,14 +134,6 @@ sidebarData:
   - id: /mosaic/configure/sources
     kind: group
     childNodes:
-      - id: /mosaic/configure/sources/index
-        kind: data
-        fullPath: /mosaic/configure/sources/index.mdx
-        name: Sources
-        priority: 999
-        data:
-          level: 3
-          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/source-figma
         kind: data
         fullPath: /mosaic/configure/sources/source-figma.mdx
@@ -170,6 +166,14 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/schedules
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/local-folder-source
         kind: data
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
@@ -203,7 +207,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/layouts/index.mdx
         name: Layouts
-        priority: 999
+        priority: 2
         data:
           level: 3
           link: /mosaic/configure/layouts/index
@@ -258,21 +262,13 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/plugins/index.mdx
         name: Plugins
-        priority: 999
+        priority: 1
         data:
           level: 3
           link: /mosaic/configure/plugins/index
       - id: /mosaic/configure/plugins/lifecycle
         kind: group
         childNodes:
-          - id: /mosaic/configure/plugins/lifecycle/index
-            kind: data
-            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-            name: Lifecycle Events
-            priority: 999
-            data:
-              level: 4
-              link: /mosaic/configure/plugins/lifecycle/index
           - id: /mosaic/configure/plugins/lifecycle/after-source
             kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
@@ -305,6 +301,14 @@ sidebarData:
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 1
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
           - id: >-
               /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
             kind: data
@@ -346,6 +350,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/codemod-plugin
+      - id: /mosaic/configure/plugins/document-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+        name: DocumentAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/document-assets-plugin
       - id: /mosaic/configure/plugins/lazy-page-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
@@ -430,12 +441,12 @@ sidebarData:
 
 The Storybook source is used to pull individual stories from Storybook, based on tags.
 
-The Mosaic source will filter your Storybook's stories, based on `kind` or `tags`.
+The Mosaic source will filter your Storybook's stories, based on `title` or `tags`.
 
 For each matching story, a page is created in the Mosaic file-system.
 
-*   additional Mosaic tags can be added to each page using `additionalTags`
-*   additional Mosaic metadata can be added to each page using `additionalData`
+* additional Mosaic tags can be added to each page using `additionalTags`
+* additional Mosaic metadata can be added to each page using `additionalData`
 
 This information can be used to create a dynamic index of stories from Storybook.
 
@@ -449,7 +460,7 @@ The Storybook source is an [`HttpSource`](./https-source) and shares the same ba
 The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
 The `stories` option is an array of Storybook urls that are used as Sources.
-Each story is matched on `kind` using the `filter` Regexp (or by `filterTags`).
+Each story is matched on `title` using the `filter` Regexp (or by `filterTags`).
 
 If specified, `additionalTags` and `additionalData` can be added to any matching pages.
 
@@ -489,10 +500,26 @@ sources: [
                 source: 'STORYBOOK'
               }
             },
-            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook kind
+            filter: /Lab\/Tabs/ // this is a Regexp that matches on Storybook title
           }
         ]
       }
     }
 ]
+```
+
+### Example story metadata format
+
+```
+{
+  "type": "story",
+  "id": "folder--story-1",
+  "name": "Story 1",
+  "title": "Folder/Story 1",
+  "importPath": "./folder/story-1.stories.tsx",
+  "tags": [
+    "dev",
+    "test"
+  ]
+}
 ```
