@@ -22,7 +22,6 @@ const createItemRenderer = (filterKey, filterLabel) => (item, itemIndex) => {
       key={`${name}-${itemIndex}`}
       link={item.link}
       title={item.name}
-      variant="grid"
     />
   );
 };

@@ -16,10 +16,10 @@ globalStyle('*', {
   boxSizing: 'border-box'
 });
 
-globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre', {
-  margin: 0,
-  fontFamily: 'inherit'
-});
+// globalStyle('p,h1, h2, h3, h4, h5, h6, ul, ol, li, pre', {
+//   margin: 0,
+//   fontFamily: 'inherit'
+// });
 
 globalStyle('a', {
   color: 'inherit',
@@ -33,9 +33,9 @@ globalStyle('table', {
   border: 'none'
 });
 
-globalStyle('h1, h2, h3, h4, h5, h6', {
-  margin: 0
-});
+// globalStyle('h1, h2, h3, h4, h5, h6', {
+//   margin: 0
+// });
 
 globalStyle('li > p', {
   display: 'inline'

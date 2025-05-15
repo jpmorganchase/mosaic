@@ -104,7 +104,7 @@ You have had a taste of the power and want to know more? OK, lets reference and 
 
 <ul>
   {meta.data.modes.map(mode => (
-    <li key={mode}>{mode}</li>
+    <li key={mode.mode}>{mode.mode}</li>
   ))}
 </ul>
 
@@ -145,32 +145,36 @@ With the code below, the referenced data can be embedded in a page.
 ```
 <ul>
   {meta.data.modes.map(mode => (
-    <li key={mode}>{mode}</li>
+    <li key={mode.mode}>{mode.mode}</li>
   ))}
 </ul>
 ```
 
 ### Output with Mosaic Components
 
-You can use Mosaic components with referenced data as well. Below we are using the `Tiles` and `TileContent` components.
+You can use Mosaic components with referenced data as well. Below we are using the `Tiles` and `TileLink` components.
 
-<Tiles>
+<Tiles columns={4} row={1}>
   {meta.data.modes.map(mode => (
-    <TileContent
-      title={mode}
+    <TileLink
+      key={mode.mode}
+      action={'Learn more'}
       description={`Documentation about ${mode} of Mosaic`}
-      eyebrow="Mosaic"
+      title={mode.mode}
+      link={mode.link}
     />
   ))}
 </Tiles>
 
 ```
-<Tiles>
+<Tiles columns={4} row={1}>
   {meta.data.modes.map(mode => (
-    <TileContent
-      title={mode}
+    <TileLink
+      key={mode.mode}
+      action={'Learn more'}
       description={`Documentation about ${mode} of Mosaic`}
-      eyebrow="Mosaic"
+      title={mode.mode}
+      link={mode.link}
     />
   ))}
 </Tiles>

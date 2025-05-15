@@ -1,9 +1,14 @@
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { ssrClassName } from '@jpmorganchase/mosaic-theme';
-import { SaltProvider, UNSTABLE_SaltProviderNext } from '@salt-ds/core';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type Density, SaltProviderNext } from '@salt-ds/core';
+import { type Dispatch, type ReactNode, type SetStateAction, useEffect, useState } from 'react';
+import { useIsMobileView } from './useIsMobileView';
 
-import classnames from 'clsx';
+interface ThemeProviderProps {
+  /** Applies to `SaltProvider` `theme` prop */
+  themeClassName?: string;
+  children?: ReactNode;
+}
 
 const useHasHydrated = () => {
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -15,34 +20,41 @@ const useHasHydrated = () => {
   return hasHydrated;
 };
 
-interface ThemeProviderProps {
-  /** Applies to `SaltProvider` `theme` prop */
-  themeClassName?: string;
-  className?: string;
-  children?: ReactNode;
-  /** Enables Salt theme next */
-  themeNext?: boolean;
+/** This has to be within a SaltProvider to get correct breakpoint, not the same level as SaltProvider */
+function DensitySetter({ setDensity }: { setDensity: Dispatch<SetStateAction<Density>> }) {
+  const isMobileOrTablet = useIsMobileView();
+
+  const density = isMobileOrTablet ? 'touch' : 'low';
+
+  useEffect(() => {
+    setDensity(density);
+  }, [density, setDensity]);
+
+  return null;
 }
 
-export function ThemeProvider({
-  themeClassName,
-  className,
-  themeNext,
-  children
-}: ThemeProviderProps) {
+// This is a direct copy of Mosaic's ThemeProvider + injecting density, so that we can control top level provider's density,
+// which impacts both children as well as portal (e.g. mobile menu drawer)
+export function ThemeProvider({ themeClassName, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
+  const [density, setDensity] = useState<Density>('low');
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 
-  const ChosenSaltProvider = themeNext ? UNSTABLE_SaltProviderNext : SaltProvider;
-
   return (
-    <ChosenSaltProvider mode={hasHydrated ? colorMode : 'light'} theme={themeClassName}>
-      <div className={classnames(ssrClassname, className)}>
-        {children}
-        <div data-mosaic-id="portal-root" />
-      </div>
-    </ChosenSaltProvider>
+    <SaltProviderNext
+      mode={colorMode}
+      theme={themeClassName}
+      density={density}
+      accent="teal"
+      corner="rounded"
+      actionFont="Amplitude"
+      headingFont="Amplitude"
+    >
+      <DensitySetter setDensity={setDensity} />
+      <div className={ssrClassname}>{children}</div>
+      <div data-mosaic-id="portal-root" />
+    </SaltProviderNext>
   );
 }

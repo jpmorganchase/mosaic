@@ -8,11 +8,14 @@ sidebar:
 data:
   authorRef: Hello from Author page
   modes:
-    - active
-    - snapshot-file
-    - snapshot-s3
+    - mode: active
+      link: /mosaic/configure/modes/active
+    - mode: snapshot-file
+      link: /mosaic/configure/modes/snapshot-file
+    - mode: snapshot-s3
+      link: /mosaic/configure/modes/snapshot-s3
   sidebarPriority: 3
-lastModified: 1700475661338
+lastModified: 1747325852736
 fullPath: /mosaic/author/refs.mdx
 route: /mosaic/author/refs
 breadcrumbs:
@@ -21,9 +24,9 @@ breadcrumbs:
     id: /mosaic/author/index.mdx
 readingTime:
   text: 4 min read
-  minutes: 3.075
-  time: 184500
-  words: 615
+  minutes: 3.1
+  time: 186000
+  words: 620
 tableOfContents:
   - depth: 2
     level: 0
@@ -63,20 +66,12 @@ tableOfContents:
     text: Create global refs
 navigation:
   prev:
-    title: Aliases
-    route: /mosaic/author/aliases
+    title: Author
+    route: /mosaic/author/index
   next:
     title: Tags
     route: /mosaic/author/tags
 sidebarData:
-  - id: /mosaic/author/index
-    kind: data
-    fullPath: /mosaic/author/index.mdx
-    name: Author
-    priority: 999
-    data:
-      level: 2
-      link: /mosaic/author/index
   - id: /mosaic/author/markdown-syntax
     kind: data
     fullPath: /mosaic/author/markdown-syntax.mdx
@@ -101,6 +96,14 @@ sidebarData:
     data:
       level: 2
       link: /mosaic/author/aliases
+  - id: /mosaic/author/index
+    kind: data
+    fullPath: /mosaic/author/index.mdx
+    name: Author
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/index
   - id: /mosaic/author/refs
     kind: data
     fullPath: /mosaic/author/refs.mdx
@@ -148,13 +151,13 @@ a property from the page frontmatter or frontmatter of other pages.
 
 The key concept is that of a JSON pointer which takes the form **A**#**B** where:
 
-*   **A** is the relative path from the current schema to a target schema. If A is empty, the reference is to a type or property in the same schema, an in-schema reference. Otherwise, the reference is to a different schema, a cross-schema reference.
-*   **B** is the complete path from the root of the schema to a type or property in the schema. If # in not included or B is empty, the reference is to an entire schema.
+* **A** is the relative path from the current schema to a target schema. If A is empty, the reference is to a type or property in the same schema, an in-schema reference. Otherwise, the reference is to a different schema, a cross-schema reference.
+* **B** is the complete path from the root of the schema to a type or property in the schema. If # in not included or B is empty, the reference is to an entire schema.
 
 To translate this for our purposes:
 
-*   **A** is the relative path to a file in the filesystem.
-*   **B** is the path to a property in the frontmatter of the file.
+* **A** is the relative path to a file in the filesystem.
+* **B** is the path to a property in the frontmatter of the file.
 
 It's probably better explained with examples...
 
@@ -233,8 +236,8 @@ You have had a taste of the power and want to know more? OK, lets reference and 
 
 <ul>
   {meta.data.modes.map(mode => (
-    <li key={mode}>{mode}</li>
-  ))}
+        <li key={mode.mode}>{mode.mode}</li>
+      ))}
 </ul>
 
 The Modes [index](../configure/modes/index) page has this frontmatter:
@@ -274,32 +277,36 @@ With the code below, the referenced data can be embedded in a page.
 ```
 <ul>
   {meta.data.modes.map(mode => (
-    <li key={mode}>{mode}</li>
+    <li key={mode.mode}>{mode.mode}</li>
   ))}
 </ul>
 ```
 
 ### Output with Mosaic Components
 
-You can use Mosaic components with referenced data as well. Below we are using the `Tiles` and `TileContent` components.
+You can use Mosaic components with referenced data as well. Below we are using the `Tiles` and `TileLink` components.
 
-<Tiles>
+<Tiles columns={4} row={1}>
   {meta.data.modes.map(mode => (
-    <TileContent
-      title={mode}
-      description={`Documentation about ${mode} of Mosaic`}
-      eyebrow="Mosaic"
-    />
-  ))}
+        <TileLink
+          key={mode.mode}
+          action={'Learn more'}
+          description={`Documentation about ${mode} of Mosaic`}
+          title={mode.mode}
+          link={mode.link}
+        />
+      ))}
 </Tiles>
 
 ```
-<Tiles>
+<Tiles columns={4} row={1}>
   {meta.data.modes.map(mode => (
-    <TileContent
-      title={mode}
+    <TileLink
+      key={mode.mode}
+      action={'Learn more'}
       description={`Documentation about ${mode} of Mosaic`}
-      eyebrow="Mosaic"
+      title={mode.mode}
+      link={mode.link}
     />
   ))}
 </Tiles>
@@ -313,9 +320,9 @@ Mosaic plugins can create new refs, create new *global* refs and see existing re
 
 Use the `config.setRef` function from the helpers provided to plugin lifecycle events. You need to provide
 
-*   The file/fullpath to write the ref to
-*   The path to the ptoperty where the ref will be applied
-*   The value of the ref, which can use wildcards
+* The file/fullpath to write the ref to
+* The path to the ptoperty where the ref will be applied
+* The value of the ref, which can use wildcards
 
 For example, the following would add a property to pages named `titles`. The value is the title of all pages in the **same** directory as the current page
 

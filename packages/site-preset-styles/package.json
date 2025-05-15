@@ -30,8 +30,8 @@
     "esbuild-node-externals": "^1.0.2"
   },
   "dependencies": {
-    "@salt-ds/theme": "^1.19.0",
-    "@salt-ds/icons": "^1.12.1",
+    "@salt-ds/theme": "^1.29.0",
+    "@salt-ds/icons": "^1.13.2",
     "@jpmorganchase/mosaic-components": "0.1.0-beta.91",
     "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.91",
     "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.91",

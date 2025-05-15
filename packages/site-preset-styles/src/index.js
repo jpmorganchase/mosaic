@@ -1,5 +1,6 @@
 import '@salt-ds/theme/css/global.css';
 import '@salt-ds/theme/css/theme.css';
+import '@salt-ds/theme/css/theme-next.css';
 import '@jpmorganchase/mosaic-theme/index.css';
 import '@jpmorganchase/mosaic-theme/baseline.css';
 import '@jpmorganchase/mosaic-theme/salt.css';

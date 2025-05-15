@@ -5,7 +5,7 @@ sidebar:
   label: Lifecycle Events
   groupLabel: Lifecycle Events
   priority: 1
-lastModified: 1700475661344
+lastModified: 1745483718273
 fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
 route: /mosaic/configure/plugins/lifecycle/index
 breadcrumbs:
@@ -26,19 +26,19 @@ readingTime:
 tableOfContents: []
 navigation:
   prev:
-    title: Plugins
-    route: /mosaic/configure/plugins/index
-    group: Plugins
+    title: shouldClearCache
+    route: /mosaic/configure/plugins/lifecycle/should-clear-cache
+    group: Lifecycle Events
   next:
-    title: $afterSource
-    route: /mosaic/configure/plugins/lifecycle/after-source
+    title: shouldUpdateNamespaceSources
+    route: /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
     group: Lifecycle Events
 sidebarData:
   - id: /mosaic/configure/index
     kind: data
     fullPath: /mosaic/configure/index.mdx
     name: Configure
-    priority: 999
+    priority: 4
     data:
       level: 2
       link: /mosaic/configure/index
@@ -49,7 +49,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/modes/index.mdx
         name: Modes of operation
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/modes/index
@@ -83,7 +83,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/theme/index.mdx
         name: Theming Your Site
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/theme/index
@@ -112,7 +112,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/admin/index.mdx
         name: Admin
-        priority: 999
+        priority: 3
         data:
           level: 3
           link: /mosaic/configure/admin/index
@@ -121,14 +121,6 @@ sidebarData:
   - id: /mosaic/configure/sources
     kind: group
     childNodes:
-      - id: /mosaic/configure/sources/index
-        kind: data
-        fullPath: /mosaic/configure/sources/index.mdx
-        name: Sources
-        priority: 999
-        data:
-          level: 3
-          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/source-figma
         kind: data
         fullPath: /mosaic/configure/sources/source-figma.mdx
@@ -161,6 +153,14 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/schedules
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/local-folder-source
         kind: data
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
@@ -194,7 +194,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/layouts/index.mdx
         name: Layouts
-        priority: 999
+        priority: 2
         data:
           level: 3
           link: /mosaic/configure/layouts/index
@@ -249,21 +249,13 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/plugins/index.mdx
         name: Plugins
-        priority: 999
+        priority: 1
         data:
           level: 3
           link: /mosaic/configure/plugins/index
       - id: /mosaic/configure/plugins/lifecycle
         kind: group
         childNodes:
-          - id: /mosaic/configure/plugins/lifecycle/index
-            kind: data
-            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-            name: Lifecycle Events
-            priority: 999
-            data:
-              level: 4
-              link: /mosaic/configure/plugins/lifecycle/index
           - id: /mosaic/configure/plugins/lifecycle/after-source
             kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
@@ -296,6 +288,14 @@ sidebarData:
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 1
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
           - id: >-
               /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
             kind: data
@@ -337,6 +337,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/codemod-plugin
+      - id: /mosaic/configure/plugins/document-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+        name: DocumentAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/document-assets-plugin
       - id: /mosaic/configure/plugins/lazy-page-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
@@ -426,11 +433,11 @@ All other lifecycle events will execute in the main Mosaic process.
 
 The 5 lifecycle events are:
 
-1.  [$afterSource](./after-source)
-2.  [$beforeSend](./before-send)
-3.  [afterUpdate](./after-update)
-4.  [shouldClearCache](./should-clear-cache)
-5.  [shouldUpdateNamespaceSources](./should-update-namespace-sources)
+1. [$afterSource](./after-source)
+2. [$beforeSend](./before-send)
+3. [afterUpdate](./after-update)
+4. [shouldClearCache](./should-clear-cache)
+5. [shouldUpdateNamespaceSources](./should-update-namespace-sources)
 
 <Callout variant="caution">
   Plugin methods that trigger inside the main thread should be asynchronous and highly optimised to

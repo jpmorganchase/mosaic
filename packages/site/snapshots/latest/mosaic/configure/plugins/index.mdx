@@ -5,7 +5,7 @@ sidebar:
   label: Plugins
   groupLabel: Plugins
   priority: 1
-lastModified: 1700475661343
+lastModified: 1745483718265
 fullPath: /mosaic/configure/plugins/index.mdx
 route: /mosaic/configure/plugins/index
 breadcrumbs:
@@ -47,15 +47,15 @@ navigation:
     route: /mosaic/configure/layouts/product-preview
     group: Layouts
   next:
-    title: Lifecycle Events
-    route: /mosaic/configure/plugins/lifecycle/index
+    title: $afterSource
+    route: /mosaic/configure/plugins/lifecycle/after-source
     group: Lifecycle Events
 sidebarData:
   - id: /mosaic/configure/index
     kind: data
     fullPath: /mosaic/configure/index.mdx
     name: Configure
-    priority: 999
+    priority: 4
     data:
       level: 2
       link: /mosaic/configure/index
@@ -66,7 +66,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/modes/index.mdx
         name: Modes of operation
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/modes/index
@@ -100,7 +100,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/theme/index.mdx
         name: Theming Your Site
-        priority: 999
+        priority: 4
         data:
           level: 3
           link: /mosaic/configure/theme/index
@@ -129,7 +129,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/admin/index.mdx
         name: Admin
-        priority: 999
+        priority: 3
         data:
           level: 3
           link: /mosaic/configure/admin/index
@@ -138,14 +138,6 @@ sidebarData:
   - id: /mosaic/configure/sources
     kind: group
     childNodes:
-      - id: /mosaic/configure/sources/index
-        kind: data
-        fullPath: /mosaic/configure/sources/index.mdx
-        name: Sources
-        priority: 999
-        data:
-          level: 3
-          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/source-figma
         kind: data
         fullPath: /mosaic/configure/sources/source-figma.mdx
@@ -178,6 +170,14 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/schedules
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
       - id: /mosaic/configure/sources/local-folder-source
         kind: data
         fullPath: /mosaic/configure/sources/local-folder-source.mdx
@@ -211,7 +211,7 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/layouts/index.mdx
         name: Layouts
-        priority: 999
+        priority: 2
         data:
           level: 3
           link: /mosaic/configure/layouts/index
@@ -266,21 +266,13 @@ sidebarData:
         kind: data
         fullPath: /mosaic/configure/plugins/index.mdx
         name: Plugins
-        priority: 999
+        priority: 1
         data:
           level: 3
           link: /mosaic/configure/plugins/index
       - id: /mosaic/configure/plugins/lifecycle
         kind: group
         childNodes:
-          - id: /mosaic/configure/plugins/lifecycle/index
-            kind: data
-            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
-            name: Lifecycle Events
-            priority: 999
-            data:
-              level: 4
-              link: /mosaic/configure/plugins/lifecycle/index
           - id: /mosaic/configure/plugins/lifecycle/after-source
             kind: data
             fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
@@ -313,6 +305,14 @@ sidebarData:
             data:
               level: 4
               link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 1
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
           - id: >-
               /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
             kind: data
@@ -354,6 +354,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/codemod-plugin
+      - id: /mosaic/configure/plugins/document-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+        name: DocumentAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/document-assets-plugin
       - id: /mosaic/configure/plugins/lazy-page-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
@@ -485,10 +492,10 @@ Plugins are added to the `plugins` collection of the mosaic config file. Like [s
 
 The following plugins are always included by Mosaic, regardless of whether they are present in the plugins collection of the Mosaic config file:
 
-1.  [$TagPlugin](./tag-plugin)
-2.  [$AliasPlugin](./alias-plugin)
-3.  [$CodeModPlugin](./codemod-plugin)
-4.  [$RefPlugin](./ref-plugin)
+1. [$TagPlugin](./tag-plugin)
+2. [$AliasPlugin](./alias-plugin)
+3. [$CodeModPlugin](./codemod-plugin)
+4. [$RefPlugin](./ref-plugin)
 
 ## Plugin errors
 

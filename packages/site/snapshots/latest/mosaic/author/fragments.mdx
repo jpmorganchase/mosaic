@@ -5,7 +5,7 @@ sidebar:
   label: Fragments
   groupLabel: Fragments
   priority: 2
-lastModified: 1700475661338
+lastModified: 1745483718241
 fullPath: /mosaic/author/fragments.mdx
 route: /mosaic/author/fragments
 breadcrumbs:
@@ -42,14 +42,6 @@ navigation:
     title: UI Components
     route: /mosaic/author/ui-components
 sidebarData:
-  - id: /mosaic/author/index
-    kind: data
-    fullPath: /mosaic/author/index.mdx
-    name: Author
-    priority: 999
-    data:
-      level: 2
-      link: /mosaic/author/index
   - id: /mosaic/author/markdown-syntax
     kind: data
     fullPath: /mosaic/author/markdown-syntax.mdx
@@ -74,6 +66,14 @@ sidebarData:
     data:
       level: 2
       link: /mosaic/author/aliases
+  - id: /mosaic/author/index
+    kind: data
+    fullPath: /mosaic/author/index.mdx
+    name: Author
+    priority: 3
+    data:
+      level: 2
+      link: /mosaic/author/index
   - id: /mosaic/author/refs
     kind: data
     fullPath: /mosaic/author/refs.mdx
@@ -178,11 +178,9 @@ The below code snippet will render the content from the content-fragment.mdx fil
 
 Example output:
 
-
 #### Fragment Title
 
 This is an example fragment of markdown content, being pulled from `../fragments/content-fragment.mdx`.
-
 
 ### Component Example
 
@@ -194,7 +192,6 @@ Here is another example, where the fragment files each contain a `<Tile>` compon
 
 The above code will render the content from tile-a.mdx and tile-b.mdx files, demonstrated below:
 
-
 <TileContent title="Tile A" description="Tile A description" eyebrow="Eyebrow" />
-&#x20;
-<TileContent title="Tile B" description="Tile B description" eyebrow="Eyebrow" />
+
+&#x20;<TileContent title="Tile B" description="Tile B description" eyebrow="Eyebrow" />
