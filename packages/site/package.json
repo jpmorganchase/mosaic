@@ -44,7 +44,7 @@
     "@salt-ds/core": "^1.33.0",
     "@salt-ds/lab": "1.0.0-alpha.50",
     "@types/react": "^18.3.12",
-    "next": "^14.2.25",
+    "next": "^14.2.26",
     "next-auth": "^4.24.5"
   },
   "devDependencies": {
