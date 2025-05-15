@@ -7,32 +7,30 @@ import {
   Metadata,
   components as mosaicComponents
 } from '@jpmorganchase/mosaic-site-components';
+import { Card, GridItem, GridLayout, StackLayout, SplitLayout, Text } from '@salt-ds/core';
 import { Sitemap } from '@jpmorganchase/mosaic-sitemap-component';
 import { StoreProvider, useCreateStore } from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
-import classnames from 'clsx';
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
-import { Open_Sans, PT_Mono } from 'next/font/google';
+import { amplitude, openSans, ptMono } from '../fonts';
 import Head from 'next/head';
 import type { MyAppProps } from '../types/mosaic';
+import classnames from 'clsx';
 
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import '@jpmorganchase/mosaic-sitemap-component/index.css';
+import '../css/index.css';
 
-const ptMono = PT_Mono({
-  weight: '400',
-  variable: '--salt-typography-fontFamily-ptMono',
-  display: 'swap',
-  subsets: ['latin']
-});
-const openSans = Open_Sans({
-  subsets: ['latin'],
-  variable: '--salt-typography-fontFamily-openSans',
-  display: 'swap'
-});
-
-const components = { ...mosaicComponents, Sitemap };
+const saltComponents = {
+  Card,
+  GridItem,
+  GridLayout,
+  StackLayout,
+  SplitLayout,
+  Text
+};
+const components = { ...mosaicComponents, Salt: saltComponents, Sitemap };
 const layoutComponents = mosaicLayouts;
 
 export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps>) {
@@ -50,7 +48,13 @@ export default function MyApp({ Component, pageProps = {} }: AppProps<MyAppProps
       <StoreProvider value={createStore()}>
         <Metadata Component={Head} />
         <ThemeProvider
-          themeClassName={classnames(themeClassName, ptMono.variable, openSans.variable)}
+          themeClassName={classnames(
+            themeClassName,
+            'salt-editorial',
+            ptMono.variable,
+            openSans.variable,
+            amplitude.variable
+          )}
         >
           <BaseUrlProvider>
             <ImageProvider value={Image}>

@@ -1,6 +1,7 @@
 import React from 'react';
-
-import styles from './styles.css';
+import { Card as SaltCard, Text } from '@salt-ds/core';
+import classnames from 'clsx';
+import styles from './Card.module.css';
 
 /**
  * The props type for [[`Card`]].
@@ -26,10 +27,22 @@ export interface CardProps {
  *   </Card>
  *```
  */
-export const Card: React.FC<CardProps> = ({ children, step, title, ...rest }: CardProps) => (
-  <div {...rest}>
-    <p className={styles.step}>{step}</p>
-    <p className={styles.title}>{title}</p>
+export const Card: React.FC<CardProps> = ({
+  children,
+  className,
+  step,
+  title,
+  ...rest
+}: CardProps) => (
+  <SaltCard className={classnames(className, styles.container)} {...rest}>
+    {step !== undefined ? (
+      <Text styleAs={'h2'} className={styles.step}>
+        {step}
+      </Text>
+    ) : null}
+    <Text styleAs={'h3'} className={styles.title}>
+      {title}
+    </Text>
     <div className={styles.content}>{children}</div>
-  </div>
+  </SaltCard>
 );

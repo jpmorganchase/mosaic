@@ -1,0 +1,49 @@
+.root {
+  height: 100%;
+  margin: 0px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  margin: 0px;
+  gap: var(--salt-spacing-25);
+  height: 100%;
+}
+
+.description > p {
+  margin: 0;
+  padding: 0;
+}
+
+.caption {
+  margin: 0;
+  padding: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  padding: 0;
+}
+
+.title {
+  margin: 0;
+  padding: 0;
+}
+
+.imageSizeDefault {
+  height: 80px;
+  width: 80px;
+}
+
+.imageSizeFullWidth {
+  height: 186px;
+}
+
+.action {
+  --salt-text-action-textTransform: capitalize;
+  --salt-text-action-textAlign: start;
+}
+.action > svg {
+  vertical-align: center;
+}

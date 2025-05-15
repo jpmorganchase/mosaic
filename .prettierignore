@@ -11,6 +11,8 @@ LICENSE
 *.png
 *.hbs
 *.jpg
+*.woff
+*.woff2
 
 **/build
 **/dist

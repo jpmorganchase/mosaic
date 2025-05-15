@@ -12,6 +12,7 @@ export default {
   ]),
   tile: style([
     {
+      padding: 0,
       height: '100%'
     }
   ]),

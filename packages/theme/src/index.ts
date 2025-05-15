@@ -26,6 +26,7 @@ export * from './hero';
 export * from './impact';
 export * from './link';
 export * from './list';
+export * from './pre/index.css';
 export * from './responsive';
 export * from './shadow';
 export * from './sidebar';

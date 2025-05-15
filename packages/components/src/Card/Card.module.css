@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  margin: 0px;
+  gap: var(--salt-spacing-25);
+  height: 100%;
+}
+
+.content > p {
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  opacity: 0.1;
+}
+
+.title {
+  margin: 0;
+  padding: 0;
+}

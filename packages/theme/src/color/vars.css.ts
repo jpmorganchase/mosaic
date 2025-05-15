@@ -54,7 +54,7 @@ const dpColors = {
         selectedLabel: color.grey900,
         hover: color.grey300,
         unselected: color.grey60,
-        unselectedLabel: color.grey300
+        unselectedLabel: color.grey900
       }
     },
     selectable: {

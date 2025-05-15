@@ -4,7 +4,6 @@ import { withAnchorHeading } from './AnchorHeading';
 import { BlockQuote } from './BlockQuote';
 import * as Heading from './Heading';
 import { ListItem, OrderedList, UnorderedList } from '../List';
-import { InlineCode } from './InlineCode';
 import { Link } from './Link';
 import { Pre } from './Pre';
 import { Table } from './Table';
@@ -16,25 +15,30 @@ import { Tr } from './Tr';
 import { withStyledTypography } from '../Typography/withStyledTypography';
 import { withMarkdownSpacing } from './withMarkdownSpacing';
 import { ThematicBreak } from './ThematicBreak';
+import { Code } from './code';
+import { Heading1 } from './h1';
+import { Heading2 } from './h2';
+import { Heading3 } from './h3';
+import { Heading4 } from './h4';
 
 export const getMarkdownElements = () => ({
   a: withMarkdownSpacing(Link, link({ context: 'markdown', variant: 'document' })),
   blockquote: withMarkdownSpacing(BlockQuote),
-  code: withMarkdownSpacing(InlineCode),
+  code: withMarkdownSpacing(Code),
   ol: withMarkdownSpacing(OrderedList),
   ul: withMarkdownSpacing(UnorderedList),
   li: withMarkdownSpacing(ListItem, 'none'),
   hr: ThematicBreak,
-  h1: withAnchorHeading(Heading.H1),
-  h2: withAnchorHeading(Heading.H2),
-  h3: withAnchorHeading(Heading.H3),
-  h4: withAnchorHeading(Heading.H4),
+  h1: withAnchorHeading(Heading1),
+  h2: withAnchorHeading(Heading2),
+  h3: withAnchorHeading(Heading3),
+  h4: withAnchorHeading(Heading4),
   h5: withAnchorHeading(Heading.H5),
   h6: withAnchorHeading(Heading.H6),
   p: withStyledTypography(paragraph({ variant: 'paragraph2', context: 'markdown' })),
   pre: withMarkdownSpacing(Pre),
   Pre: withMarkdownSpacing(Pre),
-  inlineCode: withMarkdownSpacing(InlineCode, 'none'),
+  inlineCode: withMarkdownSpacing(Code),
   table: withMarkdownSpacing(Table),
   Table: withMarkdownSpacing(Table),
   tbody: withMarkdownSpacing(Tbody, 'none'),
