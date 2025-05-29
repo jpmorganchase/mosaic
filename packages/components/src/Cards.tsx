@@ -20,7 +20,7 @@ function layoutChildren(children) {
 }
 
 export const Cards: React.FC<CardsProps> = ({ children, ...rest }) => (
-  <GridLayout style={{ margin: '0px' }} {...rest}>
+  <GridLayout margin={0} style={{ gridAutoColumns: 'minmax(0, 1fr)' }} {...rest}>
     {layoutChildren(children)}
   </GridLayout>
 );
