@@ -1,8 +1,8 @@
 import React, { Children, cloneElement, ReactElement } from 'react';
-import { GridLayout, GridItem } from '@salt-ds/core';
+import { GridLayout, GridItem, GridLayoutProps } from '@salt-ds/core';
 import { CardProps } from './Card';
 
-export interface CardsProps {
+export interface CardsProps extends GridLayoutProps<'div'> {
   className?: string;
   children: ReactElement<CardProps>[];
 }
@@ -19,8 +19,8 @@ function layoutChildren(children) {
   });
 }
 
-export const Cards: React.FC<CardsProps> = ({ children, ...rest }) => (
-  <GridLayout style={{ margin: '0px' }} {...rest}>
+export const Cards: React.FC<CardsProps> = ({ children, columns = 4, ...rest }) => (
+  <GridLayout style={{ margin: '0px', ...rest.style }} {...rest}>
     {layoutChildren(children)}
   </GridLayout>
 );

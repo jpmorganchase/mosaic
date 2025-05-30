@@ -43,6 +43,9 @@
 .action {
   --salt-text-action-textTransform: capitalize;
   --salt-text-action-textAlign: start;
+  /* Aligns arrow with link */
+  display: inline-flex;
+  align-items: center;
 }
 .action > svg {
   vertical-align: center;
