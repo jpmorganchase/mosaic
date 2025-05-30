@@ -1,5 +1,11 @@
 import { style } from '@vanilla-extract/css';
-import { action, link, responsiveSprinkles, navigableBorder } from '@jpmorganchase/mosaic-theme';
+import {
+  action,
+  link,
+  responsiveSprinkles,
+  navigableBorder,
+  vars
+} from '@jpmorganchase/mosaic-theme';
 
 export default {
   menuItems: style([
@@ -33,7 +39,8 @@ export default {
           alignItems: 'center',
           justifyContent: 'center'
         }
-      }
+      },
+      fontSize: vars.fontSize.s50
     },
     link({ variant: 'selectable' }),
     responsiveSprinkles({
