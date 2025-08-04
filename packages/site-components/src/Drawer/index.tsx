@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import classNames from 'clsx';
 import { useRoute } from '@jpmorganchase/mosaic-store';
-import { LayerLayout } from '@salt-ds/lab';
+import { Drawer as SaltDrawer, DrawerCloseButton } from '@salt-ds/core';
+import { useOutsideClick } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
-import { Button, Icon, useOutsideClick } from '@jpmorganchase/mosaic-components';
 
 export type TriggerElementProps = {
   /** open state of drawer */
@@ -31,51 +29,20 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
     setOpen(!open);
   };
 
-  const [isClient, setIsClient] = useState<boolean>(false);
-
   useEffect(() => {
     // Close drawer whenever a page loads
     setOpen(false);
-    setIsClient(true);
   }, [route]);
 
-  const portalRoot = isClient ? document.querySelector('[data-mosaic-id="portal-root"]') : null;
   return (
     <>
       <div ref={triggerRef}>
         <TriggerElement open={open} onClick={handleNavigationToggle} />
       </div>
-      {portalRoot
-        ? createPortal(
-            <div className={styles.root}>
-              <LayerLayout
-                className={classNames(styles.layerLayout, styles[side], {
-                  [styles.openLeft]: side === 'left' && open,
-                  [styles.closeLeft]: side === 'left' && !open,
-                  [styles.openRight]: side === 'right' && open,
-                  [styles.closeRight]: side === 'right' && !open
-                })}
-                isOpen={open}
-                disableScrim
-                position={side}
-                ref={rootRef}
-              >
-                <Button
-                  className={classNames(styles.closeButton, {
-                    [styles.leftCloseButton]: side === 'left',
-                    [styles.rightCloseButton]: side === 'right'
-                  })}
-                  variant="secondary"
-                  onClick={handleNavigationToggle}
-                >
-                  <Icon aria-label="close the drawer" name="close" />
-                </Button>
-                {children}
-              </LayerLayout>
-            </div>,
-            portalRoot
-          )
-        : null}
+      <SaltDrawer className={styles.root} position={side} open={open} ref={rootRef}>
+        <DrawerCloseButton onClick={handleNavigationToggle} />
+        {children}
+      </SaltDrawer>
     </>
   );
 }

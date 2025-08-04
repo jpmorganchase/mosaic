@@ -1,7 +1,6 @@
 import { FC } from 'react';
-import { Text } from '@salt-ds/core';
-import { Logo, LogoImage } from '@salt-ds/lab';
-import { useBreakpoint, Link } from '@jpmorganchase/mosaic-components';
+import { Divider, Text } from '@salt-ds/core';
+import { useBreakpoint, Link, useImageComponent } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';
 
@@ -34,6 +33,7 @@ const createDrawerMenu = menu =>
 export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
   const breakpoint = useBreakpoint();
   const { route } = useRoute();
+  const ImageComponent = useImageComponent();
   const showDrawer = breakpoint === 'mobile' || breakpoint === 'tablet';
 
   return (
@@ -43,10 +43,11 @@ export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title
         {homeLink && (
           <Link className={styles.logoContainer} href={homeLink} variant="component">
             {logo && (
-              <Logo>
-                <LogoImage className={styles.logoImage} src={logo} alt="homepage" />
+              <div className={styles.logo}>
+                <ImageComponent className={styles.logoImage} src={logo} alt="homepage" />
+                <Divider className={styles.logoDivider} variant="tertiary" orientation="vertical" />
                 <Text>{title}</Text>
-              </Logo>
+              </div>
             )}
           </Link>
         )}
