@@ -102,6 +102,7 @@
     "@braintree/sanitize-url": "^6.0.0",
     "@types/react": "^18.3.12",
     "commander": "^9.4.0",
+    "cookie": "^1.0.0",
     "esbuild": "0.25.0",
     "json5": "^1.0.2"
   },
