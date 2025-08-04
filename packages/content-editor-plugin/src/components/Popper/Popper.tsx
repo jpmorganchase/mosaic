@@ -1,9 +1,9 @@
 import { forwardRef, HTMLAttributes, ReactNode } from 'react';
-import { Portal, useWindow } from '@salt-ds/lab';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import classnames from 'clsx';
 
 import styles from './Popper.css';
+import { useFloatingComponent } from '@salt-ds/core';
 
 interface PopperProps extends HTMLAttributes<HTMLDivElement> {
   /** Floating contents */
@@ -11,26 +11,17 @@ interface PopperProps extends HTMLAttributes<HTMLDivElement> {
   /** Class name */
   className?: string;
   /** Flag indicating whether the floating content is visible */
-  open?: boolean;
+  open: boolean;
 }
 
 export const Popper = forwardRef<HTMLDivElement, PopperProps>(function Popper(props, forwardedRef) {
   const { children, className, ...rest } = props;
-  const Window = useWindow();
 
-  if (!rest.open) {
-    return null;
-  }
+  const { Component: FloatingComponent } = useFloatingComponent();
 
   return (
-    <Portal>
-      <Window
-        className={classnames(className, themeClassName, styles.root)}
-        ref={forwardedRef}
-        {...rest}
-      >
-        {children}
-      </Window>
-    </Portal>
+    <FloatingComponent ref={forwardedRef} {...rest}>
+      <div className={classnames(className, themeClassName, styles.root)}>{children}</div>
+    </FloatingComponent>
   );
 });
