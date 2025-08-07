@@ -5,7 +5,7 @@ export const POPPER_Z_INDEX = 10;
 
 export default {
   root: style([
-    style({ zIndex: POPPER_Z_INDEX }),
+    style({ zIndex: POPPER_Z_INDEX, position: 'relative' }),
     backgroundColor({ variant: 'regular' }),
     shadow({ variant: 'elevation3' })
   ])

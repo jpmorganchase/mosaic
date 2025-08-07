@@ -2,6 +2,7 @@ import { globalStyle, style } from '@vanilla-extract/css';
 import { caption, responsiveSprinkles, vars } from '@jpmorganchase/mosaic-theme';
 
 const logoImage = style({
+  display: 'flex',
   selectors: {
     '[data-mode=dark] &': {
       filter: 'invert(1)'
