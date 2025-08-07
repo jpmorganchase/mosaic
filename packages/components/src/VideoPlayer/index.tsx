@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Spinner, Slider } from '@salt-ds/core';
-import { ButtonBar, OrderedButton } from '@salt-ds/lab';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Spinner, Slider, Button } from '@salt-ds/core';
+import classnames from 'clsx';
 import { Icon } from '../Icon';
 import { Caption6 } from '../Typography';
 import styles from './styles.css';
@@ -125,6 +125,12 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
     videoElem?.requestFullscreen();
   };
 
+  const linkRef = useRef<HTMLAnchorElement>(null);
+
+  const handleDownload = () => {
+    linkRef.current?.click();
+  };
+
   return (
     <div className={styles.root}>
       <video ref={videoRef} aria-label="video" src={src} className={styles.video} />
@@ -132,22 +138,22 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
         {metaDataLoaded ? null : <Spinner size="large" />}
       </div>
       <div className={styles.controlsBar}>
-        <ButtonBar stackAtBreakpoint={0} disableAutoAlignment>
-          <OrderedButton className={styles.button} variant="secondary" onClick={handleReplay}>
+        <div className={styles.buttonBar}>
+          <Button sentiment="neutral" appearance="transparent" onClick={handleReplay}>
             <Icon name={replayIconByVariant[skipDuration]} />
-          </OrderedButton>
-          <OrderedButton
-            className={styles.button}
-            variant="secondary"
+          </Button>
+          <Button
+            sentiment="neutral"
+            appearance="transparent"
             onClick={handlePlay}
             disabled={!metaDataLoaded}
           >
             <Icon name={isPlaying ? 'pauseSolid' : 'playSolid'} />
-          </OrderedButton>
-          <OrderedButton className={styles.button} variant="secondary" onClick={handleFastForward}>
+          </Button>
+          <Button sentiment="neutral" appearance="transparent" onClick={handleFastForward}>
             <Icon name={forwardIconByVariant[skipDuration]} />
-          </OrderedButton>
-        </ButtonBar>
+          </Button>
+        </div>
 
         <div className={styles.sliderContainer}>
           <Caption6>{timeNowString}</Caption6>
@@ -160,19 +166,20 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
           />
           <Caption6> {durationString}</Caption6>
         </div>
-        <ButtonBar stackAtBreakpoint={0} alignLeft>
-          <a href={src} target="_blank" download rel="noreferrer">
-            <OrderedButton className={styles.button} variant="secondary">
+        <div className={classnames(styles.buttonBar, styles.leftAlign)}>
+          <div>
+            <Button sentiment="neutral" appearance="transparent" onClick={handleDownload}>
               <Icon name="download" />
-            </OrderedButton>
-          </a>
-          <OrderedButton className={styles.button} variant="secondary" onClick={mute}>
+            </Button>
+            <a ref={linkRef} href={src} target="_blank" download rel="noreferrer" />
+          </div>
+          <Button sentiment="neutral" appearance="transparent" onClick={mute}>
             <Icon name={volumeOn ? 'volumeUp' : 'volumeDown'} />
-          </OrderedButton>
-          <OrderedButton className={styles.button} variant="secondary" onClick={enterFullScreen}>
+          </Button>
+          <Button sentiment="neutral" appearance="transparent" onClick={enterFullScreen}>
             <Icon name="maximize" />
-          </OrderedButton>
-        </ButtonBar>
+          </Button>
+        </div>
       </div>
     </div>
   );

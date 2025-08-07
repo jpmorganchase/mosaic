@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 
-import { Slider } from '@salt-ds/core';
-import { ButtonBar, OrderedButton } from '@salt-ds/lab';
+import { Button, Slider } from '@salt-ds/core';
 import { Icon } from '../Icon';
 
 import { Caption3, Caption6 } from '../Typography';
@@ -117,6 +116,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
     }
   };
 
+  const downloadLink = useRef<HTMLAnchorElement>(null);
+
+  const handleDownload = () => {
+    downloadLink.current?.click();
+  };
+
   return (
     <div className={styles.root}>
       <audio ref={audioRef} aria-label="audio" src={`${src}`} />
@@ -133,32 +138,39 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
         <Caption6>{durationString}</Caption6>
       </div>
 
-      <ButtonBar className={styles.buttonBar} stackAtBreakpoint={0} disableAutoAlignment={true}>
+      <div className={styles.buttonBar}>
         <div>
-          <a href={src} download target="_blank" rel="noreferrer">
-            <OrderedButton variant="secondary" className={styles.button}>
-              <Icon name="download" />
-            </OrderedButton>
-          </a>
+          <Button sentiment="neutral" appearance="transparent" onClick={handleDownload}>
+            <Icon name="download" />
+          </Button>
+          <a
+            ref={downloadLink}
+            hidden
+            aria-hidden
+            href={src}
+            download
+            target="_blank"
+            rel="noreferrer"
+          />
         </div>
-        <OrderedButton className={styles.button} variant="secondary" onClick={handleRewind}>
+        <Button sentiment="neutral" appearance="transparent" onClick={handleRewind}>
           <Icon name={replayIconByVariant[skipDuration]} />
-        </OrderedButton>
-        <OrderedButton
-          className={styles.button}
-          variant="secondary"
+        </Button>
+        <Button
+          sentiment="neutral"
+          appearance="transparent"
           onClick={handlePlay}
           disabled={playDisabled}
         >
           {isPlaying ? <Icon name="pauseSolid" /> : <Icon name="playSolid" />}
-        </OrderedButton>
-        <OrderedButton className={styles.button} variant="secondary" onClick={handleFastforward}>
+        </Button>
+        <Button sentiment="neutral" appearance="transparent" onClick={handleFastforward}>
           <Icon name={forwardIconByVariant[skipDuration]} />
-        </OrderedButton>
-        <OrderedButton variant="secondary" onClick={handleMute} className={styles.button}>
+        </Button>
+        <Button sentiment="neutral" appearance="transparent" onClick={handleMute}>
           {mute ? <Icon name="volumeOff" /> : <Icon name="volumeUp" />}
-        </OrderedButton>
-      </ButtonBar>
+        </Button>
+      </div>
     </div>
   );
 };

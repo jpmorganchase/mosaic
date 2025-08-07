@@ -80,5 +80,8 @@ export default {
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap'
     })
-  ])
+  ]),
+  highlight: style({
+    fontWeight: vars.fontWeight.bold
+  })
 };
