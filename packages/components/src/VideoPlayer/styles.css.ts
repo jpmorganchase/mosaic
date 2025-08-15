@@ -78,10 +78,16 @@ export default {
       marginRight: vars.space.horizontal.x2
     })
   ]),
-  button: style({
-    height: '32px',
-    width: '32px',
-    color: 'inherit',
-    fill: 'currentColor'
+  buttonBar: style([
+    style({
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexDirection: 'row'
+    }),
+    responsiveSprinkles({ gap: ['x1'] })
+  ]),
+  leftAlign: style({
+    justifyContent: 'flex-start'
   })
 };
