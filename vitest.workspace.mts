@@ -7,6 +7,7 @@ export default defineWorkspace([
       include: [
         '**/{cli,core,fromHttpRequest,plugins,site-middleware,source-figma,source-http,source-readme,source-storybook}/**/__tests__/*.test.[j|t]s?(x)'
       ],
+      setupFiles: ['./scripts/vitest/vitest.server.setup.mts'],
       // Has complex mocking so is hard to migrate to vitest, needs to be revisited.
       exclude: ['**/WorkerSubscription.test.ts']
     }

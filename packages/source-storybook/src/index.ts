@@ -2,12 +2,9 @@ import { map } from 'rxjs';
 import { z } from 'zod';
 import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
-import {
-  createHttpSource,
-  httpSourceCreatorSchema,
-  createProxyAgent
-} from '@jpmorganchase/mosaic-source-http';
+import { createHttpSource, httpSourceCreatorSchema } from '@jpmorganchase/mosaic-source-http';
 import deepmerge from 'deepmerge';
+import { ProxyAgent, Request, HeadersInit } from 'undici';
 
 import { StoriesResponseJSON, StorybookPage, StoryConfig } from './types/index.js';
 import { normalizeStorybookJson } from './stories.js';
@@ -101,20 +98,18 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
 
     const configuredRequests = storiesConfig.map(config => {
       const { storiesUrl, storyUrlPrefix, proxyEndpoint } = config;
-      let agent;
+      let dispatcher;
       const headers = requestHeaders ? (requestHeaders as HeadersInit) : undefined;
 
       if (proxyEndpoint) {
         console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`);
-        agent = createProxyAgent(proxyEndpoint);
+        dispatcher = new ProxyAgent(proxyEndpoint);
       }
       const url = storiesUrl || `${storyUrlPrefix}/index.json`;
       return new Request(url, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        agent,
+        dispatcher,
         headers,
-        timeout: requestTimeout
+        signal: AbortSignal.timeout(requestTimeout)
       });
     });
 

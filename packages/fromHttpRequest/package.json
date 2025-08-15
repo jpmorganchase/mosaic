@@ -35,11 +35,9 @@
     "event-target-polyfill": "^0.0.3",
     "fast-content-type-parse": "^1.1.0",
     "rxjs": "^7.5.5",
-    "node-fetch": "^2.6.2",
     "yet-another-abortcontroller-polyfill": "0.0.4"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.6.2",
     "msw": "^2.0.0"
   }
 }

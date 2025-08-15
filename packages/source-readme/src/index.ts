@@ -3,12 +3,9 @@ import { z } from 'zod';
 import deepmerge from 'deepmerge';
 import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
-import {
-  createHttpSource,
-  httpSourceCreatorSchema,
-  createProxyAgent
-} from '@jpmorganchase/mosaic-source-http';
+import { createHttpSource, httpSourceCreatorSchema } from '@jpmorganchase/mosaic-source-http';
 import { ReadmePage } from './types/index.js';
+import { ProxyAgent, Request } from 'undici';
 
 const baseSchema = httpSourceCreatorSchema.omit({
   endpoints: true, // will be generated from the url in the readme object,
@@ -79,21 +76,20 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
     } = parsedOptions;
     const configuredRequests = readmeConfig.map(config => {
       const { accessToken, readmeUrl, proxyEndpoint } = config;
-      let agent;
+      let dispatcher;
 
       if (proxyEndpoint) {
         console.log(`[Mosaic] Readme source using ${proxyEndpoint} proxy for ${readmeUrl}`);
-        agent = createProxyAgent(proxyEndpoint);
+        dispatcher = new ProxyAgent(proxyEndpoint);
       }
 
       let requestHeaders: HeadersInit = accessToken ? { Authorization: accessToken } : {};
       requestHeaders = { ...requestHeaders, 'Content-Type': 'text/html', ...requestHeadersParam };
+
       return new Request(`${readmeUrl}`, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        agent,
+        dispatcher,
         headers: requestHeaders,
-        timeout: requestTimeout
+        signal: AbortSignal.timeout(requestTimeout)
       });
     });
 
