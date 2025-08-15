@@ -1,10 +1,10 @@
 import 'event-target-polyfill';
 import 'yet-another-abortcontroller-polyfill';
 import { Observable, of } from 'rxjs';
+import { fromFetch } from 'rxjs/fetch';
 import { catchError, switchMap } from 'rxjs/operators';
 import contentTypeParser from 'fast-content-type-parse';
-
-import { fromFetch } from './fromFetch.js';
+import { Request } from 'undici';
 
 export type ErrorResponse = { error: boolean; message: string };
 
