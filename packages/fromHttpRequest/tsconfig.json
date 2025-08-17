@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "lib": ["es2022", "dom"]
+    "lib": ["es2022"]
   },
   "include": ["src"],
   "exclude": ["src/**/__tests__/**/*", "src/__tests__/**/*"]

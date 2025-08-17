@@ -4,11 +4,9 @@ import { z } from 'zod';
 import type { Page, SourceConfig } from '@jpmorganchase/mosaic-types';
 import { fromHttpRequest, isErrorResponse } from '@jpmorganchase/mosaic-from-http-request';
 import { sourceScheduleSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
+import { ProxyAgent, type HeadersInit, Request } from 'undici';
 
-import { createProxyAgent } from './proxyAgent.js';
 import { ResponseTransformer } from './fromDynamicImport.js';
-
-export { createProxyAgent };
 
 export type HttpSourceResponseTransformerType<TResponse, TPage> = ResponseTransformer<
   TResponse,
@@ -61,7 +59,7 @@ export function createHttpSource<TResponse, TPage = Page>(
 
   if (endpoints.length > 0) {
     requests = endpoints.map(endpoint => {
-      let agent;
+      let dispatcher;
       const headers = requestHeaders
         ? (requestHeaders as HeadersInit)
         : {
@@ -69,15 +67,13 @@ export function createHttpSource<TResponse, TPage = Page>(
           };
 
       if (!noProxy?.test(endpoint) && proxyEndpoint) {
-        agent = createProxyAgent(proxyEndpoint);
+        dispatcher = new ProxyAgent(proxyEndpoint);
       }
 
       return new Request(new URL(endpoint), {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        agent,
+        dispatcher,
         headers,
-        timeout: requestTimeout
+        signal: AbortSignal.timeout(requestTimeout)
       });
     });
   }

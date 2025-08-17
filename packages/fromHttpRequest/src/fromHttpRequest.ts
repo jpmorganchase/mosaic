@@ -3,6 +3,7 @@ import 'yet-another-abortcontroller-polyfill';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import contentTypeParser from 'fast-content-type-parse';
+import { Request } from 'undici';
 
 import { fromFetch } from './fromFetch.js';
 
