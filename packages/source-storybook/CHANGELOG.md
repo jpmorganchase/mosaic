@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-source-storybook
 
+## 0.1.0-beta.93
+
+### Patch Changes
+
+- 699e570b: Refactored to remove node-fetch.
+- Updated dependencies [699e570b]
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.93
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.93
+  - @jpmorganchase/mosaic-types@0.1.0-beta.93
+
 ## 0.1.0-beta.92
 
 ### Patch Changes
