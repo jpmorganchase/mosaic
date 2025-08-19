@@ -2,21 +2,28 @@ import { describe, expect, it, vi, beforeAll, afterAll, afterEach, beforeEach } 
 import { Observable, of, take } from 'rxjs';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
+import { ProxyAgent } from 'undici';
 
 import type { Page } from '@jpmorganchase/mosaic-types';
 
 import Source, { createHttpSource } from '../index.js';
-import { createProxyAgent } from '../proxyAgent.js';
+
+vi.mock('undici', async importOriginal => {
+  return {
+    ...(await importOriginal()),
+    ProxyAgent: vi.fn().mockImplementation(() => ({
+      connect: vi.fn(),
+      destroy: vi.fn(),
+      close: vi.fn()
+    }))
+  };
+});
 
 vi.mock('../fromDynamicImport', async importOriginal => ({
   ...(await importOriginal()),
   fromDynamicImport: vi
     .fn()
     .mockImplementation((modulePath: string) => of({ transformer: toUpperCaseTransformer }))
-}));
-
-vi.mock('../proxyAgent', () => ({
-  createProxyAgent: vi.fn().mockImplementation((proxyUrl: string) => undefined)
 }));
 
 function toUpperCaseTransformer(response) {
@@ -166,7 +173,7 @@ describe('GIVEN an HTTP Source ', () => {
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(createProxyAgent).toHaveBeenCalledTimes(2);
+            expect(ProxyAgent).toHaveBeenCalledTimes(2);
           },
           complete: () => done()
         });

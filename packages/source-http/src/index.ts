@@ -3,7 +3,6 @@ import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
-import { createProxyAgent } from './proxyAgent.js';
 import { fromDynamicImport } from './fromDynamicImport.js';
 import {
   createHttpSource,
@@ -11,12 +10,7 @@ import {
   httpSourceCreatorSchema
 } from './createHttpSource.js';
 
-export {
-  createProxyAgent,
-  createHttpSource,
-  HttpSourceResponseTransformerType,
-  httpSourceCreatorSchema
-};
+export { createHttpSource, HttpSourceResponseTransformerType, httpSourceCreatorSchema };
 
 export const schema = httpSourceCreatorSchema.merge(
   z.object({
