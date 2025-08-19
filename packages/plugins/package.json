@@ -45,7 +45,7 @@
     "check-links": "^2.0.0",
     "deepmerge": "^4.3.1",
     "github-slugger": "^1.4.0",
-    "https-proxy-agent": "^5.0.1",
+    "https-proxy-agent": "^7.0.0",
     "lodash-es": "^4.17.21",
     "memfs": "^4.0.0",
     "react-docgen-typescript": "^2.2.2",
