@@ -1,5 +1,24 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.93
+
+### Patch Changes
+
+- 699e570b: Refactored to remove node-fetch.
+- Updated dependencies [699e570b]
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.93
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.93
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.93
+  - @jpmorganchase/mosaic-components@0.1.0-beta.93
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.93
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.93
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.93
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.93
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.93
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.93
+  - @jpmorganchase/mosaic-store@0.1.0-beta.93
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.93
+
 ## 0.1.0-beta.92
 
 ### Patch Changes

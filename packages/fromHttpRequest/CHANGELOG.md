@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-from-http-request
 
+## 0.1.0-beta.93
+
+### Patch Changes
+
+- 699e570b: Refactored to remove node-fetch.
+
 ## 0.1.0-beta.92
 
 ## 0.1.0-beta.91

@@ -1,5 +1,12 @@
 # @jpmorganchase/mosaic-create-site
 
+## 0.1.0-beta.93
+
+### Patch Changes
+
+- 699e570b: Refactored to remove node-fetch.
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.93
+
 ## 0.1.0-beta.92
 
 ### Patch Changes
