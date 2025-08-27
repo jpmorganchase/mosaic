@@ -8,14 +8,60 @@ import { mkdirSync, existsSync } from 'fs';
 export class ThumbnailCache {
   private cacheDir: string;
   private ttl: number;
+  private maxCacheAge: number;
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private cleanupIntervalMs: number;
 
-  constructor(options: { cacheDir: string; ttl: number }) {
+  constructor(options: {
+    cacheDir: string;
+    ttl: number;
+    maxCacheAge?: number;
+    cleanupIntervalMs?: number;
+  }) {
     this.cacheDir = options.cacheDir;
     this.ttl = options.ttl;
+    // Default max cache age is 7 days (in milliseconds)
+    this.maxCacheAge = options.maxCacheAge || 7 * 24 * 60 * 60 * 1000;
+    // Default cleanup interval is 1 hour (in milliseconds)
+    this.cleanupIntervalMs = options.cleanupIntervalMs || 60 * 60 * 1000;
 
     // Ensure cache directory exists
     if (!existsSync(this.cacheDir)) {
       mkdirSync(this.cacheDir, { recursive: true });
+    }
+
+    // Clean up stale cache files when cache is initialized
+    this.cleanStaleCache();
+
+    // Set up periodic cleanup
+    this.startPeriodicCleanup();
+  }
+
+  /**
+   * Start periodic cleanup of stale cache files
+   */
+  private startPeriodicCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+
+    this.cleanupInterval = setInterval(() => {
+      this.cleanStaleCache();
+    }, this.cleanupIntervalMs);
+
+    // Ensure the interval doesn't prevent the process from exiting
+    if (this.cleanupInterval.unref) {
+      this.cleanupInterval.unref();
+    }
+  }
+
+  /**
+   * Stop the periodic cleanup
+   */
+  public stopPeriodicCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
   }
 
@@ -69,6 +115,36 @@ export class ThumbnailCache {
       fs.writeFileSync(cacheFilePath, JSON.stringify(thumbnails));
     } catch (error) {
       console.error(`[Figma-Source] Error writing thumbnail cache: ${error}`);
+    }
+  }
+
+  /**
+   * Clean up stale cache files that are older than maxCacheAge
+   */
+  public cleanStaleCache(): void {
+    try {
+      const now = Date.now();
+      const files = fs.readdirSync(this.cacheDir);
+
+      let removed = 0;
+      for (const file of files) {
+        if (file.startsWith('thumbnail-') && file.endsWith('.json')) {
+          const filePath = path.join(this.cacheDir, file);
+          const stats = fs.statSync(filePath);
+          const fileAge = now - stats.mtimeMs;
+
+          if (fileAge > this.maxCacheAge) {
+            fs.unlinkSync(filePath);
+            removed++;
+          }
+        }
+      }
+
+      if (removed > 0) {
+        console.log(`[Figma-Source] Cleaned up ${removed} stale cache files`);
+      }
+    } catch (error) {
+      console.error(`[Figma-Source] Error cleaning stale cache: ${error}`);
     }
   }
 }
