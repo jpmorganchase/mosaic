@@ -46,7 +46,9 @@ export const schema = baseSchema.merge(
     cache: z
       .object({
         ttl: z.number().default(60 * 60 * 1000), // Default 1 hour TTL
-        dir: z.string().optional()
+        dir: z.string().optional(),
+        maxCacheAge: z.number().optional(), // Max age for cache files before cleanup (default: 7 days)
+        cleanupIntervalMs: z.number().optional() // How often to run cleanup (default: 1 hour)
       })
       .optional()
   })
@@ -77,7 +79,9 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
     const thumbnailCache = cache
       ? new ThumbnailCache({
           cacheDir: cache.dir || path.join(process.cwd(), '.cache', 'figma-thumbnails'),
-          ttl: cache.ttl
+          ttl: cache.ttl,
+          maxCacheAge: cache.maxCacheAge,
+          cleanupIntervalMs: cache.cleanupIntervalMs
         })
       : null;
 
