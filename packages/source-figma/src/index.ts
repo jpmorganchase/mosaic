@@ -213,11 +213,8 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         if (thumbnailCache) {
           for (const fileId of fileIds) {
             const cachedThumbnails = thumbnailCache.getThumbnails(fileId);
-
             if (cachedThumbnails) {
-              // Apply cached thumbnails to pages
               console.log(`[Figma-Source] Using cached thumbnails for file ${fileId}`);
-
               for (const page of figmaPages) {
                 if (
                   page.data.fileId === fileId &&
@@ -228,21 +225,15 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
                 }
               }
             } else {
-              // Cache miss - need to fetch from API
               filesToFetch.push(fileId);
             }
           }
         } else {
-          // No cache configured, fetch all
           filesToFetch.push(...fileIds);
         }
-
-        // If all thumbnails were cached, return the pages immediately without API calls
         if (filesToFetch.length === 0) {
           return of(figmaPages);
         }
-
-        // Generate URLs for files that need to be fetched
         const thumbnailRequestUrls = filesToFetch.map(fileId => {
           const generateThumbnailUrl = endpoints.generateThumbnail.replace(':project_id', fileId);
           return generateThumbnailUrl.replace(':node_id', thumbnailNodes[fileId].join(','));
@@ -259,10 +250,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
             console.error(`Figma returned ${response.err} for ${fileId} thumbnail generation`);
             return transformerOptions.pages;
           }
-
-          // Store in cache if enabled
           if (thumbnailCache && !response.err) {
-            // Filter out any null thumbnail URLs before storing in cache
             const validThumbnails: Record<string, string> = {};
             for (const nodeId in response.images) {
               if (response.images[nodeId] && response.images[nodeId] !== null) {
@@ -271,8 +259,6 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
             }
             thumbnailCache.storeThumbnails(fileId, validThumbnails);
           }
-
-          // Apply to pages (same as original transformer)
           const thumbnailNodes = Object.keys(response.images);
           thumbnailNodes.forEach(thumbnailNodeId => {
             const pageForNode = transformerOptions.pages.find(
