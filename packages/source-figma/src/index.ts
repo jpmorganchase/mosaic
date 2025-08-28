@@ -1,6 +1,7 @@
-import { switchMap } from 'rxjs';
+import { switchMap, of } from 'rxjs';
 import { z } from 'zod';
 import deepmerge from 'deepmerge';
+import path from 'path';
 import type { Source } from '@jpmorganchase/mosaic-types';
 import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import {
@@ -8,6 +9,7 @@ import {
   httpSourceCreatorSchema,
   HttpSourceResponseTransformerType
 } from '@jpmorganchase/mosaic-source-http';
+import { ThumbnailCache } from './utils/thumbnailCache.js';
 
 import type {
   FigmaPage,
@@ -40,7 +42,15 @@ export const schema = baseSchema.merge(
       getProject: z.string().url(),
       generateThumbnail: z.string().url()
     }),
-    requestTimeout: z.number().default(5000)
+    requestTimeout: z.number().default(5000),
+    cache: z
+      .object({
+        ttl: z.number().default(24 * 60 * 60 * 1000),
+        dir: z.string().optional(),
+        maxCacheAge: z.number().optional(),
+        cleanupIntervalMs: z.number().optional()
+      })
+      .optional()
   })
 );
 
@@ -63,7 +73,16 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
   create(options, sourceConfig) {
     const parsedOptions = validateMosaicSchema(schema, options);
 
-    const { endpoints, projects, figmaToken, prefixDir, ...rest } = parsedOptions;
+    const { endpoints, projects, figmaToken, prefixDir, cache, ...rest } = parsedOptions;
+
+    const thumbnailCache = cache
+      ? new ThumbnailCache({
+          cacheDir: cache.dir || path.join(process.cwd(), '.tmp', '.cache', 'figma-thumbnails'),
+          ttl: cache.ttl,
+          maxCacheAge: cache.maxCacheAge,
+          cleanupIntervalMs: cache.cleanupIntervalMs
+        })
+      : null;
 
     const projectEndpoints: Record<string, string> = {};
     const projectById: Record<string, typeof projects[number]> = {};
@@ -139,29 +158,6 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       }, []);
     };
 
-    const generateThumbnailTransformer = (
-      response: GenerateThumbnailResponse,
-      _prefixDir: string,
-      index: number,
-      transformerOptions: GenerateThumbnailTransformerOptions
-    ) => {
-      const fileId = transformerOptions.fileIds[index];
-      if (response.err) {
-        console.error(`Figma returned ${response.err} for ${fileId} thumbnail generation `);
-        return transformerOptions.pages;
-      }
-      const thumbnailNodes = Object.keys(response.images);
-      thumbnailNodes.forEach(thumbnailNodeId => {
-        const pageForNode = transformerOptions.pages.find(
-          page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
-        );
-        if (pageForNode) {
-          pageForNode.data.contentUrl = response.images[thumbnailNodeId];
-        }
-      });
-      return transformerOptions.pages;
-    };
-
     const projects$ = createHttpSource<ProjectsResponse, ProjectsTransformerResult>(
       {
         endpoints: Object.values(projectEndpoints),
@@ -211,11 +207,71 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           },
           {}
         );
+        const filesToFetch: string[] = [];
+        const fileIds = Object.keys(thumbnailNodes);
 
-        const thumbnailRequestUrls = Object.keys(thumbnailNodes).map(fileId => {
+        if (thumbnailCache) {
+          for (const fileId of fileIds) {
+            const cachedThumbnails = thumbnailCache.getThumbnails(fileId);
+            if (cachedThumbnails) {
+              console.log(`[Figma-Source] Using cached thumbnails for file ${fileId}`);
+              for (const page of figmaPages) {
+                if (
+                  page.data.fileId === fileId &&
+                  cachedThumbnails[page.data.nodeId] &&
+                  cachedThumbnails[page.data.nodeId] !== null
+                ) {
+                  page.data.contentUrl = cachedThumbnails[page.data.nodeId];
+                }
+              }
+            } else {
+              filesToFetch.push(fileId);
+            }
+          }
+        } else {
+          filesToFetch.push(...fileIds);
+        }
+        if (filesToFetch.length === 0) {
+          return of(figmaPages);
+        }
+        const thumbnailRequestUrls = filesToFetch.map(fileId => {
           const generateThumbnailUrl = endpoints.generateThumbnail.replace(':project_id', fileId);
           return generateThumbnailUrl.replace(':node_id', thumbnailNodes[fileId].join(','));
         });
+
+        const cachedThumbnailTransformer = (
+          response: GenerateThumbnailResponse,
+          _prefixDir: string,
+          index: number,
+          transformerOptions: GenerateThumbnailTransformerOptions
+        ) => {
+          const fileId = transformerOptions.fileIds[index];
+          if (response.err) {
+            console.error(`Figma returned ${response.err} for ${fileId} thumbnail generation`);
+            return transformerOptions.pages;
+          }
+          if (thumbnailCache && !response.err) {
+            const validThumbnails: Record<string, string> = {};
+            for (const nodeId in response.images) {
+              if (response.images[nodeId] && response.images[nodeId] !== null) {
+                validThumbnails[nodeId] = response.images[nodeId];
+              }
+            }
+            thumbnailCache.storeThumbnails(fileId, validThumbnails);
+          }
+          const thumbnailNodes = Object.keys(response.images);
+          thumbnailNodes.forEach(thumbnailNodeId => {
+            const pageForNode = transformerOptions.pages.find(
+              page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
+            );
+            if (pageForNode) {
+              pageForNode.data.contentUrl = response.images[thumbnailNodeId];
+            }
+          });
+
+          return transformerOptions.pages;
+        };
+
         return createHttpSource<GenerateThumbnailResponse, FigmaPage>({
           endpoints: thumbnailRequestUrls,
           prefixDir,
@@ -225,8 +281,8 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
             'X-FIGMA-TOKEN': figmaToken,
             ...rest.requestHeaders
           },
-          transformer: generateThumbnailTransformer,
-          transformerOptions: { fileIds: Object.keys(thumbnailNodes), pages: figmaPages }
+          transformer: cachedThumbnailTransformer,
+          transformerOptions: { fileIds: filesToFetch, pages: figmaPages }
         });
       })
     );
