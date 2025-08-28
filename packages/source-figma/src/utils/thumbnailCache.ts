@@ -20,9 +20,7 @@ export class ThumbnailCache {
   }) {
     this.cacheDir = options.cacheDir;
     this.ttl = options.ttl;
-    // Default max cache age is 7 days
     this.maxCacheAge = options.maxCacheAge || 7 * 24 * 60 * 60 * 1000;
-    // Default cleanup interval is 1 hour
     this.cleanupIntervalMs = options.cleanupIntervalMs || 60 * 60 * 1000;
 
     if (!existsSync(this.cacheDir)) {
@@ -33,27 +31,19 @@ export class ThumbnailCache {
     this.startPeriodicCleanup();
   }
 
-  /**
-   * Start periodic cleanup of stale cache files
-   */
   private startPeriodicCleanup(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-
     this.cleanupInterval = setInterval(() => {
       this.cleanStaleCache();
     }, this.cleanupIntervalMs);
-
     // Ensure the interval doesn't prevent the process from exiting
     if (this.cleanupInterval.unref) {
       this.cleanupInterval.unref();
     }
   }
 
-  /**
-   * Stop the periodic cleanup
-   */
   public stopPeriodicCleanup(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
@@ -61,16 +51,10 @@ export class ThumbnailCache {
     }
   }
 
-  /**
-   * Generate a cache key for a file ID
-   */
   private getCacheFilePath(fileId: string): string {
     return path.join(this.cacheDir, `thumbnail-${fileId}.json`);
   }
 
-  /**
-   * Check if the cache file exists and is still valid (not expired)
-   */
   private isCacheValid(cacheFilePath: string): boolean {
     if (!existsSync(cacheFilePath)) {
       return false;
@@ -81,10 +65,6 @@ export class ThumbnailCache {
     return ageInMs < this.ttl;
   }
 
-  /**
-   * Get cached thumbnail URLs for a file
-   * @returns A map of nodeIds to thumbnail URLs, or null if cache miss
-   */
   public getThumbnails(fileId: string): Record<string, string> | null {
     const cacheFilePath = this.getCacheFilePath(fileId);
 
@@ -101,9 +81,6 @@ export class ThumbnailCache {
     }
   }
 
-  /**
-   * Store thumbnail URLs in the cache
-   */
   public storeThumbnails(fileId: string, thumbnails: Record<string, string>): void {
     const cacheFilePath = this.getCacheFilePath(fileId);
 
@@ -114,9 +91,6 @@ export class ThumbnailCache {
     }
   }
 
-  /**
-   * Clean up stale cache files that are older than maxCacheAge
-   */
   public cleanStaleCache(): void {
     try {
       const now = Date.now();
@@ -135,7 +109,6 @@ export class ThumbnailCache {
           }
         }
       }
-
       if (removed > 0) {
         console.log(`[Figma-Source] Cleaned up ${removed} stale cache files`);
       }
