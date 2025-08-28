@@ -45,10 +45,10 @@ export const schema = baseSchema.merge(
     requestTimeout: z.number().default(5000),
     cache: z
       .object({
-        ttl: z.number().default(60 * 60 * 1000), // Default 1 hour TTL
+        ttl: z.number().default(24 * 60 * 60 * 1000),
         dir: z.string().optional(),
-        maxCacheAge: z.number().optional(), // Max age for cache files before cleanup (default: 7 days)
-        cleanupIntervalMs: z.number().optional() // How often to run cleanup (default: 1 hour)
+        maxCacheAge: z.number().optional(),
+        cleanupIntervalMs: z.number().optional()
       })
       .optional()
   })
@@ -75,10 +75,9 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
 
     const { endpoints, projects, figmaToken, prefixDir, cache, ...rest } = parsedOptions;
 
-    // Initialize thumbnail cache if cache config is provided
     const thumbnailCache = cache
       ? new ThumbnailCache({
-          cacheDir: cache.dir || path.join(process.cwd(), '.cache', 'figma-thumbnails'),
+          cacheDir: cache.dir || path.join(process.cwd(), '.tmp', '.cache', 'figma-thumbnails'),
           ttl: cache.ttl,
           maxCacheAge: cache.maxCacheAge,
           cleanupIntervalMs: cache.cleanupIntervalMs
@@ -208,12 +207,9 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           },
           {}
         );
-
-        // Files that need API calls (not in cache or cache expired)
         const filesToFetch: string[] = [];
         const fileIds = Object.keys(thumbnailNodes);
 
-        // Apply cached thumbnails if available
         if (thumbnailCache) {
           for (const fileId of fileIds) {
             const cachedThumbnails = thumbnailCache.getThumbnails(fileId);
@@ -252,7 +248,6 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           return generateThumbnailUrl.replace(':node_id', thumbnailNodes[fileId].join(','));
         });
 
-        // Custom transformer that also stores thumbnails in cache
         const cachedThumbnailTransformer = (
           response: GenerateThumbnailResponse,
           _prefixDir: string,

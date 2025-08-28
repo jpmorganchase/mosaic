@@ -20,20 +20,16 @@ export class ThumbnailCache {
   }) {
     this.cacheDir = options.cacheDir;
     this.ttl = options.ttl;
-    // Default max cache age is 7 days (in milliseconds)
+    // Default max cache age is 7 days
     this.maxCacheAge = options.maxCacheAge || 7 * 24 * 60 * 60 * 1000;
-    // Default cleanup interval is 1 hour (in milliseconds)
+    // Default cleanup interval is 1 hour
     this.cleanupIntervalMs = options.cleanupIntervalMs || 60 * 60 * 1000;
 
-    // Ensure cache directory exists
     if (!existsSync(this.cacheDir)) {
       mkdirSync(this.cacheDir, { recursive: true });
     }
 
-    // Clean up stale cache files when cache is initialized
     this.cleanStaleCache();
-
-    // Set up periodic cleanup
     this.startPeriodicCleanup();
   }
 
