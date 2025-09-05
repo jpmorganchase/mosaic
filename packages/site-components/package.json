@@ -59,7 +59,7 @@
     "fuse.js": "^6.6.2",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.21",
-    "next": "^14.2.30",
+    "next": "^14.2.32",
     "next-mdx-remote": "^5.0.0",
     "node-cookie": "^2.1.2",
     "react-error-boundary": "^4.0.11",
