@@ -195,6 +195,12 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
 
     const figmaPagesWithThumbnails$ = figmaPages$.pipe(
       switchMap(figmaPages => {
+        figmaPages.forEach(page => {
+          if (page.data && !page.data.contentUrl) {
+            page.data.contentUrl = undefined;
+          }
+        });
+
         const thumbnailNodes = figmaPages.reduce<Record<string, string[]>>(
           (thumbnailNodeMap, page) => {
             const { fileId } = page.data;
@@ -247,27 +253,32 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         ) => {
           const fileId = transformerOptions.fileIds[index];
           if (response.err) {
-            console.error(`Figma returned ${response.err} for ${fileId} thumbnail generation`);
-            return transformerOptions.pages;
+            console.error(
+              `[Figma-Source] Figma returned ${response.err} for ${fileId} thumbnail generation`
+            );
           }
-          if (thumbnailCache && !response.err) {
+          if (thumbnailCache && !response.err && response.images) {
             const validThumbnails: Record<string, string> = {};
             for (const nodeId in response.images) {
               if (response.images[nodeId] && response.images[nodeId] !== null) {
                 validThumbnails[nodeId] = response.images[nodeId];
               }
             }
-            thumbnailCache.storeThumbnails(fileId, validThumbnails);
-          }
-          const thumbnailNodes = Object.keys(response.images);
-          thumbnailNodes.forEach(thumbnailNodeId => {
-            const pageForNode = transformerOptions.pages.find(
-              page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
-            );
-            if (pageForNode) {
-              pageForNode.data.contentUrl = response.images[thumbnailNodeId];
+            if (Object.keys(validThumbnails).length > 0) {
+              thumbnailCache.storeThumbnails(fileId, validThumbnails);
             }
-          });
+          }
+          if (response.images) {
+            const thumbnailNodes = Object.keys(response.images);
+            thumbnailNodes.forEach(thumbnailNodeId => {
+              const pageForNode = transformerOptions.pages.find(
+                page => page.data.fileId === fileId && page.data.nodeId === thumbnailNodeId
+              );
+              if (pageForNode && response.images[thumbnailNodeId]) {
+                pageForNode.data.contentUrl = response.images[thumbnailNodeId];
+              }
+            });
+          }
 
           return transformerOptions.pages;
         };
