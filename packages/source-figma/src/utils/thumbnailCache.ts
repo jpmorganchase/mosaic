@@ -8,46 +8,13 @@ import { mkdirSync, existsSync } from 'fs';
 export class ThumbnailCache {
   private cacheDir: string;
   private ttl: number;
-  private maxCacheAge: number;
-  private cleanupInterval: NodeJS.Timeout | null = null;
-  private cleanupIntervalMs: number;
 
-  constructor(options: {
-    cacheDir: string;
-    ttl: number;
-    maxCacheAge?: number;
-    cleanupIntervalMs?: number;
-  }) {
+  constructor(options: { cacheDir: string; ttl: number }) {
     this.cacheDir = options.cacheDir;
     this.ttl = options.ttl;
-    this.maxCacheAge = options.maxCacheAge || 7 * 24 * 60 * 60 * 1000;
-    this.cleanupIntervalMs = options.cleanupIntervalMs || 60 * 60 * 1000;
 
     if (!existsSync(this.cacheDir)) {
       mkdirSync(this.cacheDir, { recursive: true });
-    }
-
-    this.cleanStaleCache();
-    this.startPeriodicCleanup();
-  }
-
-  private startPeriodicCleanup(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-    }
-    this.cleanupInterval = setInterval(() => {
-      this.cleanStaleCache();
-    }, this.cleanupIntervalMs);
-    // Ensure the interval doesn't prevent the process from exiting
-    if (this.cleanupInterval.unref) {
-      this.cleanupInterval.unref();
-    }
-  }
-
-  public stopPeriodicCleanup(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
     }
   }
 
@@ -69,6 +36,23 @@ export class ThumbnailCache {
     const cacheFilePath = this.getCacheFilePath(fileId);
 
     if (!this.isCacheValid(cacheFilePath)) {
+      // If cache is invalid due to age, delete the stale file immediately
+      if (existsSync(cacheFilePath)) {
+        try {
+          const stats = fs.statSync(cacheFilePath);
+          const ageInMs = Date.now() - stats.mtimeMs;
+          if (ageInMs >= this.ttl) {
+            fs.unlinkSync(cacheFilePath);
+            console.log(
+              `[Figma-Source] Removed expired cache file: thumbnail-${fileId}.json (age: ${Math.round(
+                ageInMs / 1000 / 60
+              )} minutes)`
+            );
+          }
+        } catch (error) {
+          console.error(`[Figma-Source] Error removing expired cache file: ${error}`);
+        }
+      }
       return null;
     }
 
@@ -86,34 +70,11 @@ export class ThumbnailCache {
 
     try {
       fs.writeFileSync(cacheFilePath, JSON.stringify(thumbnails));
+      console.log(
+        `[Figma-Source] Cached ${Object.keys(thumbnails).length} thumbnails for file ${fileId}`
+      );
     } catch (error) {
       console.error(`[Figma-Source] Error writing thumbnail cache: ${error}`);
-    }
-  }
-
-  public cleanStaleCache(): void {
-    try {
-      const now = Date.now();
-      const files = fs.readdirSync(this.cacheDir);
-
-      let removed = 0;
-      for (const file of files) {
-        if (file.startsWith('thumbnail-') && file.endsWith('.json')) {
-          const filePath = path.join(this.cacheDir, file);
-          const stats = fs.statSync(filePath);
-          const fileAge = now - stats.mtimeMs;
-
-          if (fileAge > this.maxCacheAge) {
-            fs.unlinkSync(filePath);
-            removed++;
-          }
-        }
-      }
-      if (removed > 0) {
-        console.log(`[Figma-Source] Cleaned up ${removed} stale cache files`);
-      }
-    } catch (error) {
-      console.error(`[Figma-Source] Error cleaning stale cache: ${error}`);
     }
   }
 }
