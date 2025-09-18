@@ -46,9 +46,7 @@ export const schema = baseSchema.merge(
     cache: z
       .object({
         ttl: z.number().default(24 * 60 * 60 * 1000),
-        dir: z.string().optional(),
-        maxCacheAge: z.number().optional(),
-        cleanupIntervalMs: z.number().optional()
+        dir: z.string().optional()
       })
       .optional()
   })
@@ -78,9 +76,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
     const thumbnailCache = cache
       ? new ThumbnailCache({
           cacheDir: cache.dir || path.join(process.cwd(), '.tmp', '.cache', 'figma-thumbnails'),
-          ttl: cache.ttl,
-          maxCacheAge: cache.maxCacheAge,
-          cleanupIntervalMs: cache.cleanupIntervalMs
+          ttl: cache.ttl
         })
       : null;
 
@@ -220,7 +216,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           for (const fileId of fileIds) {
             const cachedThumbnails = thumbnailCache.getThumbnails(fileId);
             if (cachedThumbnails) {
-              console.log(`[Figma-Source] Using cached thumbnails for file ${fileId}`);
+              console.log(`[Figma-Source] Using cached thumbnail files for ${fileId}`);
               for (const page of figmaPages) {
                 if (
                   page.data.fileId === fileId &&
