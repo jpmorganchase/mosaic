@@ -128,7 +128,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
       index: number,
       transformerOptions: ProjectsTransformerResult[]
     ) => {
-      const { document: { sharedPluginData = {} } = {} } = response;
+      const { document: { sharedPluginData = {} } = {}, lastModified } = response;
       const sourceProvidedMetadata = transformerOptions[index].meta ?? {};
       const patternPrefix = getPatternPrefix(sourceProvidedMetadata);
       return Object.keys(sharedPluginData).reduce<FigmaPage[]>((figmaPagesResult, patternId) => {
@@ -140,6 +140,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
             tags,
             data: {
               patternId,
+              lastModified,
               ...patternData
             }
           };
@@ -209,14 +210,31 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           },
           {}
         );
+
+        const fileMetadata = figmaPages.reduce<Record<string, { lastModified: string }>>(
+          (metadataMap, page) => {
+            const { fileId } = page.data;
+            if (!metadataMap[fileId]) {
+              metadataMap[fileId] = {
+                lastModified: page.data.lastModified || new Date().toISOString()
+              };
+            }
+            return metadataMap;
+          },
+          {}
+        );
+
         const filesToFetch: string[] = [];
         const fileIds = Object.keys(thumbnailNodes);
 
         if (thumbnailCache) {
           for (const fileId of fileIds) {
-            const cachedThumbnails = thumbnailCache.getThumbnails(fileId);
+            const fileLastModified = fileMetadata[fileId]?.lastModified;
+            const cachedThumbnails = thumbnailCache.getThumbnails(fileId, fileLastModified);
             if (cachedThumbnails) {
-              console.log(`[Figma-Source] Using cached thumbnail files for ${fileId}`);
+              console.log(
+                `[Figma-Source] Using cached thumbnail files for ${fileId} (lastModified: ${fileLastModified})`
+              );
               for (const page of figmaPages) {
                 if (
                   page.data.fileId === fileId &&
@@ -261,7 +279,8 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
               }
             }
             if (Object.keys(validThumbnails).length > 0) {
-              thumbnailCache.storeThumbnails(fileId, validThumbnails);
+              const fileLastModified = fileMetadata[fileId]?.lastModified;
+              thumbnailCache.storeThumbnails(fileId, validThumbnails, fileLastModified);
             }
           }
           if (response.images) {

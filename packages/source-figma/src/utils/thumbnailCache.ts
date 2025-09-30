@@ -1,6 +1,11 @@
-import fs from 'fs';
+import fs, { existsSync, mkdirSync } from 'fs';
 import path from 'path';
-import { mkdirSync, existsSync } from 'fs';
+
+interface CacheEntry {
+  thumbnails: Record<string, string>;
+  fileLastModified: string;
+  cachedAt: number;
+}
 
 /**
  * A cache for Figma thumbnail URLs to reduce API calls and avoid rate limits
@@ -22,35 +27,55 @@ export class ThumbnailCache {
     return path.join(this.cacheDir, `thumbnail-${fileId}.json`);
   }
 
-  private isCacheValid(cacheFilePath: string): boolean {
+  private isCacheValidWithModificationCheck(
+    cacheFilePath: string,
+    currentFileLastModified?: string
+  ): boolean {
     if (!existsSync(cacheFilePath)) {
       return false;
     }
 
     const stats = fs.statSync(cacheFilePath);
     const ageInMs = Date.now() - stats.mtimeMs;
-    return ageInMs < this.ttl;
+    if (ageInMs >= this.ttl) {
+      return false;
+    }
+
+    if (currentFileLastModified) {
+      try {
+        const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+        const cacheEntry: CacheEntry = JSON.parse(cacheContent);
+
+        const currentModTime = new Date(currentFileLastModified).getTime();
+        const cachedModTime = new Date(cacheEntry.fileLastModified).getTime();
+
+        if (currentModTime > cachedModTime) {
+          console.log(
+            `[Figma-Source] File was modified after cache (file: ${currentFileLastModified}, cache: ${cacheEntry.fileLastModified})`
+          );
+          return false;
+        }
+      } catch (error) {
+        console.error(`[Figma-Source] Error reading cache for modification check: ${error}`);
+        return false;
+      }
+    }
+    return true;
   }
 
-  public getThumbnails(fileId: string): Record<string, string> | null {
+  public getThumbnails(fileId: string, fileLastModified?: string): Record<string, string> | null {
     const cacheFilePath = this.getCacheFilePath(fileId);
 
-    if (!this.isCacheValid(cacheFilePath)) {
-      // If cache is invalid due to age, delete the stale file immediately
+    if (!this.isCacheValidWithModificationCheck(cacheFilePath, fileLastModified)) {
       if (existsSync(cacheFilePath)) {
         try {
-          const stats = fs.statSync(cacheFilePath);
-          const ageInMs = Date.now() - stats.mtimeMs;
-          if (ageInMs >= this.ttl) {
-            fs.unlinkSync(cacheFilePath);
-            console.log(
-              `[Figma-Source] Removed expired cache file: thumbnail-${fileId}.json (age: ${Math.round(
-                ageInMs / 1000 / 60
-              )} minutes)`
-            );
-          }
+          const reason = fileLastModified ? 'file modification or TTL expiry' : 'TTL expiry';
+          fs.unlinkSync(cacheFilePath);
+          console.log(
+            `[Figma-Source] Removed invalid cache file: thumbnail-${fileId}.json (reason: ${reason})`
+          );
         } catch (error) {
-          console.error(`[Figma-Source] Error removing expired cache file: ${error}`);
+          console.error(`[Figma-Source] Error removing invalid cache file: ${error}`);
         }
       }
       return null;
@@ -58,20 +83,33 @@ export class ThumbnailCache {
 
     try {
       const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
-      return JSON.parse(cacheContent);
+      const cacheEntry: CacheEntry = JSON.parse(cacheContent);
+      return cacheEntry.thumbnails;
     } catch (error) {
       console.error(`[Figma-Source] Error reading thumbnail cache: ${error}`);
       return null;
     }
   }
 
-  public storeThumbnails(fileId: string, thumbnails: Record<string, string>): void {
+  public storeThumbnails(
+    fileId: string,
+    thumbnails: Record<string, string>,
+    fileLastModified?: string
+  ): void {
     const cacheFilePath = this.getCacheFilePath(fileId);
 
+    const cacheEntry: CacheEntry = {
+      thumbnails,
+      fileLastModified: fileLastModified || new Date().toISOString(),
+      cachedAt: Date.now()
+    };
+
     try {
-      fs.writeFileSync(cacheFilePath, JSON.stringify(thumbnails));
+      fs.writeFileSync(cacheFilePath, JSON.stringify(cacheEntry));
       console.log(
-        `[Figma-Source] Cached ${Object.keys(thumbnails).length} thumbnails for file ${fileId}`
+        `[Figma-Source] Cached ${
+          Object.keys(thumbnails).length
+        } thumbnails for file ${fileId} (lastModified: ${cacheEntry.fileLastModified})`
       );
     } catch (error) {
       console.error(`[Figma-Source] Error writing thumbnail cache: ${error}`);

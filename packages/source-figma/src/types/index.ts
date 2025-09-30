@@ -50,6 +50,7 @@ export type FigmaPageData = {
   nodeId: string;
   link: string;
   contentUrl?: string;
+  lastModified?: string;
 };
 
 /** Figma page */
