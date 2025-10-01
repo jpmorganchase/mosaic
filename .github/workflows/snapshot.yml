@@ -91,8 +91,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMENT_ID: ${{ github.event.comment.id }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_MODULAR_PUBLISHER }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_MODULAR_PUBLISHER }}
           NPM_CONFIG_PROVENANCE: true
         with:
           script: |
