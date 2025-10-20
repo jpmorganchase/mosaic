@@ -1,11 +1,8 @@
-import React, { FC, KeyboardEvent, MouseEvent } from 'react';
-import { Menu, MenuItem, MenuPanel, MenuTrigger, Button } from '@salt-ds/core';
-import classnames from 'clsx';
+import { FC, KeyboardEvent, MouseEvent } from 'react';
+import { Menu, MenuItem, MenuPanel, MenuTrigger, NavigationItem } from '@salt-ds/core';
 
-import styles from './tabsMenuButton.css';
 import type { TabsLinkItem } from './TabsLink';
 import type { TabMenuItemType } from './index';
-import { Icon } from '../Icon';
 
 export interface TabsMenuButtonItem {
   /**
@@ -23,19 +20,21 @@ export interface TabsMenuButtonItem {
 }
 
 export interface TabsMenuButtonProps {
-  children: React.ReactNode;
+  active?: boolean;
   item: TabsMenuButtonItem;
-  className?: string;
 }
 
-export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ children, className, item }) => (
+export const TabsMenuButton: FC<TabsMenuButtonProps> = ({ active, item }) => (
   <Menu>
     <MenuTrigger>
-      <Button variant="secondary" className={classnames([className, styles.root])}>
+      <NavigationItem
+        active={active}
+        orientation="horizontal"
+        parent
+        render={props => <button type="button" {...props} />}
+      >
         <span>{item.title || item.label}</span>
-        {children}
-        <Icon name="chevronDown" aria-hidden />
-      </Button>
+      </NavigationItem>
     </MenuTrigger>
     <MenuPanel>
       {item.links.map(link => (

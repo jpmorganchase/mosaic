@@ -33,5 +33,4 @@ import './SectionHeading/styles.css';
 import './StickyHeader/styles.css';
 import './Story/styles.css';
 import './Tabs/styles.css';
-import './TabsBase/tabsMenuButton.css';
 import './TabsBase/styles.css';
