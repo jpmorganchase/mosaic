@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-icons
 
+## 0.1.0-beta.94
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-theme@0.1.0-beta.94
+
 ## 0.1.0-beta.93
 
 ### Patch Changes
