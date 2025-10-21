@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-core
 
+## 0.1.0-beta.94
+
+### Patch Changes
+
+- 8c04c22a: Fixed Mosaic running on Node 22+
+  - @jpmorganchase/mosaic-plugins@0.1.0-beta.94
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.94
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.94
+  - @jpmorganchase/mosaic-types@0.1.0-beta.94
+
 ## 0.1.0-beta.93
 
 ### Patch Changes
