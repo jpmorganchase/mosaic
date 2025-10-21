@@ -1,7 +1,7 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 import { TabMenuItemType } from './index';
-import styles from './styles.css';
+import { NavigationItem } from '@salt-ds/core';
 
 export interface TabsButtonItem {
   /**
@@ -17,14 +17,16 @@ export interface TabsButtonItem {
 }
 
 interface TabButtonProps {
+  active?: boolean;
   item: TabsButtonItem;
 }
-export const TabsButton: FC<React.PropsWithChildren<TabButtonProps>> = ({ item }) => (
-  <div
-    className={styles.menuButton}
+export const TabsButton: FC<TabButtonProps> = ({ active, item }) => (
+  <NavigationItem
+    active={active}
+    orientation="horizontal"
+    render={props => <button type="button" {...props} />}
     onClick={event => item.onSelect(event, item.title)}
-    role="button"
   >
     {item.title || item.label}
-  </div>
+  </NavigationItem>
 );

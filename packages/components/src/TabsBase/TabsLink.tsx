@@ -1,8 +1,8 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 import { Link } from '../Link';
 import { TabMenuItemType } from './index';
-import styles from './styles.css';
+import { NavigationItem } from '@salt-ds/core';
 
 export interface TabsLinkItem {
   /**
@@ -18,13 +18,17 @@ export interface TabsLinkItem {
 }
 
 export interface TabsLinkProps {
-  children: React.ReactNode;
+  active?: boolean;
   item: TabsLinkItem;
 }
 
-export const TabsLink: FC<React.PropsWithChildren<TabsLinkProps>> = ({ children, item }) => (
-  <Link className={styles.menuLink} link={item.link} variant="selectable">
+export const TabsLink: FC<TabsLinkProps> = ({ active, item }) => (
+  <NavigationItem
+    active={active}
+    orientation="horizontal"
+    href={item.link}
+    render={props => <Link variant="component" {...props} />}
+  >
     {item.title || item.label}
-    {children}
-  </Link>
+  </NavigationItem>
 );
