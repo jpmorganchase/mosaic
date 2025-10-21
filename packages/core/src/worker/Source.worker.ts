@@ -73,7 +73,8 @@ if (isMainThread) {
         // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
         // we don't bother freezing
         // Turn data into buffer
-        return Buffer.from(
+        const encoder = new TextEncoder();
+        return encoder.encode(
           JSON.stringify({
             pages: filesystem.toJSON(),
             data: config.data,
@@ -108,12 +109,14 @@ if (isMainThread) {
       if (await fs.promises.stat(cachePath)) {
         const data = await fs.promises.readFile(cachePath);
         console.info(`[Mosaic][Source] Restoring cached filesystem for ${workerData.name}`);
+        const encoder = new TextEncoder();
+        const buffer = encoder.encode(String(data));
         parentPort.postMessage(
           {
             type: 'init',
-            data
+            data: buffer
           },
-          /* transferList */ [data.buffer]
+          /* transferList */ [buffer.buffer]
         );
       }
       // Important: Return to avoid sending another init signal on L107
