@@ -31,36 +31,33 @@ export class ThumbnailCache {
     cacheFilePath: string,
     currentFileLastModified?: string
   ): boolean {
-    if (!existsSync(cacheFilePath)) {
-      return false;
-    }
+    try {
+      if (!fs.existsSync(cacheFilePath)) {
+        return false;
+      }
 
-    const stats = fs.statSync(cacheFilePath);
-    const ageInMs = Date.now() - stats.mtimeMs;
-    if (ageInMs >= this.ttl) {
-      return false;
-    }
+      const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+      const cacheEntry: CacheEntry = JSON.parse(cacheContent);
+      const ageInMs = Date.now() - cacheEntry.cachedAt;
+      if (ageInMs >= this.ttl) {
+        return false;
+      }
 
-    if (currentFileLastModified) {
-      try {
-        const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
-        const cacheEntry: CacheEntry = JSON.parse(cacheContent);
-
+      if (currentFileLastModified) {
         const currentModTime = new Date(currentFileLastModified).getTime();
         const cachedModTime = new Date(cacheEntry.fileLastModified).getTime();
-
         if (currentModTime > cachedModTime) {
           console.log(
             `[Figma-Source] File was modified after cache (file: ${currentFileLastModified}, cache: ${cacheEntry.fileLastModified})`
           );
           return false;
         }
-      } catch (error) {
-        console.error(`[Figma-Source] Error reading cache for modification check: ${error}`);
-        return false;
       }
+      return true;
+    } catch (error) {
+      console.error(`[Figma-Source] Error reading cache for modification check: ${error}`);
+      return false;
     }
-    return true;
   }
 
   public getThumbnails(fileId: string, fileLastModified?: string): Record<string, string> | null {

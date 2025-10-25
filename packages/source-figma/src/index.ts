@@ -22,8 +22,8 @@ import type {
 } from './types/index.js';
 
 const baseSchema = httpSourceCreatorSchema.omit({
-  endpoints: true, // will be generated from the url in the stories object,
-  transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
+  endpoints: true,
+  transformerOptions: true
 });
 
 export const schema = baseSchema.merge(
