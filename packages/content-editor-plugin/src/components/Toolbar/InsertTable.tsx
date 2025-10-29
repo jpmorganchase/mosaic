@@ -81,7 +81,7 @@ export const InsertTable: FC<InsertTableProps> = ({
     setIsOpen(prevState => !prevState);
   };
 
-  const { context, floating, reference, strategy, x, y } = useFloatingUI({
+  const { context, floating, reference, strategy, x, y, elements } = useFloatingUI({
     placement: 'bottom',
     strategy: 'absolute',
     open: isOpen,
@@ -157,8 +157,12 @@ export const InsertTable: FC<InsertTableProps> = ({
         className={styles.popper}
         ref={floating}
         open={isOpen}
-        style={{ top: y ?? '', left: x ?? '', position: strategy }}
         {...getFloatingProps({})}
+        top={y ?? 0}
+        left={x ?? 0}
+        position={strategy}
+        width={elements.floating?.offsetWidth}
+        height={elements.floating?.offsetHeight}
       >
         <div
           className={styles.tableContainer}

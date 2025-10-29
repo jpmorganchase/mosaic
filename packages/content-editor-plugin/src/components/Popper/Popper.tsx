@@ -1,11 +1,11 @@
-import { forwardRef, HTMLAttributes, ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import classnames from 'clsx';
 
 import styles from './Popper.css';
-import { useFloatingComponent } from '@salt-ds/core';
+import { FloatingComponentProps, useFloatingComponent } from '@salt-ds/core';
 
-interface PopperProps extends HTMLAttributes<HTMLDivElement> {
+interface PopperProps extends FloatingComponentProps {
   /** Floating contents */
   children?: ReactNode;
   /** Class name */

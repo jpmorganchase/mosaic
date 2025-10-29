@@ -8,7 +8,7 @@ import {
   SELECTION_CHANGE_COMMAND
 } from 'lexical';
 import { flip, inline, useInteractions, useDismiss } from '@floating-ui/react';
-import { useFloatingUI, UseFloatingUIProps } from '@salt-ds/core';
+import { useFloatingUI } from '@salt-ds/core';
 import { Popper } from '../components/Popper/Popper';
 import { TextFormatTooltray } from '../components/Toolbar/TextFormatTooltray';
 import { InsertLinkButton } from '../components/Toolbar/InsertLink';
@@ -18,28 +18,19 @@ import styles from './FloatingToolbarPlugin.css';
 
 export function FloatingToolbarPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
-  const [floatingPosition, setFloatingPosition] = useState<{ x: number; y: number } | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 
-  const FloatingProps: UseFloatingUIProps = floatingPosition
-    ? {
-        middleware: [
-          inline(floatingPosition),
-          flip({
-            fallbackPlacements: ['bottom-start', 'top-start']
-          })
-        ]
-      }
-    : {
-        placement: 'bottom-start',
-        strategy: 'absolute'
-      };
-  const { context, floating, reference, strategy } = useFloatingUI({
+  const { context, refs, strategy, x, y, elements } = useFloatingUI({
     placement: 'bottom-start',
     open,
     onOpenChange: setOpen,
     strategy: 'absolute',
-    ...FloatingProps
+    middleware: [
+      inline(),
+      flip({
+        fallbackPlacements: ['bottom-start', 'top-start']
+      })
+    ]
   });
   const { getFloatingProps } = useInteractions([
     useDismiss(context, {
@@ -52,16 +43,16 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
     const nativeSelection = window.getSelection();
     const anchorEl = nativeSelection?.anchorNode?.parentElement;
     if ($isRangeSelection(selection) && anchorEl && !nativeSelection?.isCollapsed) {
-      reference(anchorEl);
-      const getRange = nativeSelection.getRangeAt(0);
-      const { x, y, height } = getRange.getBoundingClientRect();
-      setFloatingPosition({ x, y: y + height });
+      const range = nativeSelection.getRangeAt(0);
+      refs.setReference({
+        getBoundingClientRect: () => range.getBoundingClientRect(),
+        getClientRects: () => range.getClientRects()
+      });
       setOpen(true);
     } else {
-      setFloatingPosition(null);
       setOpen(false);
     }
-  }, [reference]);
+  }, [refs]);
 
   useEffect(
     () =>
@@ -84,12 +75,17 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
     [editor, updateToolbar]
   );
 
-  let style: Record<string, any> = { position: strategy };
-  if (floatingPosition) {
-    style = { ...style, top: floatingPosition.y, left: floatingPosition.x };
-  }
   return (
-    <Popper ref={floating} open={open} style={style} {...getFloatingProps({})}>
+    <Popper
+      ref={refs.setFloating}
+      open={open}
+      {...getFloatingProps({})}
+      top={y ?? 0}
+      left={x ?? 0}
+      position={strategy}
+      width={elements.floating?.offsetWidth}
+      height={elements.floating?.offsetHeight}
+    >
       <Toolbar aria-label="page editing toolbar" className={styles.toolbar}>
         <TextFormatTooltray floating />
         <Tooltray aria-label="text format tooltray">

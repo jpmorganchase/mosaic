@@ -170,7 +170,7 @@ export function TableActionMenuPlugin() {
   const [editor] = useLexicalComposerContext();
   const [tableCellNode, setTableMenuCellNode] = useState<TableCellNode | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const { context, floating, reference, strategy, x, y } = useFloatingUI({
+  const { context, floating, reference, strategy, x, y, elements } = useFloatingUI({
     placement: 'right',
     strategy: 'absolute',
     open: tableCellNode !== null,
@@ -254,8 +254,12 @@ export function TableActionMenuPlugin() {
     <Popper
       ref={floating}
       open={tableCellNode !== null}
-      style={{ top: y ?? '', left: x ?? '', position: strategy }}
       {...getFloatingProps({})}
+      top={y ?? 0}
+      left={x ?? 0}
+      position={strategy}
+      width={elements.floating?.offsetWidth}
+      height={elements.floating?.offsetHeight}
     >
       <TableActionMenu editor={editor} tableCellNode={tableCellNode} onComplete={handleComplete} />
     </Popper>
