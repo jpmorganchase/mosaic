@@ -11,20 +11,6 @@
     "build:snapshot:latest": {
       "cache": false
     },
-    "clean": {},
-    "debug": {},
-    "start": {},
-    "//#clean:site": {},
-    "//#copy:rig:images": {
-      "dependsOn": ["create:rig"],
-      "outputs": ["packages/rig/**"],
-      "inputs": ["./assets/*"]
-    },
-    "//#copy:site:images": {
-      "dependsOn": ["create:site"],
-      "outputs": ["packages/site/**"],
-      "inputs": ["./assets/*"]
-    },
     "dev": {
       "cache": false
     },
@@ -37,46 +23,13 @@
     "e2e:codegen": {
       "cache": false
     },
-    "//#create:site": {
-      "cache": false
-    },
-    "//#create:rig": {
-      "cache": false
-    },
-    "//#gen": {
-      "cache": false
-    },
-    "//#gen:rig": {
-      "cache": false
-    },
-    "//#gen:site": {
-      "cache": false
-    },
-    "//#gen:snapshot": {
-      "outputs": ["./packages/site/public/snapshots/[0-9]*/**"]
-    },
     "gen:snapshot": {
       "outputs": ["./packages/site/public/snapshots/latest/**"]
     },
     "lint": {},
-    "lint:fix": {},
-
-    "//#serve": {},
-    "serve": {
-      "outputs": []
-    },
-    "//#serve:rig": {},
-    "serve:rig": {
-      "outputs": []
-    },
-    "//#serve:snapshot:file": {},
-    "serve:snapshot:file": {
-      "outputs": []
-    },
-    "//#serve:snapshot:s3": {},
-    "serve:snapshot:s3": {
-      "outputs": []
-    },
+    "serve": {},
+    "serve:snapshot:file": {},
+    "serve:snapshot:s3": {},
     "test": {},
     "types": {}
   },

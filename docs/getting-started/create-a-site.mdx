@@ -16,17 +16,54 @@ To begin setting up a Mosaic site, you need to have the following software insta
 1. Yarn v1
 2. Node.js v18 or higher
 
-## Step 1: Generate a Mosaic site
+## Step 1: Set Up a Mosaic Site
 
-Run the following command in your project directory to generate a new Mosaic site:
+You can copy the `site` directory from this repository into your project. The site directory is a standard Next.js app that loads the packages created by this repo, with an additional `mosaic-config.mjs` file to configure sources and other settings.
 
-```bash
-npx @jpmorganchase/mosaic-create-site create -o my-sample-site
+**Steps:**
+
+1. Copy the `site` directory from this repository to your desired location (outside of this repo, such as your own project root).
+2. Configure the contents of the `site` directory as needed.
+   - Update `mosaic-config.mjs` to specify your content sources and other options.
+   - A local source is used to serve pages from the local file-system, which can be a clone of a remote repo.
+   - A remote source is used to pull content from a remote Git repository.
+
+```
+sources: [
+{
+    disabled: process.env.NODE_ENV !== 'development',
+    modulePath: '@jpmorganchase/mosaic-source-local-folder',
+    namespace: 'local', // each site has its own namespace, think of this as your content's uid
+    options: {
+      rootDir: '../../docs', // relative path to content, which can be a clone of another repo
+      prefixDir: 'local', // root path used for namespace
+      extensions: ['.mdx'] // extensions of content which should be pulled
+    }
+ },
+ {
+   modulePath: '@jpmorganchase/mosaic-source-git-repo',
+   namespace: 'remote', // each site has its own namespace, think of this as your content's uid
+   options: {
+     // To run a local instance that accesses remote repos, enter your credentials to access the BitBucket/GitHub repo
+     // !! Polite Reminder... do not store credentials in code !!
+     // For final deployments, you could put repo access credentials securely in environment variables provided by Gaia console.
+     // credentials: "{process.env.FID}:{process.env.FID_PERSONAL_ACCESS_TOKEN}",
+     // If running locally
+     // create an environment variable like MOSAIC_DOCS_CLONE_CREDENTIALS to let the user define it via the CLI
+     // export MOSAIC_DOCS_CLONE_CREDENTIALS="<sid>:<Personal Access Token (PAT) provided by your Repo OR password>",
+     credentials: process.env.MOSAIC_DOCS_CLONE_CREDENTIALS,
+     prefixDir: 'remote', // root path used for namespace
+     subfolder: 'docs', // subfolder within your branch containing the docs, typically 'docs'
+     repo: 'github.com/jpmorganchase/mosaic.git', // repo url without any protocol
+     branch: 'main', // branch where docs are pulled from
+     extensions: ['.mdx'], // extensions of content which should be pulled
+     remote: 'origin' // what is the shorthand name of the remote repo, typically 'origin'
+   }
+ }
+]
 ```
 
-This command creates a new Mosaic site in the my-sample-site directory.
-
-Next, navigate to the site directory:
+Next, navigate to your new site directory:
 
 ```bash
 cd my-sample-site
