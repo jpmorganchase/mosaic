@@ -15,8 +15,7 @@ export interface AudioPlayerProps {
 function timeFormat(durationS): string {
   const date = new Date(0);
   date.setSeconds(durationS);
-  const timeString = date.toISOString().substring(11, 19);
-  return timeString;
+  return date.toISOString().substring(11, 19);
 }
 
 const forwardIconByVariant = {
@@ -38,8 +37,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
   const [isPlaying, setIsPlaying] = useState(false);
   const [mute, setMute] = useState(false);
   const [playDisabled, setPlayDisabled] = useState(true);
-  const [durationString, setDurationString] = useState('00:00:00');
-  const [timeNowString, setTimeNowString] = useState('00:00:00');
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [timeNowSeconds, setTimeNowSeconds] = useState(0);
 
@@ -49,16 +46,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
 
   const timeUpdate = useCallback(() => {
     if (audioElem) {
-      const currentTimeFormatted = timeFormat(audioElem.currentTime);
-      setTimeNowString(currentTimeFormatted);
       setTimeNowSeconds(audioElem.currentTime);
     }
   }, [audioElem]);
 
   const onLoad = useCallback(() => {
     if (audioElem) {
-      const durationFormatted = timeFormat(audioElem.duration);
-      setDurationString(durationFormatted);
       setDurationSeconds(audioElem.duration);
       setPlayDisabled(false);
     }
@@ -109,9 +102,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
     }
   };
 
-  const handleSliderInput = e => {
+  const handleSliderInput = (_: Event, value: number) => {
     if (audioElem) {
-      audioElem.currentTime = e;
+      audioElem.currentTime = value;
       timeUpdate();
     }
   };
@@ -127,15 +120,16 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, title, skipDurati
       <audio ref={audioRef} aria-label="audio" src={`${src}`} />
       <Caption3 className={styles.title}>{title}</Caption3>
       <div className={styles.sliderContainer}>
-        <Caption6>{timeNowString}</Caption6>
+        <Caption6>{timeFormat(timeNowSeconds)}</Caption6>
         <Slider
           className={styles.slider}
           min={0}
           max={durationSeconds}
           value={timeNowSeconds}
           onChange={handleSliderInput}
+          format={value => timeFormat(value)}
         />
-        <Caption6>{durationString}</Caption6>
+        <Caption6>{timeFormat(durationSeconds)}</Caption6>
       </div>
 
       <div className={styles.buttonBar}>

@@ -13,8 +13,7 @@ export interface VideoPlayerProps {
 function timeFormat(durationS): string {
   const date = new Date(0);
   date.setSeconds(durationS);
-  const timeString = date.toISOString().substring(11, 19);
-  return timeString;
+  return date.toISOString().substring(11, 19);
 }
 
 const forwardIconByVariant = {
@@ -37,8 +36,6 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
 }) => {
   const [videoElem, setVideoElem] = useState<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [durationString, setDurationString] = useState('00:00:00');
-  const [timeNowString, setTimeNowString] = useState('00:00:00');
   const [durationSeconds, setDurationSeconds] = useState(0);
   const [timeNowSeconds, setTimeNowSeconds] = useState(0);
   const [volumeOn, setVolumeOn] = useState(true);
@@ -52,8 +49,6 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
 
   const onLoad = useCallback(() => {
     if (videoElem) {
-      const durationFormatted = timeFormat(videoElem.duration);
-      setDurationString(durationFormatted);
       setDurationSeconds(videoElem.duration);
       setMetaDataLoaded(true);
     }
@@ -61,8 +56,6 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
 
   const timeUpdate = useCallback(() => {
     if (videoElem) {
-      const currentTimeFormatted = timeFormat(videoElem.currentTime);
-      setTimeNowString(currentTimeFormatted);
       setTimeNowSeconds(videoElem.currentTime);
     }
   }, [videoElem]);
@@ -114,9 +107,9 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
     }
   };
 
-  const handleSliderInput = e => {
+  const handleSliderInput = (_: Event, value: number) => {
     if (videoElem) {
-      videoElem.currentTime = e;
+      videoElem.currentTime = value;
       timeUpdate();
     }
   };
@@ -156,15 +149,16 @@ export const VideoPlayer: React.FC<React.PropsWithChildren<VideoPlayerProps>> = 
         </div>
 
         <div className={styles.sliderContainer}>
-          <Caption6>{timeNowString}</Caption6>
+          <Caption6>{timeFormat(timeNowSeconds)}</Caption6>
           <Slider
             className={styles.slider}
             min={0}
             max={durationSeconds}
             value={timeNowSeconds}
             onChange={handleSliderInput}
+            format={value => timeFormat(value)}
           />
-          <Caption6> {durationString}</Caption6>
+          <Caption6>{timeFormat(durationSeconds)}</Caption6>
         </div>
         <div className={classnames(styles.buttonBar, styles.leftAlign)}>
           <div>

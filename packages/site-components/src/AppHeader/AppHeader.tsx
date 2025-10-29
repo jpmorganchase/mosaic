@@ -45,8 +45,16 @@ export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title
             {logo && (
               <div className={styles.logo}>
                 <ImageComponent className={styles.logoImage} src={logo} alt="homepage" />
-                <Divider className={styles.logoDivider} variant="tertiary" orientation="vertical" />
-                <Text>{title}</Text>
+                {title && (
+                  <>
+                    <Divider
+                      className={styles.logoDivider}
+                      variant="tertiary"
+                      orientation="vertical"
+                    />
+                    <Text>{title}</Text>
+                  </>
+                )}
               </div>
             )}
           </Link>

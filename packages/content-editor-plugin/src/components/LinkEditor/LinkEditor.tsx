@@ -23,7 +23,7 @@ export function LinkEditor() {
     setLastSelection(null);
   };
 
-  const { context, floating, reference, strategy, x, y } = useFloatingUI({
+  const { context, floating, reference, strategy, x, y, elements } = useFloatingUI({
     placement: 'right',
     strategy: 'absolute',
     open: linkUrl.length > 0,
@@ -89,8 +89,12 @@ export function LinkEditor() {
       className={styles.popper}
       ref={floating}
       open={linkUrl.length > 0}
-      style={{ top: y ?? '', left: x ?? '', position: strategy }}
       {...getFloatingProps({})}
+      top={y ?? 0}
+      left={x ?? 0}
+      position={strategy}
+      width={elements.floating?.offsetWidth}
+      height={elements.floating?.offsetHeight}
     >
       {!isEdit ? (
         <EditLinkButton onClick={handleEdit} />
