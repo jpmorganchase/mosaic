@@ -1,5 +1,27 @@
 # @jpmorganchase/mosaic-site
 
+## 0.1.0-beta.95
+
+### Minor Changes
+
+- 7e4a9788: Remove @salt-ds/lab usage.
+
+### Patch Changes
+
+- Updated dependencies [7e4a9788]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.95
+  - @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.95
+  - @jpmorganchase/mosaic-layouts@0.1.0-beta.95
+  - @jpmorganchase/mosaic-site-components@0.1.0-beta.95
+  - @jpmorganchase/mosaic-site-preset-styles@0.1.0-beta.95
+  - @jpmorganchase/mosaic-sitemap-component@0.1.0-beta.95
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.95
+  - @jpmorganchase/mosaic-cli@0.1.0-beta.95
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.95
+  - @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.95
+  - @jpmorganchase/mosaic-standard-generator@0.1.0-beta.95
+  - @jpmorganchase/mosaic-store@0.1.0-beta.95
+
 ## 0.1.0-beta.94
 
 ### Patch Changes
