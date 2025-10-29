@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.94",
-    "@salt-ds/core": "^1.45.0",
+    "@salt-ds/core": "^1.52.0",
     "d3": "^7.7.0"
   },
   "peerDependencies": {
