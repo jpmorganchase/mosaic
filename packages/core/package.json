@@ -36,16 +36,16 @@
     "cors": "^2.8.5"
   },
   "dependencies": {
-    "gray-matter": "^4.0.3",
     "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.94",
-    "md5": "*",
-    "unionfs": "^4.4.0",
-    "lodash-es": "^4.17.21",
     "fast-glob": "*",
+    "gray-matter": "^4.0.3",
+    "lodash-es": "^4.17.21",
+    "md5": "*",
     "memfs": "^4.0.0",
-    "rxjs": "^7.5.5"
+    "rxjs": "^7.5.5",
+    "unionfs": "^4.4.0"
   }
 }

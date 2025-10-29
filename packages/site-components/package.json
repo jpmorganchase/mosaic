@@ -22,7 +22,7 @@
     }
   },
   "scripts": {
-    "build": "npm-run-all --parallel build:*",
+    "build": "npm-run-all --parallel \"build:*\"",
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",

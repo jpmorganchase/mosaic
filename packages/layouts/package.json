@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm-run-all --parallel build:*",
+    "build": "npm-run-all --parallel \"build:*\"",
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "del-cli": "^4.0.1",
-    "esbuild-node-externals": "^1.0.2",
+    "esbuild-node-externals": "^1.18.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
