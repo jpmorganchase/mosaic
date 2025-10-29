@@ -1,5 +1,16 @@
 # @jpmorganchase/mosaic-sitemap-component
 
+## 0.1.0-beta.95
+
+### Minor Changes
+
+- 7e4a9788: Remove @salt-ds/lab usage.
+
+### Patch Changes
+
+- Updated dependencies [7e4a9788]
+  - @jpmorganchase/mosaic-components@0.1.0-beta.95
+
 ## 0.1.0-beta.94
 
 ### Patch Changes

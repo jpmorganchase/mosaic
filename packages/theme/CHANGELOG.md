@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.95
+
+### Minor Changes
+
+- 7e4a9788: Remove @salt-ds/lab usage.
+
 ## 0.1.0-beta.94
 
 ## 0.1.0-beta.93
