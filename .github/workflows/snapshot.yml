@@ -83,7 +83,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: yarn --immutable
+        run: yarn
       - name: Exit pre mode if pre.json exists
         run: rm -f .changeset/pre.json
       - name: Create and publish snapshot release
