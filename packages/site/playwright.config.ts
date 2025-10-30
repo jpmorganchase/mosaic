@@ -1,4 +1,4 @@
-import { PlaywrightTestConfig, devices } from '@playwright/test';
+import { devices, defineConfig } from '@playwright/test';
 import path from 'path';
 
 // Use process.env.PORT by default and fallback to port 3000
@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || `http://localhost:${PORT}`;
 
 // Reference: https://playwright.dev/docs/test-configuration
-const config: PlaywrightTestConfig = {
+export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   // Timeout per test
   timeout: 120 * 1000,
@@ -52,5 +52,4 @@ const config: PlaywrightTestConfig = {
       use: { ...devices['Desktop Safari'] }
     }
   ]
-};
-export default config;
+});
