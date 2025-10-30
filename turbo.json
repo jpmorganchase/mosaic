@@ -1,5 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
+  "globalPassThroughEnv": ["PLAYWRIGHT_TEST_BASE_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
