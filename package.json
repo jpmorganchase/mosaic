@@ -25,7 +25,6 @@
     "gen": "turbo run gen:site gen:snapshot --filter=//",
     "lint": "turbo run lint",
     "mosaic": "node ./packages/cli/dist/index.js",
-    "postinstall": "patch-package",
     "prepare": "husky install",
     "prettier:ci": "prettier --check .",
     "prettier": "prettier --write .",
@@ -63,7 +62,7 @@
     "esbuild-node-externals": "^1.18.0",
     "eslint": "^8.56.0",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-airbnb-extended": "^2.3.2",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.29.1",
@@ -77,19 +76,18 @@
     "identity-obj-proxy": "^3.0.0",
     "jsdom": "^25.0.0",
     "lint-staged": "^13.0.3",
-    "npm-run-all": "^4.0.2",
-    "patch-package": "^7.0.0",
     "prettier": "^2.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resize-observer-polyfill": "1.5.1",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^3.0.0"
   },
   "dependencies": {
     "@types/swagger-ui-react": "^5.0.0",
     "swagger-client": "^3.34.1",
-    "swagger-ui-react": "^5.0.0",
+    "swagger-ui-react": "^5.30.0",
     "turbo": "latest"
   },
   "resolutions": {
@@ -99,7 +97,8 @@
     "commander": "^9.4.0",
     "cookie": "^1.0.0",
     "esbuild": "0.25.0",
-    "json5": "^1.0.2"
+    "json5": "^1.0.2",
+    "prismjs": "1.30.0"
   },
   "lint-staged": {
     "*": [

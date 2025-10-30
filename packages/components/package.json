@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm-run-all --parallel \"build:*\"",
+    "build": "concurrently \"yarn:build:*\"",
     "build:types": "tsc",
     "build:components": "node  ../../scripts/bundle.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
@@ -57,7 +57,7 @@
     "react-responsive-carousel": "3.2.10",
     "react-table": "^7.8.0",
     "shiki": "^3.0.0",
-    "swagger-ui-react": "^5.0.0",
+    "swagger-ui-react": "^5.30.0",
     "use-memo-one": "^1.1.1",
     "warning": "^3.0.0"
   },

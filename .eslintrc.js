@@ -1,5 +1,13 @@
+const { configs } = require('eslint-config-airbnb-extended/legacy');
+
 module.exports = {
-  extends: ['airbnb', 'airbnb-typescript', 'plugin:eslint-comments/recommended', 'prettier'],
+  extends: [
+    'airbnb',
+    'airbnb-typescript',
+    'plugin:eslint-comments/recommended',
+    'prettier',
+    ...configs.react.typescript
+  ],
   parserOptions: {
     project: ['./tsconfig.json']
   },

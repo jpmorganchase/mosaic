@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm-run-all --parallel \"build:*\"",
+    "build": "concurrently \"yarn:build:*\"",
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
@@ -49,7 +49,7 @@
     "deepmerge": "^2.0.1",
     "lodash-es": "^4.17.21",
     "react-markdown": "^9.0.0",
-    "swagger-ui-react": "^5.0.0",
+    "swagger-ui-react": "^5.30.0",
     "use-memo-one": "^1.1.1",
     "warning": "^3.0.0"
   },

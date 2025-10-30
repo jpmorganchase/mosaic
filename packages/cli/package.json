@@ -24,7 +24,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm-run-all --parallel \"build:*\"",
+    "build": "concurrently \"yarn:build:*\"",
     "build:types": "tsc",
     "build:cli": "node ./scripts/bundle.mjs",
     "clean": "rm -fr dist",

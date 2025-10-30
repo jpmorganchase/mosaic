@@ -45,11 +45,11 @@
     "@types/react": "^18.3.12",
     "https-proxy-agent": "^7.0.0",
     "next": "^14.2.32",
-    "next-auth": "^4.24.5"
+    "next-auth": "^4.24.13"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.2.22",
-    "@playwright/test": "^1.49.1",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20.0.0",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
