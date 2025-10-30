@@ -25,5 +25,5 @@
 
 Update yarn to 4.10.3
 
-- pip Salt version
 - pip dependencies to allow for internal JPM build
+- removed `create-site` as un-used, `site` directory can be copied, refer to docs for more details
