@@ -9,13 +9,24 @@ next-env.d.ts
 # Dependencies
 **/node_modules
 
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Identify the release and plugin bundles as binary content.
+# This way Git won't bother showing massive diffs when each time you subsequently add or update them
+/.yarn/releases/** binary
+/.yarn/plugins/** binary
+
 # Production
 **/dist-labs/
 **/.tmp/**
 tsconfig.tsbuildinfo
 
 # Deployment
-packages/rig
 packages/site/public/images
 
 # Test Results

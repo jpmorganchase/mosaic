@@ -21,14 +21,15 @@ jobs:
         node-version: ['18', '20']
 
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Use Node.js
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn --frozen-lockfile
+        run: yarn
       - name: 'Build internal prerequisites'
         run: yarn build
       - name: Run Tests
@@ -38,14 +39,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn --frozen-lockfile
+        run: yarn
       - name: Prettier
         run: yarn run prettier:ci
       - name: Lint
