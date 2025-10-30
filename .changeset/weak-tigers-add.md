@@ -1,6 +1,5 @@
 ---
 '@jpmorganchase/mosaic-content-editor-plugin': patch
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-theme': patch
 ---
 

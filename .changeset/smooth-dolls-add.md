@@ -1,7 +1,6 @@
 ---
 '@jpmorganchase/mosaic-cli': patch
 '@jpmorganchase/mosaic-schemas': patch
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-types': patch
 '@jpmorganchase/mosaic-workflows': patch
 ---

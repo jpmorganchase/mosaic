@@ -3,7 +3,6 @@
 '@jpmorganchase/mosaic-content-editor-plugin': patch
 '@jpmorganchase/mosaic-icons': patch
 '@jpmorganchase/mosaic-layouts': patch
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-site-components': patch
 '@jpmorganchase/mosaic-site-preset-styles': patch
 '@jpmorganchase/mosaic-sitemap-component': patch

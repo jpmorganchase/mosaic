@@ -15,7 +15,6 @@
     "@jpmorganchase/mosaic-workflows": "0.1.0-beta.6",
     "@jpmorganchase/mosaic-components": "0.1.0-beta.8",
     "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-create-site": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-layouts": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.9",
     "@jpmorganchase/mosaic-site": "0.1.0-beta.9",

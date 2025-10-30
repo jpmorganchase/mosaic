@@ -11,7 +11,6 @@
 '@jpmorganchase/mosaic-source-git-repo': patch
 '@jpmorganchase/mosaic-source-readme': patch
 '@jpmorganchase/mosaic-source-figma': patch
-'@jpmorganchase/mosaic-create-site': patch
 '@jpmorganchase/mosaic-components': patch
 '@jpmorganchase/mosaic-layouts': patch
 '@jpmorganchase/mosaic-plugins': patch
@@ -19,7 +18,6 @@
 '@jpmorganchase/mosaic-store': patch
 '@jpmorganchase/mosaic-theme': patch
 '@jpmorganchase/mosaic-core': patch
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-cli': patch
 ---
 

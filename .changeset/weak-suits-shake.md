@@ -1,6 +1,5 @@
 ---
 '@jpmorganchase/mosaic-plugins': patch
-'@jpmorganchase/mosaic-site': patch
 ---
 
 Add DocumentAssetPlugin

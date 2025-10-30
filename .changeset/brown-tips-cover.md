@@ -1,5 +1,4 @@
 ---
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-standard-generator': patch
 ---
 
