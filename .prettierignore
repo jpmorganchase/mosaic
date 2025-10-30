@@ -25,3 +25,5 @@ LICENSE
 Dockerfile
 Dockerfile.*
 .vercelignore
+.yarn/
+.turbo/
