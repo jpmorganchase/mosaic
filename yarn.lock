@@ -12373,7 +12373,7 @@ __metadata:
   resolution: "playwright-core@npm:1.56.1"
   bin:
     playwright-core: cli.js
-  checksum: 10/a8769c3de82a0f0195341063ec1ab695c9fac47c212eebeb5ada47e70f33af710e5511b0863e39cc474561c0049d2f0651c0e5561712615b1796f157625a7ff5
+  checksum: 10/df785eb3b3a8392b10dcde5f768e09b7fe459a7b06ed81180da69e048f2154b761f86d79572c2b62037a1f18a44e4ace72f5b6547f4f473b4ab13ab1d94007d2
   languageName: node
   linkType: hard
 
