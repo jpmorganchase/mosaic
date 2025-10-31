@@ -1,13 +1,66 @@
 import dotenvLoad from 'dotenv-load';
-import deepmerge from 'deepmerge';
-import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
-
 dotenvLoad();
 
-const siteConfig = {
-  ...mosaicConfig,
+const config = {
+  pageExtensions: ['.mdx', '.json'],
+  ignorePages: ['shared-config.json', 'sitemap.xml', 'sidebar.json'],
+  serialisers: [
+    {
+      modulePath: '@jpmorganchase/mosaic-serialisers/mdx',
+      filter: /\.mdx$/,
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-serialisers/md',
+      filter: /\.md$/,
+      options: {}
+    }
+  ],
   plugins: [
-    ...mosaicConfig.plugins,
+    // --- Plugins from first config ---
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+      previewDisabled: true,
+      options: { siteUrl: process.env.SITE_URL || 'http://localhost:3000' }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
+      previewDisabled: true,
+      options: { maxLineLength: 240, maxLineCount: 240 }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
+      options: { indexPageName: 'index.mdx' }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/LazyPagePlugin',
+      priority: -2,
+      runTimeOnly: true,
+      options: { cacheDir: '.tmp/.pull-docs-last-page-plugin-cache' }
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/PagesWithoutFileExtPlugin',
+      options: {},
+      priority: 1
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/ReadingTimePlugin',
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SharedConfigPlugin',
+      options: { filename: 'shared-config.json' },
+      priority: 3
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      options: { minRank: 2, maxRank: 3 }
+    },
+    // --- Plugins from second config ---
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
       options: { rootDirGlob: '*/*' }
@@ -34,10 +87,7 @@ const siteConfig = {
         imagesPrefix: '/images'
       }
     }
-  ]
-};
-
-export default deepmerge(siteConfig, {
+  ],
   deployment: { mode: 'snapshot-file', platform: 'vercel' },
   sources: [
     /**
@@ -48,15 +98,15 @@ export default deepmerge(siteConfig, {
     {
       disabled: process.env.NODE_ENV !== 'development',
       modulePath: '@jpmorganchase/mosaic-source-local-folder',
-      namespace: 'mosaic', // each site has it's own namespace, think of this as your content's uid
+      namespace: 'mosaic',
       options: {
-        rootDir: '../../docs', // relative path to content
-        prefixDir: 'mosaic', // root path used for namespace
-        extensions: ['.mdx'] // extensions of content which should be pulled
+        rootDir: '../../docs',
+        prefixDir: 'mosaic',
+        extensions: ['.mdx']
       }
     },
     /**
-     * Tags examples require multiple sources
+     * Documentation, tags examples require multiple sources
      */
     {
       disabled: process.env.NODE_ENV !== 'development',
@@ -69,4 +119,6 @@ export default deepmerge(siteConfig, {
       }
     }
   ]
-});
+};
+
+export default config;

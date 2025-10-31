@@ -1,5 +1,5 @@
 import deepmerge from 'deepmerge';
-import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+import mosaicConfig from '@jpmorganchase/mosaic-site/mosaic.config.mjs';
 
 const siteConfig = {
   ...mosaicConfig,
