@@ -20,6 +20,8 @@ export type SiteState = BreadcrumbsSlice &
   NavigationSlice &
   SearchIndexSlice &
   SharedConfigSlice & {
+    /** Commit timestamp */
+    lastModified?: string;
     /** Page metadata description, used by search */
     description?: string;
     /** Page route */

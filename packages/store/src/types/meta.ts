@@ -10,4 +10,6 @@ export type MetaSlice = {
   breadcrumbs?: Breadcrumb[];
   /** Page title */
   title?: string;
+  /** Last modified */
+  lastModified?: string;
 };
