@@ -12,6 +12,7 @@
     "build:snapshot:latest": {
       "cache": false
     },
+    "clean": {},
     "dev": {
       "cache": false
     },

@@ -51,7 +51,6 @@
     "@jpmorganchase/mosaic-core": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.94",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",

@@ -1658,7 +1658,6 @@ __metadata:
     "@jpmorganchase/mosaic-core": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.94"
-    "@jpmorganchase/mosaic-standard-generator": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.94"
     "@types/ws": "npm:^8.5.7"
     commander: "npm:^9.4.1"
@@ -2011,7 +2010,6 @@ __metadata:
     "@jpmorganchase/mosaic-sitemap-component": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.94"
-    "@jpmorganchase/mosaic-standard-generator": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.94"
     "@next/eslint-plugin-next": "npm:^14.2.22"
@@ -2134,14 +2132,6 @@ __metadata:
     rxjs: "npm:^7.5.5"
     undici: "npm:^6.0.0"
     zod: "npm:^3.22.3"
-  languageName: unknown
-  linkType: soft
-
-"@jpmorganchase/mosaic-standard-generator@npm:^0.1.0-beta.94, @jpmorganchase/mosaic-standard-generator@workspace:packages/standard-generator":
-  version: 0.0.0-use.local
-  resolution: "@jpmorganchase/mosaic-standard-generator@workspace:packages/standard-generator"
-  dependencies:
-    dotenv-load: "npm:^2.0.1"
   languageName: unknown
   linkType: soft
 
@@ -7651,13 +7641,13 @@ __metadata:
   linkType: hard
 
 "eslint-config-prettier@npm:^8.5.0":
-  version: 8.5.0
-  resolution: "eslint-config-prettier@npm:8.5.0"
+  version: 8.10.2
+  resolution: "eslint-config-prettier@npm:8.10.2"
   peerDependencies:
     eslint: ">=7.0.0"
   bin:
     eslint-config-prettier: bin/cli.js
-  checksum: 10/cafd93fb39997969e9e79b3e0b3466d0b8570273d15423986597b8422b7363d4a80f009aec1d1443fa2329972dafde79031b1649590cc35069b0a68d31098e7b
+  checksum: 10/9818f26eebf32c5698bcc68d9b05e985ccaa6862488a32305681f9f025248c4b9192e587969594b3e79a814f965f808f513f63921dbb14639501fa61d6e6560d
   languageName: node
   linkType: hard
 
@@ -7792,11 +7782,11 @@ __metadata:
   linkType: hard
 
 "eslint-plugin-promise@npm:^6.0.1":
-  version: 6.1.1
-  resolution: "eslint-plugin-promise@npm:6.1.1"
+  version: 6.6.0
+  resolution: "eslint-plugin-promise@npm:6.6.0"
   peerDependencies:
-    eslint: ^7.0.0 || ^8.0.0
-  checksum: 10/216c4348f796c5e90984224532d42a8f8d0455b8cbb1955bcb328b3aa10a52e9718f6fb044b6fe19825eda3a2d62a32b1042d9cbb10731353cf61b7a6cab2d71
+    eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
+  checksum: 10/c2b5604efd7e1390c132fcbf06cb2f072c956ffa65c14a991cb74ba1e2327357797239cb5b9b292d5e4010301bb897bd85a6273d7873fb157edc46aa2d95cbd9
   languageName: node
   linkType: hard
 
@@ -7904,7 +7894,7 @@ __metadata:
     strip-ansi: "npm:^6.0.1"
     text-table: "npm:^0.2.0"
   bin:
-    eslint: bin/eslint.js
+    eslint: ./bin/eslint.js
   checksum: 10/5504fa24879afdd9f9929b2fbfc2ee9b9441a3d464efd9790fbda5f05738858530182029f13323add68d19fec749d3ab4a70320ded091ca4432b1e9cc4ed104c
   languageName: node
   linkType: hard
@@ -8349,19 +8339,20 @@ __metadata:
   linkType: hard
 
 "flat-cache@npm:^3.0.4":
-  version: 3.0.4
-  resolution: "flat-cache@npm:3.0.4"
+  version: 3.2.0
+  resolution: "flat-cache@npm:3.2.0"
   dependencies:
-    flatted: "npm:^3.1.0"
+    flatted: "npm:^3.2.9"
+    keyv: "npm:^4.5.3"
     rimraf: "npm:^3.0.2"
-  checksum: 10/9fe5d0cb97c988e3b25242e71346965fae22757674db3fca14206850af2efa3ca3b04a3ba0eba8d5e20fd8a3be80a2e14b1c2917e70ffe1acb98a8c3327e4c9f
+  checksum: 10/02381c6ece5e9fa5b826c9bbea481d7fd77645d96e4b0b1395238124d581d10e56f17f723d897b6d133970f7a57f0fab9148cbbb67237a0a0ffe794ba60c0c70
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.1.0":
-  version: 3.2.5
-  resolution: "flatted@npm:3.2.5"
-  checksum: 10/eed01f72ad0317561e4d6187f7408dc391f7849d9cd6700520ce06155d1859539b6899afdfefc815ce51ec48f97d1015350287c541b5302a49581cf25cec1cd2
+"flatted@npm:^3.2.9":
+  version: 3.3.3
+  resolution: "flatted@npm:3.3.3"
+  checksum: 10/8c96c02fbeadcf4e8ffd0fa24983241e27698b0781295622591fc13585e2f226609d95e422bcf2ef044146ffacb6b68b1f20871454eddf75ab3caa6ee5f4a1fe
   languageName: node
   linkType: hard
 
@@ -10005,6 +9996,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-buffer@npm:3.0.1":
+  version: 3.0.1
+  resolution: "json-buffer@npm:3.0.1"
+  checksum: 10/82876154521b7b68ba71c4f969b91572d1beabadd87bd3a6b236f85fbc7dc4695089191ed60bb59f9340993c51b33d479f45b6ba9f3548beb519705281c32c3c
+  languageName: node
+  linkType: hard
+
 "json-parse-even-better-errors@npm:^2.3.0":
   version: 2.3.1
   resolution: "json-parse-even-better-errors@npm:2.3.1"
@@ -10088,6 +10086,15 @@ __metadata:
   version: 3.1.2
   resolution: "jwt-decode@npm:3.1.2"
   checksum: 10/20a4b072d44ce3479f42d0d2c8d3dabeb353081ba4982e40b83a779f2459a70be26441be6c160bfc8c3c6eadf9f6380a036fbb06ac5406b5674e35d8c4205eeb
+  languageName: node
+  linkType: hard
+
+"keyv@npm:^4.5.3":
+  version: 4.5.4
+  resolution: "keyv@npm:4.5.4"
+  dependencies:
+    json-buffer: "npm:3.0.1"
+  checksum: 10/167eb6ef64cc84b6fa0780ee50c9de456b422a1e18802209234f7c2cf7eae648c7741f32e50d7e24ccb22b24c13154070b01563d642755b156c357431a191e75
   languageName: node
   linkType: hard
 
@@ -12383,7 +12390,7 @@ __metadata:
   resolution: "playwright-core@npm:1.56.1"
   bin:
     playwright-core: cli.js
-  checksum: 10/df785eb3b3a8392b10dcde5f768e09b7fe459a7b06ed81180da69e048f2154b761f86d79572c2b62037a1f18a44e4ace72f5b6547f4f473b4ab13ab1d94007d2
+  checksum: 10/a8769c3de82a0f0195341063ec1ab695c9fac47c212eebeb5ada47e70f33af710e5511b0863e39cc474561c0049d2f0651c0e5561712615b1796f157625a7ff5
   languageName: node
   linkType: hard
 

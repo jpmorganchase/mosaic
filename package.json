@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
-    "build": "turbo run build",
+    "build": "turbo run build --filter=!@jpmorganchase/mosaic-site",
     "clean": "turbo run clean",
     "deploy:site": "turbo run deploy --filter=@jpmorganchase/mosaic-site",
     "deploy": "yarn build:site",
