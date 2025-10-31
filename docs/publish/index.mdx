@@ -7,8 +7,6 @@ sidebar:
 
 # {meta.title}
 
-To create your first Mosaic site, we have created a command line generator that scaffolds a _standard_ site.
-
 A _standard_ site offers
 
 - an out the box, working site, which showcases local and remote content sources
@@ -17,18 +15,12 @@ A _standard_ site offers
 
 ## Create your first site
 
-Install the Mosaic create site script.
+Duplicate the `site` package from the Mosaic monorepo to create your own site.
 
 ```
-> yarn global add @jpmorganchase/mosaic-create-site
-```
-
-Create a directory for your site and run the `mosaic-create-site` script.
-
-```
-> mkdir mosaic-sample-site
+> git clone https://github.com/jpmorganchase/mosaic.git
+> cp -r mosaic/packages/site mosaic-sample-site
 > cd mosaic-sample-site
-> mosaic-create-site -f .
 ```
 
 Define the environment variable, which enables us to access your remote repo.
