@@ -12,7 +12,8 @@
       "import": "./dist/index.mjs",
       "node": "./dist/index.mjs",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./fs.config.js": "./fs.config.js"
   },
   "engines": {
     "node": ">=18.0.0 || >=20.0.0"
@@ -21,7 +22,8 @@
     "mosaic": "./dist/index.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "fs.config.js"
   ],
   "scripts": {
     "build": "concurrently \"yarn:build:*\"",
