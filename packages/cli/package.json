@@ -12,7 +12,8 @@
       "import": "./dist/index.mjs",
       "node": "./dist/index.mjs",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./fs.config.js": "./fs.config.js"
   },
   "engines": {
     "node": ">=18.0.0 || >=20.0.0"
@@ -21,7 +22,8 @@
     "mosaic": "./dist/index.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "fs.config.js"
   ],
   "scripts": {
     "build": "concurrently \"yarn:build:*\"",
@@ -51,7 +53,6 @@
     "@jpmorganchase/mosaic-core": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.94",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-standard-generator": "^0.1.0-beta.94",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
     "deepmerge": "^4.2.2",

@@ -1,20 +1,21 @@
 import dotenvLoad from 'dotenv-load';
 import deepmerge from 'deepmerge';
-import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
 
 dotenvLoad();
 
 const siteConfig = {
-  ...mosaicConfig,
+  ...fsConfig,
   plugins: [
-    ...mosaicConfig.plugins,
+    ...fsConfig.plugins,
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
+      previewDisabled: true,
+      options: { siteUrl: process.env.SITE_URL || 'http://localhost:3000' }
+    },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
       options: { rootDirGlob: '*/*' }
-    },
-    {
-      modulePath: '@jpmorganchase/mosaic-plugins/FragmentPlugin',
-      options: {}
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/PublicAssetsPlugin',
@@ -56,7 +57,7 @@ export default deepmerge(siteConfig, {
       }
     },
     /**
-     * Tags examples require multiple sources
+     * Documentation, tags examples require multiple sources
      */
     {
       disabled: process.env.NODE_ENV !== 'development',

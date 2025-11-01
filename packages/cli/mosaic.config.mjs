@@ -1,10 +1,10 @@
 import deepmerge from 'deepmerge';
-import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+import fsConfig from './fs.config.js';
 
 const siteConfig = {
-  ...mosaicConfig,
+  ...fsConfig,
   plugins: [
-    ...mosaicConfig.plugins,
+    ...fsConfig.plugins,
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SidebarPlugin',
       options: { rootDirGlob: '*/*' }

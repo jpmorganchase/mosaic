@@ -7,16 +7,7 @@ layout: DetailTechnical
 
 Publish a site to AWS using S3 snapshots.
 
-## Step 1: Generate a Mosaic site
-
-If you have already created your Mosaic site, skip ahead to step 2.
-
-```
-> npx @jpmorganchase/mosaic-create-site -o my-sample-site
-> cd my-sample-site
-```
-
-## Step 2: Create a Github repository
+## Step 1: Create a Github repository
 
 ```
 > git init
@@ -26,7 +17,7 @@ If you have already created your Mosaic site, skip ahead to step 2.
 > git push origin main
 ```
 
-## Step 3: Generate a snapshot of content
+## Step 2: Generate a snapshot of content
 
 Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
 
@@ -34,7 +25,7 @@ Consider a snapshot as a directory of static content previously pulled from your
 > yarn gen:snapshot
 ```
 
-## Step 4: Configure environment for S3
+## Step 3: Configure environment for S3
 
 ```
 > export MOSAIC_MODE="snapshot-s3"
@@ -45,13 +36,13 @@ Consider a snapshot as a directory of static content previously pulled from your
 > yarn mosaic upload -S ./snapshots/latest
 ```
 
-## Step 5: Setup AWS
+## Step 4: Setup AWS
 
 Switch to the [AWS Amplify](https://aws.amazon.com/amplify/hosting/) console and deploy your app as a SSR application by following the [AWS docs](https://docs.amplify.aws/guides/hosting/nextjs/q/platform/js/).
 
 Setup an S3 bucket as per the [AWS S3 docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html).
 
-## Step 7: Configure your AWS app
+## Step 5: Configure your AWS app
 
 Add the environment vars to the hosted app via your console
 
@@ -87,7 +78,7 @@ frontend:
 
 Ensure the Node is set to 16
 
-## Step 8: Upload your snapshot
+## Step 6: Upload your snapshot
 
 Upload your snapshot to S3 storage.
 

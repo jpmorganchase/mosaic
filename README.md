@@ -7,8 +7,7 @@ Mosaic is a **content aggregating, headless CMS solution** which can be ran with
 
 ## How To Create Your Own Mosaic Site
 
-To create a Mosaic site, we have created a simple command line generator.  
-Refer to [@jpmorganchase/mosaic-create-site](./packages/create-site/README.md)
+You can copy the `site` directory from this repository into your project. The site directory is a standard Next.js app that loads the packages created by this repo, with an additional `mosaic-config.mjs` file to configure sources and other settings.
 
 ## Serving A Dynamic, Server Side Rendered Site
 

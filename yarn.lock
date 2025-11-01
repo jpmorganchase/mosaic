@@ -1658,7 +1658,6 @@ __metadata:
     "@jpmorganchase/mosaic-core": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.94"
-    "@jpmorganchase/mosaic-standard-generator": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.94"
     "@types/ws": "npm:^8.5.7"
     commander: "npm:^9.4.1"
@@ -2011,7 +2010,6 @@ __metadata:
     "@jpmorganchase/mosaic-sitemap-component": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.94"
-    "@jpmorganchase/mosaic-standard-generator": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.94"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.94"
     "@next/eslint-plugin-next": "npm:^14.2.22"
@@ -2134,14 +2132,6 @@ __metadata:
     rxjs: "npm:^7.5.5"
     undici: "npm:^6.0.0"
     zod: "npm:^3.22.3"
-  languageName: unknown
-  linkType: soft
-
-"@jpmorganchase/mosaic-standard-generator@npm:^0.1.0-beta.94, @jpmorganchase/mosaic-standard-generator@workspace:packages/standard-generator":
-  version: 0.0.0-use.local
-  resolution: "@jpmorganchase/mosaic-standard-generator@workspace:packages/standard-generator"
-  dependencies:
-    dotenv-load: "npm:^2.0.1"
   languageName: unknown
   linkType: soft
 
