@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-workflows
 
+## 0.1.0-beta.95
+
+### Patch Changes
+
+- Updated dependencies [18bdd6a]
+  - @jpmorganchase/mosaic-source-git-repo@0.1.0-beta.95
+  - @jpmorganchase/mosaic-serialisers@0.1.0-beta.95
+  - @jpmorganchase/mosaic-types@0.1.0-beta.95
+
 ## 0.1.0-beta.94
 
 ### Patch Changes

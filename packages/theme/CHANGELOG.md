@@ -1,5 +1,22 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.95
+
+### Patch Changes
+
+- 18bdd6a: Modernise the build and remove un-used site generator
+
+  - update yarn to 4.10.3
+  - pip dependencies to allow for internal JPM build
+  - removed `create-site` as un-used, `site` directory can be copied, refer to docs for more details
+  - remove packages `@mosaicjs/create-site` and `@jpmorganchase/mosaic-standard-generator` as they are no longer needed
+  - `fsconfig.js` has moved from `@jpmorganchase/mosaic-standard-generator` to `@jpmorganchase/mosaic-cli`
+
+  ```diff
+  - import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
+  + import mosaicConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+  ```
+
 ## 0.1.0-beta.94
 
 ## 0.1.0-beta.93
