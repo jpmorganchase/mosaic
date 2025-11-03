@@ -17,7 +17,6 @@
 '@jpmorganchase/mosaic-store': patch
 '@jpmorganchase/mosaic-theme': patch
 '@jpmorganchase/mosaic-core': patch
-'@jpmorganchase/mosaic-site': patch
 '@jpmorganchase/mosaic-cli': patch
 ---
 
