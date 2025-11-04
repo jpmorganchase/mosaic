@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-sitemap-component",
-  "version": "0.1.0-beta.94",
+  "version": "0.1.0-beta.95",
   "license": "Apache-2.0",
   "description": "Mosaic - Sitemap component",
   "repository": {
@@ -40,7 +40,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.94",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.95",
     "@salt-ds/core": "^1.52.0",
     "d3": "^7.7.0"
   },

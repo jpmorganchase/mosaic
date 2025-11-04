@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-site-components",
-  "version": "0.1.0-beta.94",
+  "version": "0.1.0-beta.95",
   "license": "Apache-2.0",
   "description": "Mosaic - Site components",
   "repository": {
@@ -40,12 +40,12 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-site-middleware": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.94",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.94",
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.95",
+    "@jpmorganchase/mosaic-content-editor-plugin": "^0.1.0-beta.95",
+    "@jpmorganchase/mosaic-open-api-component": "^0.1.0-beta.95",
+    "@jpmorganchase/mosaic-site-middleware": "^0.1.0-beta.95",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.95",
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.95",
     "@salt-ds/core": "^1.52.0",
     "@types/mdast": "^3.0.0",
     "@vanilla-extract/css": "^1.6.0",
