@@ -26,11 +26,7 @@
     "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58",
     "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59",
     "@jpmorganchase/mosaic-sitemap-component": "0.1.0-beta.62",
-    "@jpmorganchase/mosaic-icons": "0.1.0-beta.89",
-    "@jpmorganchase/mosaic-site": "0.1.0-beta.94"
+    "@jpmorganchase/mosaic-icons": "0.1.0-beta.89"
   },
-  "changesets": [
-    "fresh-carrots-flow",
-    "ready-weeks-matter"
-  ]
+  "changesets": ["fresh-carrots-flow", "ready-weeks-matter"]
 }
