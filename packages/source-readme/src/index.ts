@@ -104,7 +104,15 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
       sourceConfig
     );
 
-    return readmeHttpSource$.pipe(map(pages => pages.flat()));
+    return readmeHttpSource$.pipe(
+      map(({ results, errors }) => {
+        if (errors.length > 0) {
+          console.error('[ReadmeSource] Failed requests:');
+          console.error(JSON.stringify(errors, null, 2));
+        }
+        return results.map(result => result.data);
+      })
+    );
   }
 };
 

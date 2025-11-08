@@ -1,4 +1,4 @@
-import { switchMap, of } from 'rxjs';
+import { switchMap, of, tap, map } from 'rxjs';
 import { z } from 'zod';
 import deepmerge from 'deepmerge';
 import path from 'path';
@@ -169,6 +169,14 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         transformerOptions: { projectIds: Object.keys(projectEndpoints) }
       },
       sourceConfig
+    ).pipe(
+      tap(summary => {
+        if (summary.errors.length > 0) {
+          console.error('[Figma-Source] Project fetch errors:');
+          console.error(JSON.stringify(summary.errors, null, 2));
+        }
+      }),
+      map(summary => summary.results.map(result => result.data))
     );
 
     const figmaPages$ = projects$.pipe(
@@ -186,7 +194,15 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           },
           transformer: projectFilesTransformer,
           transformerOptions: projectFiles
-        });
+        }).pipe(
+          tap(summary => {
+            if (summary.errors.length > 0) {
+              console.error('[Figma-Source] Project files fetch errors:');
+              console.error(JSON.stringify(summary.errors, null, 2));
+            }
+          }),
+          map(summary => summary.results.map(result => result.data))
+        );
       })
     );
 
@@ -309,7 +325,15 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           },
           transformer: cachedThumbnailTransformer,
           transformerOptions: { fileIds: filesToFetch, pages: figmaPages }
-        });
+        }).pipe(
+          tap(summary => {
+            if (summary.errors.length > 0) {
+              console.error('[Figma-Source] Thumbnail fetch errors:');
+              console.error(JSON.stringify(summary.errors, null, 2));
+            }
+          }),
+          map(summary => summary.results.map(result => result.data))
+        );
       })
     );
     return figmaPagesWithThumbnails$;
