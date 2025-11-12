@@ -4,7 +4,7 @@ import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 import { ProxyAgent } from 'undici';
 
-import type { Page } from '@jpmorganchase/mosaic-types';
+import { Page, SourceResultSummary } from '@jpmorganchase/mosaic-types';
 
 import Source, { createHttpSource } from '../index.js';
 
@@ -21,9 +21,7 @@ vi.mock('undici', async importOriginal => {
 
 vi.mock('../fromDynamicImport', async importOriginal => ({
   ...(await importOriginal()),
-  fromDynamicImport: vi
-    .fn()
-    .mockImplementation((modulePath: string) => of({ transformer: toUpperCaseTransformer }))
+  fromDynamicImport: vi.fn().mockImplementation(() => of({ transformer: toUpperCaseTransformer }))
 }));
 
 function toUpperCaseTransformer(response) {
@@ -100,25 +98,20 @@ describe('GIVEN an HTTP Source ', () => {
 
     it('should merge results from all endpoints into 1 array', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = Source.create(options, { schedule });
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
+          { ...options, transformer: toUpperCaseTransformer },
+          { schedule }
+        );
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(result.length).toEqual(3);
-          },
-          complete: () => done()
-        });
-      }));
-
-    it('should transform the responses using the transform function', () =>
-      new Promise<void>(done => {
-        const source$: Observable<Page[]> = Source.create(options, { schedule });
-
-        source$.pipe(take(1)).subscribe({
-          next: result => {
-            expect(result[0]).toEqual('ALICE');
-            expect(result[1]).toEqual('BOB');
-            expect(result[2]).toEqual('EVE');
+            expect(result.results.length).toEqual(3);
+            // Check the transformed values
+            expect(result.results[0].data).toEqual('ALICE');
+            expect(result.results[1].data).toEqual('BOB');
+            expect(result.results[2].data).toEqual('EVE');
+            // No errors
+            expect(result.errors.length).toEqual(0);
           },
           complete: () => done()
         });
@@ -126,126 +119,91 @@ describe('GIVEN an HTTP Source ', () => {
   });
 
   describe('WHEN a fetch is **NOT** successful', () => {
-    beforeEach(() => {
-      server.resetHandlers(
-        http.get(options.endpoints[0], () => {
-          return HttpResponse.json({ name: 'Alice' });
-        }),
-        http.get(options.endpoints[1], () => {
-          return new HttpResponse(null, { status: 404 });
-        }),
-        http.get(options.endpoints[2], () => {
-          return new HttpResponse(null, { status: 500 });
-        })
-      );
-    });
-
-    it('should merge results from **successful** endpoints into 1 array', () =>
+    it('should merge two valid results and one invalid response', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = Source.create(options, { schedule });
-
-        source$.pipe(take(1)).subscribe({
-          next: result => {
-            expect(result.length).toEqual(1);
-            expect(result[0]).toEqual('ALICE');
-          },
-          complete: () => done()
-        });
-      }));
-  });
-
-  describe('WHEN noProxy option is used', () => {
-    beforeEach(() => {
-      server.resetHandlers(...successHandlers);
-    });
-
-    it('THEN a proxy agent is created for all matching endpoints', () =>
-      new Promise<void>(done => {
-        const proxyEndpoint = 'https://proxy.endpoint.com';
-        const source$: Observable<Page[]> = Source.create(
-          {
-            ...options,
-            noProxy: /api.endpoint.com\/2/,
-            proxyEndpoint
-          },
-          { schedule }
+        server.resetHandlers(
+          http.get(options.endpoints[0], () => HttpResponse.json({ name: 'Alice' })),
+          http.get(options.endpoints[1], () => HttpResponse.json({ name: 'Bob' })),
+          http.get(
+            options.endpoints[2],
+            () => new HttpResponse(null, { status: 404, statusText: 'Not Found' })
+          )
         );
 
-        source$.pipe(take(1)).subscribe({
-          next: result => {
-            expect(ProxyAgent).toHaveBeenCalledTimes(2);
-          },
-          complete: () => done()
-        });
-      }));
-  });
-});
-
-describe('GIVEN the createHttpSource function ', () => {
-  describe('WHEN a fetch is successful', () => {
-    beforeEach(() => {
-      server.resetHandlers(...successHandlers);
-    });
-
-    it('should merge results from all endpoints into 1 array', () =>
-      new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
           { ...options, transformer: toUpperCaseTransformer },
           { schedule }
         );
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(result.length).toEqual(3);
+            // Only two successful results
+            expect(result.results.length).toEqual(2);
+            expect(result.results[0].data).toEqual('ALICE');
+            expect(result.results[1].data).toEqual('BOB');
+            // One error for the 404
+            expect(result.errors.length).toEqual(1);
+            expect(result.errors[0].url).toEqual(options.endpoints[2]);
+            expect(result.errors[0].kind).toEqual('http');
           },
           complete: () => done()
         });
       }));
 
-    it('should transform the responses using the transform function', () =>
-      new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
-          { ...options, transformer: toUpperCaseTransformer },
-          { schedule }
-        );
+    describe('WHEN noProxy option is used', () => {
+      beforeEach(() => {
+        server.resetHandlers(...successHandlers);
+      });
 
-        source$.pipe(take(1)).subscribe({
-          next: result => {
-            expect(result[0]).toEqual('ALICE');
-            expect(result[1]).toEqual('BOB');
-            expect(result[2]).toEqual('EVE');
-          },
-          complete: () => done()
-        });
-      }));
-  });
+      it('THEN a proxy agent is created for all matching endpoints', () =>
+        new Promise<void>(done => {
+          const proxyEndpoint = 'https://proxy.endpoint.com';
+          const source$: Observable<Page[]> = Source.create(
+            {
+              ...options,
+              noProxy: /api.endpoint.com\/2/,
+              proxyEndpoint
+            },
+            { schedule }
+          );
 
-  describe('WHEN a fetch is **NOT** successful', () => {
-    beforeEach(() => {
-      server.resetHandlers(
-        http.get(options.endpoints[0], () => {
-          return HttpResponse.json({ name: 'Alice' });
-        }),
-        http.get(options.endpoints[1], () => {
-          return new HttpResponse(null, { status: 404 });
-        }),
-        http.get(options.endpoints[2], () => {
-          return new HttpResponse(null, { status: 500 });
-        })
-      );
+          source$.pipe(take(1)).subscribe({
+            next: () => {
+              expect(ProxyAgent).toHaveBeenCalledTimes(2);
+            },
+            complete: () => done()
+          });
+        }));
     });
 
-    it('should merge results from **successful** endpoints into 1 array', () =>
+    it('should handle thrown error, two valid results, and one invalid response', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
+        server.resetHandlers(
+          http.get(options.endpoints[0], () => HttpResponse.json({ name: 'Alice' })),
+          http.get(options.endpoints[1], () => HttpResponse.error()), // Simulate network error
+          http.get(
+            options.endpoints[2],
+            () => new HttpResponse(null, { status: 404, statusText: 'Not Found' })
+          )
+        );
+
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
           { ...options, transformer: toUpperCaseTransformer },
           { schedule }
         );
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(result.length).toEqual(1);
-            expect(result[0]).toEqual('ALICE');
+            // Only one successful result
+            expect(result.results.length).toEqual(1);
+            expect(result.results[0].data).toEqual('ALICE');
+            // Two errors: one thrown, one http
+            expect(result.errors.length).toEqual(2);
+            expect(result.errors[0].kind).toEqual('thrown');
+            expect(result.errors[1].kind).toEqual('http');
+            const errorUrls = result.errors.map(e => e.url);
+            expect(errorUrls).toContain(options.endpoints[1]);
+            expect(errorUrls).toContain(options.endpoints[2]);
           },
           complete: () => done()
         });
@@ -253,20 +211,20 @@ describe('GIVEN the createHttpSource function ', () => {
   });
 
   describe('WHEN the transformer is passed params', () => {
-    const mockTransformer = vi.fn();
+    const mockTransformer = vi.fn().mockImplementation((...args) => args);
     beforeEach(() => {
       server.resetHandlers(...successHandlers);
     });
 
     it('should pass transformer options to the transformer', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
           { ...options, transformer: mockTransformer, transformerOptions: { option: 'an option' } },
           { schedule }
         );
 
         source$.pipe(take(1)).subscribe({
-          next: result => {
+          next: () => {
             expect(mockTransformer).toBeCalledTimes(3);
             expect(mockTransformer.mock.calls[0][0]).toEqual({ name: 'Alice' });
             expect(mockTransformer.mock.calls[0][1]).toEqual(options.prefixDir);
@@ -289,7 +247,7 @@ describe('GIVEN the createHttpSource function ', () => {
 
     it('should merge results from all endpoints into 1 array', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
           { ...configuredRequestsOptions, transformer: toUpperCaseTransformer },
           {
             schedule
@@ -298,7 +256,7 @@ describe('GIVEN the createHttpSource function ', () => {
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(result.length).toEqual(3);
+            expect(result.results.length).toEqual(3);
           },
           complete: () => done()
         });
@@ -306,7 +264,7 @@ describe('GIVEN the createHttpSource function ', () => {
 
     it('should transform the responses using the transform function', () =>
       new Promise<void>(done => {
-        const source$: Observable<Page[]> = createHttpSource(
+        const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
           { ...configuredRequestsOptions, transformer: toUpperCaseTransformer },
           {
             schedule
@@ -315,9 +273,9 @@ describe('GIVEN the createHttpSource function ', () => {
 
         source$.pipe(take(1)).subscribe({
           next: result => {
-            expect(result[0]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/1');
-            expect(result[1]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/2');
-            expect(result[2]).toEqual('DAVID HTTPS://API.ENDPOINT.COM/3');
+            expect(result.results[0].data).toEqual('DAVID HTTPS://API.ENDPOINT.COM/1');
+            expect(result.results[1].data).toEqual('DAVID HTTPS://API.ENDPOINT.COM/2');
+            expect(result.results[2].data).toEqual('DAVID HTTPS://API.ENDPOINT.COM/3');
           },
           complete: () => done()
         });

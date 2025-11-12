@@ -124,7 +124,15 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
       sourceConfig
     );
 
-    return storybookHttpSource$.pipe(map(pages => pages.flat()));
+    return storybookHttpSource$.pipe(
+      map(({ results, errors }) => {
+        if (errors.length > 0) {
+          console.error('[StorybookSource] Failed requests:');
+          console.error(JSON.stringify(errors, null, 2));
+        }
+        return results.map(result => result.data);
+      })
+    );
   }
 };
 

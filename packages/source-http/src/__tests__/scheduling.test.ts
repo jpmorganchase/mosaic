@@ -6,14 +6,12 @@ import type { Page } from '@jpmorganchase/mosaic-types';
 
 vi.mock('@jpmorganchase/mosaic-from-http-request', async importOriginal => ({
   ...(await importOriginal()),
-  fromHttpRequest: vi.fn().mockImplementation((url: string) => of(['response']))
+  fromHttpRequest: vi.fn().mockImplementation(() => of(['response']))
 }));
 
 vi.mock('../fromDynamicImport', async importOriginal => ({
   ...(await importOriginal()),
-  fromDynamicImport: vi
-    .fn()
-    .mockImplementation((modulePath: string) => of({ transformer: mockTransformer }))
+  fromDynamicImport: vi.fn().mockImplementation(() => of({ transformer: mockTransformer }))
 }));
 
 function mockTransformer(response: any) {

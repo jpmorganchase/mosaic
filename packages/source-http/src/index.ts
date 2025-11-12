@@ -1,3 +1,4 @@
+import { map } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { z } from 'zod';
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
@@ -28,9 +29,17 @@ const HttpSource: Source<HttpSourceOptions> = {
     const { transformResponseToPagesModulePath } = validateMosaicSchema(schema, options);
 
     return fromDynamicImport<Page>(transformResponseToPagesModulePath).pipe(
-      switchMap(({ transformer }) =>
-        createHttpSource<Page, Page>({ ...options, transformer }, sourceConfig)
-      )
+      switchMap(({ transformer }) => {
+        const httpSource$ = createHttpSource<Page, Page>({ ...options, transformer }, sourceConfig);
+        return httpSource$.pipe(
+          map(({ results, errors }) => {
+            if (errors.length > 0) {
+              console.error('[ReadmeSource] Failed requests:', errors);
+            }
+            return results.map(result => result.data);
+          })
+        );
+      })
     );
   }
 };

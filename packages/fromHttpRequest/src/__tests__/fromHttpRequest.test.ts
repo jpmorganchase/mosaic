@@ -2,7 +2,11 @@ import { describe, it, expect, afterEach, beforeEach, beforeAll, afterAll, vi } 
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 
-import { fromHttpRequest, isErrorResponse } from '../fromHttpRequest.js';
+import {
+  fromHttpRequest,
+  isFromHttpRequestError,
+  isFromHttpRequestThrownError
+} from '../fromHttpRequest.js';
 
 const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -18,7 +22,7 @@ const successfulRequestHandler = http.get(testUrl, () => {
 });
 
 const notOKHandler = http.get(testUrl, () => {
-  return new HttpResponse(null, { status: 404 });
+  return new HttpResponse(null, { status: 404, statusText: 'Not Found' });
 });
 
 const errorHandler = http.get(testUrl, () => {
@@ -82,7 +86,7 @@ describe('GIVEN a fromHttpRequest helper ', () => {
         }));
     });
 
-    describe('AND WHEN a **NO** content-type header is found', () => {
+    describe('AND WHEN a no content-type header is found', () => {
       beforeEach(() => {
         server.resetHandlers(successfulDefaultContentTypeRequestHandler);
       });
@@ -104,33 +108,45 @@ describe('GIVEN a fromHttpRequest helper ', () => {
     beforeEach(() => {
       server.resetHandlers(errorHandler);
     });
-    it('An Error Response is returned', () =>
+    it('A thrown Error response is returned', () =>
       new Promise<void>(done => {
         const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
 
         fromHttpRequest$.subscribe({
           next: response => {
-            expect(response).toEqual({
+            expect(response).toMatchObject({
               error: true,
-              message: 'Failed to fetch'
+              kind: 'thrown',
+              message: expect.any(String)
             });
+            expect(isFromHttpRequestThrownError(response)).toBe(true);
           },
           complete: () => done()
         });
       }));
   });
 
-  describe('WHEN a unsuccessful request is made', () => {
+  describe('WHEN an unsuccessful request is made', () => {
     beforeEach(() => {
       server.resetHandlers(notOKHandler);
     });
-    it('An ErrorResponse is returned', () =>
+    it('An HTTP ErrorResponse is returned', () =>
       new Promise<void>(done => {
         const fromHttpRequest$ = fromHttpRequest<Data>(testUrl);
 
         fromHttpRequest$.subscribe({
           next: response => {
-            expect(response).toEqual({ error: true, message: 'Error 404' });
+            expect(response).toMatchObject({
+              error: true,
+              kind: 'http',
+              message: expect.stringContaining(
+                'A non-OK HTTP response was received from the server'
+              ),
+              status: 404,
+              statusText: 'Not Found',
+              headers: expect.any(Object)
+            });
+            expect(isFromHttpRequestError(response)).toBe(true);
           },
           complete: () => done()
         });
@@ -138,15 +154,59 @@ describe('GIVEN a fromHttpRequest helper ', () => {
   });
 });
 
-describe('GIVEN the `isErrorResponse` function', () => {
-  describe('WHEN the response is **not** an error', () => {
-    it('THEN it returns false', () => {
-      expect(isErrorResponse('test')).toEqual(false);
+describe('GIVEN the `isFromHttpRequestError` and `isFromHttpRequestThrownError` functions', () => {
+  describe('WHEN the response is not an error', () => {
+    it('THEN isFromHttpRequestError returns false', () => {
+      expect(isFromHttpRequestError('test')).toEqual(false);
+    });
+    it('THEN isFromHttpRequestThrownError returns false', () => {
+      expect(isFromHttpRequestThrownError('test')).toEqual(false);
     });
   });
-  describe('WHEN the response **is** an error', () => {
-    it('THEN it returns false', () => {
-      expect(isErrorResponse({ error: true, message: 'message' })).toEqual(true);
+  describe('WHEN the response is an http error', () => {
+    it('THEN isFromHttpRequestError returns true', () => {
+      expect(
+        isFromHttpRequestError({
+          error: true,
+          kind: 'http',
+          message: 'message',
+          status: 404,
+          statusText: 'Not Found',
+          headers: {}
+        })
+      ).toEqual(true);
+    });
+    it('THEN isFromHttpRequestThrownError returns false', () => {
+      expect(
+        isFromHttpRequestThrownError({
+          error: true,
+          kind: 'http',
+          message: 'message',
+          status: 404,
+          statusText: 'Not Found',
+          headers: {}
+        })
+      ).toEqual(false);
+    });
+  });
+  describe('WHEN the response is a thrown error', () => {
+    it('THEN isFromHttpRequestThrownError returns true', () => {
+      expect(
+        isFromHttpRequestThrownError({
+          error: true,
+          kind: 'thrown',
+          message: 'message'
+        })
+      ).toEqual(true);
+    });
+    it('THEN isFromHttpRequestError returns false', () => {
+      expect(
+        isFromHttpRequestError({
+          error: true,
+          kind: 'thrown',
+          message: 'message'
+        })
+      ).toEqual(false);
     });
   });
 });

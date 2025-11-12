@@ -1,16 +1,48 @@
 import 'event-target-polyfill';
 import 'yet-another-abortcontroller-polyfill';
-import { Observable, of } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import contentTypeParser from 'fast-content-type-parse';
 import { Request } from 'undici';
 
 import { fromFetch } from './fromFetch.js';
 
-export type ErrorResponse = { error: boolean; message: string };
+/**
+ * Error raised when there an error is thrown
+ */
+export interface FromHttpRequestThrownError {
+  error: true;
+  kind: 'thrown';
+  message: string;
+}
 
-export function isErrorResponse<TData>(response: TData | ErrorResponse): response is ErrorResponse {
-  return (response as ErrorResponse).error !== undefined;
+/**
+ * Error raised when there is a network/http error
+ */
+export interface FromHttpRequestHttpError {
+  error: true;
+  kind: 'http';
+  message: string;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+}
+
+export type FromHttpRequestError = FromHttpRequestThrownError | FromHttpRequestHttpError;
+
+export function isFromHttpRequestError(response: any): response is FromHttpRequestError {
+  return (
+    !!(response as FromHttpRequestError).error && (response as FromHttpRequestError).kind === 'http'
+  );
+}
+
+export function isFromHttpRequestThrownError(
+  response: any
+): response is FromHttpRequestThrownError {
+  return (
+    !!(response as FromHttpRequestThrownError).error &&
+    (response as FromHttpRequestThrownError).kind === 'thrown'
+  );
 }
 
 /**
@@ -18,28 +50,40 @@ export function isErrorResponse<TData>(response: TData | ErrorResponse): respons
  * @param input The resource you would like to fetch. Can be a url or a request object.
  * @returns Observable of JSON or ErrorResponse
  */
-export function fromHttpRequest<TData>(input: string | Request): Observable<TData | ErrorResponse> {
+export function fromHttpRequest<TData>(
+  input: string | Request
+): Observable<TData | FromHttpRequestError> {
   return fromFetch(input).pipe(
     switchMap(response => {
       if (response.ok) {
         const contentTypeHeader = response.headers.get('content-type') || '';
         const contentType = contentTypeParser.safeParse(contentTypeHeader).type;
-
-        if (contentType.includes('json')) {
-          return response.json() as Promise<TData>;
-        }
-
         if (contentType.includes('text')) {
-          return response.text() as Promise<TData>;
+          return from(response.text() as Promise<TData>);
         }
         // default to json
-        return response.json() as Promise<TData>;
+        return from(response.json() as Promise<TData>);
       }
-      return of<ErrorResponse>({ error: true, message: `Error ${response.status}` });
+      const headersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        headersObj[key] = value;
+      });
+      return of<FromHttpRequestHttpError>({
+        error: true,
+        kind: 'http',
+        message: `A non-OK HTTP response was received from the server: ${response.status}/${response.statusText}`,
+        status: response.status,
+        statusText: response.statusText,
+        headers: headersObj
+      });
     }),
-    catchError(err => {
-      console.error(err);
-      return of<ErrorResponse>({ error: true, message: err.message as string });
+    catchError(error => {
+      // Network or thrown error
+      return of<FromHttpRequestThrownError>({
+        error: true,
+        kind: 'thrown',
+        message: error.message
+      });
     })
   );
 }

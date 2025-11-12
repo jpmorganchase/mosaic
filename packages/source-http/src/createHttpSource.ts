@@ -1,8 +1,22 @@
-import { forkJoin, of, timer } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { of, switchMap, timer, Observable, forkJoin } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { z } from 'zod';
-import type { Page, SourceConfig } from '@jpmorganchase/mosaic-types';
-import { fromHttpRequest, isErrorResponse } from '@jpmorganchase/mosaic-from-http-request';
+import {
+  Page,
+  SourceConfig,
+  SourceResultSummary,
+  SourceResult,
+  SourceError,
+  SourceHttpError,
+  SourceThrownError
+} from '@jpmorganchase/mosaic-types';
+import {
+  fromHttpRequest,
+  isFromHttpRequestError,
+  FromHttpRequestHttpError,
+  isFromHttpRequestThrownError,
+  FromHttpRequestThrownError
+} from '@jpmorganchase/mosaic-from-http-request';
 import { sourceScheduleSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import { ProxyAgent, type HeadersInit, Request } from 'undici';
 
@@ -42,7 +56,7 @@ export interface CreateHttpSourceParams<TResponse, TPage>
 export function createHttpSource<TResponse, TPage = Page>(
   { configuredRequests, transformer, ...restOptions }: CreateHttpSourceParams<TResponse, TPage>,
   sourceConfig?: SourceConfig
-) {
+): Observable<SourceResultSummary<TPage>> {
   const {
     endpoints,
     prefixDir,
@@ -62,9 +76,7 @@ export function createHttpSource<TResponse, TPage = Page>(
       let dispatcher;
       const headers = requestHeaders
         ? (requestHeaders as HeadersInit)
-        : {
-            'Content-Type': 'application/json'
-          };
+        : { 'Content-Type': 'application/json' };
 
       if (!noProxy?.test(endpoint) && proxyEndpoint) {
         dispatcher = new ProxyAgent(proxyEndpoint);
@@ -86,15 +98,67 @@ export function createHttpSource<TResponse, TPage = Page>(
       const fetches = requests.map((request, index) =>
         fromHttpRequest<TResponse>(request).pipe(
           map(response => {
-            if (isErrorResponse<TResponse>(response)) {
-              return [];
+            if (isFromHttpRequestError(response)) {
+              const httpResponse = response as FromHttpRequestHttpError;
+              const sourceHttpError: SourceHttpError = {
+                type: 'error' as const,
+                kind: 'http',
+                index,
+                url: request.url,
+                message: httpResponse.message,
+                status: httpResponse.status,
+                statusText: httpResponse.statusText,
+                headers: httpResponse.headers
+              };
+              return sourceHttpError;
+            } else if (isFromHttpRequestThrownError(response)) {
+              const thrownError = response as FromHttpRequestThrownError;
+              const sourceThrowError: SourceThrownError = {
+                type: 'error' as const,
+                kind: 'thrown',
+                index,
+                url: request.url,
+                message: thrownError.message
+              };
+              return sourceThrowError;
             }
-
-            return transformer(response, prefixDir, index, transformerOptions);
+            return {
+              type: 'success' as const,
+              kind: 'result',
+              index,
+              url: request.url,
+              data: transformer(response, prefixDir, index, transformerOptions)
+            };
+          }),
+          catchError((error: Error) => {
+            return of({
+              type: 'error' as const,
+              kind: 'thrown',
+              message: error.message,
+              index,
+              url: request.url
+            });
           })
         )
       );
-      return forkJoin(fetches).pipe(map(result => result.flat()));
+
+      return forkJoin(fetches).pipe(
+        map(fetchedResults => {
+          const results: SourceResult<TPage>[] = [];
+          const errors: SourceError[] = [];
+          for (const fetchedResult of fetchedResults) {
+            if (fetchedResult.type === 'success' && fetchedResult.kind === 'result') {
+              const pages = fetchedResult.data.map(data => ({ ...fetchedResult, data }));
+              results.push(...pages);
+            } else if (fetchedResult.type === 'error' && fetchedResult.kind === 'http') {
+              errors.push(fetchedResult as SourceHttpError);
+            } else if (fetchedResult.type === 'error' && fetchedResult.kind === 'thrown') {
+              errors.push(fetchedResult as SourceThrownError);
+            }
+          }
+          return { results, errors };
+        })
+      );
     })
   );
 }
