@@ -103,7 +103,10 @@ export const optimizeContentForSearch = async ({
   try {
     tree = await processor.parse(content);
   } catch (err) {
-    console.error(`Search Index Plugin failed to parse content for ${title}`, err.reason);
+    console.error(
+      `[Mosaic][Plugin-SearchIndex] Search Index Plugin failed to parse content for ${title}`,
+      err.reason
+    );
     return [];
   }
 

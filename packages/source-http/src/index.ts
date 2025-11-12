@@ -34,7 +34,7 @@ const HttpSource: Source<HttpSourceOptions> = {
         return httpSource$.pipe(
           map(({ results, errors }) => {
             if (errors.length > 0) {
-              console.error('[ReadmeSource] Failed requests:', errors);
+              console.error('[Mosaic][Source-Http] Failed requests:', errors);
             }
             return results.map(result => result.data);
           })

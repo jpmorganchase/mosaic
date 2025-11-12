@@ -5,7 +5,7 @@ export const getSnapshotFileConfig = url => {
   if (!env.success) {
     env.error.issues.forEach(issue => {
       console.error(
-        `Missing process.env.${issue.path.join()} environment variable required to load path ${url} from local snapshot`
+        `[Mosaic][Middleware] Missing process.env.${issue.path.join()} environment variable required to load path ${url} from local snapshot`
       );
     });
     throw new Error(`Environment variables missing for loading of ${url} for local snapshot`);

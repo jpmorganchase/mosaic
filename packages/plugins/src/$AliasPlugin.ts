@@ -56,7 +56,7 @@ const $AliasPlugin: PluginType<AliasPluginPage> = {
             await mutableFilesystem.promises.symlink(fullPath, aliasPath);
           } else {
             console.warn(
-              `Alias '${aliasPath}' already exists. Is there a duplicate alias, or a page with the same name but different file extensions?`
+              `[Mosaic][Plugin-Alias] Alias '${aliasPath}' already exists. Is there a duplicate alias, or a page with the same name but different file extensions?`
             );
           }
         }

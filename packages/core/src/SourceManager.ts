@@ -16,12 +16,12 @@ import createConfig from './helpers/createConfig.js';
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
     console.debug(
-      `[Mosaic][Source] '${sourceId.description}' received first docs snapshot ${
+      `[Mosaic][Core] '${sourceId.description}' received first docs snapshot ${
         (new Date().getTime() - initOrStartTime) / 1000
       }s after starting.`
     );
   } else {
-    console.debug(`[Mosaic][Source] '${sourceId.description}' received updated docs`);
+    console.debug(`[Mosaic][Core] '${sourceId.description}' received updated docs`);
   }
 }
 
@@ -193,18 +193,18 @@ export default class SourceManager {
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
           } catch (e) {
             console.warn(
-              `[Mosaic] Exceptions during source update are currently set to terminate the parent source. Terminating '${String(
+              `[Mosaic][Core] Exceptions during source update are currently set to terminate the parent source. Terminating '${String(
                 source.id.description
               )}'. See error:`
             );
-            console.error(e);
+            console.error('[Mosaic][Core]', e);
             source.stop();
           }
           //
         }
       });
       source.onError(error => {
-        console.error(error);
+        console.error('[Mosaic][Core]', error);
         if (!sourceActive) {
           reject(error);
         }
@@ -217,7 +217,7 @@ export default class SourceManager {
             )
           );
         }
-        console.debug(`[Mosaic][Source] '${source.id.description}' closed`);
+        console.debug(`[Mosaic][Core] '${source.id.description}' closed`);
 
         this.#sources.delete(source.id);
         sourceActive = false;
@@ -226,7 +226,7 @@ export default class SourceManager {
       source.onStart(() => {
         sourceActive = true;
         console.debug(
-          `[Mosaic][Source] '${source.id.description}' started in ${
+          `[Mosaic][Core] '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime
           }ms - awaiting first docs snapshot`
         );
