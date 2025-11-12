@@ -93,7 +93,9 @@ export function createMiddlewareRunner<TProps>(
       });
 
     if (show500) {
-      console.error('An un-expected error(s) was thrown which caused the 500 page to appear');
+      console.error(
+        '[Mosaic][Middleware] An un-expected error(s) was thrown which caused the 500 page to appear'
+      );
       errors.forEach(console.error);
     }
 

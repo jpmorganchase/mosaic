@@ -20,19 +20,19 @@ export const exponentialBackOffRetryStrategy =
           const backOffTime = Math.pow(2, retryIndex - 1) * retryDelayMs;
           const backOffTimeMins = backOffTime / 60000;
           const remainingAttempts = schedule.maxRetries - retryIndex;
-          console.warn(`[Mosaic] Source '${schedule.name}' failed. Retrying...`);
+          console.warn(`[Mosaic][Core] Source '${schedule.name}' failed. Retrying...`);
           console.log(
-            `[Mosaic] Source '${schedule.name}' retry attempt (${retryIndex}/${
+            `[Mosaic][Core] Source '${schedule.name}' retry attempt (${retryIndex}/${
               schedule.maxRetries
             }). ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining`
           );
           console.log(
-            `[Mosaic] Source '${schedule.name}' current retry delay: ${backOffTimeMins} min${
+            `[Mosaic][Core] Source '${schedule.name}' current retry delay: ${backOffTimeMins} min${
               backOffTimeMins !== 1 ? 's' : ''
             }`
           );
 
-          console.error(`[Mosaic] Source ${error}`);
+          console.error('[Mosaic][Core]', error);
           return timer(backOffTime);
         },
         resetOnSuccess: schedule.resetOnSuccess

@@ -121,15 +121,15 @@ export default class PullDocs {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
     source.onError(error => {
       console.error(
-        new Error(`[Mosaic] Source '${source.id.description}' threw an exception. See below:`)
+        new Error(`[Mosaic][Core] Source '${source.id.description}' threw an exception. See below:`)
       );
-      console.error(error);
+      console.error('[Mosaic][Core]', error);
     });
     source.onExit(() => {
       this.#ufs.fss.splice(this.#ufs.fss.indexOf(source.filesystem), 1);
 
       if (this.#ufs.fss.length < 1) {
-        console.debug("[Mosaic] All of my source have been terminated. That's sad :-(");
+        console.debug("[Mosaic][Core] All of my source have been terminated. That's sad :-(");
       }
     });
 
@@ -145,7 +145,7 @@ export default class PullDocs {
   async restartSource(name: string) {
     const sourceDef = this.#sourceManager.getSourceDefinition(name);
     if (sourceDef) {
-      console.log(`[Mosaic][Source] ${name} restarting as requested`);
+      console.log(`[Mosaic][Core] ${name} restarting as requested`);
       await this.stopSource(name);
       await this.addSource(sourceDef);
     } else {

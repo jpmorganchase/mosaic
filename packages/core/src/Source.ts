@@ -126,7 +126,7 @@ export default class Source {
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 400) {
       console.warn(
-        `Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
+        `[Mosaic][Core] Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
     }
     if (shouldInvokeAfterUpdate === true) {
@@ -155,12 +155,12 @@ export default class Source {
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 400) {
       console.warn(
-        `Lifecycle phase 'shouldUpdateNamespaceSources' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
+        `[Mosaic][Core] Lifecycle phase 'shouldUpdateNamespaceSources' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
     }
     if (shouldInvokeAfterUpdate === true) {
       console.log(
-        `[Mosaic][Source] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
+        `[Mosaic][Core] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
       );
       this.filesystem.unfreeze();
       await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
@@ -174,7 +174,7 @@ export default class Source {
     serialisers: SerialiserModuleDefinition[] = []
   ) {
     if (this.namespace.startsWith('preview-')) {
-      console.log('[Mosaic] Preview source detected, filtering plugins to use.');
+      console.log('[Mosaic][Core] Preview source detected, filtering plugins to use.');
       this.#plugins.push(...plugins.filter(plugin => !plugin.previewDisabled));
     } else {
       this.#plugins.push(...plugins);
@@ -197,7 +197,9 @@ export default class Source {
     const timeTaken = new Date().getTime() - initTime;
     if (timeTaken > 800) {
       console.warn(
-        `Lifecycle phase '${lifecycleMethod}' for source '${this.id.description}' took ${
+        `[Mosaic][Core] Lifecycle phase '${lifecycleMethod}' for source '${
+          this.id.description
+        }' took ${
           timeTaken / 1000
         }s to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );

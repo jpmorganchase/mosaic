@@ -31,7 +31,7 @@ async function loadSnapshotFile(url) {
     return await loadLocalFile(filePath);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message);
+      console.error(`[Mosaic][Middleware] ${error.message}`);
     }
     throw new MiddlewareError(404, url, [`Could not read local file '${filePath}' for '${url}'`], {
       show404: true
@@ -49,7 +49,7 @@ async function loadSnapshotS3(url) {
     text = await s3Loader.loadKey(bucket, s3Key);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error.message);
+      console.error(`[Mosaic][Middleware] ${error.message}`);
     }
     throw new MiddlewareError(404, url, [`Could not find an S3 object for '${url}'`], {
       show404: true
@@ -113,7 +113,7 @@ export const withMDXContent: MosaicMiddleware<ContentProps> = async (
     const mdxSource = await compileMDX(text);
     return { props: { type: 'mdx', source: mdxSource, raw: text } };
   } catch (error) {
-    console.error(error);
+    console.error('[Mosaic][Middleware]', error);
     if (error instanceof Error) {
       throw new MiddlewareError(500, resolvedUrl, [error.message], { show500: true });
     } else {

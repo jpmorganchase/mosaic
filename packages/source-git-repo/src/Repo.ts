@@ -163,7 +163,7 @@ export default class Repo {
       throw new Error('Repo is a required option.');
     }
     if (!credentials) {
-      console.warn('[Mosaic] No `credentials` provided for git repo request.');
+      console.warn('[Mosaic][Source-Git] No `credentials` provided for git repo request.');
     }
 
     this.#cloneRootDir = getCloneDirName(repo);
@@ -212,7 +212,7 @@ export default class Repo {
           }
         }
       } catch (e: unknown) {
-        console.warn(`[Mosaic] Unsubscribing from \`onCommitChange\` for ${this.name}`);
+        console.warn(`[Mosaic][Source-Git] Unsubscribing from \`onCommitChange\` for ${this.name}`);
         unsubscribe();
         errCallback(e);
       }
@@ -286,7 +286,7 @@ export default class Repo {
     }
     const result = await spawn('git', ['rev-parse', 'HEAD'], this.#dir);
     if (!result) {
-      console.warn('[Mosaic] No revision found for HEAD');
+      console.warn('[Mosaic][Source-Git] No revision found for HEAD');
       return null;
     }
     return result ? result.trim() : '';
@@ -299,7 +299,7 @@ export default class Repo {
     const result = await spawn('git', ['rev-parse', `${this.#remote}/${this.#branch}`], this.#dir);
 
     if (!result) {
-      console.warn(`[Mosaic] No revision found for tag ${this.#branch}`);
+      console.warn(`[Mosaic][Source-Git] No revision found for tag ${this.#branch}`);
       return null;
     }
     return result.trim();
@@ -332,7 +332,7 @@ export default class Repo {
   async init() {
     try {
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
-        console.debug(`[Mosaic] Creating main worktree for repo '${this.#name}'`);
+        console.debug(`[Mosaic][Source-Git] Creating main worktree for repo '${this.#name}'`);
 
         //Empty the directory before cloning
         try {
@@ -349,17 +349,21 @@ export default class Repo {
           path.dirname(this.#cloneRootDir)
         );
       } else {
-        console.debug(`[Mosaic] Re-using main worktree for repo '${this.#name}'`);
+        console.debug(`[Mosaic][Source-Git] Re-using main worktree for repo '${this.#name}'`);
       }
       this.#cloned = true;
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
         console.debug(
-          `[Mosaic] Creating linked worktree repo '${this.#name} branch '${this.#branch}'`
+          `[Mosaic][Source-Git] Creating linked worktree repo '${this.#name} branch '${
+            this.#branch
+          }'`
         );
         await spawn('git', ['worktree', 'add', '-f', this.#dir, this.#branch], this.#cloneRootDir);
       } else {
         console.debug(
-          `[Mosaic] Re-using linked worktree repo '${this.#name} branch '${this.#branch}'`
+          `[Mosaic][Source-Git] Re-using linked worktree repo '${this.#name} branch '${
+            this.#branch
+          }'`
         );
         await this.pull();
       }
@@ -371,20 +375,20 @@ export default class Repo {
 
   async createWorktree(sid: string, branchName: string) {
     this.#dir = path.posix.join(this.#worktreeRootDir, sid);
-    console.debug(`[Mosaic] Creating worktree for content save @ ${this.#dir}`);
+    console.debug(`[Mosaic][Source-Git] Creating worktree for content save @ ${this.#dir}`);
     await spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
       this.#worktreeRootDir
     );
-    console.debug(`[Mosaic] Creating linked worktree for ${sid}`);
+    console.debug(`[Mosaic][Source-Git] Creating linked worktree for ${sid}`);
   }
 
   async removeWorktree(sid: string) {
-    console.debug(`[Mosaic] Removing worktree for content save @ ${this.#dir}`);
+    console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${this.#dir}`);
     await spawn('git', ['worktree', 'remove', sid, '--force'], this.#dir);
     this.#dir = path.join(this.#worktreeRootDir, this.#branch);
-    console.debug(`[Mosaic] Removed linked worktree for ${sid}`);
+    console.debug(`[Mosaic][Source-Git] Removed linked worktree for ${sid}`);
   }
 
   getTagInfo = async (tag: string) => {
@@ -467,7 +471,7 @@ export default class Repo {
       }
       return jsonResult;
     } catch (e: unknown) {
-      console.group('[Mosaic] Pull Request Error');
+      console.group('[Mosaic][Source-Git] Pull Request Error');
       console.log('fullPath', filePath);
       console.log('Branch Name', branchName);
       console.log('Name', this.#name);

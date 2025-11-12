@@ -26,7 +26,7 @@ const getSnapshotFile = async (urlPath, targetPath) => {
     const rawSearchIndex = await loadLocalFile(filePath);
     return JSON.parse(rawSearchIndex);
   } catch {
-    console.warn(`Could not load data from ${urlPath}/${targetPath}`);
+    console.warn(`[Mosaic][Middleware] Could not load data from ${urlPath}/${targetPath}`);
     return false;
   }
 };
@@ -39,7 +39,7 @@ const getSnapshotS3File = async (urlPath, targetPath) => {
     const rawSearchIndex = await loadKey(bucket, targetPath);
     return JSON.parse(rawSearchIndex);
   } else {
-    console.warn(`Could not load data from ${urlPath}/${targetPath}`);
+    console.warn(`[Mosaic][Middleware] Could not load data from ${urlPath}/${targetPath}`);
     return false;
   }
 };
@@ -55,7 +55,7 @@ const getFechedFile = async (mosaicUrl, targetPath) => {
   } else if (response.status !== 404) {
     throw Error(`${response.status} - ${response.statusText}`);
   } else {
-    console.warn(`Could not load data from ${mosaicUrl}/${targetPath}`);
+    console.warn(`[Mosaic][Middleware] Could not load data from ${mosaicUrl}/${targetPath}`);
     return false;
   }
 };
@@ -94,7 +94,7 @@ export const withSearchIndex: MosaicMiddleware<SearchIndexSlice> = async (
     }
     return { props: {} };
   } catch (error) {
-    console.error(error);
+    console.error('[Mosaic][Middleware]', error);
     let errorMessage = `Could not load any search index for ${resolvedUrl}`;
     throw new MiddlewareError(500, resolvedUrl, [errorMessage], {
       show404: false,

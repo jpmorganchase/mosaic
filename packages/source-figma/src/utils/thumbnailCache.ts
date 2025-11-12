@@ -48,14 +48,14 @@ export class ThumbnailCache {
         const cachedModTime = new Date(cacheEntry.fileLastModified).getTime();
         if (currentModTime > cachedModTime) {
           console.log(
-            `[Figma-Source] File was modified after cache (file: ${currentFileLastModified}, cache: ${cacheEntry.fileLastModified})`
+            `[Mosaic][Source-Figma] File was modified after cache (file: ${currentFileLastModified}, cache: ${cacheEntry.fileLastModified})`
           );
           return false;
         }
       }
       return true;
     } catch (error) {
-      console.error(`[Figma-Source] Error reading cache for modification check: ${error}`);
+      console.error('[Mosaic][Source-Figma] Error reading cache for modification check:', error);
       return false;
     }
   }
@@ -69,10 +69,10 @@ export class ThumbnailCache {
           const reason = fileLastModified ? 'file modification or TTL expiry' : 'TTL expiry';
           fs.unlinkSync(cacheFilePath);
           console.log(
-            `[Figma-Source] Removed invalid cache file: thumbnail-${fileId}.json (reason: ${reason})`
+            `[Mosaic][Source-Figma] Removed invalid cache file: thumbnail-${fileId}.json (reason: ${reason})`
           );
         } catch (error) {
-          console.error(`[Figma-Source] Error removing invalid cache file: ${error}`);
+          console.error('[Mosaic][Source-Figma] Error removing invalid cache file:', error);
         }
       }
       return null;
@@ -83,7 +83,7 @@ export class ThumbnailCache {
       const cacheEntry: CacheEntry = JSON.parse(cacheContent);
       return cacheEntry.thumbnails;
     } catch (error) {
-      console.error(`[Figma-Source] Error reading thumbnail cache: ${error}`);
+      console.error('[Mosaic][Source-Figma] Error reading thumbnail cache:', error);
       return null;
     }
   }
@@ -104,12 +104,12 @@ export class ThumbnailCache {
     try {
       fs.writeFileSync(cacheFilePath, JSON.stringify(cacheEntry));
       console.log(
-        `[Figma-Source] Cached ${
+        `[Mosaic][Source-Figma] Cached ${
           Object.keys(thumbnails).length
         } thumbnails for file ${fileId} (lastModified: ${cacheEntry.fileLastModified})`
       );
     } catch (error) {
-      console.error(`[Figma-Source] Error writing thumbnail cache: ${error}`);
+      console.error('[Mosaic][Source-Figma] Error writing thumbnail cache:', error);
     }
   }
 }

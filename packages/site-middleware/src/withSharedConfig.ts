@@ -73,7 +73,7 @@ export const withSharedConfig: MosaicMiddleware<SharedConfigSlice> = async (
     return { props: {} };
   } catch (error) {
     console.error(error);
-    let errorMessage = `Could not load any shared config for ${resolvedUrl}`;
+    let errorMessage = `[Mosaic][Middleware] Could not load any shared config for ${resolvedUrl}`;
     throw new MiddlewareError(500, resolvedUrl, [errorMessage], {
       show404: false,
       show500: true

@@ -35,7 +35,7 @@ export function useAppHeader(): AppHeader | undefined {
       const linkItem: AppHeaderMenuLinkItem = { ...menu, type: MenuItemType.LINK };
       return [...result, linkItem];
     }
-    console.error('Unknown menu type passed to useAppHeader, ignoring', menu);
+    console.error('[Mosaic][Store] Unknown menu type passed to useAppHeader, ignoring', menu);
     return result;
   }, []);
 

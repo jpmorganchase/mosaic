@@ -128,7 +128,7 @@ export async function createPullRequest(
       throw new Error(`${result.data.status} - ${result.data.message}`);
     }
   } catch (e: unknown) {
-    console.group('[Mosaic] Pull Request Error');
+    console.group('[Mosaic][Workflows] Pull Request Error');
     console.log('fullPath', filePath);
     console.log('Head', branchName);
     console.log('Base', sourceBranch);

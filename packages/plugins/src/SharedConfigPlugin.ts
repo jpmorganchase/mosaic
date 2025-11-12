@@ -196,10 +196,10 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
           !(await sharedFilesystem.promises.exists(aliasSharedConfigPath))
         ) {
           console.log(
-            `[Mosaic][Plugin] Source has no shared config. Root index page is: ${namespaceSharedConfig.rootPath}`
+            `[Mosaic][Plugin-SharedConfig] Source has no shared config. Root index page is: ${namespaceSharedConfig.rootPath}`
           );
           console.log(
-            '[Mosaic][Plugin] Copying shared config ',
+            '[Mosaic][Plugin-SharedConfig] Copying shared config ',
             closestSharedConfigPath,
             '-->',
             aliasSharedConfigPath

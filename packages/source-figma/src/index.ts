@@ -172,7 +172,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
     ).pipe(
       tap(summary => {
         if (summary.errors.length > 0) {
-          console.error('[Figma-Source] Project fetch errors:');
+          console.error('[Mosaic][Source-Figma] Project fetch errors:');
           console.error(JSON.stringify(summary.errors, null, 2));
         }
       }),
@@ -197,7 +197,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         }).pipe(
           tap(summary => {
             if (summary.errors.length > 0) {
-              console.error('[Figma-Source] Project files fetch errors:');
+              console.error('[Mosaic][Source-Figma] Project files fetch errors:');
               console.error(JSON.stringify(summary.errors, null, 2));
             }
           }),
@@ -249,7 +249,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
             const cachedThumbnails = thumbnailCache.getThumbnails(fileId, fileLastModified);
             if (cachedThumbnails) {
               console.log(
-                `[Figma-Source] Using cached thumbnail files for ${fileId} (lastModified: ${fileLastModified})`
+                `[Mosaic][Source-Figma] Using cached thumbnail files for ${fileId} (lastModified: ${fileLastModified})`
               );
               for (const page of figmaPages) {
                 if (
@@ -284,7 +284,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
           const fileId = transformerOptions.fileIds[index];
           if (response.err) {
             console.error(
-              `[Figma-Source] Figma returned ${response.err} for ${fileId} thumbnail generation`
+              `[Source-Figma] Figma returned ${response.err} for ${fileId} thumbnail generation`
             );
           }
           if (thumbnailCache && !response.err && response.images) {
@@ -328,7 +328,7 @@ const FigmaSource: Source<FigmaSourceOptions, FigmaPage> = {
         }).pipe(
           tap(summary => {
             if (summary.errors.length > 0) {
-              console.error('[Figma-Source] Thumbnail fetch errors:');
+              console.error('[Mosaic][Source-Figma] Thumbnail fetch errors:');
               console.error(JSON.stringify(summary.errors, null, 2));
             }
           }),
