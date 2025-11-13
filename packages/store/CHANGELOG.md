@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-store
 
+## 0.1.0-beta.96
+
+### Patch Changes
+
+- 5e42846: Improved logging by standardizing the prefix
+
 ## 0.1.0-beta.95
 
 ### Patch Changes
