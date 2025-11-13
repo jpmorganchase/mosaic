@@ -1,5 +1,23 @@
 # @jpmorganchase/mosaic-source-storybook
 
+## 0.1.0-beta.96
+
+### Patch Changes
+
+- ce408d6: Improve error handling
+
+  Improve error handling of `fromHTTPRequest` and `createHttpSource`.
+  An object is now returned providing the successful responses and also an error for each failed request.
+  This enables you to process the error in your Source but also fixes an issue where, one bad request would
+  drop all the other successful responses.
+
+- 5e42846: Improved logging by standardizing the prefix
+- Updated dependencies [ce408d6]
+- Updated dependencies [5e42846]
+  - @jpmorganchase/mosaic-source-http@0.1.0-beta.96
+  - @jpmorganchase/mosaic-types@0.1.0-beta.96
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.96
+
 ## 0.1.0-beta.95
 
 ### Patch Changes

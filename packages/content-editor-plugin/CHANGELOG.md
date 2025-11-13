@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 0.1.0-beta.96
+
+### Patch Changes
+
+- 5e42846: Improved logging by standardizing the prefix
+  - @jpmorganchase/mosaic-components@0.1.0-beta.96
+  - @jpmorganchase/mosaic-theme@0.1.0-beta.96
+
 ## 0.1.0-beta.95
 
 ### Patch Changes
