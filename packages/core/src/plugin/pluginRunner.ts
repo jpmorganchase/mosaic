@@ -35,7 +35,7 @@ export default async function pluginRunner(
         lifecycleName !== 'shouldUpdateNamespaceSources'
       ) {
         console.warn(
-          `[Mosaic] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
+          `[Mosaic][Core] \`${lifecycleName}\` plugin should not return a value - this lifecycle phase expects mutation to occur directly on the filesystem instance. This will be ignored.`
         );
       }
 
@@ -54,9 +54,9 @@ export default async function pluginRunner(
         path.posix.extname(plugin.modulePath)
       );
       console.error(
-        `[Mosaic][Plugin] '${pluginName}' threw an exception running \`${lifecycleName}\``
+        `[Mosaic][Core] '${pluginName}' threw an exception running \`${lifecycleName}\``
       );
-      console.error(`[Mosaic][Plugin] ${exception.stack}`);
+      console.error(`[Mosaic][Core] ${exception.stack}`);
 
       if (exception instanceof PluginError) {
         exception.lifecycleMethod = lifecycleName;

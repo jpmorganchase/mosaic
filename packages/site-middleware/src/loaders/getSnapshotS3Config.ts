@@ -5,7 +5,7 @@ export function getSnapshotS3Config(key) {
   if (!config.success) {
     config.error.issues.forEach(issue => {
       console.error(
-        `Missing process.env.${issue.path.join()} environment variable required to load S3 bucket ${key}`
+        `[Mosaic][Middleware] Missing process.env.${issue.path.join()} environment variable required to load S3 bucket ${key}`
       );
     });
     throw new Error(`Environment variables missing for loading of S3 content for key ${key}`);

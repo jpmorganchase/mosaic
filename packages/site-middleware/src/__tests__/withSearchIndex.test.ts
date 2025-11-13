@@ -137,7 +137,6 @@ describe('GIVEN withSearchIndex', () => {
           getHeader: name => (name === 'X-Mosaic-Content-Url' ? '/mydomain' : 'snapshot-file')
         }
       });
-      console.log({ content });
       expect(content).toEqual({ props: {} });
     });
   });

@@ -102,7 +102,9 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
       const headers = requestHeaders ? (requestHeaders as HeadersInit) : undefined;
 
       if (proxyEndpoint) {
-        console.log(`[Mosaic] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`);
+        console.log(
+          `[Mosaic][Source-Storybook] Storybook source using ${proxyEndpoint} proxy for ${storiesUrl}`
+        );
         dispatcher = new ProxyAgent(proxyEndpoint);
       }
       const url = storiesUrl || `${storyUrlPrefix}/index.json`;
@@ -127,7 +129,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
     return storybookHttpSource$.pipe(
       map(({ results, errors }) => {
         if (errors.length > 0) {
-          console.error('[StorybookSource] Failed requests:');
+          console.error('[Mosaic][Source-Storybook] Failed requests:');
           console.error(JSON.stringify(errors, null, 2));
         }
         return results.map(result => result.data);

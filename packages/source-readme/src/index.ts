@@ -79,7 +79,7 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
       let dispatcher;
 
       if (proxyEndpoint) {
-        console.log(`[Mosaic] Readme source using ${proxyEndpoint} proxy for ${readmeUrl}`);
+        console.log(`[Mosaic][Source-Readme] using ${proxyEndpoint} proxy for ${readmeUrl}`);
         dispatcher = new ProxyAgent(proxyEndpoint);
       }
 
@@ -107,7 +107,7 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
     return readmeHttpSource$.pipe(
       map(({ results, errors }) => {
         if (errors.length > 0) {
-          console.error('[ReadmeSource] Failed requests:');
+          console.error('[Mosaic][Source-Readme] Failed requests:');
           console.error(JSON.stringify(errors, null, 2));
         }
         return results.map(result => result.data);

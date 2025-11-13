@@ -31,7 +31,9 @@ function processFragments(
       const { src } = attributes;
 
       if (!src) {
-        console.error("Fragment directive requires a 'src' attribute. Skipping.");
+        console.error(
+          "[Mosaic][Plugin-Fragment] Fragment directive requires a 'src' attribute. Skipping."
+        );
         return;
       }
 
@@ -39,7 +41,9 @@ function processFragments(
       const isHidden = !isNonHiddenPage(fragmentFullPath);
       const fragmentPage = pages.find(page => page.fullPath === fragmentFullPath);
       if (isHidden || !fragmentPage) {
-        console.warn(`Invalid file reference: '${node.attributes.src}'. Skipping.`);
+        console.warn(
+          `[Mosaic][Plugin-Fragment] Invalid file reference: '${node.attributes.src}'. Skipping.`
+        );
       } else {
         // Create a new node with the content from fragmentPage.content
         const newNode: RootContent = {

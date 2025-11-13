@@ -51,7 +51,7 @@ export default async function createSourceObservable(
       pages.reduce((pagesResult, page) => {
         if (!isNonHiddenPage(page.fullPath)) {
           console.warn(
-            `File '${
+            `[Mosaic][Core] File '${
               page.fullPath
             }' does not have a matching page file extension, it will be removed from the output.
             
@@ -63,7 +63,7 @@ NOTE: Only ${pageExtensions.join(
         }
         if (!page.fullPath) {
           console.warn(
-            `Page '${page.fullPath}' is missing the \`fullPath\` property. It will be removed from the output.`
+            `[Mosaic][Core] Page '${page.fullPath}' is missing the \`fullPath\` property. It will be removed from the output.`
           );
           return pagesResult;
         }
@@ -79,7 +79,7 @@ NOTE: Only ${pageExtensions.join(
     exponentialBackOffRetryStrategy({ ...schedule, name }),
     catchError(error => {
       console.log(
-        `[Mosaic] Source ${name} failed and retries are ${
+        `[Mosaic][Core] Source ${name} failed and retries are ${
           schedule.retryEnabled ? 'exhausted' : 'disabled'
         }`
       );

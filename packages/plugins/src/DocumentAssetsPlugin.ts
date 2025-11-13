@@ -105,11 +105,16 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
           fs
         });
         if (globbedImageDirs.length === 0) {
-          console.warn(`Warning: No entries found for ${assetSubDir}. It may not exist.`);
+          console.warn(
+            `[Mosaic][Plugin-DocumentAssets] Warning: No entries found for ${assetSubDir}. It may not exist.`
+          );
           continue;
         }
       } catch (err) {
-        console.error(`Error globbing ${assetSubDir} in ${srcDir}:`, err);
+        console.error(
+          `[Mosaic][Plugin-DocumentAssets] Error globbing ${assetSubDir} in ${srcDir}:`,
+          err
+        );
         throw new PluginError(err.message, assetSubDir);
       }
 
@@ -126,7 +131,10 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
           globbedPath = path.join(rootSrcDir, globbedImageDir);
           imageFiles = await fs.promises.readdir(globbedPath);
         } catch (err) {
-          console.error(`Error reading directory ${globbedPath}:`, err);
+          console.error(
+            `[Mosaic][Plugin-DocumentAssets] Error reading directory ${globbedPath}:`,
+            err
+          );
           continue;
         }
         if (!path.isAbsolute(rootOutputDir)) {
@@ -146,10 +154,12 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
               .catch(() => false);
             if (!symlinkAlreadyExists) {
               await fs.promises.symlink(fullImageSrcPath, fullImageDestPath);
-              console.log(`Symlink created: ${fullImageSrcPath} -> ${fullImageDestPath}`);
+              console.log(
+                `[Mosaic][Plugin-DocumentAssets] Symlink created: ${fullImageSrcPath} -> ${fullImageDestPath}`
+              );
             }
           } catch (error) {
-            console.error(`Error processing ${imageFile}:`, error);
+            console.error(`[Mosaic][Plugin-DocumentAssets] Error processing ${imageFile}:`, error);
           }
         }
       }
@@ -176,7 +186,7 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
           page.content = String(file);
         })
         .catch((err: Error) => {
-          console.error('Error processing Markdown:', err);
+          console.error('[Mosaic][Plugin-DocumentAssets] Error processing Markdown:', err);
         });
     }
     return pages;

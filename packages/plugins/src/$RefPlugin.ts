@@ -119,9 +119,10 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
           return serialisedPage;
         } catch (e) {
           console.warn(
-            `Error resolving ref(s) for page '${pagePath}'. ${e.message.replace(/\.$/, '')} in '${
-              e.source
-            }'`
+            `[Mosaic][Plugin-Ref] Error resolving ref(s) for page '${pagePath}'. ${e.message.replace(
+              /\.$/,
+              ''
+            )} in '${e.source}'`
           );
           throw new PluginError(e.message, page.fullPath);
         }
@@ -175,9 +176,10 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
           normalisedRefs[fullPath] = { ...page, ...resolved };
         } catch (e) {
           console.warn(
-            `Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(/\.$/, '')} in '${
-              e.source
-            }'`
+            `[Mosaic][Plugin-Ref] Error resolving ref(s) for page '${fullPath}'. ${e.message.replace(
+              /\.$/,
+              ''
+            )} in '${e.source}'`
           );
           throw new PluginError(e.message, page.fullPath);
         }

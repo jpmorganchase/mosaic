@@ -195,7 +195,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
                * Plugins need a way to log errors/warnings without exceptions
                */
               console.error(
-                `[Mosaic] SidebarPlugin - Invalid sidebar sort config found in ${page.fullPath}`
+                `[Mosaic][Plugin-Sidebar] - Invalid sidebar sort config found in ${page.fullPath}`
               );
             }
           }
@@ -375,10 +375,10 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const sidebarData = linkGroupMap(groupMap, rootDir);
           if (sidebarData[0] === undefined) {
             console.warn(
-              `[Mosaic] SidebarPlugin - Unable to create a Sidebar grouping for ${rootDir}`
+              `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}`
             );
             console.log(
-              '[Mosaic] SidebarPlugin - likely you have a directory without an index file'
+              '[Mosaic][Plugin-Sidebar] - likely you have a directory without an index file'
             );
             return;
           }
@@ -390,7 +390,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
               JSON.stringify({ pages: sortedRootSidebar[0].childNodes })
             );
           } else {
-            console.warn(`[Mosaic] SidebarPlugin - Unable to sort Sidebar grouping for ${rootDir}`);
+            console.warn(`[Mosaic][Plugin-Sidebar] Unable to sort Sidebar grouping for ${rootDir}`);
           }
           addSidebarDataToFrontmatter(pages, rootDir);
         })

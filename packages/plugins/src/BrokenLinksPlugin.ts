@@ -79,7 +79,7 @@ async function checkPageLinks(
     const nodes = urlToNodes[link];
     if (!nodes) return;
 
-    console.group(`[Mosaic] Broken links found in ${fullPath}`);
+    console.group(`[Mosaic][Plugin-BrokenLinks] Broken links found in ${fullPath}`);
     for (const node of nodes) {
       console.log(`Link to ${link} is dead`, node);
     }

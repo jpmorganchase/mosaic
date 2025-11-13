@@ -20,8 +20,10 @@ export default function useDataFeed(
       try {
         if (connect) {
           webSocketRef.current = new WebSocket(ENDPOINT);
-          webSocketRef.current.onopen = () => console.log(`Workflows websocket open: ${ENDPOINT}`);
-          webSocketRef.current.onclose = () => console.log('Workflows websocket closed');
+          webSocketRef.current.onopen = () =>
+            console.log(`[Mosaic][Plugin-ContentEditor] Workflows websocket open: ${ENDPOINT}`);
+          webSocketRef.current.onclose = () =>
+            console.log('[Mosaic][Plugin-ContentEditor] Workflows websocket closed');
 
           webSocketRef.current.onmessage = (msg: MessageEvent) => {
             const message: SourceWorkflowMessageEvent = JSON.parse(msg.data);
