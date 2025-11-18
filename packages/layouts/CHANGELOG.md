@@ -1,5 +1,19 @@
 # @jpmorganchase/mosaic-layouts
 
+## 0.1.0-beta.97
+
+### Minor Changes
+
+- 91a87e2: Added `LayoutProps` to the top-level exports.
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-components@0.1.0-beta.97
+- @jpmorganchase/mosaic-content-editor-plugin@0.1.0-beta.97
+- @jpmorganchase/mosaic-site-components@0.1.0-beta.97
+- @jpmorganchase/mosaic-store@0.1.0-beta.97
+- @jpmorganchase/mosaic-theme@0.1.0-beta.97
+
 ## 0.1.0-beta.96
 
 ### Patch Changes
