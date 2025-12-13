@@ -1807,7 +1807,7 @@ __metadata:
     del-cli: "npm:^4.0.1"
     esbuild-node-externals: "npm:^1.18.0"
     lodash-es: "npm:^4.17.21"
-    next: "npm:^14.2.32"
+    next: "npm:^14.2.35"
     react-transition-group: "npm:^4.4.5"
     typescript: "npm:^5.0.0"
   peerDependencies:
@@ -1922,7 +1922,7 @@ __metadata:
     fuse.js: "npm:^6.6.2"
     jwt-decode: "npm:^3.1.2"
     lodash-es: "npm:^4.17.21"
-    next: "npm:^14.2.32"
+    next: "npm:^14.2.35"
     next-mdx-remote: "npm:^5.0.0"
     next-router-mock: "npm:^0.9.13"
     node-cookie: "npm:^2.1.2"
@@ -1962,7 +1962,7 @@ __metadata:
     mdast-util-mdx: "npm:^3.0.0"
     mdast-util-mdx-jsx: "npm:^3.0.0"
     micromark-extension-mdxjs: "npm:^3.0.0"
-    next: "npm:^14.2.32"
+    next: "npm:^14.2.35"
     next-mdx-remote: "npm:^5.0.0"
     node-cookie: "npm:^2.1.2"
     react-error-boundary: "npm:^3.1.4"
@@ -2022,7 +2022,7 @@ __metadata:
     dotenv-load: "npm:^2.0.1"
     eslint-config-next: "npm:^14.2.30"
     https-proxy-agent: "npm:^7.0.0"
-    next: "npm:^14.2.32"
+    next: "npm:^14.2.35"
     next-auth: "npm:^4.24.13"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -2668,10 +2668,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/env@npm:14.2.33":
-  version: 14.2.33
-  resolution: "@next/env@npm:14.2.33"
-  checksum: 10/04d6d2c724a4b4999b059cb2ed97c08162c009ec16cbb39001df62f91a75625555c48e85be296c15b1dcfda3cb8fc8c44d03190e7265c0713d634b5a2306ff5f
+"@next/env@npm:14.2.35":
+  version: 14.2.35
+  resolution: "@next/env@npm:14.2.35"
+  checksum: 10/5685145c9a6e6d21a85c012b023092ff50cfee61b73424d3c913d4155a89c85cf02867e79b5b3bde6ef9f6e6b2bec662cecd644d0d428082801e95c4cbe2393f
   languageName: node
   linkType: hard
 
@@ -11564,11 +11564,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:^14.2.32":
-  version: 14.2.33
-  resolution: "next@npm:14.2.33"
+"next@npm:^14.2.35":
+  version: 14.2.35
+  resolution: "next@npm:14.2.35"
   dependencies:
-    "@next/env": "npm:14.2.33"
+    "@next/env": "npm:14.2.35"
     "@next/swc-darwin-arm64": "npm:14.2.33"
     "@next/swc-darwin-x64": "npm:14.2.33"
     "@next/swc-linux-arm64-gnu": "npm:14.2.33"
@@ -11618,7 +11618,7 @@ __metadata:
       optional: true
   bin:
     next: dist/bin/next
-  checksum: 10/cd2faeed13fe5fec9dfae69dfefd203057236135664698f5ca59c224aaa05068d276fad1ef067ed21356497dff38e9f79863192d4887eacbfd25a84a5202ce8d
+  checksum: 10/3647056e208cf0b19821d761841b378c8fb489b291acc8dc4d80a7afe6b1850b30dad91e1766301feda03360275347881d6ead068f1f944d823b4f91177f35ae
   languageName: node
   linkType: hard
 
