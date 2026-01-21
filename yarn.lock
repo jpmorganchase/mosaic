@@ -1692,7 +1692,7 @@ __metadata:
     deepmerge: "npm:^2.0.1"
     del-cli: "npm:^4.0.1"
     hoist-non-react-statics: "npm:^3.3.2"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     react: "npm:^18.2.0"
     react-live: "npm:^4.0.0"
     react-markdown: "npm:^9.0.0"
@@ -1733,7 +1733,7 @@ __metadata:
     clsx: "npm:^2.0.0"
     gray-matter: "npm:^4.0.3"
     lexical: "npm:^0.17.1"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     md5: "npm:*"
     react-split: "npm:^2.0.14"
     typescript: "npm:^5.0.0"
@@ -1757,7 +1757,7 @@ __metadata:
     cors: "npm:^2.8.5"
     fast-glob: "npm:*"
     gray-matter: "npm:^4.0.3"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     md5: "npm:*"
     memfs: "npm:^4.0.0"
     rxjs: "npm:^7.5.5"
@@ -1807,7 +1807,7 @@ __metadata:
     clsx: "npm:^2.0.0"
     del-cli: "npm:^4.0.1"
     esbuild-node-externals: "npm:^1.18.0"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     next: "npm:^14.2.35"
     react-transition-group: "npm:^4.4.5"
     typescript: "npm:^5.0.0"
@@ -1831,7 +1831,7 @@ __metadata:
     clsx: "npm:^2.0.0"
     deepmerge: "npm:^2.0.1"
     del-cli: "npm:^4.0.1"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     react-markdown: "npm:^9.0.0"
     swagger-ui-react: "npm:^5.30.0"
     typescript: "npm:^5.0.0"
@@ -1859,7 +1859,7 @@ __metadata:
     deepmerge: "npm:^4.3.1"
     github-slugger: "npm:^1.4.0"
     https-proxy-agent: "npm:^7.0.0"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     mdast-util-directive: "npm:^3.0.0"
     mdast-util-to-string: "npm:^4.0.0"
     memfs: "npm:^4.0.0"
@@ -1922,7 +1922,7 @@ __metadata:
     del-cli: "npm:^4.0.1"
     fuse.js: "npm:^6.6.2"
     jwt-decode: "npm:^3.1.2"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     next: "npm:^14.2.35"
     next-mdx-remote: "npm:^5.0.0"
     next-router-mock: "npm:^0.9.13"
@@ -1958,7 +1958,7 @@ __metadata:
     deepmerge: "npm:^4.2.2"
     hast-util-properties-to-mdx-jsx-attributes: "npm:^1.0.0"
     jwt-decode: "npm:^3.1.2"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     mdast-util-from-markdown: "npm:^2.0.0"
     mdast-util-mdx: "npm:^3.0.0"
     mdast-util-mdx-jsx: "npm:^3.0.0"
@@ -2072,7 +2072,7 @@ __metadata:
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.97"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
     deepmerge: "npm:^4.2.2"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     rxjs: "npm:^7.5.5"
     zod: "npm:^3.22.3"
   languageName: unknown
@@ -2100,7 +2100,7 @@ __metadata:
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
     chokidar: "npm:^3.5.3"
     fast-glob: "npm:^3.2.12"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     rxjs: "npm:^7.5.5"
     zod: "npm:^3.22.3"
   languageName: unknown
@@ -2128,7 +2128,7 @@ __metadata:
     "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.97"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
     deepmerge: "npm:^4.2.2"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.23"
     msw: "npm:^2.0.0"
     rxjs: "npm:^7.5.5"
     undici: "npm:^6.23.0"
@@ -10305,6 +10305,13 @@ __metadata:
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 10/03f39878ea1e42b3199bd3f478150ab723f93cc8730ad86fec1f2804f4a07c6e30deaac73cad53a88e9c3db33348bb8ceeb274552390e7a75d7849021c02df43
+  languageName: node
+  linkType: hard
+
+"lodash-es@npm:^4.17.23":
+  version: 4.17.23
+  resolution: "lodash-es@npm:4.17.23"
+  checksum: 10/1feae200df22eb0bd93ca86d485e77784b8a9fb1d13e91b66e9baa7a7e5e04be088c12a7e20c2250fc0bd3db1bc0ef0affc7d9e3810b6af2455a3c6bf6dde59e
   languageName: node
   linkType: hard
 
