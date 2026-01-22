@@ -35,7 +35,7 @@
     "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.97",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.97",
     "deepmerge": "^4.2.2",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "rxjs": "^7.5.5",
     "undici": "^6.23.0",
     "zod": "^3.22.3"

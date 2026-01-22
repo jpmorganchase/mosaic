@@ -57,7 +57,7 @@
     "clsx": "^2.0.0",
     "gray-matter": "^4.0.3",
     "lexical": "^0.17.1",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "md5": "*",
     "react-split": "^2.0.14",
     "yup": "^0.32.9",
