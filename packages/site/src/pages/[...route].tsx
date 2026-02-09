@@ -1,4 +1,3 @@
-import React from 'react';
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from 'next';
 import { Body } from '@jpmorganchase/mosaic-site-components';
 import {

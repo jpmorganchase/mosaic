@@ -25,7 +25,7 @@
     "incremental": true,
     "resolveJsonModule": true,
     "noImplicitAny": false,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "module": "esnext"
   },
   "include": ["src"],
