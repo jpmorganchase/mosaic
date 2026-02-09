@@ -41,20 +41,18 @@
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.97",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.97",
     "@salt-ds/core": "^1.52.0",
-    "@types/react": "^18.3.12",
+    "@types/react": "^19.0.0",
     "https-proxy-agent": "^7.0.0",
-    "next": "^14.2.35",
+    "next": "^16.1.6",
     "next-auth": "^4.24.13"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^14.2.22",
     "@playwright/test": "^1.56.1",
     "@types/node": "^20.0.0",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "dotenv-load": "^2.0.1",
-    "eslint-config-next": "^14.2.30",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
