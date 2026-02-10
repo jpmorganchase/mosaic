@@ -36,8 +36,8 @@
     "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.97",
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.97",
     "@jpmorganchase/mosaic-theme": "0.1.0-beta.97",
-    "@salt-ds/icons": "^1.15.0",
-    "@salt-ds/theme": "^1.35.0",
+    "@salt-ds/icons": "^1.17.1",
+    "@salt-ds/theme": "^1.39.0",
     "prismjs": "^1.30.0"
   }
 }
