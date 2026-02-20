@@ -30,6 +30,8 @@
     "@jpmorganchase/mosaic-site": "0.1.0-beta.94"
   },
   "changesets": [
+    "cold-coats-grab",
+    "frank-paths-start",
     "fresh-carrots-flow",
     "moody-buses-bake",
     "ready-grapes-laugh",

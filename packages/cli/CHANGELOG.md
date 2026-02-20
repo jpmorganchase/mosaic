@@ -1,5 +1,13 @@
 # @jpmorganchase/mosaic-cli
 
+## 0.1.0-beta.98
+
+### Patch Changes
+
+- @jpmorganchase/mosaic-core@0.1.0-beta.98
+- @jpmorganchase/mosaic-plugins@0.1.0-beta.98
+- @jpmorganchase/mosaic-source-local-folder@0.1.0-beta.98
+
 ## 0.1.0-beta.97
 
 ### Patch Changes

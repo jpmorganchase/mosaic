@@ -1,5 +1,11 @@
 # @jpmorganchase/mosaic-theme
 
+## 0.1.0-beta.98
+
+### Patch Changes
+
+- b78c699: Update Salt dependencies
+
 ## 0.1.0-beta.97
 
 ## 0.1.0-beta.96
