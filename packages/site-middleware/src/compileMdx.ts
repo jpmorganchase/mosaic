@@ -10,8 +10,8 @@ export async function compileMDX(
   remarkPlugins = []
 ) {
   const mdxSource = await serialize(content, {
-    blockJS: true,
-    blockDangerousJS: true,
+    blockJS: false,
+    blockDangerousJS: false,
     mdxOptions: {
       rehypePlugins: [codeBlocks, rehypeSlug, ...remarkPlugins],
       remarkPlugins: [remarkGfm, ...rehypePlugins]
