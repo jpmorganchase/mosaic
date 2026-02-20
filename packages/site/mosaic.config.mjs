@@ -39,7 +39,7 @@ const siteConfig = {
 };
 
 export default deepmerge(siteConfig, {
-  deployment: { mode: 'snapshot-file', platform: 'vercel' },
+  deployment: { mode: 'snapshot-file' },
   sources: [
     /**
      * Demonstrates a local file-system source, in this case a relative path to where the

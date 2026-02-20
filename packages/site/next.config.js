@@ -2,6 +2,9 @@ module.exports = {
   outputFileTracingExcludes: {
     '*': ['**/.next/cache/webpack']
   },
+  outputFileTracingIncludes: {
+    '/*': ['snapshots/**/*']
+  },
   transpilePackages: [
     '@jpmorganchase/mosaic-components',
     '@jpmorganchase/mosaic-content-editor-plugin',

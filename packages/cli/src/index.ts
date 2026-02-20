@@ -7,7 +7,6 @@ import serve from './serve.js';
 import uploadS3Snapshot from './upload-s3-snapshot.js';
 
 import build from './build.js';
-import { updateTraceFile } from './vercel-snapshot.js';
 
 program
   .option('-c, --config <string>', 'Config path')
@@ -42,7 +41,4 @@ if (program.args[0] === 'serve') {
 }
 if (program.args[0] === 'upload') {
   uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot));
-}
-if (program.args[0] === 'deploy') {
-  updateTraceFile(config.default, options);
 }
