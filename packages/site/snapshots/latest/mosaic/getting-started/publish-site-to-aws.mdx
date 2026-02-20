@@ -1,7 +1,7 @@
 ---
 title: Publish a site to AWS
 layout: DetailTechnical
-lastModified: 1746866940632
+lastModified: 1762156634277
 fullPath: /mosaic/getting-started/publish-site-to-aws.mdx
 route: /mosaic/getting-started/publish-site-to-aws
 breadcrumbs:
@@ -13,38 +13,34 @@ sidebar:
   groupLabel: Publish a site to AWS
 readingTime:
   text: 2 min read
-  minutes: 1.195
-  time: 71700
-  words: 239
+  minutes: 1.075
+  time: 64500
+  words: 215
 tableOfContents:
   - depth: 2
     level: 0
-    id: step-1-generate-a-mosaic-site
-    text: 'Step 1: Generate a Mosaic site'
+    id: step-1-create-a-github-repository
+    text: 'Step 1: Create a Github repository'
   - depth: 2
     level: 0
-    id: step-2-create-a-github-repository
-    text: 'Step 2: Create a Github repository'
+    id: step-2-generate-a-snapshot-of-content
+    text: 'Step 2: Generate a snapshot of content'
   - depth: 2
     level: 0
-    id: step-3-generate-a-snapshot-of-content
-    text: 'Step 3: Generate a snapshot of content'
+    id: step-3-configure-environment-for-s3
+    text: 'Step 3: Configure environment for S3'
   - depth: 2
     level: 0
-    id: step-4-configure-environment-for-s3
-    text: 'Step 4: Configure environment for S3'
+    id: step-4-setup-aws
+    text: 'Step 4: Setup AWS'
   - depth: 2
     level: 0
-    id: step-5-setup-aws
-    text: 'Step 5: Setup AWS'
+    id: step-5-configure-your-aws-app
+    text: 'Step 5: Configure your AWS app'
   - depth: 2
     level: 0
-    id: step-7-configure-your-aws-app
-    text: 'Step 7: Configure your AWS app'
-  - depth: 2
-    level: 0
-    id: step-8-upload-your-snapshot
-    text: 'Step 8: Upload your snapshot'
+    id: step-6-upload-your-snapshot
+    text: 'Step 6: Upload your snapshot'
 navigation:
   prev:
     title: Create a Site
@@ -78,16 +74,7 @@ sidebarData:
 
 Publish a site to AWS using S3 snapshots.
 
-## Step 1: Generate a Mosaic site
-
-If you have already created your Mosaic site, skip ahead to step 2.
-
-```
-> npx @jpmorganchase/mosaic-create-site -o my-sample-site
-> cd my-sample-site
-```
-
-## Step 2: Create a Github repository
+## Step 1: Create a Github repository
 
 ```
 > git init
@@ -97,7 +84,7 @@ If you have already created your Mosaic site, skip ahead to step 2.
 > git push origin main
 ```
 
-## Step 3: Generate a snapshot of content
+## Step 2: Generate a snapshot of content
 
 Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
 
@@ -105,7 +92,7 @@ Consider a snapshot as a directory of static content previously pulled from your
 > yarn gen:snapshot
 ```
 
-## Step 4: Configure environment for S3
+## Step 3: Configure environment for S3
 
 ```
 > export MOSAIC_MODE="snapshot-s3"
@@ -116,13 +103,13 @@ Consider a snapshot as a directory of static content previously pulled from your
 > yarn mosaic upload -S ./snapshots/latest
 ```
 
-## Step 5: Setup AWS
+## Step 4: Setup AWS
 
 Switch to the [AWS Amplify](https://aws.amazon.com/amplify/hosting/) console and deploy your app as a SSR application by following the [AWS docs](https://docs.amplify.aws/guides/hosting/nextjs/q/platform/js/).
 
 Setup an S3 bucket as per the [AWS S3 docs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html).
 
-## Step 7: Configure your AWS app
+## Step 5: Configure your AWS app
 
 Add the environment vars to the hosted app via your console
 
@@ -158,7 +145,7 @@ frontend:
 
 Ensure the Node is set to 16
 
-## Step 8: Upload your snapshot
+## Step 6: Upload your snapshot
 
 Upload your snapshot to S3 storage.
 

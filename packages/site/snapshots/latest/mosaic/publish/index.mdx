@@ -5,7 +5,7 @@ sidebar:
   label: Publish
   groupLabel: Publish
   priority: 2
-lastModified: 1746866940634
+lastModified: 1762156634277
 fullPath: /mosaic/publish/index.mdx
 route: /mosaic/publish/index
 breadcrumbs:
@@ -14,9 +14,9 @@ breadcrumbs:
     id: /mosaic/publish/index.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.755
-  time: 45300
-  words: 151
+  minutes: 0.645
+  time: 38700
+  words: 129
 tableOfContents:
   - depth: 2
     level: 0
@@ -52,8 +52,6 @@ sidebarData:
 ---
 # {meta.title}
 
-To create your first Mosaic site, we have created a command line generator that scaffolds a *standard* site.
-
 A *standard* site offers
 
 * an out the box, working site, which showcases local and remote content sources
@@ -62,18 +60,12 @@ A *standard* site offers
 
 ## Create your first site
 
-Install the Mosaic create site script.
+Duplicate the `site` package from the Mosaic monorepo to create your own site.
 
 ```
-> yarn global add @jpmorganchase/mosaic-create-site
-```
-
-Create a directory for your site and run the `mosaic-create-site` script.
-
-```
-> mkdir mosaic-sample-site
+> git clone https://github.com/jpmorganchase/mosaic.git
+> cp -r mosaic/packages/site mosaic-sample-site
 > cd mosaic-sample-site
-> mosaic-create-site -f .
 ```
 
 Define the environment variable, which enables us to access your remote repo.

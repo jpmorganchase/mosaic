@@ -1,7 +1,7 @@
 ---
 title: BreadcrumbsPlugin
 layout: DetailOverview
-lastModified: 1745483718261
+lastModified: 1762156634229
 fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
 route: /mosaic/configure/plugins/breadcrumbs-plugin
 breadcrumbs:
@@ -16,9 +16,9 @@ sidebar:
   groupLabel: BreadcrumbsPlugin
 readingTime:
   text: 1 min read
-  minutes: 0.96
-  time: 57600
-  words: 192
+  minutes: 0.775
+  time: 46500
+  words: 155
 tableOfContents:
   - depth: 2
     level: 0
@@ -454,13 +454,7 @@ This plugin runs with no special priority.
 
 ## Adding to Mosaic
 
-This plugin is included in the mosaic config shipped by the Mosaic standard generator. So if you use the below import in your `mosaic.config.mjs` file then the breadcrumbs plugin is included already:
-
-```js
-import mosaicConfig from '@jpmorganchase/mosaic-standard-generator/dist/fs.config.js';
-```
-
-To add it yourself, add the following to the `plugins` collection:
+Add the following to the `plugins` collection:
 
 ```js
 plugins: [
