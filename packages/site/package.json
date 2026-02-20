@@ -18,7 +18,7 @@
     "dev": "next dev",
     "start": "next start",
     "debug": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
-    "deploy": "yarn mosaic deploy --out snapshots --name latest --config mosaic.config.mjs",
+    "deploy": "echo 'DO NOTHING'",
     "docker:build": "docker build . --tag mosaic-site:latest",
     "docker:start": "docker run -it --rm --ipc=host -p 3000:3000 --network mosaic-net --name mosaic-site mosaic-site:latest",
     "e2e": "yarn playwright test",

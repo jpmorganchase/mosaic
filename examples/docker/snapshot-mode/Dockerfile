@@ -27,17 +27,6 @@ COPY --from=app-source ./app ./
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN yarn build
 
-# Copy the snapshot files and run deploy to update the nextjs output trace file
-FROM base AS snapshot-apply
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=snapshots /snapshots ./snapshots
-COPY package.json mosaic.config.mjs ./
-COPY --from=builder /app/.next/standalone ./
-ENV MOSAIC_SNAPSHOT_DIR snapshots/latest
-ENV MOSAIC_MODE snapshot-file
-RUN yarn deploy
-
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
