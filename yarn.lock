@@ -1885,17 +1885,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jpmorganchase/mosaic-cli@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-cli@workspace:packages/cli":
+"@jpmorganchase/mosaic-cli@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-cli@workspace:packages/cli"
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.859.0"
     "@fastify/middie": "npm:^9.1.0"
     "@fastify/websocket": "npm:^11.0.0"
-    "@jpmorganchase/mosaic-core": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-core": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@types/ws": "npm:^8.5.7"
     commander: "npm:^9.4.1"
     cors: "npm:^2.8.5"
@@ -1913,13 +1913,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-components@npm:0.1.0-beta.97, @jpmorganchase/mosaic-components@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-components@workspace:packages/components":
+"@jpmorganchase/mosaic-components@npm:0.1.0-beta.98, @jpmorganchase/mosaic-components@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-components@workspace:packages/components":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-components@workspace:packages/components"
   dependencies:
-    "@jpmorganchase/mosaic-icons": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-icons": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.56.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/recipes": "npm:^0.2.1"
@@ -1946,13 +1946,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-content-editor-plugin@npm:0.1.0-beta.97, @jpmorganchase/mosaic-content-editor-plugin@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-content-editor-plugin@workspace:packages/content-editor-plugin":
+"@jpmorganchase/mosaic-content-editor-plugin@npm:0.1.0-beta.98, @jpmorganchase/mosaic-content-editor-plugin@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-content-editor-plugin@workspace:packages/content-editor-plugin":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-content-editor-plugin@workspace:packages/content-editor-plugin"
   dependencies:
     "@floating-ui/react": "npm:^0.26.6"
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@lexical/code": "npm:^0.17.1"
     "@lexical/link": "npm:^0.17.1"
     "@lexical/list": "npm:^0.17.1"
@@ -1982,14 +1982,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-core@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-core@workspace:packages/core":
+"@jpmorganchase/mosaic-core@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-core@workspace:packages/core"
   dependencies:
-    "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     cors: "npm:^2.8.5"
     fast-glob: "npm:*"
     gray-matter: "npm:^4.0.3"
@@ -2001,7 +2001,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-from-http-request@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-from-http-request@workspace:packages/fromHttpRequest":
+"@jpmorganchase/mosaic-from-http-request@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-from-http-request@workspace:packages/fromHttpRequest":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-from-http-request@workspace:packages/fromHttpRequest"
   dependencies:
@@ -2014,11 +2014,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-icons@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-icons@workspace:packages/icons":
+"@jpmorganchase/mosaic-icons@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-icons@workspace:packages/icons":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-icons@workspace:packages/icons"
   dependencies:
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.56.0"
     del-cli: "npm:^4.0.1"
     typescript: "npm:^5.2.2"
@@ -2028,15 +2028,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-layouts@npm:0.1.0-beta.97, @jpmorganchase/mosaic-layouts@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-layouts@workspace:packages/layouts":
+"@jpmorganchase/mosaic-layouts@npm:0.1.0-beta.98, @jpmorganchase/mosaic-layouts@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-layouts@workspace:packages/layouts":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-layouts@workspace:packages/layouts"
   dependencies:
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-content-editor-plugin": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-content-editor-plugin": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.56.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/sprinkles": "npm:^1.3.0"
@@ -2054,12 +2054,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-open-api-component@npm:0.1.0-beta.97, @jpmorganchase/mosaic-open-api-component@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-open-api-component@workspace:packages/open-api-component":
+"@jpmorganchase/mosaic-open-api-component@npm:0.1.0-beta.98, @jpmorganchase/mosaic-open-api-component@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-open-api-component@workspace:packages/open-api-component":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-open-api-component@workspace:packages/open-api-component"
   dependencies:
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@types/swagger-ui-react": "npm:^5.0.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/recipes": "npm:^0.2.1"
@@ -2080,16 +2080,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-plugins@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-plugins@workspace:packages/plugins":
+"@jpmorganchase/mosaic-plugins@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-plugins@workspace:packages/plugins":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-plugins@workspace:packages/plugins"
   dependencies:
     "@apidevtools/json-schema-ref-parser": "npm:^10.1.0"
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@types/github-slugger": "npm:^1.3.0"
     check-links: "npm:^3.0.0"
     deepmerge: "npm:^4.3.1"
@@ -2115,7 +2115,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-schemas@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-schemas@workspace:packages/schemas":
+"@jpmorganchase/mosaic-schemas@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-schemas@workspace:packages/schemas":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-schemas@workspace:packages/schemas"
   dependencies:
@@ -2124,26 +2124,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-serialisers@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-serialisers@workspace:packages/serialisers":
+"@jpmorganchase/mosaic-serialisers@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-serialisers@workspace:packages/serialisers":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-serialisers@workspace:packages/serialisers"
   dependencies:
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     gray-matter: "npm:^4.0.3"
     rxjs: "npm:^7.5.5"
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-site-components@npm:0.1.0-beta.97, @jpmorganchase/mosaic-site-components@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-site-components@workspace:packages/site-components":
+"@jpmorganchase/mosaic-site-components@npm:0.1.0-beta.98, @jpmorganchase/mosaic-site-components@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-site-components@workspace:packages/site-components":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-site-components@workspace:packages/site-components"
   dependencies:
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-open-api-component": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-site-middleware": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-open-api-component": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-middleware": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.56.0"
     "@types/mdast": "npm:^3.0.0"
     "@types/styled-components": "npm:^5.1.26"
@@ -2178,15 +2178,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-site-middleware@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware":
+"@jpmorganchase/mosaic-site-middleware@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware"
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.859.0"
     "@fetch-mock/vitest": "npm:^0.2.10"
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@types/mdast": "npm:^3.0.0"
     acorn: "npm:^8.0.0"
     acorn-jsx: "npm:^5.0.0"
@@ -2215,16 +2215,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-site-preset-styles@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-site-preset-styles@workspace:packages/site-preset-styles":
+"@jpmorganchase/mosaic-site-preset-styles@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-site-preset-styles@workspace:packages/site-preset-styles":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-site-preset-styles@workspace:packages/site-preset-styles"
   dependencies:
-    "@jpmorganchase/mosaic-components": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-content-editor-plugin": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-layouts": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-open-api-component": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-site-components": "npm:0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-content-editor-plugin": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-layouts": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-open-api-component": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-components": "npm:0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:0.1.0-beta.98"
     "@salt-ds/icons": "npm:^1.17.1"
     "@salt-ds/theme": "npm:^1.39.0"
     del-cli: "npm:^4.0.1"
@@ -2238,17 +2238,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-site@workspace:packages/site"
   dependencies:
-    "@jpmorganchase/mosaic-cli": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-layouts": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-site-preset-styles": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-sitemap-component": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-cli": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-layouts": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-preset-styles": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-sitemap-component": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@playwright/test": "npm:^1.56.1"
     "@salt-ds/core": "npm:^1.56.0"
     "@types/node": "npm:^20.0.0"
@@ -2264,11 +2264,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-sitemap-component@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-sitemap-component@workspace:packages/sitemap-component":
+"@jpmorganchase/mosaic-sitemap-component@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-sitemap-component@workspace:packages/sitemap-component":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-sitemap-component@workspace:packages/sitemap-component"
   dependencies:
-    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.56.0"
     "@types/styled-components": "npm:^5.1.26"
     "@vanilla-extract/esbuild-plugin": "npm:^2.3.15"
@@ -2288,9 +2288,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-figma@workspace:packages/source-figma"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     deepmerge: "npm:^4.2.2"
     msw: "npm:^2.0.0"
     rxjs: "npm:^7.5.5"
@@ -2298,13 +2298,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-source-git-repo@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-source-git-repo@workspace:packages/source-git-repo":
+"@jpmorganchase/mosaic-source-git-repo@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-source-git-repo@workspace:packages/source-git-repo":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-git-repo@workspace:packages/source-git-repo"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     deepmerge: "npm:^4.2.2"
     lodash-es: "npm:^4.17.23"
     rxjs: "npm:^7.5.5"
@@ -2312,13 +2312,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-source-http@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-source-http@workspace:packages/source-http":
+"@jpmorganchase/mosaic-source-http@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-source-http@workspace:packages/source-http":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-http@workspace:packages/source-http"
   dependencies:
-    "@jpmorganchase/mosaic-from-http-request": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-from-http-request": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     msw: "npm:^2.0.0"
     rxjs: "npm:^7.5.5"
     undici: "npm:^6.23.0"
@@ -2326,12 +2326,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-source-local-folder@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-source-local-folder@workspace:packages/source-local-folder":
+"@jpmorganchase/mosaic-source-local-folder@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-source-local-folder@workspace:packages/source-local-folder":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-local-folder@workspace:packages/source-local-folder"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     chokidar: "npm:^3.5.3"
     fast-glob: "npm:^3.2.12"
     lodash-es: "npm:^4.17.23"
@@ -2344,9 +2344,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-readme@workspace:packages/source-readme"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     msw: "npm:^2.0.0"
     rxjs: "npm:^7.5.5"
     undici: "npm:^6.23.0"
@@ -2358,9 +2358,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-source-storybook@workspace:packages/source-storybook"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-http": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     deepmerge: "npm:^4.2.2"
     lodash-es: "npm:^4.17.23"
     msw: "npm:^2.0.0"
@@ -2370,7 +2370,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-store@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-store@workspace:packages/store":
+"@jpmorganchase/mosaic-store@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-store@workspace:packages/store":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-store@workspace:packages/store"
   dependencies:
@@ -2384,7 +2384,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-theme@npm:0.1.0-beta.97, @jpmorganchase/mosaic-theme@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-theme@workspace:packages/theme":
+"@jpmorganchase/mosaic-theme@npm:0.1.0-beta.98, @jpmorganchase/mosaic-theme@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-theme@workspace:packages/theme":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-theme@workspace:packages/theme"
   dependencies:
@@ -2405,11 +2405,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-types@npm:^0.1.0-beta.97, @jpmorganchase/mosaic-types@workspace:packages/types":
+"@jpmorganchase/mosaic-types@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-types@workspace:packages/types"
   dependencies:
-    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
     memfs: "npm:^4.0.0"
     rxjs: "npm:^7.5.5"
     zod: "npm:^3.22.3"
@@ -2420,9 +2420,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-workflows@workspace:packages/workflows"
   dependencies:
-    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.97"
-    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.97"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@octokit/core": "npm:^6.1.2"
     "@types/uuid": "npm:^8.3.4"
     undici: "npm:^6.23.0"

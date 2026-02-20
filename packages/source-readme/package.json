@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-readme",
-  "version": "0.1.0-beta.97",
+  "version": "0.1.0-beta.98",
   "author": "",
   "description": "Mosaic Readme.md source for core file system",
   "license": "Apache-2.0",
@@ -30,9 +30,9 @@
     "url": "git@github.com:jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.97",
-    "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.97",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.97",
+    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
     "rxjs": "^7.5.5",
     "undici": "^6.23.0",
     "zod": "^3.22.3"

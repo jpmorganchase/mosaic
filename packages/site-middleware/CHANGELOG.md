@@ -1,5 +1,14 @@
 # @jpmorganchase/mosaic-site-middleware
 
+## 0.1.0-beta.98
+
+### Patch Changes
+
+- b78c699: Update Next.js
+  - @jpmorganchase/mosaic-schemas@0.1.0-beta.98
+  - @jpmorganchase/mosaic-store@0.1.0-beta.98
+  - @jpmorganchase/mosaic-types@0.1.0-beta.98
+
 ## 0.1.0-beta.97
 
 ### Patch Changes
