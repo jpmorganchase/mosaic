@@ -2110,7 +2110,7 @@ __metadata:
     rxjs: "npm:^7.5.5"
     unified: "npm:^11.0.0"
     unist-util-visit: "npm:^5.0.0"
-    uuid: "npm:^7.0.3"
+    uuid: "npm:^14.0.0"
     vfile-reporter: "npm:^7.0.5"
   languageName: unknown
   linkType: soft
@@ -2426,7 +2426,7 @@ __metadata:
     "@octokit/core": "npm:^6.1.2"
     "@types/uuid": "npm:^8.3.4"
     undici: "npm:^6.23.0"
-    uuid: "npm:^7.0.3"
+    uuid: "npm:^14.0.0"
   languageName: unknown
   linkType: soft
 
@@ -15650,12 +15650,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^7.0.3":
-  version: 7.0.3
-  resolution: "uuid@npm:7.0.3"
+"uuid@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "uuid@npm:14.0.0"
   bin:
-    uuid: dist/bin/uuid
-  checksum: 10/b2a4d30ecd6581015175487426558aafd7f7b4013a2e30802c128cc28cad9abe46ecd36c02f7fbcde7908fd4672334818d56a441c0871963d6bd89d911bef2ea
+    uuid: dist-node/bin/uuid
+  checksum: 10/8ee9b98f9650e25555515f7a28d3c3ae9364e72f7bb19b9e08b681bc135338beba5509b2830f6ae1cfaba4d45401da0d16d4d109b977097bc3d6ba0c5583341b
   languageName: node
   linkType: hard
 

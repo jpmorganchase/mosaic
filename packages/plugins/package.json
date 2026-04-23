@@ -61,7 +61,7 @@
     "rxjs": "^7.5.5",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0",
-    "uuid": "^7.0.3",
+    "uuid": "^14.0.0",
     "vfile-reporter": "^7.0.5"
   }
 }
