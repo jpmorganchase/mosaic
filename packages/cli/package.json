@@ -5,6 +5,7 @@
   "description": "Mosaic command line scripts",
   "license": "Apache-2.0",
   "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
