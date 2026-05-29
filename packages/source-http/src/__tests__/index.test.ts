@@ -11,11 +11,16 @@ import Source, { createHttpSource } from '../index.js';
 vi.mock('undici', async importOriginal => {
   return {
     ...(await importOriginal()),
-    ProxyAgent: vi.fn().mockImplementation(() => ({
-      connect: vi.fn(),
-      destroy: vi.fn(),
-      close: vi.fn()
-    }))
+    // Use a `function` (not an arrow) so the mock can be invoked with
+    // `new` — Vitest 4 routes constructor calls through `Reflect.construct`,
+    // which requires the implementation to be a constructable function.
+    ProxyAgent: vi.fn().mockImplementation(function ProxyAgentMock() {
+      return {
+        connect: vi.fn(),
+        destroy: vi.fn(),
+        close: vi.fn()
+      };
+    })
   };
 });
 

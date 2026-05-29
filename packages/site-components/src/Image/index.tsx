@@ -26,7 +26,17 @@ export const Image: FC<ImageProps> = forwardRef(
       width,
       height,
       fill,
-      unoptimized = !process.env.OPTIMIZE_IMAGES || false,
+      // Must read a NEXT_PUBLIC_* env var so the value is statically inlined
+      // identically on both server and client. Reading a non-public env var
+      // (e.g. `OPTIMIZE_IMAGES`) would yield different values during SSR vs.
+      // client hydration and cause a hydration mismatch on the rendered <img>
+      // (server emits `srcSet`/`sizes` from next/image optimization, client
+      // emits the raw `src`). See React hydration-mismatch docs.
+      //
+      // Note: env vars are always strings. The string "false" is truthy, so
+      // we must compare explicitly rather than using `!process.env.X`.
+      // Optimization is enabled only when the var is the literal "true".
+      unoptimized = process.env.NEXT_PUBLIC_OPTIMIZE_IMAGES !== 'true',
       ...rest
     },
     ref: Ref<HTMLDivElement>

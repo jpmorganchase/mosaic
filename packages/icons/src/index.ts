@@ -5,7 +5,7 @@ import type { IconProps as SaltIconProps } from '@salt-ds/icons';
 import type { saltIconNames } from '../types/saltIconNames';
 
 const {
-  DEFAULT_ICON_SIZE: DEDEFAULT_ICON_SIZE,
+  DEFAULT_ICON_SIZE: _DEFAULT_ICON_SIZE,
   Icon: _Icon,
   makePrefixer: _makePrefixer,
   ...allIcons

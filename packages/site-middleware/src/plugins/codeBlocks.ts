@@ -34,7 +34,6 @@ export const transformer: Transformer<Root> = ast => {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let parent = ancestors.at(-1)!;
 
     if (parent.type !== 'element') {
@@ -50,7 +49,7 @@ export const transformer: Transformer<Root> = ast => {
     }
 
     const child = parent;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     parent = ancestors.at(-2)!;
 
     // Limit eval to just basic strings that start with "meta."

@@ -16,7 +16,7 @@ export function useSidebar() {
 }
 function getIds(breadcrumbs: Breadcrumb[]) {
   const pathIds = breadcrumbs.reduce<string[]>(
-    (result, { id }) => [...result, id.replace(/\/[^\/]*$/, '')],
+    (result, { id }) => [...result, id.replace(/\/[^/]*$/, '')],
     []
   );
   return new Set(pathIds);

@@ -1,7 +1,6 @@
 import { z, ZodTypeAny } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 
-// eslint-disable-next-line import/prefer-default-export
 export function validateMosaicSchema<T extends ZodTypeAny>(
   schema: T,
   options: Record<string, unknown>,

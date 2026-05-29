@@ -96,15 +96,13 @@ export default class FileAccess implements IFileAccess {
     }
     Object.keys(symlinks).forEach(async alias => {
       for (const { target, type = 'file' } of symlinks[alias]) {
-        // eslint-disable-next-line no-await-in-loop
         if (!(await this.exists(alias))) {
-          // eslint-disable-next-line no-await-in-loop
           if (!(await this.exists(path.dirname(alias)))) {
             // TODO: This works... But why are the subdirs not being passed from the child process as `null`s?
-            // eslint-disable-next-line no-await-in-loop
+
             await this.#adapter.promises.mkdir(path.dirname(alias), { recursive: true });
           }
-          // eslint-disable-next-line no-await-in-loop
+
           await this.#adapter.promises.symlink(target, alias, type);
         }
       }
@@ -226,7 +224,6 @@ export default class FileAccess implements IFileAccess {
       let fileData = rawFile;
 
       for (const hook of this.#hooks) {
-        // eslint-disable-next-line no-await-in-loop
         fileData = await hook(file, fileData);
       }
       resolve(fileData);

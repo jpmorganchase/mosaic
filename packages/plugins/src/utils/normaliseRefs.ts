@@ -56,36 +56,32 @@ export default async function normaliseRefs(
       continue;
     }
 
-    try {
-      let globResolvedRefs =
-        // If the pattern doesn't have an explicit file extension - then we'll make it just return pages
-        await filesystem.promises.glob(
-          !/\/[^/]+\.\w{2,4}$/.test(url) ? createFileGlob(url, pageExtensions) : url,
-          {
-            ignore: [filepath, ...ignorePages.map(ignore => `**/${ignore}`)],
-            cwd: path.dirname(filepath),
-            absolute: true
-          }
-        );
-
-      // Use a set so we de-dupe any symlinks that point to the same page
-      const resolvedRefs = new Set();
-
-      for (const value of globResolvedRefs) {
-        const refRealPath = await filesystem.promises.realpath(path.posix.resolve(filepath, value));
-        if (refRealPath !== (await filesystem.promises.realpath(filepath))) {
-          resolvedRefs.add(`${refRealPath}#${fragment}`);
+    const globResolvedRefs =
+      // If the pattern doesn't have an explicit file extension - then we'll make it just return pages
+      await filesystem.promises.glob(
+        !/\/[^/]+\.\w{2,4}$/.test(url) ? createFileGlob(url, pageExtensions) : url,
+        {
+          ignore: [filepath, ...ignorePages.map(ignore => `**/${ignore}`)],
+          cwd: path.dirname(filepath),
+          absolute: true
         }
-      }
-
-      set(
-        configWithoutGlobs,
-        ref.$$path.slice(0, -1),
-        Array.from(resolvedRefs).map($ref => ({ $ref }))
       );
-    } catch (e) {
-      throw e;
+
+    // Use a set so we de-dupe any symlinks that point to the same page
+    const resolvedRefs = new Set();
+
+    for (const value of globResolvedRefs) {
+      const refRealPath = await filesystem.promises.realpath(path.posix.resolve(filepath, value));
+      if (refRealPath !== (await filesystem.promises.realpath(filepath))) {
+        resolvedRefs.add(`${refRealPath}#${fragment}`);
+      }
     }
+
+    set(
+      configWithoutGlobs,
+      ref.$$path.slice(0, -1),
+      Array.from(resolvedRefs).map($ref => ({ $ref }))
+    );
   }
 
   return configWithoutGlobs;

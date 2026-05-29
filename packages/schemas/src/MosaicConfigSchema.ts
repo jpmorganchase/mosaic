@@ -1,13 +1,11 @@
 import { z } from 'zod';
 import { fileExtensionSchema } from './fileExtensionSchema.js';
-import { modeSchema } from './modeSchema.js';
 import { pluginModuleSchema } from './PluginModuleSchema.js';
 import { serialiserModuleSchema } from './SerialiserModuleSchema.js';
 import { sourceModuleSchema } from './SourceModuleSchema.js';
 import { sourceScheduleSchema } from './SourceScheduleSchema.js';
 
 export const mosaicConfigSchema = z.object({
-  deployment: z.object({ mode: modeSchema, platform: z.string() }).optional(),
   /**
    * A collection of file extensions that can be served
    * e.g. [".mdx", ".json"]

@@ -109,7 +109,7 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
           );
         }
       });
-    } catch (e) {
+    } catch {
       setError('Sorry - an unexpected error has occurred');
       setPrHref(null);
       setIsRaising(false);

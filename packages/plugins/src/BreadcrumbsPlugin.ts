@@ -36,10 +36,7 @@ const BreadcrumbsPlugin: PluginType<BreadcrumbsPluginPage, BreadcrumbsPluginOpti
               ...topAndTailedPath.slice(0, topAndTailedPath.length - partIndex),
               options.indexPageName
             );
-            const breadcrumbPage = pages.find(
-              // eslint-disable-next-line @typescript-eslint/no-loop-func
-              item => item.fullPath === breadcrumbPath
-            );
+            const breadcrumbPage = pages.find(item => item.fullPath === breadcrumbPath);
             if (breadcrumbPage) {
               result.unshift({
                 label:

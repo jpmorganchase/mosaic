@@ -7,7 +7,7 @@ export type Meta = {
 
 export function useMeta(): Meta {
   const meta = useStore(state => {
-    const namespaceMatches = state?.route?.match(/^\/([^\/]+)/);
+    const namespaceMatches = state?.route?.match(/^\/([^/]+)/);
     const namespace = namespaceMatches?.length ? namespaceMatches[1] : '';
     return {
       description: state.description,

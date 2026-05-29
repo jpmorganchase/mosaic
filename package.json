@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": ">=18.0.0 || >=20.0.0"
+    "node": "^22.13.0 || >=24"
   },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
@@ -44,34 +44,36 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^10.0.1",
+    "@next/eslint-plugin-next": "^16.2.6",
+    "@stylistic/eslint-plugin": "^2.13.0",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
     "@types/lodash-es": "^4.17.6",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "@vanilla-extract/esbuild-plugin": "^2.3.15",
-    "@vitest/coverage-istanbul": "^3.0.0",
-    "concurrently": "^7.1.0",
-    "del-cli": "^4.0.1",
-    "esbuild": "0.25.0",
-    "esbuild-node-externals": "^1.18.0",
-    "eslint": "^8.56.0",
+    "@vitest/coverage-istanbul": "^4.0.0",
+    "eslint": "^10.4.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-extended": "^2.3.2",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsx-a11y": "^6.7.1",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-promise": "^6.0.1",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "fast-glob": "^3.2.7",
+    "eslint-config-next": "^16.1.6",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-import-x": "^4.6.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-promise": "^7.3.0",
+    "eslint-plugin-react": "patch:eslint-plugin-react@npm%3A7.37.5#~/.yarn/patches/eslint-plugin-react-npm-7.37.5-d03f6b6543.patch",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
     "husky": "^8.0.0",
     "identity-obj-proxy": "^3.0.0",
     "jsdom": "^25.0.0",
@@ -82,28 +84,41 @@
     "resize-observer-polyfill": "1.5.1",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.0.0"
   },
   "dependencies": {
     "@types/swagger-ui-react": "^5.0.0",
     "swagger-client": "^3.34.1",
-    "swagger-ui-react": "^5.30.0",
-    "turbo": "latest"
+    "swagger-ui-react": "^5.32.4",
+    "turbo": "^2.9.14"
   },
   "resolutions": {
     "@types/mdast": "^4.0.0",
     "@braintree/sanitize-url": "^6.0.0",
-    "@types/react": "^18.3.12",
+    "@types/react": "^19.0.0",
     "commander": "^9.4.0",
     "cookie": "^1.0.0",
     "esbuild": "0.25.0",
     "json5": "^1.0.2",
-    "prismjs": "1.30.0"
+    "prismjs": "1.30.0",
+    "eslint-plugin-react@npm:^7.37.0": "patch:eslint-plugin-react@npm%3A7.37.5#~/.yarn/patches/eslint-plugin-react-npm-7.37.5-d03f6b6543.patch"
   },
   "lint-staged": {
     "*": [
       "prettier --write"
     ]
+  },
+  "packageExtensions": {
+    "eslint-config-airbnb-extended@*": {
+      "peerDependencies": {
+        "eslint": "^9.0.0 || ^10.0.0"
+      }
+    },
+    "eslint-plugin-react@*": {
+      "peerDependencies": {
+        "eslint": "^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7 || ^10"
+      }
+    }
   },
   "packageManager": "yarn@4.10.3"
 }

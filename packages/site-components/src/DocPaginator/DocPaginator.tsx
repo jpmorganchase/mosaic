@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
 import { Card, StackLayout } from '@salt-ds/core';
 import { Link, P6, P3, Icon } from '@jpmorganchase/mosaic-components';
 import classnames from 'clsx';
-import { useRouter } from 'next/router';
+import { usePathname } from 'next/navigation';
 
 import styles from './styles.css';
 
@@ -18,28 +20,22 @@ export interface DocPaginatorProps {
 }
 
 export const DocPaginator: React.FC<DocPaginatorProps> = ({ linkSuffix, next, prev }) => {
-  const router = useRouter();
+  const pathname = usePathname();
+  const isFirstRender = useRef(true);
 
-  const handleRouteChangeComplete = () => {
-    setTimeout(() => {
+  // After a successful client navigation, smoothly scroll to top.
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const id = window.setTimeout(() => {
       if (window.pageYOffset > 0) {
-        window.scroll({
-          top: 0,
-          left: 0,
-          behavior: 'smooth'
-        });
+        window.scroll({ top: 0, left: 0, behavior: 'smooth' });
       }
     }, 300);
-  };
-
-  useEffect(() => {
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => window.clearTimeout(id);
+  }, [pathname]);
 
   return (
     <div className={styles.root}>

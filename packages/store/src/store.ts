@@ -68,16 +68,95 @@ const storeMiddlewares = stateCreatorFn =>
     })
   );
 
+/**
+ * Mirror the active `colorMode` onto `document.documentElement` as a
+ * `data-mode` attribute, so any CSS keyed off `[data-mode=dark]`
+ * (notably global theme styles and the FOUC-prevention script in the
+ * site's root layout) follows the user's preference immediately —
+ * without a full page refresh.
+ *
+ * Lives at the module level so every store instance (layout-level and
+ * per-route) drives the same attribute. The inline `<script>` in the
+ * site's `<head>` sets the initial value from `localStorage` before
+ * React hydrates; this function keeps it in sync from that point on.
+ */
+function syncColorModeToDom(colorMode: ColorMode) {
+  if (typeof document === 'undefined') return;
+  document.documentElement.setAttribute('data-mode', colorMode);
+}
+
+/**
+ * Cross-store same-tab sync for `colorMode`.
+ *
+ * The App Router site mounts two store instances (one at the layout
+ * level for `<ThemeProvider>` / global state, one per route for
+ * page-scoped seeds). They share persisted storage
+ * (`localStorage.mosaic-theme-pref`) but not in-memory state, and the
+ * browser does not fire `storage` events for same-tab writes — so a
+ * `setColorMode` call on one store would not propagate to the other,
+ * leaving Salt's `SaltProviderNext` and `<html data-mode>` out of sync
+ * until a full page reload.
+ *
+ * Maintain a module-level set of every live store and broadcast every
+ * `colorMode` change to all of them. Unsubscribe is best-effort —
+ * stores live for the lifetime of the tab in practice, and zustand
+ * does not expose a destroy hook on a per-store basis.
+ */
+const liveStores = new Set<StoreApi<SiteState>>();
+function broadcastColorMode(colorMode: ColorMode, origin: StoreApi<SiteState>) {
+  for (const store of liveStores) {
+    if (store === origin) continue;
+    if (store.getState().colorMode !== colorMode) {
+      store.setState({ colorMode });
+    }
+  }
+}
+
 const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
   const mosaicStore = createStore(
     storeMiddlewares(set => ({
       ...getDefaultInitialState(),
       ...preloadedState,
       actions: {
-        setColorMode: (colorMode: ColorMode) => set({ colorMode })
+        setColorMode: (colorMode: ColorMode) => {
+          set({ colorMode });
+          syncColorModeToDom(colorMode);
+        }
       }
     }))
   );
+
+  if (typeof window !== 'undefined') {
+    liveStores.add(mosaicStore);
+
+    // Same-tab: when any store changes `colorMode`, broadcast to every
+    // sibling store and mirror to `<html data-mode>`.
+    mosaicStore.subscribe((state, prev) => {
+      if (state.colorMode !== prev.colorMode) {
+        syncColorModeToDom(state.colorMode);
+        broadcastColorMode(state.colorMode, mosaicStore);
+      }
+    });
+
+    // Cross-tab: the persist middleware writes `localStorage` on every
+    // change; the matching read side is a `storage` event listener,
+    // which fires only on *other* same-origin tabs/windows. Pick the
+    // updated value back up and reflect it locally.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== 'mosaic-theme-pref' || !event.newValue) return;
+      try {
+        const next = JSON.parse(event.newValue)?.state?.colorMode as ColorMode | undefined;
+        if (!next || next === mosaicStore.getState().colorMode) return;
+        mosaicStore.setState({ colorMode: next });
+        // `setState` here will trip the subscriber above, which handles
+        // the DOM mirror + same-tab broadcast.
+      } catch {
+        // ignore malformed payloads
+      }
+    };
+    window.addEventListener('storage', onStorage);
+  }
+
   return mosaicStore;
 };
 

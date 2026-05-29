@@ -40,7 +40,6 @@ export function HTMLView({ children }) {
   }, []);
 
   if (typeof window === 'undefined') {
-    // eslint-disable-next-line react/no-danger
     return <div dangerouslySetInnerHTML={{ __html: children }} />;
   }
 

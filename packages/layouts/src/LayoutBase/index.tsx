@@ -1,11 +1,14 @@
 import React from 'react';
-import { Spinner } from '@salt-ds/core';
 import classnames from 'clsx';
 
-import { useIsLoading } from '../hooks/useIsLoading';
-import { Fade } from '../Fade';
 import styles from './styles.css';
 
+/**
+ * Minimal page chrome wrapper: a top `<header>` slot and a `<main>` body.
+ *
+ * Loading UI is the responsibility of each route segment via
+ * `loading.tsx` / `<Suspense>`, so no spinner overlay is rendered here.
+ */
 export const LayoutBase = ({
   Header,
   children,
@@ -15,18 +18,10 @@ export const LayoutBase = ({
   className?: string;
   children?: React.ReactNode;
 }) => {
-  // Add a delay before showing loading state, so loading screen doesn't appear if page loads quickly
-  const isLoading = useIsLoading({ loadingDelay: 50 });
   return (
     <div className={classnames(styles.root, className)}>
       <header className={styles.header}>{Header}</header>
       <main className={styles.main}>
-        <Fade style={{ transitionDelay: isLoading ? '1000ms' : '0ms' }} in={isLoading}>
-          <div className={styles.overlayRoot}>
-            <div className={styles.overlayInner} />
-            <Spinner size="large" />
-          </div>
-        </Fade>
         <React.Fragment>{children}</React.Fragment>
       </main>
     </div>

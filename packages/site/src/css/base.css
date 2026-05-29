@@ -11,6 +11,19 @@
   box-sizing: inherit;
 }
 
+/*
+ * Paint the themed background at the document root, not just on <body>.
+ * During App Router client navigations the dynamic route subtree
+ * unmounts and the `loading.tsx` placeholder mounts in its place; any
+ * gap in that handover (or a paint frame where <body>'s children are
+ * momentarily empty) would otherwise expose the browser's default
+ * white. Painting the same Salt token on <html> guarantees the
+ * viewport stays themed across the swap regardless of what's beneath.
+ */
+html {
+  background: var(--salt-container-primary-background);
+}
+
 body {
   color: var(--salt-content-primary-foreground);
   background: var(--salt-container-primary-background);
