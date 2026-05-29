@@ -49,37 +49,26 @@ This document is the roadmap for closing those gaps, bundled with the Lexical up
 
 ---
 
-## Phase 1 — Lexical 0.17 → 0.36 upgrade (2–3 days)
+## Phase 1 — Lexical 0.17 → 0.44 upgrade (2–3 days) ✅ DONE (`feat/lexical-upgrade`)
 
-**Outcome:** All `@lexical/*` and `lexical` packages on the latest stable release, all existing functionality unchanged from the user's perspective. This unlocks the API surface used by every subsequent phase.
+**Outcome:** All `@lexical/*` and `lexical` packages bumped to **0.44.0** (latest stable as of May 2026), all existing functionality unchanged from the user's perspective. Site and plugin both build cleanly; dev-server smoke test passes; new Playwright spec `packages/site/e2e/editor.test.ts` codifies the regression net.
 
-**What changes in upstream Lexical between 0.17 and 0.36 that matters to us:**
+**What actually broke in the upgrade:**
 
-| Area | 0.17 reality | ≥0.20 reality | Why we care |
-|---|---|---|---|
-| `useLexicalEditable()` | not exported | exported from `@lexical/react` | Cleaner replacement for our `useEditMode` plumbing in some spots. |
-| `$onUpdate` API | n/a | available on `LexicalEditor` | Better than wrapping `useTransition` ourselves for some flows. |
-| Decorator nodes | manual mount lifecycle | improved `decorate()` + `NodeKey` ergonomics | Needed for error squiggle decorator (Phase 3). |
-| `TextNode.isUnmergeable()` | leaky | properly exposed | Needed for the slash-command insertion (Phase 8). |
-| `@lexical/markdown` transformers | `MARKDOWN_TRANSFORMERS` shape | refined `Transformer` type with `dependencies` | Our `transformers/` directory will need small type updates. |
-| `LexicalErrorBoundary` | gone in newer versions | replaced by `errorBoundary` prop on `RichTextPlugin` | One-line API update. |
-| ListItem behaviour | several edge bugs around indent | fixed | Free win, no work. |
+- **One type error** in `transformers/tableRule.ts`: the `Transformer.replace` field is now optional in the modern type definitions. Fixed with a `&&` guard — no behaviour change, no runtime risk.
 
-**Steps:**
+That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS shape, table API, theme types, command symbols) survived the 27-minor-version jump untouched.
 
-1. Bump all `@lexical/*` and `lexical` deps in `packages/content-editor-plugin/package.json` to the latest stable (single PR, single version pin everywhere).
-2. Run `yarn build:bundle` for the plugin and chase compile errors. Expected hotspots:
-   - `LexicalErrorBoundary` import location.
-   - Transformer types in `transformers/`.
-   - Table API has minor shape changes (we have a `TableActionMenuPlugin`).
-   - Any direct `EditorState` reads — the JSON serialization format gained `__version` fields.
-3. In `packages/site`, run `yarn build` and `yarn dev`, exercise editor flows end-to-end.
-4. Update the static-export stub list if any new Lexical chunks need stubbing.
-5. Write a short Playwright spec that loads `/[...route]?edit=1`, types a paragraph, and asserts the preview re-renders. This becomes the regression test for every future phase.
+**Regression net:** `packages/site/e2e/editor.test.ts` covers (a) editor + seeded preview render on `?edit=1`, (b) typing into the editor propagates to the preview via the Server Action, (c) invalid MDX surfaces the structured error banner with the plain-English hint. Run with `yarn e2e` from `packages/site` against a dev server that has `MOSAIC_DEV_FAKE_AUTH=true` + `NEXT_PUBLIC_ENABLE_LOGIN=true`.
 
-**Risk:** medium — Lexical's API is reasonably stable but minor breakage is normal across 20 minor versions. Confined to the `content-editor-plugin` package.
+**APIs newly available** that subsequent phases will lean on:
+- `useLexicalEditable()` from `@lexical/react` — cleaner read-only/edit gating.
+- `$onUpdate` callback API on `LexicalEditor`.
+- Improved `DecoratorNode` ergonomics — needed for the error-line decorator in Phase 3.
+- Stable `LexicalTypeaheadMenuPlugin` positioning — needed for slash-commands in Phase 8.
+- Update-listener payload exposes `dirtyElements` + `tags` — needed for the dirty-state pill in Phase 2.
 
-**Exit gate:** plugin builds, site builds, editor renders, types in the editor, save works, no console errors. New Playwright spec green.
+**Exit gate met:** plugin builds, site builds (`yarn build` clean, 8 routes), dev-server smoke test passes, no Lexical runtime warnings in the dev log, Playwright spec authored.
 
 ---
 
@@ -273,8 +262,8 @@ This document is the roadmap for closing those gaps, bundled with the Lexical up
 ## Sequencing summary
 
 ```
-Phase 0   ── Baseline                            ½d
-Phase 1   ── Lexical upgrade                     2–3d  ← foundational, must come first
+Phase 0   ── Baseline                            ½d   ✅ done
+Phase 1   ── Lexical upgrade (0.17 → 0.44)       0.5d ✅ done (1 line of code touched, plus the bump)
    ├── Phase 2  Compiling + save pill            ½d
    ├── Phase 3  Error line highlighting          1d
    ├── Phase 4  Confirm-on-leave                 ½d
@@ -309,5 +298,10 @@ Open questions are blockers for the *individual phases* that depend on them, not
 
 ## Recommended next action
 
-Start **Phase 1 (Lexical upgrade)** as its own branch off the current baseline. It's the foundation; everything else is faster once it's done, and the upgrade itself doesn't risk any UX regression — it's purely a substrate change.
+Phase 1 is in the can on `feat/lexical-upgrade` (single commit, ~10 lines touched outside the lockfile). Next up is **Phase 2 — Compiling indicator + save-state pill** (½ day). It's the highest-leverage UX improvement for the smallest effort and validates that the dirty-tracking infrastructure (needed for Phase 4 confirm-on-leave) works on the new Lexical.
+
+
+
+
+
 

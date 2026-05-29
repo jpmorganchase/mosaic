@@ -125,7 +125,7 @@ const createTableCell = (textContent: string | null | undefined): TableCellNode 
      * so we check if the content is a markdown link and render a link accordingly
      */
     const linkMatch = textContent.trim().match(LINK_TRANSFORMER.regExp);
-    if (linkMatch) {
+    if (linkMatch && LINK_TRANSFORMER.replace) {
       LINK_TRANSFORMER.replace(textNode, linkMatch);
     }
   }
