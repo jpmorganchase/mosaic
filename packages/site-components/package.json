@@ -19,6 +19,11 @@
       "import": "./dist/index.js",
       "node": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "default": "./dist/*.js"
     }
   },
   "scripts": {
@@ -26,7 +31,7 @@
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "files": [
@@ -35,7 +40,8 @@
   "devDependencies": {
     "@types/styled-components": "^5.1.26",
     "@vanilla-extract/esbuild-plugin": "^2.3.15",
-    "del-cli": "^4.0.1",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
     "next-router-mock": "^0.9.13",
     "typescript": "^5.0.0"
   },
@@ -58,10 +64,8 @@
     "fuse.js": "^6.6.2",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.23",
-    "next": "^16.1.6",
-    "next-mdx-remote": "^6.0.0",
+    "next": "^16.2.6",
     "node-cookie": "^2.1.2",
-    "react-error-boundary": "^4.0.11",
     "rehype-slug": "^6.0.0",
     "swr": "^2.1.2",
     "unified": "^11.0.0",
@@ -70,7 +74,7 @@
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",
-    "next-auth": "^4.22.1",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }

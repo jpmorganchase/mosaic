@@ -37,7 +37,7 @@ async function createPullRequest(
     return false;
   }
 
-  let repoInstance: Repo | null = new Repo(credentials, remote, sourceBranch, repoUrl);
+  const repoInstance: Repo = new Repo(credentials, remote, sourceBranch, repoUrl);
   await repoInstance.init();
   sendWorkflowProgressMessage('Bitbucket clone complete', 'IN_PROGRESS');
 
@@ -56,7 +56,7 @@ async function createPullRequest(
   );
 
   const rawPage = await fs.promises.readFile(pathOnDisk);
-  const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
+  const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
   const updatedPage = { ...metadata, content: markdown };
   sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
   await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
@@ -98,7 +98,6 @@ async function createPullRequest(
 
   sendWorkflowProgressMessage(result, 'COMPLETE');
 
-  repoInstance = null;
   return result;
 }
 

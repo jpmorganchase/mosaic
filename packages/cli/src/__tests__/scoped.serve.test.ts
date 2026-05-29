@@ -49,7 +49,10 @@ const mockFileSystem = {
 };
 
 vi.mock('@jpmorganchase/mosaic-core', () => ({
-  default: vi.fn().mockImplementation(() => {
+  // Use a `function` (not an arrow) so the mock can be invoked with
+  // `new` — Vitest 4 routes constructor calls through `Reflect.construct`,
+  // which requires the implementation to be a constructable function.
+  default: vi.fn().mockImplementation(function MosaicCoreMock() {
     return {
       start: vi.fn(),
       filesystem: mockFileSystem
@@ -59,7 +62,7 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
 
 describe('GIVEN the serve command with a scope', () => {
   beforeAll(async () => {
-    await serve(mosaicConfig, 8080, ['docs'] /** scope */);
+    await serve(mosaicConfig, 0, ['docs'] /** scope */);
   });
 
   afterAll(async () => {

@@ -44,7 +44,6 @@ export default async function loadDefinitionModules(
         default:
           | Partial<Plugin | Serialiser>
           | { __esModule: boolean; default: Partial<Plugin | Serialiser> };
-        // eslint-disable-next-line no-await-in-loop
       } = await import(pathToFileURL(require.resolve(modulePath)).toString());
       const pluginApi: Partial<Plugin | Serialiser> =
         '__esModule' in definitionExports && 'default' in definitionExports

@@ -44,7 +44,7 @@ export async function createPullRequest(
     return false;
   }
 
-  let repoInstance: Repo | null = new Repo(credentials, remote, sourceBranch, repoUrl);
+  const repoInstance: Repo = new Repo(credentials, remote, sourceBranch, repoUrl);
   await repoInstance.init();
   const userId = user.id.toLowerCase();
 
@@ -65,7 +65,7 @@ export async function createPullRequest(
   );
 
   const rawPage = await fs.promises.readFile(pathOnDisk);
-  const { content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
+  const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
   const updatedPage = { ...metadata, content: markdown };
   sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
   await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
@@ -98,7 +98,7 @@ export async function createPullRequest(
 
   sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
 
-  let prResult = null;
+  let prResult: string | { error: string; source: string } | null;
 
   try {
     await repoInstance.configureGitUser(user.name, user.email);
@@ -141,7 +141,6 @@ export async function createPullRequest(
     };
   } finally {
     await repoInstance.removeWorktree(userId);
-    repoInstance = null;
   }
 
   sendWorkflowProgressMessage(prResult, 'COMPLETE');

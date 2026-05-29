@@ -12,8 +12,9 @@ export default function useDataFeed(
   onSuccess: SourceWorkflowMessageEventHandler,
   onComplete: SourceWorkflowMessageEventHandler
 ) {
-  const webSocketRef = useRef<WebSocket>();
-  const channelRef = useRef<string | null>();
+  // React 19's `useRef` requires an explicit initial value.
+  const webSocketRef = useRef<WebSocket | undefined>(undefined);
+  const channelRef = useRef<string | null | undefined>(undefined);
 
   useEffect(
     function subscribe() {

@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 
 const embeddedWebViewInitialized = false;
 
-declare global {
+// React 19 removed the global `JSX` namespace; intrinsic-element
+// augmentations now have to target `react`'s own JSX namespace.
+declare module 'react' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
@@ -40,7 +42,6 @@ export function HTMLView({ children }) {
   }, []);
 
   if (typeof window === 'undefined') {
-    // eslint-disable-next-line react/no-danger
     return <div dangerouslySetInnerHTML={{ __html: children }} />;
   }
 

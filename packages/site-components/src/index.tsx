@@ -5,8 +5,10 @@ export * from './AppHeaderTabs';
 export * from './BackLink';
 export * from './Breadcrumbs';
 export * from './BaseUrlProvider';
-export * from './Body';
-export * from './Document';
+// `Body` (the legacy `next-mdx-remote`-based renderer) is intentionally
+// not re-exported. The App Router site now renders MDX via
+// `BodyServer` → `MdxRenderer` (`next-mdx-remote-client`). Deep imports
+// still work for any consumer that genuinely needs the legacy component.
 export * from './DocPaginator';
 export * from './Drawer';
 export * from './Footer';

@@ -69,7 +69,6 @@ export default class SourceManager {
     data: unknown
   ) {
     for (const source of this.#sources.values()) {
-      // eslint-disable-next-line no-await-in-loop
       if (await source.isOwner(filePath)) {
         source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
         return;

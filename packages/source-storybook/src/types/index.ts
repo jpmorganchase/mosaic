@@ -31,7 +31,6 @@ type DocsIndexEntry = BaseIndexEntry & {
 };
 export type IndexEntry = StoryIndexEntry | DocsIndexEntry;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export interface API_PreparedStoryIndex {
   v: number;
   entries: Record<string, IndexEntry>;

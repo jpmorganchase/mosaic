@@ -17,7 +17,7 @@ export interface WorkflowRequestBodyType {
   name: string;
 }
 
-async function mosaicWorkflows(fastify: FastifyInstance, _options) {
+async function mosaicWorkflows(fastify: FastifyInstance) {
   await fastify.register(websocket);
   const { fs, core } = fastify.mosaic;
 
@@ -29,6 +29,7 @@ async function mosaicWorkflows(fastify: FastifyInstance, _options) {
       if (socket.OPEN) {
         try {
           const {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             type,
             route: routeReq,
             name,

@@ -26,15 +26,16 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+    "lint": "eslint ."
   },
   "devDependencies": {
-    "@fetch-mock/vitest": "^0.2.10",
+    "@fetch-mock/vitest": "^0.2.18",
+    "@smithy/util-stream": "^4.6.3",
     "aws-sdk-client-mock": "^4.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.859.0",
+    "@aws-sdk/client-s3": "^3.1053.0",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
@@ -42,6 +43,7 @@
     "acorn": "^8.0.0",
     "acorn-jsx": "^5.0.0",
     "deepmerge": "^4.2.2",
+    "gray-matter": "^4.0.3",
     "hast-util-properties-to-mdx-jsx-attributes": "^1.0.0",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.23",
@@ -49,8 +51,8 @@
     "mdast-util-mdx": "^3.0.0",
     "mdast-util-mdx-jsx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
-    "next": "^16.1.6",
-    "next-mdx-remote": "^6.0.0",
+    "next": "^16.2.6",
+    "next-mdx-remote-client": "^1.0.3",
     "node-cookie": "^2.1.2",
     "react-error-boundary": "^3.1.4",
     "rehype-slug": "^6.0.0",
@@ -61,6 +63,6 @@
     "warning": "^3.0.0"
   },
   "peerDependencies": {
-    "next-auth": "^4.22.1"
+    "next-auth": "^5.0.0-beta.30"
   }
 }

@@ -31,10 +31,11 @@
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
+    "concurrently": "^7.1.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
@@ -64,8 +65,8 @@
     "zustand": "^4.1.1"
   },
   "peerDependencies": {
-    "@types/react": "^18.3.12",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@types/react": "^18.3.12 || ^19.0.0",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0"
   }
 }

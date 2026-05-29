@@ -21,8 +21,9 @@ export const UnorderedList: React.FC<React.PropsWithChildren<UnOrderedListProps>
     if (!React.isValidElement(child)) {
       return child;
     }
-    return React.cloneElement(child as React.ReactElement<ListItemProps>, {
-      className: classnames(child.props.className, unorderedListItem({ size, variant })),
+    const typedChild = child as React.ReactElement<ListItemProps & { className?: string }>;
+    return React.cloneElement(typedChild, {
+      className: classnames(typedChild.props.className, unorderedListItem({ size, variant })),
       size,
       variant
     });

@@ -5,6 +5,7 @@ node_modules
 **/build/
 **/.next/
 next-env.d.ts
+**/out/
 
 # Dependencies
 **/node_modules
@@ -54,3 +55,6 @@ yarn-error.log*
 .turbo
 
 
+
+# Mosaic static-export route-handler backups (scripts/static-export-route-stubs.mjs)
+packages/site/src/app/api/**/route.ts.bak

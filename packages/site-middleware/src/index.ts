@@ -1,9 +1,10 @@
+// MDX compilation (used by the `/api/content/preview` editor endpoint).
 export * from './compileMdx.js';
-export * from './createMiddlewareRunner.js';
-export * from './MiddlewareError.js';
-export * from './middlewarePresets.js';
-export * from './withMDXContent.js';
-export * from './withMosaicMode.js';
-export * from './withSearchIndex.js';
-export * from './withSession.js';
-export * from './withSharedConfig.js';
+// Server-side serialise → client-side render MDX pipeline used by
+// `<BodyServer />` in the App Router catch-all.
+export * from './serializeMdxForClient.js';
+// Sitemap loader for static-export builds.
+export * from './loadSitemap.js';
+// Cached, parallelisable per-request loaders consumed by App Router
+// route segments (`getMdxRaw`, `getSharedConfig`, `getSearchData`).
+export * from './cachedLoaders.js';

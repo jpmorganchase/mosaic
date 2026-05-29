@@ -16,6 +16,7 @@ LICENSE
 
 **/build
 **/dist
+**/out
 .tmp
 .next
 **/.env*

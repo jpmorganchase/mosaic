@@ -28,11 +28,12 @@
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "del-cli": "^4.0.1",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {

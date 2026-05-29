@@ -133,7 +133,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         if (!isNonHiddenPage(page.fullPath)) {
           continue;
         }
-        let sidebar = {
+        const sidebar = {
           label: page.title,
           groupLabel: page?.sidebar?.label || page.title,
           ...page?.sidebar
@@ -189,7 +189,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             try {
               sidebarSortConfigSchema.parse(sharedSortConfig);
               sortConfigPages[`${path.posix.dirname(page.fullPath)}`] = sharedSortConfig;
-            } catch (e) {
+            } catch {
               /**
                * Don't throw a PluginError here as this will stop the sidebar being generated.
                * Plugins need a way to log errors/warnings without exceptions
@@ -204,7 +204,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const isGroupDefaultPage = /\/index$/.test(page.route);
           const groupPath = path.posix.dirname(page.fullPath);
 
-          let newChildNode: SidebarDataNode = {
+          const newChildNode: SidebarDataNode = {
             id: page.route,
             kind: 'data',
             fullPath: page.fullPath,
@@ -255,7 +255,7 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         const linkedGroupMap = cloneDeep(groupMap);
         const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathLevel);
         sortedGroupMapKeys.forEach(groupPath => {
-          let parentGroupPath = path.posix.dirname(groupPath);
+          const parentGroupPath = path.posix.dirname(groupPath);
           if (linkedGroupMap[parentGroupPath] === undefined) {
             return;
           }
@@ -325,8 +325,8 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           return page === lastPage;
         };
 
-        let prevParentPage = [];
-        let nextParentPage = [];
+        const prevParentPage = [];
+        const nextParentPage = [];
         function recursiveAddNavigation(pages) {
           let nextPage: SidebarDataNode, prevPage: SidebarDataNode;
           pages.forEach((page, pageIndex) => {

@@ -34,12 +34,10 @@ export const TABLE_RULE: ElementTransformer = {
     const output: string[] = [];
     let columnCount: number | null = null;
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const row of node.getChildren()) {
       const rowOutput: string[] = [];
 
       if ($isTableRowNode(row)) {
-        // eslint-disable-next-line no-restricted-syntax
         for (const cell of row.getChildren()) {
           if ($isElementNode(cell)) {
             rowOutput.push(exportChildren(cell));
@@ -180,7 +178,7 @@ const handleHeaderDashes = (matchCells: TableCellNode[]) => {
 
 const createTableNode = (rows: TableCellNode[][], maxCells: number) => {
   const table = $createTableNode();
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const cells of rows) {
     const tableRow = $createTableRowNode();
     table.append(tableRow);

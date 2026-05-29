@@ -79,7 +79,7 @@ const LazyPagePlugin: PluginType<LazyPagePluginPage, LazyPagePluginOptions> = {
         path.join(baseDir, String(filePath)),
         await serialiser.serialise(String(filePath), page)
       );
-      const { content, ...pageRest } = page;
+      const { content: _content, ...pageRest } = page;
       hddPaths[String(filePath)] = path.join(baseDir, String(filePath));
       const redactedPage = await serialiser.serialise(String(filePath), pageRest);
       newDiskSize += redactedPage.length;

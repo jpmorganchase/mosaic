@@ -29,14 +29,15 @@
   "scripts": {
     "build": "concurrently \"yarn:build:*\"",
     "build:types": "tsc",
-    "build:components": "node  ../../scripts/bundle.mjs",
+    "build:components": "node ../../scripts/bundle.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "doc": "node ../../scripts/updateDocs.js",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "del-cli": "^4.0.1",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
     "react": "^19.0.0",
     "typescript": "^5.0.0"
   },
@@ -57,7 +58,7 @@
     "react-responsive-carousel": "3.2.10",
     "react-table": "^7.8.0",
     "shiki": "^3.0.0",
-    "swagger-ui-react": "^5.30.0",
+    "swagger-ui-react": "^5.32.4",
     "use-memo-one": "^1.1.1",
     "warning": "^3.0.0"
   },

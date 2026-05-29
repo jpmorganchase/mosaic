@@ -16,7 +16,7 @@ export const exponentialBackOffRetryStrategy =
         count: schedule.retryEnabled ? schedule.maxRetries : 0,
         delay: (error, retryIndex) => {
           const retryDelayMs = schedule.retryDelayMins * 60000;
-          // eslint-disable-next-line prefer-exponentiation-operator, no-restricted-properties
+
           const backOffTime = Math.pow(2, retryIndex - 1) * retryDelayMs;
           const backOffTimeMins = backOffTime / 60000;
           const remainingAttempts = schedule.maxRetries - retryIndex;

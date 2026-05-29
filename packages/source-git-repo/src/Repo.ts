@@ -114,7 +114,7 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
       /\s+([^ ]+)/
     ) as RegExpMatchArray;
     return projectURI === repo;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -396,7 +396,7 @@ export default class Repo {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
     const result = await spawn('git', ['show', '-s', '--format="%ci|%B"', tag], this.#dir);
-    const [, date, description] = result.match(/^([^\|]+)\|(.*$)/) as RegExpMatchArray;
+    const [, date, description] = result.match(/^([^|]+)\|(.*$)/) as RegExpMatchArray;
     return {
       date,
       description

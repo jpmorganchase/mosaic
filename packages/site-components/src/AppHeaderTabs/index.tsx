@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { usePathname, useRouter } from 'next/navigation';
 import { hasProtocol, TabsBase, TabMenuItemType } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@jpmorganchase/mosaic-components';
 
@@ -13,7 +15,6 @@ function resolveSelectedIndex(menu, itemPath) {
   for (let i = 0; i < menu.length; i++) {
     const item: TabsMenuButtonItem | TabsLinkItem = menu[i];
     if (item.type === TabMenuItemType.MENU) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const { link: subLink } of item.links) {
         // If menu link matches the current route - we can return this index
         if (subLink === itemPath) {
@@ -44,6 +45,7 @@ function resolveSelectedIndex(menu, itemPath) {
 
 export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
   const router = useRouter();
+  const pathname = usePathname();
   const size: Size = useWindowResize();
   const getSelectedTabIndex = React.useCallback(
     itemPath => resolveSelectedIndex(menu, itemPath),
@@ -52,28 +54,13 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
 
   const [selectionIndex, setSelectionIndex] = useState(() => -1);
 
-  const updateSelection = (route: string) => {
-    const currentSelection = getSelectedTabIndex(route);
-    setSelectionIndex(currentSelection);
-  };
-
-  const handleRouteChangeComplete = (newRoute: string) => updateSelection(newRoute);
-
+  // App Router has no `router.events` — recompute on every pathname change,
+  // which fires after every client navigation completes.
   useEffect(() => {
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (router.asPath && size?.width) {
-      updateSelection(router.asPath);
+    if (pathname && size?.width) {
+      setSelectionIndex(getSelectedTabIndex(pathname));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, size]);
+  }, [pathname, size, getSelectedTabIndex]);
 
   const handleMenuSelect = (_event, sourceItem) => {
     const { link } = sourceItem as TabsLinkItem;

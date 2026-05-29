@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "start": "node --trace-warnings ./dist/example",
     "start:debug": "node --inspect-brk ./dist/example"
   },

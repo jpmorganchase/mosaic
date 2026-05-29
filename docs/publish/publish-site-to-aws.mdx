@@ -19,7 +19,21 @@ MOSAIC_S3_BUCKET="<your S3 bucket id>"
 MOSAIC_S3_REGION="<your S3 region>"
 MOSAIC_S3_ACCESS_KEY_ID=""<your S3 access key>"
 MOSAIC_S3_SECRET_ACCESS_KEY="<your S3 secret access key>"
+NEXT_PUBLIC_SITE_URL="https://your-site.example.com"
 ```
+
+### `NEXT_PUBLIC_SITE_URL`
+
+Set this to the canonical public origin of the deployed site (no trailing
+slash). It powers Next's [`metadataBase`](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase)
+in `app/layout.tsx`, the absolute `<loc>` entries in `/sitemap.xml`, and
+the `Sitemap:` line in `/robots.txt`. Without it, social-card unfurlers
+(Slack, X, LinkedIn, etc.) can't resolve relative `og:image` URLs and
+crawlers can't discover the sitemap.
+
+Falls back to `http://localhost:3000` in local dev. A production build
+without it still works but logs a loud warning at boot and produces
+broken social cards / SEO.
 
 Add the following build settings
 

@@ -31,7 +31,7 @@ const defaultButtonLabel = (selectedItems: string[] | undefined) => {
 };
 
 export const SitemapToolbar: React.FC<SitemapToolbarProps> = ({
-  initialNamespaceFilters = [],
+  initialNamespaceFilters: _initialNamespaceFilters = [],
   loading,
   namespaces,
   pageCount,

@@ -58,7 +58,6 @@ export const getHeadings = (root: Root) => {
 };
 
 const remarkHeadings: Plugin<[], Root> = () => (tree, vfile) => {
-  // eslint-disable-next-line no-param-reassign
   vfile.data.headings = getHeadings(tree);
 };
 

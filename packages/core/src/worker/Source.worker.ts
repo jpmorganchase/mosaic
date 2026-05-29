@@ -121,7 +121,7 @@ if (isMainThread) {
       }
       // Important: Return to avoid sending another init signal on L107
       return;
-    } catch (e) {
+    } catch {
       // Does not exist
     }
   }

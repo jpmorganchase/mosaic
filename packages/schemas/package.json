@@ -29,7 +29,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+    "lint": "eslint ."
   },
   "dependencies": {
     "zod": "^3.22.3",
