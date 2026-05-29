@@ -2,7 +2,10 @@ import { Icon } from '@jpmorganchase/mosaic-components';
 import { useEditHistory } from '../../hooks/useEditHistory';
 import { useEditMode } from '../../useEditMode';
 import { SaveButton } from '../SaveButton';
+import { CompileStatus } from '../CompileStatus';
+import { SaveStatePill } from '../SaveStatePill';
 import { TextFormatTooltray } from './TextFormatTooltray';
+// ...existing code...
 import { InsertTable } from './InsertTable';
 import { InsertImage } from './InsertImage';
 import { InsertLinkButton } from './InsertLink';
@@ -40,6 +43,8 @@ const Toolbar = ({ onSave }: ToolbarProps) => {
         <ToolbarSeparator />
       </Tooltray>
       <Tooltray aria-label="stop editing tooltray" align="right">
+        <CompileStatus />
+        <SaveStatePill />
         <ToolbarButton label="Cancel Editing" onClick={stopEditing}>
           <Icon name="delete" />
         </ToolbarButton>

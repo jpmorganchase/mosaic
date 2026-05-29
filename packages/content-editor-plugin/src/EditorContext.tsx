@@ -10,7 +10,7 @@
  * into per-editor contexts also means unmounting `<Editor>` (e.g.
  * leaving EDIT mode) garbage-collects all of it automatically.
  */
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 export type EditorUser = { sid: string; displayName: string; email: string };
@@ -69,6 +69,46 @@ interface InsertLinkContextValue {
 }
 const InsertLinkContext = createContext<InsertLinkContextValue | null>(null);
 
+// --- Compile-in-flight flag (high-frequency-ish: toggles around every
+// preview-action invocation, but boolean so cheap) ---------------------
+
+interface CompileContextValue {
+  isCompiling: boolean;
+  setIsCompiling: (value: boolean) => void;
+}
+const CompileContext = createContext<CompileContextValue | null>(null);
+
+// --- Save state ------------------------------------------------------
+//
+// Modelled as an explicit FSM rather than a pair of booleans so the
+// pill UI can't end up in nonsense combinations (e.g. "saving" + "saved").
+// Transitions:
+//
+//   clean  --user edits-->  dirty  --persist start-->  saving
+//   saving --persist ok-->  saved  --user edits-->    dirty
+//   saving --persist err-> dirty   (so the user can retry; banner shows
+//                                   the actual error separately)
+//
+// `lastSavedAt` is captured at the saving -> saved transition so the
+// pill can render "Saved 12s ago" without timing infrastructure
+// downstream.
+
+export type SaveState = 'clean' | 'dirty' | 'saving' | 'saved';
+
+interface SaveContextValue {
+  saveState: SaveState;
+  lastSavedAt: number | undefined;
+  /** Mark the editor dirty (called from a Lexical update listener). */
+  markDirty: () => void;
+  /** Mark a save as in-flight. */
+  markSaving: () => void;
+  /** Mark a save as complete; transitions to `saved` and stamps the time. */
+  markSaved: () => void;
+  /** Mark a save as failed; transitions back to `dirty` so retry is allowed. */
+  markSaveFailed: () => void;
+}
+const SaveContext = createContext<SaveContextValue | null>(null);
+
 export interface EditorProviderProps {
   initialUser?: EditorUser;
   children: ReactNode;
@@ -79,6 +119,24 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   const [error, setError] = useState<EditorError | undefined>(undefined);
   const [user, setUser] = useState<EditorUser | undefined>(initialUser);
   const [isInsertingLink, setIsInsertingLink] = useState(false);
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>('clean');
+  const [lastSavedAt, setLastSavedAt] = useState<number | undefined>(undefined);
+
+  // Save-state transitions are funnelled through these stable
+  // callbacks so consumers don't have to think about the FSM. They are
+  // each useCallback'd separately so they retain identity even when
+  // unrelated state changes — important because they feed into Lexical
+  // listener registration dep arrays downstream.
+  const markDirty = useCallback(() => {
+    setSaveState(prev => (prev === 'saving' ? prev : 'dirty'));
+  }, []);
+  const markSaving = useCallback(() => setSaveState('saving'), []);
+  const markSaved = useCallback(() => {
+    setSaveState('saved');
+    setLastSavedAt(Date.now());
+  }, []);
+  const markSaveFailed = useCallback(() => setSaveState('dirty'), []);
 
   // Each context value is memoised independently so changes to one
   // slice don't invalidate the others. Setters are stable references
@@ -96,12 +154,24 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
     () => ({ isInsertingLink, setIsInsertingLink }),
     [isInsertingLink]
   );
+  const compileValue = useMemo<CompileContextValue>(
+    () => ({ isCompiling, setIsCompiling }),
+    [isCompiling]
+  );
+  const saveValue = useMemo<SaveContextValue>(
+    () => ({ saveState, lastSavedAt, markDirty, markSaving, markSaved, markSaveFailed }),
+    [saveState, lastSavedAt, markDirty, markSaving, markSaved, markSaveFailed]
+  );
 
   return (
     <UserContext.Provider value={userValue}>
       <ErrorContext.Provider value={errorValue}>
         <InsertLinkContext.Provider value={insertLinkValue}>
-          <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
+          <SaveContext.Provider value={saveValue}>
+            <CompileContext.Provider value={compileValue}>
+              <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
+            </CompileContext.Provider>
+          </SaveContext.Provider>
         </InsertLinkContext.Provider>
       </ErrorContext.Provider>
     </UserContext.Provider>
@@ -126,11 +196,22 @@ export const useErrorMessage = () => useRequiredContext(ErrorContext, 'useErrorM
 export const useEditorUser = () => useRequiredContext(UserContext, 'useEditorUser');
 export const useIsInsertingLink = () =>
   useRequiredContext(InsertLinkContext, 'useIsInsertingLink');
+export const useIsCompiling = () =>
+  useRequiredContext(CompileContext, 'useIsCompiling').isCompiling;
+export const useSetIsCompiling = () =>
+  useRequiredContext(CompileContext, 'useSetIsCompiling').setIsCompiling;
+export const useSaveState = () => useRequiredContext(SaveContext, 'useSaveState');
 
 export type EditorContextValue = PreviewContextValue &
   ErrorContextValue &
   UserContextValue &
-  InsertLinkContextValue;
+  InsertLinkContextValue &
+  CompileContextValue &
+  SaveContextValue;
+
+
+
+
 
 
 

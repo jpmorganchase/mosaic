@@ -17,6 +17,7 @@ import { DialogHeader, DialogContent, DialogActions } from '@salt-ds/core';
 import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 import transformers from '../../transformers';
+import { useSaveState } from '../../EditorContext';
 import { PersistStatus } from './PersistStatus';
 import { Dialog } from '../Dialog';
 import style from './index.css';
@@ -68,6 +69,7 @@ export const PersistDialog = ({ open, onOpenChange, meta, persist }: PersistDial
   const [prHref, setPrHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<SourceWorkflowMessageEvent[]>([]);
+  const { markSaving, markSaved, markSaveFailed } = useSaveState();
 
   const state = prHref !== null ? 'success' : 'info';
 
@@ -103,8 +105,10 @@ export const PersistDialog = ({ open, onOpenChange, meta, persist }: PersistDial
       }
 
       startTransition(async () => {
+        markSaving();
         try {
           const stream = await persist({ route: meta.route as string, markdown });
+          let sawError = false;
           for await (const event of stream) {
             if (event.kind === 'progress') {
               // Functional update so the callback doesn't capture a
@@ -113,12 +117,16 @@ export const PersistDialog = ({ open, onOpenChange, meta, persist }: PersistDial
             } else if (event.kind === 'complete') {
               setPrHref(event.prHref);
             } else if (event.kind === 'error') {
+              sawError = true;
               setError(event.message || 'Sorry - an unexpected error has occurred');
+              markSaveFailed();
               return;
             }
           }
+          if (!sawError) markSaved();
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Sorry - an unexpected error has occurred');
+          markSaveFailed();
         }
       });
     });

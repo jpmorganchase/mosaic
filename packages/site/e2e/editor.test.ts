@@ -80,3 +80,51 @@ test.describe('editor (Lexical) — Phase 1 baseline', () => {
   });
 });
 
+test.describe('editor status pills — Phase 2', () => {
+  test('save-state pill is hidden until the user types, then shows "Edited"', async ({ page }) => {
+    await signInWithDevFake(page);
+    await page.goto(`${EDITABLE_PAGE}?edit=1`);
+
+    const editable = page.locator('[contenteditable="true"]').first();
+    await expect(editable).toBeVisible({ timeout: 15_000 });
+
+    // Pill is absent before any edit (clean state renders nothing).
+    await expect(page.locator('[data-state="dirty"]')).toHaveCount(0);
+    await expect(page.locator('[data-state="saving"]')).toHaveCount(0);
+    await expect(page.locator('[data-state="saved"]')).toHaveCount(0);
+
+    await editable.click();
+    await editable.press('Control+End');
+    await editable.press('End');
+    await editable.type('\n\nphase-2-dirty-marker');
+
+    await expect(page.locator('[data-state="dirty"]')).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('Edited')).toBeVisible();
+  });
+
+  test('"Compiling…" appears while a preview action is in flight', async ({ page }) => {
+    await signInWithDevFake(page);
+    await page.goto(`${EDITABLE_PAGE}?edit=1`);
+
+    const editable = page.locator('[contenteditable="true"]').first();
+    await expect(editable).toBeVisible({ timeout: 15_000 });
+
+    const compiling = page.getByRole('status', { name: /Compiling preview/i });
+
+    await editable.click();
+    await editable.press('Control+End');
+    await editable.press('End');
+    // Type enough to defeat the 250 ms debounce so the request fires
+    // and we can observe the pending state.
+    await editable.type('phase-2 compile sentinel');
+
+    // Race-tolerant assertion: catch it either while in flight or
+    // immediately after settle. PreviewPlugin flips isCompiling on
+    // entry and clears it in the action's `finally`, so the appearance
+    // window is at least one render frame even for instant compiles.
+    await expect(compiling).toBeVisible({ timeout: 5_000 });
+    await expect(compiling).toBeHidden({ timeout: 10_000 });
+  });
+});
+
+

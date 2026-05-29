@@ -72,21 +72,29 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 
 ---
 
-## Phase 2 — "Compiling…" indicator + save-state pill (½ day)
+## Phase 2 — "Compiling…" indicator + save-state pill (½ day) ✅ DONE (`feat/lexical-upgrade`)
 
-**Outcome:** The user always knows whether the preview is in sync and whether their save was acknowledged.
+**Outcome:** Two new at-a-glance status indicators live in the toolbar's right-hand tooltray:
 
-**Changes:**
+- **`<CompileStatus />`** — spinner + "Compiling…" while a preview Server Action is in flight; hidden when idle. Driven by a new `isCompiling` context slice that `PreviewPlugin` flips synchronously around its `startTransition` (so it shows immediately on keystroke, not after `useTransition`'s non-urgent pending state settles).
+- **`<SaveStatePill />`** — explicit FSM rendered as a coloured pill: `clean` (hidden) → `dirty` ("Edited", warning tone) → `saving` ("Saving…", info tone + spinner) → `saved` ("Saved {relative time}", success tone). Owns a single 30 s interval that auto-refreshes the relative-time string while in `saved`; tears the interval down for every other state so no timers leak.
 
-- `PreviewPlugin` exposes `isCompiling` via context (drives off the existing `useTransition` `isPending`).
-- New `<CompileStatus />` component lives next to `<StatusBanner />` in the toolbar: shows a small spinner + "Compiling…" while a preview action is in flight, idle otherwise.
-- New save-state pill in the toolbar with three states: `Edited`, `Saving…`, `Saved 2m ago` (relative-time updates every 30 s via a single timer). Driven by a new `useEditorDirty` hook that listens to Lexical's update listener and the `persistAction` lifecycle.
+**Implementation details worth remembering:**
 
-**Why it's now-friendly after Phase 1:** modern Lexical's update-listener payload includes `tags` and `dirtyElements` which make "are we dirty since last save?" trivial to compute without our own bookkeeping.
+- The FSM lives in `EditorContext` as a `SaveState` union (`'clean' | 'dirty' | 'saving' | 'saved'`) plus a `lastSavedAt: number | undefined`. Transitions are funnelled through stable `markDirty` / `markSaving` / `markSaved` / `markSaveFailed` callbacks so consumers don't have to model the state machine themselves.
+- `DirtyTrackerPlugin` bridges Lexical's `registerUpdateListener` into `markDirty()`, with three filters to avoid false positives: a `useRef` armed-after-first-update guard, `tags.has('history-merge' | 'historic')` to ignore hydration/undo events, and `dirtyElements.size === 0 && dirtyLeaves.size === 0` to ignore pure selection moves.
+- `SaveButton` no longer owns its own `OnChangePlugin` + local `isDisabled` state. It now reads `useSaveState()` directly: enabled iff `dirty` or `saved` (the latter so authors can immediately re-save after a successful PR), disabled while `saving` to suppress double-clicks.
+- `PersistDialog` calls `markSaving()` on save start, `markSaved()` on successful complete, `markSaveFailed()` on error (which transitions back to `dirty` so the user can retry).
 
-**Risk:** low.
+**Regression net extension:** `editor.test.ts` gains two cases under `editor status pills — Phase 2`:
+- Save-state pill is hidden in `clean`, becomes "Edited" after typing.
+- "Compiling…" status appears during a preview round-trip and disappears after.
 
-**Exit gate:** Playwright spec asserting the pill text transitions correctly through a save cycle.
+**APIs unblocked for later phases:**
+- `useSaveState()` — the foundation for Phase 4's confirm-on-leave (`saveState !== 'clean'` is the dirty signal).
+- The `dirty` ↔ `clean` transitions are now centralised, so we won't need to re-derive "is this editor dirty" from update-listener payloads in three different places.
+
+**Exit gate met:** plugin builds, site builds, dev-server smoke OK, no console errors.
 
 ---
 
@@ -264,7 +272,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 ```
 Phase 0   ── Baseline                            ½d   ✅ done
 Phase 1   ── Lexical upgrade (0.17 → 0.44)       0.5d ✅ done (1 line of code touched, plus the bump)
-   ├── Phase 2  Compiling + save pill            ½d
+   ├── Phase 2  Compiling + save pill            ½d   ✅ done
    ├── Phase 3  Error line highlighting          1d
    ├── Phase 4  Confirm-on-leave                 ½d
    ├── Phase 5  Image paste                      1d
@@ -298,7 +306,10 @@ Open questions are blockers for the *individual phases* that depend on them, not
 
 ## Recommended next action
 
-Phase 1 is in the can on `feat/lexical-upgrade` (single commit, ~10 lines touched outside the lockfile). Next up is **Phase 2 — Compiling indicator + save-state pill** (½ day). It's the highest-leverage UX improvement for the smallest effort and validates that the dirty-tracking infrastructure (needed for Phase 4 confirm-on-leave) works on the new Lexical.
+Phases 1 and 2 are in the can on `feat/lexical-upgrade`. Next up is **Phase 3 — In-editor error highlighting** (1 day): use the `error.line` already in context to underline the offending line in red and make the banner's headline a "Jump to error" link. Modern Lexical's `DecoratorNode` ergonomics make this much cheaper than it would have been on 0.17.
+
+
+
 
 
 

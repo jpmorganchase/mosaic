@@ -5,9 +5,13 @@ export {
   EditorProvider,
   useEditorUser,
   useErrorMessage,
+  useIsCompiling,
   useIsInsertingLink,
   usePreviewContent,
+  useSaveState,
+  useSetIsCompiling,
   useSetPreviewContent,
   type EditorUser,
-  type EditorContextValue
+  type EditorContextValue,
+  type SaveState
 } from './EditorContext';

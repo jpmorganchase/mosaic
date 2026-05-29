@@ -17,6 +17,7 @@ import ContentEditor from './ContentEditor';
 import { nodes } from '../nodes';
 import { EditorProvider, usePreviewContent, type EditorUser } from '../EditorContext';
 import { PreviewPlugin } from '../plugins/PreviewPlugin';
+import { DirtyTrackerPlugin } from '../plugins/DirtyTrackerPlugin';
 import styles from './Editor.css';
 import Toolbar from './Toolbar/Toolbar';
 import theme from '../theme';
@@ -136,6 +137,7 @@ const EditorInner: FC<EditorProps> = ({
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={transformers} />
           <PreviewPlugin compilePreview={compilePreview} />
+          <DirtyTrackerPlugin />
           <MarkdownImagePlugin />
           <MarkdownLinkPlugin />
           <LinkEditor />

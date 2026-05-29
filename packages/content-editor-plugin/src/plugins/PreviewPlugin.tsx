@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useTransition } from 'react';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import transformers from '../transformers';
-import { useErrorMessage, useSetPreviewContent } from '../EditorContext';
+import { useErrorMessage, useSetIsCompiling, useSetPreviewContent } from '../EditorContext';
 import { formatMdxError } from '../utils/formatMdxError';
 
 export interface PreviewPluginProps {
@@ -33,6 +33,7 @@ export interface PreviewPluginProps {
 export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
   const [editor] = useLexicalComposerContext();
   const setPreviewContent = useSetPreviewContent();
+  const setIsCompiling = useSetIsCompiling();
   const { setError } = useErrorMessage();
   const [, startTransition] = useTransition();
   const didSeedRef = useRef(false);
@@ -44,6 +45,10 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
     () =>
       debounce(
         (markdown: string) => {
+          // Flip the compile-status flag synchronously so the UI can
+          // show a spinner immediately — useTransition's pending state
+          // is non-urgent and would visibly lag a fast typist.
+          setIsCompiling(true);
           startTransition(async () => {
             try {
               const source = await compilePreview(markdown);
@@ -59,13 +64,15 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
               }
             } catch (e) {
               setError(formatMdxError(e));
+            } finally {
+              setIsCompiling(false);
             }
           });
         },
         250,
         { maxWait: 500 }
       ),
-    [compilePreview, setError, setPreviewContent]
+    [compilePreview, setError, setIsCompiling, setPreviewContent]
   );
 
   // Cancel any pending debounced call on unmount so a stale compile
@@ -82,6 +89,7 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
     editor.getEditorState().read(() => {
       const markdown = $convertToMarkdownString(transformers);
       if (!markdown) return;
+      setIsCompiling(true);
       startTransition(async () => {
         try {
           const source = await compilePreview(markdown);
@@ -93,10 +101,12 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
           }
         } catch (e) {
           setError(formatMdxError(e));
+        } finally {
+          setIsCompiling(false);
         }
       });
     });
-  }, [editor, compilePreview, setError, setPreviewContent]);
+  }, [editor, compilePreview, setError, setIsCompiling, setPreviewContent]);
 
   const onChange = (editorState: EditorState) => {
     editorState.read(() => {
