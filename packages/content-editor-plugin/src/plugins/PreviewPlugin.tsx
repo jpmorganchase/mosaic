@@ -1,32 +1,102 @@
+'use client';
+
+/**
+ * Lexical plugin that compiles the current editor content via a host-
+ * supplied Server Action (debounced on keystrokes) and stores the
+ * result in the editor context for the preview pane to render.
+ *
+ * The action is invoked inside `useTransition` so the resulting state
+ * updates are non-urgent — typing stays responsive even when a slow
+ * compile is in flight.
+ */
 import { $convertToMarkdownString } from '@lexical/markdown';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';
 import { debounce } from 'lodash-es';
+import { useEffect, useMemo, useRef, useTransition } from 'react';
+import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import transformers from '../transformers';
-import { useContentEditor } from '../index';
+import { useErrorMessage, useSetPreviewContent } from '../EditorContext';
+import { formatMdxError } from '../utils/formatMdxError';
 
-interface SourceResponse {
-  source: { compiledSource: string; frontmatter: any; scope: any };
-  error?: string;
-  exception?: string;
+export interface PreviewPluginProps {
+  /**
+   * Server Action that compiles MDX source to a `SerializeResult`.
+   * Passed in (rather than imported) so the plugin stays decoupled
+   * from any specific Next app.
+   */
+  compilePreview: (markdown: string) => Promise<SerializeResult>;
 }
 
-async function fetchSource(previewUrl: string, markdown: string) {
-  const response = await fetch(previewUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ mode: 'markdown', text: markdown })
-  });
+export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
+  const [editor] = useLexicalComposerContext();
+  const setPreviewContent = useSetPreviewContent();
+  const { setError } = useErrorMessage();
+  const [, startTransition] = useTransition();
+  const didSeedRef = useRef(false);
 
-  const data = (await response.json()) as SourceResponse;
-  return data;
-}
+  // `debounce` returns a new function on every render; memoise it so
+  // the leading/trailing timer state is preserved across keystrokes
+  // and `OnChangePlugin` doesn't re-subscribe each render.
+  const handleContentChange = useMemo(
+    () =>
+      debounce(
+        (markdown: string) => {
+          startTransition(async () => {
+            try {
+              const source = await compilePreview(markdown);
+              if ('error' in source && source.error) {
+                // Surface the compile error in the banner but KEEP the
+                // last successful preview rendered — clearing it on
+                // every typo is jarring and makes the editor feel
+                // broken while the user is mid-edit.
+                setError(formatMdxError(source.error));
+              } else {
+                setError(undefined);
+                setPreviewContent(source);
+              }
+            } catch (e) {
+              setError(formatMdxError(e));
+            }
+          });
+        },
+        250,
+        { maxWait: 500 }
+      ),
+    [compilePreview, setError, setPreviewContent]
+  );
 
-function usePreview(onContentChange: (markdown: string) => void) {
-  const handleContentChange = debounce(onContentChange, 250, { maxWait: 500 });
+  // Cancel any pending debounced call on unmount so a stale compile
+  // doesn't fire setState on an unmounted tree.
+  useEffect(() => () => handleContentChange.cancel(), [handleContentChange]);
+
+  // Seed the preview once on mount by compiling the editor's initial
+  // content. Without this the preview pane stays blank until the user
+  // types — confusing for read-only previews and for users who open
+  // the editor just to inspect the rendered output.
+  useEffect(() => {
+    if (didSeedRef.current) return;
+    didSeedRef.current = true;
+    editor.getEditorState().read(() => {
+      const markdown = $convertToMarkdownString(transformers);
+      if (!markdown) return;
+      startTransition(async () => {
+        try {
+          const source = await compilePreview(markdown);
+          if ('error' in source && source.error) {
+            setError(formatMdxError(source.error));
+          } else {
+            setError(undefined);
+            setPreviewContent(source);
+          }
+        } catch (e) {
+          setError(formatMdxError(e));
+        }
+      });
+    });
+  }, [editor, compilePreview, setError, setPreviewContent]);
 
   const onChange = (editorState: EditorState) => {
     editorState.read(() => {
@@ -37,34 +107,6 @@ function usePreview(onContentChange: (markdown: string) => void) {
     });
   };
 
-  return { onChange };
-}
-
-interface PreviewPluginProps {
-  previewUrl: string;
-}
-
-export const PreviewPlugin = ({ previewUrl }: PreviewPluginProps) => {
-  const { setErrorMessage, setPreviewContent } = useContentEditor();
-
-  const handleContentChange = async (content: string) => {
-    try {
-      if (content) {
-        const data = await fetchSource(previewUrl, content);
-        if (!data.error && data?.source) {
-          setPreviewContent(data.source);
-        } else {
-          setErrorMessage(`${data.error?.toUpperCase()}: ${data?.exception}`);
-        }
-      }
-    } catch (e) {
-      if (e instanceof Error) {
-        setErrorMessage(`MDX Error: ${e.message}`);
-      }
-    }
-  };
-
-  const { onChange } = usePreview(handleContentChange);
 
   return <OnChangePlugin onChange={onChange} ignoreSelectionChange />;
 };
