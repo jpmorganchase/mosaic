@@ -16,7 +16,7 @@ import { $getSelection, $isRangeSelection } from 'lexical';
 import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
 import { INSERT_MARKDOWN_LINK_COMMAND, InsertLinkPayload } from '../../plugins/MarkdownLinkPlugin';
-import { useIsInsertingLink } from '../../store';
+import { useIsInsertingLink } from '../../EditorContext';
 import styles from './InsertLink.css';
 
 const validationSchema = object({

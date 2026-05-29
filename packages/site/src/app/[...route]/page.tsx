@@ -1,6 +1,5 @@
 /**
- * Top-level App Router catch-all — the production page for every Mosaic
- * MDX route.
+ * Top-level App Router catch-all (WS-3 / WS-9).
  *
  * Data loading: the three independent inputs — `sharedConfig`
  * (header/footer/nav), `searchData` (site-wide search index), and the
@@ -14,11 +13,19 @@
  *
  * MDX rendering: `<BodyServer />` serialises the raw MDX text with
  * `serializeMdxForClient` and hands the result to the client
- * `<MdxRenderer />`.
+ * `<MdxRenderer />`. When the URL carries `?edit=1` we render
+ * `<EditorBody />` instead — the Lexical editor lazily code-split
+ * behind a Suspense boundary so VIEW mode never pays its cost.
+ *
+ * Edit-mode auth gate: `?edit=1` requires a signed-in session. The
+ * check happens here in the server component so the editor bundle is
+ * never even shipped to an un-authenticated client.
  *
  * Static-export path: when `MOSAIC_MODE` starts with `snapshot`,
  * this route is `force-static` and `generateStaticParams` enumerates
- * every URL from the snapshot's `sitemap.xml`.
+ * every URL from the snapshot's `sitemap.xml`. The edit branch is
+ * unreachable in a static export (no `auth()` available, no Server
+ * Actions) so we ignore `?edit=1` and always render the body.
  *
  * Metadata: `generateMetadata` reuses `getMdxRaw` for frontmatter, and
  * because both loaders are `cache()`-wrapped the underlying file/HTTP
@@ -40,20 +47,12 @@ import {
 import { auth } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
+import { EditorBody } from './EditorBody';
 import { RouteMetadata } from './RouteMetadata';
-
-// `auth` (Auth.js v5) is imported but not awaited in the catch-all
-// page render. The client `<SessionProvider>` set up in
-// `app/layout.tsx` already kicks off a session fetch on mount.
-// Keeping the import here exercises the module-evaluation side
-// effects (NextAuth config validation) at page-render time so
-// misconfigurations surface during a request rather than only on a
-// `/api/auth/*` hit. Reference it explicitly so the bundler doesn't
-// tree-shake it away.
-void auth;
 
 interface PageProps {
   params: Promise<{ route?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 // Route segment config. We deliberately don't export `dynamic` here:
@@ -174,7 +173,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function RoutePage({ params }: PageProps) {
+export default async function RoutePage({ params, searchParams }: PageProps) {
   const { pathname, mode, contentUrl } = await resolveRouteInputs(params);
 
   // The three loaders are independent — fetch them concurrently.
@@ -184,15 +183,18 @@ export default async function RoutePage({ params }: PageProps) {
   // `generateMetadata` (it only needs frontmatter), so this is the
   // first call for them this request.
   //
-  // Session is intentionally *not* batched here: Auth.js `auth()` is
-  // request-scoped and cannot be safely cached across requests, and
-  // the session isn't needed to render the page body — only the
-  // session-dependent `<RouteMetadata>` consumes it via
-  // `useSession()`, which fetches via `SessionProvider` on the client.
-  const [mdx, sharedConfig, search] = await Promise.all([
+  // `searchParams` is awaited alongside them so the `?edit=1` check
+  // costs no extra latency — but only when we're *not* prerendering.
+  // Awaiting `searchParams` during a static-export prerender promotes
+  // the route to dynamic and breaks the build; the EDIT branch is
+  // unreachable in static export anyway (auth() is stubbed).
+  const [mdx, sharedConfig, search, sp] = await Promise.all([
     getMdxRaw(pathname, mode, contentUrl),
     getSharedConfig(pathname, mode, contentUrl),
-    getSearchData(mode, contentUrl)
+    getSearchData(mode, contentUrl),
+    shouldPrerenderSnapshot
+      ? (Promise.resolve({}) as Promise<Record<string, string | string[] | undefined>>)
+      : searchParams
   ]);
 
   if (mdx.kind === 'redirect') redirect(mdx.destination);
@@ -207,20 +209,38 @@ export default async function RoutePage({ params }: PageProps) {
     ...frontmatter
   };
 
+  // Edit-mode gate: only honour `?edit=1` for signed-in users on a
+  // dynamic (non-static-export) deployment. The auth check happens
+  // here on the server so an un-authenticated request never receives
+  // the editor bundle at all — defense in depth, regardless of any
+  // client-side UI gating in `AppHeaderControls`.
+  const editRequested = sp.edit === '1';
+  const session = editRequested && !shouldPrerenderSnapshot ? await auth() : null;
+  const editing = editRequested && session?.user != null;
+  const editorUser = editing && session?.user
+    ? {
+        sid:
+          (session.user as { sid?: string }).sid ?? session.user.email ?? session.user.name ?? '',
+        displayName: session.user.name ?? '',
+        email: session.user.email ?? ''
+      }
+    : undefined;
+
   // Intentionally no nested `<Suspense>` and no sibling `loading.tsx`
-  // at the route segment. When a `<Link>`-driven navigation enters a
-  // React transition (the default) *and* there is no Suspense
-  // fallback above the suspending server component, React keeps the
-  // previous committed UI mounted until the new RSC payload is ready,
-  // then swaps — no flash. Adding a `loading.tsx` (segment-level
-  // Suspense) or wrapping `<BodyServer />` in `<Suspense fallback>`
+  // at the route segment for the VIEW branch. When a `<Link>`-driven
+  // navigation enters a React transition (the default) *and* there is
+  // no Suspense fallback above the suspending server component, React
+  // keeps the previous committed UI mounted until the new RSC payload
+  // is ready, then swaps — no flash. A segment-level `loading.tsx`
   // would force the fallback to show *during* the transition,
-  // re-creating the flash. So: no fallback here — let the transition
-  // do its job.
+  // re-creating the flash.
+  //
+  // The EDIT branch is `next/dynamic` — Next handles the loading
+  // state via the `loading: () => …` option above.
   return (
     <StoreShell storeProps={storeProps}>
       <RouteMetadata />
-      <BodyServer type="mdx" raw={raw} />
+      {editing ? <EditorBody raw={raw} user={editorUser} /> : <BodyServer type="mdx" raw={raw} />}
     </StoreShell>
   );
 }

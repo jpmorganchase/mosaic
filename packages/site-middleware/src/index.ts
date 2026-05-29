@@ -1,7 +1,6 @@
-// MDX compilation (used by the `/api/content/preview` editor endpoint).
-export * from './compileMdx.js';
 // Server-side serialise → client-side render MDX pipeline used by
-// `<BodyServer />` in the App Router catch-all.
+// `<BodyServer />` in the App Router catch-all and by the editor's
+// `compilePreview` Server Action.
 export * from './serializeMdxForClient.js';
 // Sitemap loader for static-export builds.
 export * from './loadSitemap.js';

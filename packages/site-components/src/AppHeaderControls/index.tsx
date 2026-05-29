@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
-import { useContentEditor, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { useEditMode, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
 import { useColorMode, useSearchIndex, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { useSession } from 'next-auth/react';
 
@@ -26,7 +26,7 @@ export const AppHeaderControls: React.FC = () => {
   const { data: session } = useSession();
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
   const isLoggedIn = session != null;
-  const { pageState, startEditing, stopEditing } = useContentEditor();
+  const { isEditing, startEditing, stopEditing } = useEditMode();
   const { searchEnabled } = useSearchIndex();
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
@@ -39,14 +39,8 @@ export const AppHeaderControls: React.FC = () => {
 
   if (isLoggedIn) {
     actionMenuOptions.push({
-      title: pageState === 'EDIT' ? 'Stop Editing' : 'Edit Document',
-      onSelect: () => {
-        if (pageState !== 'EDIT') {
-          startEditing();
-        } else {
-          stopEditing();
-        }
-      }
+      title: isEditing ? 'Stop Editing' : 'Edit Document',
+      onSelect: () => (isEditing ? stopEditing() : startEditing())
     });
   }
   if (isLoginEnabled && isLoggedIn) {

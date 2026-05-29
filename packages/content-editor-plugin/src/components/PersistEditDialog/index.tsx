@@ -1,17 +1,25 @@
-import { FC, useState } from 'react';
-import md5 from 'md5';
+'use client';
+
+/**
+ * Save / Pull-Request dialog.
+ *
+ * Controlled via `open` / `onOpenChange` props from the parent (no
+ * global page-state flag). The save itself calls a host-supplied
+ * Server Action that streams progress events; the dialog consumes
+ * the stream inside `useTransition` so the pending flag is driven by
+ * React.
+ */
+import { FC, useState, useTransition } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { $convertToMarkdownString } from '@lexical/markdown';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
 import { DialogHeader, DialogContent, DialogActions } from '@salt-ds/core';
 import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
-import { useEditorUser, usePageState } from '../../store';
 import transformers from '../../transformers';
 import { PersistStatus } from './PersistStatus';
 import { Dialog } from '../Dialog';
 import style from './index.css';
-import useWorkflowFeed from '../../hooks/useWorkflowFeed';
 
 interface InfoProps {
   isRaising: boolean;
@@ -34,91 +42,90 @@ const Info: FC<InfoProps> = ({ isRaising, prHref, error }) =>
     </>
   ) : null;
 
-interface PersistDialogProps {
-  meta: any;
-  persistUrl?: string;
+export type PersistEvent =
+  | { kind: 'progress'; message: SourceWorkflowMessageEvent }
+  | { kind: 'complete'; prHref: string | null }
+  | { kind: 'error'; message: string };
+
+export interface PersistDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  meta: { route?: string } & Record<string, unknown>;
+  /**
+   * Host-supplied Server Action that streams progress events for a
+   * save. Passed in so the plugin stays decoupled from any specific
+   * Next app.
+   */
+  persist?: (input: {
+    route: string;
+    markdown: string;
+  }) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
 }
 
-export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
-  const { pageState, setPageState } = usePageState();
-  const { user } = useEditorUser();
+export const PersistDialog = ({ open, onOpenChange, meta, persist }: PersistDialogProps) => {
   const [editor] = useLexicalComposerContext();
-  const [isRaising, setIsRaising] = useState(false);
+  const [isRaising, startTransition] = useTransition();
   const [prHref, setPrHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<SourceWorkflowMessageEvent[]>([]);
 
-  const open = pageState === 'SAVING';
   const state = prHref !== null ? 'success' : 'info';
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setIsRaising(newOpen);
-    if (!newOpen) {
-      setPageState('EDIT');
-      setPrHref(null);
-      setProgress([]);
-    }
-  };
-
-  const handleClose = () => {
-    handleOpenChange(false);
-  };
-
-  const handleErrorMessage = (errorMessage: string) => {
-    setError(errorMessage ? errorMessage : 'Sorry - an unexpected error has occurred');
-    setPrHref(null);
-    setProgress([]);
-    setIsRaising(false);
-  };
-
-  const handleCompleteMessage = message => {
-    setPrHref(message.message?.links?.self[0]?.href || message);
-    setIsRaising(false);
-  };
-
-  const handleSuccessMessage = message => {
-    setProgress(prevState => [...prevState, message]);
-  };
-
-  const { sendWorkflowProgressMessage } = useWorkflowFeed(
-    open,
-    handleErrorMessage,
-    handleSuccessMessage,
-    handleCompleteMessage
-  );
-
-  const handleRaisePr = () => {
-    setIsRaising(true);
+  const resetAndClose = () => {
+    // Suppress close-while-saving so the user can't navigate away
+    // mid-flight; the in-flight transition would still resolve and
+    // try to setState on an unmounted dialog.
+    if (isRaising) return;
     setPrHref(null);
     setError(null);
+    setProgress([]);
+    onOpenChange(false);
+  };
 
-    try {
-      editor.update(() => {
-        const markdown = $convertToMarkdownString(transformers);
-        if (markdown && user && persistUrl) {
-          const { sid, displayName, email } = user;
+  const handleRaisePr = () => {
+    if (!persist) {
+      setError('Save is not configured for this app.');
+      return;
+    }
+    setPrHref(null);
+    setError(null);
+    setProgress([]);
 
-          sendWorkflowProgressMessage(
-            JSON.stringify({
-              user: { sid, name: displayName, email },
-              route: meta.route,
-              markdown,
-              name: 'save'
-            }),
-            md5(`${sid.toLowerCase()} - save`)
-          );
+    editor.update(() => {
+      const markdown = $convertToMarkdownString(transformers);
+      if (!markdown) {
+        setError('Editor is empty — nothing to save.');
+        return;
+      }
+      if (!meta.route) {
+        setError('Page route is missing — cannot save.');
+        return;
+      }
+
+      startTransition(async () => {
+        try {
+          const stream = await persist({ route: meta.route as string, markdown });
+          for await (const event of stream) {
+            if (event.kind === 'progress') {
+              // Functional update so the callback doesn't capture a
+              // stale `progress` array (rule rerender-functional-setstate).
+              setProgress(prev => [...prev, event.message]);
+            } else if (event.kind === 'complete') {
+              setPrHref(event.prHref);
+            } else if (event.kind === 'error') {
+              setError(event.message || 'Sorry - an unexpected error has occurred');
+              return;
+            }
+          }
+        } catch (e) {
+          setError(e instanceof Error ? e.message : 'Sorry - an unexpected error has occurred');
         }
       });
-    } catch {
-      setError('Sorry - an unexpected error has occurred');
-      setPrHref(null);
-      setIsRaising(false);
-      setProgress([]);
-    }
+    });
   };
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open} status={error ? 'error' : state}>
+    <Dialog onOpenChange={resetAndClose} open={open} status={error ? 'error' : state}>
       <DialogHeader
         className={style.title}
         header={!prHref ? 'Save Changes' : 'Pull Request Created Successfully'}
@@ -133,11 +140,11 @@ export const PersistDialog = ({ meta, persistUrl }: PersistDialogProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button disabled={isRaising} onClick={handleClose}>
+        <Button disabled={isRaising} onClick={resetAndClose}>
           {!prHref ? 'Cancel' : 'Done'}
         </Button>
         <Button
-          disabled={persistUrl === undefined || isRaising || prHref !== null}
+          disabled={persist === undefined || isRaising || prHref !== null}
           onClick={handleRaisePr}
           variant="cta"
         >

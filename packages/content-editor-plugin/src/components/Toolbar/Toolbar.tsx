@@ -1,6 +1,6 @@
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { useEditHistory } from '../../hooks/useEditHistory';
-import { usePageState } from '../../store';
+import { useEditMode } from '../../useEditMode';
 import { SaveButton } from '../SaveButton';
 import { TextFormatTooltray } from './TextFormatTooltray';
 import { InsertTable } from './InsertTable';
@@ -12,9 +12,13 @@ import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarSeparator } from './ToolbarSepartor';
 
-const Toolbar = () => {
+interface ToolbarProps {
+  onSave: () => void;
+}
+
+const Toolbar = ({ onSave }: ToolbarProps) => {
   const { canRedo, canUndo, redoEdit, undoEdit } = useEditHistory();
-  const { setPageState } = usePageState();
+  const { stopEditing } = useEditMode();
 
   return (
     <BaseToolbar aria-label="page editing toolbar">
@@ -36,13 +40,13 @@ const Toolbar = () => {
         <ToolbarSeparator />
       </Tooltray>
       <Tooltray aria-label="stop editing tooltray" align="right">
-        <ToolbarButton label="Cancel Editing" onClick={() => setPageState('VIEW')}>
+        <ToolbarButton label="Cancel Editing" onClick={stopEditing}>
           <Icon name="delete" />
         </ToolbarButton>
         <ToolbarSeparator />
       </Tooltray>
       <Tooltray aria-label="copy tooltray">
-        <SaveButton />
+        <SaveButton onSave={onSave} />
       </Tooltray>
     </BaseToolbar>
   );

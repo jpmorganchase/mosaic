@@ -24,7 +24,6 @@
  */
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 
-import { BodySwitcher } from './BodySwitcher';
 import { MdxRenderer } from './MdxRenderer';
 
 interface BodyServerProps {
@@ -41,15 +40,9 @@ export async function BodyServer({ type, raw, content }: BodyServerProps) {
       throw new Error('BodyServer: `raw` MDX text is required when type === "mdx".');
     }
     const source = await serializeMdxForClient(raw);
-    // The server-rendered MDX subtree is passed as `children` to the
-    // client-side `<BodySwitcher>`, which swaps it for the Lexical
-    // `<Editor>` when the user starts editing. VIEW mode pays no
-    // extra cost — Lexical is dynamically imported only on EDIT.
     return (
       <div className="wrapper">
-        <BodySwitcher raw={raw}>
-          <MdxRenderer source={source} />
-        </BodySwitcher>
+        <MdxRenderer source={source} />
       </div>
     );
   }

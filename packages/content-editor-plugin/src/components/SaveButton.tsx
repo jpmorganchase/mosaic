@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 
-import { usePageState } from '../store';
+interface SaveButtonProps {
+  onSave: () => void;
+}
 
-export const SaveButton = () => {
-  const { setPageState } = usePageState();
+export const SaveButton = ({ onSave }: SaveButtonProps) => {
   const [isDisabled, setIsDisabled] = useState(true);
 
   const onChange = () => {
@@ -15,7 +16,7 @@ export const SaveButton = () => {
   return (
     <>
       <OnChangePlugin onChange={onChange} ignoreSelectionChange />
-      <Button disabled={isDisabled} variant="cta" onClick={() => setPageState('SAVING')}>
+      <Button disabled={isDisabled} variant="cta" onClick={onSave}>
         <Icon name="save" /> &nbsp; Save
       </Button>
     </>

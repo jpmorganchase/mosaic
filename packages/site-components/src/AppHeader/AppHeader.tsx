@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useEffect, useState } from 'react';
+import { FC, Suspense, useEffect, useState } from 'react';
 import { Divider, Text } from '@salt-ds/core';
 import { useBreakpoint, Link, useImageComponent } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
@@ -70,7 +70,17 @@ export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title
           </Link>
         )}
         {mounted && !showDrawer && <AppHeaderTabs key={route} menu={menu} />}
-        <AppHeaderControls />
+        {/*
+          `useEditMode` (used by `<AppHeaderControls>` and the
+          `EditorControls` button it renders) calls `useSearchParams()`,
+          which Next requires to be wrapped in a Suspense boundary so
+          that pages without `?edit=…` in their URL can still be
+          statically prerendered. The fallback is `null` because the
+          controls aren't critical to first paint.
+        */}
+        <Suspense fallback={null}>
+          <AppHeaderControls />
+        </Suspense>
       </div>
     </>
   );

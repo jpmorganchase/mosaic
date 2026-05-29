@@ -1,9 +1,11 @@
+'use client';
+
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { BaseToolbar as Toolbar } from './BaseToolbar/BaseToolbar';
 import { BaseTooltray as Tooltray } from './BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './Toolbar/ToolbarButton';
 
-import { default as useContentEditor } from '../store';
+import { useEditMode } from '../useEditMode';
 import styles from './EditorControls.css';
 
 export interface EditorControlsProps {
@@ -11,10 +13,8 @@ export interface EditorControlsProps {
 }
 
 export const EditorControls = ({ enabled = false }: EditorControlsProps) => {
-  const { pageState, startEditing, stopEditing } = useContentEditor();
-  const isEditing = pageState === 'EDIT';
-
-  const handleClick = () => (!isEditing ? startEditing() : stopEditing());
+  const { isEditing, startEditing, stopEditing } = useEditMode();
+  const handleClick = () => (isEditing ? stopEditing() : startEditing());
 
   const enabledLabel = isEditing ? 'Cancel Editing' : 'Edit Page';
   const overflowLabel = !enabled ? 'Login Required to Edit' : enabledLabel;
@@ -34,3 +34,5 @@ export const EditorControls = ({ enabled = false }: EditorControlsProps) => {
     </Toolbar>
   );
 };
+
+

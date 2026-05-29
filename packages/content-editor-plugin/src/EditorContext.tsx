@@ -1,0 +1,137 @@
+'use client';
+
+/**
+ * Editor-scoped state, split across small contexts so high-frequency
+ * updates (preview compile on every keystroke) don't re-render
+ * consumers that only care about low-frequency state (current user,
+ * the "insert link" dialog flag).
+ *
+ * Replaces the previous module-level zustand store. Hoisting state
+ * into per-editor contexts also means unmounting `<Editor>` (e.g.
+ * leaving EDIT mode) garbage-collects all of it automatically.
+ */
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+
+export type EditorUser = { sid: string; displayName: string; email: string };
+
+// --- Preview context (high-frequency: every keystroke) -----------------
+
+interface PreviewContextValue {
+  previewContent: SerializeResult | undefined;
+  setPreviewContent: (content: SerializeResult | undefined) => void;
+}
+const PreviewContext = createContext<PreviewContextValue | null>(null);
+
+// --- Error context (low-frequency, but separate so the status banner
+// doesn't need to re-render on every preview update) -------------------
+
+/**
+ * Structured error for the status banner. Modelled after `vfile`
+ * messages from MDX / remark so we can render line/column and a
+ * human-friendly hint without ad-hoc string parsing in the banner.
+ */
+export interface EditorError {
+  /** Short one-line summary, shown as the banner headline. */
+  message: string;
+  /** 1-based source line, when known. */
+  line?: number;
+  /** 1-based source column, when known. */
+  column?: number;
+  /**
+   * Plain-English suggestion shown under the message (e.g. "escape `<`
+   * as `\<`"). Optional — synthesised from `message` heuristically.
+   */
+  hint?: string;
+  /** Original error string for the "details" disclosure. */
+  raw?: string;
+}
+
+interface ErrorContextValue {
+  error: EditorError | undefined;
+  setError: (err: EditorError | undefined) => void;
+}
+const ErrorContext = createContext<ErrorContextValue | null>(null);
+
+// --- User context (set once at mount; effectively static) -------------
+
+interface UserContextValue {
+  user: EditorUser | undefined;
+  setUser: (user: EditorUser | undefined) => void;
+}
+const UserContext = createContext<UserContextValue | null>(null);
+
+// --- Insert-link dialog flag (changes on dialog open/close) -----------
+
+interface InsertLinkContextValue {
+  isInsertingLink: boolean;
+  setIsInsertingLink: (value: boolean) => void;
+}
+const InsertLinkContext = createContext<InsertLinkContextValue | null>(null);
+
+export interface EditorProviderProps {
+  initialUser?: EditorUser;
+  children: ReactNode;
+}
+
+export function EditorProvider({ initialUser, children }: EditorProviderProps) {
+  const [previewContent, setPreviewContent] = useState<SerializeResult | undefined>(undefined);
+  const [error, setError] = useState<EditorError | undefined>(undefined);
+  const [user, setUser] = useState<EditorUser | undefined>(initialUser);
+  const [isInsertingLink, setIsInsertingLink] = useState(false);
+
+  // Each context value is memoised independently so changes to one
+  // slice don't invalidate the others. Setters are stable references
+  // returned by useState, so the dep arrays only need the value.
+  const previewValue = useMemo<PreviewContextValue>(
+    () => ({ previewContent, setPreviewContent }),
+    [previewContent]
+  );
+  const errorValue = useMemo<ErrorContextValue>(
+    () => ({ error, setError }),
+    [error]
+  );
+  const userValue = useMemo<UserContextValue>(() => ({ user, setUser }), [user]);
+  const insertLinkValue = useMemo<InsertLinkContextValue>(
+    () => ({ isInsertingLink, setIsInsertingLink }),
+    [isInsertingLink]
+  );
+
+  return (
+    <UserContext.Provider value={userValue}>
+      <ErrorContext.Provider value={errorValue}>
+        <InsertLinkContext.Provider value={insertLinkValue}>
+          <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
+        </InsertLinkContext.Provider>
+      </ErrorContext.Provider>
+    </UserContext.Provider>
+  );
+}
+
+function useRequiredContext<T>(ctx: React.Context<T | null>, name: string): T {
+  const value = useContext(ctx);
+  if (!value) {
+    throw new Error(`${name} must be called inside <EditorProvider>.`);
+  }
+  return value;
+}
+
+// Selector hooks return individual slices so callers only subscribe
+// to the state they actually use (rerender-defer-reads).
+export const usePreviewContent = () =>
+  useRequiredContext(PreviewContext, 'usePreviewContent').previewContent;
+export const useSetPreviewContent = () =>
+  useRequiredContext(PreviewContext, 'useSetPreviewContent').setPreviewContent;
+export const useErrorMessage = () => useRequiredContext(ErrorContext, 'useErrorMessage');
+export const useEditorUser = () => useRequiredContext(UserContext, 'useEditorUser');
+export const useIsInsertingLink = () =>
+  useRequiredContext(InsertLinkContext, 'useIsInsertingLink');
+
+export type EditorContextValue = PreviewContextValue &
+  ErrorContextValue &
+  UserContextValue &
+  InsertLinkContextValue;
+
+
+
+

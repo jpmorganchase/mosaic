@@ -1,5 +1,6 @@
-import { ComponentType, FC, useRef, useState } from 'react';
-import classnames from 'clsx';
+'use client';
+
+import { ComponentType, FC, useCallback, useRef, useState } from 'react';
 import matter from 'gray-matter';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
@@ -9,16 +10,17 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import Split from 'react-split';
 import { $convertFromMarkdownString } from '@lexical/markdown';
+import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import transformers from '../transformers';
 import ContentEditor from './ContentEditor';
 import { nodes } from '../nodes';
-import { useEditorUser, usePreviewContent } from '../store';
+import { EditorProvider, usePreviewContent, type EditorUser } from '../EditorContext';
 import { PreviewPlugin } from '../plugins/PreviewPlugin';
 import styles from './Editor.css';
 import Toolbar from './Toolbar/Toolbar';
 import theme from '../theme';
-import { PersistDialog } from './PersistEditDialog';
+import { PersistDialog, type PersistEvent } from './PersistEditDialog';
 import StatusBanner from './StatusBanner';
 import { MarkdownImagePlugin } from '../plugins/MarkdownImagePlugin';
 import { MarkdownLinkPlugin } from '../plugins/MarkdownLinkPlugin';
@@ -39,49 +41,56 @@ const initialConfig = {
   theme
 };
 
-interface PreviewComponentProps {
-  source: any;
-  meta?: any;
-  components: any;
+export interface PreviewComponentProps {
+  /**
+   * Compiled MDX payload produced by `compilePreview`. `undefined`
+   * until the first compile completes.
+   */
+  source: SerializeResult | undefined;
+  meta?: Record<string, unknown>;
+  components: Record<string, unknown>;
 }
 
-interface EditorProps extends PreviewComponentProps {
+export interface EditorProps {
   content: string;
-  PreviewComponent?: ComponentType<PreviewComponentProps>;
-  previewUrl?: string;
-  persistUrl?: string;
-  user?: any;
+  components: Record<string, unknown>;
+  PreviewComponent: ComponentType<PreviewComponentProps>;
+  /** Server Action that compiles MDX → serialised renderer payload. */
+  compilePreview: (markdown: string) => Promise<SerializeResult>;
+  /** Optional Server Action that streams progress for a save. */
+  persist?: (input: {
+    route: string;
+    markdown: string;
+  }) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  /** Currently-signed-in user. */
+  user?: EditorUser;
 }
 
 const gutter = () => {
-  const gutter = document.createElement('div');
-  gutter.className = styles.gutter;
-  return gutter;
+  const gutterEl = document.createElement('div');
+  gutterEl.className = styles.gutter;
+  return gutterEl;
 };
 
-const Editor: FC<EditorProps> = ({
+// Split so it can consume `usePreviewContent`, which requires the
+// `EditorProvider` mounted by the outer component.
+const EditorInner: FC<EditorProps> = ({
   components,
   content,
-  persistUrl,
-  PreviewComponent,
-  previewUrl,
-  source,
-  user
+  compilePreview,
+  persist,
+  PreviewComponent
 }) => {
-  const previewContent = usePreviewContent() || source;
-  const { setUser } = useEditorUser();
-  const [focused, setFocused] = useState(false);
+  const previewContent = usePreviewContent();
+  const [saveOpen, setSaveOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { data: meta, content: markdown } = matter(content);
 
-  const handleEditorFocus = () => {
-    setFocused(true);
-    setUser(user);
-  };
-
-  const handleEditorBlur = () => {
-    setFocused(false);
-  };
+  // Stable handler — `setSaveOpen` from useState is itself stable,
+  // but wrapping it lets us keep `<Toolbar>` API single-purpose
+  // (open the save dialog) without leaking the dispatcher's
+  // `SetStateAction` shape.
+  const openSave = useCallback(() => setSaveOpen(true), []);
 
   return (
     <LexicalComposer
@@ -90,10 +99,15 @@ const Editor: FC<EditorProps> = ({
         editorState: () => $convertFromMarkdownString(markdown, transformers)
       }}
     >
-      <div className={styles.root} onFocus={handleEditorFocus} onBlur={handleEditorBlur}>
+      <div className={styles.root}>
         <div className={styles.toolbarContainer}>
-          <Toolbar />
-          <PersistDialog meta={meta} persistUrl={persistUrl} />
+          <Toolbar onSave={openSave} />
+          <PersistDialog
+            open={saveOpen}
+            onOpenChange={setSaveOpen}
+            meta={meta}
+            persist={persist}
+          />
           <StatusBanner />
         </div>
         <div className={styles.editorRoot}>
@@ -109,19 +123,11 @@ const Editor: FC<EditorProps> = ({
             sizes={[50, 50]}
             snapOffset={30}
           >
-            <ScrollableSection
-              className={classnames({
-                [styles.focused]: focused,
-                [styles.unfocused]: !focused
-              })}
-              ref={containerRef}
-            >
+            <ScrollableSection className={styles.focused} ref={containerRef}>
               <ContentEditor />
             </ScrollableSection>
             <ScrollableSection>
-              {PreviewComponent && (
-                <PreviewComponent source={previewContent} meta={meta} components={components} />
-              )}
+              <PreviewComponent source={previewContent} meta={meta} components={components} />
             </ScrollableSection>
           </Split>
           <HistoryPlugin />
@@ -129,7 +135,7 @@ const Editor: FC<EditorProps> = ({
           <TablePlugin />
           <LinkPlugin />
           <MarkdownShortcutPlugin transformers={transformers} />
-          {previewUrl ? <PreviewPlugin previewUrl={previewUrl} /> : null}
+          <PreviewPlugin compilePreview={compilePreview} />
           <MarkdownImagePlugin />
           <MarkdownLinkPlugin />
           <LinkEditor />
@@ -141,5 +147,11 @@ const Editor: FC<EditorProps> = ({
     </LexicalComposer>
   );
 };
+
+const Editor: FC<EditorProps> = props => (
+  <EditorProvider initialUser={props.user}>
+    <EditorInner {...props} />
+  </EditorProvider>
+);
 
 export default Editor;

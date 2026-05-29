@@ -1,39 +1,30 @@
 'use client';
 
 /**
- * Lexical-based content editor mounted in place of the rendered MDX
- * body when `pageState === 'EDIT'`. Loaded lazily via `next/dynamic`
- * from `<BodySwitcher>` so its Lexical / `next-mdx-remote-client`
- * footprint doesn't burden VIEW renders.
+ * Lexical-based content editor rendered in place of the MDX body
+ * when `?edit=1` is on the URL. Code-split via `next/dynamic` in
+ * `page.tsx` so its bundle is only fetched on the EDIT branch.
  *
- * Wiring:
- *   - `previewUrl="/api/content/preview"` — the editor POSTs the
- *     current markdown on every (debounced) keystroke and stores the
- *     compiled `{ compiledSource, frontmatter, scope }` result.
- *   - `PreviewComponent` — receives that compiled payload and renders
- *     it with `<MDXClient />`, using the same component registry as
- *     the production `<MdxRenderer />` so previewed pages look
- *     identical to published ones.
- *   - `persistUrl` — any truthy value enables the "Raise PR" button
- *     in `<PersistEditDialog />`. The actual save transport is the
- *     workflows websocket (`NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`), not
- *     an HTTP POST to this URL.
+ * Both Server Actions are passed in as props (rather than imported
+ * inside the editor plugin) so the plugin stays decoupled from this
+ * specific Next app. `EditorPreview` adapts the editor's
+ * `PreviewComponent` contract to `<MDXClient />`, reusing the same
+ * MDX component registry as the production page render.
  */
-import { ComponentType, useMemo } from 'react';
+import { ComponentType } from 'react';
 import { MDXClient } from 'next-mdx-remote-client';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
-import { Editor } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { Editor, type EditorUser } from '@jpmorganchase/mosaic-content-editor-plugin';
+
+import { mdxComponents } from './MdxComponents';
+import { compilePreview } from './previewAction';
+import { persistContent } from './persistAction';
 
 interface PreviewProps {
-  source: SerializeResult;
+  source: SerializeResult | undefined;
   components: Record<string, ComponentType<unknown>>;
 }
 
-/**
- * Adapter that bridges the editor's `PreviewComponent` contract
- * (`{ source, components, meta }`) to `<MDXClient />`'s expected
- * `{ compiledSource, frontmatter, scope, components }` props.
- */
 function EditorPreview({ source, components }: PreviewProps) {
   if (!source) return null;
   if ('error' in source && source.error) {
@@ -50,28 +41,30 @@ function EditorPreview({ source, components }: PreviewProps) {
   );
 }
 
-interface EditorBodyProps {
-  content: string;
-  components: Record<string, unknown>;
-  PreviewComponent: ComponentType<{ source: SerializeResult }>;
-  user?: { sid: string; displayName: string; email: string };
+export interface EditorBodyProps {
+  raw: string;
+  user?: EditorUser;
 }
 
-export function EditorBody({ content, components, user }: EditorBodyProps) {
-  // `Editor`'s prop types are loose (`any`) for `source` / `meta` /
-  // `components`. Memoise the components object so the editor's
-  // internal effects aren't reset on every parent render.
-  const stableComponents = useMemo(() => components, [components]);
+export function EditorBody({ raw, user }: EditorBodyProps) {
   return (
-    <Editor
-      content={content}
-      components={stableComponents}
-      source={undefined}
-      PreviewComponent={EditorPreview as ComponentType<{ source: unknown; components: unknown }>}
-      previewUrl="/api/content/preview"
-      persistUrl="/api/content/persist"
-      user={user}
-    />
+    <div className="wrapper">
+      <Editor
+        content={raw}
+        components={mdxComponents}
+        PreviewComponent={
+          EditorPreview as ComponentType<{
+            source: SerializeResult | undefined;
+            components: Record<string, unknown>;
+          }>
+        }
+        compilePreview={compilePreview}
+        persist={persistContent}
+        user={user}
+      />
+    </div>
   );
 }
+
+
 
