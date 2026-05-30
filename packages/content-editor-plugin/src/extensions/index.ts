@@ -1,52 +1,124 @@
 'use client';
 
 /**
- * Phase 0 — Re-exports for the Extension API authoring layer.
+ * Extension API authoring layer — final state after Phase 0d.
  *
- * Each extension here packages the register-effect of one of our
- * existing React-component plugins so it can later be mounted via
- * `<LexicalExtensionComposer extension={rootExtension} />`. None of
- * these extensions are mounted by the live editor yet — `Editor.tsx`
- * still uses the React component form for every plugin — so runtime
- * behaviour is unchanged by this file's existence.
+ * Every plugin in this directory follows **one** pattern, matching
+ * upstream Lexical's `ClearEditorExtension` / `LexicalClearEditorPlugin`
+ * split (see `@lexical/extension/src/ClearEditorExtension.ts` and
+ * `@lexical/react/src/LexicalClearEditorPlugin.ts` for the model):
  *
- * The reason this barrel exists is so the eventual root-extension
- * file (planned Phase 2 of the Extension API roadmap) can do a
- * single `import { ... } from './extensions'` rather than reaching
- * into each per-extension file.
+ *   1. A standalone `register*(editor, ...inputs)` helper that owns
+ *      the Lexical-touching logic (command registration, update
+ *      listener, DOM mutation, etc.) and returns its own unregister
+ *      function.
  *
- * Audit trail: which React-plugin became which extension and what
- * we deliberately left out:
+ *   2. A thin `defineExtension(...)` wrapper whose `register` field
+ *      calls the helper. Plus `build` + `namedSignals` for the
+ *      extensions that take reactive config (the Phase-0c pair).
  *
- *   - `HorizontalRulePlugin`  → `HorizontalRuleExtension`     (full)
- *   - `MarkdownImagePlugin`   → `MarkdownImageExtension`      (full)
- *   - `MarkdownLinkPlugin`    → `MarkdownLinkExtension`       (command only;
- *      the `<InsertLinkDialog />` JSX surface stays in the React
- *      plugin file and will be hoisted to a composer sibling /
- *      ReactExtension decorator in a later phase)
+ *   3. A consumption site:
+ *      - **React-hosted editor (us, today)**: imports the helper
+ *        directly and calls it from a `useEffect` in `Editor.tsx`
+ *        with the right dep array. Reactive inputs come from React
+ *        context / refs / props; useEffect-with-deps gives us the
+ *        re-register-on-change semantics for free.
+ *      - **Headless / non-React (hypothetical, future)**: depends
+ *        on the extension via `buildEditorFromExtensions`. Reactive
+ *        inputs come through `namedSignals` and re-register via
+ *        `effect(...)`.
  *
- * The four other "leaf-ish" plugins were explicitly NOT migrated in
- * Phase 0:
+ * Both consumption modes share one implementation. The React side
+ * is what the live editor uses; the extension form is what the
+ * smoke test exercises and what a future non-React consumer would
+ * mount.
  *
- *   - `ErrorHighlightPlugin` — depends on React context
- *     (`useErrorMessage`, `useLineMap`) for its input signal.
- *     Extensions run in `register` phase before React renders, so
- *     they can't read context. This one stays as a React component
- *     and bridges via signals in Phase 1.
+ * Two-category split
+ * ------------------
+ * The five extensions split by whether they take reactive config:
  *
- *   - `KeyboardShortcutsPlugin` — same constraint: reads
- *     `useIsInsertingLink` and `useShortcutHelp` from context.
+ *   - **Command handlers (no reactive config)**:
+ *     `HorizontalRuleExtension`, `MarkdownImageExtension`,
+ *     `MarkdownLinkExtension`. The helper takes just `editor`. The
+ *     extension's `register` is a one-liner that calls the helper.
  *
- *   - `DirtyTrackerPlugin` — same constraint: drives
- *     `markDirty()` from `EditorContext`.
+ *   - **Context-bridged (reactive config)**:
+ *     `DirtyTrackerExtension`, `ErrorHighlightExtension`. The helper
+ *     takes `editor` plus one or more inputs (`markDirty` callback,
+ *     `getError` / `getLineMap` getters). The extension's `build`
+ *     turns its config into a `namedSignals` object; its `register`
+ *     wraps the helper call in `effect(...)` so signal writes
+ *     re-register with fresh inputs.
  *
- *   - `PreviewPlugin` — depends on the `previewAction` Server
- *     Action prop and on `EditorContext` slices for state writes.
+ * Plugins that explicitly stay React
+ * ----------------------------------
+ * Two plugins were considered for migration during Phase 0c and
+ * deliberately not migrated. Their file-level doc comments explain
+ * the specific reasoning; the short version:
  *
- * Those four migrate in Phase 1 (signals bridge) and Phase 3 (context
- * teardown), not Phase 0.
+ *   - `KeyboardShortcutsPlugin` registers a `window` keydown listener
+ *     and never touches `editor`. An extension wrapper would be
+ *     empty ceremony.
+ *
+ *   - `PreviewPlugin` is a React async coordinator (`useTransition`,
+ *     memoised `debounce`, sequencing refs, four context-slice
+ *     writes, renders `<OnChangePlugin>` JSX). The extension form
+ *     would be strictly larger and less idiomatic. Upstream's
+ *     `LexicalAutoFocusPlugin` is the precedent for "plain React
+ *     effect, no extension wrapper".
+ *
+ * Why this barrel doesn't ship a `ROOT_EXTENSIONS` array any more
+ * ---------------------------------------------------------------
+ * Phase 0b shipped an `<ExtensionMounter>` component + a
+ * `ROOT_EXTENSIONS` constant that auto-mounted the three
+ * command-handler extensions through a generic React bridge. Phase
+ * 0d removed both in favour of the upstream-idiomatic per-helper
+ * pattern: `Editor.tsx` calls `mergeRegister(registerHorizontalRule(editor),
+ * registerMarkdownImage(editor), registerMarkdownLink(editor))` from
+ * one `useEffect`, which is what `<ExtensionMounter>` was wrapping
+ * anyway. The mounter required fabricating an `ExtensionRegisterState`
+ * stub for the dependency-resolver fields it couldn't fulfil; the
+ * per-helper pattern doesn't need any stubbing because the helper
+ * signature is just `(editor) => unregister`. Smaller code, fewer
+ * fragile assumptions about upstream's evolving `ExtensionRegisterState`
+ * shape, single uniform pattern across all five extensions.
  */
 
-export { HorizontalRuleExtension } from './HorizontalRuleExtension';
-export { MarkdownImageExtension } from './MarkdownImageExtension';
-export { MarkdownLinkExtension } from './MarkdownLinkExtension';
+// --- Command-handler extensions ---------------------------------------
+//
+// Each exports a `register*(editor)` standalone helper (called from
+// `Editor.tsx`) and a `*Extension` `defineExtension` wrapper (for
+// headless consumers via `buildEditorFromExtensions`).
+
+export { HorizontalRuleExtension, registerHorizontalRule } from './HorizontalRuleExtension';
+export {
+  MarkdownImageExtension,
+  registerMarkdownImage,
+  INSERT_MARKDOWN_IMAGE_COMMAND,
+  type InsertImagePayload
+} from './MarkdownImageExtension';
+export {
+  MarkdownLinkExtension,
+  registerMarkdownLink,
+  INSERT_MARKDOWN_LINK_COMMAND,
+  type InsertLinkPayload
+} from './MarkdownLinkExtension';
+
+// --- Context-bridged extensions ---------------------------------------
+//
+// Each exports a `register*(editor, inputs)` standalone helper
+// (called from the matching `../plugins/*Plugin.tsx` React adapter)
+// and a `*Extension` `defineExtension` wrapper (for headless consumers).
+
+export {
+  DirtyTrackerExtension,
+  registerDirtyTracker,
+  type DirtyTrackerConfig,
+  type MarkDirtyCallback
+} from './DirtyTrackerExtension';
+export {
+  ErrorHighlightExtension,
+  registerErrorHighlight,
+  type ErrorHighlightConfig,
+  type ErrorHighlightInputs
+} from './ErrorHighlightExtension';

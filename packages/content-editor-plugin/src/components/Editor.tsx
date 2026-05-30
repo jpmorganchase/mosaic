@@ -53,7 +53,7 @@ import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPl
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import Split from 'react-split';
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
-import { $getRoot, $getSelection, $isRangeSelection } from 'lexical';
+import { $getRoot, $getSelection, $isRangeSelection, mergeRegister } from 'lexical';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import transformers from '../transformers';
@@ -69,11 +69,21 @@ import theme from '../theme';
 import { PersistDialog, type PersistEvent } from './PersistEditDialog';
 import StatusBanner from './StatusBanner';
 import { ShortcutHelpDialog } from './ShortcutHelpDialog';
-import { MarkdownImagePlugin } from '../plugins/MarkdownImagePlugin';
-import { MarkdownLinkPlugin } from '../plugins/MarkdownLinkPlugin';
+// Phase 0d: the three command-only React plugins
+// (`MarkdownImagePlugin`, `MarkdownLinkPlugin`,
+// `HorizontalRulePlugin`) and the generic `<ExtensionMounter>`
+// bridge are gone. We now call upstream Lexical's idiomatic
+// per-helper pattern (`registerClearEditor`-style) directly from
+// the small `<CommandHandlerRegistrations />` child below, which
+// pipes them through `mergeRegister` so a single `useEffect`
+// returns one combined unregister. The link plugin's JSX surface
+// (`<InsertLinkDialog />`) sits next to it as a direct composer
+// child — same composer subtree, so its `useLexicalComposerContext()`
+// still resolves to the same editor it dispatches against.
+import { InsertLinkDialog } from './Toolbar/InsertLink';
+import { registerHorizontalRule, registerMarkdownImage, registerMarkdownLink } from '../extensions';
 import { LinkEditor } from './LinkEditor/LinkEditor';
 import { ScrollableSection } from './ScrollableSection/ScrollableSection';
-import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import { FloatingToolbarPlugin } from '../plugins/FloatingToolbarPlugin';
 import { TableActionMenuPlugin } from '../plugins/TableActionMenuPlugin';
 import { LeaveGuardPlugin } from '../plugins/LeaveGuardPlugin';
@@ -337,10 +347,28 @@ const WysiwygShell: FC<WysiwygShellProps> = ({
     <PreviewPlugin compilePreview={compilePreview} />
     <DirtyTrackerPlugin />
     <ErrorHighlightPlugin />
-    <MarkdownImagePlugin />
-    <MarkdownLinkPlugin />
+    {/*
+      Phase 0d: replaces the former `<MarkdownImagePlugin />`,
+      `<MarkdownLinkPlugin />`, `<HorizontalRulePlugin />`, and
+      (transitionally) `<ExtensionMounter extensions={ROOT_EXTENSIONS} />`
+      mounts. `<CommandHandlerRegistrations />` calls the three
+      standalone `register*(editor)` helpers from
+      `src/extensions/` through `mergeRegister`, giving us a single
+      `useEffect` whose cleanup tears all three down in registration
+      order. Matches upstream Lexical's pattern (e.g.
+      `LexicalClearEditorPlugin`).
+    */}
+    <CommandHandlerRegistrations />
+    {/*
+      Phase 0b: the link dialog used to be rendered by
+      `<MarkdownLinkPlugin />`. With that wrapper gone, the dialog
+      is mounted directly here — same composer subtree, so its
+      `useLexicalComposerContext()` call still resolves to the
+      same editor it dispatches `INSERT_MARKDOWN_LINK_COMMAND`
+      against.
+    */}
+    <InsertLinkDialog />
     <LinkEditor />
-    <HorizontalRulePlugin />
     <FloatingToolbarPlugin />
     <TableActionMenuPlugin />
     {/*
@@ -359,6 +387,50 @@ const WysiwygShell: FC<WysiwygShellProps> = ({
     />
   </LexicalComposer>
 );
+
+/**
+ * Phase 0d — mounts the three command-handler register helpers
+ * from `src/extensions/` against the composer's editor.
+ *
+ * Why a child component rather than inlining a `useEffect` into
+ * `WysiwygShell`: `WysiwygShell` is an arrow-returning-JSX
+ * presentational component with no hook calls, and the
+ * `useLexicalComposerContext()` we need is only resolvable
+ * *inside* `<LexicalComposer>`. A tiny child component is the
+ * smallest hammer for both constraints, and matches the existing
+ * pattern in this file (`<WysiwygBridgeInstaller />` does the
+ * same trick).
+ *
+ * Why `mergeRegister` rather than three separate effects:
+ *
+ *   - Single `useEffect` means a single cleanup, which fires in
+ *     LIFO order per `mergeRegister` semantics. Three commands
+ *     register against the same editor; tearing them down in
+ *     reverse-of-registration order is the safe default.
+ *
+ *   - The dep array stays `[editor]` only — the three helper
+ *     identities are module-scoped imports, so they never change
+ *     and don't belong in deps. Lint rules that flag missing deps
+ *     won't complain because the helpers aren't reactive values.
+ *
+ * Adding a fourth command-handler extension here is a one-line
+ * change: import the helper, call it inside `mergeRegister(...)`.
+ */
+const CommandHandlerRegistrations: FC = () => {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(
+    () =>
+      mergeRegister(
+        registerHorizontalRule(editor),
+        registerMarkdownImage(editor),
+        registerMarkdownLink(editor)
+      ),
+    [editor]
+  );
+
+  return null;
+};
 
 interface WysiwygBridgeInstallerProps {
   seed: ModeBridgeSnapshot;

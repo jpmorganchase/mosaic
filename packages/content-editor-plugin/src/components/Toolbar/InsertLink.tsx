@@ -15,7 +15,10 @@ import { $getSelection, $isRangeSelection } from 'lexical';
 
 import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
-import { INSERT_MARKDOWN_LINK_COMMAND, InsertLinkPayload } from '../../plugins/MarkdownLinkPlugin';
+import {
+  INSERT_MARKDOWN_LINK_COMMAND,
+  InsertLinkPayload
+} from '../../extensions/MarkdownLinkExtension';
 import { useIsInsertingLink } from '../../EditorContext';
 import { SHORTCUTS } from '../../utils/shortcuts';
 import styles from './InsertLink.css';

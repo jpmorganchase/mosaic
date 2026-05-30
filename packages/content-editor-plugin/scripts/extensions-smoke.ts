@@ -43,6 +43,21 @@ import { defineExtension } from 'lexical';
 import { HorizontalRuleExtension } from '../src/extensions/HorizontalRuleExtension.ts';
 import { MarkdownImageExtension } from '../src/extensions/MarkdownImageExtension.ts';
 import { MarkdownLinkExtension } from '../src/extensions/MarkdownLinkExtension.ts';
+// Phase 0c — `DirtyTrackerExtension` and `ErrorHighlightExtension`
+// are deliberately NOT smoke-tested here. Both transitively import
+// from `../src/EditorContext` and `../src/utils/focusErrorRegistry`,
+// which use extensionless intra-source imports (correct for tsc +
+// esbuild). Node's `--experimental-strip-types` resolver doesn't
+// synthesize the `.ts` extension on transitive imports, so loading
+// either extension here fails with `ERR_MODULE_NOT_FOUND` on the
+// first hop into shared utilities. Switching to a TS loader (tsx,
+// @swc-node/register) would fix it at the cost of a new dev dep and
+// a script-runner choice that's load-bearing for one file. Not
+// worth it: the Phase-0c extensions get stronger runtime coverage
+// from the live editor mounting their `register*` helpers (see
+// `../src/plugins/DirtyTrackerPlugin.tsx`,
+// `../src/plugins/ErrorHighlightPlugin.tsx`), which exercises the
+// exact same code paths the smoke would have covered.
 
 interface SmokeResult {
   name: string;
@@ -89,10 +104,10 @@ const results: SmokeResult[] = [
   runSmoke('MarkdownLinkExtension', MarkdownLinkExtension)
 ];
 
-// Combined smoke: all three together under a single root, which is
-// the configuration the live editor will actually use after Phase 2.
-// Catches dependency-graph or name-collision issues that the
-// individual tests miss.
+// Combined smoke: all three together under a single root. Catches
+// dependency-graph or name-collision issues that the individual
+// tests miss. The Phase-0c extensions are excluded for the
+// transitive-import reason documented at the top of this file.
 const combinedResult = runSmoke(
   'all-three-combined',
   defineExtension({

@@ -1,33 +1,32 @@
 'use client';
 
 /**
- * Phase 0 — Extension API authoring for MarkdownImagePlugin.
+ * Extension API authoring for the markdown-image insertion command.
  *
- * Mirrors `HorizontalRuleExtension.ts`: same command-handler register
- * logic that lives in the React component (`MarkdownImagePlugin.tsx`),
- * packaged as a `LexicalExtension`.
+ * Pattern (post-Phase 0d) — matches upstream Lexical's
+ * `ClearEditorExtension` template:
+ *
+ *   1. `registerMarkdownImage(editor)` — standalone helper that
+ *      owns the command-registration logic and returns its own
+ *      unregister. Called from `Editor.tsx`'s
+ *      `<CommandHandlerRegistrations />` for the live editor.
+ *
+ *   2. `MarkdownImageExtension` — thin `defineExtension` wrapper
+ *      whose `register` field calls the helper. For headless
+ *      consumers via `buildEditorFromExtensions` and the smoke test.
  *
  * Command symbol ownership
  * ------------------------
  * `INSERT_MARKDOWN_IMAGE_COMMAND` and `InsertImagePayload` are
- * declared HERE, in the extension file, not in the React plugin
- * file. The React plugin file re-exports them for backwards
- * compatibility while it still exists, but the source of truth is
- * this extension. Rationale:
- *
- *   - The extension is the unit that owns the command's behaviour
- *     (the registered handler). Co-locating the symbol with the
- *     handler matches Lexical's own pattern (`TOGGLE_LINK_COMMAND`
- *     lives in `@lexical/link`, not in a separate `commands.ts`).
- *
- *   - In Path B's 0d step we delete the React plugin file
- *     entirely. Declaring the symbol there now would force a
- *     symbol-move during 0d that risks a stale-import-graph bug
- *     (something forgets to update its import path). Declaring it
- *     here from the start means 0d is a pure deletion.
+ * declared HERE — the extension is the unit that owns the
+ * command's behaviour, so its symbol lives next to its handler.
+ * Matches Lexical's own pattern (`TOGGLE_LINK_COMMAND` lives in
+ * `@lexical/link`, not in a separate `commands.ts`). Phase 0d
+ * deleted the old `plugins/MarkdownImagePlugin.tsx` re-export
+ * shim; all callers (`Toolbar/InsertImage.tsx`) import from this
+ * file directly.
  */
 
-import { defineExtension } from 'lexical';
 import {
   $createParagraphNode,
   $createTextNode,
@@ -35,7 +34,9 @@ import {
   $isRangeSelection,
   COMMAND_PRIORITY_EDITOR,
   createCommand,
-  type LexicalCommand
+  defineExtension,
+  type LexicalCommand,
+  type LexicalEditor
 } from 'lexical';
 
 export interface InsertImagePayload {
@@ -47,28 +48,36 @@ export const INSERT_MARKDOWN_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> =
   'INSERT_MARKDOWN_IMAGE_COMMAND'
 );
 
+/**
+ * Standalone register fn. Returns an unregister for teardown.
+ *
+ * Handler semantics (preserved verbatim from the original React
+ * plugin): wrap the markdown image literal in a fresh paragraph
+ * and `selection.insertNodes` it. The `url !== undefined && alt
+ * !== undefined` guard is defence-in-depth — the toolbar dialog
+ * yup-validates both to non-empty strings before dispatch, so the
+ * null branch is unreachable in practice.
+ */
+export function registerMarkdownImage(editor: LexicalEditor): () => void {
+  return editor.registerCommand(
+    INSERT_MARKDOWN_IMAGE_COMMAND,
+    ({ url, alt }: InsertImagePayload) => {
+      editor.update(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection) && url !== undefined && alt !== undefined) {
+          const imageNode = $createParagraphNode().append($createTextNode(`![${alt}](${url})`));
+          if (selection.focus.getNode().canInsertTextAfter()) {
+            selection.insertNodes([imageNode]);
+          }
+        }
+      });
+      return true;
+    },
+    COMMAND_PRIORITY_EDITOR
+  );
+}
+
 export const MarkdownImageExtension = defineExtension({
   name: 'mosaic/markdown-image',
-  register: editor =>
-    editor.registerCommand(
-      INSERT_MARKDOWN_IMAGE_COMMAND,
-      ({ url, alt }: InsertImagePayload) => {
-        editor.update(() => {
-          const selection = $getSelection();
-          // Same guard as the React plugin: url/alt are typed as
-          // `string | null` but the toolbar dialog yup-validates
-          // them to strings before dispatch, so the null branch is
-          // unreachable in practice. The check stays as defence in
-          // depth.
-          if ($isRangeSelection(selection) && url !== undefined && alt !== undefined) {
-            const imageNode = $createParagraphNode().append($createTextNode(`![${alt}](${url})`));
-            if (selection.focus.getNode().canInsertTextAfter()) {
-              selection.insertNodes([imageNode]);
-            }
-          }
-        });
-        return true;
-      },
-      COMMAND_PRIORITY_EDITOR
-    )
+  register: editor => registerMarkdownImage(editor)
 });

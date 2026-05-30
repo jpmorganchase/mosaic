@@ -17,7 +17,7 @@ import { Dialog } from '../Dialog';
 import {
   INSERT_MARKDOWN_IMAGE_COMMAND,
   InsertImagePayload
-} from '../../plugins/MarkdownImagePlugin';
+} from '../../extensions/MarkdownImageExtension';
 import styles from './InsertImage.css';
 
 const validationSchema = object({
