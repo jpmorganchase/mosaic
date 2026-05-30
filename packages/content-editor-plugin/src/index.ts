@@ -7,11 +7,13 @@ export {
   useErrorMessage,
   useIsCompiling,
   useIsInsertingLink,
+  useLineMap,
   usePreviewContent,
   useSaveState,
   useSetIsCompiling,
   useSetPreviewContent,
   type EditorUser,
   type EditorContextValue,
+  type LineMapEntry,
   type SaveState
 } from './EditorContext';

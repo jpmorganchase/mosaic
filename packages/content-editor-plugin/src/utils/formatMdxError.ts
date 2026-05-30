@@ -55,6 +55,13 @@ function deriveHint(message: string): string | undefined {
 /**
  * `serialize`'s error is a plain object (vfile-shaped) with `message`
  * and either top-level `line`/`column` or a nested `place.start`.
+ *
+ * In Server Action contexts the error has been re-serialised across
+ * the RSC boundary and most non-enumerable / class-instance fields
+ * are stripped — only `message` reliably survives. Callers therefore
+ * combine this with `parseLocationFromMessage` (which parses the
+ * `(line:col)` suffix MDX appends to its error messages) to recover
+ * a location whenever the structured fields are missing.
  */
 function extractLocation(err: unknown): { line?: number; column?: number } {
   if (!err || typeof err !== 'object') return {};
@@ -67,6 +74,20 @@ function extractLocation(err: unknown): { line?: number; column?: number } {
     return { line: place.start.line, column: place.start.column };
   }
   return {};
+}
+
+// Matches MDX/vfile location suffixes:
+//   "(12:3)"          — single point
+//   "(12:3-12:7)"     — range
+//   "(12:3-13:1)"     — multi-line range
+// Anchored to the end of the string so we don't accidentally match
+// a "(1:2)" inside the body of the error message.
+const LOCATION_SUFFIX = /\((\d+):(\d+)(?:-\d+:\d+)?\)\s*$/;
+
+function parseLocationFromMessage(message: string): { line?: number; column?: number } {
+  const match = LOCATION_SUFFIX.exec(message);
+  if (!match) return {};
+  return { line: Number(match[1]), column: Number(match[2]) };
 }
 
 function rawMessage(err: unknown): string {
@@ -89,20 +110,39 @@ function rawMessage(err: unknown): string {
 export function formatMdxError(err: unknown): EditorError {
   const raw = rawMessage(err);
 
-  // Strip noisy compiler prefixes and the trailing "More information:"
-  // URL — the URL isn't clickable in the banner and the prefix tells
-  // the user nothing they don't already know.
+  // The library wraps errors as:
+  //   [next-mdx-remote-client] error compiling MDX:
+  //   <original mdx message ending in (line:col)>
+  //
+  //   <code frame>
+  //
+  //   More information: https://...
+  //
+  // We only want the original message (first non-prefix line) for the
+  // banner; the code frame is helpful debug context but too noisy for
+  // the headline and is preserved in `raw` for the "Show details"
+  // disclosure.
   let message = raw;
   for (const re of NOISY_PREFIXES) {
     message = message.replace(re, '');
   }
+  // Keep only the first line — everything after is codeframe + docs URL.
+  message = message.split('\n', 1)[0];
   message = message.replace(TRAILING_DOCS_URL, '').trim();
+  // Pull line/col out of the suffix BEFORE stripping it, so the
+  // structured fields and the displayed text stay in sync. We prefer
+  // the structured fields on the original error object when they
+  // exist (server-side they often do) and only fall back to parsing
+  // when the RSC boundary has stripped them — see extractLocation.
+  const fromObject = extractLocation(err);
+  const fromMessage = parseLocationFromMessage(message);
+  const line = fromObject.line ?? fromMessage.line;
+  const column = fromObject.column ?? fromMessage.column;
+  message = message.replace(LOCATION_SUFFIX, '').trim();
   // Strip trailing period for nicer headline composition.
   message = message.replace(/\.$/, '');
 
-  const { line, column } = extractLocation(err);
   const hint = deriveHint(message);
 
   return { message, line, column, hint, raw };
 }
-

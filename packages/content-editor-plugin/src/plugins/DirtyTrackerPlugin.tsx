@@ -45,4 +45,3 @@ export const DirtyTrackerPlugin = () => {
 
   return null;
 };
-

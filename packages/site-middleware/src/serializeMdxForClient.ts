@@ -14,6 +14,7 @@
  * Server-only — importing this from a client component throws.
  */
 import { serialize, type SerializeResult } from 'next-mdx-remote-client/serialize';
+import { compile } from '@mdx-js/mdx';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 
@@ -77,6 +78,47 @@ export async function serializeMdxForClient<
       ...existingScope,
       meta: 'meta' in existingScope ? existingScope.meta : result.frontmatter
     };
+  }
+
+  // `next-mdx-remote-client` wraps the underlying MDX compile error in
+  // a plain `Error`, which loses the structured `line` / `column` /
+  // `place` that the original `VFileMessage` carried. That metadata is
+  // essential for the editor's "jump to error" affordance, so when we
+  // see an error, re-run the bare `@mdx-js/mdx` compiler on the same
+  // source to recover the position and attach it to the returned
+  // error.
+  //
+  // Cost: a second compile *only* on error. Errors are rare relative
+  // to keystrokes; the duplicate is well worth the precise location.
+  if ('error' in result && result.error) {
+    try {
+      await compile(source, {
+        remarkPlugins: [remarkGfm as any, ...remarkPlugins],
+        rehypePlugins: [codeBlocks as any, rehypeSlug as any, ...rehypePlugins]
+      });
+    } catch (locationProbe) {
+      const probe = locationProbe as {
+        line?: number;
+        column?: number;
+        place?: { line?: number; column?: number };
+        reason?: string;
+      };
+      // Attach as own enumerable properties so they survive the RSC
+      // serialisation boundary (class-instance fields and getters do
+      // not).
+      const err = result.error as Error & {
+        line?: number;
+        column?: number;
+        place?: { line?: number; column?: number };
+        reason?: string;
+      };
+      if (typeof probe.line === 'number') err.line = probe.line;
+      if (typeof probe.column === 'number') err.column = probe.column;
+      if (probe.place && typeof probe.place === 'object') {
+        err.place = { line: probe.place.line, column: probe.place.column };
+      }
+      if (typeof probe.reason === 'string') err.reason = probe.reason;
+    }
   }
 
   return result;

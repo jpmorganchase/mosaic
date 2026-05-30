@@ -76,7 +76,7 @@ export const AppHeaderControls: React.FC = () => {
       )}
       <Menu placement="bottom-end">
         <MenuTrigger>
-          <Button className={styles.menuButton} aria-label="Select an action" variant="secondary">
+          <Button aria-label="Select an action" variant="secondary">
             <Icon aria-hidden name="microMenu" />
           </Button>
         </MenuTrigger>

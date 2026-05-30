@@ -11,6 +11,29 @@ globalStyle('div[contenteditable]', {
   outline: 'none'
 });
 
+// Applied imperatively by ErrorHighlightPlugin to the Lexical block
+// whose markdown line matches the current compile error. Uses a
+// globalStyle (not a vanilla-extract scoped class) because the class
+// is added directly to a Lexical-owned DOM element rather than a JSX
+// element under our control. Keep the class name in sync with
+// ERROR_CLASS in plugins/ErrorHighlightPlugin.tsx.
+globalStyle('.mosaic-editor-error-line', {
+  position: 'relative',
+  // A wavy underline tracks each character without forcing layout —
+  // text-decoration-line is preferred over a border-bottom because the
+  // latter would shift adjacent content by a pixel and cause visible
+  // jitter as the error appears / disappears.
+  textDecorationLine: 'underline',
+  textDecorationStyle: 'wavy',
+  textDecorationColor: 'var(--salt-status-error-foreground-informative)',
+  textDecorationThickness: 'var(--salt-size-fixed-200)',
+  // A faint tinted background helps the eye locate the block when the
+  // underline alone is hidden by long content, without obscuring the
+  // text colour.
+  backgroundColor: 'var(--salt-status-error-background)',
+  borderRadius: 'var(--salt-palette-corner-weaker)'
+});
+
 export default {
   root: style({
     display: 'grid',

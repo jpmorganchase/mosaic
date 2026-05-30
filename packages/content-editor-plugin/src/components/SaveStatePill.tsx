@@ -16,7 +16,7 @@
  * on unmount and on state-change away from `saved`.
  */
 import { useEffect, useState } from 'react';
-import { Spinner } from '@salt-ds/core';
+import { Spinner, Tag } from '@salt-ds/core';
 
 import { useSaveState } from '../EditorContext';
 
@@ -35,15 +35,7 @@ function formatRelative(then: number, now: number): string {
 }
 
 const baseStyles = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  paddingInline: 10,
-  paddingBlock: 4,
-  borderRadius: 12,
-  fontSize: 12,
-  lineHeight: 1.4,
-  fontWeight: 500
+  display: 'inline-flex'
 } as const;
 
 export const SaveStatePill = () => {
@@ -63,37 +55,36 @@ export const SaveStatePill = () => {
 
   if (saveState === 'dirty') {
     return (
-      <div
+      <Tag
         role="status"
         aria-live="polite"
         data-state="dirty"
+        bordered
+        category={2}
         style={{
-          ...baseStyles,
-          background: 'var(--salt-status-warning-background, #FEF3C7)',
-          color: 'var(--salt-status-warning-foreground, #92400E)'
+          ...baseStyles
         }}
       >
         <span aria-hidden>●</span>
         <span>Edited</span>
-      </div>
+      </Tag>
     );
   }
 
   if (saveState === 'saving') {
     return (
-      <div
+      <Tag
         role="status"
         aria-live="polite"
+        bordered
         data-state="saving"
         style={{
-          ...baseStyles,
-          background: 'var(--salt-status-info-background, #DBEAFE)',
-          color: 'var(--salt-status-info-foreground, #1E3A8A)'
+          ...baseStyles
         }}
       >
         <Spinner size="small" />
         <span>Saving…</span>
-      </div>
+      </Tag>
     );
   }
 
@@ -115,4 +106,3 @@ export const SaveStatePill = () => {
     </div>
   );
 };
-

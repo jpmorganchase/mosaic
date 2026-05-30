@@ -10,8 +10,17 @@
  * into per-editor contexts also means unmounting `<Editor>` (e.g.
  * leaving EDIT mode) garbage-collects all of it automatically.
  */
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from 'react';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { NodeKey } from 'lexical';
 
 export type EditorUser = { sid: string; displayName: string; email: string };
 
@@ -69,6 +78,20 @@ interface InsertLinkContextValue {
 }
 const InsertLinkContext = createContext<InsertLinkContextValue | null>(null);
 
+// --- Shortcut-help dialog flag (Phase 6.1) ----------------------------
+//
+// Two callers need to mutate this — the toolbar's `?` button and the
+// global `Mod+/` shortcut — and one consumer renders the dialog.
+// Hoisting to context means neither caller has to know about the
+// dialog's internal state.
+
+interface ShortcutHelpContextValue {
+  isShortcutHelpOpen: boolean;
+  setShortcutHelpOpen: (value: boolean) => void;
+  toggleShortcutHelp: () => void;
+}
+const ShortcutHelpContext = createContext<ShortcutHelpContextValue | null>(null);
+
 // --- Compile-in-flight flag (high-frequency-ish: toggles around every
 // preview-action invocation, but boolean so cheap) ---------------------
 
@@ -109,6 +132,31 @@ interface SaveContextValue {
 }
 const SaveContext = createContext<SaveContextValue | null>(null);
 
+// --- Line map (ref-backed, no re-render trigger) ----------------------
+//
+// `ErrorHighlightPlugin` needs to translate a compile error's
+// `line: number` -> the Lexical block `NodeKey` that produced that
+// line. `PreviewPlugin` builds the map on every successful compile.
+//
+// Storing the map in React state would re-render every consumer of
+// this context on every keystroke. Instead we expose a ref-style
+// getter / setter pair so the writer doesn't trigger any render; the
+// reader (ErrorHighlightPlugin) only consults it lazily when an error
+// is present.
+
+export interface LineMapEntry {
+  /** 1-based line → top-level block key. */
+  lineToKey: Map<number, NodeKey>;
+  /** The exact markdown string the map describes. */
+  markdown: string;
+}
+
+interface LineMapContextValue {
+  getLineMap: () => LineMapEntry | null;
+  setLineMap: (next: LineMapEntry | null) => void;
+}
+const LineMapContext = createContext<LineMapContextValue | null>(null);
+
 export interface EditorProviderProps {
   initialUser?: EditorUser;
   children: ReactNode;
@@ -119,6 +167,8 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   const [error, setError] = useState<EditorError | undefined>(undefined);
   const [user, setUser] = useState<EditorUser | undefined>(initialUser);
   const [isInsertingLink, setIsInsertingLink] = useState(false);
+  const [isShortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+  const toggleShortcutHelp = useCallback(() => setShortcutHelpOpen(v => !v), []);
   const [isCompiling, setIsCompiling] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('clean');
   const [lastSavedAt, setLastSavedAt] = useState<number | undefined>(undefined);
@@ -138,6 +188,15 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   }, []);
   const markSaveFailed = useCallback(() => setSaveState('dirty'), []);
 
+  // Line map lives in a ref so PreviewPlugin can update it on every
+  // compile without re-rendering any consumer. See LineMapContext
+  // declaration above for rationale.
+  const lineMapRef = useRef<LineMapEntry | null>(null);
+  const getLineMap = useCallback(() => lineMapRef.current, []);
+  const setLineMap = useCallback((next: LineMapEntry | null) => {
+    lineMapRef.current = next;
+  }, []);
+
   // Each context value is memoised independently so changes to one
   // slice don't invalidate the others. Setters are stable references
   // returned by useState, so the dep arrays only need the value.
@@ -145,14 +204,15 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
     () => ({ previewContent, setPreviewContent }),
     [previewContent]
   );
-  const errorValue = useMemo<ErrorContextValue>(
-    () => ({ error, setError }),
-    [error]
-  );
+  const errorValue = useMemo<ErrorContextValue>(() => ({ error, setError }), [error]);
   const userValue = useMemo<UserContextValue>(() => ({ user, setUser }), [user]);
   const insertLinkValue = useMemo<InsertLinkContextValue>(
     () => ({ isInsertingLink, setIsInsertingLink }),
     [isInsertingLink]
+  );
+  const shortcutHelpValue = useMemo<ShortcutHelpContextValue>(
+    () => ({ isShortcutHelpOpen, setShortcutHelpOpen, toggleShortcutHelp }),
+    [isShortcutHelpOpen, toggleShortcutHelp]
   );
   const compileValue = useMemo<CompileContextValue>(
     () => ({ isCompiling, setIsCompiling }),
@@ -162,6 +222,10 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
     () => ({ saveState, lastSavedAt, markDirty, markSaving, markSaved, markSaveFailed }),
     [saveState, lastSavedAt, markDirty, markSaving, markSaved, markSaveFailed]
   );
+  const lineMapValue = useMemo<LineMapContextValue>(
+    () => ({ getLineMap, setLineMap }),
+    [getLineMap, setLineMap]
+  );
 
   return (
     <UserContext.Provider value={userValue}>
@@ -169,7 +233,11 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
         <InsertLinkContext.Provider value={insertLinkValue}>
           <SaveContext.Provider value={saveValue}>
             <CompileContext.Provider value={compileValue}>
-              <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
+              <LineMapContext.Provider value={lineMapValue}>
+                <ShortcutHelpContext.Provider value={shortcutHelpValue}>
+                  <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
+                </ShortcutHelpContext.Provider>
+              </LineMapContext.Provider>
             </CompileContext.Provider>
           </SaveContext.Provider>
         </InsertLinkContext.Provider>
@@ -194,13 +262,14 @@ export const useSetPreviewContent = () =>
   useRequiredContext(PreviewContext, 'useSetPreviewContent').setPreviewContent;
 export const useErrorMessage = () => useRequiredContext(ErrorContext, 'useErrorMessage');
 export const useEditorUser = () => useRequiredContext(UserContext, 'useEditorUser');
-export const useIsInsertingLink = () =>
-  useRequiredContext(InsertLinkContext, 'useIsInsertingLink');
+export const useIsInsertingLink = () => useRequiredContext(InsertLinkContext, 'useIsInsertingLink');
 export const useIsCompiling = () =>
   useRequiredContext(CompileContext, 'useIsCompiling').isCompiling;
 export const useSetIsCompiling = () =>
   useRequiredContext(CompileContext, 'useSetIsCompiling').setIsCompiling;
 export const useSaveState = () => useRequiredContext(SaveContext, 'useSaveState');
+export const useLineMap = () => useRequiredContext(LineMapContext, 'useLineMap');
+export const useShortcutHelp = () => useRequiredContext(ShortcutHelpContext, 'useShortcutHelp');
 
 export type EditorContextValue = PreviewContextValue &
   ErrorContextValue &
@@ -208,11 +277,3 @@ export type EditorContextValue = PreviewContextValue &
   InsertLinkContextValue &
   CompileContextValue &
   SaveContextValue;
-
-
-
-
-
-
-
-

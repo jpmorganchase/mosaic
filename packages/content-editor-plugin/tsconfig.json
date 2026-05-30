@@ -2,7 +2,17 @@
   "extends": "../../tsconfig.bundle.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    // Lexical 0.45 packages expose their entry points exclusively via the
+    // `exports` field in their package.json (e.g.
+    // `@lexical/react/LexicalComposerContext`). The shared
+    // tsconfig.bundle.json sets moduleResolution to the legacy "node"
+    // strategy which does not understand `exports` subpaths, so every
+    // `@lexical/react/Lexical*` import would fail to resolve. We override
+    // here (rather than in the shared config) because this is the only
+    // package in the workspace that depends on Lexical; "bundler" matches
+    // the output format produced by scripts/bundle.mjs.
+    "moduleResolution": "bundler"
   },
   "include": ["src"]
 }

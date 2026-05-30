@@ -204,6 +204,8 @@ export type saltIconNames =
   | 'headphonesDisabledSolid'
   | 'headphonesSolid'
   | 'help'
+  | 'helpCircle'
+  | 'helpCircleSolid'
   | 'helpSolid'
   | 'hidden'
   | 'hiddenSolid'

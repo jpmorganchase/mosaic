@@ -33,8 +33,6 @@ function DensitySetter({ setDensity }: { setDensity: Dispatch<SetStateAction<Den
   return null;
 }
 
-// This is a direct copy of Mosaic's ThemeProvider + injecting density, so that we can control top level provider's density,
-// which impacts both children as well as portal (e.g. mobile menu drawer)
 export function ThemeProvider({ themeClassName, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();

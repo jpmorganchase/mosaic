@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface IsomorphicSuspenseProps {
-  fallback: JSX.Element;
+  fallback: React.JSX.Element;
 }
 
 export const IsomorphicSuspense: React.FC<React.PropsWithChildren<IsomorphicSuspenseProps>> = ({

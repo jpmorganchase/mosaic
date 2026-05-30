@@ -125,6 +125,7 @@ export function InsertBlockDropdown({
       selected={[source[selectedBlockSourceIndex]]}
       valueToString={itemToString}
       onSelectionChange={handleSelect}
+      bordered
       style={{ width: 132 }}
     >
       {source.map(item => (

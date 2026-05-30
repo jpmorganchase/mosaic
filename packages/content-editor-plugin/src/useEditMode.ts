@@ -54,5 +54,3 @@ export function useEditMode(): EditMode {
 
   return { isEditing, startEditing, stopEditing };
 }
-
-

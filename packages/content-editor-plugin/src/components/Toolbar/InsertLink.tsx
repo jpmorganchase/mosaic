@@ -17,6 +17,7 @@ import { ToolbarButton } from './ToolbarButton';
 import { Dialog } from '../Dialog';
 import { INSERT_MARKDOWN_LINK_COMMAND, InsertLinkPayload } from '../../plugins/MarkdownLinkPlugin';
 import { useIsInsertingLink } from '../../EditorContext';
+import { SHORTCUTS } from '../../utils/shortcuts';
 import styles from './InsertLink.css';
 
 const validationSchema = object({
@@ -31,6 +32,7 @@ export const InsertLinkButton = () => {
       active={isInsertingLink}
       onClick={() => setIsInsertingLink(true)}
       label="Insert Link"
+      shortcut={SHORTCUTS.insertLink}
     >
       <Icon name="linked" />
     </ToolbarButton>

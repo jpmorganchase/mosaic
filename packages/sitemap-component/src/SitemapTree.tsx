@@ -71,7 +71,7 @@ export const Sitemap: React.FC<SitemapTreeProps> = ({
   ...rest
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const dataRef = useRef<string[]>();
+  const dataRef = useRef<string[]>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [namespaces, setNamespaces] = useState<string[]>([]);
   const [pageCount, setPageCount] = useState(0);
