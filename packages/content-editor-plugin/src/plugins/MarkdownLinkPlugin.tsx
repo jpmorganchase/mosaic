@@ -6,20 +6,27 @@ import {
   $insertNodes,
   $isRangeSelection,
   $isTextNode,
-  COMMAND_PRIORITY_EDITOR,
-  createCommand,
-  LexicalCommand
+  COMMAND_PRIORITY_EDITOR
 } from 'lexical';
 import { useCallback, useEffect } from 'react';
 
 import { InsertLinkDialog } from '../components/Toolbar/InsertLink';
+// Command symbol + payload moved to the extension file in Phase 0a
+// of the Extension API migration. Re-exported here so existing
+// callsites (`Toolbar/InsertLink.tsx`, the ⌘K keyboard shortcut)
+// keep working without an import-path change. This file (and the
+// re-export) will be deleted in Phase 0d once the live editor is on
+// `<LexicalExtensionComposer>` and the React plugin is no longer
+// mounted.
+import {
+  INSERT_MARKDOWN_LINK_COMMAND,
+  type InsertLinkPayload
+} from '../extensions/MarkdownLinkExtension';
 
-export interface InsertLinkPayload {
-  url?: string;
-  text?: string;
-}
-
-export const INSERT_MARKDOWN_LINK_COMMAND: LexicalCommand<InsertLinkPayload> = createCommand();
+export {
+  INSERT_MARKDOWN_LINK_COMMAND,
+  type InsertLinkPayload
+} from '../extensions/MarkdownLinkExtension';
 
 function useMarkdownLinkPlugin() {
   const [editor] = useLexicalComposerContext();

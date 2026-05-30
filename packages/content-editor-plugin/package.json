@@ -32,7 +32,8 @@
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint .",
-    "dev": "node ../../scripts/bundle.mjs watch"
+    "dev": "node ../../scripts/bundle.mjs watch",
+    "extensions:smoke": "node --experimental-strip-types --no-warnings scripts/extensions-smoke.ts"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
@@ -43,6 +44,7 @@
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
     "@lexical/code": "^0.45.0",
+    "@lexical/extension": "^0.45.0",
     "@lexical/link": "^0.45.0",
     "@lexical/list": "^0.45.0",
     "@lexical/markdown": "^0.45.0",

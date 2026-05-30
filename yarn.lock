@@ -1824,6 +1824,7 @@ __metadata:
     "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@lexical/code": "npm:^0.45.0"
+    "@lexical/extension": "npm:^0.45.0"
     "@lexical/link": "npm:^0.45.0"
     "@lexical/list": "npm:^0.45.0"
     "@lexical/markdown": "npm:^0.45.0"
@@ -2532,7 +2533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lexical/extension@npm:0.45.0":
+"@lexical/extension@npm:0.45.0, @lexical/extension@npm:^0.45.0":
   version: 0.45.0
   resolution: "@lexical/extension@npm:0.45.0"
   dependencies:

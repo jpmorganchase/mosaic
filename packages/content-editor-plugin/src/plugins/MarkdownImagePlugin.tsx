@@ -4,18 +4,26 @@ import {
   $createTextNode,
   $getSelection,
   $isRangeSelection,
-  COMMAND_PRIORITY_EDITOR,
-  createCommand,
-  LexicalCommand
+  COMMAND_PRIORITY_EDITOR
 } from 'lexical';
 import { useCallback, useEffect } from 'react';
 
-export interface InsertImagePayload {
-  url: string | null;
-  alt: string | null;
-}
+// Command symbol + payload moved to the extension file in Phase 0a
+// of the Extension API migration. Re-exported here so existing
+// callsites (`Toolbar/InsertImage.tsx`, the toolbar dialog) keep
+// working without an import-path change. This file (and the
+// re-export) will be deleted in Phase 0d once the live editor is on
+// `<LexicalExtensionComposer>` and the React plugin is no longer
+// mounted.
+import {
+  INSERT_MARKDOWN_IMAGE_COMMAND,
+  type InsertImagePayload
+} from '../extensions/MarkdownImageExtension';
 
-export const INSERT_MARKDOWN_IMAGE_COMMAND: LexicalCommand<InsertImagePayload> = createCommand();
+export {
+  INSERT_MARKDOWN_IMAGE_COMMAND,
+  type InsertImagePayload
+} from '../extensions/MarkdownImageExtension';
 
 function useMarkdownImagePlugin() {
   const [editor] = useLexicalComposerContext();
