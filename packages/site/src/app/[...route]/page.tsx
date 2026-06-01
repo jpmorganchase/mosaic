@@ -46,6 +46,7 @@ import {
 } from '@jpmorganchase/mosaic-site-middleware';
 
 import { auth } from '../../auth';
+import { AUTH_ENABLED } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
 import { EditorBody } from './EditorBody';
@@ -344,7 +345,13 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Auth is required for both the edit and the create branch.
   // Compute once + share the resulting session promise so we
   // never pay for two `auth()` calls in a single request.
-  const authPossible = (editPossible || newPossible) && isWritableSource;
+  //
+  // `AUTH_ENABLED` is the deployment-wide switch (see `src/auth.ts`).
+  // When false, the editor is unreachable end-to-end: `auth()` is the
+  // no-op stub that returns `null` anyway, but short-circuiting here
+  // avoids importing the session-resolution path at all on no-auth
+  // deployments (helping bundlers tree-shake more aggressively).
+  const authPossible = AUTH_ENABLED && (editPossible || newPossible) && isWritableSource;
   const sessionPromise = authPossible ? auth() : Promise.resolve(null);
   // Raw-source fetch is only meaningful for the edit branch.
   // For the create branch we synthesise a raw envelope below

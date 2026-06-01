@@ -39,6 +39,8 @@ import { initializeStore, StoreProvider, useCreateStore } from '@jpmorganchase/m
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
 
+import { AUTH_ENABLED } from '../auth';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   // `<SessionProvider>` is rendered without a `session` prop so the
   // client fetches it lazily via `/api/auth/session` after mount. This
@@ -48,19 +50,23 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // `error.tsx` and surface as Next's generic "A server error
   // occurred" fallback).
   //
+  // When `AUTH_ENABLED` is false the entire `<SessionProvider>` branch
+  // (and the `next-auth/react` client runtime it pulls in) is skipped.
+  // The `AUTH_ENABLED` constant is build-time-constant, so bundlers can
+  // tree-shake the `SessionProvider` import out of no-auth deployments.
+  //
   // Default-seeded store so the layout's `ThemeProvider`
   // (`useColorMode()`) always has a store in context — required even
   // for not-found and error renders. `useCreateStore({})` is fine
   // here because the layout-level store doesn't carry per-route data
   // that would cause a hydration mismatch.
   const createStore = useCreateStore({});
-  return (
-    <SessionProvider>
-      <StoreProvider value={createStore()}>
-        <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
-      </StoreProvider>
-    </SessionProvider>
+  const tree = (
+    <StoreProvider value={createStore()}>
+      <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
+    </StoreProvider>
   );
+  return AUTH_ENABLED ? <SessionProvider>{tree}</SessionProvider> : tree;
 }
 
 /**
