@@ -1,5 +1,6 @@
 import { useIsomorphicLayoutEffect } from '@salt-ds/core';
-import { Button, Icon } from '@jpmorganchase/mosaic-components';
+import { Button } from '../../Button';
+import { Icon } from '../../Icon';
 import { clsx } from 'clsx';
 import {
   type ComponentPropsWithoutRef,
