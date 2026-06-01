@@ -1805,7 +1805,9 @@ __metadata:
   dependencies:
     "@floating-ui/react": "npm:^0.26.6"
     "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-icons": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@lexical/code": "npm:^0.45.0"
     "@lexical/extension": "npm:^0.45.0"
     "@lexical/link": "npm:^0.45.0"
@@ -1998,7 +2000,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware":
+"@jpmorganchase/mosaic-site-middleware@npm:^0.1.0-beta.98, @jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware":
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware"
   dependencies:
@@ -2053,11 +2055,13 @@ __metadata:
     "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-layouts": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-site-middleware": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-site-preset-styles": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-sitemap-component": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@playwright/test": "npm:^1.56.1"
     "@salt-ds/core": "npm:^1.63.0"
     "@types/node": "npm:^24.0.0"
@@ -2078,6 +2082,7 @@ __metadata:
   resolution: "@jpmorganchase/mosaic-sitemap-component@workspace:packages/sitemap-component"
   dependencies:
     "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@salt-ds/core": "npm:^1.63.0"
     concurrently: "npm:^7.1.0"
     d3: "npm:^7.7.0"
