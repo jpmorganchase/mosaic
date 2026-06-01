@@ -82,7 +82,7 @@
     "resize-observer-polyfill": "1.5.1",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "@types/swagger-ui-react": "^5.0.0",
