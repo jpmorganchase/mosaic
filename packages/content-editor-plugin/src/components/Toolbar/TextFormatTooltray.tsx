@@ -12,12 +12,12 @@ import { $isListNode, ListNode } from '@lexical/list';
 import { $getNearestNodeOfType } from '@lexical/utils';
 import { $isHeadingNode } from '@lexical/rich-text';
 import { $isCodeNode } from '@lexical/code';
+import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './ToolbarButton';
 import { InsertBlockDropdown } from './InsertBlockDropdown';
 import { SHORTCUTS } from '../../utils/shortcuts';
-import { ApiIcon, TextBoldIcon, TextItalicsIcon } from '@salt-ds/icons';
 
 export function TextFormatTooltray({ floating = false }) {
   const [editor] = useLexicalComposerContext();
@@ -100,7 +100,7 @@ export function TextFormatTooltray({ floating = false }) {
           label="Bold"
           shortcut={SHORTCUTS.bold}
         >
-          <TextBoldIcon aria-hidden />
+          <Icon name="textBold" aria-hidden />
         </ToolbarButton>
         <ToolbarButton
           active={isItalic}
@@ -108,10 +108,10 @@ export function TextFormatTooltray({ floating = false }) {
           label="Italic"
           shortcut={SHORTCUTS.italic}
         >
-          <TextItalicsIcon aria-hidden />
+          <Icon name="textItalics" aria-hidden />
         </ToolbarButton>
         <ToolbarButton active={isCode} onClick={() => handleFormat('code')} label="Inline Code">
-          <ApiIcon aria-hidden />
+          <Icon name="api" aria-hidden />
         </ToolbarButton>
       </Tooltray>
     </>

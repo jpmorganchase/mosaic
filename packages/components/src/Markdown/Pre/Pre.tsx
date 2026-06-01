@@ -1,5 +1,5 @@
-import { Button, useIsomorphicLayoutEffect } from '@salt-ds/core';
-import { CopyIcon } from '@salt-ds/icons';
+import { useIsomorphicLayoutEffect } from '@salt-ds/core';
+import { Button, Icon } from '@jpmorganchase/mosaic-components';
 import { clsx } from 'clsx';
 import {
   type ComponentPropsWithoutRef,
@@ -69,7 +69,7 @@ export const Pre = forwardRef<HTMLDivElement, PreProps>(function Pre(
         className={styles.copyButton}
         onClick={handleClickCopy}
       >
-        <CopyIcon aria-hidden />
+        <Icon name="copy" aria-hidden />
       </Button>
       <div
         className={styles.preCode}

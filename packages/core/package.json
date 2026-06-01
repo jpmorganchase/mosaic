@@ -43,5 +43,8 @@
     "memfs": "^4.0.0",
     "rxjs": "^7.5.5",
     "unionfs": "^4.4.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
   }
 }
