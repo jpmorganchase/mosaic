@@ -10,6 +10,7 @@
  */
 import classnames from 'clsx';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import '@jpmorganchase/mosaic-sitemap-component/index.css';
@@ -21,7 +22,15 @@ import { resolveSiteOrigin } from '../lib/siteOrigin';
 import { LiveReload } from './LiveReload';
 import { Providers } from './providers';
 
-// Theme-mode script injected at the top of <body> to prevent dark-mode FOUC.
+// Theme-mode script injected before hydration to prevent dark-mode FOUC.
+// Rendered via `next/script` with `strategy="beforeInteractive"` so Next
+// inlines it into the document `<head>` at SSR and does NOT re-render it
+// through React on the client. A bare `<script dangerouslySetInnerHTML>`
+// inside the JSX tree trips React 19's "scripts inside React components
+// are never executed when rendering on the client" warning during
+// client-side re-renders (HMR, route transitions), even though the SSR
+// emit is correct. `beforeInteractive` is what this script needs anyway —
+// it must run before any React render reads `data-mode`.
 const themePrefScript = `
   try {
     const theme = JSON.parse(localStorage.getItem("mosaic-theme-pref")).state.colorMode || "light";

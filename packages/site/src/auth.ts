@@ -39,11 +39,18 @@ import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 
 /**
- * Deployment-wide auth switch. Build-time constant — when this is
+ * Deployment-wide auth switch. **Server-side only.** When this is
  * `false`, the `if (AUTH_ENABLED)` block below dead-codes and the
- * stub exports below are what consumers receive. Static analysis
- * lets bundlers tree-shake the `next-auth/react` client subgraph
- * out of `<SessionProvider>` callers too (see `app/providers.tsx`).
+ * stub exports below are what server callers receive (no `next-auth`
+ * runtime cost on the server, no `AUTH_SECRET` required).
+ *
+ * Note: `process.env.AUTH_SECRET` and `MOSAIC_AUTH_ENABLED` are NOT
+ * `NEXT_PUBLIC_` vars, so on the client both resolve to `undefined`
+ * and `AUTH_ENABLED` always evaluates to `false`. The client must
+ * therefore NOT use this flag to gate `<SessionProvider>` — see
+ * `app/providers.tsx`, which mounts the provider unconditionally and
+ * relies on the server's stub 404 handlers to make `useSession()`
+ * settle to `null` on no-auth deployments.
  */
 export const AUTH_ENABLED =
   process.env.MOSAIC_AUTH_ENABLED === 'true' ||
