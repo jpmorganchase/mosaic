@@ -1,23 +1,29 @@
 # Mosaic site: Pages Router → App Router migration
+
 ## When to use this skill
+
 Use this skill when migrating a **consumer site built on `@jpmorganchase/mosaic-*`**
 from Next.js Pages Router to App Router, or when working on the reference
 site (`packages/site`) itself. Trigger phrases:
+
 - "migrate this mosaic site to app router"
 - "port a mosaic site off `getServerSideProps`"
 - "this mosaic site is still on `src/pages/`, move it"
 - "how do I load MDX in the mosaic app router?"
-The canonical reference implementation is `packages/site` in the
-`jpmorganchase/mosaic` monorepo. **Always read its `src/app/` tree and
-`packages/site-middleware/src/` before proposing changes** — they are
-the source of truth.
+  The canonical reference implementation is `packages/site` in the
+  `jpmorganchase/mosaic` monorepo. **Always read its `src/app/` tree and
+  `packages/site-middleware/src/` before proposing changes** — they are
+  the source of truth.
+
 ## Background
+
 `@jpmorganchase/mosaic-site-middleware` no longer ships any Pages Router
 context adapter, runner, or compile helper. The legacy
 `fromGetServerSidePropsContext` / `createMiddlewareRunner` /
 `withMosaicMode` / `withMDXContent` / `fromAppRouter` / `runMiddleware` /
 `compileMdxRsc` API has been **deleted**.
 The current public surface (`packages/site-middleware/src/index.ts`) is:
+
 ```ts
 // Server-side MDX serialise → client-side render pipeline
 export { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
@@ -27,13 +33,14 @@ export { loadSitemap } from '@jpmorganchase/mosaic-site-middleware';
 export { resolveMosaicMode } from '@jpmorganchase/mosaic-site-middleware';
 // App-Router-native, cache()/unstable_cache-wrapped loaders
 export {
-  getMdxRaw,                  // raw MDX bytes (post-plugin) + frontmatter
-  getMdxRawSource,            // raw MDX bytes (pre-plugin, for editor)
-  getSharedConfig,            // per-subtree header/footer/menu config
-  getSearchData,              // site-wide search index + config
-  MOSAIC_CONTENT_CACHE_TAG    // tag name for revalidateTag()
+  getMdxRaw, // raw MDX bytes (post-plugin) + frontmatter
+  getMdxRawSource, // raw MDX bytes (pre-plugin, for editor)
+  getSharedConfig, // per-subtree header/footer/menu config
+  getSearchData, // site-wide search index + config
+  MOSAIC_CONTENT_CACHE_TAG // tag name for revalidateTag()
 } from '@jpmorganchase/mosaic-site-middleware';
 ```
+
 All loaders accept `(pathname, mode, contentUrl)` (search takes
 `(mode, contentUrl)`) and dispatch internally across the three Mosaic
 modes: `active`, `snapshot-file`, `snapshot-s3`. There is no
@@ -43,6 +50,7 @@ modes: `active`, `snapshot-file`, `snapshot-s3`. There is no
 otherwise duplicate the env-read snippet — `not-found.tsx`,
 `sitemap.ts`, and `loadSitemap()` all do.
 MDX rendering is **server-serialise → client-render**, not pure RSC:
+
 - Server: `serializeMdxForClient(raw)` (uses
   `next-mdx-remote-client/serialize`) returns a JSON-safe
   `{ compiledSource, frontmatter, scope }`. It also auto-injects
@@ -53,40 +61,50 @@ MDX rendering is **server-serialise → client-render**, not pure RSC:
 - That payload crosses the RSC boundary as plain props.
 - Client (`'use client'`): `<MDXClient />` from `next-mdx-remote-client`
   evaluates it, supplying the local MDX component registry.
-This shape is deliberate: most Mosaic / Salt-DS components ship hooks
-without a `'use client'` directive in their dist bundles, which trips
-Turbopack's RSC rules. Keeping component refs in the client graph
-avoids the entire boundary-shim problem.
+  This shape is deliberate: most Mosaic / Salt-DS components ship hooks
+  without a `'use client'` directive in their dist bundles, which trips
+  Turbopack's RSC rules. Keeping component refs in the client graph
+  avoids the entire boundary-shim problem.
+
 ## The migration recipe
+
 ### 1. Inventory the Pages Router surface
-| Pages file | Replacement |
-| --- | --- |
-| `_app.tsx` | `app/layout.tsx` + `app/providers.tsx` (`'use client'`) |
-| `_document.tsx` | Inline `<html>`/`<body>` in `app/layout.tsx`; FOUC scripts go in `<head>` via `dangerouslySetInnerHTML` |
-| `[...route].tsx` | `app/[...route]/page.tsx` (async RSC) + `not-found.tsx` + `error.tsx` (+ `loading.tsx` only if needed) |
-| `index.tsx` (redirect) | `app/page.tsx` with `export const dynamic = 'force-static'` calling `redirect('/mosaic/index')`; ALSO keep the same redirect in `next.config.js`'s `redirects()` for the dynamic build (export builds use the page, dynamic builds use the manifest) |
-| `api/auth/[...nextauth].ts` | `app/api/auth/[...nextauth]/route.ts` re-exporting `handlers.GET/POST` from `src/auth.ts` |
-| `api/content/preview.ts` | Server Action in `app/[...route]/previewAction.ts` (NOT a route handler) |
-| `sitemap.xml.ts` / `robots.txt.ts` | `app/sitemap.ts` / `app/robots.ts` App Router conventions |
-| 404 page | `app/not-found.tsx` — fetches root `sharedConfig` + `searchData` via the same `cache()` loaders so the 404 renders with the full chrome |
-| 500 page | `app/error.tsx` (`'use client'`, mandatory) — wraps `<Hero>` from `mosaic-components`, NOT `<Page500>` (the latter hardcodes its strings) |
+
+| Pages file                         | Replacement                                                                                                                                                                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_app.tsx`                         | `app/layout.tsx` + `app/providers.tsx` (`'use client'`)                                                                                                                                                                                              |
+| `_document.tsx`                    | Inline `<html>`/`<body>` in `app/layout.tsx`; FOUC scripts go in `<head>` via `dangerouslySetInnerHTML`                                                                                                                                              |
+| `[...route].tsx`                   | `app/[...route]/page.tsx` (async RSC) + `not-found.tsx` + `error.tsx` (+ `loading.tsx` only if needed)                                                                                                                                               |
+| `index.tsx` (redirect)             | `app/page.tsx` with `export const dynamic = 'force-static'` calling `redirect('/mosaic/index')`; ALSO keep the same redirect in `next.config.js`'s `redirects()` for the dynamic build (export builds use the page, dynamic builds use the manifest) |
+| `api/auth/[...nextauth].ts`        | `app/api/auth/[...nextauth]/route.ts` re-exporting `handlers.GET/POST` from `src/auth.ts`                                                                                                                                                            |
+| `api/content/preview.ts`           | Server Action in `app/[...route]/previewAction.ts` (NOT a route handler)                                                                                                                                                                             |
+| `sitemap.xml.ts` / `robots.txt.ts` | `app/sitemap.ts` / `app/robots.ts` App Router conventions                                                                                                                                                                                            |
+| 404 page                           | `app/not-found.tsx` — fetches root `sharedConfig` + `searchData` via the same `cache()` loaders so the 404 renders with the full chrome                                                                                                              |
+| 500 page                           | `app/error.tsx` (`'use client'`, mandatory) — wraps `<Hero>` from `mosaic-components`, NOT `<Page500>` (the latter hardcodes its strings)                                                                                                            |
+
 ### 2. Compose loaders directly in `page.tsx`
+
 There is no middleware runner. The page calls the cached loaders in
 parallel via `Promise.all`:
+
 ```ts
 // src/app/[...route]/page.tsx
 import { cache } from 'react';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import {
-  getMdxRaw, getSharedConfig, getSearchData, getMdxRawSource,
-  loadSitemap, resolveMosaicMode
+  getMdxRaw,
+  getSharedConfig,
+  getSearchData,
+  getMdxRawSource,
+  loadSitemap,
+  resolveMosaicMode
 } from '@jpmorganchase/mosaic-site-middleware';
 import { auth } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
 // `cache()` so generateMetadata + the page share one resolution.
-const resolveRouteInputs = cache(async (params) => {
+const resolveRouteInputs = cache(async params => {
   const [{ route = [] }] = await Promise.all([
     params,
     // Skip headers() during snapshot prerender to keep the route static.
@@ -102,24 +120,28 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     getMdxRaw(pathname, mode, contentUrl),
     getSharedConfig(pathname, mode, contentUrl),
     getSearchData(mode, contentUrl),
-    shouldPrerenderSnapshot ? Promise.resolve({}) : searchParams,
+    shouldPrerenderSnapshot ? Promise.resolve({}) : searchParams
   ]);
   if (mdx.kind === 'redirect') redirect(mdx.destination);
   if (mdx.kind === 'not-found') notFound();
   // mdx.kind === 'mdx' from here.
   return (
-    <StoreShell storeProps={{
-      ...mdx.frontmatter,
-      sharedConfig,
-      searchIndex: search.searchIndex,
-      searchConfig: search.searchConfig
-    }}>
+    <StoreShell
+      storeProps={{
+        ...mdx.frontmatter,
+        sharedConfig,
+        searchIndex: search.searchIndex,
+        searchConfig: search.searchConfig
+      }}
+    >
       <BodyServer type="mdx" raw={mdx.raw} />
     </StoreShell>
   );
 }
 ```
+
 Key points:
+
 - **Do NOT export `dynamic`** from `app/[...route]/page.tsx`. Let App
   Router infer the mode from `generateStaticParams`: return URLs for
   snapshot prod builds; return `[]` for active and for `next dev` (so
@@ -136,23 +158,29 @@ Key points:
   `storeProps` (the loader-derived `sharedConfig` is the enriched
   copy — see the comment block in `packages/site/src/app/[...route]/page.tsx`
   around `_frontmatterSharedConfig`).
+
 ### 3. Loader caching is built in
+
 `getMdxRaw`, `getSharedConfig`, `getSearchData`, `getMdxRawSource` are
 each wrapped in **two layers**:
+
 1. `cache()` from `react` — request-scoped memoisation (so
    `generateMetadata` and the page render share one read of the same
    args).
 2. `unstable_cache()` from `next/cache` — cross-request memoisation
    tagged with `MOSAIC_CONTENT_CACHE_TAG = 'mosaic-content'`.
-To invalidate after a content change, POST to `/api/revalidate` (the
-Mosaic CLI does this automatically when it emits a new snapshot) which
-calls `revalidateTag(MOSAIC_CONTENT_CACHE_TAG, 'max')`. The `'max'`
-second arg is required by Next 16's revalidate API — it's the
-cache-life profile matching "cache until invalidated".
-Dev escape hatch: `MOSAIC_DISABLE_LOADER_CACHE=true` bypasses the
-cross-request layer.
+   To invalidate after a content change, POST to `/api/revalidate` (the
+   Mosaic CLI does this automatically when it emits a new snapshot) which
+   calls `revalidateTag(MOSAIC_CONTENT_CACHE_TAG, 'max')`. The `'max'`
+   second arg is required by Next 16's revalidate API — it's the
+   cache-life profile matching "cache until invalidated".
+   Dev escape hatch: `MOSAIC_DISABLE_LOADER_CACHE=true` bypasses the
+   cross-request layer.
+
 ### 4. MDX rendering: serialise on server, render on client
+
 Do **not** render MDX inside the RSC. The pattern is:
+
 ```tsx
 // app/[...route]/BodyServer.tsx (server component, async)
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
@@ -160,16 +188,21 @@ import { MdxRenderer } from './MdxRenderer';
 export async function BodyServer({ type, raw }: { type: 'mdx'; raw: string }) {
   if (!raw) throw new Error('BodyServer: `raw` MDX text is required when type === "mdx".');
   const source = await serializeMdxForClient(raw);
-  return <div className="wrapper"><MdxRenderer source={source} /></div>;
+  return (
+    <div className="wrapper">
+      <MdxRenderer source={source} />
+    </div>
+  );
 }
 ```
+
 ```tsx
 // app/[...route]/MdxRenderer.tsx ('use client')
 'use client';
 import { MDXClient } from 'next-mdx-remote-client';
 import { mdxComponents } from './MdxComponents';
 export function MdxRenderer({ source }) {
-  if ('error' in source && source.error) throw source.error;  // bubble to error.tsx
+  if ('error' in source && source.error) throw source.error; // bubble to error.tsx
   return (
     <MDXClient
       compiledSource={source.compiledSource}
@@ -180,12 +213,16 @@ export function MdxRenderer({ source }) {
   );
 }
 ```
+
 `next-mdx-remote-client` (NOT `next-mdx-remote`) is the supported
 package. `mdxComponents` is a plain object imported on the client side
 so Salt-DS / Mosaic UI components stay in the client graph.
+
 ### 5. Provider stack: two layers
+
 `app/providers.tsx` (`'use client'`) exports **both** `Providers` and
 `StoreShell`:
+
 ```tsx
 'use client';
 import { useState } from 'react';
@@ -222,7 +259,9 @@ export function StoreShell({ storeProps, children }) {
   );
 }
 ```
+
 **Critical** — three things that are easy to get wrong:
+
 1. **Do NOT pass a server-resolved `session` to `<SessionProvider>`.**
    The reference site deliberately renders it without the `session`
    prop so the client fetches `/api/auth/session` lazily. This keeps
@@ -237,9 +276,12 @@ export function StoreShell({ storeProps, children }) {
    store synchronously, matching SSR exactly.
 3. **The layout-level store IS still required.** Even not-found and
    error renders need a store in context for `useColorMode`.
+
 ### 6. Static export (`MOSAIC_OUTPUT=export`)
+
 `next.config.js` splits into `baseConfig` / `dynamicOnlyConfig` /
 `exportConfig`:
+
 ```js
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const mosaicMode = process.env.MOSAIC_MODE || 'active';
@@ -252,8 +294,10 @@ module.exports = isExport
   ? { ...baseConfig, ...exportConfig }
   : { ...baseConfig, ...dynamicOnlyConfig };
 ```
+
 `app/[...route]/page.tsx` uses inferred `dynamic` via
 `generateStaticParams`:
+
 ```ts
 const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
 const isProductionBuild = process.env.NODE_ENV === 'production';
@@ -261,48 +305,59 @@ const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 export async function generateStaticParams() {
   if (!shouldPrerenderSnapshot) return [];
   const urls = await loadSitemap();
-  return urls.map(url => url.replace(/^\//, '').split('/').filter(Boolean))
+  return urls
+    .map(url => url.replace(/^\//, '').split('/').filter(Boolean))
     .filter(s => s.length > 0)
     .map(route => ({ route }));
 }
 ```
+
 **Route handlers AND Server Actions must be stubbed for export.** Next
 16's `output: 'export'` collector:
+
 - Refuses `route.ts` unless `export const dynamic = 'force-static'` is
   a **string literal** (a `process.env` ternary fails AST check).
 - Does not support `'use server'` modules (Server Actions) at all.
-So we swap them on disk around `next build`. See
-`packages/site/scripts/static-export-route-stubs.mjs` for the full
-list. Today it covers:
+  So we swap them on disk around `next build`. See
+  `packages/site/scripts/static-export-route-stubs.mjs` for the full
+  list. Today it covers:
 - `app/api/auth/[...nextauth]/route.ts` (auth requires server runtime)
 - `app/api/content/live/route.ts` (SSE requires long-lived runtime)
 - `app/api/revalidate/route.ts` (no server cache in static export)
 - `app/[...route]/previewAction.ts` (Server Action)
 - `app/[...route]/persistAction.ts` (Server Action)
-The wiring in `package.json`:
+  The wiring in `package.json`:
+
 ```jsonc
 "build:static:file": "node scripts/static-export-route-stubs.mjs apply && (yarn cross-env MOSAIC_MODE=snapshot-file MOSAIC_OUTPUT=export next build; status=$?; node scripts/static-export-route-stubs.mjs revert; exit $status)",
 "build:static:s3":   "node scripts/static-export-route-stubs.mjs apply && (yarn cross-env MOSAIC_MODE=snapshot-s3 MOSAIC_OUTPUT=export next build; status=$?; node scripts/static-export-route-stubs.mjs revert; exit $status)",
 "build:static:revert": "node scripts/static-export-route-stubs.mjs revert"
 ```
+
 Gitignore the `.bak` files the apply step produces.
+
 ### 7. Auth.js v5
+
 `src/auth.ts` is the single source of truth:
+
 ```ts
 import NextAuth, { type NextAuthResult } from 'next-auth';
 const result: NextAuthResult = NextAuth(authConfig);
 export const handlers = result.handlers;
-export const auth = result.auth;          // await auth() in server code
+export const auth = result.auth; // await auth() in server code
 export const signIn = result.signIn;
 export const signOut = result.signOut;
 ```
+
 The `NextAuthResult` type annotations on each export are **required**
 so TS can emit `.d.ts` files without an unportable reference into
 `node_modules/next-auth/lib`.
 `src/app/api/auth/[...nextauth]/route.ts`:
+
 ```ts
-export { GET, POST } from '../../../../auth';  // re-export handlers
+export { GET, POST } from '../../../../auth'; // re-export handlers
 ```
+
 Server: `await auth()` everywhere `getServerSession` was used. Client:
 `useSession()` from `next-auth/react` still works.
 The reference site has an `AUTH_SECRET ?? NEXTAUTH_SECRET` fallback,
@@ -310,13 +365,17 @@ The reference site has an `AUTH_SECRET ?? NEXTAUTH_SECRET` fallback,
 `MOSAIC_DEV_FAKE_AUTH=true` Credentials provider for exercising the
 editor without configuring OAuth. Both are guarded against
 `NODE_ENV === 'production'`.
+
 ### 8. Editor branch (`?edit=1`) and create branch (`?new=1`)
+
 The reference site's `page.tsx` has additional branches:
+
 - `?edit=1` mounts `<EditorBody />` (Lexical, lazy-loaded via
   `next/dynamic`) instead of `<BodyServer />`.
 - `?new=1` synthesises a blank-page template (see `newPageTemplate.ts`)
   and mounts the editor in create mode.
-Both are gated by:
+  Both are gated by:
+
 1. **Auth**: `const session = await auth()` — never ship the editor
    bundle to an unauthenticated client.
 2. **Source-capability gate**:
@@ -326,32 +385,37 @@ Both are gated by:
 3. **Mode gate**: skip the auth call entirely when
    `shouldPrerenderSnapshot` is true (the editor is unreachable in
    static export anyway).
-Dev escape hatch: `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` forces
-`writable = true` in non-production builds (e.g. so e2e tests can run
-against `source-local-folder`).
-Use `getMdxRawSource` (also exported by `mosaic-site-middleware`) for
-the editor's Frontmatter tab — it hits the CLI's `/_mosaic-raw/*`
-endpoint, bypassing the plugin pipeline, and returns a discriminated
-result (`raw` / `not-found` / `no-matching-source` /
-`unsupported-source` / `unavailable-in-mode`) so the UI can render
-precise hints.
-For the create (`?new=1`) branch the page synthesises a `rawSource`
-envelope around the same template bytes the body editor is seeded
-with — `{ kind: 'raw', bytes: newPageRaw, namespace: undefined }` —
-so the Frontmatter tab is immediately editable.
-If `?new=1` is hand-typed against a route that already exists, the
-page redirects to `?edit=1&existed=1` instead of silently clobbering
-on save.
+   Dev escape hatch: `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` forces
+   `writable = true` in non-production builds (e.g. so e2e tests can run
+   against `source-local-folder`).
+   Use `getMdxRawSource` (also exported by `mosaic-site-middleware`) for
+   the editor's Frontmatter tab — it hits the CLI's `/_mosaic-raw/*`
+   endpoint, bypassing the plugin pipeline, and returns a discriminated
+   result (`raw` / `not-found` / `no-matching-source` /
+   `unsupported-source` / `unavailable-in-mode`) so the UI can render
+   precise hints.
+   For the create (`?new=1`) branch the page synthesises a `rawSource`
+   envelope around the same template bytes the body editor is seeded
+   with — `{ kind: 'raw', bytes: newPageRaw, namespace: undefined }` —
+   so the Frontmatter tab is immediately editable.
+   If `?new=1` is hand-typed against a route that already exists, the
+   page redirects to `?edit=1&existed=1` instead of silently clobbering
+   on save.
+
 ### 9. Eliminate `next/router`
-| Old API | App Router replacement |
-| --- | --- |
-| `useRouter().push` | `useRouter()` from `next/navigation` (`push` API unchanged) |
-| `useRouter().asPath` / `pathname` | `usePathname()` |
-| `useRouter().query` | `useSearchParams()` |
-| `useRouter().events.on('routeChangeComplete', cb)` | `useEffect(cb, [usePathname()])` |
-| `useRouter().events.on('routeChangeStart', cb)` | No direct equivalent. Use `loading.tsx` for spinners; key effects on `usePathname()` for the common cases |
+
+| Old API                                            | App Router replacement                                                                                    |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `useRouter().push`                                 | `useRouter()` from `next/navigation` (`push` API unchanged)                                               |
+| `useRouter().asPath` / `pathname`                  | `usePathname()`                                                                                           |
+| `useRouter().query`                                | `useSearchParams()`                                                                                       |
+| `useRouter().events.on('routeChangeComplete', cb)` | `useEffect(cb, [usePathname()])`                                                                          |
+| `useRouter().events.on('routeChangeStart', cb)`    | No direct equivalent. Use `loading.tsx` for spinners; key effects on `usePathname()` for the common cases |
+
 Mark every affected file `'use client'`.
+
 ### 10. Dev-only live reload
+
 `app/api/content/live/route.ts` exposes an SSE stream. `app/LiveReload.tsx`
 opens an `EventSource` and calls `router.refresh()` on each
 `content-changed` event. The `POST /api/revalidate` handler calls
@@ -360,7 +424,9 @@ signal — so after a Mosaic CLI snapshot rebuild, every open browser
 tab refreshes automatically in dev. Both the SSE route and the
 component are gated on `NODE_ENV === 'development'`, and the route
 is stubbed out in static export builds.
+
 ### 11. Metadata, sitemap, robots
+
 Set `metadataBase` **once** in `app/layout.tsx` from
 `NEXT_PUBLIC_SITE_URL` via `resolveSiteOrigin()` (with a localhost
 fallback + production warning) so every per-route `generateMetadata`
@@ -379,7 +445,9 @@ URLs.
 Per-route `generateMetadata` should call `getMdxRaw` for the
 frontmatter — it shares the request-scoped cache entry with the page
 render so the underlying fetch only happens once.
+
 ### 12. Things to **not** do
+
 - **Don't** add a `middleware.ts` for redirects. Keep them in
   `next.config.js`'s `redirects()` (dynamic builds) and `app/page.tsx`
   (export builds). A `middleware.ts` would invoke an Edge function on
@@ -402,7 +470,9 @@ render so the underlying fetch only happens once.
 - **Don't** use `<Page500>` from `mosaic-site-components` for the
   global error boundary — it hardcodes its strings and refuses props.
   Inline `<Hero>` from `mosaic-components` instead (see §1).
+
 ### 13. Verification checklist
+
 ```bash
 # 1. Type-check
 yarn tsc --noEmit
@@ -420,9 +490,12 @@ grep -r "\"next-mdx-remote\"" .next/server/app/ && echo "FAIL" || echo "OK"
 # 6. E2E
 yarn e2e
 ```
+
 ## Reference files in `packages/site` and `packages/site-middleware`
+
 When in doubt, read these — they are the canonical patterns:
 **App Router layer (`packages/site/src/`):**
+
 - `app/layout.tsx` — root layout, metadataBase, FOUC script, dev LiveReload
 - `app/providers.tsx` — `Providers` (global) + `StoreShell` (per-route)
 - `app/page.tsx` — root redirect (`dynamic = 'force-static'`)
@@ -446,7 +519,7 @@ When in doubt, read these — they are the canonical patterns:
 - `lib/siteOrigin.ts` / `lib/liveReloadBus.ts` — shared helpers
 - `next.config.js` — three-config split for export
 - `scripts/static-export-route-stubs.mjs` — apply/revert swap for export builds
-**Middleware layer (`packages/site-middleware/src/`):**
+  **Middleware layer (`packages/site-middleware/src/`):**
 - `index.ts` — public re-exports (the entire supported surface)
 - `cachedLoaders.ts` — `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getSearchData`, `MOSAIC_CONTENT_CACHE_TAG`
 - `serializeMdxForClient.ts` — server-side MDX compile (auto-injects `scope.meta`, recovers error location)
