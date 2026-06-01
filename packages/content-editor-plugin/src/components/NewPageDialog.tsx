@@ -149,7 +149,6 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     // navigating with the dialog mounted are both legitimate
     // triggers). Adding `parentFolder` would loop because we set
     // it inside.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, knownFolders, pathname]);
 
   /**
@@ -185,6 +184,10 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
   const parentError = useMemo<string | null>(() => {
     if (parentFolder.length === 0) return 'Parent folder is required.';
     if (!parentFolder.startsWith('/')) return 'Parent folder must start with /.';
+    // Intentional control-char range: NUL..US are illegal in POSIX/Windows
+    // filenames, so we reject them up-front rather than letting the
+    // workflows layer surface a less-friendly error later.
+    // eslint-disable-next-line no-control-regex
     if (/[\s<>:"|?*\x00-\x1f]/.test(parentFolder)) {
       return 'Parent folder contains invalid characters.';
     }

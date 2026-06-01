@@ -77,7 +77,6 @@ export const AppHeaderControls: React.FC = () => {
               prefixText="Welcome, "
             />
           ) : (
-            // eslint-disable-next-line react/jsx-no-bind
             <Link href="/api/auth/signin" variant="component">
               Login
             </Link>

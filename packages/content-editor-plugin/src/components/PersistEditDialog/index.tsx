@@ -283,6 +283,9 @@ export const PersistDialog = ({
     if (value === meta.route) return null;
     if (value.length === 0) return 'Path cannot be empty.';
     if (!value.startsWith('/')) return 'Path must start with /.';
+    // Intentional control-char range: NUL..US are illegal in POSIX/Windows
+    // filenames; reject early instead of letting the workflows layer fail.
+    // eslint-disable-next-line no-control-regex
     if (/[\s<>:"|?*\x00-\x1f]/.test(value)) return 'Path contains invalid characters.';
     if (value.endsWith('/')) return 'Path must end with a file name.';
     const origExt = meta.route.match(/\.[^./]+$/)?.[0] ?? '';

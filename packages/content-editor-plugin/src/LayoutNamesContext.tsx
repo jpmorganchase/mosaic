@@ -94,7 +94,7 @@ export const LayoutNamesProvider: FC<LayoutNamesProviderProps> = ({
   const signature = names.slice().sort().join('|');
   const value = useMemo<LayoutNamesValue>(
     () => ({ names, strict }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [signature, strict]
   );
   return <LayoutNamesContext.Provider value={value}>{children}</LayoutNamesContext.Provider>;

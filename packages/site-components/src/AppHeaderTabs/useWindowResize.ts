@@ -31,7 +31,7 @@ export function useWindowResize(): Size {
     width: undefined,
     height: undefined
   });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   const debouncedHandleResize = useCallback(
     debounce(() => {
       window.removeEventListener('resize', debouncedHandleResize);
@@ -50,7 +50,6 @@ export function useWindowResize(): Size {
       debouncedHandleResize.cancel();
       window.removeEventListener('resize', debouncedHandleResize);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return windowSize;
 }

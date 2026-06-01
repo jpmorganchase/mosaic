@@ -576,7 +576,7 @@ const SplitContainer: FC<SplitContainerProps> = ({ isNewPage, children }) => {
           // Stable index keys are fine — the order never changes
           // and the fallback only renders for a single frame
           // before being swapped out.
-          // eslint-disable-next-line react/no-array-index-key
+
           <div key={i} className={styles.splitterFallbackPane}>
             {child}
           </div>
