@@ -28,7 +28,19 @@ export function resolveSiteOrigin(): string {
     try {
       return new URL(fromEnv).origin;
     } catch {
-      /* fall through to fallback; layout.tsx surfaces the warning */
+      // In production a misconfigured env var silently falls
+      // back to localhost and every sitemap URL points at the
+      // wrong host — visible to crawlers, invisible to humans
+      // doing a smoke test. Warn loudly so the boot log
+      // surfaces it. In dev we expect this path during early
+      // setup so stay quiet.
+      if (process.env.NODE_ENV === 'production') {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[mosaic-site] NEXT_PUBLIC_SITE_URL=${fromEnv!} is not a valid URL; ` +
+            `falling back to ${FALLBACK_ORIGIN}. Sitemap and robots URLs will be wrong.`
+        );
+      }
     }
   }
   return FALLBACK_ORIGIN;

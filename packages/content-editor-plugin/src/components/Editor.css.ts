@@ -46,7 +46,9 @@ export default {
       gridArea: 'toolbar',
       position: 'sticky',
       top: `${config.appHeader.height}px`,
-      zIndex: 2
+      zIndex: 2,
+      borderRadius: 'var(--salt-palette-corner)',
+      overflow: 'hidden'
     }),
     neutralBorder({
       variant: 'low',
@@ -62,6 +64,22 @@ export default {
   splitter: style({
     display: 'flex',
     flexDirection: 'row'
+  }),
+  // CSS-only 50/50 fallback used during the one paint frame before
+  // `<Split>` mounts. Mirrors the steady-state geometry react-split
+  // produces (two equal flex children, row direction) so the
+  // upgrade is visually seamless. No gutter — the brief
+  // intermediate frame doesn't need to be interactive.
+  splitterFallback: style({
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    height: '100%'
+  }),
+  splitterFallbackPane: style({
+    flex: '1 1 50%',
+    minWidth: 0,
+    overflow: 'auto'
   }),
   gutter: style([
     {

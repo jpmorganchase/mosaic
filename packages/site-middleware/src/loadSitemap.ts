@@ -1,11 +1,18 @@
 /**
  * Sitemap loader used by App Router `generateStaticParams` in snapshot
- * modes. Reads `sitemap.xml` from the active Mosaic snapshot source
- * (local snapshot dir, or S3 bucket) and returns the list of pathnames
- * relative to the site root (e.g. `/mosaic/index`).
+ * modes, and by the App Router `/sitemap.xml` route + New-Page dialog
+ * in active mode. Reads `sitemap.xml` from whichever source is
+ * authoritative for the current `MOSAIC_MODE`:
  *
- * Active mode is intentionally unsupported here — static export only makes
- * sense for the snapshot modes where the content is frozen at build time.
+ *   - `snapshot-file` → local snapshot dir on disk
+ *   - `snapshot-s3`   → configured S3 bucket
+ *   - `active`        → the live Mosaic FS server at
+ *     `MOSAIC_ACTIVE_MODE_URL/sitemap.xml`
+ *
+ * Returns pathnames relative to the site root (e.g. `/mosaic/index`).
+ * Failure is non-fatal — an empty array lets callers degrade
+ * gracefully (the App Router catch-all already 404s unknown routes,
+ * the New-Page combobox falls back to free-text).
  */
 import path from 'path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
@@ -26,15 +33,21 @@ export function resolveMosaicMode(): { mode: MosaicMode; contentUrl: string } {
 
 /**
  * Returns the list of routes (pathnames with a leading `/`, no origin, no
- * trailing `.mdx`) advertised by the sitemap. Empty array when called in
- * `active` mode or when the sitemap can't be found, so callers can short-
- * circuit safely without crashing the build.
+ * trailing `.mdx`) advertised by the sitemap. Empty array when the sitemap
+ * source can't be reached, so callers can short-circuit safely without
+ * crashing the build / the request.
+ *
+ * Source per mode:
+ *   - `snapshot-file` → `<snapshotDir>/sitemap.xml` on disk;
+ *   - `snapshot-s3`   → `sitemap.xml` in the configured S3 bucket;
+ *   - `active`        → live `${MOSAIC_ACTIVE_MODE_URL}/sitemap.xml`
+ *                       served by the Mosaic FS server. This is the only
+ *                       view the New-Page dialog has of the namespace
+ *                       tree in dev, so omitting it would leave the
+ *                       parent-folder ComboBox suggestion list empty.
  */
 export async function loadSitemap(): Promise<string[]> {
-  const { mode } = resolveMosaicMode();
-  if (!mode.startsWith('snapshot')) {
-    return [];
-  }
+  const { mode, contentUrl } = resolveMosaicMode();
 
   let xml: string | null = null;
   try {
@@ -48,10 +61,25 @@ export async function loadSitemap(): Promise<string[]> {
       if (await keyExists(bucket, 'sitemap.xml')) {
         xml = await loadKey(bucket, 'sitemap.xml');
       }
+    } else if (mode === 'active') {
+      // Active mode: the live Mosaic FS server is the only source of
+      // truth for what pages exist right now (the snapshot on disk may
+      // be stale or absent). Mosaic serves a `sitemap.xml` at the FS
+      // server root, so reuse it instead of inventing a new listing
+      // endpoint. Failure here is non-fatal — both call sites (the App
+      // Router `/sitemap.xml` route and the New-Page dialog's folder
+      // suggestions) treat an empty list as a degraded but working
+      // state.
+      if (!contentUrl) return [];
+      const response = await fetch(`${contentUrl}/sitemap.xml`);
+      if (!response.ok) {
+        throw new Error(`sitemap.xml: HTTP ${response.status}`);
+      }
+      xml = await response.text();
     }
   } catch (err) {
     console.warn(
-      '[Mosaic][loadSitemap] Failed to load sitemap.xml; static export will be empty.',
+      '[Mosaic][Middleware] Failed to load sitemap.xml; falling back to empty list.',
       err instanceof Error ? err.message : err
     );
     return [];

@@ -98,6 +98,7 @@ import { withMarkdownSpacing } from './withMarkdownSpacing';
 import { ListItem, OrderedList, UnorderedList } from '../List';
 import type { ListItemProps, OrderedListProps, UnOrderedListProps } from '../List';
 import { LinkButton, LinkButtonProps } from '../LinkButton';
+import { Code } from './code';
 
 export { getMarkdownElements } from './markdownElements';
 
@@ -342,6 +343,15 @@ export const getMarkdownComponents = () => {
     Watermark: withStyledTypography(watermark({ context: 'markdown' })),
     Emphasis: markdownElements.em,
     Strong: markdownElements.strong,
+    // Capitalised aliases for inline elements that the editor's
+    // merged-cell exporter emits as JSX (`<Strong>`, `<Em>`,
+    // `<Code>`, `<Link>` — see `tableRule.ts`'s
+    // `$serializeInlineCellContent`). MDX routes capitalised JSX
+    // names through `props.components` but treats lowercase tags
+    // as bare DOM, so without these aliases the inline marks
+    // inside merged-table cells would render unstyled.
+    Em: markdownElements.em,
+    Code: withMarkdownSpacing(Code),
     ...markdownElements
   };
 };

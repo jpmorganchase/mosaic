@@ -35,6 +35,23 @@ const providers: NextAuthConfig['providers'] = [
   })
 ];
 
+// In production a missing GitHub OAuth env pair is silently
+// registered and only fails at click time with a confusing 500
+// from Auth.js. Warn at boot so the deployer notices in startup
+// logs instead of in the first sign-in attempt. Dev runs
+// typically rely on MOSAIC_DEV_FAKE_AUTH so a missing GitHub
+// config is expected.
+if (
+  process.env.NODE_ENV === 'production' &&
+  (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET)
+) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[mosaic-site] GitHub provider is registered but GITHUB_ID and/or ' +
+      'GITHUB_SECRET is unset. Sign-in will fail with an opaque OAuth error.'
+  );
+}
+
 if (FAKE_AUTH_ENABLED) {
   providers.push(
     Credentials({

@@ -8,6 +8,7 @@ export * from './useNavigation';
 export * from './useRoute';
 export * from './useSearchIndex';
 export * from './useSidebar';
+export * from './useSourceCapabilities';
 export * from './useTableOfContents';
 export * from './useFooter';
 export * from './useStoreActions';

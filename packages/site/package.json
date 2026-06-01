@@ -39,13 +39,11 @@
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-site-preset-styles": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-sitemap-component": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
     "@salt-ds/core": "^1.63.0",
     "@types/react": "^19.0.0",
-    "https-proxy-agent": "^7.0.0",
     "next": "^16.2.6",
     "next-auth": "^5.0.0-beta.30",
     "next-mdx-remote-client": "^1.0.3"

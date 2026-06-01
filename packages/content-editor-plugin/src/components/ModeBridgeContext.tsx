@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 10 — Bridge between the toolbar's mode toggle and the
+ * Bridge between the toolbar's mode toggle and the
  * editor shell.
  *
  * `ModeToggle` lives in the toolbar, far from where the actual

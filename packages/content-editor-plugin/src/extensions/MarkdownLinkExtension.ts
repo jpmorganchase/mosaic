@@ -5,7 +5,7 @@
  * (command half only — the `<InsertLinkDialog />` JSX surface is a
  * direct child of `<LexicalComposer>` and not owned by this file).
  *
- * Pattern (post-Phase 0d) — matches upstream Lexical's
+ * Pattern — matches upstream Lexical's
  * `ClearEditorExtension` template:
  *
  *   1. `registerMarkdownLink(editor)` — standalone helper that
@@ -20,7 +20,7 @@
  * Command symbol ownership
  * ------------------------
  * `INSERT_MARKDOWN_LINK_COMMAND` and `InsertLinkPayload` are
- * declared HERE. Phase 0d deleted the old
+ * declared HERE. The old
  * `plugins/MarkdownLinkPlugin.tsx` re-export shim; all callers
  * (`Toolbar/InsertLink.tsx`, the ⌘K keyboard shortcut path) import
  * from this file directly.

@@ -27,17 +27,14 @@
   "devDependencies": {
     "concurrently": "^7.1.0",
     "del-cli": "^6.0.0",
-    "esbuild": "0.25.0",
-    "esbuild-node-externals": "^1.18.0"
+    "esbuild": "0.25.0"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "0.1.0-beta.98",
     "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.98",
     "@jpmorganchase/mosaic-layouts": "0.1.0-beta.98",
-    "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.98",
     "@jpmorganchase/mosaic-site-components": "0.1.0-beta.98",
     "@jpmorganchase/mosaic-theme": "0.1.0-beta.98",
-    "@salt-ds/icons": "^1.18.0",
     "@salt-ds/theme": "^1.43.0",
     "prismjs": "^1.30.0"
   }

@@ -39,11 +39,12 @@ export function FilterDropdown({
   };
   return (
     <Dropdown
+      bordered
       aria-label="Filters"
       className={className}
       valueToString={itemToString}
       value={labelButton ? labelButton(filters) : defaultButtonLabel(filters)}
-      startAdornment={<Icon name="filter" />}
+      startAdornment={<Icon name="filter" aria-hidden />}
       onSelectionChange={handleSelect}
       selected={filters}
       multiselect

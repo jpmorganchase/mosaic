@@ -3,7 +3,7 @@
 /**
  * Extension API authoring for the horizontal-rule insertion command.
  *
- * Pattern (post-Phase 0d) — matches upstream Lexical's
+ * Pattern — matches upstream Lexical's
  * `ClearEditorExtension` template (see
  * `@lexical/extension/src/ClearEditorExtension.ts`):
  *
@@ -23,9 +23,8 @@
  * first and inserts BEFORE the resulting top-level element. The
  * caret then lands one paragraph below the HR, which is the
  * placement our authors expect (and is asserted by our E2E tests).
- * Keeping our own helper preserves that behaviour. We can switch
- * to upstream's extension later as a deliberate UX change, not as
- * a side-effect of the API migration.
+ * Keeping our own helper preserves that behaviour. Switching
+ * to upstream's extension later would be a deliberate UX change.
  *
  * The command symbol stays upstream's `INSERT_HORIZONTAL_RULE_COMMAND`
  * from `@lexical/react/LexicalHorizontalRuleNode` — we never owned

@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * Phase 0c — `ErrorHighlightPlugin` migrated to the Extension API,
- * following the same upstream pattern as `DirtyTrackerExtension`:
- * a standalone `registerErrorHighlight(editor, ...)` helper that
+ * Extension API authoring for error highlighting. Exposes a
+ * standalone `registerErrorHighlight(editor, ...)` helper that
  * both the React plugin and the extension wrapper call, plus a
  * `defineExtension` wrapper for headless consumers.
  *
@@ -30,9 +29,9 @@
  *     a fresh closure each time — same observable behaviour as
  *     before.
  *   - `getLineMap()` returns the current `LineMapEntry | null`.
- *     This is already a ref-backed getter on the React side (see
+ *     This is a ref-backed getter on the React side (see
  *     `LineMapContextValue` in `EditorContext.tsx`); the helper
- *     simply forwards it without forcing a context migration.
+ *     simply forwards it.
  *
  * Why getters rather than values
  * ------------------------------

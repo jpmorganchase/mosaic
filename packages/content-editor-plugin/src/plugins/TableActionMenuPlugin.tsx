@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
+  $getNodeByKey,
   $getSelection,
-  $isElementNode,
   $isRangeSelection,
-  $isTextNode,
-  type ElementNode,
-  LexicalEditor
+  LexicalEditor,
+  type NodeKey
 } from 'lexical';
 import {
   $deleteTableColumnAtSelection,
@@ -27,58 +26,52 @@ import { useDismiss, useInteractions } from '@floating-ui/react';
 
 import { Popper } from '../components/Popper/Popper';
 import { ActionMenu, ActionMenuItem, ActionMenuSource } from '../components/ActionMenu/ActionMenu';
+import { $selectLastDescendant, computeSelectionCount, isMergedCell } from './tableHelpers';
 import styles from './TableActionMenuPlugin.css';
 
 /**
- * Modernized in May-2026 to use the upstream `@lexical/table`
- * `*AtSelection` helper family (introduced ~0.40 and now the
- * official API) and to expose cell merge / unmerge. A second pass
- * added selection-aware multi-row/column inserts and post-merge
- * caret placement so the plugin's behaviour matches upstream's
- * `packages/lexical-playground/src/plugins/TableActionMenuPlugin/index.tsx`
- * to the extent that's possible without the full TableObserver
- * infrastructure (see "Why no TableObserver" below).
+ * Cell-anchored action menu for tables: insert / delete row +
+ * column, merge / unmerge, delete table. Built on the upstream
+ * `@lexical/table` `*AtSelection` helpers (introduced ~0.40 and
+ * the official API).
  *
  * Selection-aware inserts
  * -----------------------
  * If the user drag-selects three rows and clicks "Insert Row Below",
- * we insert three rows below the selection, not one. We derive the
- * count from `TableSelection.getShape()` — exactly the formula
- * upstream's `computeSelectionCount` uses. RangeSelection (single
- * caret) yields a count of 1, which is the same as a no-op
- * single-cell selection. See `computeSelectionCount` below.
+ * we insert three rows below the selection, not one. The count
+ * comes from `TableSelection.getShape()` (see
+ * {@link computeSelectionCount}). RangeSelection (single caret)
+ * yields a count of 1 — same as a no-op single-cell selection.
  *
  * Merge / unmerge
  * ---------------
  * `$mergeCells(cells)` requires a {@link TableSelection} (the
  * multi-cell drag selection state), not a normal `RangeSelection`.
- * We therefore enable the merge entry only while the selection IS
- * a TableSelection covering more than one cell. Unmerge is the
+ * The merge entry is enabled only while the selection IS a
+ * `TableSelection` covering more than one cell. Unmerge is the
  * reverse — only meaningful on a cell that was previously merged.
  *
  * After a successful merge we walk the target cell's last
- * descendant and place the caret there (mirroring upstream's
- * `$selectLastDescendant`) so the user can immediately type into
- * the merged region. Without this, the editor selection ends up
- * pointing at one of the now-removed cells, which collapses to
+ * descendant and place the caret there (see
+ * {@link $selectLastDescendant}) so the user can immediately type
+ * into the merged region. Without this, the editor selection ends
+ * up pointing at one of the now-removed cells, which collapses to
  * nothing on the next update tick — visually the merge "loses
  * focus" and the user has to click back in.
  *
  * Why no TableObserver
  * --------------------
  * Upstream's `TableActionMenuPlugin` calls
- * `getTableObserverFromTableElement(...)` for two reasons:
- *   1. `$clearHighlight()` after destructive ops (drops the blue
- *      multi-cell highlight overlay rectangle).
- *   2. Awareness of the cell-resize handle state.
+ * `getTableObserverFromTableElement(...)` for `$clearHighlight()`
+ * after destructive ops and for cell-resize handle awareness.
  * Both rely on `registerTableSelectionObserver` being mounted
  * elsewhere (the playground does this via `TableCellResizer` and
  * a global `TableObserver` install). We don't ship either of
  * those features today — there is no resize handle and no cell-
  * drag highlight overlay in our editor — so installing the
  * observer would only register listeners with nothing to drive.
- * If we add cell-drag selection visuals in a future pass, the
- * observer goes in then and `$clearHighlight()` lands here.
+ * If we add cell-drag selection visuals later, the observer goes
+ * in then and `$clearHighlight()` lands here.
  *
  * Why we still own the Popper
  * ---------------------------
@@ -89,44 +82,6 @@ import styles from './TableActionMenuPlugin.css';
  * "cell hover" affordance (focus ring + adjacent menu) was
  * already wired through `anchorEl`.
  */
-
-/**
- * `computeSelectionCount` — derive the {rows, columns} extent of a
- * TableSelection from its shape. Mirrors upstream's helper of the
- * same name (`packages/lexical-playground/src/plugins/TableActionMenuPlugin/index.tsx`
- * line 56-65). `getShape()` returns a `{fromX, toX, fromY, toY}`
- * rectangle in cell coordinates; the +1 turns an inclusive range
- * into a count.
- */
-function computeSelectionCount(selection: TableSelection): {
-  columns: number;
-  rows: number;
-} {
-  const shape = selection.getShape();
-  return {
-    columns: shape.toX - shape.fromX + 1,
-    rows: shape.toY - shape.fromY + 1
-  };
-}
-
-/**
- * `$selectLastDescendant` — drop the caret at the end of `node`.
- * Mirrors upstream's helper of the same name. Used after a merge
- * so the editor selection lives inside the surviving (merged) cell
- * rather than at one of the just-removed cells. Walks once through
- * the last-descendant chain and dispatches the appropriate select
- * call for the node type we land on.
- */
-function $selectLastDescendant(node: ElementNode): void {
-  const last = node.getLastDescendant();
-  if ($isTextNode(last)) {
-    last.select();
-  } else if ($isElementNode(last)) {
-    last.selectEnd();
-  } else if (last !== null) {
-    last.selectNext();
-  }
-}
 
 interface TableMenuItem extends ActionMenuItem {
   /** Disabled when not applicable to the current selection. */
@@ -140,6 +95,15 @@ interface MenuState {
   rows: number;
   /** How many columns the current selection spans (1 for caret). */
   columns: number;
+  /**
+   * Keys of the cells the user had selected when the menu opened.
+   * Captured at menu-open time because clicking the menu trigger
+   * moves focus out of the editor and clears the `TableSelection`,
+   * so re-reading `$getSelection()` inside the merge handler would
+   * find a plain range (or null) and bail. Empty when no merge-
+   * eligible selection exists.
+   */
+  mergeCellKeys: NodeKey[];
 }
 
 const baseMenuItems: ActionMenuSource = [
@@ -147,8 +111,8 @@ const baseMenuItems: ActionMenuSource = [
   { title: 'Insert Row Below', icon: 'arrowDown' },
   { title: 'Insert Column Left', icon: 'arrowLeft' },
   { title: 'Insert Column Right', icon: 'arrowRight' },
-  { title: 'Merge Cells', icon: 'tile' },
-  { title: 'Unmerge Cells', icon: 'tile' },
+  { title: 'Merge Cells', icon: 'group' },
+  { title: 'Unmerge Cells', icon: 'ungroup' },
   { title: 'Delete Row', icon: 'delete' },
   { title: 'Delete Column', icon: 'delete' },
   { title: 'Delete Table', icon: 'deleteSolid' }
@@ -236,9 +200,14 @@ function TableActionMenu({ editor, tableCellNode, menuState, onComplete }: Table
 
   const mergeCells = useCallback(() => {
     editor.update(() => {
-      const selection = $getSelection();
-      if (!$isTableSelection(selection)) return;
-      const cells = selection.getNodes().filter($isTableCellNode);
+      // Resolve the cells we captured when the menu opened. We
+      // can't rely on `$getSelection()` here: clicking the menu
+      // trigger moves focus out of the editor, which collapses
+      // the TableSelection to a plain RangeSelection (or null),
+      // so re-reading it would lose the multi-cell context and
+      // the merge would silently no-op.
+      const cells = menuState.mergeCellKeys.map(key => $getNodeByKey(key)).filter($isTableCellNode);
+      if (cells.length < 2) return;
       // `$mergeCells` returns the target cell that swallowed the
       // others (or null if the selection was a single cell, which
       // we already gate against via canMerge). Drop the caret at
@@ -251,14 +220,22 @@ function TableActionMenu({ editor, tableCellNode, menuState, onComplete }: Table
       }
     });
     onComplete();
-  }, [editor, onComplete]);
+  }, [editor, menuState.mergeCellKeys, onComplete]);
 
   const unmergeCells = useCallback(() => {
     editor.update(() => {
+      // `$unmergeCell` operates on the anchor cell of the current
+      // selection. Focus has moved to the menu by the time we run,
+      // so the editor selection is no longer pointing inside the
+      // merged cell. Re-anchor it on the cell the menu was opened
+      // against before delegating.
+      if (tableCellNode && $isTableCellNode(tableCellNode)) {
+        tableCellNode.selectStart();
+      }
       $unmergeCell();
     });
     onComplete();
-  }, [editor, onComplete]);
+  }, [editor, tableCellNode, onComplete]);
 
   const handleMenuSelect = (item: ActionMenuItem) => {
     if (!item) return;
@@ -303,7 +280,8 @@ export function TableActionMenuPlugin() {
     canMerge: false,
     canUnmerge: false,
     rows: 1,
-    columns: 1
+    columns: 1,
+    mergeCellKeys: []
   });
   const { context, floating, reference, strategy, x, y, elements } = useFloatingUI({
     placement: 'right',
@@ -337,6 +315,7 @@ export function TableActionMenuPlugin() {
     let tableSelectionCellCount = 0;
     let selectionRows = 1;
     let selectionColumns = 1;
+    let mergeCellKeys: NodeKey[] = [];
 
     if ($isTableSelection(selection)) {
       // Multi-cell drag selection. Use the selection's anchor cell
@@ -346,7 +325,12 @@ export function TableActionMenuPlugin() {
       const tableSelection: TableSelection = selection;
       const anchorNode = tableSelection.anchor.getNode();
       anchorCell = $getTableCellNodeFromLexicalNode(anchorNode);
-      tableSelectionCellCount = tableSelection.getNodes().filter($isTableCellNode).length;
+      const selectedCells = tableSelection.getNodes().filter($isTableCellNode);
+      tableSelectionCellCount = selectedCells.length;
+      // Snapshot the cell keys now so the merge handler can resolve
+      // them later — by then focus has left the editor and the
+      // TableSelection is gone (see `mergeCells` for full rationale).
+      mergeCellKeys = selectedCells.map(cell => cell.getKey());
       const counts = computeSelectionCount(tableSelection);
       selectionRows = counts.rows;
       selectionColumns = counts.columns;
@@ -373,19 +357,16 @@ export function TableActionMenuPlugin() {
       return;
     }
 
-    // Selection-derived menu state. A cell is "merged" when it has
-    // a row-span OR col-span greater than 1; unmerge then becomes
+    // Selection-derived menu state. A cell is "merged" when it
+    // has a row-span OR col-span greater than 1; unmerge is then
     // applicable. Merge is only applicable when the user has a
     // TableSelection covering more than one distinct cell.
-    const rowSpan = anchorCell.getRowSpan();
-    const colSpan = anchorCell.getColSpan();
-    const isMerged = (rowSpan ?? 1) > 1 || (colSpan ?? 1) > 1;
-
     setMenuState({
       canMerge: tableSelectionCellCount > 1,
-      canUnmerge: isMerged,
+      canUnmerge: isMergedCell(anchorCell),
       rows: selectionRows,
-      columns: selectionColumns
+      columns: selectionColumns,
+      mergeCellKeys
     });
 
     tableCellParentNodeDOM.classList.add(...styles.focused);

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 10 — Editor view-mode toggle (`?mode=source` vs. WYSIWYG).
+ * Editor view-mode toggle (`?mode=source` vs. WYSIWYG).
  *
  * Mirrors the pattern of {@link ./useEditMode}: the URL is the
  * source of truth for the mode so it survives reload, can be
@@ -9,8 +9,9 @@
  * separate persistence layer.
  *
  * Default mode is `'wysiwyg'` (no `mode` parameter). Setting
- * `?mode=source` opts in to the raw-markdown textarea. Anything
- * other than `'source'` collapses to `'wysiwyg'` so a typo doesn't
+ * `?mode=source` opts in to the raw-markdown textarea;
+ * `?mode=frontmatter` opens the read-only frontmatter viewer.
+ * Any other value collapses to `'wysiwyg'` so a typo doesn't
  * leave the user on a broken value.
  *
  * The writers operate on the live `window.location.search` rather
@@ -21,7 +22,7 @@
 import { useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-export type EditorMode = 'wysiwyg' | 'source';
+export type EditorMode = 'wysiwyg' | 'source' | 'frontmatter';
 
 export interface EditorModeApi {
   /** Current mode, derived from the URL. */
@@ -34,13 +35,14 @@ export function useEditorMode(): EditorModeApi {
   const router = useRouter();
   const pathname = usePathname();
   const raw = useSearchParams().get('mode');
-  const mode: EditorMode = raw === 'source' ? 'source' : 'wysiwyg';
+  const mode: EditorMode =
+    raw === 'source' ? 'source' : raw === 'frontmatter' ? 'frontmatter' : 'wysiwyg';
 
   const setMode = useCallback(
     (next: EditorMode) => {
       const params = new URLSearchParams(window.location.search);
-      if (next === 'source') {
-        params.set('mode', 'source');
+      if (next === 'source' || next === 'frontmatter') {
+        params.set('mode', next);
       } else {
         // Default — drop the parameter rather than writing
         // `mode=wysiwyg` so the canonical edit URL stays

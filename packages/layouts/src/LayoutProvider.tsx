@@ -1,8 +1,8 @@
 'use client';
 
-import React, { FC, ReactNode, Suspense } from 'react';
+import React, { FC, ReactNode, Suspense, useMemo } from 'react';
 import { useLayout } from '@jpmorganchase/mosaic-store';
-import { useEditMode } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { LayoutNamesProvider, useEditMode } from '@jpmorganchase/mosaic-content-editor-plugin';
 
 import type { LayoutProps } from './types';
 import * as layouts from './layouts';
@@ -15,6 +15,16 @@ export type LayoutProviderProps = {
   children: ReactNode;
   defaultLayout?: string;
 };
+
+/**
+ * Layout names that are NOT author-selectable — they're swapped
+ * in by the framework for special states (`?edit=1`, 404) and
+ * picking them in the Frontmatter editor's `layout` dropdown
+ * would either be a no-op (the framework overrides) or render a
+ * broken page. Excluding them at the provider boundary keeps the
+ * author UX honest without forcing every consumer to filter.
+ */
+const INTERNAL_LAYOUT_NAMES = new Set<string>(['EditLayout']);
 
 /**
  * Inner component that does the actual layout selection. Reads
@@ -33,16 +43,29 @@ const LayoutPicker: FC<LayoutProviderProps> = ({
   const { isEditing } = useEditMode();
   const layout = isEditing ? 'EditLayout' : layoutInStore;
 
+  // Publish the registered author-selectable layout names via
+  // `LayoutNamesProvider` so the editor's FrontmatterEditor can
+  // render the `layout` field as a typeahead picker. Filter out
+  // framework-only names and any `undefined` slots.
+  const authorSelectableNames = useMemo(() => {
+    if (!layoutComponents) return [];
+    return Object.keys(layoutComponents)
+      .filter(name => !INTERNAL_LAYOUT_NAMES.has(name))
+      .filter(name => layoutComponents[name] !== undefined)
+      .sort();
+  }, [layoutComponents]);
+
   let LayoutComponent: FC<LayoutProps> | undefined = layoutComponents?.[layout] as FC<LayoutProps>;
   if (!LayoutComponent) {
     console.error(`Layout ${layout} is not supported, defaulting to ${defaultLayout}`);
     LayoutComponent = layouts[defaultLayout];
   }
-  return LayoutComponent ? (
+  const inner = LayoutComponent ? (
     <LayoutComponent {...LayoutProps}>{children}</LayoutComponent>
   ) : (
     <>{children}</>
   );
+  return <LayoutNamesProvider names={authorSelectableNames}>{inner}</LayoutNamesProvider>;
 };
 
 export const LayoutProvider: FC<LayoutProviderProps> = props => (
@@ -58,4 +81,3 @@ export const LayoutProvider: FC<LayoutProviderProps> = props => (
     <LayoutPicker {...props} />
   </Suspense>
 );
-

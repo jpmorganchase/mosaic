@@ -1,9 +1,12 @@
 import React from 'react';
-import classnames from 'clsx';
-import { tr } from '@jpmorganchase/mosaic-theme';
+import { TR as SaltTR, type TRProps as SaltTRProps } from '@salt-ds/core';
 
-export interface TrProps extends React.HTMLProps<HTMLTableRowElement> {}
+/**
+ * Markdown `<tr>` renderer. Delegates to Salt's `<TR>`. Salt's
+ * component is a thin `<tr>` wrapper that participates in the
+ * surrounding Salt table context — required for zebra striping
+ * and divider styling to render correctly on the row.
+ */
+export type TrProps = SaltTRProps;
 
-export const Tr: React.FC<React.PropsWithChildren<TrProps>> = ({ className, ...rest }) => (
-  <tr className={classnames(className, tr())} {...rest} />
-);
+export const Tr: React.FC<React.PropsWithChildren<TrProps>> = props => <SaltTR {...props} />;

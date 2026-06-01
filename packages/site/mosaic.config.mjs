@@ -22,7 +22,7 @@ const siteConfig = {
       priority: -1,
       options: {
         outputDir: './public',
-        assets: ['sitemap.xml', 'search-data.json']
+        assets: ['search-data.json']
       }
     },
     {

@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 6.1 — In-app keyboard-shortcut cheatsheet.
+ * In-app keyboard-shortcut cheatsheet.
  *
  * Lists every binding registered in `utils/shortcuts.ts`, rendered
  * with Salt's `Table` primitives inside a Salt `Dialog`. The dialog

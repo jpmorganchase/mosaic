@@ -5,8 +5,8 @@ const title = style({
   alignItems: 'center'
 });
 
-// Phase 9: a little top breathing room so the diff accordion sits
-// clear of the info paragraphs above it.
+// Top breathing room so the diff accordion sits clear of the info
+// paragraphs above it.
 const diffAccordion = style({
   marginTop: vars.space.vertical.x2
 });
@@ -28,12 +28,44 @@ const statRemove = style({
   color: 'rgb(248, 81, 73)'
 });
 
+// Rename row — labelled input above the diff accordion for the
+// in-flow rename feature. Understated so it doesn't compete with
+// the primary CTA.
+const renameRow = style({
+  marginTop: vars.space.vertical.x2,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: vars.space.vertical.x1
+});
+
+const renameLabel = style({
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  letterSpacing: '0.03em',
+  textTransform: 'uppercase',
+  opacity: 0.75
+});
+
+const renameHint = style({
+  fontSize: '0.75rem',
+  opacity: 0.6
+});
+
+const renameError = style({
+  fontSize: '0.8125rem',
+  color: 'var(--salt-status-error-foreground, currentColor)'
+});
+
 export default {
   title,
   diffAccordion,
   noChanges,
   statAdd,
-  statRemove
+  statRemove,
+  renameRow,
+  renameLabel,
+  renameHint,
+  renameError
 };
 
 globalStyle(`${title} [role=heading] `, {

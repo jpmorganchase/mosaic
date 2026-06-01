@@ -227,9 +227,7 @@ test.describe('editor error highlighting — Phase 3', () => {
 });
 
 test.describe('editor keyboard shortcuts — Phase 6', () => {
-  test('Mod+S opens the save / PR dialog without triggering the browser save', async ({
-    page
-  }) => {
+  test('Mod+S opens the save / PR dialog without triggering the browser save', async ({ page }) => {
     await signInWithDevFake(page);
     await page.goto(`${EDITABLE_PAGE}?edit=1`);
 
@@ -356,7 +354,9 @@ test.describe('editor diff preview — Phase 9', () => {
     const dialog = page.getByRole('dialog', { name: /Save Changes/i });
     await expect(dialog).toBeVisible({ timeout: 5_000 });
 
-    await expect(dialog.getByText(/No changes — the editor matches the saved file\./i)).toBeVisible();
+    await expect(
+      dialog.getByText(/No changes — the editor matches the saved file\./i)
+    ).toBeVisible();
     await expect(dialog.getByRole('button', { name: /Review changes/i })).toHaveCount(0);
   });
 
@@ -516,8 +516,90 @@ test.describe('editor mode toggle — Phase 10', () => {
   });
 });
 
+test.describe('new-page authoring — Phase 13', () => {
+  /**
+   * End-to-end coverage for the New-Page flow.
+   *
+   * What we exercise:
+   *   - The "+ New page" CTA appears in the header after sign-in.
+   *   - The dialog accepts a parent folder + filename + title
+   *     and produces the expected `<route>?new=1&title=<encoded>`
+   *     URL on Create.
+   *   - The site's `[...route]/page.tsx` catch-all takes the
+   *     create branch (the route doesn't exist on disk) and
+   *     mounts the editor seeded with the title in an H1.
+   *   - Opening the save dialog in create mode swaps its title
+   *     + CTA to "Create Page" wording.
+   *
+   * What we do NOT exercise: actually submitting the create.
+   * That requires a live `MOSAIC_WORKFLOWS_URL` backend speaking
+   * the save-channel protocol, which the dev server doesn't have
+   * configured. We assert the CTA is enabled (proving the
+   * change-detection guard passed) and stop there.
+   */
+  test('launches the New-Page dialog and seeds the editor at the chosen route', async ({
+    page
+  }) => {
+    await signInWithDevFake(page);
 
+    const newPageButton = page.getByRole('button', { name: /create a new page/i });
+    await expect(newPageButton).toBeVisible({ timeout: 10_000 });
+    await newPageButton.click();
 
+    // Dialog title is the unambiguous handle on the dialog —
+    // matching on field labels would also catch unrelated forms.
+    await expect(page.getByRole('heading', { name: /^New page$/i })).toBeVisible();
 
+    await page.getByLabel(/parent folder/i).fill('/docs/test-pages');
+    await page.getByLabel(/^filename$/i).fill('phase-13-e2e');
+    await page.getByLabel(/^title$/i).fill('Phase 13 E2E Test');
 
+    await page.getByRole('button', { name: /^Create$/i }).click();
 
+    await page.waitForURL(
+      url =>
+        url.pathname === '/docs/test-pages/phase-13-e2e.mdx' &&
+        url.searchParams.get('new') === '1' &&
+        url.searchParams.get('title') === 'Phase 13 E2E Test',
+      { timeout: 10_000 }
+    );
+
+    // The editor mounts (seeded with the blank-page template)
+    // and the H1 we asked for appears either in the editor
+    // surface or the preview pane. Asserting on text rather
+    // than a specific role keeps the test resilient to whether
+    // the editor surfaces the heading in Lexical's
+    // contenteditable or the preview's rendered `<h1>`.
+    await expect(page.getByText('Phase 13 E2E Test').first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('save dialog uses create-page wording in new-page mode', async ({ page }) => {
+    await signInWithDevFake(page);
+
+    // Drive the editor straight into `?new=1` rather than going
+    // through the dialog — this test is about the save-dialog
+    // wording, and the dialog launch is already covered above.
+    await page.goto(
+      '/docs/test-pages/phase-13-save-dialog.mdx?new=1&title=' +
+        encodeURIComponent('Save Dialog Wording Test')
+    );
+
+    await expect(page.getByRole('toolbar', { name: /page editing toolbar/i })).toBeVisible({
+      timeout: 15_000
+    });
+
+    await page.getByRole('button', { name: /^Save$/i }).click();
+
+    await expect(page.getByRole('heading', { name: /^Create Page$/i })).toBeVisible();
+    const createCta = page.getByRole('button', { name: /^Create Page$/i });
+    await expect(createCta).toBeVisible();
+
+    // The change-detection guard should have already accepted
+    // (the seeded H1 + title-bearing frontmatter is enough
+    // content for the create branch's "non-empty body or
+    // frontmatter" check). We stop here — clicking would try
+    // to hit the workflows backend, which the dev server isn't
+    // configured for in CI.
+    await expect(createCta).toBeEnabled();
+  });
+});

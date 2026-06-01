@@ -4,7 +4,8 @@ import { button, caption, responsiveSprinkles } from '@jpmorganchase/mosaic-them
 const root = style([
   {
     alignItems: 'center',
-    display: 'flex'
+    display: 'flex',
+    gap: 'var(--salt-spacing-100)'
   },
   caption({ variant: 'caption6' }),
   responsiveSprinkles({

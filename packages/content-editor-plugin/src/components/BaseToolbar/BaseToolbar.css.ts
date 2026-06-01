@@ -8,8 +8,7 @@ const root = style([
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    padding: vars.space.horizontal.x1,
-    height: '44px'
+    padding: vars.space.horizontal.x1
   })
 ]);
 export default {

@@ -1,15 +1,15 @@
 'use client';
 
 /**
- * Phase 10 follow-up — `FormattingToolbarSlot` portal plumbing.
+ * `FormattingToolbarSlot` portal plumbing.
  *
  * Why this exists
  * ---------------
- * After Phase 10 lifted the chrome toolbar above `LexicalComposer`
- * so it could survive mode flips, the toolbar's Lexical-coupled
- * children (undo/redo, bold/italic, insert link/table/image,
- * insert HR) blew up because `useLexicalComposerContext` requires
- * the composer mounted upstream.
+ * The chrome toolbar is mounted above `LexicalComposer` so it
+ * survives view-mode flips intact. But the toolbar's Lexical-
+ * coupled children (undo/redo, bold/italic, insert link/table/
+ * image, insert HR) need `useLexicalComposerContext`, which
+ * requires the composer mounted upstream.
  *
  * Fix: keep one visual toolbar but render its formatting half via
  * a portal whose target lives inside the chrome row. The portal
@@ -95,10 +95,10 @@ interface FormattingToolbarSlotTargetProps {
  * inside the chrome toolbar row by `Toolbar.tsx`.
  *
  * The slot div is a flex row so portal'd children become flex
- * items inside it, preserving inter-tooltray spacing exactly as
- * pre-Phase-10. We mirror BaseToolbar's `> *:not(:first-child)`
- * margin rule so spacing between formatting tooltrays matches
- * the spacing between them and the chrome tooltray.
+ * items inside it, preserving inter-tooltray spacing. We mirror
+ * BaseToolbar's `> *:not(:first-child)` margin rule so spacing
+ * between formatting tooltrays matches the spacing between them
+ * and the chrome tooltray.
  */
 export const FormattingToolbarSlotTarget = ({ className }: FormattingToolbarSlotTargetProps) => {
   const { setNode } = useContext(SlotContext);

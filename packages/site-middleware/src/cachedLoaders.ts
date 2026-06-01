@@ -371,3 +371,116 @@ const loadMdxRawCached = withCrossRequestCache(loadMdxRawImpl, ['mosaic', 'mdx']
 export const getMdxRaw = cache(async (pathname: string, mode: MosaicMode, contentUrl: string) =>
   loadMdxRawCached(pathname, mode, contentUrl)
 );
+
+// ---------------------------------------------------------------------------
+// MDX raw-source (pre-plugin) loader
+// ---------------------------------------------------------------------------
+
+/**
+ * Outcomes of a raw-source fetch.
+ *
+ * The Mosaic CLI's `/_mosaic-raw/*` route returns the bytes of a
+ * page **as they exist on the source filesystem**, before any
+ * plugin has touched them. Multiple non-success paths matter
+ * separately to the editor:
+ *
+ *   - `raw`: success — the editor can show authored frontmatter
+ *     in the Frontmatter tab and (later) round-trip authored
+ *     edits back through the workflow.
+ *   - `unsupported-source`: the URL is owned by a source kind
+ *     the CLI's raw route doesn't yet support (today: anything
+ *     other than `source-local-folder`). The editor renders a
+ *     precise "frontmatter editing requires source-local-folder"
+ *     hint and stays read-only.
+ *   - `no-matching-source`: no configured source claims this
+ *     URL — the page is virtual / synthesised. Editor renders a
+ *     "this page has no on-disk source" hint.
+ *   - `not-found`: matching source exists but the file is missing
+ *     (mid-rename, deleted, race with `fs.watch`). Editor should
+ *     retry on next mount.
+ *   - `unavailable-in-mode`: the deployment isn't in active mode
+ *     (snapshot dirs hold post-plugin bytes, not raw source —
+ *     misleading to surface those as "raw").
+ *
+ * The discriminator mirrors the CLI's `X-Mosaic-Raw-Status`
+ * header vocabulary so debugging tooling and the editor's UX
+ * messages share one set of names.
+ */
+export type MdxRawSourceResult =
+  | { kind: 'raw'; bytes: string; namespace: string | undefined }
+  | { kind: 'not-found' }
+  | { kind: 'no-matching-source' }
+  | { kind: 'unsupported-source'; modulePath: string | undefined }
+  | { kind: 'unavailable-in-mode'; mode: MosaicMode };
+
+const RAW_ROUTE_PREFIX = '/_mosaic-raw';
+
+const loadMdxRawSourceImpl = async (
+  pathname: string,
+  mode: MosaicMode,
+  contentUrl: string
+): Promise<MdxRawSourceResult> => {
+  // Snapshot modes serve the post-plugin VFS — there's no
+  // "raw source" concept on the snapshot side. Returning a
+  // distinct status (rather than falling through to a 404)
+  // lets the editor render a clear "raw source unavailable in
+  // snapshot mode" hint instead of guessing.
+  if (mode === 'snapshot-file' || mode === 'snapshot-s3') {
+    return { kind: 'unavailable-in-mode', mode };
+  }
+
+  const normalized = normalizeMdxUrl(pathname);
+  const response = await fetch(`${contentUrl}${RAW_ROUTE_PREFIX}${normalized}`);
+
+  if (response.ok) {
+    const bytes = await response.text();
+    const namespace = response.headers.get('x-mosaic-raw-namespace') ?? undefined;
+    return { kind: 'raw', bytes, namespace };
+  }
+
+  if (response.status === 404) {
+    // The CLI sets `X-Mosaic-Raw-Status` to distinguish the
+    // three 404 sub-cases; map each one onto our discriminated
+    // result so callers don't have to parse headers themselves.
+    const status = response.headers.get('x-mosaic-raw-status');
+    if (status === 'unsupported-source') {
+      return {
+        kind: 'unsupported-source',
+        modulePath: response.headers.get('x-mosaic-raw-module') ?? undefined
+      };
+    }
+    if (status === 'no-matching-source') {
+      return { kind: 'no-matching-source' };
+    }
+    // Header missing OR `not-a-file` / plain not-found —
+    // collapse to a single "the file isn't there" status.
+    return { kind: 'not-found' };
+  }
+
+  throw new Error(
+    `Failed to load raw MDX from ${contentUrl}${RAW_ROUTE_PREFIX}${normalized}: ${response.status} ${response.statusText}`
+  );
+};
+
+const loadMdxRawSourceCached = withCrossRequestCache(loadMdxRawSourceImpl, ['mosaic', 'mdxRaw']);
+
+/**
+ * Resolve the **raw on-disk source** for a route, bypassing the
+ * Mosaic plugin pipeline. See {@link MdxRawSourceResult} for the
+ * outcome shape.
+ *
+ * Cache wiring mirrors {@link getMdxRaw}: per-request `cache()`
+ * + cross-request `unstable_cache` tagged with
+ * `MOSAIC_CONTENT_CACHE_TAG`. The editor only fetches this on
+ * its initial mount per page, so cache pressure is low.
+ *
+ * Note: snapshot deployments return `unavailable-in-mode` —
+ * snapshots hold post-plugin VFS bytes, not raw source. The
+ * editor branch is only reachable on dynamic (active) builds
+ * with a signed-in user, so this is the expected combination
+ * in practice.
+ */
+export const getMdxRawSource = cache(
+  async (pathname: string, mode: MosaicMode, contentUrl: string) =>
+    loadMdxRawSourceCached(pathname, mode, contentUrl)
+);

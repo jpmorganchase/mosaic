@@ -94,6 +94,24 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
     pendingErrorRef.current = null;
   };
 
+  // Queue an error to surface after `ERROR_GRACE_MS` of markdown
+  // stillness. Resets any in-flight grace timer so the latest
+  // failure governs the wait. The visible error context is left
+  // untouched until the timer fires — half-typed JSX (`<Card`,
+  // `<Card prop=`) doesn't paint red on every keystroke pause.
+  const queueErrorAfterGrace = (formatted: ReturnType<typeof formatMdxError>) => {
+    pendingErrorRef.current = formatted;
+    if (pendingTimerRef.current !== null) {
+      clearTimeout(pendingTimerRef.current);
+    }
+    pendingTimerRef.current = setTimeout(() => {
+      pendingTimerRef.current = null;
+      const queued = pendingErrorRef.current;
+      pendingErrorRef.current = null;
+      if (queued) setError(queued);
+    }, ERROR_GRACE_MS);
+  };
+
   // Single compile pipeline used by both the initial seed and the
   // debounced onChange path. Building the line map alongside the
   // markdown (inside the same `editor.read()`) guarantees they
@@ -111,22 +129,7 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
           // its eventual response is what should drive UI state.
           if (seq !== compileSeqRef.current) return;
           if ('error' in source && source.error) {
-            // Don't surface the error immediately — wait out the
-            // grace window so half-typed JSX (`<Card`, `<Card prop=`)
-            // doesn't paint red on every pause. Until the timer
-            // fires, the previous successful preview remains visible
-            // and any prior squiggle stays cleared.
-            const formatted = formatMdxError(source.error);
-            pendingErrorRef.current = formatted;
-            if (pendingTimerRef.current !== null) {
-              clearTimeout(pendingTimerRef.current);
-            }
-            pendingTimerRef.current = setTimeout(() => {
-              pendingTimerRef.current = null;
-              const queued = pendingErrorRef.current;
-              pendingErrorRef.current = null;
-              if (queued) setError(queued);
-            }, ERROR_GRACE_MS);
+            queueErrorAfterGrace(formatMdxError(source.error));
           } else {
             // Successful compile — show the new preview and tear down
             // any pending error timer (good news cancels bad news).
@@ -139,17 +142,7 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
           // Thrown errors (server-action failures, network issues)
           // go through the same grace window as compile errors so a
           // dropped request mid-keystroke doesn't flash red either.
-          const formatted = formatMdxError(e);
-          pendingErrorRef.current = formatted;
-          if (pendingTimerRef.current !== null) {
-            clearTimeout(pendingTimerRef.current);
-          }
-          pendingTimerRef.current = setTimeout(() => {
-            pendingTimerRef.current = null;
-            const queued = pendingErrorRef.current;
-            pendingErrorRef.current = null;
-            if (queued) setError(queued);
-          }, ERROR_GRACE_MS);
+          queueErrorAfterGrace(formatMdxError(e));
         } finally {
           // Only the latest in-flight compile owns the busy flag —
           // an out-of-order earlier response should not flip it back

@@ -33,8 +33,6 @@
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "@types/styled-components": "^5.1.26",
-    "@vanilla-extract/esbuild-plugin": "^2.3.15",
     "concurrently": "^7.1.0",
     "del-cli": "^6.0.0",
     "msw": "^2.14.6",

@@ -18,8 +18,7 @@ interface ToolbarProps {
 /**
  * Top-level editor toolbar.
  *
- * Phase 10 split this into two halves driven by which view mode
- * is active:
+ * Split into two halves driven by which view mode is active:
  *
  *   - **Chrome (this file).** Mode-agnostic actions that need to
  *     work in both WYSIWYG and source mode: save, cancel,

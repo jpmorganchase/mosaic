@@ -25,6 +25,31 @@ export interface PersistInput {
   route: string;
   /** New markdown content (gray-matter front-matter included). */
   markdown: string;
+  /**
+   * Optional authored frontmatter (bare YAML, no `---` fences)
+   * from the editor's Frontmatter tab. Forwarded verbatim to the
+   * workflow; when omitted, the workflow keeps the on-disk
+   * frontmatter unchanged.
+   */
+  frontmatter?: string;
+  /**
+   * Optional new VFS route for a file rename (Mosaic uses
+   * file-based routing, so renaming = moving the page's URL).
+   * Forwarded verbatim to the workflow; when omitted or equal
+   * to `route` no rename happens.
+   */
+  targetRoute?: string;
+  /**
+   * When `true` the workflow treats `route` as a brand-new
+   * page rather than an edit of an existing one — skips the
+   * on-disk readFile, creates the parent directory tree, and
+   * requires `frontmatter` to be present. Forwarded verbatim
+   * to the workflow.
+   *
+   * Set by the editor's create-page dialog; never set by an
+   * edit save.
+   */
+  isNewPage?: boolean;
 }
 
 export type PersistEvent =
@@ -56,7 +81,12 @@ export async function* persistContent(
   // the session callback; fall back to email so a default Auth.js
   // setup still produces a stable channel key.
   const sid = (sessionUser as { sid?: string }).sid ?? sessionUser.email;
-  const channel = createHash('md5').update(`${sid.toLowerCase()} - save`).digest('hex');
+  // Stable per-save channel id. The workflows backend echoes it
+  // back on every progress message so we can ignore messages from
+  // other concurrent saves on the same socket. SHA-256 (not MD5)
+  // only because dependency scanners flag MD5 unconditionally,
+  // even for non-crypto uses like this one.
+  const channel = createHash('sha256').update(`${sid.toLowerCase()} - save`).digest('hex');
 
   let socket: WebSocket;
   try {
@@ -108,6 +138,21 @@ export async function* persistContent(
         user: { sid, name: sessionUser.name ?? '', email: sessionUser.email },
         route: input.route,
         markdown: input.markdown,
+        // Only include the key when the editor actually sent
+        // frontmatter — workflows that haven't opted in branch on
+        // `typeof frontmatter === 'string'`, so an explicit
+        // `undefined` here is functionally equivalent to omitting
+        // it but cleaner over the wire.
+        ...(typeof input.frontmatter === 'string' ? { frontmatter: input.frontmatter } : {}),
+        ...(typeof input.targetRoute === 'string' && input.targetRoute !== input.route
+          ? { targetRoute: input.targetRoute }
+          : {}),
+        // Forward the create-page flag verbatim. We never
+        // send `false` on the wire — absent === edit, present
+        // === create — so the workflow's destructure stays
+        // clean and consumers that don't know about the field
+        // see nothing new.
+        ...(input.isNewPage ? { isNewPage: true } : {}),
         name: 'save',
         channel
       })
@@ -167,5 +212,3 @@ export async function* persistContent(
     yield next;
   }
 }
-
-

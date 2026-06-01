@@ -4,6 +4,7 @@ import { vars } from '@jpmorganchase/mosaic-theme';
 const root = style({
   background: 'inherit',
   display: 'flex',
+  alignItems: 'center',
   justifyContent: 'center',
   flexShrink: 0,
   flexGrow: 0,

@@ -39,6 +39,7 @@ import { notFound, redirect } from 'next/navigation';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRaw,
+  getMdxRawSource,
   getSearchData,
   getSharedConfig,
   loadSitemap
@@ -49,6 +50,7 @@ import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
 import { EditorBody } from './EditorBody';
 import { RouteMetadata } from './RouteMetadata';
+import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 
 interface PageProps {
   params: Promise<{ route?: string[] }>;
@@ -79,6 +81,41 @@ interface PageProps {
 const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
+
+/**
+ * Dev-only escape hatch for the source-capability gate.
+ *
+ * The gate (see the edit/create branch below) hides the editor on
+ * pages whose owning source has not declared `capabilities.writable
+ * = true`. In this repo's own dev environment the docs are served
+ * via `source-local-folder`, which is correctly non-writable —
+ * which would also lock out the editor's own e2e tests (and any
+ * hand-iteration against local content).
+ *
+ * Setting `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` makes every page
+ * present as if it were from a writable source. The bypass is
+ * hard-guarded against production: `NODE_ENV` must not be
+ * `production`, and a boot-time warning fires so the leak is
+ * impossible to miss.
+ *
+ * The bypass works by rewriting the per-route `sharedConfig` to
+ * force `sourceCapabilities.writable = true` before the page
+ * renders. That keeps the override server-side and means the
+ * client-side `useSourceCapabilities()` hook needs no parallel
+ * env-var coordination — both server and browser see the same
+ * (overridden) capability snapshot.
+ */
+const CAPABILITY_GATE_BYPASSED =
+  process.env.NODE_ENV !== 'production' && process.env.MOSAIC_DEV_BYPASS_CAPABILITY_GATE === 'true';
+
+if (CAPABILITY_GATE_BYPASSED) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[mosaic-site] MOSAIC_DEV_BYPASS_CAPABILITY_GATE is enabled — ' +
+      'the editor is mounted on every page regardless of source ' +
+      'writability. Do NOT enable this in production.'
+  );
+}
 
 export async function generateStaticParams(): Promise<{ route: string[] }[]> {
   if (!shouldPrerenderSnapshot) return [];
@@ -188,7 +225,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Awaiting `searchParams` during a static-export prerender promotes
   // the route to dynamic and breaks the build; the EDIT branch is
   // unreachable in static export anyway (auth() is stubbed).
-  const [mdx, sharedConfig, search, sp] = await Promise.all([
+  const [mdx, sharedConfigOriginal, search, sp] = await Promise.all([
     getMdxRaw(pathname, mode, contentUrl),
     getSharedConfig(pathname, mode, contentUrl),
     getSearchData(mode, contentUrl),
@@ -197,34 +234,203 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       : searchParams
   ]);
 
-  if (mdx.kind === 'redirect') redirect(mdx.destination);
-  if (mdx.kind === 'not-found') notFound();
+  // Apply the dev capability-bypass to the shared config before
+  // anyone (server gate, store, client hook) reads it. The override
+  // is the closed default — `{ writable: true }` — applied via a
+  // shallow merge so authored fields (header, footer, etc.) are
+  // preserved.
+  const sharedConfig = CAPABILITY_GATE_BYPASSED
+    ? {
+        ...(sharedConfigOriginal ?? {}),
+        sourceCapabilities: {
+          ...(sharedConfigOriginal?.sourceCapabilities ?? {}),
+          writable: true
+        }
+      }
+    : sharedConfigOriginal;
 
-  // `mdx.kind === 'mdx'` from here on.
-  const { raw, frontmatter } = mdx;
+  if (mdx.kind === 'redirect') redirect(mdx.destination);
+  // For a normal view/edit request a missing page is a 404. For
+  // a `?new=1` request a missing page is EXPECTED (the file
+  // doesn't exist yet — we're about to create it) so we hand
+  // off to the create-mode branch below instead of 404'ing.
+  // The auth gate inside that branch is the actual security
+  // boundary; unauthenticated `?new=1` requests fall through
+  // to the same 404 the view branch would have produced.
+  const newRequested = sp.new === '1';
+  const newPossible = newRequested && !shouldPrerenderSnapshot;
+  // Source-capability gate. Absent capabilities (no shared-config
+  // for the subtree, or a source that hasn't opted in) means
+  // `writable` is `false` — the closed default. Applies equally
+  // to the edit and create branches; a hand-typed `?edit=1` or
+  // `?new=1` against a non-writable page falls through to view
+  // mode rather than mounting the editor for a save that would
+  // fail at the workflows layer.
+  const isWritableSource = sharedConfig?.sourceCapabilities?.writable === true;
+  if (mdx.kind === 'not-found' && !(newPossible && isWritableSource)) notFound();
+
+  // `mdx.kind === 'mdx' | 'not-found'` from here on. For the
+  // `not-found + newPossible` case `raw` doesn't exist; we
+  // synthesise the body below from a blank-page template.
+  const onDiskFrontmatter = mdx.kind === 'mdx' ? mdx.frontmatter : ({} as Record<string, unknown>);
+  const onDiskRaw = mdx.kind === 'mdx' ? mdx.raw : '';
+  // Strip `sharedConfig` out of the frontmatter spread below.
+  //
+  // Background: index pages may author a `sharedConfig` in their
+  // own frontmatter (header / footer / menu for the subtree). The
+  // `SharedConfigPlugin` already lifts that authored value into the
+  // namespace's `shared-config.json`, which is what `getSharedConfig`
+  // loads back into the `sharedConfig` const above. Re-spreading
+  // `onDiskFrontmatter.sharedConfig` on top would just overwrite
+  // the loader-derived copy with the (identical) authored one —
+  // EXCEPT that the loader-derived copy is what the
+  // `CAPABILITY_GATE_BYPASSED` block (and, in non-dev builds, the
+  // SharedConfigPlugin's `sourceCapabilities` stamping) enriches
+  // with the writability flag. The frontmatter copy carries no
+  // `sourceCapabilities` field, so the spread silently clobbers the
+  // bypass on exactly the index pages that authored a sharedConfig,
+  // hiding `<EditorControls>` on the docs landing page while every
+  // non-index page in the same namespace shows them.
+  const { sharedConfig: _frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
+    sharedConfig?: unknown;
+  } & Record<string, unknown>;
   const storeProps = {
-    sharedConfig,
     searchIndex: search.searchIndex,
     searchConfig: search.searchConfig,
-    ...frontmatter
+    ...frontmatterRest,
+    sharedConfig
   };
 
+  // If `?new=1` was requested AND the route already exists on
+  // disk, the create flow is unsafe (we'd silently clobber the
+  // existing page on save). Redirect to the existing route in
+  // edit mode with an `existed=1` query the dialog can surface
+  // as a hint. We do this here rather than in the dialog so the
+  // editor never even mounts for a route the author misidentified.
+  //
+  // Skip the redirect when the source isn't writable — there's
+  // no edit branch to redirect to, so just fall through and
+  // render view mode.
+  if (newRequested && mdx.kind === 'mdx' && isWritableSource) {
+    redirect(`${pathname}?edit=1&existed=1`);
+  }
+
   // Edit-mode gate: only honour `?edit=1` for signed-in users on a
-  // dynamic (non-static-export) deployment. The auth check happens
-  // here on the server so an un-authenticated request never receives
-  // the editor bundle at all — defense in depth, regardless of any
-  // client-side UI gating in `AppHeaderControls`.
+  // dynamic (non-static-export) deployment, **and** only when the
+  // page's owning source has declared itself writable. The auth
+  // check happens here on the server so an un-authenticated request
+  // never receives the editor bundle at all — defense in depth,
+  // regardless of any client-side UI gating in `AppHeaderControls`.
+  //
+  // The source-capability check is the second defense layer: even
+  // a signed-in user can't bypass `AppHeaderControls`'s hidden
+  // button by hand-typing `?edit=1` on a page whose source has no
+  // backing persistence workflow (a save would fail at the
+  // workflows layer anyway — we just refuse to mount the editor
+  // for it).
+  //
+  // When the edit branch is at all possible (`editRequested &&
+  // !shouldPrerenderSnapshot`) we speculatively kick off
+  // `getMdxRawSource` in parallel with `auth()`. The raw-source
+  // fetch is the editor's Frontmatter-tab data source — same shape
+  // as `getMdxRaw` but hits the CLI's `/_mosaic-raw/*` endpoint,
+  // bypassing the plugin pipeline. Speculating it here costs at
+  // most one extra HTTP request when auth ends up failing (still
+  // cheap, the route is server-local in active mode); when auth
+  // succeeds we've already paid the latency in parallel with the
+  // auth check rather than serially after it.
   const editRequested = sp.edit === '1';
-  const session = editRequested && !shouldPrerenderSnapshot ? await auth() : null;
-  const editing = editRequested && session?.user != null;
-  const editorUser = editing && session?.user
-    ? {
-        sid:
-          (session.user as { sid?: string }).sid ?? session.user.email ?? session.user.name ?? '',
-        displayName: session.user.name ?? '',
-        email: session.user.email ?? ''
-      }
-    : undefined;
+  const editPossible = editRequested && !shouldPrerenderSnapshot;
+  // Auth is required for both the edit and the create branch.
+  // Compute once + share the resulting session promise so we
+  // never pay for two `auth()` calls in a single request.
+  const authPossible = (editPossible || newPossible) && isWritableSource;
+  const sessionPromise = authPossible ? auth() : Promise.resolve(null);
+  // Raw-source fetch is only meaningful for the edit branch.
+  // For the create branch we synthesise a raw envelope below
+  // (`effectiveRawSource`) around the same template bytes the
+  // body editor is seeded with, so the Frontmatter tab gets the
+  // editable form rather than the read-only viewer — there's
+  // no on-disk file to fetch for a page that doesn't exist yet.
+  // Gated on `isWritableSource` too — no point fetching raw
+  // bytes for a page the editor will refuse to mount.
+  const rawSourcePromise =
+    editPossible && isWritableSource
+      ? getMdxRawSource(pathname, mode, contentUrl)
+      : Promise.resolve(undefined);
+  const [session, rawSource] = await Promise.all([sessionPromise, rawSourcePromise]);
+  const editing = editRequested && isWritableSource && mdx.kind === 'mdx' && session?.user != null;
+  const creating = newPossible && isWritableSource && session?.user != null;
+  const editorUser =
+    (editing || creating) && session?.user
+      ? {
+          sid:
+            (session.user as { sid?: string }).sid ?? session.user.email ?? session.user.name ?? '',
+          displayName: session.user.name ?? '',
+          email: session.user.email ?? ''
+        }
+      : undefined;
+
+  // Blank-page template for the create branch. The title comes
+  // from `?title=...` (URL-encoded by the New-Page dialog);
+  // fall back to "New Page" if absent so the editor still has
+  // a sensible title to render.
+  //
+  // Sanitisation: strip `---` (would break out of the
+  // frontmatter block) before injection. Trim to bound the
+  // string the user can dump into the template. The actual YAML
+  // quoting / escaping is handled by `gray-matter.stringify`
+  // inside `composeTemplate`, so we don't have to think about
+  // embedded newlines, quotes, or backticks here.
+  //
+  // The body skeleton itself is delegated to
+  // `./newPageTemplate.ts` so each app integrator can customise
+  // it (different starter content per folder, extra required
+  // frontmatter keys for their layout set, etc.) without
+  // editing this route. See the doc comments at the top of that
+  // file for the contract.
+  const sanitiseTitle = (t: string) => t.replace(/---+/g, '').trim().slice(0, 200) || 'New Page';
+  const newPageTitle = creating
+    ? sanitiseTitle(typeof sp.title === 'string' ? sp.title : 'New Page')
+    : '';
+  const newPageRaw = creating
+    ? composeTemplate(
+        buildNewPageTemplate({
+          title: newPageTitle,
+          pathname,
+          parentFolder: pathname.replace(/\/[^/]*$/, '')
+        })
+      )
+    : '';
+  // Pick the body bytes the editor will be seeded with. Create
+  // branch: the synthesised template. Edit / view branch: the
+  // on-disk raw bytes.
+  const raw = creating ? newPageRaw : onDiskRaw;
+
+  // Frontmatter editor wiring for the create branch.
+  //
+  // `FrontmatterPanel` mounts the editable `FrontmatterEditor`
+  // ONLY when it receives a `rawSource` of `{ kind: 'raw', ... }`
+  // — every other shape (including the `undefined` we'd otherwise
+  // pass for new pages) falls through to the read-only viewer.
+  // For new pages the synthesised template IS the authored
+  // source (there's nothing on disk yet to fetch), so we
+  // synthesise a matching `raw` envelope around the same bytes
+  // and pass that in. The result is that the Frontmatter tab is
+  // immediately editable on a new page, seeded with whatever the
+  // template put in the YAML block (currently `title: ...`),
+  // and the save dialog's existing `frontmatter` payload path
+  // picks up any edits unmodified.
+  //
+  // `namespace` is `undefined` because the page doesn't yet
+  // belong to a Mosaic namespace — that gets resolved when the
+  // file is committed and the source picks it up. The editor's
+  // `pillLabel` falls back to "On-disk source" rather than
+  // "On-disk source · <ns>" in that case, which is the right
+  // copy for a not-yet-written file.
+  const effectiveRawSource = creating
+    ? ({ kind: 'raw', bytes: newPageRaw, namespace: undefined } as const)
+    : rawSource;
 
   // Intentionally no nested `<Suspense>` and no sibling `loading.tsx`
   // at the route segment for the VIEW branch. When a `<Link>`-driven
@@ -240,7 +446,16 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   return (
     <StoreShell storeProps={storeProps}>
       <RouteMetadata />
-      {editing ? <EditorBody raw={raw} user={editorUser} /> : <BodyServer type="mdx" raw={raw} />}
+      {editing || creating ? (
+        <EditorBody
+          raw={raw}
+          rawSource={effectiveRawSource}
+          user={editorUser}
+          isNewPage={creating}
+        />
+      ) : (
+        <BodyServer type="mdx" raw={raw} />
+      )}
     </StoreShell>
   );
 }

@@ -1,5 +1,5 @@
 /**
- * Keyboard-shortcut helpers (Phase 6).
+ * Keyboard-shortcut helpers.
  *
  * Shortcuts are authored once in a platform-neutral canonical form
  * (e.g. `"Mod+S"`, `"Mod+Shift+Z"`) and converted into two shapes at

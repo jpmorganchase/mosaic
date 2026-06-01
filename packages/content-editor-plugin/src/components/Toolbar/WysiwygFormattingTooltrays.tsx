@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 10 follow-up — Lexical-coupled formatting tooltrays.
+ * Lexical-coupled formatting tooltrays.
  *
  * Mounted inside `LexicalComposer` by `WysiwygShell`. Portals its
  * content into the chrome toolbar's `<FormattingToolbarSlot>` so

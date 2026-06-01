@@ -7,7 +7,7 @@
 
 ## Why this plan exists
 
-The recent App Router migration cleaned up the editor's *architecture* (Server Actions, context split, code-splitting, structured errors). What it didn't touch is the editor's *user experience*, which still has rough edges that show up the moment a real author starts using it:
+The recent App Router migration cleaned up the editor's _architecture_ (Server Actions, context split, code-splitting, structured errors). What it didn't touch is the editor's _user experience_, which still has rough edges that show up the moment a real author starts using it:
 
 - Compile errors are surfaced but not navigable (we have `Ln 12, Col 5` but no in-editor highlight).
 - No feedback during the 250 ms debounce → server compile round-trip, so users wonder if the preview is stuck.
@@ -62,6 +62,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 **Regression net:** `packages/site/e2e/editor.test.ts` covers (a) editor + seeded preview render on `?edit=1`, (b) typing into the editor propagates to the preview via the Server Action, (c) invalid MDX surfaces the structured error banner with the plain-English hint. Run with `yarn e2e` from `packages/site` against a dev server that has `MOSAIC_DEV_FAKE_AUTH=true` + `NEXT_PUBLIC_ENABLE_LOGIN=true`.
 
 **APIs newly available** that subsequent phases will lean on:
+
 - `useLexicalEditable()` from `@lexical/react` — cleaner read-only/edit gating.
 - `$onUpdate` callback API on `LexicalEditor`.
 - Improved `DecoratorNode` ergonomics — needed for the error-line decorator in Phase 3.
@@ -87,10 +88,12 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 - `PersistDialog` calls `markSaving()` on save start, `markSaved()` on successful complete, `markSaveFailed()` on error (which transitions back to `dirty` so the user can retry).
 
 **Regression net extension:** `editor.test.ts` gains two cases under `editor status pills — Phase 2`:
+
 - Save-state pill is hidden in `clean`, becomes "Edited" after typing.
 - "Compiling…" status appears during a preview round-trip and disappears after.
 
 **APIs unblocked for later phases:**
+
 - `useSaveState()` — the foundation for Phase 4's confirm-on-leave (`saveState !== 'clean'` is the dirty signal).
 - The `dirty` ↔ `clean` transitions are now centralised, so we won't need to re-derive "is this editor dirty" from update-listener payloads in three different places.
 
@@ -104,7 +107,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 
 **What landed:**
 
-- New `$buildLineMap` utility serializes each top-level Lexical block in isolation via a small `Proxy` over the block (`getChildren()` returns `[block]`) so a single `$convertToMarkdownString(transformers, proxy)` call exercises the same `exportTopLevelElements` path as the canonical full-document export. This avoids re-implementing `@lexical/markdown`'s un-exported `exportChildren` / `exportTextFormat` helpers. The first version naively called `$convertToMarkdownString(transformers, block)` — that overload iterates the *block's* children (text nodes) as top-level, so per-block reassembly always diverged and the line map was always null. The Proxy fix gives us a map from 1-based markdown line → top-level `NodeKey` that matches the canonical output line-for-line.
+- New `$buildLineMap` utility serializes each top-level Lexical block in isolation via a small `Proxy` over the block (`getChildren()` returns `[block]`) so a single `$convertToMarkdownString(transformers, proxy)` call exercises the same `exportTopLevelElements` path as the canonical full-document export. This avoids re-implementing `@lexical/markdown`'s un-exported `exportChildren` / `exportTextFormat` helpers. The first version naively called `$convertToMarkdownString(transformers, block)` — that overload iterates the _block's_ children (text nodes) as top-level, so per-block reassembly always diverged and the line map was always null. The Proxy fix gives us a map from 1-based markdown line → top-level `NodeKey` that matches the canonical output line-for-line.
 - New `ErrorHighlightPlugin` consumes `error.line` + `getLineMap()`, resolves the `NodeKey`, looks up the DOM element via `editor.getElementByKey`, and toggles a `mosaic-editor-error-line` class. CSS in `Editor.css.ts` applies a wavy red `text-decoration` plus a faint tinted background — no Lexical node insertion, so it never round-trips back into the markdown.
 - `StatusBanner` headline gains a "Jump to error" button. The plugin registers an imperative handle via the `focusErrorRegistry` module so the banner can invoke it without a Lexical context dep. The handler runs `el.scrollIntoView({ block: 'nearest' })` + `editor.update(() => $getNodeByKey(key).selectEnd())` with `onUpdate: editor.focus` — i.e. it scrolls the block into view AND moves the caret to the end of the broken block so the user can start fixing immediately rather than landing on whatever stale selection Lexical remembered.
 - Dismiss only hides the banner; it does NOT clear the underlying error context (so the red squiggle persists — the doc is still broken). `StatusBanner` records a `dismissedSig = message::line::column`; a subsequent error with the same signature stays dismissed, a different one (or a successful compile) re-shows.
@@ -115,6 +118,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 - **Error flash during typing.** The original 250 ms debounce meant pausing mid-component (`<Card `, `<Card title=`) painted red on every keystroke pause, training users to ignore the banner. Errors now wait out an `ERROR_GRACE_MS = 800` ms idle window before being surfaced (preview pane still updates at 250 ms — only the red UI is held back). Successful compiles clear errors immediately (good news is urgent). The next `onChange` also optimistically clears any visible error so the squiggle vanishes the moment the user types, instead of lingering until the next compile finishes.
 
 **Files touched (plugin):**
+
 - `src/utils/buildLineMap.ts`, `src/plugins/ErrorHighlightPlugin.tsx`, `src/plugins/PreviewPlugin.tsx`, `src/components/StatusBanner.tsx`, `src/components/Editor.css.ts`.
 
 **Exit gate met:** typing `<x` into a real block produces a red squiggle on the offending paragraph; the banner's "Jump to error" button scrolls + selects the broken block; Dismiss hides the banner without erasing the squiggle; fixing the markdown clears both immediately; partial JSX (`<Card`, `<Card title=`) does not flash red mid-typing.
@@ -137,6 +141,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 - All three patches tear themselves down when `saveState` returns to `clean` or the plugin unmounts. `historyPatched` module flag protects against double-install during HMR / React strict-mode double-invoke.
 
 **Verified end-to-end** in the running dev server:
+
 - Clean editor → click a sidebar link → navigates immediately, no prompt.
 - Dirty editor → click a sidebar link → Salt dialog appears, URL unchanged. "Keep editing" closes the dialog and the `●Edited` pill stays. "Discard changes" completes the navigation to the target URL.
 - Dirty editor → `playwright-cli goto` (synthetic reload) → native `beforeunload` confirmation fires.
@@ -172,7 +177,7 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 
 - New `src/utils/shortcuts.ts` is the single source of truth — every binding is authored in canonical `Mod+Key` form (e.g. `Mod+Shift+Z`) and converted at the consumption sites into (a) a platform-formatted tooltip label (`⌘B` on mac, `Ctrl+B` elsewhere using the canonical Apple ⌃⌥⇧⌘ glyph order on mac and `+`-separated tokens elsewhere), (b) a WAI-ARIA-compliant `aria-keyshortcuts` value, and (c) a `KeyboardEvent` predicate. Platform detection is `navigator.platform` substring-matched against `Mac|iPhone|iPad` and memoised on first call — `userAgentData.platform` would be ideal but Safari hasn't shipped it.
 - `ToolbarButton` gained an optional `shortcut?: string` prop. When present it appends the formatted glyphs to the tooltip title and sets `aria-keyshortcuts` on the underlying `<button>`. Existing shortcut-less call sites are untouched (prop is optional and presentational-only — wiring the keystroke is a separate concern).
-- Per-button hints wired: Bold `⌘B`, Italic `⌘I`, Undo `⌘Z`, Redo `⇧⌘Z`, Insert Link `⌘K`. Bold / Italic / Undo / Redo are already bound inside Lexical's `RichTextPlugin` + `HistoryPlugin` — we only *advertise* those, no new command registration. Inline Code intentionally has no shortcut hint: Lexical doesn't bind one by default and faking a shortcut in the tooltip that doesn't actually work would be worse than no hint.
+- Per-button hints wired: Bold `⌘B`, Italic `⌘I`, Undo `⌘Z`, Redo `⇧⌘Z`, Insert Link `⌘K`. Bold / Italic / Undo / Redo are already bound inside Lexical's `RichTextPlugin` + `HistoryPlugin` — we only _advertise_ those, no new command registration. Inline Code intentionally has no shortcut hint: Lexical doesn't bind one by default and faking a shortcut in the tooltip that doesn't actually work would be worse than no hint.
 - `SaveButton` shows the `⌘S` hint via a native `title` (not a Salt tooltip — the CTA button isn't wrapped by `ToolbarButton` and adding a Label wrapper would force special-casing the disabled state) plus the same `aria-keyshortcuts` attribute, so screen-reader users and sighted users both see the binding.
 - New `KeyboardShortcutsPlugin` mounted in `Editor.tsx` registers the two editor-app bindings on `window` (capture not needed — these aren't fighting any other handler):
   - `⌘S` → `onSave()` with `preventDefault` so the browser's "Save Page As" never opens.
@@ -180,9 +185,10 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 - Both bindings skip if the focused element is an external editable surface (an `<input>` / `<textarea>` / `contentEditable` outside the editor root), so typing `⌘S` into the PR-link search field inside an already-open dialog doesn't reopen the save dialog on top of it. The editor root is tagged with `data-mosaic-editor-root="true"` to disambiguate "editor's own contentEditable" (proceed) from "some other contentEditable" (skip).
 - `Escape` to close the save dialog needed no new code — Salt's `Dialog` handles it natively and the existing `resetAndClose` already no-ops while a save is in flight, so the "Esc-during-save" footgun is closed by construction.
 - README replaced (was a 7-line stub) with a real shortcut table that points readers at `shortcuts.ts` as the source of truth for adding new bindings.
-- **In-app cheatsheet** (`ShortcutHelpDialog`) — added on top of the original plan because hovering each toolbar button one at a time is a poor way to discover what's available. The dialog is data-driven from the `SHORTCUTS` + `SHORTCUT_LABELS` maps (so it can't drift out of sync), opened either by the `?` icon on the right of the toolbar or via `⌘/`. The `⌘/` binding *toggles* (not just opens) so users who hit it accidentally can dismiss without reaching for the mouse — matches the VS Code / Linear convention. The dialog's open-state lives in `EditorContext` as its own slice (`useShortcutHelp`) so both callers (toolbar button + keyboard plugin) mutate it without threading state through `Editor.tsx`.
+- **In-app cheatsheet** (`ShortcutHelpDialog`) — added on top of the original plan because hovering each toolbar button one at a time is a poor way to discover what's available. The dialog is data-driven from the `SHORTCUTS` + `SHORTCUT_LABELS` maps (so it can't drift out of sync), opened either by the `?` icon on the right of the toolbar or via `⌘/`. The `⌘/` binding _toggles_ (not just opens) so users who hit it accidentally can dismiss without reaching for the mouse — matches the VS Code / Linear convention. The dialog's open-state lives in `EditorContext` as its own slice (`useShortcutHelp`) so both callers (toolbar button + keyboard plugin) mutate it without threading state through `Editor.tsx`.
 
 **Playwright coverage** (`packages/site/e2e/editor.test.ts`):
+
 - `Mod+S` from inside the editor opens the save dialog (asserts the dialog wasn't already mounted, focuses the editor, presses `ControlOrMeta+S`, asserts the `Save Changes` dialog becomes visible).
 - Bold button exposes `aria-keyshortcuts` matching `^(Meta|Control)\+B$` (cross-platform — CI is Linux, dev is mac).
 - `Mod+K` opens the Insert Link dialog.
@@ -293,6 +299,45 @@ That was it. Everything else (LexicalErrorBoundary, the markdown TRANSFORMERS sh
 
 ---
 
+## Phase 13 — New-page authoring (1 day) ✅ DONE (`feat/lexical-extension-api`)
+
+**Outcome:** A "New Page" button in the editor toolbar opens a dialog where an author picks a parent location and slug, then lands on a fresh page in edit mode whose save raises a PR creating the new MDX file.
+
+**Changes:**
+
+- `NewPageDialog` component in `packages/content-editor-plugin/` collects parent + slug + frontmatter and submits via the same persist pipeline as edits, with `isNewPage: true` on the payload.
+- `persistAction.ts` forwards the flag verbatim to the workflows backend; workflow side handles the "create vs. edit" branch (skips the read-existing-file step, creates parent directories).
+- `PersistEditDialog` flips wording to "Create Page" when `isNewPage` is set; rename row is suppressed (there's no baseline route to rename _from_).
+
+**Exit gate:** an author can create a brand-new page from the toolbar, end up in edit mode on that new page, and save it — producing a PR that adds the MDX file at the chosen route.
+
+---
+
+## Phase 14 — Per-source capability gating (½ day) ✅ DONE (`feat/lexical-extension-api`)
+
+**Outcome:** The editor's Edit / New Page surfaces only appear for pages whose owning source has declared itself writable. Sources without a backing persistence workflow (local folder, HTTP, Figma, Readme, Storybook, …) no longer show editor controls the user can never use.
+
+**Changes:**
+
+- New `SourceCapabilities` interface on the `Source` contract (`packages/types/`); currently exposes one flag, `writable`. Default for an absent flag is `false` — a source must explicitly opt in.
+- `source-git-repo` declares `capabilities: { writable: true }`. All other sources leave `capabilities` absent.
+- `createSourceObservable` snapshots the source's `capabilities` at load time and stamps them onto every emitted `Page` (`Page.sourceCapabilities`). Reusing the existing worker → main `Page[]` channel avoids a new IPC kind.
+- `SharedConfigPlugin` finds the capability snapshot once per namespace and ensures every index page's `sharedConfig` carries it, so per-route `shared-config.json` always surfaces it (active _and_ snapshot modes).
+- New `useSourceCapabilities()` hook in `@jpmorganchase/mosaic-store` reads it client-side; returns `{}` when absent so callsites can destructure safely.
+- `AppHeaderControls` gates both the toolbar `<EditorControls>` and the menu's "Edit Document" item on `writable === true`.
+
+**Risk:** low. The change is additive (new optional fields), the safe default is closed-by-default, and the persistence layer is untouched — sources that aren't writable could never have completed a save anyway, the change just stops the editor from offering it.
+
+**Exit gate:** loading a page from a non-writable source shows no Edit / New Page controls; loading a page from `source-git-repo` shows them as before.
+
+**Open follow-ups:**
+
+- **Defence-in-depth on `?edit=1`.** Today a user can still hand-type `?edit=1` on a non-writable page and the editor loads (save would fail at the workflow layer). Worth gating server-side in `packages/site/src/app/[...route]/page.tsx`.
+- **More capability flags** as concrete UX needs arise — likely candidates: `commentable`, `rename`, `delete`, `branchable`, `liveSync`. Each should be added when a UI surface actually needs to branch on it, not speculatively.
+- **Per-page overrides.** `Page.sourceCapabilities` is technically per-page but the framework only ever sets it per-source. Allowing plugins to override per-page would unlock "this Figma page is editable because it's a stub" scenarios.
+
+---
+
 ## Sequencing summary
 
 ```
@@ -309,6 +354,8 @@ Phase 1   ── Lexical upgrade (0.17 → 0.44)       0.5d ✅ done (1 line of 
    ├── Phase 10 Source/WYSIWYG toggle            1d
    └── Phase 11 remark-lint warnings             1–1.5d
 Phase 12  ── Component prop autocomplete         3–5d  ← stretch, depends on Phase 8
+Phase 13  ── New-page authoring                  1d   ✅ done
+Phase 14  ── Per-source capability gating        ½d   ✅ done
 ```
 
 Phases 2–11 are mostly independent post-Phase 1 — they can ship in any order, in parallel, or in a series of small PRs. Phases 3 and 11 benefit from being adjacent (Phase 11 piggybacks on Phase 3's highlight infrastructure). Phase 12 should only be attempted if Phase 8 lands and gets real usage.
@@ -326,35 +373,23 @@ The three baseline commits (`938b9733`, `26cc8eb8`, `e48bcf5c`) constitute the "
 3. **`remark-lint` ruleset (Phase 11)** — adopt the existing CI rules verbatim, or curate a subset that's tighter (errors only) for in-editor display to avoid noise?
 4. **Component manifest format (Phase 12)** — if we do this, should the manifest also flow into the API-reference docs site so we get docs-from-types as a side effect?
 
-Open questions are blockers for the *individual phases* that depend on them, not for starting Phase 1 (the Lexical upgrade), which is unaffected.
+Open questions are blockers for the _individual phases_ that depend on them, not for starting Phase 1 (the Lexical upgrade), which is unaffected.
 
 ---
 
 ## Recommended next action
 
-Phases 1–4, Phase 6, Phase 9 and Phase 10 are in the can on `feat/lexical-upgrade`. Phase 5 (image paste & drag-drop) is deprioritised. Next pickup candidate: **Phase 7 — Front-matter form** (1–1.5d) — finally exposes the YAML metadata as a structured edit surface so authors don't need to drop into source mode for tag tweaks. After that, **Phase 11 — `remark-lint` diagnostics** (1–1.5d) builds on the Phase 3 banner to surface dead links / missing alt text / broken anchor IDs as the user types.
+Phases 1–4, Phase 6, Phase 9, Phase 10, Phase 13 and Phase 14 are in the can on `feat/lexical-upgrade` / `feat/lexical-extension-api`. Phase 5 (image paste & drag-drop) is deprioritised. Next pickup candidate: **Phase 7 — Front-matter form** (1–1.5d) — finally exposes the YAML metadata as a structured edit surface so authors don't need to drop into source mode for tag tweaks. After that, **Phase 11 — `remark-lint` diagnostics** (1–1.5d) builds on the Phase 3 banner to surface dead links / missing alt text / broken anchor IDs as the user types.
 
+---
 
+## Test coverage gaps (tracked)
 
+During the App Router migration four unit-test suites were deleted because they targeted the pre-migration zustand store. Three of the four backing components still exist; their replacement tests are in different states:
 
+- `EditorControls` — **restored** in `src/components/__tests__/EditorControls.test.tsx` (7 tests covering enabled/disabled, edit-mode toggle, new-page dialog launcher).
+- `StatusBanner` — **restored** in `src/components/__tests__/StatusBanner.test.tsx` (10 tests covering headline format, hint rendering, dismiss-by-signature, jump-to-error wiring).
+- `PersistEditDialog` — **deferred**. The component is 628 lines and depends on a Server Action, Auth.js session, Lexical composer, Salt Dialog, and an Accordion-rendered diff. A jsdom smoke test would require mocking 6+ surfaces and would still cover <30% of the meaningful behaviour. Tracked under e2e — `packages/site/e2e/editor.test.ts` already exercises the open → review → submit flow end-to-end. A focused unit test for the dismiss / cancel-while-saving sub-flows would be valuable but isn't blocking.
+- `src/store/index.ts` — **gone with the store itself**. Replaced by the per-slice `EditorContext` hooks and `useEditMode`, both of which have their own unit tests (`__tests__/LayoutNamesContext.test.tsx`, `__tests__/useEditMode.test.tsx`).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+New surfaces added during the new-page flow each have their own unit suites: `useFolderSuggestions`, `newPageTemplate`, `loadSitemap` (active branch).

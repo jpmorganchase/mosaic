@@ -10,13 +10,14 @@ import { defineConfig } from 'vitest/config';
  *
  *  - `server` — Node environment, runs server-side suites in
  *    `cli`, `core`, `fromHttpRequest`, `plugins`, `site-middleware`,
- *    and the `source-*` packages. Polyfills `globalThis.Request` so
- *    libs like msw work.
+ *    and the `source-*` packages, plus pure-TS helpers under
+ *    `packages/site/src`. Polyfills `globalThis.Request` so libs like
+ *    msw work.
  *
- *  - `client` — jsdom environment, runs the React-component
- *    `ReactLive.test.tsx` suites only (other component tests aren't yet
- *    vitest-ready and live behind `WorkerSubscription.test.ts` /
- *    other excludes). CSS imports are stubbed to `identity-obj-proxy`.
+ *  - `client` — jsdom environment, runs React-component suites in the
+ *    legacy packages (`ReactLive.test.tsx` only) and the broader
+ *    `*.test.[jt]s?(x)` pattern in `content-editor-plugin` and
+ *    `layouts`. CSS imports are stubbed to `identity-obj-proxy`.
  *
  * Common excludes (`e2e/`, `node_modules/`, `dist/`, `.next/`) prevent
  * Vitest 4's broader default discovery from picking up Playwright e2e
@@ -41,7 +42,12 @@ export default defineConfig({
         '**/node_modules/**',
         '**/dist/**',
         '**/__tests__/**',
-        '**/packages/{site,theme}/**',
+        // `packages/theme` is build-time CSS-in-JS only — no test
+        // surface and excluding it stops 90% empty coverage rows.
+        // `packages/site` used to be excluded for the same reason;
+        // now that it carries `newPageTemplate.ts` + its tests the
+        // coverage signal is meaningful, so let it back in.
+        '**/packages/theme/**',
         '**/*.css.ts',
         '**/scripts/**'
       ],
@@ -57,12 +63,24 @@ export default defineConfig({
         test: {
           name: 'server',
           include: [
-            '**/{cli,core,fromHttpRequest,plugins,site-middleware,source-figma,source-http,source-readme,source-storybook}/**/__tests__/*.test.[jt]s?(x)'
+            '**/{cli,core,fromHttpRequest,plugins,site-middleware,source-figma,source-http,source-readme,source-storybook}/**/__tests__/*.test.[jt]s?(x)',
+            // Catch-all site helpers (e.g. `newPageTemplate.ts`)
+            // that are pure server-side TS without React. Site is
+            // excluded from coverage by intent (it's the example
+            // host app, not a published package), but small
+            // unit-test surface still belongs in the same vitest
+            // run so PRs can't silently regress them.
+            '**/packages/site/src/**/__tests__/*.test.[jt]s?(x)'
           ],
           setupFiles: ['./scripts/vitest/vitest.server.setup.mts'],
           exclude: [
             ...COMMON_EXCLUDES,
-            // Has complex mocking so is hard to migrate to vitest, needs to be revisited.
+            // `WorkerSubscription.test.ts` predates the vitest
+            // migration and relies on jest's auto-mock behaviour
+            // for `worker_threads`. Migrating it needs the
+            // child-worker spin-up rewritten as an explicit
+            // `vi.mock(...)` factory; until then the suite stays
+            // excluded so the rest of the server project runs green.
             '**/WorkerSubscription.test.ts'
           ]
         }
@@ -72,7 +90,21 @@ export default defineConfig({
           name: 'client',
           environment: 'jsdom',
           include: [
-            '**/{components,content-editor-plugin,site-components,sitemap-component,store}/**/__tests__/ReactLive.test.[jt]s?(x)'
+            // Legacy pattern — kept narrow for the older packages
+            // (components, site-components, sitemap-component,
+            // store) that haven't broadened beyond the one-file
+            // `ReactLive` smoke suite.
+            '**/{components,site-components,sitemap-component,store}/**/__tests__/ReactLive.test.[jt]s?(x)',
+            // Broader pattern — newer suites in the editor plugin
+            // and layouts package live as multiple focused files
+            // (`<Subject>.test.[jt]s?(x)`) rather than one
+            // catch-all, matching the convention used by
+            // `site-middleware` server-side. Adding more package
+            // names here is the smallest path to discoverability
+            // as we backfill coverage; consolidating onto a
+            // single rule once every legacy package is renamed
+            // is a future cleanup.
+            '**/{content-editor-plugin,layouts}/**/__tests__/*.test.[jt]s?(x)'
           ],
           setupFiles: ['./scripts/vitest/vitest.client.setup.mts'],
           exclude: COMMON_EXCLUDES,

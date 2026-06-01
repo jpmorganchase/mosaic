@@ -1,3 +1,5 @@
+import type { SourceCapabilities } from './Source.js';
+
 /**
  * `Page` is a type, which at a minimum has a `fullPath`, but can also contain metadata and `content`
  */
@@ -17,4 +19,17 @@ export type Page = {
   lastModified?: Date;
   type?: string;
   content?: string;
+  /**
+   * Capabilities of the source that produced this page. Stamped by
+   * core at source-load time from the source module's `capabilities`
+   * export and carried through the plugin pipeline so per-route
+   * consumers (e.g. SharedConfigPlugin → editor UI) can branch on
+   * what the originating source supports.
+   *
+   * Identical across every page emitted by a single source instance;
+   * the per-page duplication is intentional — it slots into the
+   * existing worker-to-main `Page[]` channel without requiring a
+   * separate side-channel for capability metadata.
+   */
+  sourceCapabilities?: SourceCapabilities;
 };

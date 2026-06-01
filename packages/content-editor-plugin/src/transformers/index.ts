@@ -1,7 +1,7 @@
 import { TRANSFORMERS, MULTILINE_ELEMENT_TRANSFORMERS, type Transformer } from '@lexical/markdown';
 
 import { HORIZONTAL_RULE } from './horizontalRule';
-import { TABLE_RULE, setTableCellTransformers } from './tableRule';
+import { TABLE_RULE, HTML_TABLE_RULE, setTableCellTransformers } from './tableRule';
 
 /**
  * Master transformer list.
@@ -13,7 +13,15 @@ import { TABLE_RULE, setTableCellTransformers } from './tableRule';
  *   3. ...TRANSFORMERS — `@lexical/markdown`'s default
  *      ELEMENT + TEXT_FORMAT + TEXT_MATCH transformers
  *      (bold/italic/code/link/heading/list/blockquote/etc.).
- *   4. ...MULTILINE_ELEMENT_TRANSFORMERS — added in this pass.
+ *   4. HTML_TABLE_RULE — paired multi-line transformer that imports
+ *      `<table>...</table>` blocks (emitted by the GFM exporter
+ *      whenever a table contains merged cells, since GFM has no
+ *      colspan/rowspan syntax). Placed alongside the other
+ *      MULTILINE_ELEMENT_TRANSFORMERS because its anchor
+ *      (`regExpStart` on `<table>`) doesn't overlap with any
+ *      earlier matcher; ordering among non-overlapping multi-line
+ *      transformers is not meaningful.
+ *   5. ...MULTILINE_ELEMENT_TRANSFORMERS — added in this pass.
  *      Currently a single transformer for fenced code blocks
  *      (```lang ... ```). Without it, fenced code round-trips as
  *      plain text and the language tag is lost. Placed at the
@@ -42,6 +50,7 @@ const transformers: Transformer[] = [
   TABLE_RULE,
   HORIZONTAL_RULE,
   ...TRANSFORMERS,
+  HTML_TABLE_RULE,
   ...MULTILINE_ELEMENT_TRANSFORMERS
 ];
 

@@ -8,6 +8,11 @@
  * via `router.replace` (no history entry — the back button keeps its
  * natural meaning).
  *
+ * `stopEditing` is also the cancel-out for CREATE mode (`?new=1`).
+ * In that case it strips the create flags and navigates to the
+ * parent folder, because the synthesised create-route doesn't exist
+ * on disk and staying would 404. See the callback for details.
+ *
  * Replaces the previous global `pageState` field on the zustand
  * store. The URL is the source of truth so the mode survives reload,
  * is shareable, can be auth-gated server-side, and removes the
@@ -47,9 +52,38 @@ export function useEditMode(): EditMode {
 
   const stopEditing = useCallback(() => {
     const params = new URLSearchParams(window.location.search);
+    // In CREATE mode the URL carries `?new=1&title=...` rather than
+    // `?edit=1` — stripping only `edit` would leave the create
+    // branch in `[...route]/page.tsx` active, the editor would
+    // stay mounted, and the click would appear to do nothing.
+    // Strip all three flags so a single Cancel handler works for
+    // both modes. `title` is meaningless without `new`, so it goes
+    // too (otherwise back/forward through history would leak stale
+    // titles into refreshes). `existed` is the marker the server
+    // adds when a `?new=1` request hit an existing route; once the
+    // author cancels out of edit mode the hint is stale.
+    const wasCreating = params.get('new') === '1';
     params.delete('edit');
+    params.delete('new');
+    params.delete('title');
+    params.delete('existed');
     const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+
+    // The create branch was rendering a synthesised page for a
+    // route that does NOT exist on disk; staying on `pathname`
+    // would 404. Navigate to the parent folder instead — that's
+    // where the author was browsing when they hit "New Page", so
+    // it's the closest analogue to "undo". Falls back to `/` when
+    // we're at the top level (parent of `/foo` is `/`).
+    //
+    // Edit mode never has this problem — `pathname` is always a
+    // real on-disk route — so we keep the old behaviour there.
+    const target = wasCreating
+      ? (pathname.replace(/\/[^/]*$/, '') || '/') + (qs ? `?${qs}` : '')
+      : qs
+      ? `${pathname}?${qs}`
+      : pathname;
+    router.replace(target, { scroll: false });
   }, [pathname, router]);
 
   return { isEditing, startEditing, stopEditing };

@@ -30,5 +30,3 @@ export async function compilePreview(markdown: string): Promise<SerializeResult>
   // failure; the editor's preview component renders both shapes.
   return serializeMdxForClient(markdown);
 }
-
-

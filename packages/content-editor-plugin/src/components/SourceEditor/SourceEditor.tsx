@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 10 — Raw-markdown source editor.
+ * Raw-markdown source editor.
  *
  * Mounted in place of the Lexical composer when `?mode=source`.
  * Drives the same `compilePreview` Server Action as

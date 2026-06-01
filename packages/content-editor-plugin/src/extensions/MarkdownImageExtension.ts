@@ -3,7 +3,7 @@
 /**
  * Extension API authoring for the markdown-image insertion command.
  *
- * Pattern (post-Phase 0d) — matches upstream Lexical's
+ * Pattern — matches upstream Lexical's
  * `ClearEditorExtension` template:
  *
  *   1. `registerMarkdownImage(editor)` — standalone helper that
@@ -21,8 +21,8 @@
  * declared HERE — the extension is the unit that owns the
  * command's behaviour, so its symbol lives next to its handler.
  * Matches Lexical's own pattern (`TOGGLE_LINK_COMMAND` lives in
- * `@lexical/link`, not in a separate `commands.ts`). Phase 0d
- * deleted the old `plugins/MarkdownImagePlugin.tsx` re-export
+ * `@lexical/link`, not in a separate `commands.ts`). The old
+ * `plugins/MarkdownImagePlugin.tsx` re-export
  * shim; all callers (`Toolbar/InsertImage.tsx`) import from this
  * file directly.
  */

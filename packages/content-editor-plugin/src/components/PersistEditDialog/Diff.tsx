@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 9 — Unified line-level diff renderer for the save dialog.
+ * Unified line-level diff renderer for the save dialog.
  *
  * Takes the pristine on-disk markdown and the current editor markdown
  * and renders a pre-formatted unified diff: green `+` lines for
@@ -60,9 +60,9 @@ interface DiffLine {
  * is a single visible line.
  */
 function buildDiffLines(changes: Change[]): DiffLine[] {
-  // First pass: explode each change into per-line entries tagged with
-  // the kind. Context blocks stay intact for now — we'll trim them in
-  // the second pass once we know which sides are surrounded by
+  // First pass: explode each change into per-line entries tagged
+  // with the kind. Context blocks stay intact here; the second
+  // pass trims them once we know which sides are surrounded by
   // changes.
   type RawBlock = {
     kind: 'add' | 'remove' | 'context';

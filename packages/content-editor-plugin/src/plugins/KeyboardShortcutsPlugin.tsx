@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 6 — Global keyboard shortcuts.
+ * Global keyboard shortcuts.
  *
  * Lexical already binds the obvious text-format shortcuts
  * (⌘B / ⌘I / ⌘U / undo / redo) inside its RichTextPlugin +
@@ -45,7 +45,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   // Anything inside the editor root counts as "the editor itself"
   // — covers Lexical's contentEditable in WYSIWYG mode AND the
-  // raw-markdown textarea in source mode (Phase 10). We DO want
+  // raw-markdown textarea in source mode. We DO want
   // shortcuts to fire there.
   if (target.closest('[data-mosaic-editor-root="true"]')) return false;
   const tag = target.tagName;

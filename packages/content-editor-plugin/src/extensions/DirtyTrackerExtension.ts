@@ -1,20 +1,20 @@
 'use client';
 
 /**
- * Phase 0c — `DirtyTrackerPlugin` migrated to the Extension API,
- * following upstream Lexical's `ClearEditorExtension` template (see
+ * `DirtyTrackerPlugin` exposed through the Extension API, following
+ * upstream Lexical's `ClearEditorExtension` template (see
  * `@lexical/extension/src/ClearEditorExtension.ts`).
  *
  * Why this file exists at all
  * ---------------------------
- * Until Phase 0c, every editor lifecycle that needed to fire on
- * `editor.registerUpdateListener` lived in a React component
- * (`DirtyTrackerPlugin`). That's fine for our live editor (always
- * React-hosted), but it makes the same logic unreachable from any
- * future headless consumer — for example a vitest unit that wants
- * to assert "an `editor.update(...)` that only changes the selection
- * does NOT mark the document dirty" without booting a JSDOM React
- * tree.
+ * Hosting the `editor.registerUpdateListener` logic in a React
+ * component only is fine for our live editor (always React-hosted)
+ * but makes the same logic unreachable from any headless consumer
+ * — for example a vitest unit that wants to assert "an
+ * `editor.update(...)` that only changes the selection does NOT
+ * mark the document dirty" without booting a JSDOM React tree.
+ * The standalone helper here is the reusable unit; the React
+ * plugin and the extension wrapper are both thin adapters.
  *
  * Pattern (upstream, verbatim)
  * ----------------------------

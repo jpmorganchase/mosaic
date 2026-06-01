@@ -43,7 +43,18 @@ import { loadSitemap } from '@jpmorganchase/mosaic-site-middleware';
 
 import { resolveSiteOrigin } from '../lib/siteOrigin';
 
-export const dynamic = 'force-static';
+// Snapshot builds want a fully static `/sitemap.xml` baked at build
+// time (it's part of the static export tarball). Active mode reads
+// from the live Mosaic FS server on each request, so forcing static
+// would freeze the output to whatever existed at first render and
+// hide subsequent author edits / new pages from the New-Page dialog's
+// folder suggestions. `revalidate = 0` opts the route out of the data
+// cache in active mode (equivalent to `dynamic = 'force-dynamic'` for
+// caching purposes — `revalidate` is the older / more granular knob
+// and the one Next's sitemap convention happens to honour). In a
+// `next build` static export the route is rendered exactly once at
+// build time so the value is moot there.
+export const revalidate = 0;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const origin = resolveSiteOrigin();

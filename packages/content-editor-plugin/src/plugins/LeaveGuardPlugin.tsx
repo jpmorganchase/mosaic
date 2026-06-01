@@ -40,6 +40,44 @@ import { useSaveState } from '../EditorContext';
 import { Dialog } from '../components/Dialog';
 
 /**
+ * `isIntraEditorNavigation` — true when the proposed navigation is
+ * a same-page URL update that stays within the editor session and
+ * doesn't drop any in-memory state, so the leave prompt would be
+ * spurious. Returns true when:
+ *
+ *   - the pathname is identical to the current one, AND
+ *   - `?edit=1` is still set on the target (we're not exiting edit
+ *     mode — exiting edit mode IS a real "leave" that should
+ *     prompt), AND
+ *   - the only search params that differ are intra-editor view
+ *     toggles that the editor handles in-place (currently `mode`,
+ *     for the WYSIWYG/Source switcher).
+ *
+ * The third clause is intentionally tight: any URL change OTHER
+ * than the recognised intra-editor params still routes through the
+ * prompt. That keeps the safety net in place for navigations that
+ * happen to share the same pathname (e.g. a `?filter=...` change
+ * in a future feature would re-render the page and could discard
+ * editor state).
+ */
+const INTRA_EDITOR_PARAMS = new Set(['mode']);
+function isIntraEditorNavigation(target: URL): boolean {
+  if (target.pathname !== window.location.pathname) return false;
+  if (target.searchParams.get('edit') !== '1') return false;
+  const current = new URLSearchParams(window.location.search);
+  if (current.get('edit') !== '1') return false;
+  // Build the union of param keys that appear on either side and
+  // diff them. If every differing key is in the intra-editor
+  // allowlist, the navigation is in-place.
+  const keys = new Set<string>([...current.keys(), ...target.searchParams.keys()]);
+  for (const key of keys) {
+    if (current.get(key) === target.searchParams.get(key)) continue;
+    if (!INTRA_EDITOR_PARAMS.has(key)) return false;
+  }
+  return true;
+}
+
+/**
  * Resolves a clicked anchor's href to an in-app same-origin URL we
  * should intercept. Returns `null` when the click is not something
  * we want to guard (external link, `mailto:`, `target=_blank`, etc.).
@@ -128,6 +166,14 @@ export const LeaveGuardPlugin = () => {
       if (!isDirtyRef.current) return;
       const href = resolveInAppNavigation(e);
       if (!href) return;
+      // Intra-editor URL toggles (e.g. the WYSIWYG/Source mode
+      // switcher) don't tear the editor down and don't risk data
+      // loss — let them through unprompted. Without this gate the
+      // user would see the unsaved-changes dialog whenever they
+      // clicked between Visual and Source while having any
+      // unsaved edits.
+      const targetUrl = new URL(href, window.location.href);
+      if (isIntraEditorNavigation(targetUrl)) return;
       // Stop App Router's own click handler from running this turn.
       // We'll re-trigger the navigation manually if the user
       // discards.
@@ -181,6 +227,14 @@ export const LeaveGuardPlugin = () => {
           return;
         }
         const href = new URL(String(target), window.location.href);
+        // Intra-editor URL toggles (e.g. WYSIWYG/Source mode)
+        // route through `router.replace` which lands here; let
+        // them through so the toggle doesn't pop the unsaved-
+        // changes dialog on every click.
+        if (isIntraEditorNavigation(href)) {
+          real(...args);
+          return;
+        }
         setPending(() => () => {
           // Like the anchor-click path, do a full reload on
           // discard. Replaying just the `pushState` would skip

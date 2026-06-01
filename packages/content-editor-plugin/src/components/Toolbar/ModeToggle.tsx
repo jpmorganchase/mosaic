@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Phase 10 — "Visual / Source" toolbar toggle.
+ * "Visual / Source" toolbar toggle.
  *
  * Salt's `ToggleButtonGroup` gives us a segmented control with the
  * right keyboard semantics (left/right arrow to move between
@@ -66,6 +66,9 @@ export const ModeToggle = () => {
       </ToggleButton>
       <ToggleButton value="source" aria-label="Source editor (raw markdown)">
         Source
+      </ToggleButton>
+      <ToggleButton value="frontmatter" aria-label="Frontmatter viewer (read-only metadata)">
+        Frontmatter
       </ToggleButton>
     </ToggleButtonGroup>
   );

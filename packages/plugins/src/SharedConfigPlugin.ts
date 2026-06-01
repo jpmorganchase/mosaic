@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType, SourceCapabilities } from '@jpmorganchase/mosaic-types';
 import { flatten } from 'lodash-es';
 import deepmerge from 'deepmerge';
 import { createPageTest } from './utils/createPageTest.js';
@@ -25,7 +25,7 @@ function isWithin(outer, inner) {
 }
 
 export interface SharedConfigPluginPage extends Page {
-  sharedConfig?: string;
+  sharedConfig?: Record<string, unknown> & { sourceCapabilities?: SourceCapabilities };
   frameOverrides?: any;
 }
 
@@ -47,6 +47,37 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
         path.posix.basename(page.fullPath, path.posix.extname(page.fullPath)) === 'index' &&
         isNonHiddenPage(page.fullPath)
     );
+
+    // Capability flags are identical across every page emitted by a
+    // single source instance (core stamps them at source-load time);
+    // pick the first non-empty one we see and treat it as the
+    // namespace's capability snapshot. An empty object is treated as
+    // "no capabilities declared" — we must not seed a sharedConfig
+    // for sources that opted into nothing, or every index page in
+    // the namespace would acquire a sharedConfig and flip the plugin
+    // into its O(N²) merge branch (see below).
+    let sourceCapabilities: SourceCapabilities | undefined;
+    for (const page of pages) {
+      if (page.sourceCapabilities && Object.keys(page.sourceCapabilities).length > 0) {
+        sourceCapabilities = page.sourceCapabilities;
+        break;
+      }
+    }
+
+    // Ensure every index page carries a `sharedConfig` carrying at
+    // least the source's capability flags, even when the author
+    // didn't define one. Without this the per-route shared-config
+    // endpoint would have nowhere to surface capabilities for the
+    // editor UI to read.
+    if (sourceCapabilities) {
+      for (const page of indexPages) {
+        if (page.sharedConfig === undefined) {
+          page.sharedConfig = { sourceCapabilities };
+        } else if (!('sourceCapabilities' in page.sharedConfig)) {
+          page.sharedConfig = { ...page.sharedConfig, sourceCapabilities };
+        }
+      }
+    }
 
     const indexPagesWithSharedConfig = indexPages.filter(page => page.sharedConfig !== undefined);
 

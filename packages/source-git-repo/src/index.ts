@@ -65,6 +65,12 @@ export const schema = z.object({
 export type GitRepoSourceOptions = z.infer<typeof schema>;
 
 const GitRepoSource: Source<GitRepoSourceOptions> = {
+  capabilities: {
+    // Backed by a Git workflow that can commit + raise a PR for
+    // edited pages, so the editor surfaces Edit / New Page controls
+    // when this source owns the route.
+    writable: true
+  },
   create(options, { serialiser, pageExtensions, schedule }): Observable<Page[]> {
     const {
       credentials,

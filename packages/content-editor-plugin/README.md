@@ -12,16 +12,16 @@ yarn add @jpmorganchase/mosaic-content-editor-plugin
 
 Shortcuts are available while the editor is mounted (`?edit=1`). On macOS the `Mod` modifier is `⌘`; on Windows / Linux it's `Ctrl`.
 
-| Action               | Shortcut          | Notes                                                                                                                   |
-| -------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Bold**             | `Mod + B`         | Built into Lexical's `RichTextPlugin`; toolbar button advertises it via tooltip + `aria-keyshortcuts`.                  |
-| **Italic**           | `Mod + I`         | As above.                                                                                                               |
-| **Undo**             | `Mod + Z`         | Built into Lexical's `HistoryPlugin`.                                                                                   |
-| **Redo**             | `Mod + Shift + Z` | As above.                                                                                                               |
-| **Insert link**      | `Mod + K`         | Wired in `KeyboardShortcutsPlugin`. Opens the Insert Link dialog with the current selection pre-filled.                 |
-| **Save**             | `Mod + S`         | Wired in `KeyboardShortcutsPlugin`. Opens the save / Pull-Request dialog. `preventDefault`s the browser "Save Page As". |
-| **Shortcut help**    | `Mod + /`         | Toggles the in-app cheatsheet dialog. Same dialog opens via the `?` icon on the right of the toolbar.                   |
-| **Close dialog**     | `Esc`             | Standard Salt `Dialog` behaviour; suppressed while a save is in flight so an accidental Esc can't dismiss progress.     |
+| Action            | Shortcut          | Notes                                                                                                                   |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Bold**          | `Mod + B`         | Built into Lexical's `RichTextPlugin`; toolbar button advertises it via tooltip + `aria-keyshortcuts`.                  |
+| **Italic**        | `Mod + I`         | As above.                                                                                                               |
+| **Undo**          | `Mod + Z`         | Built into Lexical's `HistoryPlugin`.                                                                                   |
+| **Redo**          | `Mod + Shift + Z` | As above.                                                                                                               |
+| **Insert link**   | `Mod + K`         | Wired in `KeyboardShortcutsPlugin`. Opens the Insert Link dialog with the current selection pre-filled.                 |
+| **Save**          | `Mod + S`         | Wired in `KeyboardShortcutsPlugin`. Opens the save / Pull-Request dialog. `preventDefault`s the browser "Save Page As". |
+| **Shortcut help** | `Mod + /`         | Toggles the in-app cheatsheet dialog. Same dialog opens via the `?` icon on the right of the toolbar.                   |
+| **Close dialog**  | `Esc`             | Standard Salt `Dialog` behaviour; suppressed while a save is in flight so an accidental Esc can't dismiss progress.     |
 
 A complete, up-to-date list is also rendered **inside the editor itself** — open it with `Mod + /` or click the `?` button on the right side of the toolbar. The dialog is data-driven from the same `SHORTCUTS` map this table is documented from, so it can never drift out of sync.
 

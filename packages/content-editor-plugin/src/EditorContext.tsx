@@ -6,9 +6,9 @@
  * consumers that only care about low-frequency state (current user,
  * the "insert link" dialog flag).
  *
- * Replaces the previous module-level zustand store. Hoisting state
- * into per-editor contexts also means unmounting `<Editor>` (e.g.
- * leaving EDIT mode) garbage-collects all of it automatically.
+ * Hoisting state into per-editor contexts (rather than a module-level
+ * store) means unmounting `<Editor>` (e.g. leaving EDIT mode)
+ * garbage-collects all of it automatically.
  */
 import {
   createContext,
@@ -78,7 +78,7 @@ interface InsertLinkContextValue {
 }
 const InsertLinkContext = createContext<InsertLinkContextValue | null>(null);
 
-// --- Shortcut-help dialog flag (Phase 6.1) ----------------------------
+// --- Shortcut-help dialog flag ---------------------------------------
 //
 // Two callers need to mutate this — the toolbar's `?` button and the
 // global `Mod+/` shortcut — and one consumer renders the dialog.
@@ -228,21 +228,46 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   );
 
   return (
-    <UserContext.Provider value={userValue}>
-      <ErrorContext.Provider value={errorValue}>
-        <InsertLinkContext.Provider value={insertLinkValue}>
-          <SaveContext.Provider value={saveValue}>
-            <CompileContext.Provider value={compileValue}>
-              <LineMapContext.Provider value={lineMapValue}>
-                <ShortcutHelpContext.Provider value={shortcutHelpValue}>
-                  <PreviewContext.Provider value={previewValue}>{children}</PreviewContext.Provider>
-                </ShortcutHelpContext.Provider>
-              </LineMapContext.Provider>
-            </CompileContext.Provider>
-          </SaveContext.Provider>
-        </InsertLinkContext.Provider>
-      </ErrorContext.Provider>
-    </UserContext.Provider>
+    <ComposedProviders
+      providers={[
+        [UserContext.Provider, userValue],
+        [ErrorContext.Provider, errorValue],
+        [InsertLinkContext.Provider, insertLinkValue],
+        [SaveContext.Provider, saveValue],
+        [CompileContext.Provider, compileValue],
+        [LineMapContext.Provider, lineMapValue],
+        [ShortcutHelpContext.Provider, shortcutHelpValue],
+        [PreviewContext.Provider, previewValue]
+      ]}
+    >
+      {children}
+    </ComposedProviders>
+  );
+}
+
+/**
+ * Render an arbitrary list of `[Provider, value]` pairs as a
+ * left-to-right nested tree. Strictly mechanical replacement for
+ * an N-deep `<A.Provider><B.Provider>...</B></A>` ladder so we
+ * can add or remove a slice with a one-line edit instead of
+ * counting brackets across the whole component. The first entry
+ * becomes the outermost provider; subsequent entries nest inside.
+ *
+ * Provider order is otherwise inconsequential: `useContext` reads
+ * each slice independently, so re-orderings don't change behaviour.
+ */
+type ProviderEntry<T> = readonly [React.Provider<T>, T];
+
+interface ComposedProvidersProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  providers: ReadonlyArray<ProviderEntry<any>>;
+  children: ReactNode;
+}
+
+function ComposedProviders({ providers, children }: ComposedProvidersProps) {
+  return providers.reduceRight<ReactNode>(
+    (acc, [Provider, value]) => <Provider value={value}>{acc}</Provider>,
+    children
   );
 }
 
@@ -275,5 +300,7 @@ export type EditorContextValue = PreviewContextValue &
   ErrorContextValue &
   UserContextValue &
   InsertLinkContextValue &
+  ShortcutHelpContextValue &
   CompileContextValue &
-  SaveContextValue;
+  SaveContextValue &
+  LineMapContextValue;

@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css';
 
 /**
- * Phase 9 diff renderer styling.
+ * Diff renderer styling.
  *
  * Colours are picked to read on both light and dark Salt themes
  * without pulling in theme-mode-aware tokens here. The add/remove
