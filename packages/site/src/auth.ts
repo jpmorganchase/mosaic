@@ -114,9 +114,7 @@ const noAuthSignIn: SignInFn = (async () => {
 }) as unknown as SignInFn;
 
 const noAuthSignOut: SignOutFn = (async () => {
-  throw new Error(
-    '[mosaic-site] signOut() called but MOSAIC_AUTH_ENABLED is not set.'
-  );
+  throw new Error('[mosaic-site] signOut() called but MOSAIC_AUTH_ENABLED is not set.');
 }) as unknown as SignOutFn;
 
 // ---------------------------------------------------------------------------

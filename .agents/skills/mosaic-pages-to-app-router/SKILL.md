@@ -471,7 +471,58 @@ render so the underlying fetch only happens once.
   global error boundary — it hardcodes its strings and refuses props.
   Inline `<Hero>` from `mosaic-components` instead (see §1).
 
-### 13. Verification checklist
+### 13. Env var inventory (audit when migrating)
+
+When porting a Pages Router site, **scrub `.env*` files**: Pages Router
+deployments accumulated several vars that App Router + Auth.js v5 do
+not consume. Run a source-only audit before shipping (excluding
+`.next/`, `out/`, `dist/`, `node_modules/`):
+
+```bash
+grep -RIn --exclude-dir={node_modules,.next,out,dist,coverage,.turbo,.git} \
+  -e MOSAIC_ -e NEXT_PUBLIC_ -e AUTH_SECRET -e NEXTAUTH \
+  -e GITHUB_ID -e GITHUB_SECRET packages/site packages/site-middleware
+```
+
+**Required by the App Router site:**
+
+| Var                                                         | Read by                                                 | Notes                                                                            |
+| ----------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `MOSAIC_MODE`                                               | `next.config.js`, `page.tsx`, middleware loaders        | `active` \| `snapshot-file` \| `snapshot-s3`. Defaults to `active`.              |
+| `MOSAIC_ACTIVE_MODE_URL`                                    | `resolveMosaicMode`, `loadSitemap`                      | Required in active mode.                                                         |
+| `MOSAIC_SNAPSHOT_DIR`                                       | `getSnapshotFileConfig`                                 | Required in `snapshot-file` mode.                                                |
+| `MOSAIC_S3_{BUCKET,REGION,ACCESS_KEY_ID,SECRET_ACCESS_KEY}` | `getSnapshotS3Config`                                   | Required in `snapshot-s3` mode.                                                  |
+| `NEXT_PUBLIC_SITE_URL`                                      | `lib/siteOrigin.ts`, `app/sitemap.ts`, `app/layout.tsx` | Drives `metadataBase` + absolute sitemap/robots URLs. Production warns if unset. |
+| `NEXT_PUBLIC_OPTIMIZE_IMAGES`                               | `site-components/Image`                                 | Toggle Next image optimisation.                                                  |
+
+**Optional / opt-in:**
+
+| Var                                         | Purpose                                                                                |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `MOSAIC_OUTPUT=export`                      | Static export build (requires snapshot mode).                                          |
+| `MOSAIC_AUTH_ENABLED=true`                  | Explicit Auth.js opt-in. Implicitly enabled when `AUTH_SECRET` is set.                 |
+| `AUTH_SECRET` (or legacy `NEXTAUTH_SECRET`) | Auth.js v5 secret. Required if auth is enabled.                                        |
+| `GITHUB_ID` / `GITHUB_SECRET`               | GitHub OAuth provider.                                                                 |
+| `MOSAIC_REVALIDATE_SECRET`                  | Shared secret for `/api/revalidate`. Site fails closed without it.                     |
+| `MOSAIC_REVALIDATE_URL`                     | CLI-side: where the `serve` command POSTs revalidate webhooks.                         |
+| `MOSAIC_DISABLE_LOADER_CACHE=true`          | Dev: bypass `unstable_cache` layer for hot-edits.                                      |
+| `MOSAIC_DEV_FAKE_AUTH=true`                 | Dev: Credentials provider auto-accepts sign-in (gated on `NODE_ENV !== 'production'`). |
+| `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true`    | Dev: force `writable=true` for the editor against non-writable sources.                |
+| `NEXT_PUBLIC_ENABLE_LOGIN=true`             | Show the Sign In button in `AppHeaderControls`.                                        |
+
+**Almost certainly stale on a migrated site — DELETE from `.env*`:**
+
+| Var                                   | Why it's stale                                                                                                                                                         |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXTAUTH_URL`                        | Auth.js **v5** uses `trustHost: true` and infers origin from request headers. Only v4 needed it.                                                                       |
+| `NODE_ENV`                            | Next.js / Node set this automatically based on the command. Manually setting it in `.env*` is an antipattern and Next.js warns about it at boot.                       |
+| `MOSAIC_ENABLE_SOURCE_PUSH`           | CLI/source-plugin concern, never read by the site.                                                                                                                     |
+| `NEXT_PUBLIC_MOSAIC_IBCE_PREVIEW_URL` | Pages Router preview API path; the App Router uses a Server Action (`previewAction.ts`) and the URL is hardcoded inside the editor plugin.                             |
+| `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`    | Legacy WebSocket workflow URL; the current editor calls Server Actions instead.                                                                                        |
+| `OPTIMIZE_IMAGES` (non-public)        | Only the `NEXT_PUBLIC_` variant is read on the client; the bare version is a duplicate that does nothing.                                                              |
+| `SITE_URL`                            | Only used by the Mosaic **CLI's** `sitemap-plugin` during `gen:snapshot` (set it in `.env`, not in the site runtime). The App Router site uses `NEXT_PUBLIC_SITE_URL`. |
+
+### 14. Verification checklist
 
 ```bash
 # 1. Type-check
