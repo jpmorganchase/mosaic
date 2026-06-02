@@ -10,7 +10,6 @@
  */
 import classnames from 'clsx';
 import type { Metadata } from 'next';
-import Script from 'next/script';
 
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import '@jpmorganchase/mosaic-sitemap-component/index.css';
