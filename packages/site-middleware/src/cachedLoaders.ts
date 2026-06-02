@@ -48,18 +48,22 @@ import {
   getSnapshotS3Config,
   loadLocalFile
 } from './loaders/index.js';
+import { MOSAIC_CONTENT_CACHE_TAG } from './cacheTags.js';
 
 if (typeof window !== 'undefined') {
   throw new Error('cachedLoaders.ts must not be imported on the client.');
 }
 
 /**
- * Tag every cache entry produced by these loaders. The Mosaic CLI (or
- * a CMS webhook) can mark all of them stale at once with
- * `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)` from a route handler — see
+ * Re-export so existing callers can continue to import this constant
+ * from `cachedLoaders`. New callers (notably the `/api/revalidate`
+ * route handler) should import from `./cacheTags.js` directly so
+ * Next.js' NFT trace doesn't pull in this file's fs/S3 dependencies.
+ * The Mosaic CLI (or a CMS webhook) can mark every entry stale at
+ * once with `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)` — see
  * `packages/site/src/app/api/revalidate/route.ts`.
  */
-export const MOSAIC_CONTENT_CACHE_TAG = 'mosaic-content';
+export { MOSAIC_CONTENT_CACHE_TAG };
 
 /**
  * Dev escape hatch. Setting `MOSAIC_DISABLE_LOADER_CACHE=true` makes

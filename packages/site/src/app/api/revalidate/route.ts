@@ -20,7 +20,13 @@
  */
 import { revalidateTag } from 'next/cache';
 import type { NextRequest } from 'next/server';
-import { MOSAIC_CONTENT_CACHE_TAG } from '@jpmorganchase/mosaic-site-middleware';
+// Import from the narrow `/cache-tags` subpath rather than the
+// package root. The barrel re-exports `cachedLoaders.ts`, which uses
+// dynamic `process.cwd()` filesystem calls and the S3 SDK; pulling
+// that file into this route's Next.js NFT trace caused Turbopack to
+// warn that "the whole project was traced unintentionally" on build.
+// This route only needs the cache-tag string constant.
+import { MOSAIC_CONTENT_CACHE_TAG } from '@jpmorganchase/mosaic-site-middleware/cache-tags';
 
 import { notifyContentChanged } from '../../../lib/liveReloadBus';
 

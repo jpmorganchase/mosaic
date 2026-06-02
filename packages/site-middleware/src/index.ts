@@ -7,3 +7,8 @@ export * from './loadSitemap.js';
 // Cached, parallelisable per-request loaders consumed by App Router
 // route segments (`getMdxRaw`, `getSharedConfig`, `getSearchData`).
 export * from './cachedLoaders.js';
+// Standalone cache-tag constants — importable without dragging in
+// `cachedLoaders.ts`' fs/S3/gray-matter dependencies. The
+// `/api/revalidate` route imports from here directly so Next.js' NFT
+// trace stays small.
+export * from './cacheTags.js';

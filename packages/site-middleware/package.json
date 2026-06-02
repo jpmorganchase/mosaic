@@ -12,6 +12,12 @@
   "types": "./dist/index.d.ts",
   "exports": {
     "./index.css": "./dist/index.css",
+    "./cache-tags": {
+      "types": "./dist/cacheTags.d.ts",
+      "import": "./dist/cacheTags.js",
+      "node": "./dist/cacheTags.js",
+      "default": "./dist/cacheTags.js"
+    },
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
