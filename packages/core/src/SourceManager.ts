@@ -101,6 +101,44 @@ export default class SourceManager {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       let sourceActive = false;
+      // Set by `onError` so the subsequent `onExit` (which always fires
+      // on worker termination) doesn't clobber the real diagnostic with
+      // a generic "silently exited" placeholder.
+      let sourceErrored = false;
+      // Watchdog: if the worker hasn't posted its `init` message within
+      // `bootTimeoutMs` we reject with an actionable error rather than
+      // leaving `mosaic.start()` (and the CLI / Fastify boot) hanging
+      // forever. Typical causes are a source plugin doing top-level
+      // async work that never settles, an unawaited promise rejection
+      // swallowed during module load, or a worker OOM whose `error`
+      // event is delayed by the platform. Worst-case before this guard
+      // was Node exiting with code 13 ("unsettled top-level await") and
+      // no message — surfacing *anything* is strictly better.
+      const bootTimeoutMs = Number.parseInt(
+        process.env.MOSAIC_SOURCE_BOOT_TIMEOUT_MS ?? '60000',
+        10
+      );
+      const watchdog: NodeJS.Timeout | null =
+        Number.isFinite(bootTimeoutMs) && bootTimeoutMs > 0
+          ? setTimeout(() => {
+              if (!sourceActive && !sourceErrored) {
+                sourceErrored = true;
+                reject(
+                  new Error(
+                    `[Mosaic][Source] '${String(
+                      sourceDefinition.modulePath
+                    )}' did not post its initial message within ${bootTimeoutMs}ms. ` +
+                      `The source worker is likely hung during module load — check for ` +
+                      `top-level async work in a plugin/serialiser, missing dependencies, ` +
+                      `or raise the limit via MOSAIC_SOURCE_BOOT_TIMEOUT_MS.`
+                  )
+                );
+              }
+            }, bootTimeoutMs)
+          : null;
+      const clearWatchdog = () => {
+        if (watchdog) clearTimeout(watchdog);
+      };
 
       const source = new Source(
         {
@@ -135,8 +173,6 @@ export default class SourceManager {
         } else {
           logUpdateStatus(source.id, initOrStartTime);
           initOrStartTime = null;
-
-          //
           try {
             this.#globalConfig.setData(
               Array.from(this.#sources.values()).reduce(
@@ -199,22 +235,30 @@ export default class SourceManager {
             console.error('[Mosaic][Core]', e);
             source.stop();
           }
-          //
         }
       });
       source.onError(error => {
         console.error('[Mosaic][Core]', error);
         if (!sourceActive) {
+          sourceErrored = true;
+          clearWatchdog();
           reject(error);
         }
       });
       source.onExit(() => {
         if (!sourceActive) {
-          reject(
-            new Error(
-              `[Mosaic][Source] '${source.id.description}' silently exited before initialising.`
-            )
-          );
+          // Only emit the "silently exited" fallback if no prior
+          // `onError` already rejected with the real cause. Node fires
+          // both `error` and `exit` on worker failure; without this
+          // guard the generic message overwrites the diagnostic.
+          if (!sourceErrored) {
+            clearWatchdog();
+            reject(
+              new Error(
+                `[Mosaic][Source] '${source.id.description}' silently exited before initialising.`
+              )
+            );
+          }
         }
         console.debug(`[Mosaic][Core] '${source.id.description}' closed`);
 
@@ -224,6 +268,7 @@ export default class SourceManager {
 
       source.onStart(() => {
         sourceActive = true;
+        clearWatchdog();
         console.debug(
           `[Mosaic][Core] '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime

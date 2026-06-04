@@ -1998,6 +1998,7 @@ __metadata:
     fuse.js: "npm:^6.6.2"
     lodash-es: "npm:^4.17.23"
     next: "npm:^16.2.6"
+    next-mdx-remote-client: "npm:^1.0.3"
     next-router-mock: "npm:^0.9.13"
     swr: "npm:^2.1.2"
     typescript: "npm:^5.0.0"
@@ -2165,7 +2166,6 @@ __metadata:
     "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     fast-glob: "npm:^3.2.12"
-    lodash-es: "npm:^4.17.23"
     rxjs: "npm:^7.5.5"
     zod: "npm:^3.22.3"
   languageName: unknown

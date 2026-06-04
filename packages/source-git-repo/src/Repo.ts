@@ -564,18 +564,20 @@ export default class Repo {
         );
       } else {
         console.debug(`[Mosaic][Source-Git] Re-using main worktree for repo '${this.#name}'`);
-        // Retrofit the single-branch fetch refspec on clones created by
-        // a pre-uplift mosaic. `--single-branch` only applies at clone
-        // time; if we inherit a multi-branch clone its
-        // `remote.<name>.fetch` is `+refs/heads/*:refs/remotes/<name>/*`
-        // and every `git fetch` still pulls every branch's refs. Force
-        // it to the single-branch shape so the per-poll cost matches a
-        // fresh clone. This is a no-op (idempotent) on clones that are
-        // already single-branch — `git config --replace-all` just
-        // rewrites the same value.
-        await this.ensureSingleBranchFetchRefspec();
       }
       this.#cloned = true;
+      // Retrofit the single-branch fetch refspec on clones created by
+      // a pre-uplift mosaic. `--single-branch` only applies at clone
+      // time; if we inherit a multi-branch clone its
+      // `remote.<name>.fetch` is `+refs/heads/*:refs/remotes/<name>/*`
+      // and every `git fetch` still pulls every branch's refs. Force
+      // it to the single-branch shape so the per-poll cost matches a
+      // fresh clone. This is a no-op (idempotent) on clones that are
+      // already single-branch — `git config --replace-all` just
+      // rewrites the same value. Done after `#cloned = true` so the
+      // method's own guard passes, and run unconditionally so fresh
+      // clones are also normalised (cheap, idempotent).
+      await this.ensureSingleBranchFetchRefspec();
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
         console.debug(
           `[Mosaic][Source-Git] Creating linked worktree repo '${this.#name} branch '${

@@ -33,12 +33,29 @@ if (options.config !== undefined) {
   throw new Error(`[Mosaic] no config file provided`);
 }
 
+/**
+ * Invoke a subcommand fire-and-forget, routing any rejection into a
+ * fatal error log + non-zero exit. We deliberately do NOT `await`:
+ * `serve` resolves once Fastify is bound and keeps the event loop
+ * alive via its listening socket, so `await serve(...)` would either
+ * be a no-op (success) or, if any boot step hangs, turn into Node's
+ * "unsettled top-level await" (exit 13) with no diagnostic. The
+ * explicit `.catch` gives us failure visibility without coupling
+ * process exit to the listening socket's lifetime.
+ */
+function dispatch(promise: Promise<unknown>) {
+  promise.catch(err => {
+    console.error('[Mosaic][CLI]', err);
+    process.exit(1);
+  });
+}
+
 if (program.args[0] === 'build') {
-  build(config.default, path.resolve(process.cwd(), options.out), options);
+  dispatch(build(config.default, path.resolve(process.cwd(), options.out), options));
 }
 if (program.args[0] === 'serve') {
-  serve(config.default, options.port, options.scope && options.scope.split(','));
+  dispatch(serve(config.default, options.port, options.scope && options.scope.split(',')));
 }
 if (program.args[0] === 'upload') {
-  uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot));
+  dispatch(uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot)));
 }
