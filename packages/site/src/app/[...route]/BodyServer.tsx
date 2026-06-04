@@ -24,7 +24,7 @@
  */
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 
-import { MdxRenderer } from './MdxRenderer';
+import { MdxRenderer } from './MdxComponents';
 
 interface BodyServerProps {
   type?: 'mdx' | 'json';

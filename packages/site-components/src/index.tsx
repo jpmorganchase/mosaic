@@ -25,3 +25,9 @@ export * from './404';
 export * from './500';
 
 export { default as components } from './mdx';
+export { createMDXScope, type MDXScope } from './utils/createMDXScope';
+export {
+  createMdxRenderer,
+  type CreateMdxRendererOptions,
+  type MdxRendererProps
+} from './MdxHost/createMdxRenderer';
