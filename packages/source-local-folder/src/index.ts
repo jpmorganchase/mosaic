@@ -64,6 +64,17 @@ export const schema = z.object({
 export type LocalFolderSourceOptions = z.infer<typeof schema>;
 
 const LocalFolderSource: Source<LocalFolderSourceOptions> = {
+  /**
+   * WARNING for upstream consumers: the per-file deserialise cache
+   * (`cache` below) is scoped to a single `create()` invocation. If you
+   * compose this source under an operator that re-subscribes the
+   * returned observable on every tick of a polling stream (e.g.
+   * `switchMap(() => watchFolder$)`, `exhaustMap`, …), the cache is
+   * thrown away and rebuilt from scratch on every re-subscription,
+   * producing the worst possible memory churn and GC pressure on large
+   * docs trees. Subscribe once for the lifetime of the source and
+   * merge in side-streams as *signals*, not triggers.
+   */
   create(options, { serialiser }): Observable<Page[]> {
     validateMosaicSchema(schema, options);
 
