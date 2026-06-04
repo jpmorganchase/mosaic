@@ -59,7 +59,9 @@
     "next-mdx-remote-client": "^1.0.3",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.0",
+    "shiki": "^4.0.0",
     "unified": "^11.0.0",
+    "unist-util-visit": "^5.0.0",
     "unist-util-visit-parents": "^6.0.0"
   },
   "peerDependencies": {

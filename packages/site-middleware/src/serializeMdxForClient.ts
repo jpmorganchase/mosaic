@@ -19,6 +19,10 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 
 import { codeBlocks } from './plugins/codeBlocks.js';
+import {
+  highlightCodeBlocks,
+  type HighlightCodeBlocksOptions
+} from './plugins/highlightCodeBlocks.js';
 
 if (typeof window !== 'undefined') {
   throw new Error('serializeMdxForClient.ts must not be imported on the client.');
@@ -35,6 +39,21 @@ export interface SerializeMdxForClientOptions {
    * references `{meta.*}` (frontmatter) here.
    */
   scope?: Record<string, unknown>;
+  /**
+   * Server-side syntax highlighting via shiki. Default `true`.
+   *
+   * When enabled, each `<pre><code class="language-…">` fence is
+   * highlighted by `highlightCodeBlocks` and the result attached as
+   * a `data-mosaic-html` attribute on the `<code>`. The client
+   * `<Pre>` reads that and skips its `await import('shiki')` —
+   * saving ~150 KB of shiki + grammars per docs page.
+   *
+   * Pass `false` to disable, or an options object to customise
+   * languages / themes (see `HighlightCodeBlocksOptions`). Hosts
+   * without a highlighter component ignore the extra attributes
+   * harmlessly.
+   */
+  highlight?: boolean | HighlightCodeBlocksOptions;
 }
 
 /**
@@ -52,7 +71,28 @@ export async function serializeMdxForClient<
   source: string,
   options: SerializeMdxForClientOptions = {}
 ): Promise<SerializeResult<TFrontmatter>> {
-  const { rehypePlugins = [], remarkPlugins = [], parseFrontmatter = true, scope } = options;
+  const {
+    rehypePlugins = [],
+    remarkPlugins = [],
+    parseFrontmatter = true,
+    scope,
+    highlight = true
+  } = options;
+
+  // Built once and reused by both the primary `serialize` and the
+  // error-recovery re-`compile` so they walk identical plugin chains.
+  const highlightPlugin =
+    highlight === false
+      ? undefined
+      : highlightCodeBlocks(typeof highlight === 'object' ? highlight : {});
+
+  const baseRehypePlugins = [
+    codeBlocks as any,
+    ...(highlightPlugin ? [highlightPlugin as any] : []),
+    rehypeSlug as any,
+    ...rehypePlugins
+  ];
+  const baseRemarkPlugins = [remarkGfm as any, ...remarkPlugins];
 
   const result = await serialize<TFrontmatter>({
     source,
@@ -60,10 +100,8 @@ export async function serializeMdxForClient<
       parseFrontmatter,
       scope,
       mdxOptions: {
-        // `codeBlocks` runs first so its transformation is visible to
-        // slug generation.
-        rehypePlugins: [codeBlocks as any, rehypeSlug as any, ...rehypePlugins],
-        remarkPlugins: [remarkGfm as any, ...remarkPlugins]
+        rehypePlugins: baseRehypePlugins,
+        remarkPlugins: baseRemarkPlugins
       }
     }
   });
@@ -93,8 +131,8 @@ export async function serializeMdxForClient<
   if ('error' in result && result.error) {
     try {
       await compile(source, {
-        remarkPlugins: [remarkGfm as any, ...remarkPlugins],
-        rehypePlugins: [codeBlocks as any, rehypeSlug as any, ...rehypePlugins]
+        remarkPlugins: baseRemarkPlugins,
+        rehypePlugins: baseRehypePlugins
       });
     } catch (locationProbe) {
       const probe = locationProbe as {
