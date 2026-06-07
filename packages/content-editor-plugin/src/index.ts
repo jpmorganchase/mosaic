@@ -8,6 +8,11 @@ export {
   type LayoutNamesProviderProps
 } from './LayoutNamesContext';
 export {
+  TagSuggestionsProvider,
+  useTagSuggestions,
+  type TagSuggestionsProviderProps
+} from './TagSuggestionsContext';
+export {
   EditorProvider,
   useEditorUser,
   useErrorMessage,

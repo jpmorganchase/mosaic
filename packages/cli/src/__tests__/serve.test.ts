@@ -55,6 +55,7 @@ const mockExistsFn = vi.fn();
 const mockStatFn = vi.fn();
 const mockRealpathFn = vi.fn();
 const mockReadFileFn = vi.fn();
+const mockReaddirFn = vi.fn();
 const mockScopeFn = vi.fn();
 
 const mockFileSystem = {
@@ -64,7 +65,8 @@ const mockFileSystem = {
     exists: mockExistsFn,
     stat: mockStatFn,
     realpath: mockRealpathFn,
-    readFile: mockReadFileFn
+    readFile: mockReadFileFn,
+    readdir: mockReaddirFn
   }
 };
 
@@ -157,6 +159,81 @@ describe('GIVEN the serve command', () => {
       expect(response.statusCode).toEqual(200);
       expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
       expect(JSON.parse(response.payload)).toEqual(mockFilesystemJSON);
+    });
+
+    describe('AND WHEN the tags list Admin API is requested', () => {
+      // Each test sets its own `readdir` / `exists` behaviour;
+      // reset between cases so a previous test's expectation
+      // doesn't bleed in (Vitest preserves call history across
+      // siblings unless we clear).
+      beforeEach(() => {
+        mockExistsFn.mockReset();
+        mockReaddirFn.mockReset();
+      });
+
+      test('THEN it returns the sorted tag names from /.tags', async () => {
+        mockExistsFn.mockResolvedValueOnce(true);
+        // Deliberately unsorted input — the endpoint must sort so
+        // the editor's ComboBox dropdown order stays stable across
+        // reloads even when memfs iteration order changes.
+        mockReaddirFn.mockResolvedValueOnce(['platform', 'blog', 'design-system']);
+
+        const response = await server.inject({
+          method: 'GET',
+          url: '/_mosaic_/tags/list'
+        });
+
+        expect(mockExistsFn).toHaveBeenCalledWith('/.tags');
+        expect(mockReaddirFn).toHaveBeenCalledWith('/.tags');
+        expect(response.statusCode).toEqual(200);
+        expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+        expect(JSON.parse(response.payload)).toEqual(['blog', 'design-system', 'platform']);
+      });
+
+      test('THEN it returns [] when /.tags does not exist', async () => {
+        // Cold-start path: `$TagPlugin` hasn't run yet because no
+        // source has emitted tagged pages. The endpoint must
+        // return 200 + [] (not 404) so the host's
+        // <TagSuggestionsProvider> still mounts and the editor
+        // surfaces the same free-text ComboBox the host gets
+        // when it doesn't opt in at all.
+        mockExistsFn.mockResolvedValueOnce(false);
+
+        const response = await server.inject({
+          method: 'GET',
+          url: '/_mosaic_/tags/list'
+        });
+
+        expect(mockExistsFn).toHaveBeenCalledWith('/.tags');
+        expect(mockReaddirFn).not.toHaveBeenCalled();
+        expect(response.statusCode).toEqual(200);
+        expect(JSON.parse(response.payload)).toEqual([]);
+      });
+
+      test('THEN it returns [] (not 500) when readdir throws', async () => {
+        // Tags are a quality-of-life feature for the editor; a
+        // transient FS read failure must not poison the editor
+        // mount with a 500 — the editor would surface that as a
+        // dialog failure and the author couldn't even open the
+        // Frontmatter tab. Logged-and-degrade is the only sane
+        // policy.
+        mockExistsFn.mockResolvedValueOnce(true);
+        mockReaddirFn.mockRejectedValueOnce(new Error('EIO'));
+
+        // Silence the expected console.error so the test output
+        // stays clean.
+        const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+        const response = await server.inject({
+          method: 'GET',
+          url: '/_mosaic_/tags/list'
+        });
+
+        expect(response.statusCode).toEqual(200);
+        expect(JSON.parse(response.payload)).toEqual([]);
+        expect(errSpy).toHaveBeenCalled();
+        errSpy.mockRestore();
+      });
     });
 
     test('THEN the Stop Source Admin API stops a source if a valid name is given', async () => {
