@@ -46,6 +46,17 @@ const baseConfig = {
     '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
+  // Transform named barrel imports (e.g.
+  // `import { Card, GridLayout } from '@salt-ds/core'`) into direct
+  // submodule imports at build time so the client bundle only pulls
+  // the components actually used. Salt-DS re-exports its full
+  // surface from its package root, so without this each barrel
+  // import drags the entire library into the chunk that touches it.
+  // `lodash-es` is already on Next's default-optimized list (Next 14+)
+  // so it doesn't need to be repeated here.
+  experimental: {
+    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
+  },
   images: {
     domains: [
       /** Insert the domains where you will load images from */

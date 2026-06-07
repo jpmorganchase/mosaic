@@ -34,6 +34,7 @@
  */
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
@@ -49,9 +50,27 @@ import { auth } from '../../auth';
 import { AUTH_ENABLED } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
-import { EditorBody } from './EditorBody';
 import { RouteMetadata } from './RouteMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
+
+// Code-split the Lexical-based editor behind `next/dynamic`. Because
+// the import lives at module top level (the natural place for any
+// component reference), a static `import { EditorBody } from
+// './EditorBody'` would land `EditorBody.tsx` and its transitive
+// deps (including Lexical, ~300KB gzipped) in this route's client
+// manifest unconditionally — every VIEW-mode visitor would download
+// the editor chunk even though it's only mounted on the
+// `?edit=1`/`?new=1` branches.
+//
+// `next/dynamic` defers the JS fetch until the component actually
+// renders, so VIEW-mode pages skip the cost entirely and the editor
+// only ships on the EDIT/CREATE branches where it's about to run.
+//
+// We don't set `ssr: false` (which would require a client component
+// host anyway) because `EditorBody` is already `'use client'` and
+// we want the RSC payload to include its placeholder slot so React's
+// hydration sequencing stays predictable.
+const EditorBody = dynamic(() => import('./EditorBody').then(m => m.EditorBody));
 
 interface PageProps {
   params: Promise<{ route?: string[] }>;
@@ -448,8 +467,12 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // would force the fallback to show *during* the transition,
   // re-creating the flash.
   //
-  // The EDIT branch is `next/dynamic` — Next handles the loading
-  // state via the `loading: () => …` option above.
+  // The EDIT/CREATE branch resolves `EditorBody` via `next/dynamic`
+  // (declared at module top). The dynamic chunk loads asynchronously
+  // on the first edit/create render; React's built-in Suspense
+  // handling for dynamic components keeps the previous UI on screen
+  // until the chunk arrives, then swaps in `<EditorBody>` — same
+  // no-flash behaviour as VIEW.
   return (
     <StoreShell storeProps={storeProps}>
       <RouteMetadata />

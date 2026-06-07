@@ -20,6 +20,7 @@
  */
 import { revalidateTag } from 'next/cache';
 import type { NextRequest } from 'next/server';
+import { timingSafeEqual } from 'node:crypto';
 // Import from the narrow `/cache-tags` subpath rather than the
 // package root. The barrel re-exports `cachedLoaders.ts`, which uses
 // dynamic `process.cwd()` filesystem calls and the S3 SDK; pulling
@@ -41,6 +42,27 @@ function extractSecret(req: NextRequest): string | null {
   return null;
 }
 
+/**
+ * Constant-time string comparison. `===` short-circuits on the first
+ * differing byte, which leaks the length of the matching prefix via
+ * response time and is a textbook secret-comparison footgun. Encoding
+ * both sides as `Buffer`s of equal length lets us hand them to
+ * `timingSafeEqual`, which always touches every byte regardless of
+ * where (or whether) a difference is found.
+ *
+ * Different-length inputs are rejected up front because
+ * `timingSafeEqual` throws on unequal buffers; we don't want that
+ * exception to surface a 500. The length check itself is allowed to
+ * be non-constant-time — the secret's length isn't sensitive,
+ * its bytes are.
+ */
+function secretsMatch(provided: string, configured: string): boolean {
+  const providedBuf = Buffer.from(provided, 'utf8');
+  const configuredBuf = Buffer.from(configured, 'utf8');
+  if (providedBuf.length !== configuredBuf.length) return false;
+  return timingSafeEqual(providedBuf, configuredBuf);
+}
+
 export async function POST(req: NextRequest) {
   const configured = process.env.MOSAIC_REVALIDATE_SECRET;
   if (!configured) {
@@ -50,7 +72,7 @@ export async function POST(req: NextRequest) {
     );
   }
   const provided = extractSecret(req);
-  if (!provided || provided !== configured) {
+  if (!provided || !secretsMatch(provided, configured)) {
     return Response.json({ ok: false, error: 'Unauthorized.' }, { status: 401 });
   }
 

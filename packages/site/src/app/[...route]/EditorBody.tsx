@@ -2,8 +2,12 @@
 
 /**
  * Lexical-based content editor rendered in place of the MDX body
- * when `?edit=1` is on the URL. Code-split via `next/dynamic` in
- * `page.tsx` so its bundle is only fetched on the EDIT branch.
+ * when `?edit=1` (or `?new=1`) is on the URL.
+ *
+ * Loaded lazily via `next/dynamic` from `page.tsx` so its JS chunk
+ * — Lexical, the editor plugins, MDX preview wiring, etc. — is only
+ * fetched on the EDIT/CREATE branches. VIEW-mode visitors never
+ * download it.
  *
  * Both Server Actions are passed in as props (rather than imported
  * inside the editor plugin) so the plugin stays decoupled from this
