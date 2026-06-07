@@ -31,6 +31,10 @@ const ROUTES = [
     why: 'The live-reload SSE stream requires a long-lived Node runtime; not available in a static export.'
   },
   {
+    path: 'src/app/api/content/ready/route.ts',
+    why: 'The cold-start readiness probe is a dev-mode helper for the active-mode Mosaic CLI; static exports have no upstream to probe.'
+  },
+  {
     path: 'src/app/api/revalidate/route.ts',
     why: 'There is no server cache to revalidate in a static export. Rebuild the site to refresh content.'
   }
