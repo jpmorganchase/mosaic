@@ -294,31 +294,50 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // synthesise the body below from a blank-page template.
   const onDiskFrontmatter = mdx.kind === 'mdx' ? mdx.frontmatter : ({} as Record<string, unknown>);
   const onDiskRaw = mdx.kind === 'mdx' ? mdx.raw : '';
-  // Strip `sharedConfig` out of the frontmatter spread below.
+  // Separate `sharedConfig` from the rest of the frontmatter so we
+  // can merge it carefully with the loader-derived copy below.
   //
   // Background: index pages may author a `sharedConfig` in their
   // own frontmatter (header / footer / menu for the subtree). The
-  // `SharedConfigPlugin` already lifts that authored value into the
+  // `SharedConfigPlugin` lifts that authored value into the
   // namespace's `shared-config.json`, which is what `getSharedConfig`
-  // loads back into the `sharedConfig` const above. Re-spreading
-  // `onDiskFrontmatter.sharedConfig` on top would just overwrite
-  // the loader-derived copy with the (identical) authored one —
-  // EXCEPT that the loader-derived copy is what the
-  // `CAPABILITY_GATE_BYPASSED` block (and, in non-dev builds, the
-  // SharedConfigPlugin's `sourceCapabilities` stamping) enriches
-  // with the writability flag. The frontmatter copy carries no
-  // `sourceCapabilities` field, so the spread silently clobbers the
-  // bypass on exactly the index pages that authored a sharedConfig,
-  // hiding `<EditorControls>` on the docs landing page while every
-  // non-index page in the same namespace shows them.
-  const { sharedConfig: _frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
-    sharedConfig?: unknown;
+  // returns above. Non-index pages can also author a per-page footer /
+  // header via `frameOverrides` — the `$CodeModPlugin` mirrors that
+  // into `frontmatter.sharedConfig` so per-page overrides travel with
+  // the parsed frontmatter.
+  //
+  // A naive spread of `onDiskFrontmatter.sharedConfig` on top of the
+  // loader-derived copy would silently clobber the loader copy's
+  // `sourceCapabilities` field (which the frontmatter copy never
+  // carries) — that field is what the `CAPABILITY_GATE_BYPASSED`
+  // block (and, in non-dev builds, the SharedConfigPlugin's
+  // `sourceCapabilities` stamping) enriches with the writability
+  // flag. Dropping the frontmatter copy entirely would lose the
+  // per-page footer / header overrides, leaving every page rendering
+  // the namespace-wide fallback.
+  //
+  // Shallow merge: per-page authored top-level keys (`header`,
+  // `footer`, `menu`, …) override the namespace fallback, while any
+  // `sourceCapabilities` present on the loader copy is preserved on
+  // top so the editor gate sees the correct writability flag.
+  const { sharedConfig: frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
+    sharedConfig?: Record<string, unknown>;
   } & Record<string, unknown>;
+  const mergedSharedConfig =
+    frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object'
+      ? {
+          ...(sharedConfig ?? {}),
+          ...frontmatterSharedConfig,
+          ...(sharedConfig?.sourceCapabilities
+            ? { sourceCapabilities: sharedConfig.sourceCapabilities }
+            : {})
+        }
+      : sharedConfig;
   const storeProps = {
     searchIndex: search.searchIndex,
     searchConfig: search.searchConfig,
     ...frontmatterRest,
-    sharedConfig
+    sharedConfig: mergedSharedConfig
   };
 
   // If `?new=1` was requested AND the route already exists on
