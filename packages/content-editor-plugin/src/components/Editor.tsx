@@ -43,6 +43,7 @@
 
 import { ComponentType, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import matter from 'gray-matter';
+import { debounce } from 'lodash-es';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TablePlugin } from '@lexical/react/LexicalTablePlugin';
@@ -58,7 +59,14 @@ import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 import transformers from '../transformers';
 import ContentEditor from './ContentEditor';
 import { nodes } from '../nodes';
-import { EditorProvider, usePreviewContent, type EditorUser } from '../EditorContext';
+import {
+  EditorProvider,
+  usePreviewContent,
+  useSetPreviewContent,
+  useSetIsCompiling,
+  useErrorMessage,
+  type EditorUser
+} from '../EditorContext';
 import { PreviewPlugin } from '../plugins/PreviewPlugin';
 import { DirtyTrackerPlugin } from '../plugins/DirtyTrackerPlugin';
 import { ErrorHighlightPlugin } from '../plugins/ErrorHighlightPlugin';
@@ -71,7 +79,9 @@ import RouteNoticeBanner from './RouteNoticeBanner';
 import { ShortcutHelpDialog } from './ShortcutHelpDialog';
 import { InsertLinkDialog } from './Toolbar/InsertLink';
 import { registerHorizontalRule, registerMarkdownImage, registerMarkdownLink } from '../extensions';
+import { formatMdxError } from '../utils/formatMdxError';
 import { blockIndexAtOffset, blockStartOffset } from '../utils/markdownBlocks';
+import { mergeAuthoredFrontmatter } from '../utils/mergeAuthoredFrontmatter';
 import { LinkEditor } from './LinkEditor/LinkEditor';
 import { ScrollableSection } from './ScrollableSection/ScrollableSection';
 import { FloatingToolbarPlugin } from '../plugins/FloatingToolbarPlugin';
@@ -182,36 +192,150 @@ const EditorInner: FC<EditorProps> = ({
   isNewPage = false
 }) => {
   const previewContent = usePreviewContent();
+  const setPreviewContent = useSetPreviewContent();
+  const setIsCompiling = useSetIsCompiling();
+  const { setError } = useErrorMessage();
   const [saveOpen, setSaveOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { data: meta, content: markdown } = matter(content);
   const { mode } = useEditorMode();
 
+  const sourceHandleRef = useRef<SourceEditorHandle | null>(null);
+  const bridgeRef = useRef<ModeBridgeSnapshot | null>(null);
+  const getCurrentMarkdownRef = useRef<() => string>(() => markdown);
+  const wysiwygBlockIndexRef = useRef<number>(0);
+
   /**
-   * Re-prepend the YAML frontmatter we stripped from `content`
-   * on mount (via `gray-matter`) so the MDX **preview compile**
-   * sees a complete file.
+   * Authored-frontmatter snapshot getter. Installed by
+   * `FrontmatterEditor` when it mounts (i.e. when the user is in
+   * frontmatter mode AND the host supplied a raw source). Read
+   * by two consumers:
+   *
+   *   - the save dialog, at open time, to capture the YAML for
+   *     the persist payload (returns `undefined` to skip the
+   *     `frontmatter` field when the form is in an unsaveable
+   *     state);
+   *   - `attachFrontmatter` below, on every preview compile, so
+   *     the right pane reflects the author's frontmatter edits
+   *     live without waiting for a save.
+   *
+   * Lives on the editor (not the panel) so it survives flips
+   * between modes inside a single editing session — the user
+   * might edit a tag in frontmatter mode, flip to source to
+   * tweak a heading, then save. The dialog needs the most
+   * recent frontmatter snapshot regardless of which mode is
+   * currently active.
+   *
+   * The editor clears this back to null on unmount so a stale
+   * getter from a previous page can't be called by the dialog
+   * after a route change.
+   */
+  const frontmatterSnapshotRef = useRef<(() => string | undefined) | null>(null);
+
+  /**
+   * Cache of the last YAML value the frontmatter form produced,
+   * persisted across form mounts. Updated by the parent's
+   * `onAuthoredChange` handler below.
+   *
+   * Why a separate cache and not just `frontmatterSnapshotRef`?
+   * The form clears `snapshotRef` on its own unmount as a
+   * defence against stale getters surviving a route remount.
+   * That's the right behaviour for the save dialog (we'd
+   * rather omit the frontmatter field than ship the previous
+   * page's bytes), but it would also blank the preview the
+   * moment the author flips OUT of the Frontmatter tab — a
+   * regression in editor UX. The cache here is owned by the
+   * parent and outlives any individual form mount, so
+   * `attachFrontmatter` can continue layering the author's
+   * edits over `meta` while the user is in another mode
+   * within the same editing session.
+   *
+   * `null` means "no authored YAML has been observed yet" —
+   * `attachFrontmatter` falls back to `meta` in that case.
+   * Empty string is a legitimate value (the form's "user
+   * removed all frontmatter" signal) and parses cleanly to
+   * `{}` so the merge below resolves to `meta` alone.
+   */
+  const lastAuthoredYamlRef = useRef<string | null>(null);
+
+  // Reset the authored-YAML cache when the host hands us a
+  // different `content` prop — that signals a fresh editing
+  // session (typically a route change) and the previous page's
+  // edits should not bleed through. Most hosts also remount
+  // `<Editor>` outright on route change (the `key` prop pattern),
+  // which makes this effect a no-op; the explicit reset is the
+  // safety net for hosts that don't.
+  useEffect(() => {
+    lastAuthoredYamlRef.current = null;
+  }, [content]);
+
+  /**
+   * Re-prepend YAML frontmatter to the body before the MDX
+   * **preview compile** so `serializeMdxForClient` populates
+   * `scope.meta` — without it, expressions like `{meta.title}`
+   * render empty in the preview pane.
    *
    * Lexical is seeded with the body alone because the markdown
    * transformers would render the `---` fences as horizontal
-   * rules. The preview pipeline, however, needs the frontmatter
-   * so `serializeMdxForClient` can populate `scope.meta` —
-   * without it, references like `{meta.title}` render empty in
-   * the preview pane.
+   * rules. The preview pipeline gets the frontmatter glued
+   * back on here.
+   *
+   * Which frontmatter
+   * -----------------
+   * Authors edit the **authored** (pre-plugin) frontmatter in
+   * `FrontmatterEditor`. That state lives in the form and is
+   * surfaced to outside callers via `frontmatterSnapshotRef`.
+   * We layer it on top of `meta` (the post-plugin enriched
+   * object the host loaded) so:
+   *
+   *   - keys the author touched (title, layout, description,
+   *     tags, …) reflect their live edits in the preview the
+   *     moment they change them;
+   *   - keys the author didn't author but plugins injected
+   *     (`sidebar`, `breadcrumbs`, `tableOfContents`,
+   *     `readingTime`, …) survive so MDX bodies that reference
+   *     them keep rendering correctly during the editor session.
+   *
+   * The author's view "wins" key-by-key, which has the right
+   * intuitive behaviour: clearing a field they authored makes
+   * it disappear from the preview, even if the post-plugin
+   * `meta` had a (now-stale) value for it. Pure-author-removal
+   * isn't perfect (the form prunes empty string / empty array
+   * rows when serialising, so a deletion becomes a "no such
+   * key" in the parsed YAML, which the merge below treats as
+   * "keep meta's copy") — but that's strictly less surprising
+   * than the previous behaviour of frontmatter edits not
+   * updating the preview AT ALL, and gets the editor's UX
+   * close enough to what the saved file produces that the
+   * remaining gap is invisible in practice.
+   *
+   * One narrow exception to "author wins": Mosaic ref
+   * placeholders. Authors write `data.foo: { $tag: '…' }` or
+   * `{ $ref: '…' }`; the CLI's `$TagPlugin` / `$RefPlugin`
+   * expand those server-side into arrays of resolved pages,
+   * which is what the body iterates over (`.filter(...)
+   * .map(...)`). `serializeMdxForClient` doesn't run those
+   * plugins, so a literal author-wins merge ships the
+   * placeholder to the preview and the first `.filter()` call
+   * throws `… is not a function`. `mergeAuthoredFrontmatter`
+   * detects `$tag` / `$ref` placeholders and keeps the
+   * post-plugin `meta` value at the same path so the preview
+   * sees the resolved form. Authored intent is unchanged on
+   * disk — the editor saves the placeholder bytes verbatim.
+   *
+   * If `frontmatterSnapshotRef` returns `undefined` (the form
+   * is in an unsaveable state — parse error, empty required
+   * field) we fall through to the original `meta` so the
+   * preview keeps rendering with the last-known-good
+   * frontmatter rather than blanking.
    *
    * NOT used for the save payload — see the dialog wiring
    * below ("Save payload is body-only…") for why.
    *
-   * Frontmatter edits happen against the **authored**
-   * (pre-plugin) bytes in `FrontmatterEditor` and travel to
-   * the workflow on a separate `frontmatter` field. `meta`
-   * here is the post-plugin enriched object and is treated as
-   * immutable for the editor session; it's only used to drive
-   * the preview compile.
-   *
-   * If the file genuinely had no frontmatter, the
-   * `Object.keys(meta).length === 0` short-circuit emits the
-   * body unchanged (no spurious `---\n---\n` block).
+   * If the file genuinely had no frontmatter AND the author
+   * hasn't added any, the `Object.keys(combined).length === 0`
+   * short-circuit emits the body unchanged (no spurious
+   * `---\n---\n` block).
    *
    * The try/catch defends against `js-yaml` throwing on values
    * it can't represent (cyclic refs, BigInt, functions). On
@@ -220,12 +344,51 @@ const EditorInner: FC<EditorProps> = ({
    */
   const attachFrontmatter = useCallback(
     (body: string): string => {
-      if (!meta || Object.keys(meta).length === 0) return body;
+      // Live authored frontmatter (when available) overlays the
+      // post-plugin `meta`. The form's `snapshotRef` is the
+      // freshest source — it reflects in-progress edits while
+      // the form is mounted; once the form unmounts (mode flip),
+      // it nulls out and we fall back to `lastAuthoredYamlRef`,
+      // a parent-owned cache that survives the form's lifetime.
+      // Final fallback is `meta` alone, preserving the original
+      // behaviour for hosts that don't supply a raw source at
+      // all.
+      //
+      // The actual overlay is delegated to
+      // `mergeAuthoredFrontmatter` — it's a recursive
+      // author-wins merge with one narrow carve-out: `$tag` /
+      // `$ref` placeholder values in the authored YAML never
+      // clobber a resolved (post-plugin) value at the same
+      // path in `meta`. See the doc comment on the helper for
+      // the full rationale.
+      let authored: Record<string, unknown> | undefined;
+      const yaml = frontmatterSnapshotRef.current?.() ?? lastAuthoredYamlRef.current ?? undefined;
+      if (typeof yaml === 'string') {
+        try {
+          // Wrap with `---` fences so `matter()` parses the
+          // editor's bare YAML the same way it parses an on-disk
+          // file. Empty string (the form's "user removed all
+          // frontmatter" output) parses cleanly to `{}`.
+          const parsed = matter(`---\n${yaml}\n---\n`).data;
+          authored = (parsed ?? {}) as Record<string, unknown>;
+        } catch (e) {
+          // Defensive — the form already gates broken YAML by
+          // returning `undefined`, but if a future change loosens
+          // that contract we'd rather fall back to meta than
+          // throw inside the compile path.
+          console.warn(
+            '[mosaic-content-editor] Failed to parse authored frontmatter; using post-plugin meta.',
+            e
+          );
+        }
+      }
+      const combined = authored ? mergeAuthoredFrontmatter(meta, authored) : meta;
+      if (!combined || Object.keys(combined).length === 0) return body;
       try {
-        return matter.stringify(body, meta);
+        return matter.stringify(body, combined);
       } catch (e) {
         console.warn(
-          '[mosaic-content-editor] Failed to serialize frontmatter; saving body only.',
+          '[mosaic-content-editor] Failed to serialize frontmatter; previewing body only.',
           e
         );
         return body;
@@ -241,11 +404,6 @@ const EditorInner: FC<EditorProps> = ({
     () => (body: string) => compilePreview(attachFrontmatter(body)),
     [compilePreview, attachFrontmatter]
   );
-
-  const sourceHandleRef = useRef<SourceEditorHandle | null>(null);
-  const bridgeRef = useRef<ModeBridgeSnapshot | null>(null);
-  const getCurrentMarkdownRef = useRef<() => string>(() => markdown);
-  const wysiwygBlockIndexRef = useRef<number>(0);
 
   /**
    * Round-tripped body baseline for the save dialog's diff
@@ -278,27 +436,6 @@ const EditorInner: FC<EditorProps> = ({
    */
   const roundTrippedBaselineRef = useRef<string | null>(null);
 
-  /**
-   * Authored-frontmatter snapshot getter. Installed by
-   * `FrontmatterEditor` when it mounts (i.e. when the user is in
-   * frontmatter mode AND the host supplied a raw source). The
-   * save dialog calls this at open time to capture the current
-   * YAML — `null` means "no editable form mounted, don't send
-   * the frontmatter field" and the workflow falls back to the
-   * on-disk bytes.
-   *
-   * Lives on the editor (not the panel) so it survives flips
-   * between modes inside a single editing session — the user
-   * might edit a tag in frontmatter mode, flip to source to
-   * tweak a heading, then save. The dialog needs the most
-   * recent frontmatter snapshot regardless of which mode is
-   * currently active.
-   *
-   * The editor clears this back to null on unmount so a stale
-   * getter from a previous page can't be called by the dialog
-   * after a route change.
-   */
-  const frontmatterSnapshotRef = useRef<(() => string | undefined) | null>(null);
   /**
    * Baseline YAML the frontmatter editor was seeded with. Owned
    * here (parent) so the value persists across mode flips even
@@ -402,6 +539,111 @@ const EditorInner: FC<EditorProps> = ({
     []
   );
 
+  // -------------------------------------------------------------
+  // Frontmatter-driven preview refresh
+  // -------------------------------------------------------------
+  //
+  // The Lexical preview plugin (and the source-mode debounced
+  // compile) only fire when the BODY changes. A pure
+  // frontmatter edit — the case where the user is in the
+  // Frontmatter tab tweaking `title` or `tags` — doesn't trip
+  // either, so before this hook landed the preview pane sat
+  // stale until the next body keystroke. The fix is to drive a
+  // compile from the frontmatter editor too, using the same
+  // pipeline (`compilePreviewWithFrontmatter` reads live
+  // frontmatter via `frontmatterSnapshotRef`, so a re-compile
+  // with the current body picks the author's edits up
+  // automatically).
+  //
+  // Shared sequence ref
+  // -------------------
+  // PreviewPlugin and SourceEditor each own their own seq id to
+  // drop out-of-order compile responses. A frontmatter-driven
+  // compile runs OUTSIDE both of those scopes, so out-of-order
+  // racing between (e.g.) a body-debounce-fired compile and a
+  // frontmatter-fired compile could surface as the older
+  // response clobbering the newer preview. We can't share refs
+  // across the existing PreviewPlugin / SourceEditor boundary
+  // without refactoring both — but we CAN serialise everything
+  // the frontmatter editor fires through one local id so that,
+  // at minimum, the user typing in the frontmatter form sees
+  // their LAST keystroke's preview rather than an earlier one.
+  // The cross-mode race (frontmatter-fired compile while a
+  // body-fired one is in flight) is bounded: the body editors
+  // are unmounted in frontmatter mode, so there's no concurrent
+  // source of compiles.
+  const frontmatterCompileSeqRef = useRef(0);
+
+  const recompilePreviewForFrontmatter = useCallback(async () => {
+    const seq = ++frontmatterCompileSeqRef.current;
+    setIsCompiling(true);
+    try {
+      const body = getCurrentMarkdownRef.current();
+      const source = await compilePreviewWithFrontmatter(body);
+      // Drop the result if a newer compile has been issued —
+      // its eventual response should win.
+      if (seq !== frontmatterCompileSeqRef.current) return;
+      if ('error' in source && source.error) {
+        // Surface the compile error immediately. We deliberately
+        // skip PreviewPlugin's "grace window" here because
+        // frontmatter edits aren't keystroke-frequent the same
+        // way prose typing is — each edit is a discrete commit
+        // (a row change, a YAML island save), so the user
+        // expects immediate feedback if the result is broken.
+        setError(formatMdxError(source.error));
+      } else {
+        setError(undefined);
+        setPreviewContent(source);
+      }
+    } catch (e) {
+      if (seq !== frontmatterCompileSeqRef.current) return;
+      setError(formatMdxError(e));
+    } finally {
+      if (seq === frontmatterCompileSeqRef.current) setIsCompiling(false);
+    }
+  }, [compilePreviewWithFrontmatter, setError, setIsCompiling, setPreviewContent]);
+
+  // Debounce so a fast typist in a string field doesn't fire a
+  // compile per keystroke. 250 ms matches PreviewPlugin /
+  // SourceEditor so the preview rhythm feels uniform across
+  // modes; `maxWait: 500` guarantees the preview can't lag
+  // arbitrarily behind continuous typing.
+  const debouncedRecompileForFrontmatter = useMemo(
+    () => debounce(recompilePreviewForFrontmatter, 250, { maxWait: 500 }),
+    [recompilePreviewForFrontmatter]
+  );
+
+  // Cancel pending recompiles on unmount so a stale response
+  // doesn't setState on an unmounted tree.
+  useEffect(
+    () => () => {
+      debouncedRecompileForFrontmatter.cancel();
+    },
+    [debouncedRecompileForFrontmatter]
+  );
+
+  // Stable wrapper exposed to `FrontmatterEditor` via the panel.
+  // Captures the current YAML into `lastAuthoredYamlRef` so the
+  // preview keeps the author's edits even after they flip out of
+  // frontmatter mode (the form clears its `snapshotRef` on
+  // unmount; the cache here outlives that), then schedules a
+  // debounced recompile.
+  //
+  // The wrapper identity stays stable across renders so the form
+  // doesn't re-debounce on every parent re-render.
+  const requestPreviewRecompileFromFrontmatter = useCallback(() => {
+    // `?? null` keeps the cache typed as "string | null" — an
+    // unsaveable form state (parse error, empty required field)
+    // returns `undefined` from the snapshot getter, which we
+    // treat as "don't update the cache" so the preview keeps
+    // showing the last good edit instead of blanking.
+    const yaml = frontmatterSnapshotRef.current?.();
+    if (typeof yaml === 'string') {
+      lastAuthoredYamlRef.current = yaml;
+    }
+    debouncedRecompileForFrontmatter();
+  }, [debouncedRecompileForFrontmatter]);
+
   const bridgeValue = useMemo<ModeBridgeContextValue>(
     () => ({ prepareModeFlip }),
     [prepareModeFlip]
@@ -490,6 +732,7 @@ const EditorInner: FC<EditorProps> = ({
                     rawSource={rawSource}
                     snapshotRef={frontmatterSnapshotRef}
                     originalYamlRef={originalFrontmatterYamlRef}
+                    onAuthoredChange={requestPreviewRecompileFromFrontmatter}
                   />
                 )}
               </ScrollableSection>

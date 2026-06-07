@@ -51,6 +51,7 @@ import {
 } from '@salt-ds/core';
 
 import { useLayoutNames, useLayoutsAreStrict } from '../../LayoutNamesContext';
+import { useTagSuggestions } from '../../TagSuggestionsContext';
 import style from './FrontmatterEditor.css';
 
 export interface FrontmatterEditorProps {
@@ -113,6 +114,25 @@ export interface FrontmatterEditorProps {
    * `['title', 'layout', 'description']`) or `[]` to opt out.
    */
   requiredKeys?: readonly string[];
+  /**
+   * Fires after every state-changing edit (a row value change,
+   * an add, a remove). Used by the parent to trigger a preview
+   * recompile so the right pane reflects the author's frontmatter
+   * edits without waiting for a save.
+   *
+   * The callback is debounced by the parent — we call it
+   * synchronously on every edit and trust the parent to coalesce.
+   * Keeping the debounce upstream means the parent can share its
+   * compile-sequence id across modes (see Editor.tsx) and cancel
+   * in-flight requests on unmount of the editor as a whole, not
+   * just this form.
+   *
+   * Optional: when omitted (e.g. tests, future call sites that
+   * don't care about preview parity) the form still functions —
+   * the save dialog reads the same `snapshotRef` at submit time
+   * regardless.
+   */
+  onChange?: () => void;
 }
 
 /**
@@ -374,7 +394,8 @@ export function FrontmatterEditor({
   pillLabel,
   snapshotRef,
   originalYamlRef,
-  requiredKeys = DEFAULT_REQUIRED_KEYS
+  requiredKeys = DEFAULT_REQUIRED_KEYS,
+  onChange
 }: FrontmatterEditorProps) {
   const [rows, setRows] = useState<Row[]>(() => seedRows(initial, requiredKeys));
   const [newKey, setNewKey] = useState('');
@@ -498,6 +519,31 @@ export function FrontmatterEditor({
   useEffect(() => {
     originalYamlRef.current = serialiseRows(seedRows(initial, requiredKeys));
   }, [initial, originalYamlRef, requiredKeys]);
+
+  // Fire `onChange` whenever the row list mutates so the parent
+  // can refresh the preview. Skips the initial mount: the first
+  // `rows` value is the on-disk frontmatter, identical to what
+  // the host already used to compile the seeded preview — firing
+  // here would just trigger a redundant compile of the same
+  // bytes. Subsequent renders represent author edits and are
+  // exactly what the caller wants notified about.
+  //
+  // Reading `onChange` from a ref keeps the effect's dep list
+  // stable: a parent that re-renders (and hands us a new
+  // callback identity) won't burn a needless onChange call from
+  // the dep-change re-run; only the `rows` mutation does.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    onChangeRef.current?.();
+  }, [rows]);
 
   const updateRow = useCallback((index: number, next: Row) => {
     setRows(prev => prev.map((r, i) => (i === index ? next : r)));
@@ -656,6 +702,8 @@ const RowEditor = ({
       : `Unknown layout — the page will fall back to the default layout when it renders. Known layouts: ${layoutNames!.join(
           ', '
         )}.`
+    : row.kind === 'tags'
+    ? 'Pick from suggestions or type a new tag and press Enter to add it. Use Backspace to remove the last tag.'
     : undefined;
 
   return (
@@ -811,19 +859,10 @@ const RowWidget = ({ row, onChange }: { row: Row; onChange: (next: Row) => void 
       );
     case 'tags':
       return (
-        <Input
+        <TagsInput
           id={id}
-          value={row.value.join(', ')}
-          onChange={e =>
-            onChange({
-              ...row,
-              value: (e.target as HTMLInputElement).value
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean)
-            })
-          }
-          placeholder="comma, separated, values"
+          values={row.value}
+          onValuesChange={next => onChange({ ...row, value: next })}
         />
       );
     case 'complex':
@@ -838,4 +877,217 @@ const RowWidget = ({ row, onChange }: { row: Row; onChange: (next: Row) => void 
         />
       );
   }
+};
+
+/**
+ * Tag multiselect.
+ *
+ * Salt's `ComboBox` with `multiselect` already renders selected
+ * values as proper pills (via the underlying `PillInput`), wires
+ * keyboard removal, manages focus, and ships the design tokens
+ * the rest of the form uses. We let it do that work instead of
+ * hand-rolling the chip frame — the previous bespoke widget
+ * looked off-system and didn't pick up Salt density / spacing
+ * tokens the way every other field in this form does.
+ *
+ * Suggestions come from {@link useTagSuggestions} (the host's
+ * registered tag vocabulary — see {@link TagSuggestionsContext}).
+ * When the host hasn't opted in, the hook returns `null` and we
+ * fall back to a no-suggestions ComboBox so the affordance stays
+ * identical regardless of host integration depth — authors still
+ * type a tag, hit Enter, see it pillified.
+ *
+ * Free-text acceptance
+ * --------------------
+ * Tags are open-vocabulary metadata: a brand new tag the author
+ * is coining right now is just as valid as one that's been on a
+ * dozen other pages. ComboBox doesn't accept arbitrary input on
+ * its own (Enter only commits a highlighted Option), so we add a
+ * keydown handler that, when the typed value doesn't match any
+ * existing suggestion or selection, manually appends it to the
+ * selection on Enter / comma. This keeps the keyboard contract
+ * from the previous widget ("type, Enter, it's added") while
+ * delegating everything else to Salt.
+ *
+ * Paste handling
+ * --------------
+ * Multi-tag pastes (clipboard contains commas) are intercepted
+ * and split into individual selections, again deduped against
+ * the existing list. A paste without commas is left alone so
+ * the user can keep typing — the ComboBox's filtering will
+ * narrow the dropdown as they go.
+ */
+interface TagsInputProps {
+  id: string;
+  values: readonly string[];
+  onValuesChange: (next: string[]) => void;
+}
+
+const TagsInput = ({ id, values, onValuesChange }: TagsInputProps) => {
+  const suggestions = useTagSuggestions();
+  const [draft, setDraft] = useState('');
+
+  // The dropdown options are the union of host-registered
+  // suggestions and any selected values not in that list. The
+  // second slice keeps already-committed free-text tags visible
+  // as Options so the ComboBox can highlight them as "selected"
+  // (otherwise Salt would render a pill with no matching Option
+  // and the row in the dropdown would be missing).
+  const options = useMemo(() => {
+    const known = new Set<string>(suggestions ?? []);
+    const extras = values.filter(v => !known.has(v));
+    return [...(suggestions ?? []), ...extras];
+  }, [suggestions, values]);
+
+  // Filter visible options by the in-progress draft so the
+  // dropdown narrows as the author types — same behaviour as the
+  // layout picker above. Empty draft shows the full list so the
+  // dropdown is useful as a browse affordance, not just a
+  // typeahead.
+  const visibleOptions = useMemo(() => {
+    if (draft.trim() === '') return options;
+    const needle = draft.trim().toLowerCase();
+    return options.filter(opt => opt.toLowerCase().includes(needle));
+  }, [options, draft]);
+
+  // Commit one or more raw strings as new tags. Splits on commas
+  // so a paste of "a, b, c" lands three tags, trims, drops
+  // empties, dedupes against the existing selection. Centralised
+  // so Enter, comma, blur, and paste all share the same
+  // semantics — divergence here was a bug source in the previous
+  // hand-rolled widget.
+  const commit = useCallback(
+    (raw: string): boolean => {
+      const additions = raw
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .filter(tag => !values.includes(tag));
+      if (additions.length === 0) return false;
+      onValuesChange([...values, ...additions]);
+      return true;
+    },
+    [values, onValuesChange]
+  );
+
+  const handleSelectionChange = (_e: SyntheticEvent, selected: string[]) => {
+    // Salt fires this for every dropdown click and pill removal.
+    // We treat it as authoritative for the selection list — the
+    // user might have removed a pill, ticked an existing
+    // suggestion, or both in one gesture. Dedupe defensively in
+    // case Salt ever surfaces duplicates from the options +
+    // extras merge above.
+    const deduped = Array.from(new Set(selected));
+    onValuesChange(deduped);
+    // Clear the in-progress draft after any selection event so
+    // ticking a suggestion (or removing a pill via the dropdown)
+    // doesn't leave stale filter text in the input.
+    setDraft('');
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ComboBox forwards the underlying input's onChange — we
+    // mirror its value into `draft` so the filter logic above
+    // sees what the user is typing. We do NOT commit on every
+    // keystroke; that's reserved for Enter / comma / blur /
+    // paste (see handlers below).
+    setDraft(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Enter / comma with a non-empty draft commits whatever was
+    // typed as a new tag, provided it doesn't already exist as
+    // either a suggestion (in which case Salt's own selection
+    // logic handles the Enter — we let it through) or an
+    // already-selected value. The check against `visibleOptions`
+    // matters because Salt's Enter behaviour only fires when
+    // there's an active highlighted option; the free-text path
+    // here covers the "nothing matches, but I still want this
+    // tag" case.
+    if (e.key === 'Enter' || e.key === ',') {
+      const trimmed = draft.trim();
+      if (trimmed === '') {
+        // Bare Enter is a no-op (Salt may also be opening /
+        // closing the dropdown here — don't interfere). Comma
+        // on an empty input is silenced so it doesn't get
+        // inserted as a literal character.
+        if (e.key === ',') e.preventDefault();
+        return;
+      }
+      // If the draft exactly matches a visible option, let Salt's
+      // own Enter handler commit the selection through the
+      // existing onSelectionChange pipeline. We only step in
+      // when nothing matches — that's the free-text case.
+      const exactMatch = visibleOptions.some(opt => opt.toLowerCase() === trimmed.toLowerCase());
+      if (exactMatch && e.key === 'Enter') return;
+      e.preventDefault();
+      const committed = commit(trimmed);
+      if (committed) setDraft('');
+    }
+  };
+
+  const handleBlur = () => {
+    // Commit whatever's left in the draft on blur so a user who
+    // types "foo" then clicks elsewhere doesn't lose their
+    // value. The dedupe inside `commit` is the safety net for
+    // the case where their text happened to match an existing
+    // tag exactly.
+    if (draft.trim() !== '') {
+      const committed = commit(draft);
+      if (committed) setDraft('');
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    // Only intercept multi-tag pastes — a paste without a comma
+    // is treated as normal text input so the ComboBox's
+    // typeahead filtering still works while the user composes a
+    // single tag from their clipboard.
+    const text = e.clipboardData.getData('text');
+    if (!text.includes(',')) return;
+    e.preventDefault();
+    const committed = commit(text);
+    if (committed) setDraft('');
+  };
+
+  return (
+    <ComboBox
+      id={id}
+      multiselect
+      // Pass `selected` as a plain array (not `defaultSelected`)
+      // so the field stays fully controlled by parent state.
+      // Important for the snapshot getter — `originalYamlRef`
+      // round-trips selection state through React, never through
+      // ComboBox's internal store.
+      selected={values as string[]}
+      onSelectionChange={handleSelectionChange}
+      // ComboBox is a controlled input: we drive its value from
+      // `draft` and clear it on every commit. Leaving it
+      // uncontrolled caused Salt to retain stale filter text
+      // after a free-text commit, which then re-filtered the
+      // dropdown to show nothing useful.
+      value={draft}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+      onPaste={handlePaste}
+      placeholder={
+        values.length === 0
+          ? suggestions && suggestions.length > 0
+            ? 'Pick or type a tag…'
+            : 'Add a tag…'
+          : ''
+      }
+      // Salt highlights an "active" option for keyboard arrow
+      // navigation; we don't pre-seed one because the suggestion
+      // list isn't ordered by relevance — letting the user
+      // arrow into it themselves matches the layout picker.
+      spellCheck={false}
+      bordered
+    >
+      {visibleOptions.map(name => (
+        <Option value={name} key={name} />
+      ))}
+    </ComboBox>
+  );
 };

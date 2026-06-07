@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react';
 import { Spinner, Tag } from '@salt-ds/core';
 
 import { useSaveState } from '../EditorContext';
+import { Icon } from '@jpmorganchase/mosaic-components';
 
 const REFRESH_INTERVAL_MS = 30_000;
 
@@ -91,18 +92,9 @@ export const SaveStatePill = () => {
   // saved
   const relative = lastSavedAt ? formatRelative(lastSavedAt, now) : 'just now';
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      data-state="saved"
-      style={{
-        ...baseStyles,
-        background: 'var(--salt-status-success-background, #D1FAE5)',
-        color: 'var(--salt-status-success-foreground, #065F46)'
-      }}
-    >
-      <span aria-hidden>✓</span>
+    <Tag role="status" aria-live="polite" data-state="saved" category={10}>
+      <Icon name="success" />
       <span>Saved {relative}</span>
-    </div>
+    </Tag>
   );
 };

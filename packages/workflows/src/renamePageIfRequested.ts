@@ -3,6 +3,16 @@ import fs from 'node:fs';
 import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
 /**
+ * Escape a string for safe use inside a `new RegExp(...)`. See
+ * `BitbucketPullRequestWorkflow.ts` for the rationale — config
+ * strings (`prefixDir`) interpolated raw can otherwise contain
+ * metacharacters and silently match unintended paths.
+ */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * Rename a freshly-written page on disk to honour an
  * `targetRoute` field from the editor's save dialog.
  *
@@ -69,7 +79,7 @@ export async function renamePageIfRequested({
   // different PR target), which is well out of scope for a
   // single in-browser save. Source-level move tooling can be
   // added later as its own workflow.
-  const prefixMatch = new RegExp(`^/?${prefixDir}/`);
+  const prefixMatch = new RegExp(`^/?${escapeRegExp(prefixDir)}/`);
   if (!prefixMatch.test(normalisedTarget)) {
     return {
       ok: false,
@@ -80,7 +90,7 @@ export async function renamePageIfRequested({
   const newPathOnDisk = path.posix.join(
     repoDir,
     subfolder,
-    normalisedTarget.replace(new RegExp(`^/?${prefixDir}/`), '')
+    normalisedTarget.replace(new RegExp(`^/?${escapeRegExp(prefixDir)}/`), '')
   );
 
   // Same on-disk path after normalisation (e.g. user typed the

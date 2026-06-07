@@ -57,6 +57,14 @@ export interface FrontmatterPanelProps {
    * `['title', 'layout']`.
    */
   requiredKeys?: readonly string[];
+  /**
+   * Notification the editor fires (debounced) when the user
+   * changes authored frontmatter. The parent uses this to
+   * trigger a preview recompile so the right pane reflects
+   * the edit without waiting for a save. No-op on the viewer
+   * branch — that path is read-only.
+   */
+  onAuthoredChange?: () => void;
 }
 
 export const FrontmatterPanel = ({
@@ -64,7 +72,8 @@ export const FrontmatterPanel = ({
   rawSource,
   snapshotRef,
   originalYamlRef,
-  requiredKeys
+  requiredKeys,
+  onAuthoredChange
 }: FrontmatterPanelProps) => {
   // Parse the raw bytes once per `rawSource` change so the editor
   // gets a stable `initial` object across re-renders. Keeping this
@@ -92,6 +101,7 @@ export const FrontmatterPanel = ({
         snapshotRef={snapshotRef}
         originalYamlRef={originalYamlRef}
         requiredKeys={requiredKeys}
+        onChange={onAuthoredChange}
       />
     );
   }

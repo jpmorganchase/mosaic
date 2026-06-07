@@ -9,10 +9,19 @@ import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/m
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
+import { stripUndefined } from './stripUndefined.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
   return String(error);
+}
+
+/**
+ * Escape a string for safe use inside a `new RegExp(...)`. See
+ * the matching helper in `BitbucketPullRequestWorkflow.ts`.
+ */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 interface GitHubPullRequestWorkflowData {
@@ -119,7 +128,9 @@ export async function createPullRequest(
   const pathOnDisk = path.posix.join(
     repoInstance.dir,
     subfolder,
-    filePath.replace(new RegExp(`${prefixDir}/`), '')
+    // `prefixDir` is a config string; escape regex metacharacters
+    // so values like `docs.v2` don't silently match `docsAv2`.
+    filePath.replace(new RegExp(`${escapeRegExp(prefixDir)}/`), '')
   );
 
   /**
@@ -207,7 +218,21 @@ export async function createPullRequest(
     if (typeof frontmatter === 'string') {
       try {
         const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
-        nextMeta = { ...parsed, fullPath: (metadata as { fullPath?: unknown }).fullPath };
+        // Preserve `fullPath` from the on-disk metadata, but ONLY
+        // when it's actually set. Writing `fullPath: undefined`
+        // here would propagate an `undefined` field into
+        // `updatedPage` → `js-yaml` refuses to dump `undefined`
+        // and throws `YAMLException: unacceptable kind of an
+        // object to dump [object Undefined]`. The serialiser
+        // destructures `{ content, ...meta }`, so a missing key
+        // is fine; an explicit-undefined key is not. See
+        // `./stripUndefined.ts` for the belt-and-braces guard
+        // applied below.
+        const preservedFullPath = (metadata as { fullPath?: unknown }).fullPath;
+        nextMeta =
+          preservedFullPath !== undefined
+            ? { ...parsed, fullPath: preservedFullPath }
+            : { ...parsed };
         sendWorkflowProgressMessage('Applied authored frontmatter', 'IN_PROGRESS');
       } catch (e) {
         sendWorkflowProgressMessage(
@@ -220,7 +245,16 @@ export async function createPullRequest(
     }
   }
 
-  const updatedPage = { ...nextMeta, content: markdown } as unknown as Parameters<
+  // Final scrub: strip any `undefined` values from the
+  // frontmatter tree before handing it to `gray-matter` →
+  // `js-yaml`. See `./stripUndefined.ts` for the full rationale —
+  // a single stray `undefined` anywhere in the tree crashes the
+  // whole save with an opaque `YAMLException`, and the producers
+  // can be subtle (object spreads, ref-placeholder merges, future
+  // plugin contributions). This guard runs last so it catches
+  // every code path above, including ones we don't anticipate.
+  const cleanMeta = stripUndefined(nextMeta) as Record<string, unknown>;
+  const updatedPage = { ...cleanMeta, content: markdown } as unknown as Parameters<
     typeof mdx.serialise
   >[1];
   if (!isNewPage) {
@@ -332,8 +366,36 @@ export async function createPullRequest(
       error: `Error creating Pull Request: ${getErrorMessage(e)} `,
       source: `${repoInstance.name}`
     };
+    // If we got past `pushBranch` before the API call failed, the
+    // branch is now sitting on the remote with no PR pointing at
+    // it. We can't reliably distinguish "push succeeded, API
+    // failed" from "push failed" at this point (the caller log
+    // above has the stack), so warn unconditionally; operators
+    // can grep this line to find orphan branches that may need
+    // pruning on the remote.
+    console.warn(
+      `[Mosaic][Workflows] Pushed branch '${branchName}' may now be orphaned on the remote ` +
+        `(PR creation failed after push). If the branch exists on the remote and no PR was raised, ` +
+        `it can be deleted manually.`
+    );
   } finally {
     await repoInstance.removeWorktree(userId);
+  }
+
+  // `prResult` is either a success URL string or an
+  // `{ error, source }` object. Sending the error shape with
+  // status `COMPLETE` makes the editor treat a failed PR as
+  // success and silently drop the user's work — the dialog
+  // closes with no PR link visible. Detect the shape and route
+  // to the right status.
+  if (prResult && typeof prResult === 'object' && 'error' in prResult) {
+    sendWorkflowProgressMessage(
+      typeof (prResult as { error?: unknown }).error === 'string'
+        ? (prResult as { error: string }).error
+        : 'Pull request creation failed.',
+      'ERROR'
+    );
+    return prResult;
   }
 
   sendWorkflowProgressMessage(prResult, 'COMPLETE');
