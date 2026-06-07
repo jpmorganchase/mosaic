@@ -2,6 +2,8 @@ import cp from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
 
+import { getCloneRootDir } from './getWorktreeDir.js';
+
 const gitChangeType = {
   A: 'add',
   D: 'delete',
@@ -36,11 +38,6 @@ function getErrorMessage(error: unknown) {
   return String(error);
 }
 
-function getCloneDirName(repoUrl: string) {
-  const { projectNameAndRepoName } = getProjectNameAndRepoName(repoUrl);
-
-  return path.join(process.cwd(), '.tmp/.cloned_docs', projectNameAndRepoName);
-}
 
 /**
  * Hard cap on per-stream child-process output we keep in memory. Most git
@@ -246,7 +243,7 @@ export default class Repo {
       console.warn('[Mosaic][Source-Git] No `credentials` provided for git repo request.');
     }
 
-    this.#cloneRootDir = getCloneDirName(repo);
+    this.#cloneRootDir = getCloneRootDir(repo);
     this.#worktreeRootDir = path.join(this.#cloneRootDir, '.mosaic-worktrees');
     this.#dir = path.join(this.#worktreeRootDir, branch);
     this.#remote = remote;
@@ -593,7 +590,26 @@ export default class Repo {
             this.#branch
           }'`
         );
-        await this.pull();
+        // Refresh-pull the existing worktree, but treat a failure
+        // as non-fatal: the on-disk content is still a valid clone
+        // (it served fine on the previous start), so the right move
+        // when the remote is unreachable (off-VPN, transient DNS,
+        // proxy hiccup) is to log and proceed with the stale-but-
+        // serviceable worktree rather than crash the CLI worker.
+        // The poll loop in `onCommitChange` will resume normal
+        // refreshes the moment the remote becomes reachable again;
+        // if it doesn't, it self-unsubscribes after one failure
+        // (see Repo.ts:`onCommitChange`'s catch arm) and the source
+        // continues to serve the last-known content read-only.
+        try {
+          await this.pull();
+        } catch (e) {
+          console.warn(
+            `[Mosaic][Source-Git] Refresh-pull failed for '${this.#name}'; ` +
+              `continuing with the existing on-disk worktree. ` +
+              `(${(e as Error).message})`
+          );
+        }
       }
     } catch (e) {
       this.#cloned = false;
@@ -604,6 +620,67 @@ export default class Repo {
   async createWorktree(sid: string, branchName: string) {
     this.#dir = path.posix.join(this.#worktreeRootDir, sid);
     console.debug(`[Mosaic][Source-Git] Creating worktree for content save @ ${this.#dir}`);
+
+    // Idempotency guard. A previous save that crashed mid-flight
+    // (e.g. workflow threw before reaching its `finally`, or
+    // `removeWorktree` itself failed because git's worktree
+    // registry was already inconsistent) can leave the target
+    // directory present on disk. `git worktree add -f` only
+    // overrides a *registered* worktree at the same path — it
+    // refuses with "fatal: '<dir>' already exists" when the
+    // directory exists but isn't in `git worktree list`. So we
+    // explicitly clear both halves of the state before retrying:
+    //
+    //   1. `git worktree prune` — drops registry entries whose
+    //      backing directory no longer exists, and entries whose
+    //      backing directory contents disagree with the registry.
+    //      Harmless when there's nothing to prune.
+    //
+    //   2. `git worktree remove --force <dir>` — the documented
+    //      way to drop a registered worktree. Wrapped in a
+    //      try/catch because it fails when the directory is not
+    //      currently registered, which is exactly the case we're
+    //      recovering from.
+    //
+    //   3. `fs.rm(<dir>, { recursive: true, force: true })` —
+    //      catch-all for the "dir on disk, not in registry" case.
+    //      No-op when the dir is already gone (force: true).
+    //
+    // All three steps are individually safe to run; combined they
+    // guarantee `git worktree add` below starts from a known-empty
+    // slate without affecting any healthy in-use worktree for a
+    // different `sid`.
+    try {
+      await spawn('git', ['worktree', 'prune'], this.#cloneRootDir, { discardStdout: true });
+    } catch (e) {
+      console.warn(
+        `[Mosaic][Source-Git] worktree prune failed for '${this.#name}'; ` +
+          `continuing. (${(e as Error).message})`
+      );
+    }
+    try {
+      await spawn(
+        'git',
+        ['worktree', 'remove', '--force', this.#dir],
+        this.#cloneRootDir,
+        { discardStdout: true }
+      );
+    } catch {
+      // Expected when the target wasn't registered. Falls through
+      // to the filesystem-level cleanup below.
+    }
+    try {
+      await fs.rm(this.#dir, { recursive: true, force: true });
+    } catch (e) {
+      // Fs-level removal really shouldn't fail at this point;
+      // surface a warning and let the `git worktree add` below
+      // produce the canonical error if it still can't proceed.
+      console.warn(
+        `[Mosaic][Source-Git] fs.rm of stale worktree dir failed for '${this.#dir}'; ` +
+          `git worktree add may still fail. (${(e as Error).message})`
+      );
+    }
+
     await spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
@@ -614,10 +691,62 @@ export default class Repo {
   }
 
   async removeWorktree(sid: string) {
-    console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${this.#dir}`);
-    await spawn('git', ['worktree', 'remove', sid, '--force'], this.#dir, {
-      discardStdout: true
-    });
+    // The worktree dir we're removing is the one currently held in
+    // `this.#dir` — `createWorktree` sets it. We capture it BEFORE
+    // running `git worktree remove` because the operation should
+    // be idempotent: even if git's registry is already cleaned
+    // up (e.g. a previous `removeWorktree` ran on the same `sid`,
+    // or `createWorktree`'s own idempotency-guard already pruned
+    // it), we still want to clear the dir from disk so the next
+    // `createWorktree` doesn't see a stale directory and crash
+    // with "'<dir>' already exists".
+    const worktreeDir = this.#dir;
+    console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${worktreeDir}`);
+
+    // Run `git worktree remove` from the CLONE root, not from
+    // inside the worktree itself. The old code passed `cwd =
+    // this.#dir` (the worktree being removed), which fails when
+    // the dir has already been deleted from disk, and uses the
+    // bare `sid` as the path argument — git's resolution of that
+    // depends on cwd and registry state in ways that are easy to
+    // misread. The clone-root-relative absolute path is
+    // unambiguous and works whether or not the dir still exists.
+    try {
+      await spawn('git', ['worktree', 'remove', '--force', worktreeDir], this.#cloneRootDir, {
+        discardStdout: true
+      });
+    } catch (e) {
+      // `git worktree remove` fails when the worktree isn't
+      // registered (it was already removed, or `createWorktree`'s
+      // idempotency guard pruned it). Fall through to the fs
+      // cleanup below; warn so we have a paper trail in case the
+      // failure was actually something else.
+      console.warn(
+        `[Mosaic][Source-Git] git worktree remove failed for '${worktreeDir}'; ` +
+          `falling back to filesystem cleanup. (${(e as Error).message})`
+      );
+    }
+
+    // Catch-all: drop the dir from disk if it still exists.
+    // `force: true` makes this a no-op when the dir is already
+    // gone. This is what guarantees `createWorktree` sees a
+    // clean slate next time — the line we depend on most.
+    try {
+      await fs.rm(worktreeDir, { recursive: true, force: true });
+    } catch (e) {
+      // Genuinely unexpected; not fatal because `createWorktree`
+      // has its own belt-and-braces cleanup, but log so we
+      // notice if it becomes a pattern.
+      console.warn(
+        `[Mosaic][Source-Git] fs.rm of removed worktree dir failed for '${worktreeDir}': ` +
+          `${(e as Error).message}`
+      );
+    }
+
+    // Reset `#dir` back to the canonical branch worktree so any
+    // subsequent calls on this Repo instance (e.g. another save
+    // for the same user, or a refresh fetch) go through the
+    // shared branch worktree instead of the now-removed sid one.
     this.#dir = path.join(this.#worktreeRootDir, this.#branch);
     console.debug(`[Mosaic][Source-Git] Removed linked worktree for ${sid}`);
   }
@@ -730,18 +859,57 @@ export default class Repo {
     }
 
     const sid = user.sid.toLowerCase();
+    // Track whether the branch made it to the remote, so the
+    // error path can flag operator-visible orphan-branch state
+    // (we can't reliably auto-delete from the remote — would
+    // require credentials we may not have at this layer — but a
+    // log line lets someone clean up).
+    let branchPushed = false;
     try {
       await this.configureGitUser(user.name, user.email);
       await this.addChanges();
       await this.commitChanges(user.name, user.email, commitMessage);
       await this.pushBranch(branchName);
+      branchPushed = true;
+
       const curlResult = await this.curlPullRequest(endpoint, requestData);
-      const jsonResult = await JSON.parse(curlResult);
+
+      // Defensive parse. The previous code did
+      // `JSON.parse(curlResult)` unconditionally, which throws
+      // `SyntaxError: Unexpected end of JSON input` on an empty
+      // response body — surfacing to the user as an opaque
+      // crash. Empty bodies happen on 204/network-timeout/curl
+      // exited early; surface what we know rather than blaming
+      // JSON.
+      if (!curlResult || !curlResult.trim()) {
+        throw new Error(
+          'Bitbucket API returned an empty body — the request may have failed silently. ' +
+            'Check the CLI process can reach the Bitbucket API and that credentials are valid.'
+        );
+      }
+      let jsonResult: { errors?: Array<{ message?: string }> } & Record<string, unknown>;
+      try {
+        jsonResult = JSON.parse(curlResult);
+      } catch (e) {
+        throw new Error(
+          `Bitbucket API returned a malformed response (not JSON): ` +
+            `${(e as Error).message}. First 200 chars of body: ` +
+            `${curlResult.slice(0, 200)}`
+        );
+      }
 
       if (jsonResult.errors) {
-        throw new Error(jsonResult.errors?.[0].message);
+        // `errors[0]` and `errors[0].message` may both be
+        // missing; fall back to a generic message so we don't
+        // get `Cannot read properties of undefined (reading
+        // 'message')` masking the real Bitbucket error shape.
+        const firstError = jsonResult.errors[0];
+        const message =
+          (firstError && typeof firstError.message === 'string' && firstError.message) ||
+          'Bitbucket API reported an unspecified error.';
+        throw new Error(message);
       }
-      return jsonResult;
+      return jsonResult as unknown as string;
     } catch (e: unknown) {
       console.group('[Mosaic][Source-Git] Pull Request Error');
       console.log('fullPath', filePath);
@@ -750,12 +918,34 @@ export default class Repo {
       console.log('Remote', this.#remote);
       console.error(e);
       console.groupEnd();
+      if (branchPushed) {
+        // See the matching warning in
+        // `GitHubPullRequestWorkflow.ts` — if push succeeded but
+        // the PR call failed, the remote has a branch with no
+        // PR attached. Surface it so operators can clean up.
+        console.warn(
+          `[Mosaic][Source-Git] Pushed branch '${branchName}' may now be orphaned on the remote ` +
+            `(PR creation failed after push). If the branch exists on the remote and no PR was raised, ` +
+            `it can be deleted manually.`
+        );
+      }
       return {
         error: `Error creating Pull Request: ${getErrorMessage(e)} `,
         source: `${this.#name}`
       };
     } finally {
-      await this.removeWorktree(sid);
+      // Idempotent with the workflow's outer finally — both call
+      // `removeWorktree(sid)`, and the second is a no-op since
+      // `removeWorktree` itself is idempotent.
+      try {
+        await this.removeWorktree(sid);
+      } catch (e) {
+        console.warn(
+          `[Mosaic][Source-Git] removeWorktree failed for '${sid}' in createPullRequest finally: ` +
+            `${(e as Error).message}. The next createWorktree call will recover via its ` +
+            `idempotency guard.`
+        );
+      }
     }
   }
 }

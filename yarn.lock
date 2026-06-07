@@ -1751,6 +1751,7 @@ __metadata:
     "@fastify/websocket": "npm:^11.2.0"
     "@jpmorganchase/mosaic-core": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-plugins": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-source-git-repo": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-source-local-folder": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     commander: "npm:^9.4.1"

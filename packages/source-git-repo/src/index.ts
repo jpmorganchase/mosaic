@@ -26,6 +26,7 @@ import Repo from './Repo.js';
 import fromCommitChange from './fromCommitChange.js';
 
 export { Repo };
+export { getWorktreeDir } from './getWorktreeDir.js';
 
 export const schema = z.object({
   /**

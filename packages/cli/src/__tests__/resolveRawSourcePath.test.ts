@@ -18,6 +18,7 @@ import {
   KNOWN_RAW_UNSUPPORTED_MODULES,
   resolveRawSourcePath
 } from '../plugins/resolveRawSourcePath';
+import { getWorktreeDir } from '@jpmorganchase/mosaic-source-git-repo';
 
 const LOCAL: SourceModuleDefinition = {
   modulePath: '@jpmorganchase/mosaic-source-local-folder',
@@ -38,11 +39,24 @@ const LOCAL_NO_PREFIX: SourceModuleDefinition = {
   }
 };
 
+const HTTP: SourceModuleDefinition = {
+  modulePath: '@jpmorganchase/mosaic-source-http',
+  namespace: 'http',
+  options: {
+    prefixDir: 'http-docs',
+    extensions: ['.mdx']
+  }
+};
+
 const GIT: SourceModuleDefinition = {
   modulePath: '@jpmorganchase/mosaic-source-git-repo',
   namespace: 'docs',
   options: {
-    rootDir: '/abs/should-be-ignored',
+    repo: 'https://bitbucket.example.com/scm/proj/my-docs.git',
+    branch: 'main',
+    remote: 'origin',
+    credentials: 'user:token',
+    subfolder: 'docs',
     prefixDir: 'docs',
     extensions: ['.mdx']
   }
@@ -84,13 +98,52 @@ describe('resolveRawSourcePath', () => {
     expect(result).toEqual({ kind: 'no-matching-source', url: '/unknown/page.mdx' });
   });
 
-  test('returns unsupported-source when the matching source is not local-folder', () => {
-    const result = resolveRawSourcePath('/docs/page.mdx', [GIT]);
+  test('returns unsupported-source when the matching source is not local-folder or git-repo', () => {
+    const result = resolveRawSourcePath('/http-docs/page.mdx', [HTTP]);
     expect(result).toEqual({
       kind: 'unsupported-source',
-      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      modulePath: '@jpmorganchase/mosaic-source-http',
+      namespace: 'http'
+    });
+  });
+
+  test('resolves a git-repo URL to <worktreeDir>/<subfolder>/<rest>', () => {
+    // The resolver derives the worktree path from `(repo, branch)`
+    // via the source-git-repo helper — same formula the source's
+    // worker uses, so no IPC is required.
+    const result = resolveRawSourcePath('/docs/getting-started/index.mdx', [GIT]);
+    const expectedRoot = path.join(
+      getWorktreeDir(
+        'https://bitbucket.example.com/scm/proj/my-docs.git',
+        'main'
+      ),
+      'docs'
+    );
+    expect(result).toEqual({
+      kind: 'resolved',
+      filePath: path.resolve(expectedRoot, 'getting-started/index.mdx'),
       namespace: 'docs'
     });
+  });
+
+  test('git-repo: refuses to read above the worktree subfolder via `..`', () => {
+    const result = resolveRawSourcePath('/docs/../../escape.mdx', [GIT]);
+    expect(result.kind).toBe('no-matching-source');
+  });
+
+  test('git-repo: falls through to no-match when options are incomplete', () => {
+    const incomplete: SourceModuleDefinition = {
+      modulePath: '@jpmorganchase/mosaic-source-git-repo',
+      namespace: 'broken',
+      options: {
+        // missing `repo` and `branch`
+        prefixDir: 'docs',
+        subfolder: 'docs',
+        extensions: ['.mdx']
+      }
+    };
+    const result = resolveRawSourcePath('/docs/index.mdx', [incomplete]);
+    expect(result.kind).toBe('no-matching-source');
   });
 
   test('skips disabled sources', () => {
@@ -138,7 +191,19 @@ describe('resolveRawSourcePath', () => {
   });
 
   test('exposes the catalogue of known-unsupported modules for diagnostics', () => {
-    expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-git-repo')).toBe(true);
+    // `source-git-repo` is intentionally absent — it now resolves
+    // to the worker's worktree directory. The catalogue covers
+    // the source kinds for which on-disk raw bytes either don't
+    // exist (figma, storybook) or require more design work to
+    // fetch (http, readme).
     expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-http')).toBe(true);
+    expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-figma')).toBe(true);
+    expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-storybook')).toBe(true);
+    expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-readme')).toBe(true);
+    expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-git-repo')).toBe(false);
   });
 });
+
+
+
+

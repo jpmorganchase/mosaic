@@ -25,6 +25,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 
+import { getWorktreeDir } from '@jpmorganchase/mosaic-source-git-repo';
 import fastifyMosaic from '../plugins/mosaicFastifyPlugin';
 
 // Mock MosaicCore so we don't actually pull content / start
@@ -54,12 +55,38 @@ let tmpDir: string;
 let server: ReturnType<typeof Fastify>;
 
 const FIXTURE_BODY = '---\ntitle: Raw\n---\n# Hello\n';
+const GIT_FIXTURE_BODY = '---\ntitle: Git Raw\n---\n# From the worktree\n';
+
+// Real-shaped git URL so `getWorktreeDir` can parse it. The
+// derived worktree path is relative to `process.cwd()`, so we
+// seed a fixture under that path before the server boots so the
+// route can read real bytes back.
+const FIXTURE_REPO_URL = 'https://example.com/proj/raw-route-test-docs.git';
+const FIXTURE_REPO_BRANCH = 'main';
+const FIXTURE_REPO_SUBFOLDER = 'docs';
+
+let gitWorktreeFixtureDir: string;
 
 beforeAll(async () => {
   tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mosaic-raw-test-'));
   fs.mkdirSync(path.join(tmpDir, 'getting-started'), { recursive: true });
   fs.writeFileSync(path.join(tmpDir, 'getting-started', 'index.mdx'), FIXTURE_BODY);
   fs.writeFileSync(path.join(tmpDir, 'config.json'), '{"k":1}');
+
+  // Seed a fixture inside the *exact* directory the git-repo
+  // resolver will compute via `getWorktreeDir`. We resolve the
+  // path here (not in `getWorktreeDir`) so the test stays
+  // self-contained: same formula, same cwd, same answer the
+  // resolver will produce when the route handler runs.
+  gitWorktreeFixtureDir = path.join(
+    getWorktreeDir(FIXTURE_REPO_URL, FIXTURE_REPO_BRANCH),
+    FIXTURE_REPO_SUBFOLDER
+  );
+  fs.mkdirSync(path.join(gitWorktreeFixtureDir, 'some-page'), { recursive: true });
+  fs.writeFileSync(
+    path.join(gitWorktreeFixtureDir, 'some-page', 'index.mdx'),
+    GIT_FIXTURE_BODY
+  );
 
   const config: MosaicConfig = {
     pageExtensions: ['.mdx', '.json'],
@@ -83,8 +110,24 @@ beforeAll(async () => {
         namespace: 'docs',
         options: {
           prefixDir: 'docs',
-          rootDir: '/ignored',
-          repo: 'x',
+          repo: FIXTURE_REPO_URL,
+          branch: FIXTURE_REPO_BRANCH,
+          remote: 'origin',
+          subfolder: FIXTURE_REPO_SUBFOLDER,
+          extensions: ['.mdx'],
+          credentials: 'x:y'
+        }
+      },
+      // A second git-repo source with a deliberately malformed
+      // `repo` URL — the resolver swallows the parse failure
+      // and falls through to "no match", so this source
+      // shouldn't break sibling lookups.
+      {
+        modulePath: '@jpmorganchase/mosaic-source-git-repo',
+        namespace: 'broken-git',
+        options: {
+          prefixDir: 'broken-git',
+          repo: 'not-a-url',
           branch: 'main',
           remote: 'origin',
           subfolder: 'docs',
@@ -108,6 +151,13 @@ beforeAll(async () => {
 afterAll(async () => {
   await server.close();
   fs.rmSync(tmpDir, { recursive: true, force: true });
+  // Tear down the git-repo fixture too — the clone-root
+  // (`<cwd>/.tmp/.cloned_docs/<project>/<repo>`) is two levels
+  // above the worktree dir; remove the whole project subtree
+  // so we don't leave stray `<cwd>/.tmp/.cloned_docs/proj/...`
+  // dirs behind between test runs.
+  const cloneRoot = path.dirname(path.dirname(gitWorktreeFixtureDir));
+  fs.rmSync(cloneRoot, { recursive: true, force: true });
 });
 
 describe('GET /_mosaic-raw/*', () => {
@@ -135,14 +185,51 @@ describe('GET /_mosaic-raw/*', () => {
     expect(response.payload).toBe('{"k":1}');
   });
 
-  test('returns 404 + unsupported-source header for a git-repo URL', async () => {
+  test('returns the raw on-disk bytes for a git-repo source via the derived worktree path', async () => {
+    // The resolver computes the worktree path with the same
+    // `(repo, branch)` formula the source's worker uses, joins
+    // it with `subfolder`, then resolves the URL's remaining
+    // segments under that. Reading back the fixture we wrote
+    // in `beforeAll` proves the parent CLI process can serve
+    // raw bytes for a git-repo URL without any IPC into the
+    // worker.
     const response = await server.inject({
       method: 'GET',
-      url: '/_mosaic-raw/docs/some-page.mdx'
+      url: '/_mosaic-raw/docs/some-page/index.mdx'
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toBe('text/mdx');
+    expect(response.headers['x-mosaic-raw-namespace']).toBe('docs');
+    expect(response.payload).toBe(GIT_FIXTURE_BODY);
+  });
+
+  test('returns 404 (no headers) for a git-repo URL whose file is missing on disk', async () => {
+    // Common in dev: the source worker hasn't finished its
+    // initial clone yet, or the file was just renamed. We map
+    // ENOENT to a plain 404 so the editor's
+    // `MdxRawSourceResult` reads it as `not-found` and shows a
+    // "the source file couldn't be found" banner — the same
+    // recoverable path as a mid-rename race on a local-folder
+    // source.
+    const response = await server.inject({
+      method: 'GET',
+      url: '/_mosaic-raw/docs/missing-page.mdx'
     });
     expect(response.statusCode).toBe(404);
-    expect(response.headers['x-mosaic-raw-status']).toBe('unsupported-source');
-    expect(response.headers['x-mosaic-raw-module']).toBe('@jpmorganchase/mosaic-source-git-repo');
+    expect(response.headers['x-mosaic-raw-status']).toBeUndefined();
+  });
+
+  test('falls through to no-matching-source when a git-repo source has a malformed `repo` URL', async () => {
+    // The malformed-repo source is registered with prefix
+    // `broken-git` — it should fall through to "no match"
+    // rather than 500 the route, so the editor still gets a
+    // useful discriminator and sibling sources keep working.
+    const response = await server.inject({
+      method: 'GET',
+      url: '/_mosaic-raw/broken-git/page.mdx'
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.headers['x-mosaic-raw-status']).toBe('no-matching-source');
   });
 
   test('returns 404 + no-matching-source for a URL no source claims', async () => {
