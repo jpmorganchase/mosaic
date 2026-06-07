@@ -133,7 +133,19 @@ export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
               {datestampLabel}:
             </label>
             <span aria-labelledby="last-modified-label" className={styles.datestamp}>
-              {new Date(datestamp).toLocaleString()}
+              {/*
+               * Use a fixed locale rather than the runtime default. Bare
+               * `.toLocaleString()` reads the host locale, which differs
+               * between the Node SSR runtime (typically `en-US-POSIX` or
+               * `C`) and the browser (whatever the user has set) — that
+               * produced a hydration mismatch on every page that
+               * supplied a `datestamp`. `en-GB` gives a stable
+               * `DD/MM/YYYY, HH:MM:SS` representation that's unambiguous
+               * across hosts; consumers wanting per-user locale should
+               * pass a pre-formatted `string` for `datestamp` instead of
+               * raw ISO.
+               */}
+              {new Date(datestamp).toLocaleString('en-GB')}
             </span>
           </>
         ) : null}
