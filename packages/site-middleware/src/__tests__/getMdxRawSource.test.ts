@@ -71,7 +71,9 @@ describe('getMdxRawSource', () => {
       namespace: 'mosaic'
     });
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(fetchMock).toHaveBeenCalledWith(`${CONTENT_URL}/_mosaic-raw/mosaic/index.mdx`);
+    expect(fetchMock).toHaveBeenCalledWith(`${CONTENT_URL}/_mosaic-raw/mosaic/index.mdx`, {
+      cache: 'no-store'
+    });
   });
 
   test('normalises `/foo/index` to `/foo/index.mdx` before fetching', async () => {
@@ -86,7 +88,8 @@ describe('getMdxRawSource', () => {
     await getMdxRawSource('/mosaic/getting-started/index', 'active', CONTENT_URL);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      `${CONTENT_URL}/_mosaic-raw/mosaic/getting-started/index.mdx`
+      `${CONTENT_URL}/_mosaic-raw/mosaic/getting-started/index.mdx`,
+      { cache: 'no-store' }
     );
   });
 

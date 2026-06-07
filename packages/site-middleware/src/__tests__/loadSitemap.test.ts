@@ -81,7 +81,9 @@ describe('loadSitemap (active mode)', () => {
 
     expect(result).toEqual(['/mosaic/index', '/mosaic/author/aliases']);
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(fetchMock).toHaveBeenCalledWith('http://content.test/sitemap.xml');
+    expect(fetchMock).toHaveBeenCalledWith('http://content.test/sitemap.xml', {
+      cache: 'no-store'
+    });
   });
 
   it('returns [] (no throw) when MOSAIC_ACTIVE_MODE_URL is unset', async () => {
@@ -109,3 +111,4 @@ describe('loadSitemap (active mode)', () => {
     expect(result).toEqual([]);
   });
 });
+
