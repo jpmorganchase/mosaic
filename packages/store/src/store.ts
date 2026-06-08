@@ -172,8 +172,10 @@ function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
   const isReusingStore = Boolean(store);
   store = store ?? initializeStore(serverInitialState);
 
-  // When next.js re-renders _app while re-using an older store, then replace current state with
-  // the new state (in the next render cycle).
+  // When the App Router re-renders the provider tree (the `app/providers.tsx`
+  // layout boundary on a client-side route change) while re-using an older
+  // store, replace current state with the new state (in the next render
+  // cycle).
   // (Why next render cycle? Because react cannot re-render while a render is already in progress.
   // i.e. we cannot do a setState() as that will initiate a re-render)
   //
