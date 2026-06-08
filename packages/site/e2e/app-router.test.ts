@@ -1,4 +1,4 @@
-import { test, expect, request as playwrightRequest } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 /**
  * App Router smoke tests (WS-7 verification).
@@ -13,8 +13,11 @@ import { test, expect, request as playwrightRequest } from '@playwright/test';
  *  2. The Auth.js v5 route handlers respond cleanly:
  *       - `/api/auth/providers` returns the configured providers
  *       - `/api/auth/session` returns `null` for an unauthenticated client
- *  3. The content-editor preview endpoint accepts a POST and returns
- *     JSON.
+ *  3. The legacy `POST /api/content/preview` REST endpoint is gone —
+ *     content-editor preview is now a React Server Action (see
+ *     `src/app/[...route]/previewAction.ts`). The test asserts the
+ *     old surface is no longer reachable so we don't accidentally
+ *     re-introduce two MDX pipelines.
  *
  * Static-export coverage is provided by the separate
  * `static-export.test.ts` integration that runs against an already-built
@@ -23,8 +26,7 @@ import { test, expect, request as playwrightRequest } from '@playwright/test';
 
 test.describe('App Router server behaviour', () => {
   test('catch-all RSC route serves MDX as HTML, not as a JSON compiledSource', async ({
-    request,
-    baseURL
+    request
   }) => {
     const res = await request.get('/mosaic/index');
     expect(res.status()).toBe(200);
@@ -67,12 +69,25 @@ test.describe('App Router server behaviour', () => {
     expect(body).not.toContain('"user"');
   });
 
-  test('content preview API accepts a POST and returns JSON', async ({ request }) => {
+  test('legacy /api/content/preview REST endpoint has been removed in favour of a Server Action', async ({
+    request
+  }) => {
+    // The content-editor preview was migrated from a REST route
+    // handler to the `compilePreview` React Server Action exported
+    // by `src/app/[...route]/previewAction.ts`. Posting to the old
+    // path should therefore NOT resolve to a 2xx — Next.js will
+    // return a 404 (no route handler) or a 405 (method not allowed
+    // if the path collides with the catch-all page). Anything in
+    // the 2xx range means the legacy surface has crept back in and
+    // we're running two MDX compile pipelines again, which is the
+    // exact regression WS-7 was meant to prevent.
     const res = await request.post('/api/content/preview', {
       data: { source: '# hello world' },
-      headers: { 'content-type': 'application/json' }
+      headers: { 'content-type': 'application/json' },
+      // Don't let Playwright throw on non-2xx — we *expect* one here.
+      failOnStatusCode: false
     });
-    expect(res.status()).toBe(200);
-    expect(res.headers()['content-type'] || '').toMatch(/application\/json/);
+    expect(res.status()).toBeGreaterThanOrEqual(400);
+    expect(res.status()).toBeLessThan(500);
   });
 });
