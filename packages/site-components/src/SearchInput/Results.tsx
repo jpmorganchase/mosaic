@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, KeyboardEvent } from 'react';
+import { startTransition, useState, KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import classnames from 'clsx';
 import { Caption6, P4, P6 } from '@jpmorganchase/mosaic-components';
@@ -103,7 +103,15 @@ export function ResultsList({ searchResults, query, handleClear }: SearchResults
   const router = useRouter();
 
   const handleSelect = (result: SearchResult) => {
-    router.push(result.route);
+    // Wrap in a React transition so the App Router keeps the
+    // current page committed until the destination's RSC payload is
+    // ready. Without this, `router.push` commits synchronously and
+    // the search-results pop dismisses with a one-frame flash of
+    // unstyled chrome before the new route paints. See
+    // AppHeaderTabs for the same fix on the top-nav click.
+    startTransition(() => {
+      router.push(result.route);
+    });
     handleClear();
   };
 

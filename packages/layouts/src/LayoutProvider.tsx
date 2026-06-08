@@ -16,15 +16,39 @@ export type LayoutProviderProps = {
   defaultLayout?: string;
 };
 
-/**
- * Layout names that are NOT author-selectable — they're swapped
- * in by the framework for special states (`?edit=1`, 404) and
- * picking them in the Frontmatter editor's `layout` dropdown
- * would either be a no-op (the framework overrides) or render a
- * broken page. Excluding them at the provider boundary keeps the
- * author UX honest without forcing every consumer to filter.
- */
 const INTERNAL_LAYOUT_NAMES = new Set<string>(['EditLayout']);
+
+/**
+ * Resolve the layout component to render. Pulled out so the
+ * Suspense fallback can use the same lookup as the post-suspense
+ * render — we want the fallback to mount the FULL chrome (header,
+ * sidebars, footer), only the editor-mode swap should wait for
+ * `useEditMode`.
+ */
+function pickLayoutComponent(
+  name: string,
+  layoutComponents: LayoutProviderProps['layoutComponents'],
+  defaultLayout: string
+): FC<LayoutProps> | undefined {
+  const requested = layoutComponents?.[name] as FC<LayoutProps> | undefined;
+  if (requested) return requested;
+  if (name !== defaultLayout) {
+    console.error(`Layout ${name} is not supported, defaulting to ${defaultLayout}`);
+  }
+  return (
+    (layoutComponents?.[defaultLayout] as FC<LayoutProps> | undefined) ?? layouts[defaultLayout]
+  );
+}
+
+function getAuthorSelectableNames(
+  layoutComponents: LayoutProviderProps['layoutComponents']
+): string[] {
+  if (!layoutComponents) return [];
+  return Object.keys(layoutComponents)
+    .filter(name => !INTERNAL_LAYOUT_NAMES.has(name))
+    .filter(name => layoutComponents[name] !== undefined)
+    .sort();
+}
 
 /**
  * Inner component that does the actual layout selection. Reads
@@ -43,23 +67,45 @@ const LayoutPicker: FC<LayoutProviderProps> = ({
   const { isEditing } = useEditMode();
   const layout = isEditing ? 'EditLayout' : layoutInStore;
 
-  // Publish the registered author-selectable layout names via
-  // `LayoutNamesProvider` so the editor's FrontmatterEditor can
-  // render the `layout` field as a typeahead picker. Filter out
-  // framework-only names and any `undefined` slots.
-  const authorSelectableNames = useMemo(() => {
-    if (!layoutComponents) return [];
-    return Object.keys(layoutComponents)
-      .filter(name => !INTERNAL_LAYOUT_NAMES.has(name))
-      .filter(name => layoutComponents[name] !== undefined)
-      .sort();
-  }, [layoutComponents]);
+  const authorSelectableNames = useMemo(
+    () => getAuthorSelectableNames(layoutComponents),
+    [layoutComponents]
+  );
 
-  let LayoutComponent: FC<LayoutProps> | undefined = layoutComponents?.[layout] as FC<LayoutProps>;
-  if (!LayoutComponent) {
-    console.error(`Layout ${layout} is not supported, defaulting to ${defaultLayout}`);
-    LayoutComponent = layouts[defaultLayout];
-  }
+  const LayoutComponent = pickLayoutComponent(layout, layoutComponents, defaultLayout);
+  const inner = LayoutComponent ? (
+    <LayoutComponent {...LayoutProps}>{children}</LayoutComponent>
+  ) : (
+    <>{children}</>
+  );
+  return <LayoutNamesProvider names={authorSelectableNames}>{inner}</LayoutNamesProvider>;
+};
+
+/**
+ * Suspense fallback for `LayoutPicker`. Renders the default
+ * layout's full chrome — header, sidebars, footer — so navigations
+ * never expose the bare page body. The only thing that has to wait
+ * for `useEditMode` to resolve is the `EditLayout` swap, which is
+ * an opt-in author flow and represents a tiny minority of renders.
+ *
+ * Before this existed, the fallback rendered `<>{children}</>` and
+ * every cross-route navigation produced a one-frame flash of
+ * unchromed body (visible as a "flash of white" when the body was
+ * shorter than the viewport). Mounting the default layout — the
+ * SAME component the post-resolve render mounts in the common case
+ * — keeps the chrome on screen continuously across navigations.
+ */
+const LayoutFallback: FC<LayoutProviderProps> = ({
+  children,
+  layoutComponents,
+  LayoutProps = {},
+  defaultLayout = 'FullWidth'
+}) => {
+  const authorSelectableNames = useMemo(
+    () => getAuthorSelectableNames(layoutComponents),
+    [layoutComponents]
+  );
+  const LayoutComponent = pickLayoutComponent(defaultLayout, layoutComponents, defaultLayout);
   const inner = LayoutComponent ? (
     <LayoutComponent {...LayoutProps}>{children}</LayoutComponent>
   ) : (
@@ -69,15 +115,7 @@ const LayoutPicker: FC<LayoutProviderProps> = ({
 };
 
 export const LayoutProvider: FC<LayoutProviderProps> = props => (
-  <Suspense
-    fallback={
-      // Render the default layout's children directly during the
-      // Suspense fallback so the body isn't blanked out while the
-      // search-params hook resolves. The actual layout swap (e.g.
-      // into `EditLayout`) happens once `useEditMode` is ready.
-      <>{props.children}</>
-    }
-  >
+  <Suspense fallback={<LayoutFallback {...props} />}>
     <LayoutPicker {...props} />
   </Suspense>
 );

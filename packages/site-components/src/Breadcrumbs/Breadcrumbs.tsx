@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { startTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Menu, MenuItem, MenuPanel, MenuTrigger } from '@salt-ds/core';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
@@ -28,7 +28,15 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ breadcrumbs, enabled }
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const path = event.currentTarget.getAttribute('data-path');
     if (path) {
-      router.push(path);
+      // Wrap in a React transition so the App Router keeps the
+      // current page committed until the destination's RSC payload
+      // is ready. Without this, `router.push` commits synchronously
+      // and the page flashes blank chrome for one frame before the
+      // new route paints. See AppHeaderTabs for the same fix on the
+      // top-nav click.
+      startTransition(() => {
+        router.push(path);
+      });
     }
   };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { startTransition, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { hasProtocol, TabsBase, TabMenuItemType } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu, TabsMenuButtonItem, TabsLinkItem } from '@jpmorganchase/mosaic-components';
@@ -66,9 +66,18 @@ export function AppHeaderTabs({ menu = [] }: { menu: TabsMenu }) {
     const { link } = sourceItem as TabsLinkItem;
     if (hasProtocol(link)) {
       window.open(link, '_blank');
-    } else {
-      router.push(link);
+      return;
     }
+    // Wrap the imperative navigation in a React transition. `<Link>`
+    // does this automatically — `router.push` does not. Without the
+    // transition wrap the App Router commits the destination route
+    // synchronously, which tears down the current page subtree before
+    // the new RSC payload is ready and produces a one-frame flash of
+    // blank chrome. The transition keeps the old subtree committed
+    // until React has the new tree in hand, then swaps without a gap.
+    startTransition(() => {
+      router.push(link);
+    });
   };
   const linkedMenu = menu.map(menuItem => {
     if (menuItem.type === TabMenuItemType.MENU) {

@@ -23,7 +23,16 @@
  * suggestions (derived from `/sitemap.xml`) for discoverability
  * without taking away the ability to type a brand-new path.
  */
-import { FC, SyntheticEvent, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  FC,
+  startTransition,
+  SyntheticEvent,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@jpmorganchase/mosaic-components';
 import {
@@ -265,9 +274,17 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     // the App Router's compiled segment tree, which is what
     // we want — the catch-all `[...route]/page.tsx` then sees
     // a fresh request and takes its `?new=1` branch.
+    //
+    // Wrap in a React transition so the App Router keeps the
+    // current page committed until the destination is ready;
+    // without this, `router.push` commits synchronously and the
+    // dialog dismisses to a one-frame flash of blank chrome
+    // before the new route paints.
     const target = `${route}?new=1&title=${encodeURIComponent(title.trim())}`;
     onOpenChange(false);
-    router.push(target);
+    startTransition(() => {
+      router.push(target);
+    });
   };
 
   return (
