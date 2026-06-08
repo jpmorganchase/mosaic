@@ -50,6 +50,7 @@ import { auth } from '../../auth';
 import { AUTH_ENABLED } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
+import { CanonicalizeUrl } from './CanonicalizeUrl';
 import { RouteMetadata } from './RouteMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 
@@ -176,9 +177,151 @@ const resolveRouteInputs = cache(
 );
 
 /**
- * Server-side metadata. Reuses `getMdxRaw` (whose result contains
- * pre-parsed frontmatter) so the underlying file/HTTP read and YAML
- * parse happen once per request, shared with the page render.
+ * Max number of redirect hops we'll follow in-process before giving
+ * up and letting the upstream redirect surface to the client.
+ *
+ * A misconfigured upstream that points `/a` → `/a/index` → `/a`
+ * would otherwise hang the request; three hops is generous for the
+ * folder→index case (always one hop) while keeping the worst-case
+ * latency bounded.
+ */
+const MAX_INTERNAL_REDIRECT_HOPS = 3;
+
+/**
+ * `true` when `destination` is the folder→index canonicalisation
+ * of `from` (i.e. `from === '/a/b'` and `destination === '/a/b/index'`
+ * or `'/a/b/'`-with-leading slash variants). This is the **only**
+ * redirect class we silently follow server-side; anything else is a
+ * real content move and deserves a true HTTP redirect so the URL
+ * bar updates.
+ *
+ * We compare with trailing-slash normalisation because the upstream
+ * may or may not emit one — both `/a/b` and `/a/b/` are valid
+ * "folder" pathnames.
+ */
+function isFolderIndexRedirect(from: string, destination: string): boolean {
+  const stripped = from.replace(/\/+$/, '');
+  return destination === `${stripped}/index`;
+}
+
+/**
+ * One resolved view of the route. Either the upstream returned MDX
+ * (or a not-found we'll forward to `notFound()`), or it returned a
+ * non-folder-index redirect we have to bounce to the client.
+ *
+ * `originalPathname` is the URL the user actually requested (= the
+ * `[...route]` params we got handed); `pathname` is where the content
+ * actually lives after following any folder→index hops. They differ
+ * when the user lands on `/dp/products` and the canonical file is
+ * `/dp/products/index` — keeping both lets the editor save against
+ * the canonical path while breadcrumbs / `<link rel="canonical">`
+ * announce the SEO target.
+ */
+type ResolvedContent =
+  | {
+      kind: 'mdx';
+      originalPathname: string;
+      pathname: string;
+      mdx: Extract<Awaited<ReturnType<typeof getMdxRaw>>, { kind: 'mdx' }>;
+      sharedConfig: Awaited<ReturnType<typeof getSharedConfig>>;
+      followedRedirect: boolean;
+    }
+  | { kind: 'not-found'; originalPathname: string; pathname: string }
+  | { kind: 'redirect'; destination: string };
+
+/**
+ * Fetch MDX + shared config for a pathname, transparently following
+ * folder→index redirects up to `MAX_INTERNAL_REDIRECT_HOPS` hops.
+ *
+ * **Why this exists.** The upstream content server returns HTTP 302
+ * for "folder" pathnames (`/dp/products`) pointing at the canonical
+ * file (`/dp/products/index`). The previous implementation forwarded
+ * that to `redirect()` from `next/navigation`, which the App Router
+ * translates into a second client RSC request to the destination —
+ * with the side-effect that the current page subtree unmounts at the
+ * URL change (which commits before the destination's payload
+ * arrives). The visible result is a ~150 ms blank-chrome flash on
+ * every nav to a folder URL (`Products`, `Release notes`, …), while
+ * nav to a direct page URL is gap-free.
+ *
+ * Following the redirect here, inside the same render, keeps the
+ * navigation a **single** client commit: the chrome stays mounted,
+ * the new page paints in one frame. The user-visible URL stays at
+ * the requested folder path (which is what they clicked); SEO is
+ * preserved via `metadata.alternates.canonical` in
+ * `generateMetadata`.
+ *
+ * Cached at the request level (deduping any duplicate calls from
+ * `generateMetadata`); the inner `getMdxRaw` / `getSharedConfig`
+ * calls are themselves `cache()`'d so following the redirect just
+ * adds at most one extra fetch per hop, all of which are also
+ * cross-request memoised by `unstable_cache`.
+ */
+const resolveContent = cache(
+  async (
+    originalPathname: string,
+    mode: MosaicMode,
+    contentUrl: string
+  ): Promise<ResolvedContent> => {
+    let pathname = originalPathname;
+    let followedRedirect = false;
+
+    for (let hop = 0; hop <= MAX_INTERNAL_REDIRECT_HOPS; hop++) {
+      // Issue MDX + shared-config in parallel. They're independent
+      // per pathname so the round-trip is `max(steps)`, not
+      // `sum(steps)`; both already share the request-scoped cache so
+      // a duplicate call later (e.g. from `generateMetadata`) is
+      // free.
+      const [mdx, sharedConfig] = await Promise.all([
+        getMdxRaw(pathname, mode, contentUrl),
+        getSharedConfig(pathname, mode, contentUrl)
+      ]);
+
+      if (mdx.kind === 'mdx') {
+        return {
+          kind: 'mdx',
+          originalPathname,
+          pathname,
+          mdx,
+          sharedConfig,
+          followedRedirect
+        };
+      }
+
+      if (mdx.kind === 'not-found') {
+        return { kind: 'not-found', originalPathname, pathname };
+      }
+
+      // mdx.kind === 'redirect'. If the destination is the
+      // folder→index canonicalisation we follow it in-process to
+      // avoid the client-side bounce; otherwise it's a real content
+      // move and we surface it so the caller can `redirect()` and
+      // the URL bar updates.
+      if (!isFolderIndexRedirect(pathname, mdx.destination)) {
+        return { kind: 'redirect', destination: mdx.destination };
+      }
+      followedRedirect = true;
+      pathname = mdx.destination;
+    }
+
+    // Hop budget exhausted. Treat as not-found to fall through to the
+    // 404 page — preferable to a silent infinite loop or a misleading
+    // generic 500.
+    console.error(
+      `[mosaic-site] redirect chain exceeded ${MAX_INTERNAL_REDIRECT_HOPS} hops starting at ${originalPathname}; treating as not-found`
+    );
+    return { kind: 'not-found', originalPathname, pathname };
+  }
+);
+
+/**
+ * Server-side metadata. Reuses `resolveContent` (whose result
+ * carries pre-parsed frontmatter) so the underlying file/HTTP read
+ * and YAML parse happen once per request, shared with the page
+ * render below. For pathnames that the upstream resolved via a
+ * folder→index redirect, the SEO canonical points at the
+ * destination so search engines de-duplicate the two URLs on the
+ * preferred one.
  *
  * Returns an empty `Metadata` for non-success cases (the page render
  * handles redirect / not-found / error signalling and would override
@@ -186,11 +329,11 @@ const resolveRouteInputs = cache(
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { pathname, mode, contentUrl } = await resolveRouteInputs(params);
-  const mdx = await getMdxRaw(pathname, mode, contentUrl);
+  const resolved = await resolveContent(pathname, mode, contentUrl);
 
-  if (mdx.kind !== 'mdx') return {};
+  if (resolved.kind !== 'mdx') return {};
 
-  const { frontmatter } = mdx;
+  const { frontmatter } = resolved.mdx;
   const title = typeof frontmatter.title === 'string' ? frontmatter.title : undefined;
   const description =
     typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
@@ -214,6 +357,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     ...(title && { title }),
     ...(description && { description }),
+    // When we followed a folder→index redirect server-side, point
+    // search engines at the canonical destination so `/dp/products`
+    // and `/dp/products/index` collapse to one indexed page. Relative
+    // paths resolve against `metadataBase` (set in `app/layout.tsx`).
+    ...(resolved.followedRedirect && {
+      alternates: { canonical: resolved.pathname }
+    }),
     openGraph: {
       type: 'article',
       ...(title && { title }),
@@ -233,32 +383,51 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function RoutePage({ params, searchParams }: PageProps) {
   const { pathname, mode, contentUrl } = await resolveRouteInputs(params);
 
-  // The three loaders are independent — fetch them concurrently.
-  // `getMdxRaw` hits the same `cache()` entry that `generateMetadata`
-  // already populated, so it's a free read here. `getSharedConfig` and
-  // `getSearchData` are also `cache()`'d but were not touched by
-  // `generateMetadata` (it only needs frontmatter), so this is the
-  // first call for them this request.
+  // `resolveContent` issues `getMdxRaw` + `getSharedConfig` and
+  // transparently follows any folder→index redirect the upstream
+  // returns for `pathname`. The same call ran from
+  // `generateMetadata` is request-cached so we pay nothing extra
+  // here. `getSearchData` and `searchParams` are independent and
+  // fetched in parallel alongside.
   //
-  // `searchParams` is awaited alongside them so the `?edit=1` check
-  // costs no extra latency — but only when we're *not* prerendering.
-  // Awaiting `searchParams` during a static-export prerender promotes
-  // the route to dynamic and breaks the build; the EDIT branch is
-  // unreachable in static export anyway (auth() is stubbed).
-  const [mdx, sharedConfigOriginal, search, sp] = await Promise.all([
-    getMdxRaw(pathname, mode, contentUrl),
-    getSharedConfig(pathname, mode, contentUrl),
+  // `searchParams` is awaited alongside them so the `?edit=1`
+  // check costs no extra latency — but only when we're *not*
+  // prerendering. Awaiting `searchParams` during a static-export
+  // prerender promotes the route to dynamic and breaks the build;
+  // the EDIT branch is unreachable in static export anyway
+  // (`auth()` is stubbed).
+  const [resolved, search, sp] = await Promise.all([
+    resolveContent(pathname, mode, contentUrl),
     getSearchData(mode, contentUrl),
     shouldPrerenderSnapshot
       ? (Promise.resolve({}) as Promise<Record<string, string | string[] | undefined>>)
       : searchParams
   ]);
 
+  // Real (non-folder-index) redirect from upstream — surface to
+  // the client so the URL bar updates. Folder→index redirects were
+  // already absorbed inside `resolveContent`.
+  if (resolved.kind === 'redirect') redirect(resolved.destination);
+
+  // For a normal view/edit request a missing page is a 404. For
+  // a `?new=1` request a missing page is EXPECTED (the file
+  // doesn't exist yet — we're about to create it) so we hand
+  // off to the create-mode branch below instead of 404'ing.
+  // The auth gate inside that branch is the actual security
+  // boundary; unauthenticated `?new=1` requests fall through
+  // to the same 404 the view branch would have produced.
+  const newRequested = sp.new === '1';
+  const newPossible = newRequested && !shouldPrerenderSnapshot;
+
   // Apply the dev capability-bypass to the shared config before
   // anyone (server gate, store, client hook) reads it. The override
   // is the closed default — `{ writable: true }` — applied via a
   // shallow merge so authored fields (header, footer, etc.) are
-  // preserved.
+  // preserved. The bypass is the same shape regardless of whether
+  // `resolved` is an mdx-success or not-found-eligible-for-create
+  // case, so apply it before discriminating.
+  const sharedConfigOriginal =
+    resolved.kind === 'mdx' ? resolved.sharedConfig : undefined;
   const sharedConfig = CAPABILITY_GATE_BYPASSED
     ? {
         ...(sharedConfigOriginal ?? {}),
@@ -269,16 +438,6 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       }
     : sharedConfigOriginal;
 
-  if (mdx.kind === 'redirect') redirect(mdx.destination);
-  // For a normal view/edit request a missing page is a 404. For
-  // a `?new=1` request a missing page is EXPECTED (the file
-  // doesn't exist yet — we're about to create it) so we hand
-  // off to the create-mode branch below instead of 404'ing.
-  // The auth gate inside that branch is the actual security
-  // boundary; unauthenticated `?new=1` requests fall through
-  // to the same 404 the view branch would have produced.
-  const newRequested = sp.new === '1';
-  const newPossible = newRequested && !shouldPrerenderSnapshot;
   // Source-capability gate. Absent capabilities (no shared-config
   // for the subtree, or a source that hasn't opted in) means
   // `writable` is `false` — the closed default. Applies equally
@@ -287,13 +446,23 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // mode rather than mounting the editor for a save that would
   // fail at the workflows layer.
   const isWritableSource = sharedConfig?.sourceCapabilities?.writable === true;
-  if (mdx.kind === 'not-found' && !(newPossible && isWritableSource)) notFound();
+  if (resolved.kind === 'not-found' && !(newPossible && isWritableSource)) notFound();
 
-  // `mdx.kind === 'mdx' | 'not-found'` from here on. For the
+  // The pathname the editor (and any downstream raw-source /
+  // persist call) should treat as authoritative. Differs from the
+  // user-requested `pathname` only when we followed a folder→index
+  // redirect server-side — in that case `resolved.pathname` is
+  // the on-disk canonical (e.g. `/dp/products/index`), which is
+  // what the workflows layer needs for save targets and what
+  // `getMdxRawSource` is keyed on.
+  const resolvedPathname = resolved.kind === 'mdx' ? resolved.pathname : pathname;
+
+  // `resolved.kind === 'mdx' | 'not-found'` from here on. For the
   // `not-found + newPossible` case `raw` doesn't exist; we
   // synthesise the body below from a blank-page template.
-  const onDiskFrontmatter = mdx.kind === 'mdx' ? mdx.frontmatter : ({} as Record<string, unknown>);
-  const onDiskRaw = mdx.kind === 'mdx' ? mdx.raw : '';
+  const onDiskFrontmatter =
+    resolved.kind === 'mdx' ? resolved.mdx.frontmatter : ({} as Record<string, unknown>);
+  const onDiskRaw = resolved.kind === 'mdx' ? resolved.mdx.raw : '';
   // Separate `sharedConfig` from the rest of the frontmatter so we
   // can merge it carefully with the loader-derived copy below.
   //
@@ -350,8 +519,12 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Skip the redirect when the source isn't writable — there's
   // no edit branch to redirect to, so just fall through and
   // render view mode.
-  if (newRequested && mdx.kind === 'mdx' && isWritableSource) {
-    redirect(`${pathname}?edit=1&existed=1`);
+  //
+  // Use `resolvedPathname` so a hand-typed `/foo?new=1` against a
+  // folder that resolves to `/foo/index` redirects to the
+  // canonical edit URL, not to the folder shorthand.
+  if (newRequested && resolved.kind === 'mdx' && isWritableSource) {
+    redirect(`${resolvedPathname}?edit=1&existed=1`);
   }
 
   // Edit-mode gate: only honour `?edit=1` for signed-in users on a
@@ -378,6 +551,10 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // cheap, the route is server-local in active mode); when auth
   // succeeds we've already paid the latency in parallel with the
   // auth check rather than serially after it.
+  //
+  // Keyed on `resolvedPathname` so a request to `/foo` (which
+  // resolved to `/foo/index`) fetches the raw bytes for the
+  // canonical file the editor will be saving back to.
   const editRequested = sp.edit === '1';
   const editPossible = editRequested && !shouldPrerenderSnapshot;
   // Auth is required for both the edit and the create branch.
@@ -401,10 +578,11 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // bytes for a page the editor will refuse to mount.
   const rawSourcePromise =
     editPossible && isWritableSource
-      ? getMdxRawSource(pathname, mode, contentUrl)
+      ? getMdxRawSource(resolvedPathname, mode, contentUrl)
       : Promise.resolve(undefined);
   const [session, rawSource] = await Promise.all([sessionPromise, rawSourcePromise]);
-  const editing = editRequested && isWritableSource && mdx.kind === 'mdx' && session?.user != null;
+  const editing =
+    editRequested && isWritableSource && resolved.kind === 'mdx' && session?.user != null;
   const creating = newPossible && isWritableSource && session?.user != null;
   const editorUser =
     (editing || creating) && session?.user
@@ -494,6 +672,27 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // no-flash behaviour as VIEW.
   return (
     <StoreShell storeProps={storeProps}>
+      {/*
+        URL canonicaliser. Mounted only when we followed a
+        folder→index redirect in `resolveContent` — in that case the
+        browser URL shows the folder shorthand (e.g.
+        `/mosaic/getting-started`) but the on-disk file lives at
+        the canonical (`/mosaic/getting-started/index`). This
+        client component fires
+        `router.replace(canonical, { scroll: false })` after first
+        paint to update the URL bar without unmounting the page
+        subtree. See the comment block in `CanonicalizeUrl.tsx`
+        for the trade-off (one-frame URL flicker vs. a 150 ms blank
+        chrome flash).
+
+        Gated on `resolved.kind === 'mdx'` because
+        `followedRedirect` is only set on the mdx-success branch;
+        the create flow (`not-found + ?new=1`) never follows a
+        redirect — there's nothing to redirect to.
+      */}
+      {resolved.kind === 'mdx' && resolved.followedRedirect && (
+        <CanonicalizeUrl canonical={resolvedPathname} />
+      )}
       <RouteMetadata />
       {editing || creating ? (
         <EditorBody
