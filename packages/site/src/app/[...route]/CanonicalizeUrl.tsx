@@ -48,4 +48,3 @@ export function CanonicalizeUrl({ canonical }: { canonical: string }) {
   }, [router, currentPathname, canonical]);
   return null;
 }
-

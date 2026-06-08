@@ -103,4 +103,3 @@ export async function GET(): Promise<Response> {
     clearTimeout(timeout);
   }
 }
-

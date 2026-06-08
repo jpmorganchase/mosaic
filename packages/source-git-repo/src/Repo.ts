@@ -38,7 +38,6 @@ function getErrorMessage(error: unknown) {
   return String(error);
 }
 
-
 /**
  * Hard cap on per-stream child-process output we keep in memory. Most git
  * commands we run (`rev-parse`, `config`, `commit`, …) emit kilobytes at
@@ -659,12 +658,9 @@ export default class Repo {
       );
     }
     try {
-      await spawn(
-        'git',
-        ['worktree', 'remove', '--force', this.#dir],
-        this.#cloneRootDir,
-        { discardStdout: true }
-      );
+      await spawn('git', ['worktree', 'remove', '--force', this.#dir], this.#cloneRootDir, {
+        discardStdout: true
+      });
     } catch {
       // Expected when the target wasn't registered. Falls through
       // to the filesystem-level cleanup below.

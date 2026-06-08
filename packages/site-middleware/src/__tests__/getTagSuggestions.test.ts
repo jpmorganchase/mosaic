@@ -148,4 +148,3 @@ describe('getTagSuggestions', () => {
     expect(result).toEqual([]);
   });
 });
-

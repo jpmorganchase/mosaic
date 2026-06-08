@@ -56,4 +56,3 @@ export function stripUndefined(value: unknown): unknown {
   }
   return value;
 }
-

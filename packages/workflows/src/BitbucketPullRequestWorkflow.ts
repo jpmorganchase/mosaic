@@ -211,7 +211,10 @@ async function createPullRequest(
       nextMeta = metadata as Record<string, unknown>;
       if (typeof frontmatter === 'string') {
         try {
-          const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
+          const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+            string,
+            unknown
+          >;
           // Preserve `fullPath` from the on-disk metadata, but ONLY
           // when it's actually set. Writing `fullPath: undefined`
           // here propagates an `undefined` field into `updatedPage`
@@ -319,7 +322,7 @@ async function createPullRequest(
     if (result && typeof result === 'object' && 'error' in result) {
       sendWorkflowProgressMessage(
         typeof (result as { error?: unknown }).error === 'string'
-          ? ((result as { error: string }).error)
+          ? (result as { error: string }).error
           : 'Pull request creation failed.',
         'ERROR'
       );
@@ -332,10 +335,7 @@ async function createPullRequest(
     // Any throw between createWorktree and the PR call lands
     // here. Convert to an ERROR event so the editor stops
     // waiting; the finally arm below cleans up the worktree.
-    sendWorkflowProgressMessage(
-      `Save failed: ${getErrorMessage(e)}`,
-      'ERROR'
-    );
+    sendWorkflowProgressMessage(`Save failed: ${getErrorMessage(e)}`, 'ERROR');
     return false;
   } finally {
     // Idempotent: matches `Repo.createPullRequest`'s own

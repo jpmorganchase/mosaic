@@ -426,8 +426,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // preserved. The bypass is the same shape regardless of whether
   // `resolved` is an mdx-success or not-found-eligible-for-create
   // case, so apply it before discriminating.
-  const sharedConfigOriginal =
-    resolved.kind === 'mdx' ? resolved.sharedConfig : undefined;
+  const sharedConfigOriginal = resolved.kind === 'mdx' ? resolved.sharedConfig : undefined;
   const sharedConfig = CAPABILITY_GATE_BYPASSED
     ? {
         ...(sharedConfigOriginal ?? {}),

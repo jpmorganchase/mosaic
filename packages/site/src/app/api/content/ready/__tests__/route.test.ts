@@ -150,9 +150,7 @@ describe('/api/content/ready (active mode)', () => {
   it('reports not-ready when the upstream sitemap returns 404 (CLI up but no content)', async () => {
     const resolveMosaicMode = await getResolveMode();
     resolveMosaicMode.mockReturnValue({ mode: 'active', contentUrl: 'http://content.test' });
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Not found', { status: 404 })
-    );
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('Not found', { status: 404 }));
 
     const { GET } = await loadRoute();
     const response = await GET();
@@ -198,5 +196,3 @@ describe('/api/content/ready (active mode)', () => {
     expect(body).toEqual({ ready: false, mode: 'active', reason: 'AbortError' });
   });
 });
-
-

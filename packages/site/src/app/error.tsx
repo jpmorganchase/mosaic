@@ -36,4 +36,3 @@ export default function GlobalError({
     </Hero>
   );
 }
-

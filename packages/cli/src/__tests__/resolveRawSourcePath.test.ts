@@ -113,10 +113,7 @@ describe('resolveRawSourcePath', () => {
     // worker uses, so no IPC is required.
     const result = resolveRawSourcePath('/docs/getting-started/index.mdx', [GIT]);
     const expectedRoot = path.join(
-      getWorktreeDir(
-        'https://bitbucket.example.com/scm/proj/my-docs.git',
-        'main'
-      ),
+      getWorktreeDir('https://bitbucket.example.com/scm/proj/my-docs.git', 'main'),
       'docs'
     );
     expect(result).toEqual({
@@ -203,7 +200,3 @@ describe('resolveRawSourcePath', () => {
     expect(KNOWN_RAW_UNSUPPORTED_MODULES.has('@jpmorganchase/mosaic-source-git-repo')).toBe(false);
   });
 });
-
-
-
-

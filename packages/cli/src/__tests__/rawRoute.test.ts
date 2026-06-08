@@ -83,10 +83,7 @@ beforeAll(async () => {
     FIXTURE_REPO_SUBFOLDER
   );
   fs.mkdirSync(path.join(gitWorktreeFixtureDir, 'some-page'), { recursive: true });
-  fs.writeFileSync(
-    path.join(gitWorktreeFixtureDir, 'some-page', 'index.mdx'),
-    GIT_FIXTURE_BODY
-  );
+  fs.writeFileSync(path.join(gitWorktreeFixtureDir, 'some-page', 'index.mdx'), GIT_FIXTURE_BODY);
 
   const config: MosaicConfig = {
     pageExtensions: ['.mdx', '.json'],

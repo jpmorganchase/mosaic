@@ -121,4 +121,3 @@ describe('useTagSuggestions', () => {
     expect(observed).toEqual(['a', 'b']);
   });
 });
-

@@ -111,4 +111,3 @@ describe('loadSitemap (active mode)', () => {
     expect(result).toEqual([]);
   });
 });
-

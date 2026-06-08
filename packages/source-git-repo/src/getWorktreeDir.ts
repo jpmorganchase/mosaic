@@ -27,7 +27,11 @@ import path from 'path';
  *                 the CLI and the worker both run with the same cwd
  *                 by construction.
  */
-export function getWorktreeDir(repoUrl: string, branch: string, cwd: string = process.cwd()): string {
+export function getWorktreeDir(
+  repoUrl: string,
+  branch: string,
+  cwd: string = process.cwd()
+): string {
   return path.join(getCloneRootDir(repoUrl, cwd), '.mosaic-worktrees', branch);
 }
 
@@ -59,4 +63,3 @@ function parseRepoUrl(repoUrl: string): { projectNameAndRepoName: string } {
   ) as RegExpMatchArray;
   return { projectNameAndRepoName };
 }
-
