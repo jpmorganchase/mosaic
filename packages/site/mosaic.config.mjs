@@ -1,8 +1,9 @@
-import dotenvLoad from 'dotenv-load';
+import nextEnv from '@next/env';
 import deepmerge from 'deepmerge';
 import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
 
-dotenvLoad();
+const projectDir = process.cwd();
+nextEnv.loadEnvConfig(projectDir);
 
 const siteConfig = {
   ...fsConfig,
