@@ -32,17 +32,17 @@
     "build:bundle": "node ./scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ./scripts/bundle.mjs watch"
   },
   "devDependencies": {
     "@vanilla-extract/esbuild-plugin": "^2.3.15",
+    "concurrently": "^7.1.0",
     "esbuild": "0.25.0",
     "fast-glob": "^3.2.7",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@salt-ds/icons": "^1.17.1",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/css-utils": "^0.1.1",
     "@vanilla-extract/recipes": "^0.2.1",

@@ -22,7 +22,7 @@ const siteConfig = {
       priority: -1,
       options: {
         outputDir: './public',
-        assets: ['sitemap.xml', 'search-data.json']
+        assets: ['search-data.json']
       }
     },
     {
@@ -39,7 +39,6 @@ const siteConfig = {
 };
 
 export default deepmerge(siteConfig, {
-  deployment: { mode: 'snapshot-file' },
   sources: [
     /**
      * Demonstrates a local file-system source, in this case a relative path to where the

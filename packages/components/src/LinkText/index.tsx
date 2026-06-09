@@ -66,7 +66,6 @@ export const LinkText = forwardRef<HTMLSpanElement, LinkTextProps>(
     } = props;
     const isInternal = !hasProtocol(link);
 
-    // eslint-disable-next-line new-cap
     const startIconAdornment = IconAdornment({
       additionalProps: StartIconProps,
       disabled,
@@ -82,7 +81,7 @@ export const LinkText = forwardRef<HTMLSpanElement, LinkTextProps>(
     }
 
     const endIconName = endIcon || defaultEndIconName;
-    // eslint-disable-next-line new-cap
+
     const endIconAdornment = IconAdornment({
       additionalProps: EndIconProps,
       disabled,

@@ -513,4 +513,80 @@ describe('GIVEN the SharedConfigPlugin', () => {
       });
     });
   });
+
+  describe('WHEN `$afterSource` is called AND pages carry `sourceCapabilities`', () => {
+    const pagesWithCaps: SharedConfigPage[] = [
+      {
+        fullPath: '/FolderA/index.mdx',
+        route: 'route/folderA/index',
+        title: 'Folder A Index',
+        sharedConfig: { existing: 'value' },
+        // capabilities are stamped onto every page by core; the
+        // plugin only needs to find one to derive the namespace value.
+        sourceCapabilities: { writable: true }
+      } as SharedConfigPage,
+      {
+        fullPath: '/FolderA/SubfolderA/index.mdx',
+        route: 'route/folderA/subfolderA/index',
+        title: 'Subfolder A Index',
+        sourceCapabilities: { writable: true }
+      } as SharedConfigPage,
+      {
+        fullPath: '/FolderA/SubfolderA/PageA.mdx',
+        route: 'route/folderA/subfolderA/pageA',
+        title: 'Subfolder A Page A',
+        sourceCapabilities: { writable: true }
+      } as SharedConfigPage
+    ];
+
+    let updatedPages: SharedConfigPage[] = [];
+    beforeEach(async () => {
+      const $afterSource = SharedConfigPlugin.$afterSource;
+      // Clone so the shared fixture isn't mutated across runs (the
+      // plugin writes back into the `sharedConfig` field).
+      const cloned = pagesWithCaps.map(p => ({
+        ...p,
+        sharedConfig: p.sharedConfig && { ...p.sharedConfig }
+      }));
+      // @ts-ignore
+      updatedPages =
+        (await $afterSource?.(
+          cloned,
+          {
+            pageExtensions: ['.mdx'],
+            ignorePages: ['shared-config.json'],
+            config: { setData: setDataMock },
+            namespace: 'caps-ns'
+          },
+          { filename: 'shared-config.json' }
+        )) || [];
+    });
+
+    afterEach(() => {
+      setDataMock.mockReset();
+    });
+
+    test('THEN existing sharedConfig on an index page gains a `sourceCapabilities` field', () => {
+      const rootIndex = updatedPages.find(p => p.fullPath === '/FolderA/index.mdx');
+      expect(rootIndex?.sharedConfig).toMatchObject({
+        existing: 'value',
+        sourceCapabilities: { writable: true }
+      });
+    });
+
+    test("THEN an index page with no authored sharedConfig is given one carrying `sourceCapabilities` (and inherits parent fields per the plugin's normal merge)", () => {
+      const subIndex = updatedPages.find(p => p.fullPath === '/FolderA/SubfolderA/index.mdx');
+      // Inherits `existing` from the parent index per the
+      // pre-existing parent→child merge, and gains
+      // `sourceCapabilities` from the source-level stamping.
+      expect(subIndex?.sharedConfig).toMatchObject({
+        sourceCapabilities: { writable: true }
+      });
+    });
+
+    test('THEN non-index pages are left untouched', () => {
+      const leaf = updatedPages.find(p => p.fullPath === '/FolderA/SubfolderA/PageA.mdx');
+      expect(leaf?.sharedConfig).toBeUndefined();
+    });
+  });
 });

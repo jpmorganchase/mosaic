@@ -74,13 +74,14 @@ if (isMainThread) {
         // we don't bother freezing
         // Turn data into buffer
         const encoder = new TextEncoder();
-        return encoder.encode(
+        const encoded = encoder.encode(
           JSON.stringify({
             pages: filesystem.toJSON(),
             data: config.data,
             symlinks: filesystem.symlinksToJSON()
           })
         );
+        return encoded;
       }),
       tap(() => {
         // Reset filesystem and config memory
@@ -89,19 +90,36 @@ if (isMainThread) {
         filesystem = null;
       })
     )
-    .subscribe(async (pagesAndSymlinks: Buffer) => {
-      if (workerData.options.cache !== false) {
-        console.info(`[Mosaic][Core] Saving cached filesystem of ${workerData.name}`);
-        await fs.promises.writeFile(cachePath, pagesAndSymlinks);
-      }
+    .subscribe({
+      next: async (pagesAndSymlinks: Buffer) => {
+        if (workerData.options.cache !== false) {
+          console.info(`[Mosaic][Core] Saving cached filesystem of ${workerData.name}`);
+          await fs.promises.writeFile(cachePath, pagesAndSymlinks);
+        }
 
-      parentPort.postMessage(
-        {
-          type: 'message',
-          data: pagesAndSymlinks
-        },
-        /* transferList */ [pagesAndSymlinks.buffer]
-      );
+        parentPort.postMessage(
+          {
+            type: 'message',
+            data: pagesAndSymlinks
+          },
+          /* transferList */ [pagesAndSymlinks.buffer]
+        );
+      },
+      error: err => {
+        // Without this, an rxjs error short-circuits the chain silently
+        // — the worker stops emitting but the parent never finds out
+        // (no `init`, no `message`, no `error` event), so the source's
+        // cache file never gets written and the parent's SourceManager
+        // waits forever for first contact. Re-throwing here triggers
+        // the `uncaughtException` handler below, which exits the worker
+        // with a real error event to the parent.
+        process.stderr.write(
+          `[Mosaic][Core] Worker '${workerData.name}' pipeline errored: ${
+            err instanceof Error ? err.stack ?? err.message : String(err)
+          }\n`
+        );
+        throw err instanceof Error ? err : new Error(String(err));
+      }
     });
 
   if (workerData.options.cache !== false) {
@@ -121,7 +139,7 @@ if (isMainThread) {
       }
       // Important: Return to avoid sending another init signal on L107
       return;
-    } catch (e) {
+    } catch {
       // Does not exist
     }
   }

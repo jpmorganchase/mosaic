@@ -31,16 +31,19 @@
     "build:components": "node  ./scripts/bundle.mjs",
     "build:icons": "node ./scripts/generateIconTypes.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ./scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "del-cli": "^4.0.1",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
+    "esbuild": "^0.25.0",
+    "esbuild-node-externals": "^1.18.0",
+    "fast-glob": "^3.3.3",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
-    "@salt-ds/core": "^1.56.0"
+    "@salt-ds/icons": "^1.18.0"
   },
   "peerDependencies": {
     "@types/react": "^18.2.46",

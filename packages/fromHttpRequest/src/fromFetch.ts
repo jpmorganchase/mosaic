@@ -1,13 +1,9 @@
-/* eslint-disable eslint-comments/no-unlimited-disable */
 import { fetch, Request } from 'undici';
 import { fromFetch } from 'rxjs/fetch';
 
-// eslint-disable-next-line
-// @ts-ignore
+// @ts-expect-error needed to make rxjs use undici's fetch
 globalThis.fetch = fetch;
-// eslint-disable-next-line
-// @ts-ignore
+// @ts-expect-error needed to make rxjs use undici's Request
 globalThis.Request = Request;
 
 export { fromFetch };
-/* eslint-enable eslint-comments/no-unlimited-disable */

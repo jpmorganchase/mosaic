@@ -12,7 +12,7 @@ export default {
     caption({ variant: 'caption2' }),
     responsiveSprinkles({
       columnGap: ['x2', 'x2', 'x2', 'x2'],
-      paddingX: ['x2', 'x2', 'x2', 'x2']
+      padding: ['x2', 'x2', 'x2', 'x2']
     }),
     neutralBorder({ variant: 'low', borderBottomWidth: 'thin' })
   ])

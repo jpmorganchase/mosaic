@@ -1,9 +1,13 @@
 import React from 'react';
-import classnames from 'clsx';
-import { tbody } from '@jpmorganchase/mosaic-theme';
+import { TBody as SaltTBody, type TBodyProps as SaltTBodyProps } from '@salt-ds/core';
 
-export interface TbodyProps extends React.HTMLProps<HTMLTableSectionElement> {}
+/**
+ * Markdown `<tbody>` renderer. Delegates to Salt's `<TBody>` so
+ * it inherits the parent `<Table>`'s zebra/variant styling via
+ * Salt's table context.
+ */
+export type TbodyProps = SaltTBodyProps;
 
-export const Tbody: React.FC<React.PropsWithChildren<TbodyProps>> = ({ className, ...rest }) => (
-  <tbody className={classnames(className, tbody())} {...rest} />
+export const Tbody: React.FC<React.PropsWithChildren<TbodyProps>> = props => (
+  <SaltTBody {...props} />
 );

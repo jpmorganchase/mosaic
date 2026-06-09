@@ -42,7 +42,7 @@ export function createS3Loader(region, accessKeyId, secretAccessKey) {
         Key: key
       };
       const command = new HeadObjectCommand(params);
-      let exists = false;
+      let exists: boolean;
 
       try {
         const response = await client.send(command);

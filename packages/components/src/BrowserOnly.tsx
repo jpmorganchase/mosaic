@@ -1,3 +1,4 @@
+import type { JSX } from 'react';
 import { canUseDOM } from './canUseDOM';
 
 export function BrowserOnly({

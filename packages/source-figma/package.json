@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,6 @@
     "zod": "^3.22.3"
   },
   "devDependencies": {
-    "msw": "^2.0.0"
+    "msw": "^2.14.6"
   }
 }

@@ -4,7 +4,7 @@
     "target": "es2022",
     "lib": ["es2022", "DOM", "DOM.iterable"],
     "esModuleInterop": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "isolatedModules": true,
     "sourceMap": true,
     "declaration": true,
@@ -17,7 +17,6 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "rootDir": "./src",
     "outDir": "./dist",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo",
     "forceConsistentCasingInFileNames": true,
@@ -26,8 +25,13 @@
     "resolveJsonModule": true,
     "noImplicitAny": false,
     "jsx": "react-jsx",
-    "module": "esnext"
+    "module": "esnext",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["src"],
+  "include": ["src", ".next/types/**/*.ts", ".next/dev/types/**/*.ts", "next-env.d.ts"],
   "exclude": ["node_modules", "dist/**/*"]
 }

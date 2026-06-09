@@ -54,9 +54,9 @@ const filterRoutes = (routes: string[], namespaceFilters: string[]) => {
 };
 
 function getAllNamespaces(routes): string[] {
-  const isRootNamespaceRegexp = new RegExp(/^\/[^\/]+\/index$/);
+  const isRootNamespaceRegexp = new RegExp(/^\/[^/]+\/index$/);
   return routes.reduce((allNamespaces, route) => {
-    const namespace = route.match(/^\/([^\/]+)\//)[1];
+    const namespace = route.match(/^\/([^/]+)\//)[1];
     if (isRootNamespaceRegexp.test(route) && allNamespaces.indexOf(namespace) === -1) {
       allNamespaces = [...allNamespaces, namespace];
     }
@@ -67,11 +67,11 @@ function getAllNamespaces(routes): string[] {
 export const Sitemap: React.FC<SitemapTreeProps> = ({
   d3,
   href = '/sitemap.xml',
-  initialNamespaceFilters = [],
+  initialNamespaceFilters: _initialNamespaceFilters = [],
   ...rest
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const dataRef = useRef<string[]>();
+  const dataRef = useRef<string[]>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [namespaces, setNamespaces] = useState<string[]>([]);
   const [pageCount, setPageCount] = useState(0);
@@ -96,10 +96,10 @@ export const Sitemap: React.FC<SitemapTreeProps> = ({
     });
     function createSitemapNode(route) {
       const basenameRegexp = new RegExp(/.*\//);
-      const isNamespaceRegexp = new RegExp(/^\/[^\/]+\/?$/);
-      const childPathRegexp = new RegExp(/\/[^\/]+\/?$/);
+      const isNamespaceRegexp = new RegExp(/^\/[^/]+\/?$/);
+      const childPathRegexp = new RegExp(/\/[^/]+\/?$/);
       const label = route.replace(basenameRegexp, '');
-      let parent = isNamespaceRegexp.test(route) ? '/' : route.replace(childPathRegexp, '');
+      const parent = isNamespaceRegexp.test(route) ? '/' : route.replace(childPathRegexp, '');
       return { id: route, parent, label, link: route };
     }
     const treeData = Object.keys(groupedByParentRoutes).reduce(

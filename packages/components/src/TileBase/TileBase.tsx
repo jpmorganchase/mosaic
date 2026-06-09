@@ -60,7 +60,7 @@ export const TileBaseComponent: FC<TileBaseComponentProps> = function TileBase({
   children,
   size,
   tileRef,
-  variant = 'regular',
+  variant: _variant = 'regular',
   ...rest
 }) {
   const {

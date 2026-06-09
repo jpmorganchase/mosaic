@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\""
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -33,11 +33,12 @@
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "deepmerge": "^4.3.1",
     "rxjs": "^7.5.5",
-    "undici": "^6.23.0",
+    "undici": "^8.3.0",
     "zod": "^3.22.3"
   },
   "devDependencies": {
-    "msw": "^2.0.0"
+    "msw": "^2.14.6"
   }
 }

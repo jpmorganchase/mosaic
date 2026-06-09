@@ -10,7 +10,14 @@ export const BlockQuote: React.FC<React.PropsWithChildren<BlockQuoteProps>> = ({
 }) => {
   const styledChildren = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
-      return React.cloneElement(child, { ...child.props, className: styles.content });
+      // React 19 narrowed `ReactElement` default props from `any` to
+      // `unknown`, so spread the existing props through an explicit
+      // shape before merging our additions.
+      const typedChild = child as React.ReactElement<Record<string, unknown>>;
+      return React.cloneElement(typedChild, {
+        ...typedChild.props,
+        className: styles.content
+      });
     }
     return child;
   });

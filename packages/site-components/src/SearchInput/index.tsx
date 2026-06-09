@@ -58,6 +58,7 @@ export function SearchInput() {
   return (
     <div className={styles.root} ref={wrapperRef}>
       <Input
+        bordered
         aria-label="Search"
         startAdornment={<Icon name="search" />}
         endAdornment={

@@ -75,8 +75,6 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     return () => {
       document.removeEventListener('scroll', throttledHandleScroll);
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useIsomorphicLayoutEffect(() => {
@@ -90,7 +88,6 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     if (headingPositions.current.length !== items.length) {
       matchHeadingsToDOM();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   const captionId = useId();

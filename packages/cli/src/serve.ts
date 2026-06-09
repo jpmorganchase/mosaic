@@ -7,6 +7,7 @@ import fastifyMosaic from './plugins/mosaicFastifyPlugin.js';
 import fastifyMosaicAdmin from './plugins/mosaicAdminPlugin.js';
 import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
 import { createMosaicInstance } from './plugins/createMosaicInstance.js';
+import { startRevalidateNotifier } from './revalidateNotifier.js';
 
 const MOSAIC_ADMIN_PREFIX = '_mosaic_';
 
@@ -17,6 +18,13 @@ export const server = Fastify({
 
 export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
   const mosaic = await createMosaicInstance(config);
+
+  // Notify a downstream site to flush its tagged content cache whenever
+  // a source emits an update. No-op unless `MOSAIC_REVALIDATE_URL` and
+  // `MOSAIC_REVALIDATE_SECRET` are set in the CLI process env. See
+  // `revalidateNotifier.ts` for the contract.
+  startRevalidateNotifier(mosaic);
+
   await server.register(middie);
   await server.register(fastifyMosaic, { config, scope, mosaic });
   await server.register(fastifyMosaicWorkflows);

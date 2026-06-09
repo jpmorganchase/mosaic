@@ -17,11 +17,9 @@ export default async function pluginRunner(
       }
 
       if (typeof plugin[lifecycleName] !== 'function') {
-        // eslint-disable-next-line no-continue
         continue;
       }
 
-      // eslint-disable-next-line no-await-in-loop
       const result = await plugin[lifecycleName](
         lifecycleName === '$afterSource' ? transformedInput : input,
         ...args,

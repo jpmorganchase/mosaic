@@ -81,7 +81,7 @@ export const TileContent: FC<React.PropsWithChildren<TileContentProps>> = forwar
       className,
       classes = {},
       description,
-      disabled,
+      disabled: _disabled,
       image,
       imagePlacement = 'top',
       onImageError,

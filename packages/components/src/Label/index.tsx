@@ -20,7 +20,7 @@ export const Label: React.FC<LabelProps> = ({
   children,
   className,
   tooltip,
-  tooltipClass,
+  tooltipClass: _tooltipClass,
   TooltipProps = {},
   ...rest
 }) => (

@@ -1,16 +1,45 @@
+'use client';
+
+/**
+ * Client-side MDX evaluation scope.
+ *
+ * Restored from the Pages Router era (`createMDXScope` in
+ * `site-components`) so that MDX content authored against the legacy
+ * scope keeps rendering under the App Router pipeline.
+ *
+ * Why client-side: the App Router pipeline serialises MDX on the
+ * server (`serializeMdxForClient`) and ships the payload to the
+ * browser as JSON. The server `scope` is therefore JSON-only and
+ * cannot carry functions, recipes, or React hooks. Instead, this
+ * factory is invoked inside the `'use client'` MDX renderer and its
+ * output is merged into `<MDXClient scope={...} />` at render time —
+ * functions and hook references live entirely in the client bundle.
+ *
+ * Surface (kept stable for content compatibility — DO NOT rename
+ * without grepping consumer doc corpora first; e.g. salt-ds-internal-docs
+ * and onyx-docs use `helpers.flow / sortViewByDate / limit` heavily):
+ *
+ *   - `helpers.flow`            — lodash `flow`, compose left→right
+ *   - `helpers.filter`          — `({ filter }) => view => view.filter(...)`
+ *   - `helpers.limit`           — `({ max }) => view => view.slice(0, max)`
+ *   - `helpers.sortViewByDate`  — `({ dateKey }) => view => view.sort(...)`
+ *   - `recipes`                 — re-export from `@jpmorganchase/mosaic-theme`
+ *   - `hooks.useColorMode`      — re-export from `@jpmorganchase/mosaic-store`
+ *   - `meta`                    — frontmatter alias (also auto-injected
+ *                                 by `serializeMdxForClient` into the
+ *                                 server scope; this is the same value)
+ */
 import { recipes } from '@jpmorganchase/mosaic-theme';
 import { useColorMode } from '@jpmorganchase/mosaic-store';
 import { flow as flowImpl } from 'lodash-es';
 
-type SortViewByDate = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;
-type SortValueCallback = (item: { [key: string]: string }) => string;
-type SortViewByDateFactory = ({
-  dateKey
-}: {
-  dateKey: string | SortValueCallback;
-}) => SortViewByDate;
+type ViewItem = Record<string, string>;
+type ViewTransform = (view: ViewItem[]) => ViewItem[];
 
-/** Sort the view in date order, newest first */
+type SortValueCallback = (item: ViewItem) => string;
+type SortViewByDateFactory = (args: { dateKey: string | SortValueCallback }) => ViewTransform;
+
+/** Sort the view in date order, newest first. */
 const sortViewByDate: SortViewByDateFactory =
   ({ dateKey }) =>
   view => {
@@ -26,30 +55,45 @@ const sortViewByDate: SortViewByDateFactory =
     return sortedView;
   };
 
-type Filter = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;
-type FilterCallback = (item: { [key: string]: string }) => void;
-type FilterFactory = ({ filter }: { filter: FilterCallback }) => Filter;
+type FilterCallback = (item: ViewItem) => boolean;
+type FilterFactory = (args: { filter: FilterCallback }) => ViewTransform;
 
-/** Filter the view via filter callback */
+/** Filter the view via filter callback. */
 const filter: FilterFactory =
   ({ filter: filterProp }) =>
-  view => {
-    const filteredView = view.filter(filterProp);
-    return filteredView;
-  };
+  view =>
+    view.filter(filterProp);
 
-/** Limit the number of results */
-type Limit = (view: Array<{ [key: string]: string }>) => Array<{ [key: string]: string }>;
-type LimitFactory = ({ max }: { max: number }) => Limit;
+type LimitFactory = (args: { max: number }) => ViewTransform;
 
+/** Limit the number of results. */
 const limit: LimitFactory =
   ({ max }) =>
   view =>
     view.slice(0, Math.min(max, view.length));
 
-const flow = (...funcs) => flowImpl(...funcs);
+// Thin wrapper so callers don't accidentally couple to the lodash module
+// shape (lets us swap implementations later without a content breaking-change).
+// `any` mirrors lodash's own `flow` signature — composition is heterogeneous
+// across steps so a tighter generic would require per-arity overloads.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const flow = (...funcs: Array<(arg: any) => any>) => flowImpl(...funcs);
 
-export function createMDXScope(meta = {}) {
+export interface MDXScope {
+  helpers: {
+    flow: typeof flow;
+    filter: typeof filter;
+    limit: typeof limit;
+    sortViewByDate: typeof sortViewByDate;
+  };
+  recipes: typeof recipes;
+  hooks: {
+    useColorMode: typeof useColorMode;
+  };
+  meta: Record<string, unknown>;
+}
+
+export function createMDXScope(meta: Record<string, unknown> = {}): MDXScope {
   return {
     helpers: {
       flow,

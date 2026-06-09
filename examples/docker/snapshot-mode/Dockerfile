@@ -1,4 +1,4 @@
-FROM node:18-alpine AS  base
+FROM node:24-alpine AS  base
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 
@@ -40,7 +40,7 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=snapshot-apply --chown=nextjs:nodejs /app/snapshots ./snapshots
+COPY --from=snapshots --chown=nextjs:nodejs /snapshots ./snapshots
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 RUN chown nextjs:nodejs ./

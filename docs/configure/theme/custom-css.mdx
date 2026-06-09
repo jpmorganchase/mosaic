@@ -96,10 +96,15 @@ src/
 
 ## Import your custom CSS into your site
 
-To apply your custom styles to your Mosaic site, open your "\_app.tsx" file and add the following line to the bottom of your imports:
+To apply your custom styles to your Mosaic site, open your `src/app/layout.tsx`
+file and add the following line to the bottom of your imports:
 
 ```javascript
 import '../css/index.css';
 ```
+
+> **Note:** in the App Router, global CSS must be imported from the root
+> layout (`app/layout.tsx`). Importing global CSS from a client component
+> or any non-layout file is rejected by Next.js at build time.
 
 Congratulations! You have successfully applied your custom CSS styles to your site. This example demonstrated how to create text styles, but you can use the same approach to customize other aspects of your site as well.

@@ -14,8 +14,9 @@ export const OrderedList: React.FC<React.PropsWithChildren<OrderedListProps>> = 
     if (!React.isValidElement(child)) {
       return child;
     }
-    return React.cloneElement(child as React.ReactElement<ListItemProps>, {
-      className: classnames(child.props.className, orderedListItem)
+    const typedChild = child as React.ReactElement<ListItemProps & { className?: string }>;
+    return React.cloneElement(typedChild, {
+      className: classnames(typedChild.props.className, orderedListItem)
     });
   });
   return <ol className={classnames(className, orderedList)}>{formattedChildren}</ol>;

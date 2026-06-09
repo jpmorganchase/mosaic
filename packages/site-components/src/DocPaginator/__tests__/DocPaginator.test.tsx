@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import React, { PropsWithChildren } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
@@ -8,6 +8,12 @@ import NextLink from 'next/link';
 import { LinkProvider } from '@jpmorganchase/mosaic-components';
 
 import { DocPaginator } from '../DocPaginator';
+
+// `DocPaginator` uses `usePathname()` from `next/navigation`. Provide
+// a stub so the component can render under the test environment.
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/test'
+}));
 
 describe('GIVEN a DocPaginator', () => {
   const wrapper: PropsWithChildren<LinkProvider> = ({ children }) => (

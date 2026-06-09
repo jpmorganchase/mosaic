@@ -1,9 +1,11 @@
 import React from 'react';
-import classnames from 'clsx';
-import { th } from '@jpmorganchase/mosaic-theme';
+import { TH as SaltTH, type THProps as SaltTHProps } from '@salt-ds/core';
 
-export interface ThProps extends React.HTMLProps<HTMLTableCellElement> {}
+/**
+ * Markdown `<th>` renderer. Delegates to Salt's `<TH>` so header
+ * cells pick up the Salt header typography + divider treatment
+ * from the surrounding `<THead>` / `<Table>` context.
+ */
+export type ThProps = SaltTHProps;
 
-export const Th: React.FC<React.PropsWithChildren<ThProps>> = ({ className, ...rest }) => (
-  <th className={classnames(className, th())} {...rest} />
-);
+export const Th: React.FC<React.PropsWithChildren<ThProps>> = props => <SaltTH {...props} />;

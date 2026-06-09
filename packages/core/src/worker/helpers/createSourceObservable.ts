@@ -45,6 +45,18 @@ export default async function createSourceObservable(
   }
   const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
 
+  // Snapshot the source's static capability declaration once at
+  // load time. Only stamp pages when the source actually declared
+  // at least one capability — sources that opted into nothing should
+  // not pay the cost of an extra (and downstream-meaningful) field
+  // on every emitted page, and downstream plugins use truthiness of
+  // `page.sourceCapabilities` as their "is there anything to do?"
+  // signal.
+  const declaredCapabilities = api.capabilities;
+  const hasCapabilities =
+    declaredCapabilities != null && Object.keys(declaredCapabilities).length > 0;
+  const sourceCapabilities = hasCapabilities ? declaredCapabilities : undefined;
+
   // TODO: Move this formatter
   return source$.pipe(
     map((pages: Page[]) =>
@@ -68,12 +80,16 @@ NOTE: Only ${pageExtensions.join(
           return pagesResult;
         }
 
-        return pagesResult.concat({
+        const stamped: Page = {
           ...page,
           title: page.title || page.fullPath,
           fullPath: page.fullPath.toLowerCase(),
           route: page.route ? page.route.toLowerCase() : page.fullPath.toLowerCase()
-        });
+        };
+        if (sourceCapabilities) {
+          stamped.sourceCapabilities = sourceCapabilities;
+        }
+        return pagesResult.concat(stamped);
       }, [])
     ),
     exponentialBackOffRetryStrategy({ ...schedule, name }),

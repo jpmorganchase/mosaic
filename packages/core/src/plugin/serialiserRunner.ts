@@ -23,10 +23,10 @@ export default async function serialiserRunner(
     try {
       if (!serialiser.filter.test(String(fullPath))) {
         // Serialiser failed the path filter test
-        // eslint-disable-next-line no-continue
+
         continue;
       }
-      // eslint-disable-next-line no-await-in-loop
+
       const result = await serialiser[serialiserMethod](fullPath, ...args, serialiser.options);
       return result;
     } catch (e) {

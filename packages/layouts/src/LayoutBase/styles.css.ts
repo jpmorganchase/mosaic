@@ -1,4 +1,4 @@
-import { style, globalStyle } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import {
   backgroundColor,
@@ -9,10 +9,6 @@ import {
   responsiveConditions,
   shadow
 } from '@jpmorganchase/mosaic-theme';
-
-globalStyle('#__next', {
-  height: '100%'
-});
 
 const headerGridProperties = defineProperties({
   conditions: responsiveConditions,
@@ -25,6 +21,8 @@ const headerGridProperties = defineProperties({
 
 const headerGridSprinkles = createSprinkles(headerGridProperties);
 
+// Loading UI lives in route-segment `loading.tsx` files in App Router
+// consumers; no overlay primitives are emitted here.
 export default {
   root: style([
     {
@@ -68,29 +66,5 @@ export default {
         'auto'
       ]
     })
-  ]),
-
-  overlayRoot: style([
-    {
-      zIndex: 3,
-      top: 0,
-      bottom: 0,
-      position: 'fixed',
-      display: 'flex',
-      left: 0,
-      right: 0,
-      justifyContent: 'center',
-      alignItems: 'center'
-    }
-  ]),
-
-  overlayInner: style([
-    backgroundColor({ variant: 'regular' }),
-    {
-      opacity: 0.95,
-      position: 'absolute',
-      width: '100%',
-      height: '100%'
-    }
   ])
 };

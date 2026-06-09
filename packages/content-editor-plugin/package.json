@@ -31,41 +31,47 @@
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
-    "dev": "node ../../scripts/bundle.mjs watch"
+    "lint": "eslint .",
+    "dev": "node ../../scripts/bundle.mjs watch",
+    "extensions:smoke": "node --experimental-strip-types --no-warnings scripts/extensions-smoke.ts"
   },
   "devDependencies": {
+    "concurrently": "^7.1.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.6",
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-icons": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
-    "@lexical/code": "^0.17.1",
-    "@lexical/link": "^0.17.1",
-    "@lexical/list": "^0.17.1",
-    "@lexical/markdown": "^0.17.1",
-    "@lexical/react": "^0.17.1",
-    "@lexical/rich-text": "^0.17.1",
-    "@lexical/selection": "^0.17.1",
-    "@lexical/table": "^0.17.1",
-    "@lexical/utils": "^0.17.1",
-    "@salt-ds/core": "^1.56.0",
-    "@salt-ds/icons": "^1.17.1",
-    "@salt-ds/theme": "^1.39.0",
+    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@lexical/code": "^0.45.0",
+    "@lexical/extension": "^0.45.0",
+    "@lexical/link": "^0.45.0",
+    "@lexical/list": "^0.45.0",
+    "@lexical/markdown": "^0.45.0",
+    "@lexical/react": "^0.45.0",
+    "@lexical/rich-text": "^0.45.0",
+    "@lexical/selection": "^0.45.0",
+    "@lexical/table": "^0.45.0",
+    "@lexical/utils": "^0.45.0",
+    "@salt-ds/core": "^1.63.0",
+    "@salt-ds/theme": "^1.43.0",
     "@vanilla-extract/css": "^1.6.0",
+    "@vanilla-extract/sprinkles": "^1.5.1",
     "clsx": "^2.0.0",
+    "diff": "^9.0.0",
     "gray-matter": "^4.0.3",
-    "lexical": "^0.17.1",
+    "lexical": "^0.45.0",
     "lodash-es": "^4.17.23",
-    "md5": "*",
     "react-split": "^2.0.14",
-    "yup": "^0.32.9",
-    "zustand": "^4.1.1"
+    "yup": "^0.32.9"
   },
   "peerDependencies": {
-    "@types/react": "^18.3.12",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@types/react": "^18.3.12 || ^19.0.0",
+    "next": "^15.0.0 || ^16.0.0",
+    "next-mdx-remote-client": "^1.0.0",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0"
   }
 }

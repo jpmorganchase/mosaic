@@ -19,7 +19,11 @@ export const ListItem: React.FC<React.PropsWithChildren<ListItemProps>> = ({
     if (!React.isValidElement(child)) {
       return child;
     }
-    if (child.props.mdxType === 'ul') {
+    // React 19 narrowed `ReactElement` default props from `any` to
+    // `unknown`; cast through `{ mdxType?: string }` for the legacy
+    // MDX-v1 sentinel.
+    const childProps = child.props as { mdxType?: string };
+    if (childProps.mdxType === 'ul') {
       return React.cloneElement(child as React.ReactElement<UnOrderedListProps>, {
         size,
         variant

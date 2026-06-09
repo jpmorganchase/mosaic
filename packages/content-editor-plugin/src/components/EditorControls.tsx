@@ -1,9 +1,13 @@
+'use client';
+
+import { useState } from 'react';
 import { Icon } from '@jpmorganchase/mosaic-components';
 import { BaseToolbar as Toolbar } from './BaseToolbar/BaseToolbar';
 import { BaseTooltray as Tooltray } from './BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './Toolbar/ToolbarButton';
+import { NewPageDialog } from './NewPageDialog';
 
-import { default as useContentEditor } from '../store';
+import { useEditMode } from '../useEditMode';
 import styles from './EditorControls.css';
 
 export interface EditorControlsProps {
@@ -11,26 +15,42 @@ export interface EditorControlsProps {
 }
 
 export const EditorControls = ({ enabled = false }: EditorControlsProps) => {
-  const { pageState, startEditing, stopEditing } = useContentEditor();
-  const isEditing = pageState === 'EDIT';
+  const { isEditing, startEditing, stopEditing } = useEditMode();
+  const handleEditClick = () => (isEditing ? stopEditing() : startEditing());
 
-  const handleClick = () => (!isEditing ? startEditing() : stopEditing());
+  // Dialog open-state is local — the only launcher is the
+  // sibling toolbar button below. Lifting to context would
+  // only be worth it if another component also needed to open
+  // the dialog.
+  const [isNewPageOpen, setIsNewPageOpen] = useState(false);
 
-  const enabledLabel = isEditing ? 'Cancel Editing' : 'Edit Page';
-  const overflowLabel = !enabled ? 'Login Required to Edit' : enabledLabel;
+  const editLabel = isEditing ? 'Cancel Editing' : 'Edit Page';
+  const editOverflowLabel = !enabled ? 'Login Required to Edit' : editLabel;
+  const newPageOverflowLabel = !enabled ? 'Login Required to Create Page' : 'New Page';
 
   return (
-    <Toolbar aria-label="editor-controls" className={styles.root}>
-      <Tooltray aria-label="page editor controls tooltray">
-        <ToolbarButton
-          aria-label={isEditing ? 'cancel editing' : 'start editing'}
-          onClick={handleClick}
-          disabled={!enabled}
-          label={overflowLabel}
-        >
-          <Icon name={isEditing ? 'delete' : 'edit'} />
-        </ToolbarButton>
-      </Tooltray>
-    </Toolbar>
+    <>
+      <Toolbar aria-label="editor-controls" className={styles.root}>
+        <Tooltray aria-label="page editor controls tooltray">
+          <ToolbarButton
+            aria-label="create a new page"
+            onClick={() => setIsNewPageOpen(true)}
+            disabled={!enabled}
+            label={newPageOverflowLabel}
+          >
+            <Icon name="addDocument" />
+          </ToolbarButton>
+          <ToolbarButton
+            aria-label={isEditing ? 'cancel editing' : 'start editing'}
+            onClick={handleEditClick}
+            disabled={!enabled}
+            label={editOverflowLabel}
+          >
+            <Icon name={isEditing ? 'delete' : 'edit'} />
+          </ToolbarButton>
+        </Tooltray>
+      </Toolbar>
+      <NewPageDialog open={isNewPageOpen} onOpenChange={setIsNewPageOpen} />
+    </>
   );
 };

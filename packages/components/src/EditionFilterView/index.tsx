@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import classnames from 'clsx';
 
 import { FilterResultCount, FilterView } from '../FilterView';

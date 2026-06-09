@@ -31,12 +31,12 @@
     "build:bundle": "node ../../scripts/bundle.mjs",
     "build:types": "tsc",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "del-cli": "^4.0.1",
-    "esbuild-node-externals": "^1.18.0",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
@@ -45,12 +45,11 @@
     "@jpmorganchase/mosaic-site-components": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
-    "@salt-ds/core": "^1.56.0",
+    "@salt-ds/core": "^1.63.0",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/sprinkles": "^1.3.0",
     "clsx": "^2.0.0",
-    "lodash-es": "^4.17.23",
-    "next": "^16.1.6",
+    "next": "^16.2.6",
     "react-transition-group": "^4.4.5"
   },
   "peerDependencies": {

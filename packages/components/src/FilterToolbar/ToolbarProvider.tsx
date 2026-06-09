@@ -52,8 +52,9 @@ function toolbarReducer(state: State, action: Action): State {
 }
 
 const ToolbarProvider = ({ children, initialState = {}, onStateChange }: ToolbarProviderProps) => {
-  const previousStateRef = React.useRef<State>();
-  const nextStateRef = React.useRef<State>();
+  // React 19's `useRef` requires an explicit initial value.
+  const previousStateRef = React.useRef<State | undefined>(undefined);
+  const nextStateRef = React.useRef<State | undefined>(undefined);
   const [state, dispatch] = React.useReducer(toolbarReducer, initialState);
   React.useEffect(() => {
     if (

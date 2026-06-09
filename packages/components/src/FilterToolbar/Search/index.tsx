@@ -31,7 +31,8 @@ export function FilterSearch({ className, source = [], ...rest }: FilterSearchPr
 
   return (
     <ComboBox
-      startAdornment={<Icon name="filter" />}
+      bordered
+      startAdornment={<Icon name="filter" aria-hidden />}
       className={classnames(className, styles.root)}
       onSelectionChange={handleSelect}
       value={value}

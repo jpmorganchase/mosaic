@@ -1,9 +1,35 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType, SourceCapabilities } from '@jpmorganchase/mosaic-types';
 import { flatten } from 'lodash-es';
 import deepmerge from 'deepmerge';
 import { createPageTest } from './utils/createPageTest.js';
+
+/**
+ * `deepmerge`'s default `arrayMerge` *concatenates* both sides. The
+ * `$afterSource` merge below folds every ancestor's `sharedConfig`
+ * into a descendant's, so the default would duplicate (and
+ * re-duplicate) any array authored at an upper level once per
+ * intermediate ancestor — an array authored at the root of a
+ * deeply-nested namespace would end up repeated O(2^N) times in the
+ * leaf's `sharedConfig`. On large namespaces with arrays in authored
+ * `sharedConfig` blocks that's the difference between "a few KB
+ * merged per page" and "exhausts the worker's heap before the next
+ * pipeline stage runs".
+ *
+ * Plugin semantics have always been "child overrides parent" (see the
+ * `shared2: 'overwritten 2'` fixture in the unit tests), so picking
+ * `source` here is the behaviour the rest of the codebase already
+ * expects, and bounds the merged config size to
+ * `O(authored config bytes)` rather than
+ * `O(authored config bytes × ancestor depth)`.
+ */
+const sharedConfigMergeOptions: deepmerge.Options = {
+  // `deepmerge.Options.arrayMerge` is typed with `any[]` upstream, so
+  // we have to thread `any[]` through the parameter list to satisfy
+  // the interface — narrower types fail to assign.
+  arrayMerge: (_target: any[], source: any[]) => source // eslint-disable-line @typescript-eslint/no-explicit-any
+};
 
 function createFileGlob(url, pageExtensions) {
   if (pageExtensions.length === 1) {
@@ -25,7 +51,7 @@ function isWithin(outer, inner) {
 }
 
 export interface SharedConfigPluginPage extends Page {
-  sharedConfig?: string;
+  sharedConfig?: Record<string, unknown> & { sourceCapabilities?: SourceCapabilities };
   frameOverrides?: any;
 }
 
@@ -40,13 +66,42 @@ export interface SharedConfigPluginOptions {
 const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginOptions> = {
   async $afterSource(pages, { ignorePages, pageExtensions, config, namespace }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
-    let finalSharedConfig;
 
     const indexPages = pages.filter(
       page =>
         path.posix.basename(page.fullPath, path.posix.extname(page.fullPath)) === 'index' &&
         isNonHiddenPage(page.fullPath)
     );
+
+    // Capability flags are identical across every page emitted by a
+    // single source instance (core stamps them at source-load time);
+    // pick the first non-empty one we see and treat it as the
+    // namespace's capability snapshot. An empty object is treated as
+    // "no capabilities declared" — sources that opted into nothing
+    // skip this seeding entirely so they keep going through the
+    // `applyNamespaceSharedConfig` no-config branch below.
+    let sourceCapabilities: SourceCapabilities | undefined;
+    for (const page of pages) {
+      if (page.sourceCapabilities && Object.keys(page.sourceCapabilities).length > 0) {
+        sourceCapabilities = page.sourceCapabilities;
+        break;
+      }
+    }
+
+    // Ensure every index page carries a `sharedConfig` carrying at
+    // least the source's capability flags, even when the author
+    // didn't define one. Without this the per-route shared-config
+    // endpoint would have nowhere to surface capabilities for the
+    // editor UI to read.
+    if (sourceCapabilities) {
+      for (const page of indexPages) {
+        if (page.sharedConfig === undefined) {
+          page.sharedConfig = { sourceCapabilities };
+        } else if (!('sourceCapabilities' in page.sharedConfig)) {
+          page.sharedConfig = { ...page.sharedConfig, sourceCapabilities };
+        }
+      }
+    }
 
     const indexPagesWithSharedConfig = indexPages.filter(page => page.sharedConfig !== undefined);
 
@@ -63,20 +118,48 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       return pages;
     }
 
-    for (const page of indexPagesWithSharedConfig) {
-      if (finalSharedConfig === undefined) {
-        // first shared config we have found so seed the finalSharedConfig
-        finalSharedConfig = page.sharedConfig;
-      } else {
-        for (let i = 1; i < indexPagesWithSharedConfig.length; i++) {
-          if (isWithin(indexPagesWithSharedConfig[i].fullPath, page.fullPath)) {
-            // found another shared config so merge and apply to the page
-            finalSharedConfig = deepmerge(finalSharedConfig, page.sharedConfig);
-            page.sharedConfig = finalSharedConfig;
-            page.frameOverrides = { $ref: '#/sharedConfig' };
-          }
+    // Walk each index page's ancestor chain (shallowest → deepest) and
+    // fold ancestor sharedConfigs into the page's own. Each page gets a
+    // freshly-merged object; the accumulator is *not* shared across
+    // pages. Sharing it (or writing it back to `page.sharedConfig`
+    // mid-iteration) would make the next page's "own" config alias the
+    // accumulator and get re-deepmerged with itself on every ancestor
+    // hit, producing the O(2^N) blowup described in the
+    // `sharedConfigMergeOptions` comment.
+    //
+    // Sort ascending by path-segment depth so ancestors always appear
+    // before descendants in the list, then merge into a per-page object
+    // in a single linear pass per page. Total cost is O(N²) `isWithin`
+    // checks (cheap string ops) and O(N × ancestor-depth) deepmerges of
+    // bounded-size objects — no exponential growth, no shared mutable
+    // state across pages.
+    const byDepth = [...indexPagesWithSharedConfig].sort(
+      (a, b) => a.fullPath.split('/').length - b.fullPath.split('/').length
+    );
+    for (const page of byDepth) {
+      let merged: Record<string, unknown> | undefined;
+      for (const ancestor of byDepth) {
+        if (ancestor === page) break; // ancestors only appear before us in depth order
+        // `isWithin(outer, inner)` asks "is `inner` inside `outer`?".
+        // We want "is `page` inside `ancestor`?", so `ancestor` is the
+        // outer arg and `page` is the inner.
+        if (isWithin(ancestor.fullPath, page.fullPath) && ancestor.sharedConfig) {
+          merged = merged
+            ? deepmerge(merged, ancestor.sharedConfig, sharedConfigMergeOptions)
+            : { ...ancestor.sharedConfig };
         }
       }
+      if (merged && page.sharedConfig) {
+        // Child overrides parent. We pass a fresh object as the seed
+        // (rather than mutating `merged`) to keep `page.sharedConfig`
+        // unaliased from any other page's merged result.
+        page.sharedConfig = deepmerge(merged, page.sharedConfig, sharedConfigMergeOptions);
+        page.frameOverrides = { $ref: '#/sharedConfig' };
+      }
+      // If `merged` is undefined the page has no ancestors with a
+      // sharedConfig — leave its authored sharedConfig untouched
+      // (matches the "shared config is untouched when there is no
+      // parent config" assertion in the unit tests).
     }
     return pages;
   },

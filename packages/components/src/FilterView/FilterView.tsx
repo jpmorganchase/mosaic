@@ -1,4 +1,4 @@
-import React, { cloneElement, useMemo, useState } from 'react';
+import React, { cloneElement, useMemo, useState, type JSX } from 'react';
 
 import { FilterResultCount } from './ResultCount';
 import { FilterNoResults, DefaultNoResults } from './NoResults';

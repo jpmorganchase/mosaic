@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import classnames from 'clsx';
 import {
   FORMAT_TEXT_COMMAND,
   SELECTION_CHANGE_COMMAND,
@@ -17,8 +16,8 @@ import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './ToolbarButton';
-import styles from './TextFormatTooltray.css';
 import { InsertBlockDropdown } from './InsertBlockDropdown';
+import { SHORTCUTS } from '../../utils/shortcuts';
 
 export function TextFormatTooltray({ floating = false }) {
   const [editor] = useLexicalComposerContext();
@@ -95,17 +94,24 @@ export function TextFormatTooltray({ floating = false }) {
         </Tooltray>
       )}
       <Tooltray>
-        <ToolbarButton active={isBold} onClick={() => handleFormat('bold')} label="Bold">
-          <span className={classnames(styles.icon, styles.bold)}>B</span>
+        <ToolbarButton
+          active={isBold}
+          onClick={() => handleFormat('bold')}
+          label="Bold"
+          shortcut={SHORTCUTS.bold}
+        >
+          <Icon name="textBold" aria-hidden />
         </ToolbarButton>
-        <ToolbarButton active={isItalic} onClick={() => handleFormat('italic')} label="Italic">
-          <span className={classnames(styles.icon, styles.italic)}>I</span>
+        <ToolbarButton
+          active={isItalic}
+          onClick={() => handleFormat('italic')}
+          label="Italic"
+          shortcut={SHORTCUTS.italic}
+        >
+          <Icon name="textItalics" aria-hidden />
         </ToolbarButton>
         <ToolbarButton active={isCode} onClick={() => handleFormat('code')} label="Inline Code">
-          <span className={classnames(styles.code)}>
-            <Icon name="chevronLeft" />
-            <Icon name="chevronRight" />
-          </span>
+          <Icon name="api" aria-hidden />
         </ToolbarButton>
       </Tooltray>
     </>

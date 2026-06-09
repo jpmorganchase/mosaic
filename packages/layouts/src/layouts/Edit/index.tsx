@@ -1,35 +1,21 @@
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useContentEditor } from '@jpmorganchase/mosaic-content-editor-plugin';
+'use client';
+
+import React from 'react';
 import { AppHeader } from '@jpmorganchase/mosaic-site-components';
 
 import { LayoutBase } from '../../LayoutBase';
 import type { LayoutProps } from '../../types';
 import styles from './styles.css';
 
-export const EditLayout: React.FC<LayoutProps> = ({ children }) => {
-  const router = useRouter();
-  const { pageState, stopEditing } = useContentEditor();
-
-  useEffect(() => {
-    const handleRouteChange = () => {
-      if (pageState === 'EDIT') {
-        stopEditing();
-      }
-    };
-
-    router.events.on('routeChangeStart', handleRouteChange);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-    };
-  }, [pageState, router.events, stopEditing]);
-
-  return (
-    <LayoutBase className={styles.base} Header={<AppHeader />}>
-      <div id="edit-layout" className={styles.root}>
-        {children}
-      </div>
-    </LayoutBase>
-  );
-};
+/**
+ * Layout shown when `?edit=1` is on the URL. `LayoutProvider` swaps
+ * this layout in via `useEditMode`. Navigating away drops the
+ * `?edit=1` query naturally, so no cleanup effect is needed here.
+ */
+export const EditLayout: React.FC<LayoutProps> = ({ children }) => (
+  <LayoutBase className={styles.base} Header={<AppHeader />}>
+    <div id="edit-layout" className={styles.root}>
+      {children}
+    </div>
+  </LayoutBase>
+);

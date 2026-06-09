@@ -3,13 +3,13 @@ import ReactMarkdown, { Components } from 'react-markdown';
 
 import { getMarkdownElements } from './Markdown/markdownElements';
 
+// Renderers we provide by default + accept overrides for. Aligned
+// with `react-markdown` v9's `Components` map (no `listItem` /
+// `emphasis` aliases — those map to the standard `li` / `em` slots).
 type SupportedComponents = Pick<
   Components,
   'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'em' | 'strong' | 'ul' | 'ol' | 'li'
-> & {
-  listItem: SupportedComponents['li'];
-  emphasis: SupportedComponents['em'];
-};
+>;
 
 type FormattedContentProps = {
   className?: string;
@@ -48,7 +48,7 @@ const renderers: SupportedComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   p: ({ node, children, ...props }) => <P {...props}>{children}</P>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  emphasis: ({ node, children, ...props }) => <Emphasis {...props}>{children}</Emphasis>,
+  em: ({ node, children, ...props }) => <Emphasis {...props}>{children}</Emphasis>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   strong: ({ node, children, ...props }) => <Strong {...props}>{children}</Strong>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -56,7 +56,7 @@ const renderers: SupportedComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ol: ({ node, children, ...props }) => <Ol {...props}>{children}</Ol>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  listItem: ({ node, children, ...props }) => <ListItem {...props}>{children}</ListItem>
+  li: ({ node, children, ...props }) => <ListItem {...props}>{children}</ListItem>
 };
 
 export const FormattedContent: React.FC<React.PropsWithChildren<FormattedContentProps>> = ({

@@ -10,6 +10,14 @@ const theme: EditorThemeClasses = {
   tableCell: styles.tableCell,
   tableCellHeader: styles.tableHeader,
   tableRow: styles.tableRow,
+  // Multi-cell drag selection styling. `tableSelection` disables
+  // native text selection on the table (without which Lexical's
+  // TableObserver mousedown handler can't take over and drag-to-
+  // select silently no-ops); `tableCellSelected` paints each
+  // selected cell with a translucent overlay so the user can see
+  // what they've highlighted.
+  tableSelection: styles.tableSelection,
+  tableCellSelected: styles.tableCellSelected,
   text: {
     bold: styles.bold,
     italic: styles.italic,

@@ -5,6 +5,7 @@ node_modules
 **/build/
 **/.next/
 next-env.d.ts
+**/out/
 
 # Dependencies
 **/node_modules
@@ -28,6 +29,11 @@ tsconfig.tsbuildinfo
 
 # Deployment
 packages/site/public/images
+# PublicAssetsPlugin output (regenerated on every Mosaic build, never edit
+# by hand). sitemap.xml is handled by Next.js's App Router app/sitemap.ts
+# now, so it's never written to public/ — search-data.json is the only one
+# that still lands here.
+packages/site/public/search-data.json
 
 # Test Results
 coverage
@@ -53,4 +59,9 @@ yarn-error.log*
 # Turbo Repo
 .turbo
 
+# Playwright CLI session logs (local-only browser console capture from the
+# playwright-cli skill — never useful in version control).
+.playwright-cli/
 
+# Mosaic static-export route-handler backups (scripts/static-export-route-stubs.mjs)
+packages/site/src/app/api/**/route.ts.bak

@@ -1,0 +1,102 @@
+---
+title: Static export
+layout: DetailTechnical
+sidebar:
+  priority: 5
+data:
+  mode: static-export
+  link: /mosaic/configure/modes/static-export
+---
+
+# {meta.title}
+
+When you run a Mosaic site in a snapshot mode (`snapshot-file` or
+`snapshot-s3`), all of its content is fixed at build time. That means you
+can pre-render every page to plain HTML and serve the result from any
+static host — no Node.js runtime required.
+
+The Mosaic site ships two build scripts that produce a fully-static `out/`
+directory:
+
+```bash
+# build against a local snapshot directory
+yarn build:static:file
+
+# build against an S3-hosted snapshot
+yarn build:static:s3
+```
+
+Both commands set `MOSAIC_OUTPUT=export` and the appropriate `MOSAIC_MODE`,
+then invoke `next build`. The output is a self-contained `out/` directory
+you can upload to S3, Vercel static, Cloudflare Pages, GitHub Pages, or any
+other static host.
+
+## What gets generated
+
+- Every page enumerated by the snapshot's `sitemap.xml` (typically every
+  doc in your sources).
+- `robots.txt` and `sitemap.xml`.
+- All static assets from `public/`.
+- Stubbed `app/api/*` route handlers that return HTTP 501. These exist
+  only because Next.js refuses to emit a static export when the route
+  files are present but cannot be statically pre-rendered; the stubs are
+  applied automatically before the build and reverted afterwards. **You
+  cannot use the auth, preview, or revalidate API routes in a static
+  export.**
+
+## What does **not** work in a static export
+
+| Feature                        | Reason                                                               | Workaround                                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `active` mode                  | Active mode reads content from a live Mosaic server on every request | Use `snapshot-file` or `snapshot-s3` for the export build                                                        |
+| `next.config.js` `redirects()` | Not supported by `output: 'export'`                                  | Configure redirects at the hosting layer (S3 redirects, CloudFront Functions, Vercel `vercel.json`, Nginx, etc.) |
+| `/api/auth/*` (Auth.js)        | Auth.js needs a server                                               | Auth-gated sites must run in the regular (non-export) build                                                      |
+| `/api/content/preview`         | Same — needs a server                                                | Editor preview requires the regular build                                                                        |
+| `/api/revalidate`              | Same — no ISR in a static export                                     | Re-run the build to publish content changes                                                                      |
+| `next/image` optimisation      | Disabled in export builds                                            | Images are served as-is (`images.unoptimized: true`)                                                             |
+
+If your site relies on any of these features, deploy the regular Node
+build instead. See the [publish guide](../../publish/index).
+
+## How the export build is configured
+
+The exact knobs live in `packages/site/next.config.js` and
+`packages/site/package.json`. Three things differ from the regular build:
+
+1. **A separate config branch.** `next.config.js` switches on
+   `process.env.MOSAIC_OUTPUT === 'export'` to emit `output: 'export'`,
+   set `images.unoptimized: true`, and drop `redirects()`. The config
+   throws loudly if you try to combine `MOSAIC_OUTPUT=export` with
+   `active` mode.
+2. **`generateStaticParams` enumerates routes from the sitemap.** The
+   catch-all page (`app/[...route]/page.tsx`) reads the snapshot's
+   `sitemap.xml` at build time and emits one static page per entry. In
+   non-snapshot builds it short-circuits to a fully-dynamic route.
+3. **API route stubs.** `scripts/static-export-route-stubs.mjs` backs up
+   each `route.ts` to `route.ts.bak` and writes a static stub (HTTP 501 +
+   literal `dynamic = 'force-static'`) before the build, and restores
+   the originals afterwards — even if the build fails. If a build is
+   interrupted, run `yarn build:static:revert` to restore manually.
+
+## Serving the output
+
+The `out/` directory is a flat tree of `.html`, `.js`, `.css`, image, and
+font files. Any of the following will serve it correctly:
+
+```bash
+# Local preview
+npx serve out
+
+# AWS S3 + CloudFront
+aws s3 sync out s3://your-bucket --delete
+
+# Nginx
+location / {
+  root /var/www/your-site/out;
+  try_files $uri $uri.html $uri/ =404;
+}
+```
+
+> **Note:** static hosts typically need `try_files $uri $uri.html` (or the
+> equivalent) so that `/mosaic/index` resolves to `mosaic/index.html`
+> without an explicit `.html` suffix in the URL.

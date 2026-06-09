@@ -1,6 +1,6 @@
 import { colorVars as color } from '../salt/color.css';
 
-export var RESERVED_HOT_PINK = '#FF69b4';
+export const RESERVED_HOT_PINK = '#FF69b4';
 
 const dpColors = {
   unknown: RESERVED_HOT_PINK,

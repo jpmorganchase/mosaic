@@ -1,9 +1,13 @@
 import React from 'react';
-import classnames from 'clsx';
-import { thead } from '@jpmorganchase/mosaic-theme';
+import { THead as SaltTHead, type THeadProps as SaltTHeadProps } from '@salt-ds/core';
 
-export interface TheadProps extends React.HTMLProps<HTMLTableSectionElement> {}
+/**
+ * Markdown `<thead>` renderer. Delegates to Salt's `<THead>` so
+ * the section picks up the Salt table context (divider variant,
+ * sticky behaviour) from the parent `<Table>`.
+ */
+export type TheadProps = SaltTHeadProps;
 
-export const Thead: React.FC<React.PropsWithChildren<TheadProps>> = ({ className, ...rest }) => (
-  <thead className={classnames(className, thead())} {...rest} />
+export const Thead: React.FC<React.PropsWithChildren<TheadProps>> = props => (
+  <SaltTHead {...props} />
 );

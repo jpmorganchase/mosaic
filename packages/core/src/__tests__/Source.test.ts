@@ -183,7 +183,12 @@ describe('GIVEN Source', () => {
         once() {}
       };
       (WorkerSubscription as MockedFunction<any>).mockImplementation(
-        () => workerSubscriptionSingletonMock
+        // Use a `function` (not an arrow) so the mock can be invoked with
+        // `new` — Vitest 4 routes constructor calls through `Reflect.construct`,
+        // which requires the implementation to be a constructable function.
+        function WorkerSubscriptionMock() {
+          return workerSubscriptionSingletonMock;
+        }
       );
       source = new Source({
         modulePath: 'plugin',

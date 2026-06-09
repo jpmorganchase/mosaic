@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { mergeRegister } from '@lexical/utils';
 import {
@@ -19,6 +19,11 @@ import styles from './FloatingToolbarPlugin.css';
 export function FloatingToolbarPlugin(): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const [open, setOpen] = useState<boolean>(false);
+  // Whether a browser drag (file drop, text drag-out, etc.) is in
+  // progress. While true the popup is hidden so it doesn't sit on
+  // top of the drag image or steal pointer events near the drop
+  // target. Restored on dragend / drop.
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
   const { context, refs, strategy, x, y, elements } = useFloatingUI({
     placement: 'bottom-start',
@@ -75,10 +80,72 @@ export function FloatingToolbarPlugin(): JSX.Element | null {
     [editor, updateToolbar]
   );
 
+  /**
+   * Mouse-drag suppression — taken from upstream's
+   * FloatingTextFormatToolbarPlugin. While the user is mid-drag
+   * (primary or middle button held) AND the cursor is NOT inside
+   * the popup, drop pointer events on the popup so the drag
+   * gesture isn't snagged by it. Restore on mouseup. Without this,
+   * dragging a selection that briefly passes under the popup
+   * causes the popup to capture the gesture and the selection
+   * collapses.
+   */
+  useEffect(() => {
+    const floatingEl = elements.floating;
+    if (!floatingEl) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (e.buttons !== 1 && e.buttons !== 3) return;
+      if (floatingEl.style.pointerEvents === 'none') return;
+      const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+      if (!floatingEl.contains(elementUnderMouse)) {
+        floatingEl.style.pointerEvents = 'none';
+      }
+    };
+    const onMouseUp = () => {
+      if (floatingEl.style.pointerEvents === 'none') {
+        floatingEl.style.pointerEvents = 'auto';
+      }
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [elements.floating]);
+
+  /**
+   * Browser drag suppression — hide the popup entirely while any
+   * drag is in progress on the page (file drop, image drag-in,
+   * outbound text drag). Otherwise the popup floats over the drag
+   * image and may re-render from `selectionchange` as the drag
+   * source's selection changes, both of which are jarring.
+   *
+   * Listen on `window` (not `document`) so we catch drags that
+   * originate outside the editor (e.g. files dropped from
+   * Finder). `drop` is included alongside `dragend` because some
+   * drag sources never fire `dragend` when the drop completes on
+   * a different target.
+   */
+  useEffect(() => {
+    const onDragStart = () => setIsDragging(true);
+    const onDragEnd = () => setIsDragging(false);
+    window.addEventListener('dragstart', onDragStart);
+    window.addEventListener('dragend', onDragEnd);
+    window.addEventListener('drop', onDragEnd);
+    return () => {
+      window.removeEventListener('dragstart', onDragStart);
+      window.removeEventListener('dragend', onDragEnd);
+      window.removeEventListener('drop', onDragEnd);
+    };
+  }, []);
+
   return (
     <Popper
       ref={refs.setFloating}
-      open={open}
+      open={open && !isDragging}
       {...getFloatingProps({})}
       top={y ?? 0}
       left={x ?? 0}

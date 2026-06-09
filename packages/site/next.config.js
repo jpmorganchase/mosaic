@@ -1,4 +1,35 @@
-module.exports = {
+/**
+ * Mosaic site Next config.
+ *
+ * Two build targets are supported:
+ *
+ *  1. Default — full Next.js App Router build. Supports active mode (SSR
+ *     per request) and snapshot modes (pre-rendered at build time via
+ *     `generateStaticParams` in `src/app/[...route]/page.tsx`).
+ *
+ *  2. `MOSAIC_OUTPUT=export` — fully static export. Only valid when
+ *     MOSAIC_MODE is `snapshot-file` or `snapshot-s3`. In this mode we:
+ *       - set `output: 'export'`
+ *       - drop `redirects()` (unsupported in export builds; express them
+ *         via the hosting layer, e.g. S3 / CloudFront rules, when
+ *         deploying a static export).
+ *       - API routes (`/api/auth/*`, `/api/content/preview`) are not
+ *         emitted; consumers needing them must use the default build
+ *         target.
+ */
+const isExport = process.env.MOSAIC_OUTPUT === 'export';
+const mosaicMode = process.env.MOSAIC_MODE || 'active';
+
+if (isExport && !mosaicMode.startsWith('snapshot')) {
+  // Fail loudly rather than producing a broken export.
+  throw new Error(
+    `[mosaic-site] MOSAIC_OUTPUT=export requires a snapshot MOSAIC_MODE (got "${mosaicMode}"). ` +
+      'Set MOSAIC_MODE to "snapshot-file" or "snapshot-s3" before building.'
+  );
+}
+
+/** @type {import('next').NextConfig} */
+const baseConfig = {
   outputFileTracingExcludes: {
     '*': ['**/.next/cache/webpack']
   },
@@ -15,16 +46,16 @@ module.exports = {
     '@jpmorganchase/mosaic-theme',
     '@jpmorganchase/mosaic-store'
   ],
-  rewrites() {
-    return {
-      // These rewrites are checked after headers/redirects
-      // and before all files including _next/public files which
-      // allows overriding page files
-      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
-      // These rewrites are checked after pages/public files
-      // are checked but before dynamic routes
-      afterFiles: []
-    };
+  // Transform named barrel imports (e.g.
+  // `import { Card, GridLayout } from '@salt-ds/core'`) into direct
+  // submodule imports at build time so the client bundle only pulls
+  // the components actually used. Salt-DS re-exports its full
+  // surface from its package root, so without this each barrel
+  // import drags the entire library into the chunk that touches it.
+  // `lodash-es` is already on Next's default-optimized list (Next 14+)
+  // so it doesn't need to be repeated here.
+  experimental: {
+    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
   },
   images: {
     domains: [
@@ -32,24 +63,38 @@ module.exports = {
       /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
     ]
   },
-  env: {},
+  env: {}
+};
+
+/** @type {import('next').NextConfig} */
+const dynamicOnlyConfig = {
+  rewrites() {
+    return {
+      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
+      afterFiles: []
+    };
+  },
   async redirects() {
     return [
-      {
-        source: '/',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/mosaic',
-        destination: '/mosaic/index',
-        permanent: true
-      },
-      {
-        source: '/local',
-        destination: '/local/index',
-        permanent: true
-      }
+      { source: '/', destination: '/mosaic/index', permanent: true },
+      { source: '/mosaic', destination: '/mosaic/index', permanent: true },
+      { source: '/local', destination: '/local/index', permanent: true }
     ];
   }
 };
+
+/** @type {import('next').NextConfig} */
+const exportConfig = {
+  output: 'export',
+  // `next build` with `output: 'export'` requires `images.unoptimized: true`
+  // because the default image optimizer needs a Node runtime.
+  images: {
+    ...baseConfig.images,
+    unoptimized: true
+  },
+  trailingSlash: false
+};
+
+module.exports = isExport
+  ? { ...baseConfig, ...exportConfig }
+  : { ...baseConfig, ...dynamicOnlyConfig };

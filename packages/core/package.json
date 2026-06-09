@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -fr dist",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "start": "node --trace-warnings ./dist/example",
     "start:debug": "node --inspect-brk ./dist/example"
   },
@@ -32,20 +32,19 @@
     "url": "git@github.com:jpmorganchase/mosaic.git",
     "directory": "packages/core"
   },
-  "devDependencies": {
-    "cors": "^2.8.5"
-  },
   "dependencies": {
     "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
     "fast-glob": "*",
-    "gray-matter": "^4.0.3",
     "lodash-es": "^4.17.23",
     "md5": "*",
     "memfs": "^4.0.0",
     "rxjs": "^7.5.5",
     "unionfs": "^4.4.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
   }
 }

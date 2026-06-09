@@ -33,7 +33,8 @@ export function FilterSortDropdown({
 
   return (
     <Dropdown
-      startAdornment={<Icon name="swap" />}
+      bordered
+      startAdornment={<Icon name="swap" aria-hidden />}
       className={className}
       valueToString={itemToString}
       value={labelButton ? labelButton(sort) : sort}

@@ -27,7 +27,7 @@ export function ViewStack<T>({ children, currentViewId }: ViewStackProps<T>) {
 
     if (!React.isValidElement<ViewProps<T>>(child)) {
       // TODO refactor opportunity
-      // eslint-disable-next-line no-continue
+
       continue;
     }
 

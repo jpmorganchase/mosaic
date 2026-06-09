@@ -14,7 +14,7 @@ export interface TabsProps {
   /** Additional class name for root class override */
   className?: string;
   /** Tab elements defined by each child */
-  children: React.ReactElement;
+  children: React.ReactElement<TabView> | React.ReactElement<TabView>[];
 }
 
 interface ExtendedTabsButtonItem extends TabsButtonItem {

@@ -37,7 +37,9 @@ function isUrl(assetPath: string): boolean {
   try {
     new URL(assetPath);
     return true;
-  } catch (_err) {}
+  } catch {
+    /* not a URL */
+  }
   return false;
 }
 

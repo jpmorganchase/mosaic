@@ -27,26 +27,28 @@
   "scripts": {
     "build": "concurrently \"yarn:build:*\"",
     "build:types": "tsc",
-    "build:components": "node  ../../scripts/bundle.mjs",
+    "build:components": "node ../../scripts/bundle.mjs",
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
-    "lint": "eslint --ignore-pattern \"**/__tests__/**\"",
+    "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch"
   },
   "devDependencies": {
-    "@types/styled-components": "^5.1.26",
-    "@vanilla-extract/esbuild-plugin": "^2.3.15",
-    "del-cli": "^4.0.1",
-    "msw": "^2.0.0",
+    "concurrently": "^7.1.0",
+    "del-cli": "^6.0.0",
+    "msw": "^2.14.6",
     "typescript": "^5.0.0"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
-    "@salt-ds/core": "^1.56.0",
-    "d3": "^7.7.0"
+    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
+    "@salt-ds/core": "^1.63.0",
+    "@vanilla-extract/css": "^1.17.1",
+    "d3": "^7.7.0",
+    "lodash-es": "^4.17.23"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",
-    "next-auth": "^4.22.1",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

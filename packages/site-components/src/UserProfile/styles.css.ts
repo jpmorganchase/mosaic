@@ -1,5 +1,4 @@
 import { style } from '@vanilla-extract/css';
-import { responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 export default {
   root: style({
@@ -9,14 +8,13 @@ export default {
     maxHeight: '100%',
     whiteSpace: 'nowrap',
     alignItems: 'center',
-    maxWidth: '240px'
+    maxWidth: '240px',
+    gap: 'var(--salt-spacing-50)'
   }),
   firstName: style([
     {
       textOverflow: 'ellipsis',
       overflow: 'hidden'
-    },
-    responsiveSprinkles({ marginRight: ['x1', 'x1', 'x1', 'x1'] })
-  ]),
-  avatar: style([responsiveSprinkles({ marginRight: ['x4', 'x4', 'x4', 'x4'] })])
+    }
+  ])
 };
