@@ -27,7 +27,7 @@
   "devDependencies": {
     "concurrently": "^7.1.0",
     "del-cli": "^6.0.0",
-    "esbuild": "0.25.0"
+    "esbuild": "0.28.1"
   },
   "dependencies": {
     "@jpmorganchase/mosaic-components": "0.1.0-beta.98",
