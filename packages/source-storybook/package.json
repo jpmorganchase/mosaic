@@ -37,7 +37,7 @@
     "deepmerge": "^4.2.2",
     "lodash-es": "^4.17.23",
     "rxjs": "^7.5.5",
-    "undici": "^8.3.0",
+    "undici": "^8.5.0",
     "zod": "^3.22.3"
   },
   "devDependencies": {
