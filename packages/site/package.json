@@ -49,7 +49,7 @@
     "clsx": "^2.0.0",
     "gray-matter": "^4.0.3",
     "next": "^16.2.11",
-    "next-auth": "^5.0.0-beta.30",
+    "next-auth": "^5.0.0-beta.32",
     "next-mdx-remote-client": "^1.0.3"
   },
   "devDependencies": {

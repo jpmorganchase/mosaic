@@ -25,9 +25,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@auth/core@npm:0.41.0":
-  version: 0.41.0
-  resolution: "@auth/core@npm:0.41.0"
+"@auth/core@npm:0.41.3":
+  version: 0.41.3
+  resolution: "@auth/core@npm:0.41.3"
   dependencies:
     "@panva/hkdf": "npm:^1.2.1"
     jose: "npm:^6.0.6"
@@ -37,7 +37,7 @@ __metadata:
   peerDependencies:
     "@simplewebauthn/browser": ^9.0.1
     "@simplewebauthn/server": ^9.0.2
-    nodemailer: ^6.8.0
+    nodemailer: ^7.0.7 || ^8.0.5
   peerDependenciesMeta:
     "@simplewebauthn/browser":
       optional: true
@@ -45,7 +45,7 @@ __metadata:
       optional: true
     nodemailer:
       optional: true
-  checksum: 10/5810ce4b0080da5c6a93ffe0e7120982cbb30a41bb4a28b4b0230fb2a66c071d35e320e73694a1024445b04936862a6b0af7542a3ee536ad1c0a2421e7e3cc8d
+  checksum: 10/7eacb91684fc291d4ee15fb60ae30aa0b85909cf8eea5e781296fd2d7492d5e4451d2360e784df394ae675a211c45e26f7e072103ed676b1284c3a0149763b4b
   languageName: node
   linkType: hard
 
@@ -2090,7 +2090,7 @@ __metadata:
     cross-env: "npm:^7.0.3"
     gray-matter: "npm:^4.0.3"
     next: "npm:^16.2.11"
-    next-auth: "npm:^5.0.0-beta.30"
+    next-auth: "npm:^5.0.0-beta.32"
     next-mdx-remote-client: "npm:^1.0.3"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
@@ -11334,16 +11334,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-auth@npm:^5.0.0-beta.30":
-  version: 5.0.0-beta.30
-  resolution: "next-auth@npm:5.0.0-beta.30"
+"next-auth@npm:^5.0.0-beta.32":
+  version: 5.0.0-beta.32
+  resolution: "next-auth@npm:5.0.0-beta.32"
   dependencies:
-    "@auth/core": "npm:0.41.0"
+    "@auth/core": "npm:0.41.3"
   peerDependencies:
     "@simplewebauthn/browser": ^9.0.1
     "@simplewebauthn/server": ^9.0.2
     next: ^14.0.0-0 || ^15.0.0 || ^16.0.0
-    nodemailer: ^7.0.7
+    nodemailer: ^7.0.7 || ^8.0.5
     react: ^18.2.0 || ^19.0.0
   peerDependenciesMeta:
     "@simplewebauthn/browser":
@@ -11352,7 +11352,7 @@ __metadata:
       optional: true
     nodemailer:
       optional: true
-  checksum: 10/0b6c5bfa26db6d95ddebc95dc7b8d27727cffeb190825261144ab31261085533cf97853dfc1e4ea4f77fea8fb1f391ae64f159f5e233db52e7ed9aac5cbbce7c
+  checksum: 10/a79095f8fe92fb2c98ee2859009dcedb4208df433a0f6ef05ecb9ee87406017bddc04ac380c33bf9ca56baa08c65d2992edcb99afc601ecbf57edba9321c6f1c
   languageName: node
   linkType: hard
 
