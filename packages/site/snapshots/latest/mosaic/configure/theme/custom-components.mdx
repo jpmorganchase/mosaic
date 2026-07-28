@@ -5,7 +5,7 @@ sidebar:
   label: Custom Components
   groupLabel: Custom Components
   priority: 2
-lastModified: 1731875490799
+lastModified: 1781012102899.033
 fullPath: /mosaic/configure/theme/custom-components.mdx
 route: /mosaic/configure/theme/custom-components
 breadcrumbs:
@@ -16,10 +16,10 @@ breadcrumbs:
     path: /mosaic/configure/theme/index
     id: /mosaic/configure/theme/index.mdx
 readingTime:
-  text: 2 min read
-  minutes: 1.86
-  time: 111600
-  words: 372
+  text: 3 min read
+  minutes: 2.2
+  time: 132000
+  words: 440
 tableOfContents:
   - depth: 2
     level: 0
@@ -66,6 +66,14 @@ sidebarData:
   - id: /mosaic/configure/modes
     kind: group
     childNodes:
+      - id: /mosaic/configure/modes/static-export
+        kind: data
+        fullPath: /mosaic/configure/modes/static-export.mdx
+        name: Static export
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/modes/static-export
       - id: /mosaic/configure/modes/index
         kind: data
         fullPath: /mosaic/configure/modes/index.mdx
@@ -547,28 +555,44 @@ Your final folder structure should look like this:
 
 ## Import Custom Card Component
 
-To use your custom `Card` component, import it into your site's `_app.tsx` file. Add the following line to your imports:
+Open your site's MDX component registry at
+`src/app/[...route]/MdxComponents.ts`. This file is the App Router
+equivalent of the old `pages/_app.tsx` component-merge step — the catch-all
+route imports the exported `mdxComponents` map and forwards it to `<Body components={...} />`.
+
+Add the following line to your imports:
 
 ```tsx
-import * as myComponents from '../components';
+import * as myComponents from '../../components';
 ```
 
-Replace this line:
+Replace this block:
 
 ```tsx
-const components = mosaicComponents;
+export const mdxComponents = {
+  ...mosaicComponents,
+  Salt: saltComponents,
+  Sitemap
+};
 ```
 
 with:
 
 ```tsx
-const components = {
+export const mdxComponents = {
   ...mosaicComponents,
-  ...myComponents
+  ...myComponents,
+  Salt: saltComponents,
+  Sitemap
 };
 ```
 
 This will add your custom components to the site, and any custom components in `myComponents` will override the corresponding ones in `mosaicComponents`. The spread operator (`...`) merges both `mosaicComponents` and `myComponents` objects, giving priority to `myComponents` when there is a naming conflict.
+
+> **Note:** `MdxComponents.ts` is marked `'use client'`. Salt DS and any
+> other component that uses hooks must be reachable from a client
+> boundary. The catch-all page is a Server Component that imports only the
+> `mdxComponents` value, which keeps the bundle correctly split.
 
 ## Use Your Custom Card Component
 

@@ -1,7 +1,7 @@
 ---
 title: Publish a site to Vercel
 layout: DetailTechnical
-lastModified: 1731875490846
+lastModified: 1781012102901.211
 fullPath: /mosaic/publish/publish-site-to-vercel.mdx
 route: /mosaic/publish/publish-site-to-vercel
 breadcrumbs:
@@ -12,15 +12,19 @@ sidebar:
   label: Publish a site to Vercel
   groupLabel: Publish a site to Vercel
 readingTime:
-  text: 1 min read
-  minutes: 0.99
-  time: 59400
-  words: 198
+  text: 2 min read
+  minutes: 1.965
+  time: 117900
+  words: 393
 tableOfContents:
   - depth: 2
     level: 0
     id: deployment
     text: Deployment
+  - depth: 2
+    level: 0
+    id: two-deployment-shapes
+    text: Two deployment shapes
   - depth: 3
     level: 1
     id: 1-update-config-file
@@ -31,12 +35,8 @@ tableOfContents:
     text: 2. Set Environment Variables
   - depth: 3
     level: 1
-    id: 3-run-build-and-deploy
-    text: 3. Run Build and Deploy
-  - depth: 2
-    level: 0
-    id: output-file-tracing
-    text: Output File Tracing
+    id: next_public_site_url
+    text: NEXT_PUBLIC_SITE_URL
 navigation:
   prev:
     title: Publish a site to AWS
@@ -75,40 +75,74 @@ To publish a Next.Js App to Vercel, refer to the [Vercel docs](https://nextjs.or
 
 As the [vercel platform](https://vercel.com/) hosts static content you will need to deploy a mosaic snapshot. There is no option to run mosaic in [active mode](../configure/modes/active).
 
+## Two deployment shapes
+
+Mosaic supports two production builds against the snapshot modes:
+
+1. **Default SSR build** — `yarn build` + `yarn start` (or Vercel's
+   default Next.js runtime). Pages are pre-rendered at build time via
+   `generateStaticParams` but the Node runtime stays in the deployment
+   so the `/api/*` route handlers (auth, content-editor preview, cache
+   revalidation webhook) keep working.
+2. **Fully static export** — `yarn build:static:file` (or
+   `build:static:s3`). Emits a CDN-shippable `out/` directory with no
+   Node runtime needed. The `/api/*` route handlers are replaced with
+   501 stubs at build time (see `scripts/static-export-route-stubs.mjs`
+   for the why), so this target is for read-only sites with no auth
+   and no in-browser content editor.
+
+The instructions below assume the default SSR build. For the static
+target, point your hosting at `out/` instead of letting Vercel build
+Next normally.
+
 ### 1. Update Config File
 
-Add the following to the mosaic config file used by your site:
+Add the following to the next config file used by your site:
 
 ```
- deployment: { mode: 'snapshot-file', platform: 'vercel' }
+  outputFileTracingIncludes: {
+    '/*': ['snapshots/**/*']
+  },
 ```
-
-### 2. Set Environment Variables
-
-Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
-
-| Variable Name       | Value             |
-| ------------------- | ----------------- |
-| MOSAIC\_MODE         | snapshot-file     |
-| MOSAIC\_SNAPSHOT\_DIR | snapshots/latest. |
-
-### 3. Run Build and Deploy
-
-The `build` command used by vercel must run `yarn build` followed by `yarn deploy`
-
-The `deploy` command is needed to workaround an [output file tracing](#output-file-tracing) problem.
-
-Example:
-
-```
-yarn build && yarn deploy
-```
-
-## Output File Tracing
 
 [Output File Tracing](https://nextjs.org/docs/advanced-features/output-file-tracing) is a feature of Next.js that uses static analysis
 to determine what files are needed to deploy a production version of an application.
 
 Due to the architecture of mosaic, snapshot files can be ignored by this process and therefore excluded from the build artifacts deployed by vercel.
 
-If you are deploying your site to the [vercel platform](https://vercel.com/) then the mosaic site has a `deploy` command that will update the nextjs output trace to include the snapshot files.
+### 2. Set Environment Variables
+
+Set 2 [environment variables](https://vercel.com/docs/concepts/deployments/environments#environment-variables) in the vercel dashboard.
+
+| Variable Name        | Value                                               |
+| -------------------- | --------------------------------------------------- |
+| MOSAIC\_MODE          | snapshot-file                                       |
+| MOSAIC\_SNAPSHOT\_DIR  | snapshots/latest                                    |
+| NEXT\_PUBLIC\_SITE\_URL | `https://your-site.example.com` (no trailing slash) |
+
+### `NEXT_PUBLIC_SITE_URL`
+
+This is the canonical origin of the deployed site. It is read at build/render
+time by:
+
+* `app/layout.tsx` — sets Next's [`metadataBase`](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase),
+  which is what turns relative `og:image` / `twitter:image` URLs in your
+  per-page metadata into absolute URLs that social-card unfurlers
+  (Slack, X, LinkedIn, Discord, iMessage, etc.) can actually resolve.
+* `app/sitemap.ts` — emits absolute `<loc>` entries in `/sitemap.xml`.
+* `app/robots.ts` — emits the absolute `Sitemap:` line in `/robots.txt`.
+
+Set this **per environment**:
+
+* Production: your real public hostname, e.g. `https://docs.example.com`.
+* Preview deployments: Vercel exposes
+  [`NEXT_PUBLIC_VERCEL_URL`](https://vercel.com/docs/projects/environment-variables/system-environment-variables)
+  for each preview. Either set `NEXT_PUBLIC_SITE_URL` per preview, or wire
+  it up in `next.config.js` to fall back to
+  `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` when unset.
+* Local dev: falls back to `http://localhost:3000` automatically if unset.
+
+If the variable is missing in a production build the site still works, but
+absolute URLs in metadata/sitemap/robots will fall back to localhost and
+social cards / SEO will be broken. The site logs a warning at boot in that
+case.

@@ -45,6 +45,6 @@
     "unionfs": "^4.4.0"
   },
   "devDependencies": {
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.10"
   }
 }

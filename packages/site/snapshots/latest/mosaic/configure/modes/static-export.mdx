@@ -1,47 +1,53 @@
 ---
-title: Custom CSS
+title: Static export
 layout: DetailTechnical
 sidebar:
-  label: Custom CSS
-  groupLabel: Custom CSS
-  priority: 3
-lastModified: 1781012102899.5505
-fullPath: /mosaic/configure/theme/custom-css.mdx
-route: /mosaic/configure/theme/custom-css
+  label: Static export
+  groupLabel: Static export
+  priority: 5
+data:
+  mode: static-export
+  link: /mosaic/configure/modes/static-export
+lastModified: 1781012102898.467
+fullPath: /mosaic/configure/modes/static-export.mdx
+route: /mosaic/configure/modes/static-export
 breadcrumbs:
   - label: Configure
     path: /mosaic/configure/index
     id: /mosaic/configure/index.mdx
-  - label: Theming Your Site
-    path: /mosaic/configure/theme/index
-    id: /mosaic/configure/theme/index.mdx
+  - label: Modes of operation
+    path: /mosaic/configure/modes/index
+    id: /mosaic/configure/modes/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.04
-  time: 122400
-  words: 408
+  minutes: 2.525
+  time: 151500
+  words: 505
 tableOfContents:
   - depth: 2
     level: 0
-    id: create-a-css-folder
-    text: Create a CSS folder
+    id: what-gets-generated
+    text: What gets generated
   - depth: 2
     level: 0
-    id: create-your-theme
-    text: Create your theme
+    id: what-does-not-work-in-a-static-export
+    text: What does not work in a static export
   - depth: 2
     level: 0
-    id: import-your-custom-css-into-your-site
-    text: Import your custom CSS into your site
+    id: how-the-export-build-is-configured
+    text: How the export build is configured
+  - depth: 2
+    level: 0
+    id: serving-the-output
+    text: Serving the output
 navigation:
   prev:
-    title: Theming Your Site
-    route: /mosaic/configure/theme/index
-    group: Theming Your Site
+    title: Configure
+    route: /mosaic/configure/index
   next:
-    title: Custom Components
-    route: /mosaic/configure/theme/custom-components
-    group: Theming Your Site
+    title: Modes of operation
+    route: /mosaic/configure/modes/index
+    group: Modes of operation
 sidebarData:
   - id: /mosaic/configure/index
     kind: data
@@ -443,104 +449,93 @@ sidebarData:
 ---
 # {meta.title}
 
-You can customize the look and feel of your Mosaic site by creating cusotm CSS files. Here is a step-by-step guide to help you create your own CSS theme.
+When you run a Mosaic site in a snapshot mode (`snapshot-file` or
+`snapshot-s3`), all of its content is fixed at build time. That means you
+can pre-render every page to plain HTML and serve the result from any
+static host — no Node.js runtime required.
 
-## Create a CSS folder
+The Mosaic site ships two build scripts that produce a fully-static `out/`
+directory:
 
-To get started, create a folder named "css" in the "src" folder of your Mosaic project.
+```bash
+# build against a local snapshot directory
+yarn build:static:file
 
-```
-src/
-└── css/
-```
-
-## Create your theme
-
-Inside the "css" folder, create a folder named "global". This is where you will add your custom styles.
-
-```
-src/
-└── css/
-    ├── global/
-    ├── index.css
+# build against an S3-hosted snapshot
+yarn build:static:s3
 ```
 
-Create an "index.css" file inside the "css" folder. This file will import your custom styles.
+Both commands set `MOSAIC_OUTPUT=export` and the appropriate `MOSAIC_MODE`,
+then invoke `next build`. The output is a self-contained `out/` directory
+you can upload to S3, Vercel static, Cloudflare Pages, GitHub Pages, or any
+other static host.
 
-```css
-@import './global/';
-```
+## What gets generated
 
-Inside your global folder, create a separate CSS file for each part of your site that you want to customize. For instance, if you want to change the text styling, create a "text.css" file inside the "global" folder. Here is an example of how your "text.css" file could look like:
+* Every page enumerated by the snapshot's `sitemap.xml` (typically every
+  doc in your sources).
+* `robots.txt` and `sitemap.xml`.
+* All static assets from `public/`.
+* Stubbed `app/api/*` route handlers that return HTTP 501. These exist
+  only because Next.js refuses to emit a static export when the route
+  files are present but cannot be statically pre-rendered; the stubs are
+  applied automatically before the build and reverted afterwards. **You
+  cannot use the auth, preview, or revalidate API routes in a static
+  export.**
 
-```css
-h1 {
-  /* Set custom font size and weight */
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
+## What does **not** work in a static export
+
+| Feature                        | Reason                                                               | Workaround                                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `active` mode                  | Active mode reads content from a live Mosaic server on every request | Use `snapshot-file` or `snapshot-s3` for the export build                                                        |
+| `next.config.js` `redirects()` | Not supported by `output: 'export'`                                  | Configure redirects at the hosting layer (S3 redirects, CloudFront Functions, Vercel `vercel.json`, Nginx, etc.) |
+| `/api/auth/*` (Auth.js)        | Auth.js needs a server                                               | Auth-gated sites must run in the regular (non-export) build                                                      |
+| `/api/content/preview`         | Same — needs a server                                                | Editor preview requires the regular build                                                                        |
+| `/api/revalidate`              | Same — no ISR in a static export                                     | Re-run the build to publish content changes                                                                      |
+| `next/image` optimisation      | Disabled in export builds                                            | Images are served as-is (`images.unoptimized: true`)                                                             |
+
+If your site relies on any of these features, deploy the regular Node
+build instead. See the [publish guide](../../publish/index).
+
+## How the export build is configured
+
+The exact knobs live in `packages/site/next.config.js` and
+`packages/site/package.json`. Three things differ from the regular build:
+
+1. **A separate config branch.** `next.config.js` switches on
+   `process.env.MOSAIC_OUTPUT === 'export'` to emit `output: 'export'`,
+   set `images.unoptimized: true`, and drop `redirects()`. The config
+   throws loudly if you try to combine `MOSAIC_OUTPUT=export` with
+   `active` mode.
+2. **`generateStaticParams` enumerates routes from the sitemap.** The
+   catch-all page (`app/[...route]/page.tsx`) reads the snapshot's
+   `sitemap.xml` at build time and emits one static page per entry. In
+   non-snapshot builds it short-circuits to a fully-dynamic route.
+3. **API route stubs.** `scripts/static-export-route-stubs.mjs` backs up
+   each `route.ts` to `route.ts.bak` and writes a static stub (HTTP 501 +
+   literal `dynamic = 'force-static'`) before the build, and restores
+   the originals afterwards — even if the build fails. If a build is
+   interrupted, run `yarn build:static:revert` to restore manually.
+
+## Serving the output
+
+The `out/` directory is a flat tree of `.html`, `.js`, `.css`, image, and
+font files. Any of the following will serve it correctly:
+
+```bash
+# Local preview
+npx serve out
+
+# AWS S3 + CloudFront
+aws s3 sync out s3://your-bucket --delete
+
+# Nginx
+location / {
+  root /var/www/your-site/out;
+  try_files $uri $uri.html $uri/ =404;
 }
-
-h2 {
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
-}
-
-h3 {
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
-}
-
-h4 {
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
-}
-
-h5 {
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
-}
-
-h6 {
-  font-size: /* insert value */ ;
-  font-weight: /* insert value */ ;
-}
-
-p {
-  font-size: /* insert value */ ;
-  line-height: /* insert value */ ;
-}
 ```
 
-You can add as many CSS files as you need, depending on how much you want to customize your site.
-
-Create an "index.css" file inside the "global" folder. This file will import your custom styles, in this example we are importing our "text.css" file.
-
-```css
-@import './text.css';
-```
-
-Your "css" folder should now look like this:
-
-```
-src/
-└── css/
-    ├── global/
-    │   ├── text.css
-    │   ├── index.css
-    ├── index.css
-```
-
-## Import your custom CSS into your site
-
-To apply your custom styles to your Mosaic site, open your `src/app/layout.tsx`
-file and add the following line to the bottom of your imports:
-
-```javascript
-import '../css/index.css';
-```
-
-> **Note:** in the App Router, global CSS must be imported from the root
-> layout (`app/layout.tsx`). Importing global CSS from a client component
-> or any non-layout file is rejected by Next.js at build time.
-
-Congratulations! You have successfully applied your custom CSS styles to your site. This example demonstrated how to create text styles, but you can use the same approach to customize other aspects of your site as well.
+> **Note:** static hosts typically need `try_files $uri $uri.html` (or the
+> equivalent) so that `/mosaic/index` resolves to `mosaic/index.html`
+> without an explicit `.html` suffix in the URL.
