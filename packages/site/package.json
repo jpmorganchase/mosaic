@@ -53,11 +53,11 @@
     "next-mdx-remote-client": "^1.0.3"
   },
   "devDependencies": {
+    "@next/env": "^16.2.6",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.0.0",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
-    "dotenv-load": "^2.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }

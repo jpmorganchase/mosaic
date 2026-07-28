@@ -94,6 +94,7 @@
     "commander": "^9.4.0",
     "esbuild": "0.25.0",
     "json5": "^1.0.2",
+    "postcss": "^8.5.10",
     "prismjs": "1.30.0",
     "eslint-plugin-react@npm:^7.37.0": "patch:eslint-plugin-react@npm%3A7.37.5#~/.yarn/patches/eslint-plugin-react-npm-7.37.5-d03f6b6543.patch"
   },
