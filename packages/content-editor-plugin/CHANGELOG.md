@@ -1,5 +1,317 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 1.0.0-beta.99
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-rendered MDX, optional static export)
+
+  ## What changed
+
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+
+  ### Breaking changes
+
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+
+  - **`fromGetServerSidePropsContext` / `fromPagesRouter` adapter removed.**
+    The package no longer ships an adapter for `GetServerSidePropsContext`.
+    The router-agnostic `runMiddleware` + `fromAppRouter` API is now the
+    only public entry point. Site code that previously called
+    `createMiddlewareRunner(...)(ctx, options)` from `getServerSideProps`
+    should be rewritten as:
+
+    ```ts
+    // src/app/[...route]/page.tsx
+    import { headers } from 'next/headers';
+    import { fromAppRouter, runMiddleware } from '@jpmorganchase/mosaic-site-middleware';
+
+    const [{ route }, hdrs] = await Promise.all([params, headers()]);
+    const ctx = fromAppRouter({ pathname: '/' + route.join('/'), headers: hdrs });
+    const result = await runMiddleware(ctx, [withMosaicMode, withMDXContent, ...]);
+    ```
+
+    `createMiddlewareRunner` is retained as an internal helper used by the
+    `with*` middleware bodies; do not call it directly from site code.
+
+  - **MDX is no longer serialised via `next-mdx-remote`.** Reader pages
+    compile MDX server-side with the new `compileMdxRsc(source, { scope, components })` helper, which returns a `JSX.Element` you can render
+    directly inside a Server Component. `compileMdx` (used by the editor's
+    preview API) is now backed by `next-mdx-remote-client/serialize` —
+    output shape is unchanged.
+
+  - **New exports:** `runMiddleware`, `fromAppRouter`,
+    `MosaicRequestContext`, `MosaicMiddlewareV2`, `compileMdxRsc`,
+    `loadSitemap`, `serializeMdxForClient`, `cachedLoaders`.
+
+  **`@jpmorganchase/mosaic-site-components` — major**
+
+  - **`Body` removed.** The legacy `next-mdx-remote`-based renderer is
+    gone. Sites compose their own `BodyServer.tsx` (RSC, calls
+    `compileMdxRsc`) and `BodyClient.ts` (`'use client'` boundary). See
+    `packages/site/src/app/[...route]/BodyServer.tsx` for the reference
+    implementation.
+
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle. Recommended for any import that previously pulled
+    Salt DS or other client-only modules into a server graph.
+
+  **`@jpmorganchase/mosaic-layouts` — major**
+
+  - **`useIsLoading` hook removed.** App Router's `loading.tsx` covers the
+    spinner case for free; `router.events` no longer exists.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** now keys its "stop editing on navigation" effect on
+    `usePathname()` rather than `router.events.routeChangeStart`.
+
+  ### Non-breaking additions
+
+  **`@jpmorganchase/mosaic-site` — major (App Router cut-over)**
+
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `loading.tsx`,
+    `robots.ts`, `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/content/preview/route.ts`, `api/revalidate/route.ts`).
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`). Replaces `next-auth` v4. `AUTH_SECRET` is now required;
+    `NEXTAUTH_SECRET` continues to work as a fallback for the migration
+    window.
+  - **Static-export build target.** `yarn build:static:file` and
+    `yarn build:static:s3` produce a fully-static `out/` directory
+    servable from any CDN with no Node runtime. Gated behind
+    `MOSAIC_OUTPUT=export` and a snapshot mode.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  - **`next-mdx-remote` dropped** from the runtime bundle. Production HTML
+    for a typical MDX page contains rendered HTML, not a JSON
+    `compiledSource` blob. The editor's in-browser preview still uses
+    `next-mdx-remote-client` but it is loaded via `next/dynamic({ ssr: false })` so non-editor readers never pay for it.
+
+  **`@jpmorganchase/mosaic-cli` — patch**
+
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged ISR caches are flushed automatically. No-op when the env vars
+    are absent — fully backwards-compatible.
+
+  ## Benefits
+
+  ### Performance
+
+  - **Smaller client bundles.** `next-mdx-remote` (and its
+    `compiledSource` JSON blob) is no longer shipped to readers. Pages
+    render as plain HTML on the server. Spot-check on a typical doc
+    route: the response is ~48% smaller end-to-end vs the Pages Router
+    build with the full chrome attached.
+  - **Streaming RSC.** The catch-all route is an `async` Server
+    Component, so the shell streams while middleware runs and MDX
+    compiles.
+  - **Parallel data resolution.** Route metadata, frontmatter, sitemap,
+    and search index are resolved in parallel via the new `cachedLoaders`
+    module rather than serially through `getServerSideProps`.
+  - **Static export.** Snapshot-mode sites can now be pre-rendered to a
+    flat `out/` directory and served from a CDN with no Node runtime,
+    reducing per-request latency to whatever the edge can do.
+
+  ### Architecture
+
+  - **Router-agnostic middleware.** `MosaicRequestContext` /
+    `runMiddleware` decouple the middleware chain from
+    `GetServerSidePropsContext`. The same chain runs in App Router RSCs,
+    route handlers, and plain Node tests with no shims.
+  - **No more header-as-signalling.** `mode` and `contentUrl` are
+    resolved up-front and carried explicitly on the context, replacing
+    the previous pattern of writing `X-Mosaic-*` response headers in one
+    middleware and reading them back in another.
+  - **Discriminated return type.** `runMiddleware` returns
+    `{ kind: 'props' | 'redirect' | 'not-found' | 'error', ... }` instead
+    of the implicit `GetServerSideProps` return shape, so route code
+    pattern-matches explicitly on each outcome.
+  - **Single provider boundary.** All client-side providers (Salt theme,
+    Mosaic store, Auth.js session, layout/image/link providers) are
+    mounted in one `app/providers.tsx` — the rest of the app stays
+    server-side by default.
+
+  ### Developer experience
+
+  - **`loading.tsx` / `error.tsx` / `not-found.tsx`** replace
+    `router.events`-driven spinners and inline error rendering. Less
+    bespoke UI code.
+  - **Auth.js v5 `auth()`** works uniformly in RSCs, route handlers, and
+    server actions — no more `getServerSession(req, res, opts)` plumbing.
+  - **`next-mdx-remote-client`** retained for editor preview, lazy-loaded
+    behind `next/dynamic({ ssr: false })`, so the editor still gets
+    client-side MDX compilation without polluting the reader bundle.
+
+  ### Operational
+
+  - **Static export option** unlocks CDN-only deployments (S3 +
+    CloudFront, Cloudflare Pages, Vercel static, nginx behind anything).
+    A reference Docker image lives at `examples/docker/static-export/`
+    (Node 20 builder → nginx 1.27 runtime, no Node in the production
+    image).
+  - **Revalidate notifier** keeps active-mode sites' caches fresh
+    automatically when sources push updates, instead of relying on TTL
+    expiry.
+  - **Node 20** across all in-repo Dockerfiles (Node 18 was EOL and
+    doesn't fully support Next 16 + React 19).
+
+  ## Migration guide
+
+  Sites still on the Pages Router should follow the
+  `mosaic-pages-to-app-router` recipe. The headline steps:
+
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`).
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, using
+     `fromAppRouter` + `runMiddleware`.
+  3. **Seed the Auth.js session in `layout.tsx`** with `await auth()` and
+     pass it to `<SessionProvider session={...}>` — an unseeded provider
+     races React's dispatcher during parallel SSG and produces a
+     non-deterministic `null.useState` crash.
+  4. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  5. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  6. Add `AUTH_SECRET` to your env (Auth.js v5 hard-requires it).
+
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+
+  ## Verification
+
+  - **226 unit tests passing** across `packages/site-middleware`,
+    `packages/cli`, `packages/plugins`, `packages/core`, and the source
+    packages (migration-relevant subset: 18/18 green; pre-existing
+    failures in unrelated suites are tracked separately).
+  - **195 Playwright e2e cases passing** across chromium, firefox, and
+    webkit, including 4 new `app-router.test.ts` cases that lock in: RSC
+    HTML output (no `compiledSource` blob), Auth.js providers endpoint,
+    Auth.js session endpoint, and the content preview API.
+  - **Static export builds cleanly** — 1033 files, 89 pre-rendered pages,
+    no `next-mdx-remote` anywhere in the output, no leaked `.bak` files
+    from the route-stub apply/revert script.
+  - **6 consecutive `next build` runs** (3 active, 3 snapshot-file) all
+    completed without the non-deterministic `null.useState` SSG-race
+    crash that initially blocked the cut-over (fix: seed the session in
+    the root layout, see migration guide step 3).
+
+- 0c4d822: Editor: Lexical 0.45 + extension API + new-page flow + UX polish
+
+  ## What changed
+
+  The in-browser content editor has been substantially reworked. Three
+  themes:
+
+  1. **Lexical 0.17 → 0.45** — every `@jpmorganchase/mosaic-content-editor-plugin`
+     peer dep on `@lexical/*` is bumped to 0.45. Adds `@lexical/extension` as
+     the new composition primitive (plugins are still supported; the
+     extension API is additive).
+  2. **Editor UX polish** — structured MDX error banners with line/column
+     hints, save-state pill (`clean` / `dirty` / `saving` / `saved`),
+     compile indicator, in-editor error highlighting, source-code editor
+     toggle, keyboard shortcuts (+ help dialog), unsaved-changes leave-guard.
+  3. **New-page flow** — `?new=1&title=...` query-string contract creates a
+     synthesised page anywhere in the route tree without touching the
+     filesystem; the New-Page dialog suggests folders/routes from the live
+     sitemap and prevents collisions. Cancel navigates back to the parent
+     folder (the route doesn't exist on disk) and strips the create flags.
+
+  ### Breaking changes (content-editor-plugin)
+
+  The plugin's public API has been pruned and rebuilt around per-slice
+  context hooks:
+
+  - **Removed**: `useContentEditor`, `usePageState`. The module-level
+    zustand store backing these is gone. Consumers reading editor state
+    must migrate to the new `EditorContext` hooks.
+  - **Added**: `EditorProvider`, plus per-slice hooks
+    `useEditorUser`, `useErrorMessage`, `useIsCompiling`, `useSetIsCompiling`,
+    `useIsInsertingLink`, `useLineMap`, `usePreviewContent`,
+    `useSetPreviewContent`, `useSaveState`. Plus `useEditMode` for entering
+    /exiting edit mode by URL flag, `NewPageDialog` for the
+    create-page launcher (the in-toolbar New Page button mounts this
+    internally; exported so integrators can mount their own launcher),
+    and `LayoutNamesProvider` + `useLayoutNames` for opting the layout
+    picker into the FrontmatterEditor.
+  - **Added types**: `EditorUser`, `EditorContextValue`, `LineMapEntry`,
+    `SaveState`, `EditMode`, `NewPageDialogProps`, `LayoutNamesProviderProps`.
+
+  Migration:
+
+  ```diff
+  - import { useContentEditor, usePageState } from '@jpmorganchase/mosaic-content-editor-plugin';
+  + import {
+  +   EditorProvider,
+  +   usePreviewContent,
+  +   useSaveState,
+  + } from '@jpmorganchase/mosaic-content-editor-plugin';
+  ```
+
+  The new context split means high-frequency preview updates no longer
+  re-render the toolbar — consumers that previously called
+  `useContentEditor()` and read multiple fields off the result will see
+  one render per slice they subscribe to instead of one render per state
+  change.
+
+  ### Site-middleware additions (non-breaking)
+
+  - `loadSitemap()` now supports active mode by fetching `sitemap.xml` from
+    the configured `MOSAIC_ACTIVE_MODE_URL`. Returns `[]` (no throw) on
+    missing env var, non-OK status, or fetch failure so the New-Page
+    dialog degrades to free-text input rather than crashing.
+
+  ### Layouts additions (non-breaking)
+
+  - `LayoutNamesContext` — provider + hooks (`useLayoutNames`,
+    `useLayoutsAreStrict`) used by `FrontmatterEditor` to validate the
+    `layout` frontmatter key against the host's registered layouts.
+    `useLayoutNames()` returns `null` outside a provider (treated as
+    "host did not opt in", plain-text fallback applies).
+  - `LayoutProvider` now filters `EditLayout` and undefined slots out of
+    the names it publishes; the remaining names are sorted alphabetical so
+    the New-Page dialog's layout dropdown is stable.
+
+  ### New-page flow (site-side, non-API)
+
+  Implementation details live in the reference site:
+  `packages/site/src/app/[...route]/newPageTemplate.ts` exports
+  `buildNewPageTemplate` (returns frontmatter + body) and `composeTemplate`
+  (gray-matter stringify) so integrators can override the seeded template
+  per-folder without forking the dialog.
+
+  ## Verification
+
+  - **30 new unit tests** across the new surfaces: `loadSitemap` active
+    branch (4), `deriveFromSitemap` (8), `buildNewPageTemplate` +
+    `composeTemplate` (6), `useEditMode.stopEditing` (5),
+    `LayoutNamesContext` provider + hooks (7). All passing.
+  - **Vitest config extended** to discover `*.test.[jt]s?(x)` under
+    `__tests__` in `content-editor-plugin`, `layouts`, and
+    `packages/site/src` so future tests in those packages don't need
+    another config change.
+  - **Bug caught + fixed during test-writing**: the default new-page
+    template seeded `layout: 'DetailedTechnical'` (typo); real export is
+    `DetailTechnical`. The wrong name silently fell back to the host's
+    default layout and tripped the FrontmatterEditor's unknown-layout
+    warning. Now correct.
+
+- Updated dependencies [0c4d822]
+  - @jpmorganchase/mosaic-components@1.0.0-beta.99
+  - @jpmorganchase/mosaic-icons@1.0.0-beta.99
+  - @jpmorganchase/mosaic-types@1.0.0-beta.99
+  - @jpmorganchase/mosaic-theme@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes
