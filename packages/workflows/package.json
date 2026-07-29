@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "author": "",
   "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
