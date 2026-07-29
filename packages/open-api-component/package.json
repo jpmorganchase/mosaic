@@ -42,7 +42,7 @@
   "dependencies": {
     "@types/swagger-ui-react": "^5.0.0",
     "@vanilla-extract/css": "^1.6.0",
-    "swagger-ui-react": "^5.32.4"
+    "swagger-ui-react": "^5.32.11"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",

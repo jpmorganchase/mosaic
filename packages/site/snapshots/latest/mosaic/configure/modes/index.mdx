@@ -13,7 +13,9 @@ data:
       link: /mosaic/configure/modes/snapshot-file
     - mode: snapshot-s3
       link: /mosaic/configure/modes/snapshot-s3
-lastModified: 1754291462164
+    - mode: static-export
+      link: /mosaic/configure/modes/static-export
+lastModified: 1781012102897.9746
 fullPath: /mosaic/configure/modes/index.mdx
 route: /mosaic/configure/modes/index
 breadcrumbs:
@@ -25,9 +27,9 @@ breadcrumbs:
     id: /mosaic/configure/modes/index.mdx
 readingTime:
   text: 1 min read
-  minutes: 0.485
-  time: 29100
-  words: 97
+  minutes: 0.62
+  time: 37200
+  words: 124
 tableOfContents:
   - depth: 2
     level: 0
@@ -45,10 +47,15 @@ tableOfContents:
     level: 1
     id: s3-based-snapshots
     text: S3 based snapshots
+  - depth: 2
+    level: 0
+    id: static-export
+    text: Static export
 navigation:
   prev:
-    title: Configure
-    route: /mosaic/configure/index
+    title: Static export
+    route: /mosaic/configure/modes/static-export
+    group: Modes of operation
   next:
     title: Active mode
     route: /mosaic/configure/modes/active
@@ -65,6 +72,14 @@ sidebarData:
   - id: /mosaic/configure/modes
     kind: group
     childNodes:
+      - id: /mosaic/configure/modes/static-export
+        kind: data
+        fullPath: /mosaic/configure/modes/static-export.mdx
+        name: Static export
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/modes/static-export
       - id: /mosaic/configure/modes/index
         kind: data
         fullPath: /mosaic/configure/modes/index.mdx
@@ -477,3 +492,10 @@ Read the [snapshot-file](./snapshot-file) configuration docs.
 In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
 
 Read the [snapshot-s3](./snapshot-s3) configuration docs.
+
+## Static export
+
+Either snapshot mode can additionally be built as a fully-static site
+(`out/` directory of HTML) servable from any CDN with no Node runtime.
+
+Read the [static export](./static-export) docs.

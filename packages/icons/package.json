@@ -37,8 +37,8 @@
   "devDependencies": {
     "concurrently": "^7.1.0",
     "del-cli": "^6.0.0",
-    "esbuild": "^0.25.0",
-    "esbuild-node-externals": "^1.18.0",
+    "esbuild": "^0.28.1",
+    "esbuild-node-externals": "^1.23.1",
     "fast-glob": "^3.3.3",
     "typescript": "^5.2.2"
   },
