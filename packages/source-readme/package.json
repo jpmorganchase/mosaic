@@ -35,7 +35,7 @@
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
     "deepmerge": "^4.3.1",
     "rxjs": "^7.5.5",
-    "undici": "^8.5.0",
+    "undici": "^8.9.0",
     "zod": "^3.22.3"
   },
   "devDependencies": {
