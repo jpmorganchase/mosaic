@@ -67,7 +67,9 @@ try {
     format: 'esm',
     target: ['es2022'],
     plugins: [
-      nodeExternalsPlugin(),
+      nodeExternalsPlugin({
+        allowList: [/\.css$/]
+      }),
       vanillaExtractPlugin({}),
       ...(stampUseClient ? [useClientDirectivePlugin] : []),
       {
