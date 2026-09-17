@@ -30,12 +30,15 @@
     "@jpmorganchase/mosaic-site": "0.1.0-beta.94"
   },
   "changesets": [
+    "bright-routers-render",
     "cold-coats-grab",
+    "editor-extension-api-and-new-page-flow",
     "frank-paths-start",
     "fresh-carrots-flow",
     "moody-buses-bake",
     "ready-grapes-laugh",
     "ready-weeks-matter",
+    "silent-watchers-listen",
     "tough-laws-stay"
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "@jpmorganchase/mosaic-content-editor-plugin",
   "description": "Mosaic - In Browser content editing plugin",
-  "version": "0.1.0-beta.98",
+  "version": "1.0.0-beta.99",
   "license": "Apache-2.0",
   "author": "",
   "repository": {
@@ -41,10 +41,10 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.6",
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-icons": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-components": "^1.0.0-beta.99",
+    "@jpmorganchase/mosaic-icons": "^1.0.0-beta.99",
+    "@jpmorganchase/mosaic-theme": "^1.0.0-beta.99",
+    "@jpmorganchase/mosaic-types": "^1.0.0-beta.99",
     "@lexical/code": "^0.45.0",
     "@lexical/extension": "^0.45.0",
     "@lexical/link": "^0.45.0",
