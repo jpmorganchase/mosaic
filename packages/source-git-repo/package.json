@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "url": "git+https://github.com/jpmorganchase/mosaic.git",
     "directory": "packages/source-git-repo"
   },
   "dependencies": {

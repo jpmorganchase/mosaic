@@ -40,10 +40,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git"
+    "url": "git+https://github.com/jpmorganchase/mosaic.git"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.1",
+    "@changesets/cli": "^3.0.0",
     "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^10.0.1",
