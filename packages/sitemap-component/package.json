@@ -5,7 +5,7 @@
   "description": "Mosaic - Sitemap component",
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "url": "git+https://github.com/jpmorganchase/mosaic.git",
     "directory": "packages/sitemap-component"
   },
   "main": "./dist/index.js",

@@ -1,41 +1,4 @@
 {
   "mode": "pre",
-  "tag": "beta",
-  "initialVersions": {
-    "@jpmorganchase/mosaic-cli": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-core": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-plugins": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-serialisers": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-source-local-folder": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-types": "0.1.0-beta.1",
-    "@jpmorganchase/mosaic-schemas": "0.1.0-beta.6",
-    "@jpmorganchase/mosaic-source-git-repo": "0.1.0-beta.6",
-    "@jpmorganchase/mosaic-store": "0.1.0-beta.7",
-    "@jpmorganchase/mosaic-theme": "0.1.0-beta.6",
-    "@jpmorganchase/mosaic-workflows": "0.1.0-beta.6",
-    "@jpmorganchase/mosaic-components": "0.1.0-beta.8",
-    "@jpmorganchase/mosaic-content-editor-plugin": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-layouts": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-open-api-component": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-site-components": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-site-middleware": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-site-preset-styles": "0.1.0-beta.9",
-    "@jpmorganchase/mosaic-from-http-request": "0.1.0-beta.14",
-    "@jpmorganchase/mosaic-source-http": "0.1.0-beta.14",
-    "@jpmorganchase/mosaic-source-storybook": "0.1.0-beta.55",
-    "@jpmorganchase/mosaic-source-figma": "0.1.0-beta.58",
-    "@jpmorganchase/mosaic-source-readme": "0.1.0-beta.59",
-    "@jpmorganchase/mosaic-sitemap-component": "0.1.0-beta.62",
-    "@jpmorganchase/mosaic-icons": "0.1.0-beta.89",
-    "@jpmorganchase/mosaic-site": "0.1.0-beta.94"
-  },
-  "changesets": [
-    "cold-coats-grab",
-    "frank-paths-start",
-    "fresh-carrots-flow",
-    "moody-buses-bake",
-    "ready-grapes-laugh",
-    "ready-weeks-matter",
-    "tough-laws-stay"
-  ]
+  "tag": "beta"
 }

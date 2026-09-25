@@ -6,7 +6,7 @@
   "description": "@jpmorganchase/mosaic-site documentation",
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "url": "git+https://github.com/jpmorganchase/mosaic.git",
     "directory": "packages/site"
   },
   "main": "dist/index.js",

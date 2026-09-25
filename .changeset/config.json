@@ -1,11 +1,12 @@
 {
-  "$schema": "https://unpkg.com/@changesets/config@2.2.0/schema.json",
+  "$schema": "../node_modules/@changesets/config/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [["@jpmorganchase/*"]],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
+  "format": "prettier",
   "updateInternalDependencies": "patch",
   "ignore": [],
   "privatePackages": false

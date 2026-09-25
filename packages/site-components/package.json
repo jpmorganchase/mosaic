@@ -5,7 +5,7 @@
   "description": "Mosaic - Site components",
   "repository": {
     "type": "git",
-    "url": "git@github.com:jpmorganchase/mosaic.git",
+    "url": "git+https://github.com/jpmorganchase/mosaic.git",
     "directory": "packages/site-components"
   },
   "main": "./dist/index.js",
