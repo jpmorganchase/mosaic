@@ -33,22 +33,35 @@ function redactSource(source: SourceModuleDefinition): SourceModuleDefinition {
   return source;
 }
 
+const ADMIN_SECRET_HEADER = 'x-mosaic-admin-secret';
+
+/** Without `MOSAIC_ADMIN_SECRET`, the admin API is open in development only. */
+function isOpenInDevelopment() {
+  return !readSecret('MOSAIC_ADMIN_SECRET') && process.env.NODE_ENV === 'development';
+}
+
 /**
  * Everything except the tag list can reveal or change server state, so it
- * needs `MOSAIC_ADMIN_SECRET` (sent as `x-mosaic-admin-secret` or
- * `Authorization: Bearer …`). Without the env var those routes are disabled.
+ * needs `MOSAIC_ADMIN_SECRET` (as `x-mosaic-admin-secret`, a bearer token or
+ * the password of a browser login prompt). Without the env var those routes
+ * are open when `NODE_ENV=development` and disabled otherwise.
  */
 async function requireAdminSecret(req: FastifyRequest, reply: FastifyReply) {
   const expected = readSecret('MOSAIC_ADMIN_SECRET');
   if (!expected) {
+    if (process.env.NODE_ENV === 'development') return undefined;
     return reply
       .code(403)
       .header('Content-Type', 'application/text')
       .send('The Mosaic admin API is disabled. Set MOSAIC_ADMIN_SECRET to enable it.');
   }
-  const provided = extractSecret(req.headers, 'x-mosaic-admin-secret');
+  const provided = extractSecret(req.headers, ADMIN_SECRET_HEADER);
   if (!provided || !secretsMatch(provided, expected)) {
-    return reply.code(401).header('Content-Type', 'application/text').send('Unauthorized.');
+    return reply
+      .code(401)
+      .header('WWW-Authenticate', 'Basic realm="Mosaic admin", charset="UTF-8"')
+      .header('Content-Type', 'application/text')
+      .send('Unauthorized.');
   }
   return undefined;
 }
@@ -57,6 +70,12 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
   const { prefix } = options;
   const { config, fs, core } = fastify.mosaic;
   const adminOnly = { preHandler: requireAdminSecret };
+
+  if (isOpenInDevelopment()) {
+    console.warn(
+      `[Mosaic] Admin API /${prefix}/* is open: MOSAIC_ADMIN_SECRET is not set and NODE_ENV=development.`
+    );
+  }
 
   /**
    * Return the JSON config that Mosaic was started with.

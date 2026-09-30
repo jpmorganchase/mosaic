@@ -23,15 +23,25 @@ There are several admin urls exposed by Mosaic that provide an insight into how 
 
 ## Authentication
 
-Every endpoint except `/_mosaic_/tags/list` can reveal or change server state, so they are
-**disabled unless the CLI process has `MOSAIC_ADMIN_SECRET` set**. Callers must then send the
-secret in an `x-mosaic-admin-secret` header or as `Authorization: Bearer <secret>`:
+Every endpoint except `/_mosaic_/tags/list` can reveal or change server state, so they are protected
+by `MOSAIC_ADMIN_SECRET` on the CLI process:
 
-```
-curl -H "Authorization: Bearer $MOSAIC_ADMIN_SECRET" http://localhost:8080/_mosaic_/sources/list
-```
+- **Secret set:** requests must send it. Opening an endpoint in a browser shows a login prompt; enter
+  any username and the secret as the password. From scripts, send it as a bearer token (or in an
+  `x-mosaic-admin-secret` header):
 
-Requests without the secret get `401`; with no secret configured the endpoints return `403`.
+  ```
+  curl -H "Authorization: Bearer $MOSAIC_ADMIN_SECRET" http://localhost:8080/_mosaic_/sources/list
+  curl -u admin:$MOSAIC_ADMIN_SECRET http://localhost:8080/_mosaic_/sources/list
+  ```
+
+  Requests without a valid secret get `401`.
+
+- **Secret not set:** the endpoints are open when `NODE_ENV=development` (the reference site's
+  `.env.development` sets this for `yarn serve`) and return `403` otherwise.
+
+Basic auth sends the secret base64-encoded, not encrypted, so only use it over HTTPS outside local
+development.
 
 ## Workflows
 

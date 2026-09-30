@@ -153,9 +153,37 @@ describe('GIVEN the serve command', () => {
       }
     });
 
+    test('THEN protected Admin APIs are open in development when MOSAIC_ADMIN_SECRET is unset', async () => {
+      const nodeEnv = process.env.NODE_ENV;
+      delete process.env.MOSAIC_ADMIN_SECRET;
+      process.env.NODE_ENV = 'development';
+      try {
+        const response = await server.inject({ method: 'GET', url: '/_mosaic_/content/dump' });
+        expect(response.statusCode).toEqual(200);
+      } finally {
+        process.env.NODE_ENV = nodeEnv;
+        process.env.MOSAIC_ADMIN_SECRET = ADMIN_SECRET;
+      }
+    });
+
+    test('THEN a configured secret is still required in development', async () => {
+      const nodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      try {
+        const response = await server.inject({ method: 'GET', url: '/_mosaic_/content/dump' });
+        expect(response.statusCode).toEqual(401);
+      } finally {
+        process.env.NODE_ENV = nodeEnv;
+      }
+    });
+
     test('THEN protected Admin APIs reject a missing or wrong secret', async () => {
       const missing = await server.inject({ method: 'GET', url: '/_mosaic_/config' });
       expect(missing.statusCode).toEqual(401);
+      // Makes browsers show a login prompt; the secret is the password.
+      expect(missing.headers['www-authenticate']).toEqual(
+        'Basic realm="Mosaic admin", charset="UTF-8"'
+      );
 
       const wrong = await server.inject({
         method: 'PUT',
@@ -174,6 +202,23 @@ describe('GIVEN the serve command', () => {
         headers: { authorization: `Bearer ${ADMIN_SECRET}` }
       });
       expect(response.statusCode).toEqual(200);
+    });
+
+    test('THEN the Admin APIs accept the secret as a Basic auth password', async () => {
+      const basic = (credentials: string) => `Basic ${Buffer.from(credentials).toString('base64')}`;
+      const accepted = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/content/dump',
+        headers: { authorization: basic(`any-user:${ADMIN_SECRET}`) }
+      });
+      expect(accepted.statusCode).toEqual(200);
+
+      const rejected = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/content/dump',
+        headers: { authorization: basic(`${ADMIN_SECRET}:wrong`) }
+      });
+      expect(rejected.statusCode).toEqual(401);
     });
 
     test('THEN the config Admin API returns the mosaic config', async () => {

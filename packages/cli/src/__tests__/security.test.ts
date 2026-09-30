@@ -80,4 +80,16 @@ describe('GIVEN extractSecret', () => {
   test('THEN null is returned when nothing is sent', () => {
     expect(extractSecret({ authorization: 'Basic abc' }, 'x-mosaic-admin-secret')).toBeNull();
   });
+
+  test('THEN the password of a Basic Authorization header is used', () => {
+    const basic = (credentials: string) => `Basic ${Buffer.from(credentials).toString('base64')}`;
+    expect(extractSecret({ authorization: basic('admin:s3:cret') }, 'x-mosaic-admin-secret')).toBe(
+      's3:cret'
+    );
+    expect(extractSecret({ authorization: basic(':s3cret') }, 'x-mosaic-admin-secret')).toBe(
+      's3cret'
+    );
+    expect(extractSecret({ authorization: basic('admin:') }, 'x-mosaic-admin-secret')).toBeNull();
+    expect(extractSecret({ authorization: basic('no-colon') }, 'x-mosaic-admin-secret')).toBeNull();
+  });
 });

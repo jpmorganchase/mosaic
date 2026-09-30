@@ -5,7 +5,7 @@ import type { IncomingHttpHeaders } from 'node:http';
  * Public placeholder values committed in dev env files. They must never
  * unlock anything in production.
  */
-const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-workflows-secret', 'local-dev-admin-secret']);
+const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-workflows-secret']);
 
 /** Returns the configured secret, or `undefined` if unset or a placeholder in production. */
 export function readSecret(name: string): string | undefined {
@@ -30,15 +30,23 @@ export function secretsMatch(provided: string, expected: string): boolean {
 }
 
 /**
- * Reads a shared secret from either a dedicated header (e.g.
- * `x-mosaic-admin-secret`) or an `Authorization: Bearer <secret>` header.
+ * Reads a shared secret from a dedicated header (e.g. `x-mosaic-admin-secret`),
+ * an `Authorization: Bearer <secret>` header, or the password of an
+ * `Authorization: Basic` header (what a browser sends after its login prompt).
  */
 export function extractSecret(headers: IncomingHttpHeaders, headerName: string): string | null {
   const custom = headers[headerName];
   if (typeof custom === 'string' && custom.length > 0) return custom;
   const authorization = headers.authorization;
-  if (typeof authorization === 'string' && authorization.startsWith('Bearer ')) {
+  if (typeof authorization !== 'string') return null;
+  if (authorization.startsWith('Bearer ')) {
     return authorization.slice('Bearer '.length);
+  }
+  if (authorization.startsWith('Basic ')) {
+    // Browser login prompt: the username is ignored, the password is the secret.
+    const decoded = Buffer.from(authorization.slice('Basic '.length), 'base64').toString('utf8');
+    const separator = decoded.indexOf(':');
+    return separator >= 0 && separator < decoded.length - 1 ? decoded.slice(separator + 1) : null;
   }
   return null;
 }

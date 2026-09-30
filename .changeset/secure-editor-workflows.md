@@ -21,8 +21,10 @@ Secure the content server and editor, fix the save flow, and slim the App Router
   runs. Messages are validated (workflow name, user, route) and capped
   at 5 MB.
 - Admin endpoints other than `/_mosaic_/tags/list` require
-  `MOSAIC_ADMIN_SECRET` (sent as `x-mosaic-admin-secret` or
-  `Authorization: Bearer …`) and are disabled without it.
+  `MOSAIC_ADMIN_SECRET`: sent as `x-mosaic-admin-secret`, a bearer token,
+  or the password of the browser login prompt (HTTP Basic). Without the
+  env var they are open when `NODE_ENV=development` and disabled
+  otherwise.
 - CORS headers are no longer sent to every origin. Allow specific
   origins with `MOSAIC_CORS_ORIGINS` (comma-separated).
 
