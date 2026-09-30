@@ -97,7 +97,7 @@ environment settings). None of them should be committed with real values.
 | `MOSAIC_ACTIVE_MODE_CACHE`                        | `true` caches active-mode reads until the CLI's revalidate call. Only when that call reaches every site instance.                           |
 | `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED`              | Enable Auth.js (the editor sign-in). Generate the secret with `openssl rand -base64 32`.                                                    |
 | `GITHUB_ID`, `GITHUB_SECRET`                      | GitHub OAuth app for sign-in.                                                                                                               |
-| `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. GitHub emails must be verified. **Unset means nobody in production.**  |
+| `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. **Unset means nobody in production.**                                  |
 | `NEXT_PUBLIC_ENABLE_LOGIN`                        | `true` shows the Login control and editor buttons.                                                                                          |
 | `MOSAIC_WORKFLOWS_URL`, `MOSAIC_WORKFLOWS_SECRET` | WebSocket URL of the CLI's `/workflows` endpoint and the shared secret it requires (the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`). |
 | `MOSAIC_WORKFLOWS_TIMEOUT_MS`                     | How long a save may run before it is reported as failed (default 5 minutes).                                                                |

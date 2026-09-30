@@ -33,8 +33,7 @@ Secure the content server and editor, fix the save flow, and slim the App Router
 - Editing requires `MOSAIC_EDITORS` (emails, `@domains` or `*`); when it
   is unset nobody can sign in or edit in production. Set
   `MOSAIC_EDITORS=*` to keep the previous "anyone who can sign in"
-  behaviour. Emails and `@domains` only match GitHub emails that
-  GitHub has verified.
+  behaviour.
 - Saves need `MOSAIC_WORKFLOWS_URL` and `MOSAIC_WORKFLOWS_SECRET`
   (renamed from `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`).
 - The committed `.env.local` is now `.env.development`, which Next.js

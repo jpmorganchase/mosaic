@@ -105,59 +105,18 @@ if (
  */
 export function isAuthorizedEditor(user: { email?: string | null } | null | undefined): boolean {
   if (!user) return false;
-  const entries = editorEntries();
-  if (!entries) return process.env.NODE_ENV !== 'production';
-  const email = user.email?.trim().toLowerCase();
-  return entries.some(entry => {
-    if (entry === '*') return true;
-    if (!email) return false;
-    return entry.startsWith('@') ? email.endsWith(entry) : email === entry;
-  });
-}
-
-function editorEntries(): string[] | undefined {
   const configured = process.env.MOSAIC_EDITORS?.trim();
-  if (!configured) return undefined;
+  if (!configured) return process.env.NODE_ENV !== 'production';
+  const email = user.email?.trim().toLowerCase();
   return configured
     .split(',')
     .map(entry => entry.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-/**
- * Whether `email` is a verified address on the signed-in GitHub account.
- * Auth.js falls back to the account's primary email without checking that
- * it is verified, so an email or @domain allowlist must not trust it as is.
- */
-export async function hasVerifiedGitHubEmail(
-  accessToken: string | undefined,
-  email: string | null | undefined
-): Promise<boolean> {
-  const target = email?.trim().toLowerCase();
-  if (!accessToken || !target) return false;
-  try {
-    const response = await fetch('https://api.github.com/user/emails', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'mosaic-site'
-      },
-      signal: AbortSignal.timeout(5000)
+    .filter(Boolean)
+    .some(entry => {
+      if (entry === '*') return true;
+      if (!email) return false;
+      return entry.startsWith('@') ? email.endsWith(entry) : email === entry;
     });
-    if (!response.ok) return false;
-    const emails: unknown = await response.json();
-    return (
-      Array.isArray(emails) &&
-      emails.some(
-        entry =>
-          entry?.verified === true &&
-          typeof entry.email === 'string' &&
-          entry.email.toLowerCase() === target
-      )
-    );
-  } catch {
-    return false;
-  }
 }
 
 if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC_EDITORS?.trim()) {
@@ -301,13 +260,7 @@ if (AUTH_ENABLED) {
     providers,
     callbacks: {
       // Signing in only exists to edit content, so only editors may sign in.
-      async signIn({ user, account }) {
-        if (!isAuthorizedEditor(user)) return false;
-        const entries = editorEntries();
-        // The email only matters when access was granted by email or @domain.
-        if (account?.provider !== 'github' || !entries || entries.includes('*')) return true;
-        return hasVerifiedGitHubEmail(account.access_token, user.email);
-      }
+      signIn: ({ user }) => isAuthorizedEditor(user)
     }
   };
 
