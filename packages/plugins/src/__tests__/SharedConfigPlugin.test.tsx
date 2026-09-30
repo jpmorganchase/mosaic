@@ -1,6 +1,8 @@
 import { vi, describe, expect, test, beforeEach, afterEach } from 'vitest';
 import { Page } from '@jpmorganchase/mosaic-types';
+import { Volume } from 'memfs';
 import SharedConfigPlugin from '../SharedConfigPlugin.js';
+import $RefPlugin from '../$RefPlugin.js';
 
 vi.mock('node:crypto', () => ({
   default: {
@@ -766,6 +768,70 @@ describe('GIVEN the SharedConfigPlugin', () => {
 
       expect(await hook('/FolderA/index.json', page)).toBe(page);
       expect(await hook('/FolderA/shared-config.json', notJson)).toBe(notJson);
+    });
+
+    test('THEN capabilities that `$RefPlugin` resolves into the stored file are removed', async () => {
+      const vol = Volume.fromJSON({
+        '/FolderA/index.json': JSON.stringify({
+          fullPath: '/FolderA/index.json',
+          sharedConfig: { $ref: './caps.json#/sharedConfig' }
+        }),
+        '/FolderA/caps.json': JSON.stringify({
+          fullPath: '/FolderA/caps.json',
+          sharedConfig: { header: 'kept', sourceCapabilities: { writable: true } }
+        })
+      });
+      const mutableFilesystem = {
+        promises: {
+          glob: vi.fn(async () => ['/FolderA/index.json']),
+          exists: async (filePath: string) => vol.existsSync(filePath),
+          realpath: (filePath: string) => vol.promises.realpath(filePath),
+          stat: (filePath: string) => vol.promises.stat(filePath),
+          readFile: (filePath: string) => vol.promises.readFile(filePath),
+          writeFile: (filePath: string, data: string) => vol.promises.writeFile(filePath, data)
+        }
+      };
+      const refs: Record<string, { $$path: string[]; $$value: string }[]> = {};
+      const config = {
+        data: { refs },
+        setRef(targetPath: string, $$path: string[], $$value: string) {
+          refs[targetPath] = [...(refs[targetPath] ?? []), { $$path, $$value }];
+        },
+        setAliases: vi.fn()
+      };
+      const args = {
+        config,
+        serialiser: {
+          serialise: async (_filePath: string, page: unknown) => JSON.stringify(page),
+          deserialise: async (_filePath: string, data: unknown) => JSON.parse(String(data))
+        },
+        ignorePages: [],
+        pageExtensions: ['.json']
+      };
+      const pages = await Promise.all(
+        ['/FolderA/index.json', '/FolderA/caps.json'].map(async filePath =>
+          args.serialiser.deserialise(filePath, await vol.promises.readFile(filePath))
+        )
+      );
+
+      // Same order as a real run: SharedConfigPlugin (priority 3) sets its ref,
+      // then `$RefPlugin` (priority -1) resolves every ref into the stored file.
+      // @ts-ignore
+      await $RefPlugin.$afterSource?.(pages, args);
+      // @ts-ignore
+      await SharedConfigPlugin.$beforeSend?.(mutableFilesystem, args, {
+        filename: 'shared-config.json'
+      });
+      // @ts-ignore
+      await $RefPlugin.$beforeSend?.(mutableFilesystem, args);
+
+      const stored = await vol.promises.readFile('/FolderA/shared-config.json');
+      expect(parse(stored).config.sourceCapabilities).toEqual({ writable: true });
+
+      const hook = await registerHook();
+      expect(parse(await hook('/FolderA/shared-config.json', stored))).toEqual({
+        config: { header: 'kept' }
+      });
     });
 
     test('THEN capabilities are not copied into another source with the namespace shared config', async () => {

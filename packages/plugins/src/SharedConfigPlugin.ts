@@ -283,7 +283,8 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
     { sharedFilesystem, globalConfig, namespace, config },
     options
   ) {
-    // `$ref`s are resolved after `$afterSource`, so they can put an
+    // `$RefPlugin` resolves `$ref`s into the stored files in its
+    // `$beforeSend`, after `$afterSource` has run, so a `$ref` can put an
     // authored `sourceCapabilities` back into a shared config file.
     // Enforce the source's own flags whenever one of the files is read.
     const sourceCapabilities = config?.data?.sharedConfigSourceCapabilities as

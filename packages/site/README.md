@@ -13,6 +13,7 @@ The site runs on the **Next.js App Router** (`src/app/`).
 packages/site/
 ├── .env                        # values shared by every environment (no secrets)
 ├── .env.development            # `next dev` / CLI dev defaults, incl. placeholder secrets
+├── .env.production             # `next build` / `next start` defaults (snapshot-file mode)
 ├── mosaic.config.mjs           # content sources, plugins, settings
 ├── next.config.js              # three-config split: base / dynamic / export
 ├── package.json
@@ -52,13 +53,13 @@ packages/site/
 
 The site supports three Mosaic content modes plus a static-export target:
 
-| Command                                | Mode                                     | Output                                       |
-| -------------------------------------- | ---------------------------------------- | -------------------------------------------- |
-| `yarn build`                           | `active` (default)                       | Dynamic Node server, pulls content live      |
-| `MOSAIC_MODE=snapshot-file yarn build` | `snapshot-file`                          | Node server, content from local snapshot dir |
-| `MOSAIC_MODE=snapshot-s3 yarn build`   | `snapshot-s3`                            | Node server, content from S3 bucket          |
-| `yarn build:static:file`               | `snapshot-file` + `MOSAIC_OUTPUT=export` | Static `out/` directory, no Node runtime     |
-| `yarn build:static:s3`                 | `snapshot-s3` + `MOSAIC_OUTPUT=export`   | Static `out/` directory, no Node runtime     |
+| Command                              | Mode                                         | Output                                       |
+| ------------------------------------ | -------------------------------------------- | -------------------------------------------- |
+| `yarn build`                         | `snapshot-file` (default, `.env.production`) | Node server, content from local snapshot dir |
+| `MOSAIC_MODE=active yarn build`      | `active`                                     | Dynamic Node server, pulls content live      |
+| `MOSAIC_MODE=snapshot-s3 yarn build` | `snapshot-s3`                                | Node server, content from S3 bucket          |
+| `yarn build:static:file`             | `snapshot-file` + `MOSAIC_OUTPUT=export`     | Static `out/` directory, no Node runtime     |
+| `yarn build:static:s3`               | `snapshot-s3` + `MOSAIC_OUTPUT=export`       | Static `out/` directory, no Node runtime     |
 
 See [`docs/configure/modes/`](../../docs/configure/modes/index.mdx) for
 the full mode documentation and
@@ -88,7 +89,7 @@ environment settings). None of them should be committed with real values.
 
 | Variable                                          | Purpose                                                                                                                                     |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MOSAIC_MODE`                                     | `active` (default), `snapshot-file` or `snapshot-s3`.                                                                                       |
+| `MOSAIC_MODE`                                     | `active` (`next dev` default), `snapshot-file` (`next build` / `next start` default) or `snapshot-s3`.                                      |
 | `MOSAIC_ACTIVE_MODE_URL`                          | Mosaic CLI content server, e.g. `http://mosaic-fs:8080` (active mode).                                                                      |
 | `MOSAIC_SNAPSHOT_DIR`                             | Snapshot folder for `snapshot-file` (defaults to `snapshots/latest` via `.env`).                                                            |
 | `NEXT_PUBLIC_SITE_URL`                            | Canonical origin for metadata, `sitemap.xml` and `robots.txt`.                                                                              |
@@ -96,7 +97,7 @@ environment settings). None of them should be committed with real values.
 | `MOSAIC_ACTIVE_MODE_CACHE`                        | `true` caches active-mode reads until the CLI's revalidate call. Only when that call reaches every site instance.                           |
 | `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED`              | Enable Auth.js (the editor sign-in). Generate the secret with `openssl rand -base64 32`.                                                    |
 | `GITHUB_ID`, `GITHUB_SECRET`                      | GitHub OAuth app for sign-in.                                                                                                               |
-| `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. **Unset means nobody in production.**                                  |
+| `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. GitHub emails must be verified. **Unset means nobody in production.**  |
 | `NEXT_PUBLIC_ENABLE_LOGIN`                        | `true` shows the Login control and editor buttons.                                                                                          |
 | `MOSAIC_WORKFLOWS_URL`, `MOSAIC_WORKFLOWS_SECRET` | WebSocket URL of the CLI's `/workflows` endpoint and the shared secret it requires (the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`). |
 | `MOSAIC_WORKFLOWS_TIMEOUT_MS`                     | How long a save may run before it is reported as failed (default 5 minutes).                                                                |
