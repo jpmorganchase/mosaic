@@ -11,11 +11,36 @@ There are several admin urls exposed by Mosaic that provide an insight into how 
 
 ## Endpoints
 
-| Endpoint                   | Method | Description                                  | Params                 |
-| -------------------------- | ------ | -------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources       | n/a                    |
-| `/_mosaic_/sources/add`    | POST   | Adds the source                              | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name      | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name   | name                   |
+| Endpoint                   | Method | Description                                   | Params                 |
+| -------------------------- | ------ | --------------------------------------------- | ---------------------- |
+| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file  | n/a                    |
+| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON  | n/a                    |
+| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources        | n/a                    |
+| `/_mosaic_/source/add`     | POST   | Adds the source                               | definition & isPreview |
+| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name       | name                   |
+| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name    | name                   |
+| `/_mosaic_/tags/list`      | GET    | Returns the tag names known to the filesystem | n/a                    |
+
+## Authentication
+
+Every endpoint except `/_mosaic_/tags/list` can reveal or change server state, so they are
+**disabled unless the CLI process has `MOSAIC_ADMIN_SECRET` set**. Callers must then send the
+secret in an `x-mosaic-admin-secret` header or as `Authorization: Bearer <secret>`:
+
+```
+curl -H "Authorization: Bearer $MOSAIC_ADMIN_SECRET" http://localhost:8080/_mosaic_/sources/list
+```
+
+Requests without the secret get `401`; with no secret configured the endpoints return `403`.
+
+## Workflows
+
+The editor's save workflow runs over the `/workflows` WebSocket. It uses the server's repository
+credentials, so it only runs for messages that carry a `token` equal to the CLI's
+`MOSAIC_WORKFLOWS_SECRET`; without that variable no workflow runs. The site sends the same value from
+its own `MOSAIC_WORKFLOWS_SECRET` (see `packages/site/README.md`).
+
+## Browser access (CORS)
+
+The CLI sends no CORS headers by default, so web pages on other origins can't read its responses. Set
+`MOSAIC_CORS_ORIGINS` to a comma-separated list of origins to allow specific ones.

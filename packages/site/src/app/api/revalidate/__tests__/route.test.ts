@@ -94,6 +94,20 @@ describe('/api/revalidate (fail-closed posture)', () => {
     expect(revalidateTagMock).not.toHaveBeenCalled();
     expect(notifyContentChangedMock).not.toHaveBeenCalled();
   });
+
+  it('returns 503 when the dev placeholder secret is used in production', async () => {
+    process.env.MOSAIC_REVALIDATE_SECRET = 'local-dev-not-a-secret';
+    vi.stubEnv('NODE_ENV', 'production');
+    try {
+      const { POST } = await loadRoute();
+      const response = await POST(buildRequest({ secret: 'local-dev-not-a-secret' }) as never);
+      expect(response.status).toBe(503);
+      expect((await response.json()).error).toMatch(/placeholder/i);
+      expect(revalidateTagMock).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
 
 describe('/api/revalidate (auth)', () => {
@@ -134,7 +148,7 @@ describe('/api/revalidate (auth)', () => {
     expect(typeof body.revalidatedAt).toBe('string');
     // Confirm the side effects fired exactly once each.
     expect(revalidateTagMock).toHaveBeenCalledTimes(1);
-    expect(revalidateTagMock).toHaveBeenCalledWith('mosaic-content', 'max');
+    expect(revalidateTagMock).toHaveBeenCalledWith('mosaic-content', { expire: 0 });
     expect(notifyContentChangedMock).toHaveBeenCalledTimes(1);
   });
 

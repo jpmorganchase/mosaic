@@ -29,13 +29,19 @@
  *   late for hydration. `initializeStore(seed)` returns a fully-
  *   populated store synchronously, matching SSR exactly.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
 import { Image } from '@jpmorganchase/mosaic-site-components/Image/index';
 import { Link } from '@jpmorganchase/mosaic-site-components/Link';
-import { initializeStore, StoreProvider, useCreateStore } from '@jpmorganchase/mosaic-store';
+import {
+  disposeStore,
+  initializeStore,
+  registerStore,
+  StoreProvider,
+  useCreateStore
+} from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
 
@@ -57,7 +63,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // (`AppHeaderControls`, `RouteMetadata`, `Metadata`) without a
   // provider in the tree and throw `[next-auth]: useSession must be
   // wrapped in a <SessionProvider />`. On no-auth deployments the
-  // server's stub handlers return 404 for `/api/auth/session`, which
+  // server's stub handlers answer `/api/auth/session` with `null`, which
   // `<SessionProvider>` reads as "no session" and settles to `null` —
   // cheap, and the only correct shape.
   //
@@ -87,21 +93,36 @@ export function Providers({ children }: { children: React.ReactNode }) {
  * and remounts the page subtree on every route change, so the
  * `useState` initializer runs fresh per navigation, which is the
  * behaviour we want.
+ *
+ * `isEditing` is the server's view of `?edit=1` / `?new=1`. Passing it
+ * to `LayoutProvider` keeps `useSearchParams()` out of the view path, so
+ * prerendered pages ship their real layout in the HTML.
  */
 export function StoreShell({
   storeProps,
+  isEditing = false,
   children
 }: {
   storeProps: Record<string, unknown>;
+  isEditing?: boolean;
   children: React.ReactNode;
 }) {
   const [store] = useState(() => initializeStore(storeProps));
+  // Registers the store for colour-mode sync while mounted and releases
+  // it (listeners, sibling-store set) when the page unmounts. Re-registers
+  // after React StrictMode's simulated unmount in development.
+  useEffect(() => {
+    registerStore(store);
+    return () => disposeStore(store);
+  }, [store]);
   return (
     <StoreProvider value={store}>
       <BaseUrlProvider>
         <ImageProvider value={Image}>
           <LinkProvider value={Link}>
-            <LayoutProvider layoutComponents={mosaicLayouts}>{children}</LayoutProvider>
+            <LayoutProvider layoutComponents={mosaicLayouts} isEditing={isEditing}>
+              {children}
+            </LayoutProvider>
           </LinkProvider>
         </ImageProvider>
       </BaseUrlProvider>

@@ -98,9 +98,8 @@ function syncColorModeToDom(colorMode: ColorMode) {
  * until a full page reload.
  *
  * Maintain a module-level set of every live store and broadcast every
- * `colorMode` change to all of them. Unsubscribe is best-effort —
- * stores live for the lifetime of the tab in practice, and zustand
- * does not expose a destroy hook on a per-store basis.
+ * `colorMode` change to all of them. `disposeStore` removes a store
+ * again; `StoreShell` in the site calls it when a page unmounts.
  */
 const liveStores = new Set<StoreApi<SiteState>>();
 function broadcastColorMode(colorMode: ColorMode, origin: StoreApi<SiteState>) {
@@ -110,6 +109,59 @@ function broadcastColorMode(colorMode: ColorMode, origin: StoreApi<SiteState>) {
       store.setState({ colorMode });
     }
   }
+}
+
+const storeCleanups = new WeakMap<StoreApi<SiteState>, () => void>();
+
+/**
+ * Subscribes `store` to same-tab colour-mode sync (sibling stores and
+ * `<html data-mode>`) and cross-tab sync (`storage` events). Idempotent;
+ * `initializeStore` calls it on the client. Components that create a
+ * store per mount should call `disposeStore` on unmount (and call this
+ * again on re-mount), otherwise every navigation leaks a store.
+ */
+function registerStore(mosaicStore: StoreApi<SiteState>) {
+  if (typeof window === 'undefined' || storeCleanups.has(mosaicStore)) return;
+  liveStores.add(mosaicStore);
+
+  // Same-tab: when any store changes `colorMode`, broadcast to every
+  // sibling store and mirror to `<html data-mode>`.
+  const unsubscribe = mosaicStore.subscribe((state, prev) => {
+    if (state.colorMode !== prev.colorMode) {
+      syncColorModeToDom(state.colorMode);
+      broadcastColorMode(state.colorMode, mosaicStore);
+    }
+  });
+
+  // Cross-tab: the persist middleware writes `localStorage` on every
+  // change; the matching read side is a `storage` event listener,
+  // which fires only on *other* same-origin tabs/windows. Pick the
+  // updated value back up and reflect it locally.
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== 'mosaic-theme-pref' || !event.newValue) return;
+    try {
+      const next = JSON.parse(event.newValue)?.state?.colorMode as ColorMode | undefined;
+      if (!next || next === mosaicStore.getState().colorMode) return;
+      mosaicStore.setState({ colorMode: next });
+      // `setState` here will trip the subscriber above, which handles
+      // the DOM mirror + same-tab broadcast.
+    } catch {
+      // ignore malformed payloads
+    }
+  };
+  window.addEventListener('storage', onStorage);
+
+  storeCleanups.set(mosaicStore, () => {
+    liveStores.delete(mosaicStore);
+    unsubscribe();
+    window.removeEventListener('storage', onStorage);
+  });
+}
+
+/** Stops syncing `store` and drops the module's reference to it. */
+function disposeStore(mosaicStore: StoreApi<SiteState>) {
+  storeCleanups.get(mosaicStore)?.();
+  storeCleanups.delete(mosaicStore);
 }
 
 const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
@@ -126,36 +178,7 @@ const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
     }))
   );
 
-  if (typeof window !== 'undefined') {
-    liveStores.add(mosaicStore);
-
-    // Same-tab: when any store changes `colorMode`, broadcast to every
-    // sibling store and mirror to `<html data-mode>`.
-    mosaicStore.subscribe((state, prev) => {
-      if (state.colorMode !== prev.colorMode) {
-        syncColorModeToDom(state.colorMode);
-        broadcastColorMode(state.colorMode, mosaicStore);
-      }
-    });
-
-    // Cross-tab: the persist middleware writes `localStorage` on every
-    // change; the matching read side is a `storage` event listener,
-    // which fires only on *other* same-origin tabs/windows. Pick the
-    // updated value back up and reflect it locally.
-    const onStorage = (event: StorageEvent) => {
-      if (event.key !== 'mosaic-theme-pref' || !event.newValue) return;
-      try {
-        const next = JSON.parse(event.newValue)?.state?.colorMode as ColorMode | undefined;
-        if (!next || next === mosaicStore.getState().colorMode) return;
-        mosaicStore.setState({ colorMode: next });
-        // `setState` here will trip the subscriber above, which handles
-        // the DOM mirror + same-tab broadcast.
-      } catch {
-        // ignore malformed payloads
-      }
-    };
-    window.addEventListener('storage', onStorage);
-  }
+  registerStore(mosaicStore);
 
   return mosaicStore;
 };
@@ -221,4 +244,4 @@ function useStore<T>(
   return useZustandStore(storeFromContext, selector, equalityFn);
 }
 
-export { useCreateStore, StoreProvider, useStore, initializeStore };
+export { useCreateStore, StoreProvider, useStore, initializeStore, registerStore, disposeStore };

@@ -22,6 +22,7 @@
  *     `null.useState` hazard that `next-mdx-remote`'s
  *     `<MDXRemote lazy />` introduces.
  */
+import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 
 import { MdxRenderer } from './MdxComponents';
@@ -30,16 +31,18 @@ interface BodyServerProps {
   type?: 'mdx' | 'json';
   /** Raw, un-compiled MDX text from the loader middleware. */
   raw?: string;
+  /** Already-compiled `raw`, when the caller compiled it itself. */
+  source?: SerializeResult;
   /** Already-rendered content for non-MDX (JSON) responses. */
   content?: React.ReactNode;
 }
 
-export async function BodyServer({ type, raw, content }: BodyServerProps) {
+export async function BodyServer({ type, raw, source: precompiled, content }: BodyServerProps) {
   if (type === 'mdx') {
-    if (!raw) {
+    if (!raw && !precompiled) {
       throw new Error('BodyServer: `raw` MDX text is required when type === "mdx".');
     }
-    const source = await serializeMdxForClient(raw);
+    const source = precompiled ?? (await serializeMdxForClient(raw as string));
     return (
       <div className="wrapper">
         <MdxRenderer source={source} />

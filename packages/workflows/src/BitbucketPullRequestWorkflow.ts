@@ -7,24 +7,12 @@ import { mdx } from '@jpmorganchase/mosaic-serialisers';
 import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/mosaic-types';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
+import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
   return String(error);
-}
-
-/**
- * Escape a string for safe use inside a `new RegExp(...)`. Config
- * strings (`prefixDir`, `subfolder`) interpolated into regex
- * sources can otherwise contain metacharacters — `.`, `+`, `(`,
- * `[`, etc. — and silently match unintended paths. The set of
- * characters escaped here is the union of all metacharacters that
- * have special meaning in any JS regex context, per
- * MDN/`RegExp` reference.
- */
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 interface BitbucketPullRequestWorkflowData {
@@ -111,14 +99,15 @@ async function createPullRequest(
   // cleanup scripts that filter by sid prefix). The persistAction
   // intentionally falls back to email or name when sid is missing,
   // so we honour those too — but require *something* non-empty.
-  const sidLower = (user.sid ?? '').toLowerCase();
-  if (!sidLower) {
+  if (!user.sid) {
     sendWorkflowProgressMessage(
       'Cannot create a pull request: the authenticated user has no SID, email, or name.',
       'ERROR'
     );
     return false;
   }
+  // Used in the branch name and the worktree directory name.
+  const sidLower = toSafeIdentifier(user.sid);
 
   const branchName = `${sidLower}-${uuidv4()}`;
   await repoInstance.createWorktree(sidLower, branchName);
@@ -149,13 +138,17 @@ async function createPullRequest(
      * strip out the namespace from the file path.
      * We are interested in the file on disk not in the VFS
      */
-    const pathOnDisk = path.posix.join(
-      repoInstance.dir,
-      subfolder,
-      // `prefixDir` is a config string; escape regex metacharacters
-      // so values like `docs.v2` don't silently match `docsAv2`.
-      filePath.replace(new RegExp(`${escapeRegExp(prefixDir)}/`), '')
+    const pathOnDisk = resolveInside(
+      path.posix.join(repoInstance.dir, subfolder),
+      stripPrefixDir(filePath, prefixDir)
     );
+    if (!pathOnDisk) {
+      sendWorkflowProgressMessage(
+        `Refusing to write ${filePath}: it resolves outside the source folder.`,
+        'ERROR'
+      );
+      return false;
+    }
 
     /**
      * Create vs. edit branch — see the matching block in

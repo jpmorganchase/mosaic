@@ -2,6 +2,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
+import { resolveInside, stripPrefixDir } from './safePaths.js';
+
 /**
  * Escape a string for safe use inside a `new RegExp(...)`. See
  * `BitbucketPullRequestWorkflow.ts` for the rationale — config
@@ -87,11 +89,16 @@ export async function renamePageIfRequested({
     };
   }
 
-  const newPathOnDisk = path.posix.join(
-    repoDir,
-    subfolder,
-    normalisedTarget.replace(new RegExp(`^/?${escapeRegExp(prefixDir)}/`), '')
+  const newPathOnDisk = resolveInside(
+    path.posix.join(repoDir, subfolder),
+    stripPrefixDir(normalisedTarget, prefixDir)
   );
+  if (!newPathOnDisk) {
+    return {
+      ok: false,
+      error: `Refusing to rename: ${normalisedTarget} resolves outside the source folder.`
+    };
+  }
 
   // Same on-disk path after normalisation (e.g. user typed the
   // route with/without a leading slash). Treat as a no-op

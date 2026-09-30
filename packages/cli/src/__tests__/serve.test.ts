@@ -87,13 +87,30 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
   })
 }));
 
+const ADMIN_SECRET = 'admin-test-secret';
+const WORKFLOWS_SECRET = 'workflows-test-secret';
+const adminHeaders = { 'x-mosaic-admin-secret': ADMIN_SECRET };
+const ORIGINAL_ENV = {
+  MOSAIC_ADMIN_SECRET: process.env.MOSAIC_ADMIN_SECRET,
+  MOSAIC_WORKFLOWS_SECRET: process.env.MOSAIC_WORKFLOWS_SECRET
+};
+
+function restoreEnv(name: keyof typeof ORIGINAL_ENV) {
+  if (ORIGINAL_ENV[name] === undefined) delete process.env[name];
+  else process.env[name] = ORIGINAL_ENV[name];
+}
+
 describe('GIVEN the serve command', () => {
   beforeAll(async () => {
+    process.env.MOSAIC_ADMIN_SECRET = ADMIN_SECRET;
+    process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
     await serve(mosaicConfig, 0, undefined /** scope */);
   });
 
   afterAll(async () => {
     await server.close();
+    restoreEnv('MOSAIC_ADMIN_SECRET');
+    restoreEnv('MOSAIC_WORKFLOWS_SECRET');
   });
 
   test('THEN a mosaic instance is created and available to server plugins', async () => {
@@ -121,30 +138,76 @@ describe('GIVEN the serve command', () => {
   });
 
   describe('AND WHEN using the Admin APIs', () => {
+    test('THEN protected Admin APIs are disabled when MOSAIC_ADMIN_SECRET is unset', async () => {
+      delete process.env.MOSAIC_ADMIN_SECRET;
+      try {
+        const response = await server.inject({
+          method: 'GET',
+          url: '/_mosaic_/content/dump',
+          headers: adminHeaders
+        });
+        expect(response.statusCode).toEqual(403);
+        expect(response.payload).toMatch(/MOSAIC_ADMIN_SECRET/);
+      } finally {
+        process.env.MOSAIC_ADMIN_SECRET = ADMIN_SECRET;
+      }
+    });
+
+    test('THEN protected Admin APIs reject a missing or wrong secret', async () => {
+      const missing = await server.inject({ method: 'GET', url: '/_mosaic_/config' });
+      expect(missing.statusCode).toEqual(401);
+
+      const wrong = await server.inject({
+        method: 'PUT',
+        url: '/_mosaic_/source/stop',
+        headers: { authorization: 'Bearer not-the-secret' },
+        payload: { name: 'stop-me' }
+      });
+      expect(wrong.statusCode).toEqual(401);
+      expect(mockStopSourceFn).not.toHaveBeenCalled();
+    });
+
+    test('THEN the Admin APIs accept the secret as a Bearer token', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/_mosaic_/content/dump',
+        headers: { authorization: `Bearer ${ADMIN_SECRET}` }
+      });
+      expect(response.statusCode).toEqual(200);
+    });
+
     test('THEN the config Admin API returns the mosaic config', async () => {
       const response = await server.inject({
         method: 'GET',
-        url: '/_mosaic_/config'
+        url: '/_mosaic_/config',
+        headers: adminHeaders
       });
       expect(response.statusCode).toEqual(200);
       const responseConfig = JSON.parse(response.payload);
-      expect(responseConfig).toEqual(mosaicConfig);
+      expect({ ...responseConfig, sources: [] }).toEqual({ ...mosaicConfig, sources: [] });
+      expect(responseConfig.sources[0]).toEqual(mosaicConfig.sources[0]);
       expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
 
       // confirm credentials are sanitized for git repo sources
       expect(responseConfig.sources[1].options.credentials).toEqual('david: ********');
+      // ...without touching the live config the sources restart with
+      expect((mosaicConfig.sources[1].options as { credentials: string }).credentials).toEqual(
+        'david: Password1'
+      );
     });
 
     test('THEN the list sources Admin API returns the running sources', async () => {
       const response = await server.inject({
         method: 'GET',
-        url: '/_mosaic_/sources/list'
+        url: '/_mosaic_/sources/list',
+        headers: adminHeaders
       });
       expect(mockListSourcesFn).toBeCalledTimes(1);
       expect(response.statusCode).toEqual(200);
       expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
       const sources = JSON.parse(response.payload);
-      expect(sources).toEqual(mosaicConfig.sources);
+      expect(sources[0]).toEqual(mosaicConfig.sources[0]);
+      expect({ ...sources[1], options: {} }).toEqual({ ...mosaicConfig.sources[1], options: {} });
 
       // confirm credentials are sanitized for git repo sources
       expect(sources[1].options.credentials).toEqual('david: ********');
@@ -153,7 +216,8 @@ describe('GIVEN the serve command', () => {
     test('THEN the Get Filesystem Admin API returns the current fs content', async () => {
       const response = await server.inject({
         method: 'GET',
-        url: '/_mosaic_/content/dump'
+        url: '/_mosaic_/content/dump',
+        headers: adminHeaders
       });
 
       expect(response.statusCode).toEqual(200);
@@ -240,6 +304,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/stop',
+        headers: adminHeaders,
         payload: { name: 'stop-me' }
       });
 
@@ -255,6 +320,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/stop',
+        headers: adminHeaders,
         payload: { something: 'stop-me' }
       });
 
@@ -270,6 +336,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/stop',
+        headers: adminHeaders,
         payload: { name: 'stop-me' }
       });
 
@@ -283,6 +350,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/restart',
+        headers: adminHeaders,
         payload: { name: 'restart-me' }
       });
 
@@ -298,6 +366,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/restart',
+        headers: adminHeaders,
         payload: { something: 'restart-me' }
       });
 
@@ -313,6 +382,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'PUT',
         url: '/_mosaic_/source/restart',
+        headers: adminHeaders,
         payload: { name: 'restart-me' }
       });
 
@@ -351,6 +421,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/_mosaic_/source/add',
+        headers: adminHeaders,
         payload
       });
 
@@ -383,6 +454,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/_mosaic_/source/add',
+        headers: adminHeaders,
         payload
       });
 
@@ -415,6 +487,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/_mosaic_/source/add',
+        headers: adminHeaders,
         payload
       });
 
@@ -445,6 +518,7 @@ describe('GIVEN the serve command', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/_mosaic_/source/add',
+        headers: adminHeaders,
         payload
       });
 
@@ -455,111 +529,182 @@ describe('GIVEN the serve command', () => {
     });
   });
 
-  /** TODO work out how to test web sockets  */
-  describe.skip('AND WHEN running a workflow', () => {
+  describe('AND WHEN running a workflow over the websocket', () => {
     beforeEach(() => {
-      mockExistsFn.mockClear();
-      mockRealpathFn.mockClear();
-      mockStatFn.mockClear();
-      mockTriggerWorkflowFn.mockClear();
+      mockExistsFn.mockReset();
+      mockRealpathFn.mockReset();
+      mockStatFn.mockReset();
+      mockTriggerWorkflowFn.mockReset();
     });
 
-    test('THEN the workflow is run if the page exists', async () => {
-      mockExistsFn.mockResolvedValueOnce(true);
-      mockRealpathFn.mockResolvedValueOnce('/file/path');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockResolvedValueOnce(false) });
-      mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
-      const response = await server.inject({
-        method: 'POST',
-        url: '/workflows',
-        payload: {
-          user: { name: 'David Reid', email: 'email.address@something.com' },
-          route: '/file/path',
-          markdown: '### This is a title',
-          name: 'save'
-        }
-      });
+    const user = { sid: 'dreid', name: 'David Reid', email: 'email.address@something.com' };
 
-      expect(mockExistsFn).toBeCalledTimes(1);
-      expect(mockRealpathFn).toBeCalledTimes(1);
-      expect(mockStatFn).toBeCalledTimes(1);
-      expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
-      expect(mockTriggerWorkflowFn.mock.calls[0][0]).toEqual('save');
-      expect(mockTriggerWorkflowFn.mock.calls[0][1]).toEqual('/file/path');
-      expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual({
-        markdown: '### This is a title',
-        user: { name: 'David Reid', email: 'email.address@something.com' }
+    async function sendWorkflowMessage(payload: unknown) {
+      const ws = await server.injectWS('/workflows');
+      const reply = new Promise<Record<string, unknown>>(resolve => {
+        ws.once('message', data => resolve(JSON.parse(data.toString())));
       });
-      expect(response.statusCode).toEqual(200);
-      expect(response.payload).toEqual('workflow result');
-      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+      ws.send(typeof payload === 'string' ? payload : JSON.stringify(payload));
+      const message = await reply;
+      ws.terminate();
+      return message;
+    }
+
+    test('THEN workflows are refused when MOSAIC_WORKFLOWS_SECRET is unset', async () => {
+      delete process.env.MOSAIC_WORKFLOWS_SECRET;
+      try {
+        const reply = await sendWorkflowMessage({
+          user,
+          route: '/file/path',
+          name: 'save',
+          token: WORKFLOWS_SECRET
+        });
+        expect(reply.status).toEqual('ERROR');
+        expect(reply.message).toMatch(/MOSAIC_WORKFLOWS_SECRET/);
+        expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+      } finally {
+        process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
+      }
     });
 
-    test('THEN the workflow is run for index page if directory path is provided', async () => {
-      mockExistsFn.mockResolvedValueOnce(true);
-      mockRealpathFn.mockResolvedValueOnce('/file/path/index');
-      mockStatFn.mockResolvedValueOnce({ isDirectory: vi.fn().mockReturnValue(true) });
-      mockTriggerWorkflowFn.mockResolvedValueOnce('workflow result');
-      const response = await server.inject({
-        method: 'POST',
-        url: '/workflows',
-        payload: {
-          user: { name: 'David Reid', email: 'email.address@something.com' },
-          route: '/file/path',
-          markdown: '### This is a title',
-          name: 'save'
-        }
+    test('THEN the workflow is not run with a wrong token', async () => {
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        name: 'save',
+        token: 'not-the-secret'
       });
-
-      expect(mockExistsFn).toBeCalledTimes(1);
-      expect(mockRealpathFn).toBeCalledTimes(1);
-      expect(mockRealpathFn.mock.calls[0][0]).toEqual('/file/path/index');
-      expect(mockStatFn).toBeCalledTimes(1);
-      expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
-      expect(mockTriggerWorkflowFn.mock.calls[0][0]).toEqual('save');
-      expect(mockTriggerWorkflowFn.mock.calls[0][1]).toEqual('/file/path/index');
-      expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual({
-        markdown: '### This is a title',
-        user: { name: 'David Reid', email: 'email.address@something.com' }
-      });
-      expect(response.statusCode).toEqual(200);
-      expect(response.payload).toEqual('workflow result');
-      expect(response.headers['content-type']).toEqual('application/json; charset=utf-8');
+      expect(reply).toEqual({ status: 'ERROR', message: 'Unauthorized.' });
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
     });
 
     test('THEN the workflow is not run without providing the workflow name', async () => {
-      const response = await server.inject({
-        method: 'POST',
-        url: '/workflows',
-        payload: {
-          user: { name: 'David Reid', email: 'email.address@something.com' },
-          route: '/file/path',
-          markdown: '### This is a title'
-        }
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        token: WORKFLOWS_SECRET
+      });
+      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow name is required' });
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+    });
+
+    test('THEN the workflow is not run for a route that escapes its folder', async () => {
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/../../etc/passwd',
+        name: 'save',
+        token: WORKFLOWS_SECRET
+      });
+      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow route is invalid' });
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+    });
+
+    test('THEN the workflow is not run for a rename target that escapes its folder', async () => {
+      mockExistsFn.mockResolvedValue(true);
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        targetRoute: '/file/..\\..\\x.mdx',
+        name: 'save',
+        token: WORKFLOWS_SECRET
+      });
+      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow target route is invalid' });
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+    });
+
+    test('THEN the workflow is run if the page exists and echoes the caller channel', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockStatFn.mockResolvedValueOnce({ isDirectory: () => false });
+      mockRealpathFn.mockResolvedValueOnce('/file/path.mdx');
+
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        markdown: '### This is a title',
+        name: 'save',
+        channel: 'abc123',
+        token: WORKFLOWS_SECRET
       });
 
-      expect(mockTriggerWorkflowFn).toBeCalledTimes(0);
-      expect(response.statusCode).toEqual(500);
-      expect(response.payload).toEqual('Workflow name is required');
-      expect(response.headers['content-type']).toEqual('application/text');
+      expect(reply).toEqual({
+        status: 'SUCCESS',
+        message: 'Workflow save has started',
+        channel: 'abc123'
+      });
+      expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
+      const [, name, filePath, data] = mockTriggerWorkflowFn.mock.calls[0];
+      expect(name).toEqual('save');
+      expect(filePath).toEqual('/file/path.mdx');
+      // The token never reaches the workflow.
+      expect(data).toEqual({ user, markdown: '### This is a title' });
+    });
+
+    test('THEN the workflow is run for the index page if a directory path is provided', async () => {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockStatFn.mockResolvedValueOnce({ isDirectory: () => true });
+      mockRealpathFn.mockResolvedValueOnce('/file/path/index.mdx');
+
+      await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        name: 'save',
+        token: WORKFLOWS_SECRET
+      });
+
+      expect(mockRealpathFn).toHaveBeenCalledWith('/file/path/index');
+      expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual('/file/path/index.mdx');
     });
 
     test('THEN the workflow is not run if the page does not exist', async () => {
-      const response = await server.inject({
-        method: 'POST',
-        url: '/workflows',
-        payload: {
-          user: { name: 'David Reid', email: 'email.address@something.com' },
-          route: '/file/path',
-          markdown: '### This is a title',
-          name: 'save'
-        }
+      mockExistsFn.mockResolvedValueOnce(false);
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        name: 'save',
+        channel: 'abc123',
+        token: WORKFLOWS_SECRET
+      });
+      expect(reply).toEqual({
+        status: 'ERROR',
+        message: '/file/path not found',
+        channel: 'abc123'
+      });
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+    });
+
+    test('THEN a new page is created under the deepest existing folder', async () => {
+      // `/file/new-page.mdx` doesn't exist yet; `/file/nested` doesn't
+      // either; `/file` does.
+      mockExistsFn.mockImplementation(async (target: string) => target === '/file');
+
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/nested/new-page',
+        markdown: '# New',
+        isNewPage: true,
+        name: 'save',
+        token: WORKFLOWS_SECRET
       });
 
-      expect(mockTriggerWorkflowFn).toBeCalledTimes(0);
-      expect(response.statusCode).toEqual(404);
-      expect(response.payload).toEqual('/file/path not found');
-      expect(response.headers['content-type']).toEqual('application/text');
+      expect(reply.status).toEqual('SUCCESS');
+      const [, , filePath, data, ownerPath] = mockTriggerWorkflowFn.mock.calls[0];
+      expect(filePath).toEqual('/file/nested/new-page.mdx');
+      expect(ownerPath).toEqual('/file');
+      expect(data).toEqual({ user, markdown: '# New', isNewPage: true });
+    });
+
+    test('THEN creating a page that already exists is refused', async () => {
+      mockExistsFn.mockResolvedValue(true);
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/file/path',
+        isNewPage: true,
+        name: 'save',
+        token: WORKFLOWS_SECRET
+      });
+      expect(reply.status).toEqual('ERROR');
+      expect(reply.message).toEqual('/file/path.mdx already exists');
+      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
     });
   });
 

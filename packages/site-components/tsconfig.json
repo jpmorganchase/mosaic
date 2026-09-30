@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.bundle.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    // Resolve package `exports` subpaths (e.g.
+    // `@jpmorganchase/mosaic-content-editor-plugin/useEditMode`), which the
+    // shared "node" strategy doesn't understand. Matches the esbuild output
+    // of scripts/bundle.mjs, like content-editor-plugin's tsconfig.
+    "moduleResolution": "bundler"
   },
   "include": ["src"]
 }

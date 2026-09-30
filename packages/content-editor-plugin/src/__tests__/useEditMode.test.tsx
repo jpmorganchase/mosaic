@@ -25,7 +25,8 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(searchParamsState.search)
 }));
 
-import { useEditMode } from '../useEditMode';
+import { createElement, type ReactNode } from 'react';
+import { EditModeProvider, useEditMode, useEditModeActions, useIsEditing } from '../useEditMode';
 
 /** Convenience: set the current "URL" the hooks observe. */
 function setUrl(pathname: string, search = '') {
@@ -104,5 +105,37 @@ describe('useEditMode.stopEditing', () => {
     act(() => result.current.stopEditing());
 
     expect(replace).toHaveBeenCalledWith('/', { scroll: false });
+  });
+});
+
+describe('useIsEditing', () => {
+  const withProvider =
+    (isEditing: boolean) =>
+    ({ children }: { children: ReactNode }) =>
+      createElement(EditModeProvider, { isEditing }, children);
+
+  it('returns the edit state seeded by EditModeProvider, ignoring the URL', () => {
+    setUrl('/docs/foo/bar', '');
+    expect(renderHook(() => useIsEditing(), { wrapper: withProvider(true) }).result.current).toBe(
+      true
+    );
+    setUrl('/docs/foo/bar', 'edit=1');
+    expect(renderHook(() => useIsEditing(), { wrapper: withProvider(false) }).result.current).toBe(
+      false
+    );
+  });
+
+  it('defaults to false without a provider', () => {
+    setUrl('/docs/foo/bar', 'edit=1');
+    expect(renderHook(() => useIsEditing()).result.current).toBe(false);
+  });
+});
+
+describe('useEditModeActions', () => {
+  it('adds ?edit=1 to the current URL', () => {
+    setUrl('/docs/foo/bar', 'hl=python');
+    const { result } = renderHook(() => useEditModeActions());
+    act(() => result.current.startEditing());
+    expect(replace).toHaveBeenCalledWith('/docs/foo/bar?hl=python&edit=1', { scroll: false });
   });
 });

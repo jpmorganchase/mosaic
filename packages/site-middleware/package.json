@@ -38,6 +38,7 @@
     "@smithy/util-stream": "^4.6.3",
     "@types/hast": "^3.0.4",
     "aws-sdk-client-mock": "^4.0.0",
+    "next": "^16.3.3",
     "typescript": "^5.0.0"
   },
   "dependencies": {
@@ -55,7 +56,6 @@
     "mdast-util-mdx": "^3.0.0",
     "mdast-util-mdx-jsx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
-    "next": "^16.3.3",
     "next-mdx-remote-client": "^1.0.3",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.0",
@@ -65,7 +65,7 @@
     "unist-util-visit-parents": "^6.0.0"
   },
   "peerDependencies": {
-    "next-auth": "^5.0.0-beta.30",
-    "react": "^18.2.0 || ^19.0.0"
+    "next": "^16.3.3",
+    "react": "^19.0.0"
   }
 }

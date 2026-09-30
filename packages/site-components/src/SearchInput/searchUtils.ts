@@ -41,12 +41,29 @@ export const calculateBestIndex = (indices: Index[]): BestIndex => {
   return { index, delta };
 };
 
+const HTML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;'
+};
+
+/**
+ * Search result snippets are rendered as HTML (so the match can be wrapped
+ * in `<strong>`), but the indexed text is plain page text that can contain
+ * markup copied from docs and code samples. Escape it so it stays text.
+ */
+export const escapeHtml = (text: string) => text.replace(/[&<>"']/g, char => HTML_ESCAPES[char]);
+
 /**
  * Highlight a section of text with a <strong> tag
  *
  * This is required in addition to the Salt `<Hightlight>` component because
  * the Fuse.js "matches" may include text that differs slightly from the original
  * search term. For example, if the search term is "foo", the match may be "fool".
+ *
+ * The returned string is HTML: every part of `text` is escaped.
  *
  * @param text The full text
  * @param index The start and end points of the target portion of the text
@@ -57,8 +74,8 @@ export const highlightMatch = (text: string, index: Index) => {
     text.substring(index[0], index[1] + 1),
     text.substring(index[1] + 1)
   ];
-  if (parts[1].length === 0) return text;
-  return `${parts[0]}<strong>${parts[1]}</strong>${parts[2]}`;
+  if (parts[1].length === 0) return escapeHtml(text);
+  return `${escapeHtml(parts[0])}<strong>${escapeHtml(parts[1])}</strong>${escapeHtml(parts[2])}`;
 };
 
 export const getBestMatch = (matches: Match[], fallback: string) => {
@@ -74,7 +91,7 @@ export const getBestMatch = (matches: Match[], fallback: string) => {
     const bestMatch = matchesWithIndex[0];
     return highlightMatch(bestMatch.value, bestMatch.bestIndex.index);
   }
-  return fallback;
+  return escapeHtml(String(fallback ?? ''));
 };
 
 export const parseSearchResults = (results): SearchResult[] =>
@@ -88,9 +105,21 @@ export const parseSearchResults = (results): SearchResult[] =>
     };
   });
 
-export const performSearch = (index, term, config) => {
+// Fuse builds its index in the constructor; reuse it while the index and
+// config objects stay the same instead of re-indexing on every keystroke.
+const fuseCache = new WeakMap<object, { config: unknown; fuse: Fuse<unknown> }>();
+
+function getFuse(index, config) {
+  if (index === null || typeof index !== 'object') return new Fuse(index ?? [], config);
+  const cached = fuseCache.get(index);
+  if (cached && cached.config === config) return cached.fuse;
   const fuse = new Fuse(index, config);
-  const results = fuse.search(term);
+  fuseCache.set(index, { config, fuse });
+  return fuse;
+}
+
+export const performSearch = (index, term, config) => {
+  const results = getFuse(index, config).search(term);
 
   const parsedResults = parseSearchResults(results);
   return parsedResults;
