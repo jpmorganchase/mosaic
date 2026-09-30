@@ -121,6 +121,7 @@ let setAliasesMock = vi.fn();
 let setRefMock = vi.fn();
 let writeFileMock = vi.fn();
 const volume = {
+  __internal_do_not_use_addReadFileHook: vi.fn(),
   promises: {
     exists: vi.fn(),
     glob: vi.fn().mockResolvedValue([
@@ -587,6 +588,223 @@ describe('GIVEN the SharedConfigPlugin', () => {
     test('THEN non-index pages are left untouched', () => {
       const leaf = updatedPages.find(p => p.fullPath === '/FolderA/SubfolderA/PageA.mdx');
       expect(leaf?.sharedConfig).toBeUndefined();
+    });
+  });
+
+  describe('WHEN content authors `sharedConfig.sourceCapabilities` itself', () => {
+    async function runAfterSource(pages: SharedConfigPage[]) {
+      // @ts-ignore
+      return ((await SharedConfigPlugin.$afterSource?.(
+        pages,
+        {
+          pageExtensions: ['.mdx'],
+          ignorePages: ['shared-config.json'],
+          config: { setData: setDataMock },
+          namespace: 'caps-ns'
+        },
+        { filename: 'shared-config.json' }
+      )) || []) as SharedConfigPage[];
+    }
+
+    afterEach(() => {
+      setDataMock.mockReset();
+    });
+
+    test('THEN the source capabilities replace the authored value', async () => {
+      const [index] = await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sharedConfig: { header: 'kept', sourceCapabilities: { writable: false } },
+          sourceCapabilities: { writable: true }
+        } as SharedConfigPage
+      ]);
+
+      expect(index.sharedConfig).toEqual({
+        header: 'kept',
+        sourceCapabilities: { writable: true }
+      });
+    });
+
+    test('THEN the authored value is removed when the source declares no capabilities', async () => {
+      const [index, child] = await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sharedConfig: { header: 'kept', sourceCapabilities: { writable: true } }
+        } as SharedConfigPage,
+        {
+          fullPath: '/FolderA/SubfolderA/index.mdx',
+          route: 'route/folderA/subfolderA/index',
+          sharedConfig: { sourceCapabilities: { writable: true } }
+        } as SharedConfigPage
+      ]);
+
+      expect(index.sharedConfig).toEqual({ header: 'kept' });
+      expect(child.sharedConfig).toEqual({ header: 'kept' });
+    });
+
+    test('THEN a `sharedConfig` that is not an object does not stop later pages being checked', async () => {
+      const [index, child] = await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sharedConfig: 1
+        } as SharedConfigPage,
+        {
+          fullPath: '/FolderA/SubfolderA/index.mdx',
+          route: 'route/folderA/subfolderA/index',
+          sharedConfig: { header: 'kept', sourceCapabilities: { writable: true } }
+        } as SharedConfigPage
+      ]);
+
+      expect(index.sharedConfig).toBe(1);
+      expect(child.sharedConfig).toEqual({ header: 'kept' });
+    });
+
+    test('THEN a `sharedConfig` that is not an object is replaced when the source has capabilities', async () => {
+      const [index] = await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sharedConfig: 'not an object',
+          sourceCapabilities: { writable: true }
+        } as SharedConfigPage
+      ]);
+
+      expect(index.sharedConfig).toEqual({ sourceCapabilities: { writable: true } });
+    });
+
+    test('THEN the source capabilities are recorded for `afterUpdate`', async () => {
+      await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sourceCapabilities: { writable: true }
+        } as SharedConfigPage
+      ]);
+
+      expect(setDataMock).toHaveBeenCalledWith({
+        sharedConfigSourceCapabilities: { writable: true }
+      });
+    });
+
+    test('THEN nothing is recorded when the source declares no capabilities', async () => {
+      await runAfterSource([
+        {
+          fullPath: '/FolderA/index.mdx',
+          route: 'route/folderA/index',
+          sharedConfig: { header: 'kept' }
+        } as SharedConfigPage
+      ]);
+
+      expect(setDataMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ sharedConfigSourceCapabilities: expect.anything() })
+      );
+    });
+  });
+
+  describe('WHEN a shared config file is read after `afterUpdate`', () => {
+    type ReadFileHook = (filePath: string, fileData: unknown) => Promise<unknown>;
+
+    async function registerHook(sourceCapabilities?: { writable?: boolean }) {
+      const addReadFileHook = vi.fn();
+      // @ts-ignore
+      await SharedConfigPlugin.afterUpdate?.(
+        { __internal_do_not_use_addReadFileHook: addReadFileHook },
+        {
+          config: {
+            data: sourceCapabilities ? { sharedConfigSourceCapabilities: sourceCapabilities } : {}
+          },
+          globalConfig: { data: {} },
+          namespace: 'caps-ns'
+        },
+        { filename: 'shared-config.json' }
+      );
+      expect(addReadFileHook).toHaveBeenCalledTimes(1);
+      return addReadFileHook.mock.calls[0][0] as ReadFileHook;
+    }
+
+    const fileWith = (config: unknown) => Buffer.from(JSON.stringify({ config }));
+    const parse = (fileData: unknown) => JSON.parse(String(fileData));
+
+    test('THEN capabilities that a `$ref` put back are removed when the source declares none', async () => {
+      const hook = await registerHook();
+
+      const result = await hook(
+        '/FolderA/shared-config.json',
+        fileWith({ header: 'kept', sourceCapabilities: { writable: true } })
+      );
+
+      expect(parse(result)).toEqual({ config: { header: 'kept' } });
+    });
+
+    test('THEN the source capabilities replace any other value', async () => {
+      const hook = await registerHook({ writable: true });
+
+      const result = await hook(
+        '/FolderA/shared-config.json',
+        fileWith({ header: 'kept', sourceCapabilities: { writable: false, extra: true } })
+      );
+
+      expect(parse(result)).toEqual({
+        config: { header: 'kept', sourceCapabilities: { writable: true } }
+      });
+    });
+
+    test('THEN files that are already correct are returned unchanged', async () => {
+      const hook = await registerHook({ writable: true });
+      const fileData = fileWith({ sourceCapabilities: { writable: true } });
+
+      expect(await hook('/FolderA/shared-config.json', fileData)).toBe(fileData);
+    });
+
+    test('THEN other files, and files that are not JSON objects, are returned unchanged', async () => {
+      const hook = await registerHook();
+      const page = fileWith({ sourceCapabilities: { writable: true } });
+      const notJson = Buffer.from('not json');
+
+      expect(await hook('/FolderA/index.json', page)).toBe(page);
+      expect(await hook('/FolderA/shared-config.json', notJson)).toBe(notJson);
+    });
+
+    test('THEN capabilities are not copied into another source with the namespace shared config', async () => {
+      const writeFile = vi.fn();
+      // @ts-ignore
+      await SharedConfigPlugin.afterUpdate?.(
+        {
+          __internal_do_not_use_addReadFileHook: vi.fn(),
+          promises: {
+            exists: vi.fn(async filePath => filePath === '/shared-config.json'),
+            readFile: vi.fn(async () =>
+              fileWith({ header: 'kept', sourceCapabilities: { writable: true } })
+            )
+          }
+        },
+        {
+          config: { data: { sharedConfigSourceCapabilities: { writable: true } } },
+          sharedFilesystem: {
+            promises: { exists: vi.fn(async () => false), mkdir: vi.fn(), writeFile }
+          },
+          globalConfig: {
+            data: {
+              applyNamespaceSharedConfig: {
+                other: {
+                  namespace: 'caps-ns',
+                  paths: ['/FolderY/index.mdx'],
+                  rootPath: '/FolderY/index.mdx'
+                }
+              }
+            }
+          },
+          namespace: 'caps-ns'
+        },
+        { filename: 'shared-config.json' }
+      );
+
+      expect(writeFile).toHaveBeenCalledTimes(1);
+      expect(writeFile.mock.calls[0][0]).toEqual('/FolderY/shared-config.json');
+      expect(parse(writeFile.mock.calls[0][1])).toEqual({ config: { header: 'kept' } });
     });
   });
 });

@@ -458,32 +458,32 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // the parsed frontmatter.
   //
   // A naive spread of `onDiskFrontmatter.sharedConfig` on top of the
-  // loader-derived copy would silently clobber the loader copy's
-  // `sourceCapabilities` field (which the frontmatter copy never
-  // carries) — that field is what the `CAPABILITY_GATE_BYPASSED`
-  // block (and, in non-dev builds, the SharedConfigPlugin's
-  // `sourceCapabilities` stamping) enriches with the writability
-  // flag. Dropping the frontmatter copy entirely would lose the
+  // loader-derived copy could replace or remove the loader copy's
+  // `sourceCapabilities` field, which carries the writability flag
+  // from the SharedConfigPlugin (or the `CAPABILITY_GATE_BYPASSED`
+  // block). Dropping the frontmatter copy entirely would lose the
   // per-page footer / header overrides, leaving every page rendering
   // the namespace-wide fallback.
   //
   // Shallow merge: per-page authored top-level keys (`header`,
-  // `footer`, `menu`, …) override the namespace fallback, while any
-  // `sourceCapabilities` present on the loader copy is preserved on
-  // top so the editor gate sees the correct writability flag.
+  // `footer`, `menu`, …) override the namespace fallback, while
+  // `sourceCapabilities` always comes from the loader copy (or is
+  // absent) so content can't turn on the editor controls.
   const { sharedConfig: frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
     sharedConfig?: Record<string, unknown>;
   } & Record<string, unknown>;
-  const mergedSharedConfig =
-    frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object'
-      ? {
-          ...(sharedConfig ?? {}),
-          ...frontmatterSharedConfig,
-          ...(sharedConfig?.sourceCapabilities
-            ? { sourceCapabilities: sharedConfig.sourceCapabilities }
-            : {})
-        }
-      : sharedConfig;
+  let mergedSharedConfig = sharedConfig;
+  if (frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object') {
+    const { sourceCapabilities: _authoredCapabilities, ...authoredOverrides } =
+      frontmatterSharedConfig;
+    mergedSharedConfig = {
+      ...(sharedConfig ?? {}),
+      ...authoredOverrides,
+      ...(sharedConfig?.sourceCapabilities
+        ? { sourceCapabilities: sharedConfig.sourceCapabilities }
+        : {})
+    };
+  }
   const storeProps = {
     searchIndex: search.searchIndex,
     searchConfig: search.searchConfig,
