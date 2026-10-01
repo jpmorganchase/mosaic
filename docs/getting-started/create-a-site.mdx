@@ -35,10 +35,10 @@ You can copy the `site` directory from this repository into your project. The si
 > - `src/app/layout.tsx` — root layout, global CSS and fonts.
 > - `src/app/providers.tsx` — client-side provider stack
 >   (`SessionProvider`, theme, store, layout).
-> - `src/app/[namespace]/[...route]/page.tsx` — the catch-all RSC route that loads
+> - `src/app/[namespace]/[section]/[[...route]]/page.tsx` — the catch-all RSC route that loads
 >   content with the `@jpmorganchase/mosaic-site-middleware` loaders and
 >   renders MDX.
-> - `src/app/[namespace]/[...route]/MdxComponents.ts` — registry for MDX-visible
+> - `src/app/[namespace]/[section]/[[...route]]/MdxComponents.ts` — registry for MDX-visible
 >   components (replaces the old `_app.tsx` component merge).
 > - `src/auth.ts` — Auth.js v5 wiring (`handlers`, `auth`, `signIn`,
 >   `signOut`).

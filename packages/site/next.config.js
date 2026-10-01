@@ -6,7 +6,7 @@
  *  1. Unset — full Next.js App Router build for `next start`. Supports
  *     active mode (SSR per request) and snapshot modes (pre-rendered at
  *     build time via `generateStaticParams` in
- *     `src/app/[namespace]/[...route]/page.tsx`).
+ *     `src/app/[namespace]/[section]/[[...route]]/page.tsx`).
  *
  *  2. `standalone` — the same build plus `output: 'standalone'`, which
  *     the Dockerfiles copy from `.next/standalone` and run with

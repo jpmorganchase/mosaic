@@ -45,10 +45,11 @@ import {
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
-import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../auth';
-import { withCapabilityBypass } from '../../../lib/capabilities';
-import { StoreShell } from '../../providers';
-import { FrameSync } from '../NamespaceFrame';
+import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../../auth';
+import { withCapabilityBypass } from '../../../../lib/capabilities';
+import { getSectionSidebar } from '../../../../lib/sectionSidebar';
+import { StoreShell } from '../../../providers';
+import { FrameSync } from '../../NamespaceFrame';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
 // The Lexical editor is lazy-loaded from a Client Component wrapper so
@@ -57,9 +58,10 @@ import { EditorBodyLazy as EditorBody } from './EditorBodyLazy';
 import { RouteMetadata } from './RouteMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 import { canonicalRoute, isFolderIndexRedirect, resolveContent } from './resolveContent';
+import { omitKey, withoutFrontmatterKey } from './sharedPageData';
 
 interface PageProps {
-  params: Promise<{ namespace: string; route?: string[] }>;
+  params: Promise<{ namespace: string; section: string; route?: string[] }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -88,13 +90,15 @@ const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 
-export async function generateStaticParams(): Promise<{ namespace: string; route: string[] }[]> {
+export async function generateStaticParams(): Promise<
+  { namespace: string; section: string; route: string[] }[]
+> {
   if (!shouldPrerenderSnapshot) return [];
   const urls = await loadSitemap();
   return urls
     .map(url => url.replace(/^\//, '').split('/').filter(Boolean))
     .filter(segments => segments.length > 1)
-    .map(([namespace, ...route]) => ({ namespace, route }));
+    .map(([namespace, section, ...route]) => ({ namespace, section, route }));
 }
 
 /**
@@ -108,8 +112,14 @@ export async function generateStaticParams(): Promise<{ namespace: string; route
 const resolveRouteInputs = cache(
   async (
     params: PageProps['params']
-  ): Promise<{ pathname: string; mode: MosaicMode; contentUrl: string }> => {
-    const [{ namespace, route = [] }] = await Promise.all([
+  ): Promise<{
+    pathname: string;
+    namespace: string;
+    section: string;
+    mode: MosaicMode;
+    contentUrl: string;
+  }> => {
+    const [{ namespace, section, route = [] }] = await Promise.all([
       params,
       // Opt into request-time rendering whenever we are NOT
       // pre-rendering. In a production snapshot build we want the route
@@ -119,9 +129,9 @@ const resolveRouteInputs = cache(
       // mandatory regardless.
       shouldPrerenderSnapshot ? Promise.resolve() : connection()
     ]);
-    const pathname = '/' + [namespace, ...route].join('/');
+    const pathname = '/' + [namespace, section, ...route].join('/');
     const { mode, contentUrl } = resolveMosaicMode();
-    return { pathname, mode, contentUrl };
+    return { pathname, namespace, section, mode, contentUrl };
   }
 );
 
@@ -189,14 +199,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function RoutePage({ params, searchParams }: PageProps) {
-  const { pathname, mode, contentUrl } = await resolveRouteInputs(params);
+  const { pathname, namespace, section, mode, contentUrl } = await resolveRouteInputs(params);
 
   // `resolveContent` issues `getMdxRaw` + `getSharedConfig` and
   // transparently follows any folder→index redirect the upstream
   // returns for `pathname`. The same call ran from
   // `generateMetadata` is request-cached so we pay nothing extra
   // here. The search index belongs to the namespace layout, which
-  // loads it once per section rather than with every page.
+  // loads it once rather than with every page; the section's sidebar
+  // tree belongs to the section layout (fetched here too, request-cached,
+  // to tell whether this page's copy can be left out).
   //
   // `searchParams` is awaited alongside them so the `?edit=1`
   // check costs no extra latency — but only when we're *not*
@@ -204,8 +216,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // prerender promotes the route to dynamic and breaks the build;
   // the EDIT branch is unreachable in static export anyway
   // (`auth()` is stubbed).
-  const [resolved, sp] = await Promise.all([
+  const [resolved, sectionSidebar, sp] = await Promise.all([
     resolveContent(pathname, mode, contentUrl),
+    getSectionSidebar(namespace, section, mode, contentUrl),
     shouldPrerenderSnapshot
       ? (Promise.resolve({}) as Promise<Record<string, string | string[] | undefined>>)
       : searchParams
@@ -478,6 +491,21 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     }
   }
 
+  // The section layout already sent the section's sidebar tree (see
+  // `[section]/layout.tsx`); leave this page's identical copy out of the
+  // store props and the compiled MDX frontmatter.
+  const sidebarIsShared =
+    sectionSidebar !== undefined &&
+    JSON.stringify((storeProps as Record<string, unknown>).sidebarData) ===
+      JSON.stringify(sectionSidebar);
+  const pageStoreProps: Record<string, unknown> = sidebarIsShared
+    ? omitKey(storeProps, 'sidebarData')
+    : storeProps;
+  const clientSource =
+    sidebarIsShared && compiledSource
+      ? withoutFrontmatterKey(compiledSource, 'sidebarData')
+      : compiledSource;
+
   // Intentionally no nested `<Suspense>` and no sibling `loading.tsx`
   // at the route segment for the VIEW branch. When a `<Link>`-driven
   // navigation enters a React transition (the default) *and* there is
@@ -494,7 +522,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // screen until the chunk arrives, then swaps in `<EditorBody>` —
   // same no-flash behaviour as VIEW.
   return (
-    <StoreShell storeProps={storeProps} isEditing={editing || creating}>
+    <StoreShell storeProps={pageStoreProps} isEditing={editing || creating}>
       {/*
         URL canonicaliser. Mounted when the browser URL is the folder
         shorthand of the page's canonical route (e.g.
@@ -522,7 +550,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
           route={resolvedPathname}
         />
       ) : (
-        <BodyServer type="mdx" raw={raw} source={compiledSource} />
+        <BodyServer type="mdx" raw={raw} source={clientSource} />
       )}
     </StoreShell>
   );

@@ -4,7 +4,7 @@ import type { SharedConfig } from '@jpmorganchase/mosaic-store';
  * Dev-only escape hatch for the source-capability gate.
  *
  * The gate (see the edit/create branch in
- * `app/[namespace]/[...route]/page.tsx`) hides the editor on pages whose
+ * `app/[namespace]/[section]/[[...route]]/page.tsx`) hides the editor on pages whose
  * owning source has not declared `capabilities.writable = true`. In this
  * repo's own dev environment the docs are served via
  * `source-local-folder`, which is correctly non-writable — which would

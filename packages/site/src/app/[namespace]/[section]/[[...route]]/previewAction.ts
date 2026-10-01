@@ -18,7 +18,7 @@
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
-import { auth, isAuthorizedEditor } from '../../../auth';
+import { auth, isAuthorizedEditor } from '../../../../auth';
 
 export async function compilePreview(markdown: string): Promise<SerializeResult> {
   const session = await auth();

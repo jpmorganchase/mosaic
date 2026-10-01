@@ -41,12 +41,12 @@ const ROUTES = [
 ];
 const ACTIONS = [
   {
-    path: 'src/app/[namespace]/[...route]/previewAction.ts',
+    path: 'src/app/[namespace]/[section]/[[...route]]/previewAction.ts',
     exports: ['compilePreview'],
     why: 'The MDX preview Server Action requires a server runtime; the content editor is not available in a static export.'
   },
   {
-    path: 'src/app/[namespace]/[...route]/persistAction.ts',
+    path: 'src/app/[namespace]/[section]/[[...route]]/persistAction.ts',
     exports: ['persistContent'],
     why: 'The persist Server Action requires a server runtime; the content editor is not available in a static export.'
   }
