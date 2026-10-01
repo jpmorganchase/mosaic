@@ -18,6 +18,8 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
 # This image talks to a running Mosaic server rather than a snapshot
 ENV MOSAIC_MODE=active
+# Emit .next/standalone, which the runner stage copies (see next.config.js)
+ENV MOSAIC_OUTPUT=standalone
 RUN yarn build
 
 
