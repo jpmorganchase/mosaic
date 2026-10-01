@@ -10,8 +10,9 @@
  * stuck refreshing until the CLI catches up.
  *
  * This endpoint lets the not-found page's recovery client component
- * poll a *known-good* upstream signal (`sitemap.xml`) at a steady
- * cadence to decide when to call `router.refresh()`. We poll from
+ * (`<NotFoundRecovery />`) poll a *known-good* upstream signal
+ * (`sitemap.xml`) at a steady cadence; once it reports ready, the
+ * component reloads the page if its URL now resolves. We poll from
  * the Next.js server (not the browser) for two reasons:
  *
  *   1. CORS — the upstream Mosaic FS server doesn't speak CORS for
@@ -22,10 +23,8 @@
  *
  * Snapshot modes don't have a cold start (the bytes are on disk /
  * in S3 at boot time), so the endpoint reports `ready: true`
- * immediately in those modes — the polling client then refreshes
- * once and stops, which is also the right behaviour for a genuine
- * snapshot 404 (the page actually doesn't exist; a refresh won't
- * conjure it but is harmless).
+ * immediately in those modes. The client then checks the URL once,
+ * finds it still 404s (the page genuinely doesn't exist) and stops.
  *
  * Production gating: dev-only by design — see the
  * `process.env.NODE_ENV` guard. The route still exists in prod
@@ -53,9 +52,8 @@ export async function GET(): Promise<Response> {
   // Snapshot modes are ready as soon as the Next.js server is up —
   // the bytes are either on local disk or pre-loaded into S3 long
   // before the request lands. Report ready immediately so the
-  // recovery component triggers exactly one `router.refresh()` and
-  // unmounts (snapshot 404s are real 404s; one refresh confirms it
-  // and the page stays as-is).
+  // recovery component checks the URL once and stops (snapshot 404s
+  // are real 404s).
   if (mode !== 'active') {
     return Response.json({ ready: true, mode });
   }
