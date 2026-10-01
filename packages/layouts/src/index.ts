@@ -1,3 +1,4 @@
+export * from './Frame';
 export * from './LayoutBase';
 export * from './LayoutColumns';
 export * from './LayoutFullWidth';
