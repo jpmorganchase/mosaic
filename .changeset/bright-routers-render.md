@@ -132,5 +132,8 @@ removed, and a new static-export build target has been added.
 4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
 5. Add `AUTH_SECRET` to your env if you enable Auth.js.
 
+The full guide, including environment variable and CLI changes, is in
+`docs/getting-started/migrate-to-app-router.mdx`.
+
 For static-export deployments, see
 `docs/configure/modes/static-export.mdx`.

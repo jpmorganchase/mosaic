@@ -157,11 +157,9 @@ the resolution of a real bug.
 
 ## Migrating an older Mosaic site
 
-If you have an existing Mosaic site on the Pages Router (`src/pages/`),
-port it to the layout above: `app/layout.tsx` + `app/providers.tsx`
-instead of `_app.tsx`, `app/[...route]/page.tsx` (using the
-`@jpmorganchase/mosaic-site-middleware` loaders) instead of
-`getServerSideProps`, `next/navigation` instead of `next/router`, and
-route handlers under `app/api/`. See the
-[static-export docs](../../docs/configure/modes/static-export.mdx) for
-the export target.
+If your site still uses the Pages Router (`src/pages/`), follow
+[Migrate to the App Router](../../docs/getting-started/migrate-to-app-router.mdx).
+It maps every old file to its new location and lists the package API,
+Auth.js v5, environment variable, editor, CLI and deployment changes.
+For the export target, see the
+[static-export docs](../../docs/configure/modes/static-export.mdx).
