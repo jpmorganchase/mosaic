@@ -22,7 +22,7 @@ Keep your `mosaic.config.mjs`, your content, your CSS and your own components. T
 ## Before you start
 
 - **Node.js 22.13 or later, or Node.js 24.** The reference Docker images use Node.js 24.
-- **Next.js 16 and React 19.**
+- **Next.js 16.3.3 or later, and React 19.** Earlier Next.js 16 releases (and 15.x before 15.5.24) are affected by critical remote code execution advisories ([GHSA-2xp9-vwfh-vxw4](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4), [GHSA-p293-qw3h-jr36](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)).
 - **Upgrade every `@jpmorganchase/mosaic-*` package to the same version.** `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` have breaking changes, so don't mix old and new versions.
 - **Install `next-auth` v5** (`next-auth@^5.0.0-beta`) in place of v4.
 - `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` now list `next` as a peer dependency. Your site must depend on `next` directly, which it normally does already.
