@@ -29,7 +29,7 @@
  *   late for hydration. `initializeStore(seed)` returns a fully-
  *   populated store synchronously, matching SSR exactly.
  */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
@@ -85,9 +85,32 @@ export function Providers({
   );
 }
 
+const NO_DEFAULTS: Record<string, unknown> = {};
+const PageDataDefaultsContext = createContext<Record<string, unknown>>(NO_DEFAULTS);
+PageDataDefaultsContext.displayName = 'PageDataDefaultsContext';
+
+/**
+ * Page data shared by every page below a layout (for example the sidebar
+ * tree of a section). `<StoreShell>` seeds its store with these values
+ * and lets the page's own `storeProps` override them, so a layout can
+ * send the data once and pages can leave it out.
+ */
+export function PageDataDefaults({
+  value,
+  children
+}: {
+  value: Record<string, unknown>;
+  children: React.ReactNode;
+}) {
+  return (
+    <PageDataDefaultsContext.Provider value={value}>{children}</PageDataDefaultsContext.Provider>
+  );
+}
+
 /**
  * Per-route shell. Creates a *new* Zustand store seeded with the
- * middleware-derived `storeProps` on first mount and keeps a stable
+ * middleware-derived `storeProps` (on top of any `<PageDataDefaults>`
+ * from an enclosing layout) on first mount and keeps a stable
  * reference across re-renders. The nested `<StoreProvider>` overrides
  * the layout's default store for everything inside this subtree.
  *
@@ -112,13 +135,15 @@ export function StoreShell({
   isEditing?: boolean;
   children: React.ReactNode;
 }) {
-  const [store] = useState(() => initializeStore(storeProps));
-  const seededWith = useRef(storeProps);
+  const defaults = useContext(PageDataDefaultsContext);
+  const [store] = useState(() => initializeStore({ ...defaults, ...storeProps }));
+  const seededWith = useRef({ defaults, storeProps });
   useLayoutEffect(() => {
-    if (seededWith.current === storeProps) return;
-    seededWith.current = storeProps;
-    reseedStore(store, storeProps);
-  }, [store, storeProps]);
+    const seeded = seededWith.current;
+    if (seeded.defaults === defaults && seeded.storeProps === storeProps) return;
+    seededWith.current = { defaults, storeProps };
+    reseedStore(store, { ...defaults, ...storeProps });
+  }, [store, defaults, storeProps]);
   // Registers the store for colour-mode sync while mounted and releases
   // it (listeners, sibling-store set) when the page unmounts. Re-registers
   // after React StrictMode's simulated unmount in development.

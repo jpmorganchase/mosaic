@@ -16,7 +16,7 @@ import { test, expect } from '@playwright/test';
  *     deployment enables auth).
  *  4. The legacy `POST /api/content/preview` REST endpoint is gone —
  *     content-editor preview is a React Server Action (see
- *     `src/app/[namespace]/[...route]/previewAction.ts`).
+ *     `src/app/[namespace]/[section]/[[...route]]/previewAction.ts`).
  */
 
 test.describe('App Router server behaviour', () => {

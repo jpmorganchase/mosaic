@@ -89,7 +89,7 @@ export function useEditModeActions(): Pick<EditMode, 'startEditing' | 'stopEditi
     const params = new URLSearchParams(window.location.search);
     // In CREATE mode the URL carries `?new=1&title=...` rather than
     // `?edit=1` — stripping only `edit` would leave the create
-    // branch in `[namespace]/[...route]/page.tsx` active, the editor would
+    // branch in `[namespace]/[section]/[[...route]]/page.tsx` active, the editor would
     // stay mounted, and the click would appear to do nothing.
     // Strip all three flags so a single Cancel handler works for
     // both modes. `title` is meaningless without `new`, so it goes

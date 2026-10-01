@@ -39,17 +39,20 @@ packages/site/
         │   ├── NamespaceFrame.tsx # frame store, header, <FrameSync>
         │   ├── page.tsx        # /<namespace> → /<namespace>/index
         │   ├── not-found.tsx   # 404 inside the namespace (header included)
-        │   └── [...route]/     # catch-all route
-        │       ├── page.tsx    # loads content, gates the editor, renders the page
-        │       ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
-        │       ├── BodyServer.tsx     # renders compiled MDX with <MdxRenderer>
-        │       ├── MdxComponents.ts   # MDX-visible component registry
-        │       ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
-        │       ├── EditorBody.tsx     # Lexical editor host (edit / create only)
-        │       ├── previewAction.ts   # Server Action: editor preview compile
-        │       ├── persistAction.ts   # Server Action: save → workflows backend
-        │       ├── CanonicalizeUrl.tsx
-        │       └── RouteMetadata.tsx
+        │   └── [section]/      # one section, e.g. /mosaic/configure
+        │       ├── layout.tsx  # sends the section's sidebar tree once
+        │       └── [[...route]]/  # catch-all route
+        │           ├── page.tsx       # loads content, gates the editor, renders the page
+        │           ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
+        │           ├── sharedPageData.ts  # leaves layout-provided data out of page props
+        │           ├── BodyServer.tsx     # renders compiled MDX with <MdxRenderer>
+        │           ├── MdxComponents.ts   # MDX-visible component registry
+        │           ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
+        │           ├── EditorBody.tsx     # Lexical editor host (edit / create only)
+        │           ├── previewAction.ts   # Server Action: editor preview compile
+        │           ├── persistAction.ts   # Server Action: save → workflows backend
+        │           ├── CanonicalizeUrl.tsx
+        │           └── RouteMetadata.tsx
         └── api/
             ├── auth/[...nextauth]/route.ts   # Auth.js v5 handlers.GET/POST
             ├── content/live/route.ts         # dev-only live-reload stream
@@ -122,7 +125,7 @@ Three files cover the vast majority of customisations:
 2. **`src/app/providers.tsx`** — the client-side provider stack (Salt
    theme, Mosaic store, Auth.js session) and the per-route
    `<StoreShell>` (layout / image / link providers).
-3. **`src/app/[namespace]/[...route]/MdxComponents.ts`** — the registry of components
+3. **`src/app/[namespace]/[section]/[[...route]]/MdxComponents.ts`** — the registry of components
    reachable from MDX. This is where you add your own components (see
    [Custom Components](../../docs/configure/theme/custom-components.mdx)).
 
@@ -172,12 +175,24 @@ the resolution of a real bug.
    pages, so anything they await runs on every request. A namespace 404
    gets its header from the namespace layout; the global 404 only loads
    data in a static export, at build time.
-9. **Load namespace-wide data in `app/[namespace]/layout.tsx`, not in the
-   page.** The layout stays mounted while the reader navigates within the
-   namespace, so its data (shared config, search index) is sent once and
-   the header isn't rebuilt. A layout can't see the page it wraps, so
-   page-specific header data reaches it through `<FrameSync>` after the
-   page mounts.
+9. **Load data shared by many pages in a layout, not in the page.**
+   Layouts stay mounted while the reader navigates below them, so
+   navigations don't send their data again. `app/[namespace]/layout.tsx`
+   holds the namespace's shared config and search index and renders the
+   header; `app/[namespace]/[section]/layout.tsx` sends the section's
+   sidebar tree, and pages leave their identical copy out. A layout
+   can't see the page it wraps, so page-specific header data reaches the
+   header through `<FrameSync>` after the page mounts.
+10. **Leave `experimental.prefetchInlining` at its default.** Next.js
+    copies layouts under 2 KB (gzipped) into every page prefetch, so a
+    small section's sidebar tree still comes with each prefetch, while
+    larger trees are fetched once. A lower threshold saves bytes on a
+    server, but the client guesses which segment files an unvisited
+    page has from pages with the same route shape. Once one section's
+    layout is inlined and another's isn't, a static export requests
+    files that don't exist: the prefetch 404s and the navigation
+    downloads the whole page instead. Sections on both sides of the
+    default 2 KB cause the same 404s; navigation still works.
 
 ## Migrating an older Mosaic site
 

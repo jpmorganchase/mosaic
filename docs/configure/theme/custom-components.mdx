@@ -108,7 +108,7 @@ Your final folder structure should look like this:
 ## Import Custom Card Component
 
 Open your site's MDX component registry at
-`src/app/[namespace]/[...route]/MdxComponents.ts`. This file is the App Router
+`src/app/[namespace]/[section]/[[...route]]/MdxComponents.ts`. This file is the App Router
 equivalent of the old `pages/_app.tsx` component-merge step — the catch-all
 route imports the exported `mdxComponents` map and forwards it to `<Body components={...} />`.
 

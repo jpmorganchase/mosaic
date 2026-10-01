@@ -4,7 +4,7 @@
  * Surfaces transient navigation-derived notices that the server set
  * via querystring flags. Currently:
  *
- *   - `?existed=1` — set by `app/[namespace]/[...route]/page.tsx` when a
+ *   - `?existed=1` — set by `app/[namespace]/[section]/[[...route]]/page.tsx` when a
  *     `?new=1` request hit a route that already exists on disk.
  *     The server bounced the user into edit mode on the real
  *     page; without this banner the redirect is silent and
