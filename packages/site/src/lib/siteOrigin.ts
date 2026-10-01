@@ -35,7 +35,6 @@ export function resolveSiteOrigin(): string {
       // surfaces it. In dev we expect this path during early
       // setup so stay quiet.
       if (process.env.NODE_ENV === 'production') {
-        // eslint-disable-next-line no-console
         console.warn(
           `[mosaic-site] NEXT_PUBLIC_SITE_URL=${fromEnv!} is not a valid URL; ` +
             `falling back to ${FALLBACK_ORIGIN}. Sitemap and robots URLs will be wrong.`

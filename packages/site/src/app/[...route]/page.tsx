@@ -113,7 +113,6 @@ const CAPABILITY_GATE_BYPASSED =
   process.env.NODE_ENV !== 'production' && process.env.MOSAIC_DEV_BYPASS_CAPABILITY_GATE === 'true';
 
 if (CAPABILITY_GATE_BYPASSED) {
-  // eslint-disable-next-line no-console
   console.warn(
     '[mosaic-site] MOSAIC_DEV_BYPASS_CAPABILITY_GATE is enabled — ' +
       'the editor is mounted on every page regardless of source ' +

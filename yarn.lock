@@ -2316,7 +2316,7 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.1"
     eslint-plugin-promise: "npm:^7.3.0"
     eslint-plugin-react: "patch:eslint-plugin-react@npm%3A7.37.5#~/.yarn/patches/eslint-plugin-react-npm-7.37.5-d03f6b6543.patch"
-    eslint-plugin-react-hooks: "npm:^5.1.0"
+    eslint-plugin-react-hooks: "npm:^7.0.0"
     globals: "npm:^15.14.0"
     husky: "npm:^8.0.0"
     identity-obj-proxy: "npm:^3.0.0"
@@ -7613,15 +7613,6 @@ __metadata:
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
   checksum: 10/9f84fbd033eea686ba3d55c31fade8172a8ea0578b64af1ba22537c05c4bcffac92cc0696325a4adc0f8bad3e65b61e33164b92463be4807235ea0f2f27b93f8
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-react-hooks@npm:^5.1.0":
-  version: 5.2.0
-  resolution: "eslint-plugin-react-hooks@npm:5.2.0"
-  peerDependencies:
-    eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
-  checksum: 10/ebb79e9cf69ae06e3a7876536653c5e556b5fd8cd9dc49577f10a6e728360e7b6f5ce91f4339b33e93b26e3bb23805418f8b5e75db80baddd617b1dffe73bed1
   languageName: node
   linkType: hard
 
