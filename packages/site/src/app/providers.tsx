@@ -29,7 +29,7 @@
  *   late for hydration. `initializeStore(seed)` returns a fully-
  *   populated store synchronously, matching SSR exactly.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
@@ -39,6 +39,7 @@ import {
   disposeStore,
   initializeStore,
   registerStore,
+  reseedStore,
   StoreProvider,
   useCreateStore
 } from '@jpmorganchase/mosaic-store';
@@ -88,11 +89,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
  * reference across re-renders. The nested `<StoreProvider>` overrides
  * the layout's default store for everything inside this subtree.
  *
- * Note: this intentionally does *not* re-seed when `storeProps`
- * changes during the lifetime of a mounted page — App Router unmounts
- * and remounts the page subtree on every route change, so the
- * `useState` initializer runs fresh per navigation, which is the
- * behaviour we want.
+ * Navigating to another route remounts the page subtree, so the
+ * `useState` initializer runs fresh per navigation. `router.refresh()`
+ * (dev live reload, the 404 recovery) re-renders the page with new
+ * server data *without* remounting it, so the store is re-seeded
+ * whenever a new `storeProps` object arrives. The layout effect applies
+ * it before paint, so store-driven UI (sidebar, table of contents,
+ * breadcrumbs) never shows the old page next to the new body.
  *
  * `isEditing` is the server's view of `?edit=1` / `?new=1`. Passing it
  * to `LayoutProvider` keeps `useSearchParams()` out of the view path, so
@@ -108,6 +111,12 @@ export function StoreShell({
   children: React.ReactNode;
 }) {
   const [store] = useState(() => initializeStore(storeProps));
+  const seededWith = useRef(storeProps);
+  useLayoutEffect(() => {
+    if (seededWith.current === storeProps) return;
+    seededWith.current = storeProps;
+    reseedStore(store, storeProps);
+  }, [store, storeProps]);
   // Registers the store for colour-mode sync while mounted and releases
   // it (listeners, sibling-store set) when the page unmounts. Re-registers
   // after React StrictMode's simulated unmount in development.
