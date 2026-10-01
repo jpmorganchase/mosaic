@@ -59,6 +59,7 @@ implementation (edit gating, folder → index redirects, metadata).
 | `resolveMosaicMode()`                            | `{ mode, contentUrl }` from `MOSAIC_MODE` / `MOSAIC_<MODE>_MODE_URL`.       |
 | `getMdxRaw(pathname, mode, contentUrl)`          | `{ kind: 'mdx', raw, frontmatter }`, `{ kind: 'redirect' }` or `not-found`. |
 | `getSharedConfig(pathname, mode, contentUrl)`    | The subtree's shared config (header, footer, …) or `undefined`.             |
+| `getSidebarData(folder, mode, contentUrl)`       | The sidebar tree `SidebarPlugin` wrote for a folder, or `undefined`.        |
 | `getSearchData(mode, contentUrl)`                | `{ searchIndex, searchConfig }`.                                            |
 | `getMdxRawSource(pathname, mode, contentUrl)`    | The page's on-disk bytes (active mode only), for the editor.                |
 | `getTagSuggestions(mode, contentUrl)`            | Tag names known to the content server, for the editor.                      |
