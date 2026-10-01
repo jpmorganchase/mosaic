@@ -1,30 +1,24 @@
 'use client';
 
 /**
- * Client body of the 404 page: the global `<AppHeader>` and the rest of
- * the layout chrome around `<Page404>`, inside the same store + provider
- * tree the regular pages use.
+ * Client body of the 404 page: `<Page404>` inside the same store +
+ * provider tree the regular pages use.
  *
- * The header/footer data is loaded here, only when a 404 is actually on
- * screen (see `notFoundChromeAction.ts` for why it can't be loaded in
- * `not-found.tsx` on the server). Until it arrives the page renders
- * without a header; `<StoreShell>` re-seeds its store when the new
- * `storeProps` land. Static exports have no server to answer the
- * action, so `not-found.tsx` passes `initialChrome` loaded at build
- * time instead.
+ * Inside a namespace (`app/[namespace]/not-found.tsx`) the persistent
+ * header comes from the namespace layout, so the 404 needs no data of
+ * its own; `<FrameSync />` puts the namespace's own header back in case
+ * the previous page had overridden it. Outside a namespace
+ * (`app/not-found.tsx`) the layout chrome comes from `<StoreShell>`'s
+ * `<LayoutProvider>`, which defaults to `FullWidth`; static exports pass
+ * the site-root shared config in as `initialChrome`.
  *
- * The layout chrome (`<LayoutBase>` + `<AppHeader>`) comes from
- * `<StoreShell>`'s `<LayoutProvider>`, which defaults to `FullWidth`.
- * Mounting another `<LayoutBase>` here would double the header.
- * `<Page404>` reads context (image / link providers, `useRoute`,
- * `useAppHeader`), so it has to live in the client graph.
+ * `<Page404>` reads context (image / link providers), so it has to live
+ * in the client graph.
  */
-import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { Page404 } from '@jpmorganchase/mosaic-site-components/404';
 
+import { FrameSync } from './[namespace]/NamespaceFrame';
 import { NotFoundRecovery } from './NotFoundRecovery';
-import { loadNotFoundChrome } from './notFoundChromeAction';
 import { StoreShell } from './providers';
 
 const NO_CHROME: Record<string, unknown> = {};
@@ -33,28 +27,14 @@ const NO_CHROME: Record<string, unknown> = {};
 // CLI is still loading content (see `NotFoundRecovery.tsx`).
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-export function NotFoundBody({ initialChrome }: { initialChrome?: Record<string, unknown> }) {
-  const pathname = usePathname();
-  const [chrome, setChrome] = useState(initialChrome ?? NO_CHROME);
-
-  useEffect(() => {
-    if (initialChrome) return undefined;
-    let cancelled = false;
-    loadNotFoundChrome(pathname).then(
-      loaded => {
-        if (!cancelled) setChrome(loaded);
-      },
-      () => {
-        // Keep the header-less 404; the page is still usable.
-      }
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [initialChrome, pathname]);
-
+export function NotFoundBody({
+  initialChrome = NO_CHROME
+}: {
+  initialChrome?: Record<string, unknown>;
+}) {
   return (
-    <StoreShell storeProps={chrome}>
+    <StoreShell storeProps={initialChrome}>
+      <FrameSync />
       <Page404 />
       {isDevelopment && <NotFoundRecovery />}
     </StoreShell>

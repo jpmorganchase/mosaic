@@ -41,19 +41,14 @@ const ROUTES = [
 ];
 const ACTIONS = [
   {
-    path: 'src/app/[...route]/previewAction.ts',
+    path: 'src/app/[namespace]/[...route]/previewAction.ts',
     exports: ['compilePreview'],
     why: 'The MDX preview Server Action requires a server runtime; the content editor is not available in a static export.'
   },
   {
-    path: 'src/app/[...route]/persistAction.ts',
+    path: 'src/app/[namespace]/[...route]/persistAction.ts',
     exports: ['persistContent'],
     why: 'The persist Server Action requires a server runtime; the content editor is not available in a static export.'
-  },
-  {
-    path: 'src/app/notFoundChromeAction.ts',
-    exports: ['loadNotFoundChrome'],
-    why: 'Static exports have no server to load 404 header data on demand; not-found.tsx bakes it in at build time instead.'
   }
 ];
 function routeStub(route) {

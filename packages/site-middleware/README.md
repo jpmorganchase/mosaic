@@ -20,7 +20,7 @@ yarn add @jpmorganchase/mosaic-site-middleware
 ## Usage (App Router)
 
 ```tsx
-// src/app/[...route]/page.tsx
+// src/app/[namespace]/[...route]/page.tsx
 import { notFound, redirect } from 'next/navigation';
 import {
   getMdxRaw,
@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ route: string
 }
 ```
 
-See `packages/site/src/app/[...route]/page.tsx` for the full reference
+See `packages/site/src/app/[namespace]/[...route]/page.tsx` for the full reference
 implementation (edit gating, folder → index redirects, metadata).
 
 ## Loaders

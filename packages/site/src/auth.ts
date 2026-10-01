@@ -11,7 +11,7 @@
  *      (public mirrors, preview environments, etc.).
  *
  *   2. **Per-page capability gate** — `sharedConfig.sourceCapabilities.writable`,
- *      enforced in `app/[...route]/page.tsx`. Even with auth on, pages
+ *      enforced in `app/[namespace]/[...route]/page.tsx`. Even with auth on, pages
  *      from non-writable sources stay read-only.
  *
  * The named exports below are the canonical Auth.js v5 surface, served

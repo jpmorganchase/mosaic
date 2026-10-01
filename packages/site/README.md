@@ -28,24 +28,28 @@ packages/site/
         ├── layout.tsx          # root layout, global CSS, theme script
         ├── providers.tsx       # 'use client' providers + per-route <StoreShell>
         ├── page.tsx            # / → redirect to /mosaic/index
-        ├── not-found.tsx       # global 404 (no server data; see NotFoundBody.tsx)
-        ├── NotFoundBody.tsx    # 404 body; loads header data only when shown
-        ├── notFoundChromeAction.ts # Server Action: 404 header data
+        ├── not-found.tsx       # 404 outside a namespace / static export 404.html
+        ├── NotFoundBody.tsx    # 404 body shared by both not-found pages
         ├── error.tsx           # route error boundary (must be 'use client')
         ├── global-error.tsx    # root layout error boundary
         ├── robots.ts           # robots.txt generation
         ├── sitemap.ts          # sitemap.xml generation
-        ├── [...route]/         # catch-all route
-        │   ├── page.tsx        # loads content, gates the editor, renders the page
-        │   ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
-        │   ├── BodyServer.tsx  # renders compiled MDX with <MdxRenderer>
-        │   ├── MdxComponents.ts   # MDX-visible component registry
-        │   ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
-        │   ├── EditorBody.tsx     # Lexical editor host (edit / create only)
-        │   ├── previewAction.ts   # Server Action: editor preview compile
-        │   ├── persistAction.ts   # Server Action: save → workflows backend
-        │   ├── CanonicalizeUrl.tsx
-        │   └── RouteMetadata.tsx
+        ├── [namespace]/        # one namespace, e.g. /mosaic
+        │   ├── layout.tsx      # loads namespace data once; persistent header
+        │   ├── NamespaceFrame.tsx # frame store, header, <FrameSync>
+        │   ├── page.tsx        # /<namespace> → /<namespace>/index
+        │   ├── not-found.tsx   # 404 inside the namespace (header included)
+        │   └── [...route]/     # catch-all route
+        │       ├── page.tsx    # loads content, gates the editor, renders the page
+        │       ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
+        │       ├── BodyServer.tsx     # renders compiled MDX with <MdxRenderer>
+        │       ├── MdxComponents.ts   # MDX-visible component registry
+        │       ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
+        │       ├── EditorBody.tsx     # Lexical editor host (edit / create only)
+        │       ├── previewAction.ts   # Server Action: editor preview compile
+        │       ├── persistAction.ts   # Server Action: save → workflows backend
+        │       ├── CanonicalizeUrl.tsx
+        │       └── RouteMetadata.tsx
         └── api/
             ├── auth/[...nextauth]/route.ts   # Auth.js v5 handlers.GET/POST
             ├── content/live/route.ts         # dev-only live-reload stream
@@ -118,7 +122,7 @@ Three files cover the vast majority of customisations:
 2. **`src/app/providers.tsx`** — the client-side provider stack (Salt
    theme, Mosaic store, Auth.js session) and the per-route
    `<StoreShell>` (layout / image / link providers).
-3. **`src/app/[...route]/MdxComponents.ts`** — the registry of components
+3. **`src/app/[namespace]/[...route]/MdxComponents.ts`** — the registry of components
    reachable from MDX. This is where you add your own components (see
    [Custom Components](../../docs/configure/theme/custom-components.mdx)).
 
@@ -163,11 +167,17 @@ the resolution of a real bug.
    `scripts/static-export-route-stubs.mjs` script handles this
    automatically inside `build:static:*`; do not call `next build`
    with `MOSAIC_OUTPUT=export` directly.
-8. **Keep `not-found.tsx` free of server data loading.** Next.js renders
-   it as part of every page response, not only for missing pages, so
-   anything it awaits runs on every request. `<NotFoundBody>` loads the
-   404 page's header data from the browser instead (static exports bake
-   it in at build time).
+8. **Keep the not-found pages free of server data loading.** Next.js
+   renders them as part of every page response, not only for missing
+   pages, so anything they await runs on every request. A namespace 404
+   gets its header from the namespace layout; the global 404 only loads
+   data in a static export, at build time.
+9. **Load namespace-wide data in `app/[namespace]/layout.tsx`, not in the
+   page.** The layout stays mounted while the reader navigates within the
+   namespace, so its data (shared config, search index) is sent once and
+   the header isn't rebuilt. A layout can't see the page it wraps, so
+   page-specific header data reaches it through `<FrameSync>` after the
+   page mounts.
 
 ## Migrating an older Mosaic site
 
