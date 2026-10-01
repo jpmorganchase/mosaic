@@ -67,11 +67,11 @@ if (secretIsRejected) {
  *
  * Note: `process.env.AUTH_SECRET` and `MOSAIC_AUTH_ENABLED` are NOT
  * `NEXT_PUBLIC_` vars, so on the client both resolve to `undefined`
- * and `AUTH_ENABLED` always evaluates to `false`. The client must
- * therefore NOT use this flag to gate `<SessionProvider>` — see
- * `app/providers.tsx`, which mounts the provider unconditionally and
- * relies on the server's stub handlers to make `useSession()`
- * settle to `null` on no-auth deployments.
+ * and `AUTH_ENABLED` always evaluates to `false`. Client code must not
+ * import this flag; the root layout (a Server Component) passes the
+ * server-side value to `<Providers authEnabled>` instead. `<SessionProvider>`
+ * is still mounted either way — with `session={null}` when auth is off,
+ * so `useSession()` settles to `null` without calling `/api/auth/session`.
  */
 export const AUTH_ENABLED =
   !secretIsRejected && (process.env.MOSAIC_AUTH_ENABLED === 'true' || Boolean(configuredSecret));
