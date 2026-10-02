@@ -66,10 +66,11 @@ export default class SourceManager {
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
-    data: unknown
+    data: unknown,
+    ownerPath: string = filePath
   ) {
     for (const source of this.#sources.values()) {
-      if (await source.isOwner(filePath)) {
+      if (await source.isOwner(ownerPath)) {
         source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
         return;
       }

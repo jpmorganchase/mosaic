@@ -3,7 +3,10 @@ import deepmerge from 'deepmerge';
 import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
 
 const projectDir = process.cwd();
-nextEnv.loadEnvConfig(projectDir);
+// Load `.env.development` (dev defaults, incl. NODE_ENV=development which
+// enables the local-folder sources below) unless we're explicitly running
+// in production.
+nextEnv.loadEnvConfig(projectDir, process.env.NODE_ENV !== 'production');
 
 const siteConfig = {
   ...fsConfig,

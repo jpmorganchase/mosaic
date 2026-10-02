@@ -108,13 +108,25 @@ export default class PullDocs {
     return this.#sourceManager.destroyAll();
   }
 
+  /**
+   * @param ownerPath path used to pick the owning source; defaults to
+   *   `filePath`. Pass an existing ancestor folder when `filePath` doesn't
+   *   exist yet (creating a new page).
+   */
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
-    data
+    data,
+    ownerPath: string = filePath
   ) {
-    this.#sourceManager.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
+    this.#sourceManager.triggerWorkflow(
+      sendWorkflowProgressMessage,
+      name,
+      filePath,
+      data,
+      ownerPath
+    );
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {

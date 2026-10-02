@@ -91,7 +91,23 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
     }
 
     try {
-      const stat = await fs.promises.stat(resolution.filePath);
+      // The resolver's check is lexical; a symlink inside the source
+      // folder could still point anywhere on disk. Compare real paths.
+      const [realRoot, realFile] = await Promise.all([
+        fs.promises.realpath(resolution.rootDir),
+        fs.promises.realpath(resolution.filePath)
+      ]);
+      const relativeToRoot = path.relative(realRoot, realFile);
+      if (
+        relativeToRoot === '..' ||
+        relativeToRoot.startsWith(`..${path.sep}`) ||
+        path.isAbsolute(relativeToRoot)
+      ) {
+        reply.header('X-Mosaic-Raw-Status', 'no-matching-source');
+        reply.status(404).send();
+        return;
+      }
+      const stat = await fs.promises.stat(realFile);
       if (!stat.isFile()) {
         reply.header('X-Mosaic-Raw-Status', 'not-a-file');
         reply.status(404).send();
@@ -107,7 +123,7 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
       // Echo the resolved namespace so a future debug panel
       // can show "this raw file came from source X".
       reply.header('X-Mosaic-Raw-Namespace', resolution.namespace);
-      const bytes = await fs.promises.readFile(resolution.filePath);
+      const bytes = await fs.promises.readFile(realFile);
       reply.send(bytes);
     } catch (e: unknown) {
       // ENOENT is expected during writes/renames; surface as

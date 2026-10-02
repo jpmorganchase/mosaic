@@ -40,6 +40,7 @@
   "devDependencies": {
     "concurrently": "^7.1.0",
     "del-cli": "^6.0.0",
+    "next": "^16.3.3",
     "next-router-mock": "^0.9.13",
     "typescript": "^5.0.0"
   },
@@ -54,12 +55,12 @@
     "clsx": "^2.0.0",
     "fuse.js": "^6.6.2",
     "lodash-es": "^4.17.23",
-    "next": "^16.3.3",
     "next-mdx-remote-client": "^1.0.3",
     "swr": "^2.1.2"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",
+    "next": "^16.3.3",
     "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

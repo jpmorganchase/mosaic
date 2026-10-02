@@ -1,8 +1,15 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { createWrapper } from './test-utils/utils';
-import { initializeStore, SiteState, useCreateStore, useStore } from '../store';
+import {
+  disposeStore,
+  initializeStore,
+  registerStore,
+  SiteState,
+  useCreateStore,
+  useStore
+} from '../store';
 
 function getStateToVerify(currentState: SiteState) {
   let { actions, ...stateToVerify } = currentState;
@@ -207,5 +214,42 @@ describe('GIVEN the `useStore` hook', () => {
         'Missing StoreProvider in the tree'
       );
     });
+  });
+});
+
+describe('GIVEN per-page stores', () => {
+  test('THEN colour mode syncs between live stores and stops once a store is disposed', () => {
+    const layoutStore = initializeStore();
+    const pageStore = initializeStore();
+
+    layoutStore.getState().actions.setColorMode('dark');
+    expect(pageStore.getState().colorMode).toEqual('dark');
+
+    disposeStore(pageStore);
+    layoutStore.getState().actions.setColorMode('light');
+    expect(pageStore.getState().colorMode).toEqual('dark');
+
+    // Re-registering (e.g. after a StrictMode re-mount) resumes syncing.
+    registerStore(pageStore);
+    layoutStore.getState().actions.setColorMode('dark');
+    expect(pageStore.getState().colorMode).toEqual('dark');
+    layoutStore.getState().actions.setColorMode('light');
+    expect(pageStore.getState().colorMode).toEqual('light');
+
+    disposeStore(layoutStore);
+    disposeStore(pageStore);
+  });
+
+  test('THEN disposing a store removes its storage listener', () => {
+    const addSpy = vi.spyOn(window, 'addEventListener');
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+    const store = initializeStore();
+    const listener = addSpy.mock.calls.find(([type]) => type === 'storage')?.[1];
+    expect(listener).toBeDefined();
+
+    disposeStore(store);
+    expect(removeSpy).toHaveBeenCalledWith('storage', listener);
+    addSpy.mockRestore();
+    removeSpy.mockRestore();
   });
 });

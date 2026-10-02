@@ -84,8 +84,7 @@ export function createHttpSource<TResponse, TPage = Page>(
 
       return new Request(new URL(endpoint), {
         dispatcher,
-        headers,
-        signal: AbortSignal.timeout(requestTimeout)
+        headers
       });
     });
   }
@@ -96,7 +95,7 @@ export function createHttpSource<TResponse, TPage = Page>(
   return schedule$.pipe(
     switchMap(() => {
       const fetches = requests.map((request, index) =>
-        fromHttpRequest<TResponse>(request).pipe(
+        fromHttpRequest<TResponse>(request, { timeout: requestTimeout }).pipe(
           map(response => {
             if (isFromHttpRequestError(response)) {
               const httpResponse = response as FromHttpRequestHttpError;

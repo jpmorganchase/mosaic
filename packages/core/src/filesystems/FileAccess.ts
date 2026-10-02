@@ -94,7 +94,7 @@ export default class FileAccess implements IFileAccess {
     if (this.#frozen) {
       throw new Error('This file system has been frozen. Mutations are not allowed.');
     }
-    Object.keys(symlinks).forEach(async alias => {
+    for (const alias of Object.keys(symlinks)) {
       for (const { target, type = 'file' } of symlinks[alias]) {
         if (!(await this.exists(alias))) {
           if (!(await this.exists(path.dirname(alias)))) {
@@ -106,7 +106,7 @@ export default class FileAccess implements IFileAccess {
           await this.#adapter.promises.symlink(target, alias, type);
         }
       }
-    });
+    }
   }
 
   async unlink(target) {

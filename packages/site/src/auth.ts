@@ -5,7 +5,7 @@
  *
  *   1. **Deployment-wide switch** — `AUTH_ENABLED` (below) gates whether
  *      Auth.js initialises at all. When `false`, `auth()` is a no-op that
- *      returns `null`, `handlers.GET/POST` return 404, and the editor
+ *      returns `null`, the `/api/auth/*` handlers are stubs, and the editor
  *      bundle is unreachable. No `AUTH_SECRET`, no `next-auth` runtime
  *      cost. This is the right shape for read-only docs deployments
  *      (public mirrors, preview environments, etc.).
@@ -17,8 +17,8 @@
  * The named exports below are the canonical Auth.js v5 surface, served
  * from real Auth.js when enabled and from no-op stubs otherwise:
  * - `handlers` — App Router route handlers (`GET`/`POST`) for
- *   `/api/auth/*`. Stubs return 404 — `<SessionProvider>` will read
- *   that as "no session" and settle to `null`.
+ *   `/api/auth/*`. The stubs answer `/api/auth/session` with `null` so
+ *   `<SessionProvider>` settles to "no session"; everything else is a 404.
  * - `auth`    — universal helper that returns the current `Session`
  *   on the server (in RSCs, route handlers, server actions, and
  *   middleware). Stub returns `null` so callers can `await auth()`
@@ -39,6 +39,28 @@ import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 
 /**
+ * Placeholder secrets that ship in committed dev env files. They are
+ * public, so a production deployment that ends up with one of them (e.g.
+ * copied from `.env.development`) would let anyone forge session cookies.
+ * In production we treat them as "no secret" and keep Auth.js disabled.
+ */
+const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-auth-secret-not-for-production']);
+
+const configuredSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+const secretIsRejected =
+  process.env.NODE_ENV === 'production' &&
+  configuredSecret !== undefined &&
+  DEV_PLACEHOLDER_SECRETS.has(configuredSecret);
+
+if (secretIsRejected) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '[mosaic-site] AUTH_SECRET is the public development placeholder; Auth.js stays ' +
+      'disabled. Generate a real secret with `openssl rand -base64 32`.'
+  );
+}
+
+/**
  * Deployment-wide auth switch. **Server-side only.** When this is
  * `false`, the `if (AUTH_ENABLED)` block below dead-codes and the
  * stub exports below are what server callers receive (no `next-auth`
@@ -49,12 +71,11 @@ import GitHub from 'next-auth/providers/github';
  * and `AUTH_ENABLED` always evaluates to `false`. The client must
  * therefore NOT use this flag to gate `<SessionProvider>` — see
  * `app/providers.tsx`, which mounts the provider unconditionally and
- * relies on the server's stub 404 handlers to make `useSession()`
+ * relies on the server's stub handlers to make `useSession()`
  * settle to `null` on no-auth deployments.
  */
 export const AUTH_ENABLED =
-  process.env.MOSAIC_AUTH_ENABLED === 'true' ||
-  Boolean(process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET);
+  !secretIsRejected && (process.env.MOSAIC_AUTH_ENABLED === 'true' || Boolean(configuredSecret));
 
 if (
   AUTH_ENABLED &&
@@ -72,8 +93,43 @@ if (
 }
 
 /**
+ * Who may sign in and use the editor. `MOSAIC_EDITORS` is a
+ * comma-separated list of emails (`alice@corp.com`), email domains
+ * (`@corp.com`) or `*` (anyone who can sign in with a configured
+ * provider). When it is unset, development allows everyone (so the fake
+ * dev login works) and production allows nobody.
+ *
+ * Checked in the Auth.js `signIn` callback, in the page's edit gate and
+ * inside every editor Server Action, because a session issued before a
+ * config change must not keep its editing rights.
+ */
+export function isAuthorizedEditor(user: { email?: string | null } | null | undefined): boolean {
+  if (!user) return false;
+  const configured = process.env.MOSAIC_EDITORS?.trim();
+  if (!configured) return process.env.NODE_ENV !== 'production';
+  const email = user.email?.trim().toLowerCase();
+  return configured
+    .split(',')
+    .map(entry => entry.trim().toLowerCase())
+    .filter(Boolean)
+    .some(entry => {
+      if (entry === '*') return true;
+      if (!email) return false;
+      return entry.startsWith('@') ? email.endsWith(entry) : email === entry;
+    });
+}
+
+if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC_EDITORS?.trim()) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[mosaic-site] MOSAIC_EDITORS is not set, so nobody can sign in or edit. ' +
+      'Set it to a comma-separated list of emails, @domains or `*`.'
+  );
+}
+
+/**
  * Dev-only "fake auth" provider. Enabled by setting
- * `MOSAIC_DEV_FAKE_AUTH=true` in `.env.local`. Lets a developer click
+ * `MOSAIC_DEV_FAKE_AUTH=true` (committed in `.env.development`). Lets a developer click
  * Sign In and get a real Auth.js session cookie without configuring a
  * GitHub OAuth app — handy for exercising the `?edit=1` toggle, the
  * server-side `auth()` gate in `page.tsx`, and the preview / persist
@@ -98,11 +154,15 @@ type AuthFn = NextAuthResult['auth'];
 type SignInFn = NextAuthResult['signIn'];
 type SignOutFn = NextAuthResult['signOut'];
 
-// 404 handlers. `<SessionProvider>` polls `/api/auth/session` on mount;
-// a 404 (with no body) makes it settle into the `unauthenticated` state
-// without throwing.
+// Auth-disabled handlers. `/api/auth/session` answers `null` (200) — the
+// "no session" response `<SessionProvider>` expects — so no-auth
+// deployments don't log a client fetch error on every page. Everything
+// else is a 404.
 const noAuthHandlers: Handlers = {
-  GET: () => new Response(null, { status: 404 }),
+  GET: (request: Request) =>
+    new URL(request.url).pathname.endsWith('/session')
+      ? Response.json(null)
+      : new Response(null, { status: 404 }),
   POST: () => new Response(null, { status: 404 })
 } as unknown as Handlers;
 
@@ -191,13 +251,17 @@ if (AUTH_ENABLED) {
     // In v5 the default secret env var is `AUTH_SECRET`. Fall back to the
     // legacy `NEXTAUTH_SECRET` so existing deployments keep working
     // through the v4 → v5 migration window.
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    secret: configuredSecret,
     // Auth.js v5 requires `trustHost` to be true for any non-Vercel
     // deployment (self-hosted Docker, Kubernetes, etc.). Mosaic ships
     // both, so opt in unconditionally; the host header is already
     // forwarded correctly by our reverse proxies / Next’s own middleware.
     trustHost: true,
-    providers
+    providers,
+    callbacks: {
+      // Signing in only exists to edit content, so only editors may sign in.
+      signIn: ({ user }) => isAuthorizedEditor(user)
+    }
   };
 
   // The `NextAuthResult` annotations are required so TS can emit `.d.ts`

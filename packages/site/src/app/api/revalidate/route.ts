@@ -63,11 +63,23 @@ function secretsMatch(provided: string, configured: string): boolean {
   return timingSafeEqual(providedBuf, configuredBuf);
 }
 
+// Public placeholder committed in `.env.development`; never valid in production.
+const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-not-a-secret']);
+
 export async function POST(req: NextRequest) {
   const configured = process.env.MOSAIC_REVALIDATE_SECRET;
-  if (!configured) {
+  const isPlaceholder =
+    process.env.NODE_ENV === 'production' &&
+    configured !== undefined &&
+    DEV_PLACEHOLDER_SECRETS.has(configured);
+  if (!configured || isPlaceholder) {
     return Response.json(
-      { ok: false, error: 'MOSAIC_REVALIDATE_SECRET is not configured on the server.' },
+      {
+        ok: false,
+        error: isPlaceholder
+          ? 'MOSAIC_REVALIDATE_SECRET is the development placeholder; configure a real secret.'
+          : 'MOSAIC_REVALIDATE_SECRET is not configured on the server.'
+      },
       { status: 503 }
     );
   }
@@ -76,9 +88,11 @@ export async function POST(req: NextRequest) {
     return Response.json({ ok: false, error: 'Unauthorized.' }, { status: 401 });
   }
 
-  // Next 16 requires a cache-life profile alongside the tag. `'max'`
-  // matches the default fetch-cache behaviour ("cache until invalidated").
-  revalidateTag(MOSAIC_CONTENT_CACHE_TAG, 'max');
+  // Webhook-driven invalidation should take effect on the very next
+  // request. `{ expire: 0 }` expires the tagged entries immediately; the
+  // `'max'` profile would instead serve stale content once more while it
+  // revalidates in the background (stale-while-revalidate).
+  revalidateTag(MOSAIC_CONTENT_CACHE_TAG, { expire: 0 });
 
   // Dev-only browser auto-refresh: push a signal to any open
   // `<LiveReload />` `EventSource` so the page calls `router.refresh()`

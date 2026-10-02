@@ -1,0 +1,243 @@
+---
+title: Migrate to the App Router
+layout: DetailTechnical
+sidebar:
+  priority: 7
+---
+
+# {meta.title}
+
+The reference Mosaic site (`packages/site`) has moved from the Next.js Pages Router to the App Router. A follow-up release secured the editor and the content server, and changed some deployment defaults. This guide covers everything you need to change if your site was copied from the old Pages Router site, or if you run the Mosaic CLI (`mosaic serve`, `mosaic build` or `mosaic upload`).
+
+Your site uses the old layout if it has `src/pages/_app.tsx` and `src/pages/[...route].tsx`.
+
+**Content authors don't need to change anything.** Pages are still MDX with the same frontmatter, and references such as `{meta.title}` still work.
+
+## Recommended approach
+
+Start from a fresh copy of the current `packages/site` and move your customisations into it, rather than converting your old files in place. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
+
+Keep your `mosaic.config.mjs`, your content, your CSS and your own components. Then work through the sections below.
+
+## Before you start
+
+- **Node.js 22.13 or later, or Node.js 24.** The reference Docker images use Node.js 24.
+- **Next.js 16 and React 19.**
+- **Upgrade every `@jpmorganchase/mosaic-*` package to the same version.** `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` have breaking changes, so don't mix old and new versions.
+- **Install `next-auth` v5** (`next-auth@^5.0.0-beta`) in place of v4.
+- `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` now list `next` as a peer dependency. Your site must depend on `next` directly, which it normally does already.
+
+## 1. Find where each file has moved
+
+| Pages Router site                           | App Router site                                                                                                         |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `src/pages/_app.tsx`                        | `src/app/layout.tsx` (HTML shell, fonts, global CSS, site-wide `metadata`) and `src/app/providers.tsx` (provider stack) |
+| `src/pages/_document.tsx`                   | `src/app/layout.tsx`                                                                                                    |
+| `src/pages/[...route].tsx`                  | `src/app/[...route]/page.tsx`                                                                                           |
+| `src/pages/index.tsx` (redirect)            | `src/app/page.tsx`                                                                                                      |
+| `src/pages/api/auth/[...nextauth].ts`       | `src/auth.ts` and `src/app/api/auth/[...nextauth]/route.ts`                                                             |
+| `src/pages/api/content/preview.ts`          | `src/app/[...route]/previewAction.ts` (Server Action)                                                                   |
+| Browser WebSocket to the CLI's `/workflows` | `src/app/[...route]/persistAction.ts` (Server Action)                                                                   |
+| `components` object in `_app.tsx`           | `src/app/[...route]/MdxComponents.ts`                                                                                   |
+| `Metadata` component with `next/head`       | `generateMetadata` in `src/app/[...route]/page.tsx`                                                                     |
+| `src/types/mosaic.ts`                       | Removed                                                                                                                 |
+| `.eslintrc.js`                              | `eslint.config.mjs`                                                                                                     |
+| `.env.local` (committed)                    | `.env.development`                                                                                                      |
+| `.env.prod`                                 | `.env.production`                                                                                                       |
+
+The new site also adds files that have no Pages Router equivalent:
+
+- `not-found.tsx` and `error.tsx`
+- `robots.ts` and `sitemap.ts`
+- `api/revalidate/route.ts`, which clears cached content when the CLI reports an update
+- `api/content/live` and `api/content/ready`, which reload pages in `next dev` when content changes
+
+`next.config.js` is now split into a base config, a config used only when the site runs on a server, and a config for static export.
+
+## 2. Move your customisations
+
+### MDX components
+
+The old `_app.tsx` merged your components into `components` and passed them to every page. Add them to `hostComponents` in `src/app/[...route]/MdxComponents.ts` instead:
+
+```diff
+- // src/pages/_app.tsx
+- const components = { ...mosaicComponents, Salt: saltComponents, Sitemap, ReleaseNotes };
++ // src/app/[...route]/MdxComponents.ts
++ const hostComponents = { Salt, Sitemap, ReleaseNotes };
+```
+
+The file is marked `'use client'`, so the components it registers must work in the browser.
+
+### Providers, theme and layouts
+
+`_app.tsx` wrapped every page in a single provider stack. `src/app/providers.tsx` splits that stack in two:
+
+- **`Providers`** wraps the whole site and is mounted once by `layout.tsx`. It holds `SessionProvider`, the root `StoreProvider` and `ThemeProvider`.
+- **`StoreShell`** wraps each page and is mounted by `page.tsx`. It holds the page's store, `BaseUrlProvider`, `ImageProvider`, `LinkProvider` and `LayoutProvider`.
+
+To add your own layouts, replace `mosaicLayouts` in `StoreShell` with `{ ...mosaicLayouts, MyLayout }`. Import global CSS and fonts in `layout.tsx`.
+
+Mount `<SessionProvider>` without a `session` prop. The browser fetches the session after the page loads, so sites without auth still render.
+
+### Data from your own middleware
+
+`getServerSideProps` and the middleware chain (`createMiddlewareRunner`, `middlewarePresets`) are gone. Fetch your data in `src/app/[...route]/page.tsx` instead:
+
+1. Write an async function that loads the data. Wrap it in React's `cache()` if `generateMetadata` also needs it, so it runs once per request.
+2. Call it inside the existing `Promise.all` next to the Mosaic loaders (`resolveContent`, `getSearchData`).
+3. Pass the result to your component as a prop, or add it to `storeProps` and read it with `useStore` from `@jpmorganchase/mosaic-store`.
+
+```tsx
+const [resolved, search, sp, releaseNotes] = await Promise.all([
+  resolveContent(pathname, mode, contentUrl),
+  getSearchData(mode, contentUrl),
+  shouldPrerenderSnapshot ? Promise.resolve({}) : searchParams,
+  getReleaseNotes(pathname)
+]);
+```
+
+Snapshot builds pre-render pages, so this function runs at build time there.
+
+### Page metadata
+
+`generateMetadata` in `page.tsx` builds the title, description and Open Graph tags from frontmatter. Add per-page tags there, and site-wide tags to the `metadata` export in `layout.tsx`. Don't add the old `Metadata` component back; it would duplicate every tag.
+
+### Navigation and client components
+
+- Replace `next/router` with `next/navigation` (`useRouter`, `usePathname`, `useSearchParams`), and add `'use client'` to the top of the file.
+- Components that use hooks, context or browser APIs need `'use client'`, either in their own file or in the file that imports them.
+- `router.events` doesn't exist in the App Router, so `useIsLoading` and `Fade` have been removed.
+- Don't call `useSearchParams()` in components that render on pre-rendered pages. It makes Next.js render those pages in the browser instead. To check whether the editor is open, use `useIsEditing()` from `@jpmorganchase/mosaic-content-editor-plugin/useEditMode`.
+
+### API routes
+
+Move each `src/pages/api/<name>.ts` handler to `src/app/api/<name>/route.ts`, exporting `GET`, `POST` and so on, using the web `Request` and `Response` types.
+
+If you use static export, add your route to `ROUTES` in `scripts/static-export-route-stubs.mjs`. Next.js won't export a route handler unless it is marked as static, and that script does this for you during `build:static:*`.
+
+### Home page redirect
+
+`src/app/page.tsx` redirects `/` to `/mosaic/index`. Change the target to your own namespace.
+
+## 3. Update the package APIs you call
+
+| Package                        | Removed                                                                                                                                                                  | Use instead                                                                                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mosaic-site-middleware`       | `withMosaicMode`, `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`, `middlewarePresets`, `createMiddlewareRunner`, `fromGetServerSidePropsContext` | `resolveMosaicMode`, `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getSearchData`, `getTagSuggestions`, `loadSitemap` and `serializeMdxForClient`. Use `auth()` from `src/auth.ts` for the session. |
+| `mosaic-site-components`       | `Body`, `Document`                                                                                                                                                       | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`                                                                                                         |
+| `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                            |
+| `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                       |
+| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                       |
+
+The loaders are cached and tagged with `MOSAIC_CONTENT_CACHE_TAG`. Import the tag from `@jpmorganchase/mosaic-site-middleware/cache-tags` if you revalidate it yourself.
+
+The editor plugin now uses Lexical 0.45 instead of 0.17:
+
+```diff
+- import { useContentEditor, usePageState } from '@jpmorganchase/mosaic-content-editor-plugin';
++ import {
++   EditorProvider,
++   usePreviewContent,
++   useSaveState
++ } from '@jpmorganchase/mosaic-content-editor-plugin';
+```
+
+Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-plugin/useEditMode`. The package root includes the whole editor, so importing from it adds the editor to every page.
+
+## 4. Update sign-in (Auth.js v5)
+
+- `src/auth.ts` holds the Auth.js configuration, and `src/app/api/auth/[...nextauth]/route.ts` exports its handlers. On the server, call `auth()` instead of `getServerSession()`.
+- Rename `NEXTAUTH_SECRET` to `AUTH_SECRET`. The old name still works. Generate a secret with `openssl rand -base64 32`.
+- Remove `NEXTAUTH_URL`. The site trusts the request's host instead.
+- Set `MOSAIC_AUTH_ENABLED=true` to turn sign-in on.
+- `GITHUB_ID`, `GITHUB_SECRET` and the GitHub callback URL (`/api/auth/callback/github`) haven't changed.
+- **Set `MOSAIC_EDITORS`.** It lists who may sign in and edit: comma-separated emails, `@domains`, or `*`. **If it isn't set, nobody can sign in in production.** Set `MOSAIC_EDITORS=*` to keep the old behaviour, where anyone who could sign in could edit.
+- In production, the site rejects the placeholder `AUTH_SECRET` from `.env.development`.
+- In `next dev`, `MOSAIC_DEV_FAKE_AUTH=true` signs you in as a test user without GitHub.
+
+## 5. Update editing and saving
+
+- **The editor only appears on pages from a writable source.** A source must declare `capabilities: { writable: true }`. `source-git-repo` does; `source-local-folder`, `source-http` and the other read-only sources don't. If you wrote your own source and want it to be editable, add `capabilities` to it. Frontmatter can't turn editing on.
+- **Preview and save now run on the site's server.** The browser no longer connects to the CLI. Replace `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL` with `MOSAIC_WORKFLOWS_URL`, which is only read on the server.
+- **Set `MOSAIC_WORKFLOWS_SECRET` to the same value on the site and the CLI.** If the CLI doesn't have it, no save will run.
+- Saves that take longer than `MOSAIC_WORKFLOWS_TIMEOUT_MS` (5 minutes by default) are reported as failed.
+- Authors can create new pages from the editor.
+- In `next dev`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` shows the editor on every page. It has no effect in production.
+
+## 6. Update environment variables
+
+### Env files
+
+| Before       | Now                | Why                                                                                                                                                                   |
+| ------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.env.local` | `.env.development` | Next.js loads `.env.local` in production too. Only `next dev` loads `.env.development`, so its placeholder secrets and dev-only flags can't reach a production build. |
+| `.env.prod`  | `.env.production`  | Next.js never loaded `.env.prod`. It loads `.env.production` for `next build` and `next start`.                                                                       |
+
+Don't commit real secrets to either file. Set them in your hosting environment, or in `.env.local` or `.env.production.local`, which git ignores.
+
+**Production builds now default to snapshot mode.** `.env.production` sets `MOSAIC_MODE=snapshot-file`. If your site reads content from a running Mosaic CLI, set `MOSAIC_MODE=active` explicitly. Values set in the environment take precedence over `.env.production`.
+
+### Site: renamed or removed
+
+| Before                                | Now                                                    |
+| ------------------------------------- | ------------------------------------------------------ |
+| `NEXTAUTH_SECRET`                     | `AUTH_SECRET` (`NEXTAUTH_SECRET` still works)          |
+| `NEXTAUTH_URL`                        | Remove                                                 |
+| `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`    | `MOSAIC_WORKFLOWS_URL`, plus `MOSAIC_WORKFLOWS_SECRET` |
+| `NEXT_PUBLIC_MOSAIC_IBCE_PREVIEW_URL` | Remove. Preview is a Server Action.                    |
+| `OPTIMIZE_IMAGES`                     | `NEXT_PUBLIC_OPTIMIZE_IMAGES`                          |
+| `MOSAIC_ENABLE_SOURCE_PUSH`           | Remove. Nothing reads it.                              |
+
+### Site: new
+
+| Variable                                                                                   | Purpose                                                                                                                           |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `MOSAIC_AUTH_ENABLED`                                                                      | `true` turns sign-in on.                                                                                                          |
+| `MOSAIC_EDITORS`                                                                           | Who may sign in and edit. If it isn't set, nobody can in production.                                                              |
+| `MOSAIC_WORKFLOWS_SECRET`                                                                  | Shared secret for saves. Use the same value as the CLI.                                                                           |
+| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                                                              | How long a save may take (default 5 minutes).                                                                                     |
+| `NEXT_PUBLIC_SITE_URL`                                                                     | The site's public URL, used for canonical URLs, `sitemap.xml` and `robots.txt`. Set it at build time.                             |
+| `MOSAIC_REVALIDATE_SECRET`                                                                 | Protects `POST /api/revalidate`. Use the same value as the CLI.                                                                   |
+| `MOSAIC_ACTIVE_MODE_CACHE`                                                                 | `true` caches content in active mode until the CLI calls `/api/revalidate`. Only use it if that call reaches every site instance. |
+| `MOSAIC_DEV_FAKE_AUTH`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE`, `MOSAIC_DISABLE_LOADER_CACHE` | Only for `next dev`.                                                                                                              |
+
+These haven't changed: `MOSAIC_MODE`, `MOSAIC_ACTIVE_MODE_URL`, `MOSAIC_SNAPSHOT_DIR`, `GITHUB_ID`, `GITHUB_SECRET`, `NEXT_PUBLIC_ENABLE_LOGIN` and `SITE_URL`.
+
+### CLI: new
+
+| Variable                                            | Purpose                                                                                                                                                                                                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MOSAIC_WORKFLOWS_SECRET`                           | Required for saves. The `/workflows` endpoint ignores any message without it.                                                                                                                                                                    |
+| `MOSAIC_ADMIN_SECRET`                               | Protects the [admin API](../configure/admin/index). Send it in the `x-mosaic-admin-secret` header, as a bearer token, or as the password in the browser's login prompt. If it isn't set, the admin API is only open when `NODE_ENV=development`. |
+| `MOSAIC_CORS_ORIGINS`                               | Comma-separated origins allowed to call the CLI from a browser. CORS is now off by default.                                                                                                                                                      |
+| `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates.                                                                                                                                                         |
+
+## 7. Check how the CLI behaves
+
+- **CORS is off by default.** The CLI used to allow every origin. The site calls the CLI from its server, so it doesn't need CORS. Only set `MOSAIC_CORS_ORIGINS` if a browser calls the CLI directly.
+- **The admin API needs a secret outside development.** Only `/_mosaic_/tags/list` stays open. If an SSO proxy in front of the CLI uses the `Authorization` header, send the secret in `x-mosaic-admin-secret`.
+- **`mosaic build` empties the snapshot folder** (`--out` joined with `--name`) before writing it, so deleted pages no longer linger. It rejects a `--name` that points at the output folder itself or outside it, such as `.` or `../x`.
+- **`mosaic upload` fails if any file fails to upload.** CI jobs that used to pass despite failed uploads will now fail.
+- **Sources now honour `requestTimeout`.** The HTTP, Readme, Storybook and Figma sources apply it, and it defaults to 5 seconds. Raise `requestTimeout` for any source that regularly takes longer to respond.
+
+## 8. Deploy
+
+- **Docker:** the reference Dockerfiles use Node.js 24 and set `MOSAIC_MODE=active` in both the build and run stages. Do the same in your own images if they read from a running CLI.
+- **Network:** only the site's server needs to reach the CLI, through `MOSAIC_ACTIVE_MODE_URL` and `MOSAIC_WORKFLOWS_URL`. You no longer need to expose the CLI's `/workflows` endpoint to browsers.
+- **Static export (optional):** `yarn build:static:file` and `yarn build:static:s3` build a fully static `out/` folder that any CDN can serve. See [Static export](../configure/modes/static-export).
+- **Snapshots:** rebuild your snapshots with the new `mosaic build`.
+
+## Checklist
+
+1. Use Node.js 22.13 or later, or Node.js 24.
+2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version, and `next-auth` to v5.
+3. Copy the current `packages/site` and move your components, layouts, CSS and config into it.
+4. Replace `next/router` imports and move `pages/api` handlers to `app/api` route handlers.
+5. Rename `.env.local` to `.env.development` and `.env.prod` to `.env.production`, and rename the env vars listed above.
+6. Set `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED` and `MOSAIC_EDITORS` on the site.
+7. Set the same `MOSAIC_WORKFLOWS_SECRET` on the site and the CLI.
+8. Set `MOSAIC_ADMIN_SECRET`, and `MOSAIC_CORS_ORIGINS` if needed, on the CLI.
+9. Set `MOSAIC_MODE=active` if your site reads from a running CLI.
+10. Set `NEXT_PUBLIC_SITE_URL` when you build the site.
+11. Run `yarn build && yarn start`, open a few pages, sign in, then edit and save a page from a Git source.
