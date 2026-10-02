@@ -70,7 +70,10 @@ export default defineConfig({
             // host app, not a published package), but small
             // unit-test surface still belongs in the same vitest
             // run so PRs can't silently regress them.
-            '**/packages/site/src/**/__tests__/*.test.[jt]s?(x)'
+            '**/packages/site/src/**/__tests__/*.test.[jt]s?(x)',
+            // Release tooling: snapshot-release request, tarball checks
+            // and publishing (scripts/snapshot).
+            'scripts/snapshot/__tests__/*.test.mjs'
           ],
           setupFiles: ['./scripts/vitest/vitest.server.setup.mts'],
           exclude: [
