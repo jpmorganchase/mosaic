@@ -20,7 +20,7 @@ yarn add @jpmorganchase/mosaic-site-middleware
 ## Usage (App Router)
 
 ```tsx
-// src/app/[...route]/page.tsx
+// src/app/[namespace]/[section]/[[...route]]/page.tsx
 import { notFound, redirect } from 'next/navigation';
 import {
   getMdxRaw,
@@ -30,9 +30,13 @@ import {
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
-export default async function Page({ params }: { params: Promise<{ route: string[] }> }) {
-  const { route } = await params;
-  const pathname = '/' + route.join('/');
+export default async function Page({
+  params
+}: {
+  params: Promise<{ namespace: string; section: string; route?: string[] }>;
+}) {
+  const { namespace, section, route = [] } = await params;
+  const pathname = '/' + [namespace, section, ...route].join('/');
   const { mode, contentUrl } = resolveMosaicMode();
 
   const [mdx, sharedConfig, search] = await Promise.all([
@@ -49,7 +53,7 @@ export default async function Page({ params }: { params: Promise<{ route: string
 }
 ```
 
-See `packages/site/src/app/[...route]/page.tsx` for the full reference
+See `packages/site/src/app/[namespace]/[section]/[[...route]]/page.tsx` for the full reference
 implementation (edit gating, folder → index redirects, metadata).
 
 ## Loaders
@@ -59,6 +63,7 @@ implementation (edit gating, folder → index redirects, metadata).
 | `resolveMosaicMode()`                            | `{ mode, contentUrl }` from `MOSAIC_MODE` / `MOSAIC_<MODE>_MODE_URL`.       |
 | `getMdxRaw(pathname, mode, contentUrl)`          | `{ kind: 'mdx', raw, frontmatter }`, `{ kind: 'redirect' }` or `not-found`. |
 | `getSharedConfig(pathname, mode, contentUrl)`    | The subtree's shared config (header, footer, …) or `undefined`.             |
+| `getSidebarData(folder, mode, contentUrl)`       | The sidebar tree `SidebarPlugin` wrote for a folder, or `undefined`.        |
 | `getSearchData(mode, contentUrl)`                | `{ searchIndex, searchConfig }`.                                            |
 | `getMdxRawSource(pathname, mode, contentUrl)`    | The page's on-disk bytes (active mode only), for the editor.                |
 | `getTagSuggestions(mode, contentUrl)`            | Tag names known to the content server, for the editor.                      |

@@ -25,8 +25,8 @@
  * per-request runtime cap, saves that exceed it are cut short.
  */
 import { randomUUID } from 'node:crypto';
-import { auth, isAuthorizedEditor } from '../../auth';
-import { isSafeRoute } from '../../lib/routes';
+import { auth, isAuthorizedEditor } from '../../../../auth';
+import { isSafeRoute } from '../../../../lib/routes';
 import type { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 export interface PersistInput {

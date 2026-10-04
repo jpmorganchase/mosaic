@@ -69,7 +69,7 @@ The exact knobs live in `packages/site/next.config.js` and
    throws loudly if you try to combine `MOSAIC_OUTPUT=export` with
    `active` mode.
 2. **`generateStaticParams` enumerates routes from the sitemap.** The
-   catch-all page (`app/[...route]/page.tsx`) reads the snapshot's
+   catch-all page (`app/[namespace]/[section]/[[...route]]/page.tsx`) reads the snapshot's
    `sitemap.xml` at build time and emits one static page per entry. In
    non-snapshot builds it short-circuits to a fully-dynamic route.
 3. **API route and Server Action stubs.** `scripts/static-export-route-stubs.mjs`

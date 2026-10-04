@@ -9,7 +9,7 @@ import { cache } from 'react';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { getMdxRaw, getSharedConfig } from '@jpmorganchase/mosaic-site-middleware';
 
-import { isSafeRoute } from '../../lib/routes';
+import { isSafeRoute } from '../../../../lib/routes';
 
 type MdxContent = Extract<Awaited<ReturnType<typeof getMdxRaw>>, { kind: 'mdx' }>;
 type SharedConfig = Awaited<ReturnType<typeof getSharedConfig>>;

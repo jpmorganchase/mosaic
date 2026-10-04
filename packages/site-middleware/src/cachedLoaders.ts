@@ -40,7 +40,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import matter from 'gray-matter';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
-import type { SharedConfig } from '@jpmorganchase/mosaic-store';
+import type { SharedConfig, SidebarItem } from '@jpmorganchase/mosaic-store';
 
 import {
   createS3Loader,
@@ -262,6 +262,80 @@ const loadSharedConfigCached = withCrossRequestCache(
 export const getSharedConfig = cache(
   async (pathname: string, mode: MosaicMode, contentUrl: string) =>
     loadSharedConfigCached(deriveSharedConfigUrlPath(pathname), mode, contentUrl)
+);
+
+// ---------------------------------------------------------------------------
+// Sidebar loader
+// ---------------------------------------------------------------------------
+
+/**
+ * `SidebarPlugin` writes one `sidebar.json` (`{ pages: [...] }`) per sidebar
+ * root folder and points every page under that folder at it, so each page's
+ * `sidebarData` frontmatter is a copy of the same tree. Loading the file
+ * once per folder lets a host send the tree once rather than with every
+ * page.
+ */
+function readSidebarPages(raw: string, source: string): SidebarItem[] | undefined {
+  const parsed = safeJsonParse<{ pages?: SidebarItem[] }>(raw, source);
+  return Array.isArray(parsed?.pages) ? parsed.pages : undefined;
+}
+
+const loadSidebarImpl = async (
+  folder: string,
+  mode: MosaicMode,
+  contentUrl: string
+): Promise<SidebarItem[] | undefined> => {
+  const folderPath = folder.replace(/\/+$/, '');
+
+  if (mode === 'snapshot-file') {
+    const snapshotPath = decodeSnapshotPath(folderPath);
+    if (snapshotPath === undefined) return undefined;
+    const { snapshotDir } = getSnapshotFileConfig(snapshotPath);
+    const filePath = path.join(process.cwd(), snapshotDir, snapshotPath, 'sidebar.json');
+    try {
+      await fs.promises.stat(filePath);
+    } catch {
+      return undefined;
+    }
+    return readSidebarPages(await loadLocalFile(filePath), filePath);
+  }
+
+  if (mode === 'snapshot-s3') {
+    const snapshotPath = decodeSnapshotPath(folderPath);
+    if (snapshotPath === undefined) return undefined;
+    const s3Key = `${snapshotPath}/sidebar.json`.replace(/^\//, '');
+    const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(s3Key);
+    const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
+    if (!(await keyExists(bucket, s3Key))) return undefined;
+    return readSidebarPages(await loadKey(bucket, s3Key), `s3://${bucket}/${s3Key}`);
+  }
+
+  // Active mode. `cache: 'no-store'` — see `loadSharedConfigImpl`.
+  const response = await fetch(`${contentUrl}${folderPath}/sidebar.json`, { cache: 'no-store' });
+  if (response.ok) {
+    return readSidebarPages(await response.text(), `${contentUrl}${folderPath}/sidebar.json`);
+  }
+  if (response.status === 404) return undefined;
+  throw new Error(
+    `Failed to load sidebar from ${contentUrl}${folderPath}: ${response.status} ${response.statusText}`
+  );
+};
+
+const loadSidebarCached = withCrossRequestCache(
+  loadSidebarImpl,
+  ['mosaic', 'sidebar'],
+  // Loader signature: `(folder, mode, contentUrl)`. Mode is the second arg.
+  ([, mode]) => mode,
+  pages => pages !== undefined
+);
+
+/**
+ * Resolve the sidebar tree `SidebarPlugin` published for a folder (for
+ * example `/mosaic/configure`), or `undefined` when the folder isn't a
+ * sidebar root.
+ */
+export const getSidebarData = cache(async (folder: string, mode: MosaicMode, contentUrl: string) =>
+  loadSidebarCached(folder, mode, contentUrl)
 );
 
 // ---------------------------------------------------------------------------

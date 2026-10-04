@@ -217,7 +217,7 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
   }, [filename]);
 
   // Pre-flight collision check. The server-side branch in
-  // `[...route]/page.tsx` redirects to the existing page in edit
+  // `[namespace]/[section]/[[...route]]/page.tsx` redirects to the existing page in edit
   // mode when a `?new=1` request hits a path that already exists,
   // but bouncing the author into a different page on submit is a
   // jarring surprise. Surface the conflict in the dialog instead,
@@ -276,7 +276,7 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     // nav would 404 the RSC prefetch. `router.push` falls
     // through to a hard navigation when the route isn't in
     // the App Router's compiled segment tree, which is what
-    // we want — the catch-all `[...route]/page.tsx` then sees
+    // we want — the catch-all `[namespace]/[section]/[[...route]]/page.tsx` then sees
     // a fresh request and takes its `?new=1` branch.
     //
     // Wrap in a React transition so the App Router keeps the

@@ -9,7 +9,7 @@ import { WebSocketServer } from 'ws';
 
 const authMock = vi.fn();
 const isAuthorizedEditorMock = vi.fn();
-vi.mock('../../../auth', () => ({
+vi.mock('../../../../../auth', () => ({
   auth: authMock,
   isAuthorizedEditor: isAuthorizedEditorMock
 }));

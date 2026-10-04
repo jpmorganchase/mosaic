@@ -17,7 +17,7 @@
  * it once with their bespoke component registry and any extra scope
  * values, and use the returned component from `BodyServer.tsx`.
  *
- *   // host: app/[...route]/mdxHost.ts (or MdxComponents.ts)
+ *   // host: app/[namespace]/[section]/[[...route]]/mdxHost.ts (or MdxComponents.ts)
  *   'use client';
  *   import { createMdxRenderer } from '@jpmorganchase/mosaic-site-components';
  *   import { Salt, Sitemap, MyLocalThing } from './...';
@@ -25,7 +25,7 @@
  *     components: { Salt, Sitemap, MyLocalThing },
  *   });
  *
- *   // host: app/[...route]/BodyServer.tsx
+ *   // host: app/[namespace]/[section]/[[...route]]/BodyServer.tsx
  *   import { MdxRenderer } from './mdxHost';
  *   // ...await serializeMdxForClient(raw); <MdxRenderer source={source} />
  *

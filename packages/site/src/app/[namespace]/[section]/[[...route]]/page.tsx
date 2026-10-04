@@ -40,14 +40,16 @@ import { connection } from 'next/server';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRawSource,
-  getSearchData,
   loadSitemap,
   resolveMosaicMode,
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
-import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../auth';
-import { StoreShell } from '../providers';
+import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../../auth';
+import { withCapabilityBypass } from '../../../../lib/capabilities';
+import { getSectionSidebar } from '../../../../lib/sectionSidebar';
+import { StoreShell } from '../../../providers';
+import { FrameSync } from '../../NamespaceFrame';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
 // The Lexical editor is lazy-loaded from a Client Component wrapper so
@@ -56,9 +58,10 @@ import { EditorBodyLazy as EditorBody } from './EditorBodyLazy';
 import { RouteMetadata } from './RouteMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 import { canonicalRoute, isFolderIndexRedirect, resolveContent } from './resolveContent';
+import { omitKey, withoutFrontmatterKey } from './sharedPageData';
 
 interface PageProps {
-  params: Promise<{ route?: string[] }>;
+  params: Promise<{ namespace: string; section: string; route?: string[] }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -87,47 +90,15 @@ const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 
-/**
- * Dev-only escape hatch for the source-capability gate.
- *
- * The gate (see the edit/create branch below) hides the editor on
- * pages whose owning source has not declared `capabilities.writable
- * = true`. In this repo's own dev environment the docs are served
- * via `source-local-folder`, which is correctly non-writable —
- * which would also lock out the editor's own e2e tests (and any
- * hand-iteration against local content).
- *
- * Setting `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` makes every page
- * present as if it were from a writable source. The bypass is
- * hard-guarded against production: `NODE_ENV` must not be
- * `production`, and a boot-time warning fires so the leak is
- * impossible to miss.
- *
- * The bypass works by rewriting the per-route `sharedConfig` to
- * force `sourceCapabilities.writable = true` before the page
- * renders. That keeps the override server-side and means the
- * client-side `useSourceCapabilities()` hook needs no parallel
- * env-var coordination — both server and browser see the same
- * (overridden) capability snapshot.
- */
-const CAPABILITY_GATE_BYPASSED =
-  process.env.NODE_ENV !== 'production' && process.env.MOSAIC_DEV_BYPASS_CAPABILITY_GATE === 'true';
-
-if (CAPABILITY_GATE_BYPASSED) {
-  console.warn(
-    '[mosaic-site] MOSAIC_DEV_BYPASS_CAPABILITY_GATE is enabled — ' +
-      'the editor is mounted on every page regardless of source ' +
-      'writability. Do NOT enable this in production.'
-  );
-}
-
-export async function generateStaticParams(): Promise<{ route: string[] }[]> {
+export async function generateStaticParams(): Promise<
+  { namespace: string; section: string; route: string[] }[]
+> {
   if (!shouldPrerenderSnapshot) return [];
   const urls = await loadSitemap();
   return urls
     .map(url => url.replace(/^\//, '').split('/').filter(Boolean))
-    .filter(segments => segments.length > 0)
-    .map(route => ({ route }));
+    .filter(segments => segments.length > 1)
+    .map(([namespace, section, ...route]) => ({ namespace, section, route }));
 }
 
 /**
@@ -141,8 +112,14 @@ export async function generateStaticParams(): Promise<{ route: string[] }[]> {
 const resolveRouteInputs = cache(
   async (
     params: PageProps['params']
-  ): Promise<{ pathname: string; mode: MosaicMode; contentUrl: string }> => {
-    const [{ route = [] }] = await Promise.all([
+  ): Promise<{
+    pathname: string;
+    namespace: string;
+    section: string;
+    mode: MosaicMode;
+    contentUrl: string;
+  }> => {
+    const [{ namespace, section, route = [] }] = await Promise.all([
       params,
       // Opt into request-time rendering whenever we are NOT
       // pre-rendering. In a production snapshot build we want the route
@@ -152,9 +129,9 @@ const resolveRouteInputs = cache(
       // mandatory regardless.
       shouldPrerenderSnapshot ? Promise.resolve() : connection()
     ]);
-    const pathname = '/' + route.join('/');
+    const pathname = '/' + [namespace, section, ...route].join('/');
     const { mode, contentUrl } = resolveMosaicMode();
-    return { pathname, mode, contentUrl };
+    return { pathname, namespace, section, mode, contentUrl };
   }
 );
 
@@ -222,14 +199,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function RoutePage({ params, searchParams }: PageProps) {
-  const { pathname, mode, contentUrl } = await resolveRouteInputs(params);
+  const { pathname, namespace, section, mode, contentUrl } = await resolveRouteInputs(params);
 
   // `resolveContent` issues `getMdxRaw` + `getSharedConfig` and
   // transparently follows any folder→index redirect the upstream
   // returns for `pathname`. The same call ran from
   // `generateMetadata` is request-cached so we pay nothing extra
-  // here. `getSearchData` and `searchParams` are independent and
-  // fetched in parallel alongside.
+  // here. The search index belongs to the namespace layout, which
+  // loads it once rather than with every page; the section's sidebar
+  // tree belongs to the section layout (fetched here too, request-cached,
+  // to tell whether this page's copy can be left out).
   //
   // `searchParams` is awaited alongside them so the `?edit=1`
   // check costs no extra latency — but only when we're *not*
@@ -237,9 +216,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // prerender promotes the route to dynamic and breaks the build;
   // the EDIT branch is unreachable in static export anyway
   // (`auth()` is stubbed).
-  const [resolved, search, sp] = await Promise.all([
+  const [resolved, sectionSidebar, sp] = await Promise.all([
     resolveContent(pathname, mode, contentUrl),
-    getSearchData(mode, contentUrl),
+    getSectionSidebar(namespace, section, mode, contentUrl),
     shouldPrerenderSnapshot
       ? (Promise.resolve({}) as Promise<Record<string, string | string[] | undefined>>)
       : searchParams
@@ -267,16 +246,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // preserved. A miss carries the shared config of the folder the
   // missing page would live in, so the same gate covers the create
   // flow; apply the bypass before discriminating.
-  const sharedConfigOriginal = resolved.sharedConfig;
-  const sharedConfig = CAPABILITY_GATE_BYPASSED
-    ? {
-        ...(sharedConfigOriginal ?? {}),
-        sourceCapabilities: {
-          ...(sharedConfigOriginal?.sourceCapabilities ?? {}),
-          writable: true
-        }
-      }
-    : sharedConfigOriginal;
+  const sharedConfig = withCapabilityBypass(resolved.sharedConfig);
 
   // Source-capability gate. Absent capabilities (no shared-config
   // for the subtree, or a source that hasn't opted in) means
@@ -349,8 +319,6 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     };
   }
   const storeProps = {
-    searchIndex: search.searchIndex,
-    searchConfig: search.searchConfig,
     ...frontmatterRest,
     sharedConfig: mergedSharedConfig
   };
@@ -523,6 +491,21 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     }
   }
 
+  // The section layout already sent the section's sidebar tree (see
+  // `[section]/layout.tsx`); leave this page's identical copy out of the
+  // store props and the compiled MDX frontmatter.
+  const sidebarIsShared =
+    sectionSidebar !== undefined &&
+    JSON.stringify((storeProps as Record<string, unknown>).sidebarData) ===
+      JSON.stringify(sectionSidebar);
+  const pageStoreProps: Record<string, unknown> = sidebarIsShared
+    ? omitKey(storeProps, 'sidebarData')
+    : storeProps;
+  const clientSource =
+    sidebarIsShared && compiledSource
+      ? withoutFrontmatterKey(compiledSource, 'sidebarData')
+      : compiledSource;
+
   // Intentionally no nested `<Suspense>` and no sibling `loading.tsx`
   // at the route segment for the VIEW branch. When a `<Link>`-driven
   // navigation enters a React transition (the default) *and* there is
@@ -539,7 +522,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // screen until the chunk arrives, then swaps in `<EditorBody>` —
   // same no-flash behaviour as VIEW.
   return (
-    <StoreShell storeProps={storeProps} isEditing={editing || creating}>
+    <StoreShell storeProps={pageStoreProps} isEditing={editing || creating}>
       {/*
         URL canonicaliser. Mounted when the browser URL is the folder
         shorthand of the page's canonical route (e.g.
@@ -554,6 +537,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       {canonicalPathname && isFolderIndexRedirect(pathname, canonicalPathname) && (
         <CanonicalizeUrl canonical={canonicalPathname} />
       )}
+      {/* Hands this page's shared config (header overrides, writability)
+          and edit state to the namespace layout's persistent header. */}
+      <FrameSync sharedConfig={mergedSharedConfig} isEditing={editing || creating} />
       <RouteMetadata />
       {editing || creating ? (
         <EditorBody
@@ -564,7 +550,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
           route={resolvedPathname}
         />
       ) : (
-        <BodyServer type="mdx" raw={raw} source={compiledSource} />
+        <BodyServer type="mdx" raw={raw} source={clientSource} />
       )}
     </StoreShell>
   );
