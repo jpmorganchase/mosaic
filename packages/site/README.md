@@ -28,12 +28,16 @@ packages/site/
         ├── layout.tsx          # root layout, global CSS, theme script
         ├── providers.tsx       # 'use client' providers + per-route <StoreShell>
         ├── page.tsx            # / → redirect to /mosaic/index
-        ├── not-found.tsx       # global 404
+        ├── not-found.tsx       # global 404 (no server data; see NotFoundBody.tsx)
+        ├── NotFoundBody.tsx    # 404 body; loads header data only when shown
+        ├── notFoundChromeAction.ts # Server Action: 404 header data
         ├── error.tsx           # route error boundary (must be 'use client')
+        ├── global-error.tsx    # root layout error boundary
         ├── robots.ts           # robots.txt generation
         ├── sitemap.ts          # sitemap.xml generation
         ├── [...route]/         # catch-all route
         │   ├── page.tsx        # loads content, gates the editor, renders the page
+        │   ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
         │   ├── BodyServer.tsx  # renders compiled MDX with <MdxRenderer>
         │   ├── MdxComponents.ts   # MDX-visible component registry
         │   ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
@@ -53,13 +57,14 @@ packages/site/
 
 The site supports three Mosaic content modes plus a static-export target:
 
-| Command                              | Mode                                         | Output                                       |
-| ------------------------------------ | -------------------------------------------- | -------------------------------------------- |
-| `yarn build`                         | `snapshot-file` (default, `.env.production`) | Node server, content from local snapshot dir |
-| `MOSAIC_MODE=active yarn build`      | `active`                                     | Dynamic Node server, pulls content live      |
-| `MOSAIC_MODE=snapshot-s3 yarn build` | `snapshot-s3`                                | Node server, content from S3 bucket          |
-| `yarn build:static:file`             | `snapshot-file` + `MOSAIC_OUTPUT=export`     | Static `out/` directory, no Node runtime     |
-| `yarn build:static:s3`               | `snapshot-s3` + `MOSAIC_OUTPUT=export`       | Static `out/` directory, no Node runtime     |
+| Command                               | Mode                                         | Output                                       |
+| ------------------------------------- | -------------------------------------------- | -------------------------------------------- |
+| `yarn build`                          | `snapshot-file` (default, `.env.production`) | Node server, content from local snapshot dir |
+| `MOSAIC_MODE=active yarn build`       | `active`                                     | Dynamic Node server, pulls content live      |
+| `MOSAIC_MODE=snapshot-s3 yarn build`  | `snapshot-s3`                                | Node server, content from S3 bucket          |
+| `yarn build:static:file`              | `snapshot-file` + `MOSAIC_OUTPUT=export`     | Static `out/` directory, no Node runtime     |
+| `yarn build:static:s3`                | `snapshot-s3` + `MOSAIC_OUTPUT=export`       | Static `out/` directory, no Node runtime     |
+| `MOSAIC_OUTPUT=standalone yarn build` | any server mode                              | `.next/standalone` server for Docker images  |
 
 See [`docs/configure/modes/`](../../docs/configure/modes/index.mdx) for
 the full mode documentation and
@@ -128,7 +133,9 @@ the resolution of a real bug.
 
 1. **Mount `<SessionProvider>` without a server-resolved session.** The
    client fetches it lazily, so the root layout doesn't depend on
-   Auth.js configuration and no-auth deployments still render.
+   Auth.js configuration and no-auth deployments still render. The
+   layout passes only the build-time `AUTH_ENABLED` flag, so no-auth
+   deployments use `session={null}` and skip the session request.
 2. **Pass the server's edit state to `<StoreShell isEditing>`.** It
    reaches `LayoutProvider`, so view-mode pages never call
    `useSearchParams()` — which would make statically prerendered pages
@@ -140,7 +147,7 @@ the resolution of a real bug.
    The package root re-exports the whole Lexical editor, and
    `next/dynamic` doesn't code-split when called from a Server
    Component.
-4. **Skip `headers()` and `searchParams` in snapshot builds.** Calling
+4. **Skip `connection()` and `searchParams` in snapshot builds.** Calling
    them opts the route out of static pre-rendering. Use a cheap
    conditional **before** the `await`.
 5. **Keep the auth checks inside the Server Actions.** Server Actions
@@ -156,6 +163,11 @@ the resolution of a real bug.
    `scripts/static-export-route-stubs.mjs` script handles this
    automatically inside `build:static:*`; do not call `next build`
    with `MOSAIC_OUTPUT=export` directly.
+8. **Keep `not-found.tsx` free of server data loading.** Next.js renders
+   it as part of every page response, not only for missing pages, so
+   anything it awaits runs on every request. `<NotFoundBody>` loads the
+   404 page's header data from the browser instead (static exports bake
+   it in at build time).
 
 ## Migrating an older Mosaic site
 

@@ -39,24 +39,26 @@
  * the resolution rule in `app/layout.tsx`.
  */
 import type { MetadataRoute } from 'next';
+import { connection } from 'next/server';
 import { loadSitemap } from '@jpmorganchase/mosaic-site-middleware';
 
 import { resolveSiteOrigin } from '../lib/siteOrigin';
 
-// Snapshot builds want a fully static `/sitemap.xml` baked at build
-// time (it's part of the static export tarball). Active mode reads
-// from the live Mosaic FS server on each request, so forcing static
-// would freeze the output to whatever existed at first render and
-// hide subsequent author edits / new pages from the New-Page dialog's
-// folder suggestions. `revalidate = 0` opts the route out of the data
-// cache in active mode (equivalent to `dynamic = 'force-dynamic'` for
-// caching purposes — `revalidate` is the older / more granular knob
-// and the one Next's sitemap convention happens to honour). In a
-// `next build` static export the route is rendered exactly once at
-// build time so the value is moot there.
-export const revalidate = 0;
+// Snapshot builds (including the static export) generate `/sitemap.xml`
+// from the snapshot at build time and refresh it every five minutes, so
+// a newly uploaded snapshot shows up without a redeploy. Active mode
+// reads the live Mosaic FS server on every request instead, so new pages
+// show up immediately: it opts into request-time rendering with
+// `connection()`, because route segment config must be a literal and
+// can't say "dynamic in active mode only". `output: 'export'` needs a
+// positive `revalidate` (or `dynamic = 'force-static'`) on this route;
+// `revalidate = 0` made the export fail.
+export const revalidate = 300;
+
+const isActiveMode = (process.env.MOSAIC_MODE || 'active') === 'active';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (isActiveMode) await connection();
   const origin = resolveSiteOrigin();
   const urls = await loadSitemap();
   return urls.map(pathname => ({

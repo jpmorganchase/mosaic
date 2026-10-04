@@ -1,4 +1,5 @@
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
 // Deep imports: the package root re-exports the whole Lexical editor.
@@ -30,31 +31,33 @@ function toUpperFirst(str) {
 }
 
 /**
+ * Collapses `callbackPath` to `/` when the originating page is itself
+ * under `/api/auth/*`. Otherwise a Login click from the sign-in page
+ * (or a Logout from the sign-out confirmation screen) would round-trip
+ * back to `/api/auth/signin?...`, which looks like a redirect loop in
+ * the network panel and is never what the user wanted.
+ */
+function toCallbackPath(callbackPath: string): string {
+  return callbackPath.startsWith('/api/auth/') ? '/' : callbackPath;
+}
+
+/**
  * Same-origin path the user should land on after auth (sign-in or
- * sign-out). Composed from `pathname + search + hash` rather than
- * `window.location.href` so it stays a relative URL — NextAuth's
- * default `redirect` callback already filters cross-origin targets,
- * but never handing it an absolute URL in the first place keeps the
- * link unambiguously local and avoids encoding a redundant
- * `https://host/` prefix into every Login/Logout request.
+ * sign-out), read when the user clicks. Composed from
+ * `pathname + search + hash` rather than `window.location.href` so it
+ * stays a relative URL — NextAuth's default `redirect` callback already
+ * filters cross-origin targets, but never handing it an absolute URL in
+ * the first place keeps the link unambiguously local and avoids
+ * encoding a redundant `https://host/` prefix into every Login/Logout
+ * request.
  *
- * SSR-safe: returns `'/'` when `window` is undefined (server render,
- * prerender, build-time page collection). Lands the user on the
- * homepage in that case — same behaviour as a bare
- * `/api/auth/signin` with no `callbackUrl`, which is the correct
- * fallback when we genuinely don't know where the click originated.
- *
- * A small guard collapses `callbackUrl` to `/` when the originating
- * page is itself under `/api/auth/*`. Otherwise a Login click from
- * the sign-in page (or a Logout from the sign-out confirmation
- * screen) would round-trip back to `/api/auth/signin?...`, which
- * looks like a redirect loop in the network panel and is never what
- * the user wanted.
+ * Event handlers only: it reads `window.location`, so calling it while
+ * rendering would give the server and the browser different values.
  */
 function getCallbackPath(): string {
-  if (typeof window === 'undefined') return '/';
-  const callbackPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-  return callbackPath.startsWith('/api/auth/') ? '/' : callbackPath;
+  return toCallbackPath(
+    `${window.location.pathname}${window.location.search}${window.location.hash}`
+  );
 }
 
 /**
@@ -73,15 +76,20 @@ function getCallbackPath(): string {
  *     event JS fails to hydrate.
  *   - SSR / view-source shows a meaningful target.
  *
+ * Built from the router's pathname, which the server and the browser
+ * agree on, so hydration matches. (Search and hash are only known in
+ * the browser; the click handler includes them.)
+ *
  * Returns the path-shaped Auth.js sign-in URL with the callback
  * encoded, mirroring exactly what `signIn(undefined, { callbackUrl })`
  * resolves to internally for the default-provider-list flow.
  */
-function buildSignInFallbackHref(): string {
-  return `/api/auth/signin?callbackUrl=${encodeURIComponent(getCallbackPath())}`;
+function buildSignInFallbackHref(pathname: string | null): string {
+  return `/api/auth/signin?callbackUrl=${encodeURIComponent(toCallbackPath(pathname ?? '/'))}`;
 }
 
 export const AppHeaderControls: React.FC = () => {
+  const pathname = usePathname();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
 
@@ -164,7 +172,7 @@ export const AppHeaderControls: React.FC = () => {
             // to the native href behaviour, primary clicks go via
             // `signIn`.
             <Link
-              href={buildSignInFallbackHref()}
+              href={buildSignInFallbackHref(pathname)}
               onClick={event => {
                 if (
                   event.defaultPrevented ||

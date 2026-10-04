@@ -1,25 +1,17 @@
 /**
  * Global 404.
  *
- * Server-side: resolve the site-wide `sharedConfig` (header / footer /
- * search namespace) and search data so the not-found page can mount
- * the full `<AppHeader>` chrome users see on every other route. The
- * data loaders are the same `cache()`-deduped primitives the catch-all
- * uses, so this adds one parallel pair of fetches on a 404 and nothing
- * on a 200.
+ * Next.js renders this component as part of *every* page response (it
+ * is the root not-found boundary's fallback), not only when a page is
+ * missing. So it does no data loading on the server: `<NotFoundBody>`
+ * loads the header/footer data from the browser, and only when a 404 is
+ * actually shown.
  *
- * `getSharedConfig('/', mode, contentUrl)` asks for the *root*
- * shared-config — the header/footer/menu for the homepage, which is
- * the only safe choice when we don't know which subtree the user was
- * trying to reach.
- *
- * The actual rendering — `<StoreShell>` → `<LayoutBase Header>` →
- * `<Page404 />` — runs in `NotFoundBody.tsx`, which is a client
- * boundary because `<AppHeader>` reads React context.
- *
- * If both loaders return `undefined` (env not wired up / snapshot
- * missing the root config), the page still renders cleanly — the
- * default-seeded store leaves the header empty rather than crashing.
+ * The exception is a static export, which has no server to answer that
+ * request. There this runs once at build time to bake the site-root
+ * shared config (`getSharedConfig('/')`) and the search data into
+ * `404.html`. If they are missing the page still renders, just without
+ * a header.
  */
 import {
   getSearchData,
@@ -29,7 +21,11 @@ import {
 
 import { NotFoundBody } from './NotFoundBody';
 
+const isStaticExport = process.env.MOSAIC_OUTPUT === 'export';
+
 export default async function NotFound() {
+  if (!isStaticExport) return <NotFoundBody />;
+
   const { mode, contentUrl } = resolveMosaicMode();
   const [sharedConfig, search] = await Promise.all([
     getSharedConfig('/', mode, contentUrl).catch(() => undefined),
@@ -39,11 +35,13 @@ export default async function NotFound() {
     }))
   ]);
 
-  const storeProps = {
-    sharedConfig,
-    searchIndex: search?.searchIndex,
-    searchConfig: search?.searchConfig
-  };
-
-  return <NotFoundBody storeProps={storeProps} />;
+  return (
+    <NotFoundBody
+      initialChrome={{
+        sharedConfig,
+        searchIndex: search.searchIndex,
+        searchConfig: search.searchConfig
+      }}
+    />
+  );
 }

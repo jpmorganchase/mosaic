@@ -6,6 +6,7 @@ import {
   disposeStore,
   initializeStore,
   registerStore,
+  reseedStore,
   SiteState,
   useCreateStore,
   useStore
@@ -251,5 +252,52 @@ describe('GIVEN per-page stores', () => {
     expect(removeSpy).toHaveBeenCalledWith('storage', listener);
     addSpy.mockRestore();
     removeSpy.mockRestore();
+  });
+});
+
+describe('GIVEN `reseedStore`', () => {
+  test('THEN the page state is replaced while colour mode and actions are kept', () => {
+    const store = initializeStore({
+      title: 'Old title',
+      layout: 'DetailTechnical',
+      tableOfContents: [{ level: 0, id: 'old', text: 'Old' }]
+    });
+    store.getState().actions.setColorMode('dark');
+    const { actions } = store.getState();
+
+    reseedStore(store, { title: 'New title', layout: 'FullWidth' });
+
+    const state = store.getState();
+    expect(getStateToVerify(state)).toEqual({
+      breadcrumbs: [],
+      navigation: {},
+      searchIndex: [],
+      searchConfig: {},
+      sidebarData: [],
+      // Missing from the new seed, so back to the default rather than stale.
+      tableOfContents: [],
+      sharedConfig: {},
+      description: undefined,
+      route: undefined,
+      title: 'New title',
+      layout: 'FullWidth',
+      colorMode: 'dark'
+    });
+    expect(state.actions).toBe(actions);
+
+    disposeStore(store);
+  });
+
+  test('THEN a seed cannot override colour mode or actions', () => {
+    const store = initializeStore();
+    const { actions, colorMode } = store.getState();
+    const otherColorMode = colorMode === 'dark' ? 'light' : 'dark';
+
+    reseedStore(store, { colorMode: otherColorMode, actions: undefined } as never);
+
+    expect(store.getState().colorMode).toEqual(colorMode);
+    expect(store.getState().actions).toBe(actions);
+
+    disposeStore(store);
   });
 });
