@@ -112,6 +112,17 @@ describe('GIVEN Source', () => {
     ).toHaveProperty('triggerWorkflow');
   });
 
+  test('THEN it exposes its normalised prefixDir and workflow names', () => {
+    const create = (options: Record<string, unknown>) =>
+      new Source({ modulePath: 'plugin', namespace: 'test-namespace' }, options, [], [], {}, [
+        { name: 'save', options: {}, action: vi.fn() }
+      ]);
+    expect(create({ prefixDir: '/mosaic/docs/' }).prefixDir).toBe('mosaic/docs');
+    expect(create({}).prefixDir).toBeUndefined();
+    expect(create({}).hasWorkflow('save')).toBe(true);
+    expect(create({}).hasWorkflow('publish')).toBe(false);
+  });
+
   describe('WHEN calling `use`', () => {
     let source: Source;
 

@@ -42,7 +42,16 @@ describe('GIVEN stripPrefixDir', () => {
       'guide/mosaic/index.mdx'
     );
     expect(stripPrefixDir('/docs.v2/index.mdx', 'docs.v2')).toBe('index.mdx');
-    expect(stripPrefixDir('/docsAv2/index.mdx', 'docs.v2')).toBe('/docsAv2/index.mdx');
+    expect(stripPrefixDir('mosaic/docs/index.mdx', '/mosaic/docs/')).toBe('index.mdx');
+  });
+
+  test.each([
+    ['/docsAv2/index.mdx', 'docs.v2'],
+    ['/mosaic/new-page.mdx', 'mosaic/docs'],
+    ['/mosaic-docs/index.mdx', 'mosaic'],
+    ['/mosaic', 'mosaic']
+  ])('THEN %j is not under %j', (route, prefixDir) => {
+    expect(stripPrefixDir(route, prefixDir)).toBeUndefined();
   });
 });
 

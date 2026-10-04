@@ -127,12 +127,13 @@ export async function createPullRequest(
    * strip out the namespace from the file path.
    * We are interested in the file on disk not in the VFS
    */
-  const pathOnDisk = resolveInside(
-    path.posix.join(repoInstance.dir, subfolder),
-    stripPrefixDir(filePath, prefixDir)
-  );
+  const pathInSource = stripPrefixDir(filePath, prefixDir);
+  const pathOnDisk =
+    pathInSource === undefined
+      ? undefined
+      : resolveInside(path.posix.join(repoInstance.dir, subfolder), pathInSource);
   if (!pathOnDisk) {
-    const error = `Refusing to write ${filePath}: it resolves outside the source folder.`;
+    const error = `Refusing to write ${filePath}: it is outside the source folder (/${prefixDir}).`;
     sendWorkflowProgressMessage(error, 'ERROR');
     await repoInstance.removeWorktree(userId);
     return { error, source: repoInstance.name };

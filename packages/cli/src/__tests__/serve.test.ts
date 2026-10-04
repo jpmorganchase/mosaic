@@ -717,10 +717,9 @@ describe('GIVEN the serve command', () => {
       expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
     });
 
-    test('THEN a new page is created under the deepest existing folder', async () => {
-      // `/file/new-page.mdx` doesn't exist yet; `/file/nested` doesn't
-      // either; `/file` does.
-      mockExistsFn.mockImplementation(async (target: string) => target === '/file');
+    test('THEN a new page is passed to core to pick its owning source', async () => {
+      mockExistsFn.mockResolvedValue(false);
+      mockTriggerWorkflowFn.mockResolvedValueOnce(true);
 
       const reply = await sendWorkflowMessage({
         user,
@@ -732,10 +731,32 @@ describe('GIVEN the serve command', () => {
       });
 
       expect(reply.status).toEqual('SUCCESS');
-      const [, , filePath, data, ownerPath] = mockTriggerWorkflowFn.mock.calls[0];
+      const [, , filePath, data, options] = mockTriggerWorkflowFn.mock.calls[0];
       expect(filePath).toEqual('/file/nested/new-page.mdx');
-      expect(ownerPath).toEqual('/file');
+      expect(options).toEqual({ newPage: true });
       expect(data).toEqual({ user, markdown: '# New', isNewPage: true });
+    });
+
+    test('THEN a new page no source can create only reports the error', async () => {
+      mockExistsFn.mockResolvedValue(false);
+      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+        await new Promise(resolve => setTimeout(resolve));
+        send('No source can create /elsewhere/new-page.mdx', 'ERROR');
+        return false;
+      });
+
+      const reply = await sendWorkflowMessage({
+        user,
+        route: '/elsewhere/new-page',
+        isNewPage: true,
+        name: 'save',
+        token: WORKFLOWS_SECRET
+      });
+
+      expect(reply).toMatchObject({
+        status: 'ERROR',
+        message: 'No source can create /elsewhere/new-page.mdx'
+      });
     });
 
     test('THEN creating a page that already exists is refused', async () => {

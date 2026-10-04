@@ -17,7 +17,7 @@ import FileAccess from './filesystems/FileAccess.js';
 import MutableVolume from './filesystems/MutableVolume.js';
 import UnionFileAccess from './filesystems/UnionFileAccess.js';
 import UnionVolume from './filesystems/UnionVolume.js';
-import SourceManager from './SourceManager.js';
+import SourceManager, { type TriggerWorkflowOptions } from './SourceManager.js';
 import parsePluginModuleDefinitions from './helpers/parsePluginModuleDefinitions.js';
 
 const require = createRequire(import.meta.url);
@@ -109,23 +109,23 @@ export default class PullDocs {
   }
 
   /**
-   * @param ownerPath path used to pick the owning source; defaults to
-   *   `filePath`. Pass an existing ancestor folder when `filePath` doesn't
-   *   exist yet (creating a new page).
+   * Runs workflow `name` for `filePath`. Pass `{ newPage: true }` when
+   * `filePath` doesn't exist yet, so the owning source is picked by its
+   * `prefixDir`. Resolves to `false` when no source could run it.
    */
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
     data,
-    ownerPath: string = filePath
+    options?: TriggerWorkflowOptions
   ) {
-    this.#sourceManager.triggerWorkflow(
+    return this.#sourceManager.triggerWorkflow(
       sendWorkflowProgressMessage,
       name,
       filePath,
       data,
-      ownerPath
+      options
     );
   }
 

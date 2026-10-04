@@ -50,8 +50,15 @@ export function toSafeIdentifier(value: string): string {
   return safe || 'user';
 }
 
-/** Strips the source's `prefixDir` from the start of a VFS route. */
-export function stripPrefixDir(route: string, prefixDir: string): string {
-  const escaped = prefixDir.replace(/^\/+|\/+$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return route.replace(new RegExp(`^/?${escaped}/`), '');
+/**
+ * Strips the source's `prefixDir` from the start of a VFS route, giving
+ * the route relative to the source's content folder. Returns `undefined`
+ * when the route isn't under `prefixDir`, because it then belongs to a
+ * different source and has no path inside this one.
+ */
+export function stripPrefixDir(route: string, prefixDir: string): string | undefined {
+  const prefix = prefixDir.replace(/^\/+|\/+$/g, '');
+  const relative = route.replace(/^\/+/, '');
+  if (!prefix) return relative;
+  return relative.startsWith(`${prefix}/`) ? relative.slice(prefix.length + 1) : undefined;
 }

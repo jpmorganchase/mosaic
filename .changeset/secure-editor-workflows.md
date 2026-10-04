@@ -49,10 +49,11 @@ Secure the content server and editor, fix the save flow, and slim the App Router
 
 - **Saving works again.** The CLI echoes the caller's channel (the site
   had switched to a different channel hash, so every progress message
-  was dropped and saves never finished), new pages can be created (the
-  CLI required the route to exist already, and the editor had no route
-  for a new page), and saves time out (`MOSAIC_WORKFLOWS_TIMEOUT_MS`,
-  default 5 minutes) and always close their socket.
+  was dropped and saves never finished), new pages can be created in the
+  source whose `prefixDir` contains them (the CLI required the route to
+  exist already, and the editor had no route for a new page), and saves
+  time out (`MOSAIC_WORKFLOWS_TIMEOUT_MS`, default 5 minutes) and always
+  close their socket.
 - Workflow failures are reported to the editor instead of crashing the
   CLI with an unhandled rejection. The GitHub workflow accepts the
   site's `sid` when no `id` is sent.

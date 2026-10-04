@@ -55,20 +55,6 @@ function parseWorkflowMessage(raw: string): WorkflowMessage | string {
   return message as WorkflowMessage;
 }
 
-/**
- * For a page that doesn't exist yet, the owning source is the one holding
- * the deepest existing ancestor folder (sources are matched by what they
- * have on the filesystem).
- */
-async function findExistingAncestor(fs, pagePath: string): Promise<string | undefined> {
-  let dir = path.posix.dirname(pagePath);
-  while (dir !== '/' && dir !== '.') {
-    if (await fs.promises.exists(dir)) return dir;
-    dir = path.posix.dirname(dir);
-  }
-  return undefined;
-}
-
 async function mosaicWorkflows(fastify: FastifyInstance) {
   await fastify.register(websocket, { options: { maxPayload: MAX_WORKFLOW_MESSAGE_BYTES } });
   const { fs, core } = fastify.mosaic;
@@ -135,19 +121,16 @@ async function mosaicWorkflows(fastify: FastifyInstance) {
             sendWorkflowProgressMessage(`${pagePath} already exists`, 'ERROR');
             return;
           }
-          const ownerPath = await findExistingAncestor(fs, pagePath);
-          if (!ownerPath) {
-            sendWorkflowProgressMessage(`No source owns the folder for ${pagePath}`, 'ERROR');
-            return;
-          }
-          core.triggerWorkflow(
+          // The page doesn't exist yet, so core picks the owning source by
+          // its prefixDir and reports an ERROR itself when none owns it.
+          const started = await core.triggerWorkflow(
             sendWorkflowProgressMessage,
             name,
             pagePath,
             { user, ...restParams },
-            ownerPath
+            { newPage: true }
           );
-          sendWorkflowProgressMessage(`Workflow ${name} has started`, 'SUCCESS');
+          if (started) sendWorkflowProgressMessage(`Workflow ${name} has started`, 'SUCCESS');
           return;
         }
 

@@ -247,6 +247,19 @@ export default class Source {
     return isFileInSource;
   }
 
+  /**
+   * The folder this source's pages are mounted at, without leading or
+   * trailing slashes, or `undefined` when the source has no `prefixDir`.
+   */
+  get prefixDir(): string | undefined {
+    const { prefixDir } = this.#mergedOptions;
+    return typeof prefixDir === 'string' ? prefixDir.replace(/^\/+|\/+$/g, '') : undefined;
+  }
+
+  hasWorkflow(name: string) {
+    return this.#workflows.some(workflow => workflow.name === name);
+  }
+
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
