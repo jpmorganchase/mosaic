@@ -78,9 +78,11 @@ yarn gen:snapshot           # produce a fresh snapshot under ./snapshots
 
 Local development needs no extra configuration: `.env.development` holds
 the dev defaults (including placeholder secrets and the fake dev login).
-Next.js never loads that file for `next build` / `next start`, and the
-site refuses its placeholder secrets when `NODE_ENV=production`. Put
-personal overrides in `.env.local` (gitignored).
+Next.js never loads that file for `next build` / `next start`, and
+`mosaic.config.mjs` only loads it for the CLI when `NODE_ENV=development`,
+which the `serve`, `debug` and `gen:snapshot` scripts set. The site also
+refuses its placeholder secrets when `NODE_ENV=production`. Put personal
+overrides in `.env.local` (gitignored).
 
 ## Environment variables
 

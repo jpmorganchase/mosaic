@@ -38,7 +38,8 @@ by `MOSAIC_ADMIN_SECRET` on the CLI process:
   Requests without a valid secret get `401`.
 
 - **Secret not set:** the endpoints are open when `NODE_ENV=development` (the reference site's
-  `.env.development` sets this for `yarn serve`) and return `403` otherwise.
+  `yarn serve` and `yarn debug` scripts set it) and return `403` otherwise, including when
+  `NODE_ENV` is unset.
 
 Basic auth sends the secret base64-encoded, not encrypted, so only use it over HTTPS outside local
 development.

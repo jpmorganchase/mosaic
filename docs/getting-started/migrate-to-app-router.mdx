@@ -176,6 +176,8 @@ Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-p
 
 Don't commit real secrets to either file. Set them in your hosting environment, or in `.env.local` or `.env.production.local`, which git ignores.
 
+If your `mosaic.config.mjs` loads env files with `@next/env`, only load the development files when asked to: `loadEnvConfig(projectDir, process.env.NODE_ENV === 'development')`. Then set `NODE_ENV=development` in the scripts that run the CLI locally, as the reference site's `serve`, `debug` and `gen:snapshot` scripts do. Otherwise a `mosaic serve` started without `NODE_ENV` would pick up the placeholder secrets from `.env.development`.
+
 **Production builds now default to snapshot mode.** `.env.production` sets `MOSAIC_MODE=snapshot-file`. If your site reads content from a running Mosaic CLI, set `MOSAIC_MODE=active` explicitly. Values set in the environment take precedence over `.env.production`.
 
 ### Site: renamed or removed
