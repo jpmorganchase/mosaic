@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
-import { Observable, of, take } from 'rxjs';
+import { firstValueFrom, Observable, of, take, toArray } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { ProxyAgent } from 'undici';
 
 import { Page, SourceResultSummary } from '@jpmorganchase/mosaic-types';
@@ -213,6 +213,52 @@ describe('GIVEN an HTTP Source ', () => {
           complete: () => done()
         });
       }));
+  });
+
+  describe('WHEN an endpoint does not respond within `requestTimeout`', () => {
+    it('should report a timed-out error for that endpoint and keep the other results', async () => {
+      server.resetHandlers(
+        successHandlers[0],
+        successHandlers[1],
+        http.get(options.endpoints[2], async () => {
+          await delay('infinite');
+          return HttpResponse.json({ name: 'Eve' });
+        })
+      );
+
+      const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
+        { ...options, requestTimeout: 50, transformer: toUpperCaseTransformer },
+        { schedule: { ...schedule, initialDelayMs: 0 } }
+      );
+
+      const result = await firstValueFrom(source$);
+
+      expect(result.results.map(r => r.data)).toEqual(['ALICE', 'BOB']);
+      expect(result.errors).toEqual([
+        expect.objectContaining({
+          kind: 'thrown',
+          url: options.endpoints[2],
+          message: 'Request timed out after 50ms'
+        })
+      ]);
+    });
+
+    it('should apply a fresh timeout to every scheduled poll', async () => {
+      server.resetHandlers(...successHandlers);
+
+      const source$: Observable<SourceResultSummary<Page>> = createHttpSource(
+        { ...options, requestTimeout: 50, transformer: toUpperCaseTransformer },
+        { schedule: { checkIntervalMins: 0.002, initialDelayMs: 0 } }
+      );
+
+      const polls = await firstValueFrom(source$.pipe(take(2), toArray()));
+
+      expect(polls).toHaveLength(2);
+      for (const poll of polls) {
+        expect(poll.errors).toEqual([]);
+        expect(poll.results).toHaveLength(3);
+      }
+    });
   });
 
   describe('WHEN the transformer is passed params', () => {

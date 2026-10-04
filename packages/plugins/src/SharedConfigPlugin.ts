@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import type { Page, Plugin as PluginType, SourceCapabilities } from '@jpmorganchase/mosaic-types';
-import { flatten } from 'lodash-es';
+import { flatten, isEqual, isPlainObject } from 'lodash-es';
 import deepmerge from 'deepmerge';
 import { createPageTest } from './utils/createPageTest.js';
 
@@ -50,6 +50,49 @@ function isWithin(outer, inner) {
   return !rel.startsWith('../') && rel !== '..';
 }
 
+/**
+ * Sets `config.sourceCapabilities` in a serialised shared config file to the
+ * capabilities the source declared, or removes it when the source declared
+ * none. Content can reach the file through `$ref`s that are resolved after
+ * `$afterSource`, so this runs on the file itself. Files that don't parse,
+ * or have no `config` object, are returned unchanged.
+ */
+function enforceSourceCapabilities<TData>(
+  fileData: TData,
+  sourceCapabilities?: SourceCapabilities
+): TData | Buffer {
+  let sharedConfigFile: unknown;
+  try {
+    sharedConfigFile = JSON.parse(String(fileData).replace(/^\uFEFF/, ''));
+  } catch {
+    return fileData;
+  }
+  if (!isPlainObject(sharedConfigFile)) {
+    return fileData;
+  }
+  const { config } = sharedConfigFile as { config?: unknown };
+  if (!isPlainObject(config)) {
+    return fileData;
+  }
+  const { sourceCapabilities: currentCapabilities, ...restConfig } = config as Record<
+    string,
+    unknown
+  >;
+  let enforcedConfig: Record<string, unknown>;
+  if (sourceCapabilities) {
+    if (isEqual(currentCapabilities, sourceCapabilities)) {
+      return fileData;
+    }
+    enforcedConfig = { ...restConfig, sourceCapabilities };
+  } else {
+    if (!('sourceCapabilities' in (config as object))) {
+      return fileData;
+    }
+    enforcedConfig = restConfig;
+  }
+  return Buffer.from(JSON.stringify({ ...(sharedConfigFile as object), config: enforcedConfig }));
+}
+
 export interface SharedConfigPluginPage extends Page {
   sharedConfig?: Record<string, unknown> & { sourceCapabilities?: SourceCapabilities };
   frameOverrides?: any;
@@ -88,18 +131,26 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       }
     }
 
-    // Ensure every index page carries a `sharedConfig` carrying at
-    // least the source's capability flags, even when the author
-    // didn't define one. Without this the per-route shared-config
-    // endpoint would have nowhere to surface capabilities for the
-    // editor UI to read.
     if (sourceCapabilities) {
-      for (const page of indexPages) {
-        if (page.sharedConfig === undefined) {
-          page.sharedConfig = { sourceCapabilities };
-        } else if (!('sourceCapabilities' in page.sharedConfig)) {
-          page.sharedConfig = { ...page.sharedConfig, sourceCapabilities };
-        }
+      // Read by `afterUpdate`, which enforces the flags on the generated files.
+      config.setData({ sharedConfigSourceCapabilities: sourceCapabilities });
+    }
+
+    // Every index page carries the source's capability flags in its
+    // `sharedConfig`, even when the author didn't define one, so the
+    // per-route shared-config endpoint can surface them to the editor.
+    // `sourceCapabilities.writable` gates editing, so the value always
+    // comes from the source: an authored value is overwritten, or
+    // removed when the source declares no capabilities. A `sharedConfig`
+    // that isn't an object can't carry capabilities, so it is replaced
+    // when the source has some and otherwise left alone.
+    for (const page of indexPages) {
+      const authoredConfig = isPlainObject(page.sharedConfig) ? page.sharedConfig : undefined;
+      if (sourceCapabilities) {
+        page.sharedConfig = { ...authoredConfig, sourceCapabilities };
+      } else if (authoredConfig && 'sourceCapabilities' in authoredConfig) {
+        const { sourceCapabilities: _authoredCapabilities, ...restConfig } = authoredConfig;
+        page.sharedConfig = restConfig;
       }
     }
 
@@ -227,7 +278,24 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       }
     }
   },
-  async afterUpdate(mutableFilesystem, { sharedFilesystem, globalConfig, namespace }, options) {
+  async afterUpdate(
+    mutableFilesystem,
+    { sharedFilesystem, globalConfig, namespace, config },
+    options
+  ) {
+    // `$RefPlugin` resolves `$ref`s into the stored files in its
+    // `$beforeSend`, after `$afterSource` has run, so a `$ref` can put an
+    // authored `sourceCapabilities` back into a shared config file.
+    // Enforce the source's own flags whenever one of the files is read.
+    const sourceCapabilities = config?.data?.sharedConfigSourceCapabilities as
+      | SourceCapabilities
+      | undefined;
+    mutableFilesystem.__internal_do_not_use_addReadFileHook(async (filePath, fileData) =>
+      path.posix.basename(String(filePath)) === options.filename
+        ? enforceSourceCapabilities(fileData, sourceCapabilities)
+        : fileData
+    );
+
     const { applyNamespaceSharedConfig } = globalConfig.data;
 
     if (applyNamespaceSharedConfig === undefined) {
@@ -287,9 +355,14 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
             '-->',
             aliasSharedConfigPath
           );
+          // Only sources without capabilities ask for the namespace shared
+          // config (sources with capabilities give every index page one),
+          // so this source's capabilities must not be copied across.
           await sharedFilesystem.promises.writeFile(
             aliasSharedConfigPath,
-            await mutableFilesystem.promises.readFile(closestSharedConfigPath)
+            enforceSourceCapabilities(
+              await mutableFilesystem.promises.readFile(closestSharedConfigPath)
+            )
           );
         }
       }

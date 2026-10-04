@@ -83,5 +83,18 @@ describe('GIVEN a list of search results', () => {
       const negativeMiss = highlightMatch(exampleText, [-12, -10]);
       expect(negativeMiss).toEqual(exampleText);
     });
+
+    test('AND markup in the indexed text is escaped so it cannot execute', () => {
+      const text = 'use <img src=x onerror=alert(1)> for TARGET';
+      const result = highlightMatch(text, [37, 42]);
+      expect(result).toEqual('use &lt;img src=x onerror=alert(1)&gt; for <strong>TARGET</strong>');
+      expect(highlightMatch('<b>x</b>', [100, 101])).toEqual('&lt;b&gt;x&lt;/b&gt;');
+    });
+
+    test('AND the fallback content is escaped too', () => {
+      expect(getBestMatch([], '<script>alert(1)</script>')).toEqual(
+        '&lt;script&gt;alert(1)&lt;/script&gt;'
+      );
+    });
   });
 });

@@ -65,6 +65,7 @@ import {
   useSetPreviewContent,
   useSetIsCompiling,
   useErrorMessage,
+  useSaveState,
   type EditorUser
 } from '../EditorContext';
 import { PreviewPlugin } from '../plugins/PreviewPlugin';
@@ -174,6 +175,12 @@ export interface EditorProps {
    * payload. Defaults to `false`.
    */
   isNewPage?: boolean;
+  /**
+   * Route of the page being edited. Used when the content's own
+   * frontmatter doesn't carry a `route` — always the case for a
+   * brand-new page, whose template only has authored keys.
+   */
+  route?: string;
 }
 
 const gutter = () => {
@@ -189,15 +196,21 @@ const EditorInner: FC<EditorProps> = ({
   compilePreview,
   persist,
   PreviewComponent,
-  isNewPage = false
+  isNewPage = false,
+  route
 }) => {
   const previewContent = usePreviewContent();
   const setPreviewContent = useSetPreviewContent();
   const setIsCompiling = useSetIsCompiling();
   const { setError } = useErrorMessage();
+  const { markDirty } = useSaveState();
   const [saveOpen, setSaveOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { data: meta, content: markdown } = matter(content);
+  const { data: parsedMeta, content: markdown } = matter(content);
+  const meta = useMemo(
+    () => (typeof parsedMeta.route === 'string' || !route ? parsedMeta : { ...parsedMeta, route }),
+    [parsedMeta, route]
+  );
   const { mode } = useEditorMode();
 
   const sourceHandleRef = useRef<SourceEditorHandle | null>(null);
@@ -527,17 +540,20 @@ const EditorInner: FC<EditorProps> = ({
   const getCurrentMarkdown = useCallback(() => getCurrentMarkdownRef.current(), []);
 
   /**
-   * Stable callback the save dialog calls at open time. Delegates
-   * to whatever getter `FrontmatterEditor` last installed, or
-   * returns `undefined` when no editor is mounted / the form is in
-   * a parse-error state. The dialog treats `undefined` as "omit
-   * the `frontmatter` field" so the workflow keeps its on-disk
-   * fallback.
+   * Stable callback the save dialog calls at open time. Delegates to
+   * the getter `FrontmatterEditor` installed while it is mounted
+   * (`undefined` there means a parse-error / unsaveable state). Once the
+   * author has left the Frontmatter tab the form is unmounted, so fall
+   * back to the last valid YAML it produced — otherwise those edits
+   * would silently be dropped from the save even though the preview
+   * still shows them. `undefined` makes the dialog omit the
+   * `frontmatter` field so the workflow keeps its on-disk fallback.
    */
-  const getCurrentAuthoredFrontmatter = useCallback(
-    () => frontmatterSnapshotRef.current?.() ?? undefined,
-    []
-  );
+  const getCurrentAuthoredFrontmatter = useCallback(() => {
+    const getter = frontmatterSnapshotRef.current;
+    if (getter) return getter();
+    return lastAuthoredYamlRef.current ?? undefined;
+  }, []);
 
   // -------------------------------------------------------------
   // Frontmatter-driven preview refresh
@@ -640,9 +656,11 @@ const EditorInner: FC<EditorProps> = ({
     const yaml = frontmatterSnapshotRef.current?.();
     if (typeof yaml === 'string') {
       lastAuthoredYamlRef.current = yaml;
+      // Frontmatter-only edits must arm the unsaved-changes guard too.
+      if (yaml !== originalFrontmatterYamlRef.current) markDirty();
     }
     debouncedRecompileForFrontmatter();
-  }, [debouncedRecompileForFrontmatter]);
+  }, [debouncedRecompileForFrontmatter, markDirty]);
 
   const bridgeValue = useMemo<ModeBridgeContextValue>(
     () => ({ prepareModeFlip }),

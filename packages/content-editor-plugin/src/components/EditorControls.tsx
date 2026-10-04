@@ -7,7 +7,7 @@ import { BaseTooltray as Tooltray } from './BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './Toolbar/ToolbarButton';
 import { NewPageDialog } from './NewPageDialog';
 
-import { useEditMode } from '../useEditMode';
+import { useEditModeActions, useIsEditing } from '../useEditMode';
 import styles from './EditorControls.css';
 
 export interface EditorControlsProps {
@@ -15,7 +15,8 @@ export interface EditorControlsProps {
 }
 
 export const EditorControls = ({ enabled = false }: EditorControlsProps) => {
-  const { isEditing, startEditing, stopEditing } = useEditMode();
+  const isEditing = useIsEditing();
+  const { startEditing, stopEditing } = useEditModeActions();
   const handleEditClick = () => (isEditing ? stopEditing() : startEditing());
 
   // Dialog open-state is local — the only launcher is the

@@ -20,20 +20,19 @@ export const StickyHeader: FC<React.PropsWithChildren<StickyHeaderProps>> = ({
   const [isSticky, setSticky] = useState(false);
   const offsetTop = useRef(0);
 
-  const handleScroll = () => {
-    if (rootRef.current) {
-      setSticky(window.scrollY > offsetTop.current - rootRef.current.clientHeight);
-    }
-  };
-
   useEffect(() => {
     if (!rootRef.current) {
       return;
     }
     offsetTop.current = rootRef.current.offsetTop;
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      if (rootRef.current) {
+        setSticky(window.scrollY > offsetTop.current - rootRef.current.clientHeight);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
-      window.removeEventListener('scroll', () => handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 

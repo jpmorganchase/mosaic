@@ -2,15 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
-/**
- * Escape a string for safe use inside a `new RegExp(...)`. See
- * `BitbucketPullRequestWorkflow.ts` for the rationale — config
- * strings (`prefixDir`) interpolated raw can otherwise contain
- * metacharacters and silently match unintended paths.
- */
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+import { resolveInside, stripPrefixDir } from './safePaths.js';
 
 /**
  * Rename a freshly-written page on disk to honour an
@@ -79,19 +71,21 @@ export async function renamePageIfRequested({
   // different PR target), which is well out of scope for a
   // single in-browser save. Source-level move tooling can be
   // added later as its own workflow.
-  const prefixMatch = new RegExp(`^/?${escapeRegExp(prefixDir)}/`);
-  if (!prefixMatch.test(normalisedTarget)) {
+  const targetInSource = stripPrefixDir(normalisedTarget, prefixDir);
+  if (targetInSource === undefined) {
     return {
       ok: false,
       error: `Refusing to rename across source boundaries — target ${normalisedTarget} is not under /${prefixDir}.`
     };
   }
 
-  const newPathOnDisk = path.posix.join(
-    repoDir,
-    subfolder,
-    normalisedTarget.replace(new RegExp(`^/?${escapeRegExp(prefixDir)}/`), '')
-  );
+  const newPathOnDisk = resolveInside(path.posix.join(repoDir, subfolder), targetInSource);
+  if (!newPathOnDisk) {
+    return {
+      ok: false,
+      error: `Refusing to rename: ${normalisedTarget} resolves outside the source folder.`
+    };
+  }
 
   // Same on-disk path after normalisation (e.g. user typed the
   // route with/without a leading slash). Treat as a no-op

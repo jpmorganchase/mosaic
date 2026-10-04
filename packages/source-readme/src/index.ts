@@ -88,8 +88,7 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
 
       return new Request(`${readmeUrl}`, {
         dispatcher,
-        headers: requestHeaders,
-        signal: AbortSignal.timeout(requestTimeout)
+        headers: requestHeaders
       });
     });
 
@@ -97,6 +96,7 @@ const ReadmeSource: Source<ReadmeSourceOptions, ReadmePage> = {
       {
         prefixDir,
         ...restOptions,
+        requestTimeout,
         configuredRequests,
         transformer: transformReadmePage,
         transformerOptions: readmeConfig

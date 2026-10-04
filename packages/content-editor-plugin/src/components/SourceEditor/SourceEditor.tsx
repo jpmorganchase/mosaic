@@ -99,12 +99,6 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
   // otherwise let a stale failing compile resurrect over a
   // fresh successful one.
   const compileSeqRef = useRef(0);
-  // True after the user has actually typed once — used to gate
-  // `markDirty()` so the initial seed (which fires `onChange`
-  // synthetically in some browsers? no, but DefaultValue is the
-  // safer assumption) doesn't paint the save pill orange before
-  // a single keystroke.
-  const armedRef = useRef(false);
 
   // Keep callbacks stable across renders so the debounce timer
   // state isn't reset on every parent render. The shared
@@ -194,11 +188,9 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
 
   const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const value = event.target.value;
-    if (!armedRef.current) {
-      armedRef.current = true;
-    } else {
-      markDirty();
-    }
+    // React only fires `onChange` for user input (seeding via
+    // `defaultValue` doesn't), so every call is a real edit.
+    markDirty();
     // Optimistically clear any visible error on edit so the
     // banner doesn't linger while the user is mid-fix — same
     // UX trick PreviewPlugin uses. The next compile will

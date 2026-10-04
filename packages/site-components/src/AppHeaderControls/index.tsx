@@ -1,7 +1,12 @@
 import React from 'react';
 import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
-import { useEditMode, EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin';
+// Deep imports: the package root re-exports the whole Lexical editor.
+import {
+  useEditModeActions,
+  useIsEditing
+} from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
+import { EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls';
 import {
   useColorMode,
   useSearchIndex,
@@ -83,7 +88,8 @@ export const AppHeaderControls: React.FC = () => {
   const { data: session } = useSession();
   const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
   const isLoggedIn = session != null;
-  const { isEditing, startEditing, stopEditing } = useEditMode();
+  const isEditing = useIsEditing();
+  const { startEditing, stopEditing } = useEditModeActions();
   const { searchEnabled } = useSearchIndex();
   // Editor surfaces (toolbar + menu item) only render when the page's
   // owning source has opted in via its `capabilities.writable` flag.

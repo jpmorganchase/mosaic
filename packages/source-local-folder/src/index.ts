@@ -132,6 +132,9 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
     // subscription; each `LocalFolderSource` instance gets its own,
     // so it composes cleanly with `prefixDir` / multi-source setups.
     const cache = new Map<string, CacheEntry>();
+    // Files whose real location is outside `rootDir` (via a symlinked file
+    // or folder). Warn once each rather than on every re-scan.
+    const reportedOutsideRoot = new Set<string>();
 
     return merge(of(null), fromFsWatch(options.rootDir, { recursive: true })).pipe(
       // Coalesce the burst of `rename`/`change` events most editors emit
@@ -146,6 +149,12 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
         })
       ),
       concatMap(async (filepaths: string[]) => {
+        // Symlinks are followed by the glob, so a link committed to the
+        // content folder could point at any file the process can read
+        // (e.g. `leak.mdx -> /proc/self/environ`). Only publish files
+        // whose real path is inside the real root.
+        const realRoot = await fs.promises.realpath(options.rootDir);
+
         // Stage 1: stat every file. `stat` is metadata-only (no read)
         // and libuv caps the actual concurrent stats at its thread-pool
         // size (4 by default), so the `STAT_CONCURRENCY` ceiling is
@@ -157,8 +166,23 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
         const stats = await mapWithConcurrency(filepaths, STAT_CONCURRENCY, async filepath => {
           const fullPath = path.posix.join(options.rootDir, filepath);
           try {
-            const s = await fs.promises.stat(fullPath);
-            return { filepath, fullPath, mtimeMs: s.mtimeMs, size: s.size };
+            const realPath = await fs.promises.realpath(fullPath);
+            const relativeToRoot = path.relative(realRoot, realPath);
+            if (
+              relativeToRoot === '..' ||
+              relativeToRoot.startsWith(`..${path.sep}`) ||
+              path.isAbsolute(relativeToRoot)
+            ) {
+              if (!reportedOutsideRoot.has(filepath)) {
+                reportedOutsideRoot.add(filepath);
+                console.warn(
+                  `[Mosaic][Source-Local-Folder] Skipping ${fullPath}: it resolves outside ${options.rootDir}.`
+                );
+              }
+              return undefined;
+            }
+            const s = await fs.promises.stat(realPath);
+            return { filepath, fullPath, realPath, mtimeMs: s.mtimeMs, size: s.size };
           } catch {
             return undefined;
           }
@@ -173,13 +197,13 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
         // `CacheEntry` comment for the rationale.
         const pages = await mapWithConcurrency(stats, READ_CONCURRENCY, async entry => {
           if (!entry) return undefined;
-          const { filepath, fullPath, mtimeMs, size } = entry;
+          const { filepath, fullPath, realPath, mtimeMs, size } = entry;
           const cached = cache.get(filepath);
           if (cached && cached.mtimeMs === mtimeMs && cached.size === size) {
             return structuredClone(cached.page);
           }
 
-          const data = await fs.promises.readFile(fullPath);
+          const data = await fs.promises.readFile(realPath);
           const deserialised = (await serialiser.deserialise(fullPath, data)) as Page;
           // The cache holds the canonical (pre-clone) page; consumers
           // always receive a `structuredClone` of it on every emission.

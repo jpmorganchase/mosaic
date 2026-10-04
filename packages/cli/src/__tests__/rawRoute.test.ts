@@ -52,6 +52,7 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
 }));
 
 let tmpDir: string;
+let outsideDir: string;
 let server: ReturnType<typeof Fastify>;
 
 const FIXTURE_BODY = '---\ntitle: Raw\n---\n# Hello\n';
@@ -72,6 +73,11 @@ beforeAll(async () => {
   fs.mkdirSync(path.join(tmpDir, 'getting-started'), { recursive: true });
   fs.writeFileSync(path.join(tmpDir, 'getting-started', 'index.mdx'), FIXTURE_BODY);
   fs.writeFileSync(path.join(tmpDir, 'config.json'), '{"k":1}');
+  // Symlinks: one escaping the source folder, one staying inside it.
+  outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mosaic-raw-outside-'));
+  fs.writeFileSync(path.join(outsideDir, 'secret.mdx'), 'TOP SECRET');
+  fs.symlinkSync(path.join(outsideDir, 'secret.mdx'), path.join(tmpDir, 'leak.mdx'));
+  fs.symlinkSync(path.join(tmpDir, 'getting-started', 'index.mdx'), path.join(tmpDir, 'alias.mdx'));
 
   // Seed a fixture inside the *exact* directory the git-repo
   // resolver will compute via `getWorktreeDir`. We resolve the
@@ -148,6 +154,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await server.close();
   fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(outsideDir, { recursive: true, force: true });
   // Tear down the git-repo fixture too — the clone-root
   // (`<cwd>/.tmp/.cloned_docs/<project>/<repo>`) is two levels
   // above the worktree dir; remove the whole project subtree
@@ -244,6 +251,19 @@ describe('GET /_mosaic-raw/*', () => {
       url: '/_mosaic-raw/mosaic/does-not-exist.mdx'
     });
     expect(response.statusCode).toBe(404);
+  });
+
+  test('refuses a symlink that points outside the source folder', async () => {
+    const response = await server.inject({ method: 'GET', url: '/_mosaic-raw/mosaic/leak.mdx' });
+    expect(response.statusCode).toBe(404);
+    expect(response.headers['x-mosaic-raw-status']).toBe('no-matching-source');
+    expect(response.payload).not.toContain('TOP SECRET');
+  });
+
+  test('serves a symlink that stays inside the source folder', async () => {
+    const response = await server.inject({ method: 'GET', url: '/_mosaic-raw/mosaic/alias.mdx' });
+    expect(response.statusCode).toBe(200);
+    expect(response.payload).toBe(FIXTURE_BODY);
   });
 
   test('does not collide with the general /* route', async () => {
