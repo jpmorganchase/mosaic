@@ -172,12 +172,10 @@ function safeJsonParse<T = unknown>(raw: string | null | undefined, source: stri
 }
 
 const loadSharedConfigImpl = async (
-  pathname: string,
+  urlPath: string,
   mode: MosaicMode,
   contentUrl: string
 ): Promise<SharedConfig | undefined> => {
-  const urlPath = deriveSharedConfigUrlPath(pathname);
-
   if (mode === 'snapshot-file') {
     const { snapshotDir } = getSnapshotFileConfig(urlPath);
     const filePath = path.join(process.cwd(), snapshotDir, urlPath, 'shared-config.json');
@@ -224,7 +222,7 @@ const loadSharedConfigImpl = async (
 const loadSharedConfigCached = withCrossRequestCache(
   loadSharedConfigImpl,
   ['mosaic', 'sharedConfig'],
-  // Loader signature: `(pathname, mode, contentUrl)`. The mode is
+  // Loader signature: `(urlPath, mode, contentUrl)`. The mode is
   // the second arg; extract for the cross-request cache gate.
   ([, mode]) => mode,
   config => config !== undefined
@@ -233,11 +231,12 @@ const loadSharedConfigCached = withCrossRequestCache(
 /**
  * Resolve the per-route shared config (header, footer, search namespace,
  * etc.). Cached at the subtree level (e.g. `/mosaic/getting-started`)
- * so neighbour pages share the lookup.
+ * so neighbour pages share the lookup, and requests for made-up pages
+ * don't each add a cache entry.
  */
 export const getSharedConfig = cache(
   async (pathname: string, mode: MosaicMode, contentUrl: string) =>
-    loadSharedConfigCached(pathname, mode, contentUrl)
+    loadSharedConfigCached(deriveSharedConfigUrlPath(pathname), mode, contentUrl)
 );
 
 // ---------------------------------------------------------------------------

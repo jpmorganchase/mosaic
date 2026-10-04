@@ -76,6 +76,24 @@ describe('snapshot-file mode', () => {
     expect(second).toMatchObject({ kind: 'mdx', frontmatter: { title: 'New' } });
     expect(store.size).toBe(1);
   });
+
+  test('pages in the same folder share one shared-config entry', async () => {
+    const snapshotDir = path.relative(process.cwd(), snapshotRoot);
+    vi.stubEnv('MOSAIC_SNAPSHOT_DIR', snapshotDir);
+    fs.mkdirSync(path.join(snapshotRoot, 'mosaic'), { recursive: true });
+    fs.writeFileSync(
+      path.join(snapshotRoot, 'mosaic', 'shared-config.json'),
+      JSON.stringify({ config: { header: { title: 'Mosaic' } } })
+    );
+    const { getSharedConfig } = await loadLoaders();
+
+    for (const pathname of ['/mosaic/index', '/mosaic/made-up-1', '/mosaic/made-up-2']) {
+      expect(await getSharedConfig(pathname, 'snapshot-file', '')).toEqual({
+        header: { title: 'Mosaic' }
+      });
+    }
+    expect(store.size).toBe(1);
+  });
 });
 
 describe('active mode', () => {
