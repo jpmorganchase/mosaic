@@ -11,13 +11,22 @@
  *
  * Auth: required and checked inside the action — Server Actions are
  * public endpoints and `page.tsx`'s auth gate doesn't apply when the
- * action is invoked directly.
+ * action is invoked directly. The user must also be an authorised
+ * editor (`MOSAIC_EDITORS`), and every route is validated before it is
+ * forwarded.
+ *
+ * The workflows backend authenticates us with `MOSAIC_WORKFLOWS_SECRET`
+ * (sent as `token` on each message). A save that doesn't finish within
+ * `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is reported as an
+ * error, and the socket is always closed when the stream ends or the
+ * caller stops reading.
  *
  * Serverless caveat: one open socket per save. In platforms with a
  * per-request runtime cap, saves that exceed it are cut short.
  */
-import { createHash } from 'node:crypto';
-import { auth } from '../../auth';
+import { randomUUID } from 'node:crypto';
+import { auth, isAuthorizedEditor } from '../../auth';
+import { isSafeRoute } from '../../lib/routes';
 import type { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 export interface PersistInput {
@@ -58,6 +67,33 @@ export type PersistEvent =
   | { kind: 'error'; message: string };
 
 const WORKFLOWS_URL = process.env.MOSAIC_WORKFLOWS_URL ?? '';
+const WORKFLOWS_SECRET = process.env.MOSAIC_WORKFLOWS_SECRET ?? '';
+const WORKFLOWS_TIMEOUT_MS = Number(process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS) || 5 * 60 * 1000;
+
+const MAX_MARKDOWN_BYTES = 2 * 1024 * 1024;
+const MAX_FRONTMATTER_BYTES = 256 * 1024;
+
+/** Returns an error message for an invalid payload, `null` when it's fine. */
+function validateInput(input: PersistInput): string | null {
+  if (!input || typeof input !== 'object') return 'Invalid save request.';
+  if (!isSafeRoute(input.route)) return 'Invalid page route.';
+  if (input.targetRoute !== undefined && !isSafeRoute(input.targetRoute)) {
+    return 'Invalid target route.';
+  }
+  if (typeof input.markdown !== 'string' || input.markdown.length > MAX_MARKDOWN_BYTES) {
+    return 'Invalid page content.';
+  }
+  if (
+    input.frontmatter !== undefined &&
+    (typeof input.frontmatter !== 'string' || input.frontmatter.length > MAX_FRONTMATTER_BYTES)
+  ) {
+    return 'Invalid frontmatter.';
+  }
+  if (input.isNewPage !== undefined && typeof input.isNewPage !== 'boolean') {
+    return 'Invalid save request.';
+  }
+  return null;
+}
 
 export async function* persistContent(
   input: PersistInput
@@ -65,8 +101,11 @@ export async function* persistContent(
   // Cheap synchronous guard first — skip the auth() call (which is
   // request-scoped but still does work) if the workflow URL isn't
   // even configured.
-  if (!WORKFLOWS_URL) {
-    yield { kind: 'error', message: 'MOSAIC_WORKFLOWS_URL is not configured.' };
+  if (!WORKFLOWS_URL || !WORKFLOWS_SECRET) {
+    yield {
+      kind: 'error',
+      message: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.'
+    };
     return;
   }
 
@@ -76,17 +115,24 @@ export async function* persistContent(
     yield { kind: 'error', message: 'Not authenticated.' };
     return;
   }
+  if (!isAuthorizedEditor(sessionUser)) {
+    yield { kind: 'error', message: 'You are not allowed to edit this site.' };
+    return;
+  }
+
+  const invalid = validateInput(input);
+  if (invalid) {
+    yield { kind: 'error', message: invalid };
+    return;
+  }
 
   // Prefer a domain-specific `sid` when the host has wired one into
-  // the session callback; fall back to email so a default Auth.js
-  // setup still produces a stable channel key.
+  // the session callback; fall back to email.
   const sid = (sessionUser as { sid?: string }).sid ?? sessionUser.email;
-  // Stable per-save channel id. The workflows backend echoes it
-  // back on every progress message so we can ignore messages from
-  // other concurrent saves on the same socket. SHA-256 (not MD5)
-  // only because dependency scanners flag MD5 unconditionally,
-  // even for non-crypto uses like this one.
-  const channel = createHash('sha256').update(`${sid.toLowerCase()} - save`).digest('hex');
+  // Unique per save. The workflows backend echoes it back on every
+  // progress message so concurrent saves (e.g. two tabs) sharing a
+  // backend can tell their messages apart.
+  const channel = randomUUID();
 
   let socket: WebSocket;
   try {
@@ -108,6 +154,7 @@ export async function* persistContent(
   let done = false;
 
   const push = (event: PersistEvent) => {
+    if (done) return;
     if (pending) {
       const fn = pending;
       pending = null;
@@ -120,6 +167,8 @@ export async function* persistContent(
   const finish = () => {
     if (done) return;
     done = true;
+    // Only ever called after `timeout` below is initialised.
+    clearTimeout(timeout);
     if (pending) {
       const fn = pending;
       pending = null;
@@ -132,9 +181,15 @@ export async function* persistContent(
     }
   };
 
+  const timeout = setTimeout(() => {
+    push({ kind: 'error', message: 'Timed out waiting for the workflows backend.' });
+    finish();
+  }, WORKFLOWS_TIMEOUT_MS);
+
   socket.addEventListener('open', () => {
     socket.send(
       JSON.stringify({
+        token: WORKFLOWS_SECRET,
         user: { sid, name: sessionUser.name ?? '', email: sessionUser.email },
         route: input.route,
         markdown: input.markdown,
@@ -199,16 +254,21 @@ export async function* persistContent(
   socket.addEventListener('close', () => finish());
 
   // Consumer loop — yield events as they arrive, exit when finish()
-  // signals end-of-stream.
-  while (!done || queue.length > 0) {
-    if (queue.length > 0) {
-      yield queue.shift() as PersistEvent;
-      continue;
+  // signals end-of-stream. `finally` closes the socket and clears the
+  // timeout if the caller stops reading early.
+  try {
+    while (!done || queue.length > 0) {
+      if (queue.length > 0) {
+        yield queue.shift() as PersistEvent;
+        continue;
+      }
+      const next = await new Promise<PersistEvent | null>(resolve => {
+        pending = resolve;
+      });
+      if (next === null) return;
+      yield next;
     }
-    const next = await new Promise<PersistEvent | null>(resolve => {
-      pending = resolve;
-    });
-    if (next === null) return;
-    yield next;
+  } finally {
+    finish();
   }
 }

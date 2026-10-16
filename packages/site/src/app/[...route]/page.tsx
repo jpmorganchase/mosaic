@@ -34,7 +34,6 @@
  */
 import { cache } from 'react';
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
@@ -43,35 +42,19 @@ import {
   getMdxRawSource,
   getSearchData,
   getSharedConfig,
-  loadSitemap
+  loadSitemap,
+  serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
-import { auth } from '../../auth';
-import { AUTH_ENABLED } from '../../auth';
+import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../auth';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
+// The Lexical editor is lazy-loaded from a Client Component wrapper so
+// view-mode visitors never download it (see `EditorBodyLazy.tsx`).
+import { EditorBodyLazy as EditorBody } from './EditorBodyLazy';
 import { RouteMetadata } from './RouteMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
-
-// Code-split the Lexical-based editor behind `next/dynamic`. Because
-// the import lives at module top level (the natural place for any
-// component reference), a static `import { EditorBody } from
-// './EditorBody'` would land `EditorBody.tsx` and its transitive
-// deps (including Lexical, ~300KB gzipped) in this route's client
-// manifest unconditionally — every VIEW-mode visitor would download
-// the editor chunk even though it's only mounted on the
-// `?edit=1`/`?new=1` branches.
-//
-// `next/dynamic` defers the JS fetch until the component actually
-// renders, so VIEW-mode pages skip the cost entirely and the editor
-// only ships on the EDIT/CREATE branches where it's about to run.
-//
-// We don't set `ssr: false` (which would require a client component
-// host anyway) because `EditorBody` is already `'use client'` and
-// we want the RSC payload to include its placeholder slot so React's
-// hydration sequencing stays predictable.
-const EditorBody = dynamic(() => import('./EditorBody').then(m => m.EditorBody));
 
 interface PageProps {
   params: Promise<{ route?: string[] }>;
@@ -475,32 +458,32 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // the parsed frontmatter.
   //
   // A naive spread of `onDiskFrontmatter.sharedConfig` on top of the
-  // loader-derived copy would silently clobber the loader copy's
-  // `sourceCapabilities` field (which the frontmatter copy never
-  // carries) — that field is what the `CAPABILITY_GATE_BYPASSED`
-  // block (and, in non-dev builds, the SharedConfigPlugin's
-  // `sourceCapabilities` stamping) enriches with the writability
-  // flag. Dropping the frontmatter copy entirely would lose the
+  // loader-derived copy could replace or remove the loader copy's
+  // `sourceCapabilities` field, which carries the writability flag
+  // from the SharedConfigPlugin (or the `CAPABILITY_GATE_BYPASSED`
+  // block). Dropping the frontmatter copy entirely would lose the
   // per-page footer / header overrides, leaving every page rendering
   // the namespace-wide fallback.
   //
   // Shallow merge: per-page authored top-level keys (`header`,
-  // `footer`, `menu`, …) override the namespace fallback, while any
-  // `sourceCapabilities` present on the loader copy is preserved on
-  // top so the editor gate sees the correct writability flag.
+  // `footer`, `menu`, …) override the namespace fallback, while
+  // `sourceCapabilities` always comes from the loader copy (or is
+  // absent) so content can't turn on the editor controls.
   const { sharedConfig: frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
     sharedConfig?: Record<string, unknown>;
   } & Record<string, unknown>;
-  const mergedSharedConfig =
-    frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object'
-      ? {
-          ...(sharedConfig ?? {}),
-          ...frontmatterSharedConfig,
-          ...(sharedConfig?.sourceCapabilities
-            ? { sourceCapabilities: sharedConfig.sourceCapabilities }
-            : {})
-        }
-      : sharedConfig;
+  let mergedSharedConfig = sharedConfig;
+  if (frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object') {
+    const { sourceCapabilities: _authoredCapabilities, ...authoredOverrides } =
+      frontmatterSharedConfig;
+    mergedSharedConfig = {
+      ...(sharedConfig ?? {}),
+      ...authoredOverrides,
+      ...(sharedConfig?.sourceCapabilities
+        ? { sourceCapabilities: sharedConfig.sourceCapabilities }
+        : {})
+    };
+  }
   const storeProps = {
     searchIndex: search.searchIndex,
     searchConfig: search.searchConfig,
@@ -580,9 +563,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       ? getMdxRawSource(resolvedPathname, mode, contentUrl)
       : Promise.resolve(undefined);
   const [session, rawSource] = await Promise.all([sessionPromise, rawSourcePromise]);
-  const editing =
-    editRequested && isWritableSource && resolved.kind === 'mdx' && session?.user != null;
-  const creating = newPossible && isWritableSource && session?.user != null;
+  const isEditor = session?.user != null && isAuthorizedEditor(session.user);
+  const editing = editRequested && isWritableSource && resolved.kind === 'mdx' && isEditor;
+  const creating = newPossible && isWritableSource && isEditor;
   const editorUser =
     (editing || creating) && session?.user
       ? {
@@ -654,6 +637,28 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     ? ({ kind: 'raw', bytes: newPageRaw, namespace: undefined } as const)
     : rawSource;
 
+  // View mode compiles the MDX here (rather than inside `<BodyServer>`)
+  // so the store can share the compiled frontmatter's navigation data
+  // with `<MdxRenderer>`: when both client props reference the same
+  // objects, the RSC payload serialises them once instead of twice.
+  // Only swapped in when the two YAML parsers agree on the value.
+  const compiledSource = editing || creating ? undefined : await serializeMdxForClient(raw);
+  const compiledFrontmatter =
+    compiledSource && 'frontmatter' in compiledSource
+      ? (compiledSource.frontmatter as Record<string, unknown>)
+      : undefined;
+  if (compiledFrontmatter) {
+    for (const key of ['sidebarData', 'navigation', 'tableOfContents', 'breadcrumbs']) {
+      const shared = compiledFrontmatter[key];
+      if (
+        shared !== undefined &&
+        JSON.stringify(shared) === JSON.stringify((storeProps as Record<string, unknown>)[key])
+      ) {
+        (storeProps as Record<string, unknown>)[key] = shared;
+      }
+    }
+  }
+
   // Intentionally no nested `<Suspense>` and no sibling `loading.tsx`
   // at the route segment for the VIEW branch. When a `<Link>`-driven
   // navigation enters a React transition (the default) *and* there is
@@ -664,25 +669,22 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // re-creating the flash.
   //
   // The EDIT/CREATE branch resolves `EditorBody` via `next/dynamic`
-  // (declared at module top). The dynamic chunk loads asynchronously
-  // on the first edit/create render; React's built-in Suspense
-  // handling for dynamic components keeps the previous UI on screen
-  // until the chunk arrives, then swaps in `<EditorBody>` — same
-  // no-flash behaviour as VIEW.
+  // (in the `EditorBodyLazy` client wrapper). The chunk loads
+  // asynchronously on the first edit/create render; React's built-in
+  // Suspense handling for dynamic components keeps the previous UI on
+  // screen until the chunk arrives, then swaps in `<EditorBody>` —
+  // same no-flash behaviour as VIEW.
   return (
-    <StoreShell storeProps={storeProps}>
+    <StoreShell storeProps={storeProps} isEditing={editing || creating}>
       {/*
         URL canonicaliser. Mounted only when we followed a
         folder→index redirect in `resolveContent` — in that case the
         browser URL shows the folder shorthand (e.g.
         `/mosaic/getting-started`) but the on-disk file lives at
         the canonical (`/mosaic/getting-started/index`). This
-        client component fires
-        `router.replace(canonical, { scroll: false })` after first
-        paint to update the URL bar without unmounting the page
-        subtree. See the comment block in `CanonicalizeUrl.tsx`
-        for the trade-off (one-frame URL flicker vs. a 150 ms blank
-        chrome flash).
+        client component rewrites the URL bar with
+        `window.history.replaceState` after commit — no second
+        request, no remount. See `CanonicalizeUrl.tsx`.
 
         Gated on `resolved.kind === 'mdx'` because
         `followedRedirect` is only set on the mdx-success branch;
@@ -699,9 +701,10 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
           rawSource={effectiveRawSource}
           user={editorUser}
           isNewPage={creating}
+          route={resolvedPathname}
         />
       ) : (
-        <BodyServer type="mdx" raw={raw} />
+        <BodyServer type="mdx" raw={raw} source={compiledSource} />
       )}
     </StoreShell>
   );

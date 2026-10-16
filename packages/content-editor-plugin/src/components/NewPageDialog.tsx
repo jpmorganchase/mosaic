@@ -50,6 +50,7 @@ import {
 import { Dialog } from './Dialog';
 import styles from './NewPageDialog.css';
 import { useFolderSuggestions } from './useFolderSuggestions';
+import { hasUnsafeRouteSegments } from '../utils/routeSegments';
 
 export interface NewPageDialogProps {
   open: boolean;
@@ -199,6 +200,9 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     // eslint-disable-next-line no-control-regex
     if (/[\s<>:"|?*\x00-\x1f]/.test(parentFolder)) {
       return 'Parent folder contains invalid characters.';
+    }
+    if (parentFolder !== '/' && hasUnsafeRouteSegments(parentFolder)) {
+      return 'Parent folder cannot contain empty, "." or ".." segments or backslashes.';
     }
     return null;
   }, [parentFolder]);

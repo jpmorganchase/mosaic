@@ -24,6 +24,14 @@ interface ResultListItemProps {
 
 const MAX_RESULTS = 6;
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Highlights every whitespace-separated query term (regex characters are literal). */
+function toMatchPattern(query: string): RegExp | undefined {
+  const terms = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
+  return terms.length > 0 ? new RegExp(`(${terms.join('|')})`, 'gi') : undefined;
+}
+
 function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -46,12 +54,13 @@ function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
   };
 
   const handleKeySelection = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === 'Space') {
+    if (e.key === 'Enter' || e.key === ' ') {
       onSelect(result);
     }
   };
 
   const itemActive = hovered || focused;
+  const matchPattern = toMatchPattern(query);
 
   return (
     <article
@@ -69,18 +78,13 @@ function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
       onKeyDown={handleKeySelection}
     >
       <Caption6>
-        <Highlighter
-          matchPattern={new RegExp(`(${query.trim().split(' ').join('|')})`, 'gi')}
-          text={result.route.replace(/(<([^>]+)>)/gi, '')}
-        />
+        <Highlighter matchPattern={matchPattern} text={result.route.replace(/(<([^>]+)>)/gi, '')} />
       </Caption6>
       <P4>
-        <Highlighter
-          matchPattern={new RegExp(`(${query.trim().split(' ').join('|')})`, 'gi')}
-          text={result.title.replace(/(<([^>]+)>)/gi, '')}
-        />
+        <Highlighter matchPattern={matchPattern} text={result.title.replace(/(<([^>]+)>)/gi, '')} />
       </P4>
       <P6 className={styles.itemContent}>
+        {/* `content` is escaped by `highlightMatch`/`getBestMatch`; only the `<strong>` is markup. */}
         <span dangerouslySetInnerHTML={{ __html: result.content }} />
       </P6>
     </article>

@@ -3,7 +3,13 @@ import deepmerge from 'deepmerge';
 import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
 
 const projectDir = process.cwd();
-nextEnv.loadEnvConfig(projectDir);
+// Load `.env.development` only when the caller asks for development. The
+// site's `serve`, `debug` and `gen:snapshot` scripts set NODE_ENV=development,
+// which also enables the local-folder sources below. Anything else, including
+// `mosaic serve` with NODE_ENV unset, gets the production env files, so the
+// committed placeholder secrets and the CLI's dev-only open admin API never
+// apply by default.
+nextEnv.loadEnvConfig(projectDir, process.env.NODE_ENV === 'development');
 
 const siteConfig = {
   ...fsConfig,

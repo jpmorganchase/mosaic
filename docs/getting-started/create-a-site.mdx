@@ -14,7 +14,7 @@ In this guide you will learn how to generate and serve a Mosaic site.
 To begin setting up a Mosaic site, you need to have the following software installed:
 
 1. Yarn v1
-2. Node.js v18 or higher
+2. Node.js v22.13 or higher (or v24)
 
 ## Step 1: Set Up a Mosaic Site
 
@@ -32,21 +32,24 @@ You can copy the `site` directory from this repository into your project. The si
 > (`src/app/`), not the legacy Pages Router (`src/pages/`). Key files
 > you'll touch when customising:
 >
-> - `src/app/layout.tsx` — root layout, global CSS, session seeding.
+> - `src/app/layout.tsx` — root layout, global CSS and fonts.
 > - `src/app/providers.tsx` — client-side provider stack
 >   (`SessionProvider`, theme, store, layout).
-> - `src/app/[...route]/page.tsx` — the catch-all RSC route that runs
->   middleware and renders MDX.
+> - `src/app/[...route]/page.tsx` — the catch-all RSC route that loads
+>   content with the `@jpmorganchase/mosaic-site-middleware` loaders and
+>   renders MDX.
 > - `src/app/[...route]/MdxComponents.ts` — registry for MDX-visible
 >   components (replaces the old `_app.tsx` component merge).
 > - `src/auth.ts` — Auth.js v5 wiring (`handlers`, `auth`, `signIn`,
 >   `signOut`).
 >
-> **Footgun:** the session must be resolved in `layout.tsx` with `await auth()` and passed to `<SessionProvider session={...}>` as a prop. Do
-> not let `SessionProvider` enter its "loading" state during static
-> generation — it races React's internal dispatcher and produces a
-> non-deterministic `TypeError: Cannot read properties of null (reading 'useState')` crash. The reference `packages/site` already does this
-> correctly; keep that pattern when you copy the directory.
+> `providers.tsx` mounts `<SessionProvider>` without a `session` prop, so
+> the browser fetches the session after the page loads and sites without
+> auth still render. Keep that pattern when you copy the directory; the
+> site's `README.md` lists the other patterns to preserve.
+>
+> Upgrading a site built on the Pages Router? See
+> [Migrate to the App Router](./migrate-to-app-router).
 
 ```
 sources: [

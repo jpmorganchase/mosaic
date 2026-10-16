@@ -2,7 +2,13 @@
 
 import React, { FC, ReactNode, Suspense, useMemo } from 'react';
 import { useLayout } from '@jpmorganchase/mosaic-store';
-import { LayoutNamesProvider, useEditMode } from '@jpmorganchase/mosaic-content-editor-plugin';
+// Deep imports keep the Lexical editor out of every page's bundle: the
+// package root re-exports the whole editor.
+import { LayoutNamesProvider } from '@jpmorganchase/mosaic-content-editor-plugin/LayoutNamesContext';
+import {
+  EditModeProvider,
+  useEditMode
+} from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
 
 import type { LayoutProps } from './types';
 import * as layouts from './layouts';
@@ -14,16 +20,22 @@ export type LayoutProviderProps = {
   LayoutProps?: LayoutProps;
   children: ReactNode;
   defaultLayout?: string;
+  /**
+   * Whether this request is an edit/create request, as known by the
+   * server (`?edit=1` / `?new=1`). When provided, the provider never
+   * reads `useSearchParams()`, so statically prerendered pages render
+   * their real layout on the server. When omitted, the edit state is
+   * derived from the URL inside a Suspense boundary, which makes
+   * prerendered pages fall back to client rendering for the layout.
+   */
+  isEditing?: boolean;
 };
 
 const INTERNAL_LAYOUT_NAMES = new Set<string>(['EditLayout']);
 
 /**
- * Resolve the layout component to render. Pulled out so the
- * Suspense fallback can use the same lookup as the post-suspense
- * render — we want the fallback to mount the FULL chrome (header,
- * sidebars, footer), only the editor-mode swap should wait for
- * `useEditMode`.
+ * Resolve the layout component to render, falling back to the default
+ * layout for unknown names.
  */
 function pickLayoutComponent(
   name: string,
@@ -51,20 +63,17 @@ function getAuthorSelectableNames(
 }
 
 /**
- * Inner component that does the actual layout selection. Reads
- * `useEditMode` (which wraps `useSearchParams`), so it's wrapped in a
- * `<Suspense>` boundary by the outer `LayoutProvider` to satisfy
- * Next's "useSearchParams must be inside Suspense" prerender check
- * for pages without `?edit=…` on the URL.
+ * Renders the page's layout (or `EditLayout` while editing) and makes the
+ * edit state available to the chrome through `<EditModeProvider>`.
  */
-const LayoutPicker: FC<LayoutProviderProps> = ({
+const LayoutSelection: FC<LayoutProviderProps & { isEditing: boolean }> = ({
   children,
   layoutComponents,
   LayoutProps = {},
-  defaultLayout = 'FullWidth'
+  defaultLayout = 'FullWidth',
+  isEditing
 }) => {
   const { layout: layoutInStore = defaultLayout } = useLayout();
-  const { isEditing } = useEditMode();
   const layout = isEditing ? 'EditLayout' : layoutInStore;
 
   const authorSelectableNames = useMemo(
@@ -78,44 +87,27 @@ const LayoutPicker: FC<LayoutProviderProps> = ({
   ) : (
     <>{children}</>
   );
-  return <LayoutNamesProvider names={authorSelectableNames}>{inner}</LayoutNamesProvider>;
+  return (
+    <EditModeProvider isEditing={isEditing}>
+      <LayoutNamesProvider names={authorSelectableNames}>{inner}</LayoutNamesProvider>
+    </EditModeProvider>
+  );
 };
 
-/**
- * Suspense fallback for `LayoutPicker`. Renders the default
- * layout's full chrome — header, sidebars, footer — so navigations
- * never expose the bare page body. The only thing that has to wait
- * for `useEditMode` to resolve is the `EditLayout` swap, which is
- * an opt-in author flow and represents a tiny minority of renders.
- *
- * Before this existed, the fallback rendered `<>{children}</>` and
- * every cross-route navigation produced a one-frame flash of
- * unchromed body (visible as a "flash of white" when the body was
- * shorter than the viewport). Mounting the default layout — the
- * SAME component the post-resolve render mounts in the common case
- * — keeps the chrome on screen continuously across navigations.
- */
-const LayoutFallback: FC<LayoutProviderProps> = ({
-  children,
-  layoutComponents,
-  LayoutProps = {},
-  defaultLayout = 'FullWidth'
-}) => {
-  const authorSelectableNames = useMemo(
-    () => getAuthorSelectableNames(layoutComponents),
-    [layoutComponents]
-  );
-  const LayoutComponent = pickLayoutComponent(defaultLayout, layoutComponents, defaultLayout);
-  const inner = LayoutComponent ? (
-    <LayoutComponent {...LayoutProps}>{children}</LayoutComponent>
+/** Legacy path: derives the edit state from the URL (`useSearchParams`). */
+const UrlLayoutPicker: FC<LayoutProviderProps> = props => {
+  const { isEditing } = useEditMode();
+  return <LayoutSelection {...props} isEditing={isEditing} />;
+};
+
+export const LayoutProvider: FC<LayoutProviderProps> = props =>
+  typeof props.isEditing === 'boolean' ? (
+    <LayoutSelection {...props} isEditing={props.isEditing} />
   ) : (
-    <>{children}</>
+    // The fallback renders the page's own layout in view mode, so the
+    // chrome stays on screen while `useSearchParams` resolves; only the
+    // `EditLayout` swap has to wait.
+    <Suspense fallback={<LayoutSelection {...props} isEditing={false} />}>
+      <UrlLayoutPicker {...props} />
+    </Suspense>
   );
-  return <LayoutNamesProvider names={authorSelectableNames}>{inner}</LayoutNamesProvider>;
-};
-
-export const LayoutProvider: FC<LayoutProviderProps> = props => (
-  <Suspense fallback={<LayoutFallback {...props} />}>
-    <LayoutPicker {...props} />
-  </Suspense>
-);

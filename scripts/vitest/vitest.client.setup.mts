@@ -5,9 +5,12 @@ import ResizeObserver from 'resize-observer-polyfill';
 
 vi.stubGlobal('ResizeObserver', ResizeObserver);
 
-configure({ testIdAttribute: 'data-mosaic-testid' });
+// jsdom doesn't implement scrolling; Salt's list/menu components call it.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = vi.fn();
+}
 
-vi.mock('zustand');
+configure({ testIdAttribute: 'data-mosaic-testid' });
 
 afterEach(() => {
   cleanup();

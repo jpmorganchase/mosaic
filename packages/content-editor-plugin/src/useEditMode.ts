@@ -18,13 +18,15 @@
  * is shareable, can be auth-gated server-side, and removes the
  * pathname-watcher effect that used to clean up on navigation.
  *
- * Implementation note: only `isEditing` subscribes to
- * `useSearchParams` (it has to — it's derived state). The writers
- * read `window.location.search` on demand so toggling the URL
- * doesn't re-create the callbacks and force consumers to re-render
- * (rule `rerender-defer-reads`).
+ * Reading the mode: `useIsEditing()` returns the state seeded by the
+ * host through `<EditModeProvider>` (the server knows it from the
+ * request), so view-mode pages never touch `useSearchParams`. The
+ * legacy `useEditMode()` still derives it from the URL. The writers
+ * (`useEditModeActions`) read `window.location.search` on demand so
+ * toggling the URL doesn't re-create the callbacks and force
+ * consumers to re-render (rule `rerender-defer-reads`).
  */
-import { useCallback } from 'react';
+import { createContext, createElement, useCallback, useContext, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export interface EditMode {
@@ -36,10 +38,43 @@ export interface EditMode {
   stopEditing: () => void;
 }
 
-export function useEditMode(): EditMode {
+/**
+ * Edit state seeded by the host. A server-rendered host already knows
+ * whether the request is an edit (`?edit=1`) or create (`?new=1`)
+ * request. Passing it down here means view-mode pages never call
+ * `useSearchParams()`, which on statically prerendered pages makes Next
+ * fall back to client rendering up to the nearest Suspense boundary.
+ */
+const EditModeContext = createContext<boolean | undefined>(undefined);
+EditModeContext.displayName = 'EditModeContext';
+
+export function EditModeProvider({
+  isEditing,
+  children
+}: {
+  isEditing: boolean;
+  children?: ReactNode;
+}) {
+  return createElement(EditModeContext.Provider, { value: isEditing }, children);
+}
+
+/**
+ * The edit state seeded by the nearest `<EditModeProvider>` (`false`
+ * without one). Never reads search params, so it is safe on
+ * prerendered pages. `LayoutProvider` always provides it.
+ */
+export function useIsEditing(): boolean {
+  return useContext(EditModeContext) ?? false;
+}
+
+/**
+ * Stable callbacks that toggle edit mode by rewriting the URL. They read
+ * `window.location.search` on demand, so they don't subscribe to search
+ * params (rule `rerender-defer-reads`).
+ */
+export function useEditModeActions(): Pick<EditMode, 'startEditing' | 'stopEditing'> {
   const router = useRouter();
   const pathname = usePathname();
-  const isEditing = useSearchParams().get('edit') === '1';
 
   const startEditing = useCallback(() => {
     // Read the live query string at click-time rather than capturing
@@ -86,5 +121,17 @@ export function useEditMode(): EditMode {
     router.replace(target, { scroll: false });
   }, [pathname, router]);
 
+  return { startEditing, stopEditing };
+}
+
+/**
+ * URL-derived edit mode. Reads `useSearchParams()`, so on a statically
+ * prerendered page it must sit inside a Suspense boundary and renders on
+ * the client only. Prefer `useIsEditing()` + `useEditModeActions()`
+ * under an `<EditModeProvider>`.
+ */
+export function useEditMode(): EditMode {
+  const isEditing = useSearchParams().get('edit') === '1';
+  const { startEditing, stopEditing } = useEditModeActions();
   return { isEditing, startEditing, stopEditing };
 }

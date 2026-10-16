@@ -2,6 +2,8 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { SourceModuleDefinition } from '@jpmorganchase/mosaic-types';
 import fp from 'fastify-plugin';
 
+import { extractSecret, readSecret, secretsMatch } from './security.js';
+
 export interface FastifyMosaicAdminPluginOptions {
   prefix: string;
   enableSourcePush?: boolean;
@@ -16,38 +18,78 @@ interface AddSourceRequestBodyType {
   isPreview?: boolean;
 }
 
+const GIT_REPO_MODULE = '@jpmorganchase/mosaic-source-git-repo';
+
+/**
+ * Returns a copy of `source` with git credentials masked. Never mutates
+ * the live config: sources may be restarted later and need the real value.
+ */
+function redactSource(source: SourceModuleDefinition): SourceModuleDefinition {
+  const sourceOptions = source?.options as { credentials?: string } | undefined;
+  if (sourceOptions?.credentials && source.modulePath === GIT_REPO_MODULE) {
+    const [user] = sourceOptions.credentials.split(':');
+    return { ...source, options: { ...sourceOptions, credentials: `${user}: ********` } };
+  }
+  return source;
+}
+
+const ADMIN_SECRET_HEADER = 'x-mosaic-admin-secret';
+
+/** Without `MOSAIC_ADMIN_SECRET`, the admin API is open in development only. */
+function isOpenInDevelopment() {
+  return !readSecret('MOSAIC_ADMIN_SECRET') && process.env.NODE_ENV === 'development';
+}
+
+/**
+ * Everything except the tag list can reveal or change server state, so it
+ * needs `MOSAIC_ADMIN_SECRET` (as `x-mosaic-admin-secret`, a bearer token or
+ * the password of a browser login prompt). Without the env var those routes
+ * are open when `NODE_ENV=development` and disabled otherwise.
+ */
+async function requireAdminSecret(req: FastifyRequest, reply: FastifyReply) {
+  const expected = readSecret('MOSAIC_ADMIN_SECRET');
+  if (!expected) {
+    if (process.env.NODE_ENV === 'development') return undefined;
+    return reply
+      .code(403)
+      .header('Content-Type', 'application/text')
+      .send('The Mosaic admin API is disabled. Set MOSAIC_ADMIN_SECRET to enable it.');
+  }
+  const provided = extractSecret(req.headers, ADMIN_SECRET_HEADER);
+  if (!provided || !secretsMatch(provided, expected)) {
+    return reply
+      .code(401)
+      .header('WWW-Authenticate', 'Basic realm="Mosaic admin", charset="UTF-8"')
+      .header('Content-Type', 'application/text')
+      .send('Unauthorized.');
+  }
+  return undefined;
+}
+
 function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPluginOptions, next) {
   const { prefix } = options;
   const { config, fs, core } = fastify.mosaic;
+  const adminOnly = { preHandler: requireAdminSecret };
+
+  if (isOpenInDevelopment()) {
+    console.warn(
+      `[Mosaic] Admin API /${prefix}/* is open: MOSAIC_ADMIN_SECRET is not set and NODE_ENV=development.`
+    );
+  }
 
   /**
    * Return the JSON config that Mosaic was started with.
    * Credentials for git sources are sanitized.
    */
-  fastify.get(`/${prefix}/config`, async (_req, reply: FastifyReply) => {
+  fastify.get(`/${prefix}/config`, adminOnly, async (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
-
-    const sourcesWithoutCredentials = config.sources.map(source => {
-      const sourceOptions = source?.options as { credentials?: string };
-      const credentials = sourceOptions?.credentials as string;
-
-      if (credentials && source.modulePath === '@jpmorganchase/mosaic-source-git-repo') {
-        const parts = credentials.split(':') || [];
-        if (parts.length > 0) {
-          source.options = { ...sourceOptions, credentials: `${parts[0]}: ********` };
-        }
-      }
-
-      return source;
-    });
-    const sanitizedConfig = { ...config, sources: sourcesWithoutCredentials };
-    reply.send(sanitizedConfig);
+    reply.send({ ...config, sources: config.sources.map(redactSource) });
   });
 
   /**
    * Return the filesystem as JSON
    */
-  fastify.get(`/${prefix}/content/dump`, (_req, reply: FastifyReply) => {
+  fastify.get(`/${prefix}/content/dump`, adminOnly, (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
     reply.send(fs.toJSON());
   });
@@ -115,30 +157,15 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    * Will provide the generated name of each source
    * which can be used to stop/restart the source
    */
-  fastify.get(`/${prefix}/sources/list`, async (_req, reply: FastifyReply) => {
+  fastify.get(`/${prefix}/sources/list`, adminOnly, async (_req, reply: FastifyReply) => {
     reply.header('Content-Type', 'application/json');
     const sources = await core.listSources();
 
     const response = sources.map(source => {
       const sourceFromConfig = config.sources[source.index];
-      const sourceOptions = sourceFromConfig?.options as { credentials?: string } | undefined;
-
-      if (
-        sourceOptions?.credentials &&
-        sourceFromConfig.modulePath === '@jpmorganchase/mosaic-source-git-repo'
-      ) {
-        const parts = sourceOptions.credentials?.split(':') || [];
-        if (parts.length > 0) {
-          sourceFromConfig.options = {
-            ...sourceOptions,
-            credentials: `${parts[0]}: ********`
-          };
-        }
-      }
-
       return {
         name: source.name,
-        ...sourceFromConfig,
+        ...(sourceFromConfig ? redactSource(sourceFromConfig) : {}),
         pluginErrors: source.pluginErrors
       };
     });
@@ -150,6 +177,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.put(
     `/${prefix}/source/stop`,
+    adminOnly,
     async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply: FastifyReply) => {
       reply.header('Content-Type', 'application/text');
       const { name } = req.body;
@@ -173,6 +201,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.put(
     `/${prefix}/source/restart`,
+    adminOnly,
     async (req: FastifyRequest<{ Body: AdminRequestBodyType }>, reply: FastifyReply) => {
       reply.header('Content-Type', 'application/text');
       const { name } = req.body;
@@ -195,6 +224,7 @@ function mosaicAdmin(fastify: FastifyInstance, options: FastifyMosaicAdminPlugin
    */
   fastify.post(
     `/${prefix}/source/add`,
+    adminOnly,
     async (req: FastifyRequest<{ Body: AddSourceRequestBodyType }>, reply: FastifyReply) => {
       try {
         const { definition, isPreview = true } = req.body;

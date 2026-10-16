@@ -17,19 +17,19 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
-    "debug": "yarn mosaic serve -c ./mosaic.config.mjs -p 8080",
+    "debug": "yarn cross-env NODE_ENV=development mosaic serve -c ./mosaic.config.mjs -p 8080",
     "deploy": "echo 'DO NOTHING'",
     "docker:build": "docker build . --tag mosaic-site:latest",
     "docker:start": "docker run -it --rm --ipc=host -p 3000:3000 --network mosaic-net --name mosaic-site mosaic-site:latest",
     "e2e": "yarn playwright test",
     "e2e:codegen": "yarn playwright codegen localhost:3000",
-    "gen:snapshot": "yarn mosaic build --out snapshots --name latest --config mosaic.config.mjs",
+    "gen:snapshot": "yarn cross-env NODE_ENV=development mosaic build --out snapshots --name latest --config mosaic.config.mjs",
     "build:static:file": "node scripts/static-export-route-stubs.mjs apply && (yarn cross-env MOSAIC_MODE=snapshot-file MOSAIC_OUTPUT=export next build; status=$?; node scripts/static-export-route-stubs.mjs revert; exit $status)",
     "build:static:s3": "node scripts/static-export-route-stubs.mjs apply && (yarn cross-env MOSAIC_MODE=snapshot-s3 MOSAIC_OUTPUT=export next build; status=$?; node scripts/static-export-route-stubs.mjs revert; exit $status)",
     "build:static:revert": "node scripts/static-export-route-stubs.mjs revert",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE=\"snapshot-file\" concurrently --kill-others -n next -p \"[{name}]\" \"yarn dev\"",
     "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE=\"snapshot-s3\" concurrently --kill-others -n next -p \"[{name}]\" \"yarn dev\"",
-    "serve": "yarn cross-env MOSAIC_REVALIDATE_URL=http://localhost:3000/api/revalidate MOSAIC_REVALIDATE_SECRET=local-dev-not-a-secret concurrently --kill-others -n next,mosaic -p \"[{name}]\" \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\""
+    "serve": "yarn cross-env NODE_ENV=development MOSAIC_REVALIDATE_URL=http://localhost:3000/api/revalidate MOSAIC_REVALIDATE_SECRET=local-dev-not-a-secret concurrently --kill-others -n next,mosaic -p \"[{name}]\" \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\""
   },
   "dependencies": {
     "@jpmorganchase/mosaic-cli": "^0.1.0-beta.98",

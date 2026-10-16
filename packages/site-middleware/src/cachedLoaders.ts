@@ -75,74 +75,73 @@ export { MOSAIC_CONTENT_CACHE_TAG };
 const cacheDisabled = process.env.MOSAIC_DISABLE_LOADER_CACHE === 'true';
 
 /**
- * Active mode has no "snapshot ready" event we can hook — the upstream
- * Mosaic CLI/FS server boots, populates its in-memory volume, then
- * starts serving. A page render that lands during the cold-start
- * window sees:
+ * Active mode skips the cross-request cache by default: every request
+ * reads from the live Mosaic CLI, so edits show up immediately. Set
+ * `MOSAIC_ACTIVE_MODE_CACHE=true` to cache active-mode reads too; entries
+ * are then invalidated by the CLI's revalidate notifier
+ * (`MOSAIC_REVALIDATE_URL` / `MOSAIC_REVALIDATE_SECRET`). Only enable it
+ * when that notification reaches every site instance (a single instance,
+ * or a shared cache handler) — otherwise instances serve stale content.
  *
- *   - `fetch` rejection (ECONNREFUSED) before the server is listening,
- *     OR
- *   - HTTP 404 between "listening" and "content loaded" (the Fastify
- *     catch-all returns 404 for every route until the source workers
- *     have emitted at least once).
- *
- * `unstable_cache` happily memoises the resulting `{kind: 'not-found'}`
- * with no TTL — and there's no signal to invalidate it later (the CLI
- * doesn't POST to `/api/revalidate` for its own first-emission; that
- * webhook is for *content updates after* the CLI is already running).
- * The 404 then sticks for the entire process lifetime, forcing the
- * developer to hard-refresh.
- *
- * Sidestep entirely: in active mode we only do per-request memoisation
- * (`cache()`), never the cross-request `unstable_cache`. The file's
- * own caching comment (see `getMdxRaw`) already flags active-mode
- * cross-request caching as "technically incorrect" — this just makes
- * the docstring match reality. The dominant active-mode win
- * (`generateMetadata` + page render sharing one fetch) is preserved
- * by `cache()`; we only drop the optimisation that was never sound to
- * begin with.
- *
- * Snapshot modes (`snapshot-file`, `snapshot-s3`) are unchanged: their
- * underlying bytes ARE stable across requests, and the cache is
- * correctness-neutral + a real perf win.
+ * Snapshot modes (`snapshot-file`, `snapshot-s3`) always cache: their
+ * bytes are stable until the next snapshot is published.
  */
-function isActiveModeOnly(mode: MosaicMode): boolean {
-  return mode === 'active';
+const activeModeCacheEnabled = process.env.MOSAIC_ACTIVE_MODE_CACHE === 'true';
+
+function bypassesCrossRequestCache(mode: MosaicMode): boolean {
+  return mode === 'active' && !activeModeCacheEnabled;
 }
 
 /**
- * Helper that conditionally wraps an impl in `unstable_cache`. We
- * could pass `revalidate: 0` to disable but `unstable_cache` still
- * wraps the call and complicates stack traces; bypassing entirely is
- * cleaner for the dev case.
+ * Thrown from inside the cached function to hand a negative result back
+ * without storing it — `unstable_cache` never stores rejections.
+ */
+class UncachedResult<T> extends Error {
+  constructor(readonly value: T) {
+    super('[Mosaic] uncached loader result');
+  }
+}
+
+/**
+ * Wraps a loader in `unstable_cache` (tagged `MOSAIC_CONTENT_CACHE_TAG`,
+ * valid until invalidated), except in the cases above.
  *
- * The wrapper introspects the loader's first arg(s) at call time to
- * decide whether to engage `unstable_cache`: snapshot modes go
- * through the cache; active mode bypasses it (see
- * {@link isActiveModeOnly} for why). The conditional has to live
- * here rather than in each loader so the cached function identity
- * stays stable across calls (`unstable_cache` is memoised by
- * reference; rebuilding it per-call would defeat the purpose).
+ * Results rejected by `isCacheable` — not-found pages, missing files,
+ * empty lookups — are returned but never stored. That keeps a cold-start
+ * 404 (CLI listening, content not loaded yet) from sticking for the
+ * process lifetime, and stops requests for arbitrary URLs from growing
+ * the cache without bound.
  *
  * `getMode` extracts the mode from the loader's argument tuple —
  * different loaders have different arg shapes so the extractor is
- * passed in.
+ * passed in. The cached function is created once so its identity stays
+ * stable across calls.
  */
 function withCrossRequestCache<TArgs extends unknown[], TResult>(
   impl: (...args: TArgs) => Promise<TResult>,
   keyParts: string[],
-  getMode: (args: TArgs) => MosaicMode
+  getMode: (args: TArgs) => MosaicMode,
+  isCacheable: (result: TResult) => boolean
 ): (...args: TArgs) => Promise<TResult> {
   if (cacheDisabled) return impl;
-  const cached = unstable_cache(impl, keyParts, {
-    tags: [MOSAIC_CONTENT_CACHE_TAG]
-    // No `revalidate` — cache entries are valid until explicitly
-    // invalidated via the tag. Active mode skips this wrapper
-    // entirely (see `isActiveModeOnly` for why), so the
-    // "until-invalidated" lifetime only applies to snapshot data
-    // that genuinely is stable until the next snapshot rebuild.
-  });
-  return (...args: TArgs) => (isActiveModeOnly(getMode(args)) ? impl(...args) : cached(...args));
+  const cached = unstable_cache(
+    async (...args: TArgs) => {
+      const result = await impl(...args);
+      if (!isCacheable(result)) throw new UncachedResult(result);
+      return result;
+    },
+    keyParts,
+    { tags: [MOSAIC_CONTENT_CACHE_TAG] }
+  );
+  return async (...args: TArgs) => {
+    if (bypassesCrossRequestCache(getMode(args))) return impl(...args);
+    try {
+      return await cached(...args);
+    } catch (error) {
+      if (error instanceof UncachedResult) return error.value as TResult;
+      throw error;
+    }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -173,12 +172,10 @@ function safeJsonParse<T = unknown>(raw: string | null | undefined, source: stri
 }
 
 const loadSharedConfigImpl = async (
-  pathname: string,
+  urlPath: string,
   mode: MosaicMode,
   contentUrl: string
 ): Promise<SharedConfig | undefined> => {
-  const urlPath = deriveSharedConfigUrlPath(pathname);
-
   if (mode === 'snapshot-file') {
     const { snapshotDir } = getSnapshotFileConfig(urlPath);
     const filePath = path.join(process.cwd(), snapshotDir, urlPath, 'shared-config.json');
@@ -204,13 +201,10 @@ const loadSharedConfigImpl = async (
 
   // Active mode — HTTP fetch from the running mosaic server.
   // `cache: 'no-store'` opts out of Next's built-in fetch cache: that
-  // layer is below `unstable_cache` (which we already bypass in
-  // active mode via `withCrossRequestCache`), so without this the
-  // raw fetch result — including any cold-start 404 — would still be
-  // memoised at the fetch layer and survive across renders even
-  // though the outer cache was sidestepped. The per-request `cache()`
-  // wrapper on `getSharedConfig` is the only memoisation we want in
-  // active mode.
+  // layer is below `unstable_cache`, so without this the raw fetch
+  // result — including any cold-start 404 — would be memoised at the
+  // fetch layer even when `withCrossRequestCache` bypasses (or refuses
+  // to store) it.
   const response = await fetch(`${contentUrl}${urlPath}/shared-config.json`, {
     cache: 'no-store',
     headers: { 'Content-Type': 'application/json' }
@@ -228,19 +222,21 @@ const loadSharedConfigImpl = async (
 const loadSharedConfigCached = withCrossRequestCache(
   loadSharedConfigImpl,
   ['mosaic', 'sharedConfig'],
-  // Loader signature: `(pathname, mode, contentUrl)`. The mode is
+  // Loader signature: `(urlPath, mode, contentUrl)`. The mode is
   // the second arg; extract for the cross-request cache gate.
-  ([, mode]) => mode
+  ([, mode]) => mode,
+  config => config !== undefined
 );
 
 /**
  * Resolve the per-route shared config (header, footer, search namespace,
  * etc.). Cached at the subtree level (e.g. `/mosaic/getting-started`)
- * so neighbour pages share the lookup.
+ * so neighbour pages share the lookup, and requests for made-up pages
+ * don't each add a cache entry.
  */
 export const getSharedConfig = cache(
   async (pathname: string, mode: MosaicMode, contentUrl: string) =>
-    loadSharedConfigCached(pathname, mode, contentUrl)
+    loadSharedConfigCached(deriveSharedConfigUrlPath(pathname), mode, contentUrl)
 );
 
 // ---------------------------------------------------------------------------
@@ -278,10 +274,9 @@ async function fetchUpstreamJson(
   targetPath: string
 ): Promise<unknown | undefined> {
   // `cache: 'no-store'` — see the equivalent comment in
-  // `loadSharedConfigImpl`'s active-mode branch. The site-wide
-  // search data is reused across every page in a render via
-  // `cache()`, so disabling Next's fetch-level cache here only
-  // costs one extra round-trip per process boot (not per page).
+  // `loadSharedConfigImpl`'s active-mode branch. Without
+  // `MOSAIC_ACTIVE_MODE_CACHE` this runs on every request (the
+  // per-request `cache()` only shares it within one render).
   const response = await fetch(`${contentUrl}/${targetPath}`, {
     cache: 'no-store',
     headers: { 'Content-Type': 'application/json' }
@@ -324,7 +319,8 @@ const loadSearchDataCached = withCrossRequestCache(
   loadSearchDataImpl,
   ['mosaic', 'searchData'],
   // Loader signature: `(mode, contentUrl)`. Mode is the first arg.
-  ([mode]) => mode
+  ([mode]) => mode,
+  data => data.searchIndex !== undefined
 );
 
 /**
@@ -436,11 +432,10 @@ const loadMdxRawCached = withCrossRequestCache(
   loadMdxRawImpl,
   ['mosaic', 'mdx'],
   // Loader signature: `(pathname, mode, contentUrl)`. Mode is the
-  // second arg. Active mode bypasses the cross-request cache so a
-  // cold-start 404 (CLI listening but not yet content-ready) never
-  // gets memoised for the rest of the process lifetime — the
-  // request-scoped `cache()` below still dedupes per render.
-  ([, mode]) => mode
+  // second arg.
+  ([, mode]) => mode,
+  // Never store a 404: it may be a cold start, or a probe for a random URL.
+  result => result.kind !== 'not-found'
 );
 
 /**
@@ -450,12 +445,11 @@ const loadMdxRawCached = withCrossRequestCache(
  *
  * Caching note: snapshot modes cache the raw text cross-request
  * (the bytes are immutable until the next snapshot rebuild, which
- * flips them all stale via `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)`).
- * Active mode bypasses `unstable_cache` entirely — see
- * `withCrossRequestCache` for the rationale. The per-request
+ * expires them via `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)`). Active
+ * mode only does so with `MOSAIC_ACTIVE_MODE_CACHE=true`, and 404s are
+ * never stored — see `withCrossRequestCache`. The per-request
  * `cache()` wrapper below still dedupes a `generateMetadata` +
- * page render pair into a single fetch, which is the dominant win
- * either way.
+ * page render pair into a single fetch.
  */
 export const getMdxRaw = cache(async (pathname: string, mode: MosaicMode, contentUrl: string) =>
   loadMdxRawCached(pathname, mode, contentUrl)
@@ -587,9 +581,9 @@ const loadMdxRawSourceCached = withCrossRequestCache(
   loadMdxRawSourceImpl,
   ['mosaic', 'mdxRaw'],
   // Loader signature: `(pathname, mode, contentUrl)`. Mode is the
-  // second arg. Active mode bypasses cross-request caching for the
-  // same cold-start reason as `loadMdxRawCached`.
-  ([, mode]) => mode
+  // second arg.
+  ([, mode]) => mode,
+  result => result.kind !== 'not-found'
 );
 
 /**
@@ -684,11 +678,9 @@ const loadTagSuggestionsImpl = async (
 const loadTagSuggestionsCached = withCrossRequestCache(
   loadTagSuggestionsImpl,
   ['mosaic', 'tagSuggestions'],
-  // Loader signature: `(mode, contentUrl)`. Mode is the first
-  // arg. Active mode bypasses the cross-request cache (same
-  // cold-start reasoning as `loadMdxRawCached`) so a newly
-  // saved tag shows up on the next editor mount.
-  ([mode]) => mode
+  // Loader signature: `(mode, contentUrl)`. Mode is the first arg.
+  ([mode]) => mode,
+  tags => tags.length > 0
 );
 
 /**
@@ -709,9 +701,8 @@ const loadTagSuggestionsCached = withCrossRequestCache(
  *
  * Cache wiring mirrors {@link getMdxRawSource}: per-request
  * `cache()` so a single render shares one fetch, plus
- * cross-request `unstable_cache` (only engaged in snapshot
- * modes, which is trivially safe — there's no fetch in
- * snapshot modes, just a constant `[]`).
+ * cross-request `unstable_cache` for non-empty lists (see
+ * `withCrossRequestCache`).
  */
 export const getTagSuggestions = cache(async (mode: MosaicMode, contentUrl: string) =>
   loadTagSuggestionsCached(mode, contentUrl)

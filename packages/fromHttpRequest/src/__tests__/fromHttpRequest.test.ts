@@ -1,6 +1,9 @@
 import { describe, it, expect, afterEach, beforeEach, beforeAll, afterAll, vi } from 'vitest';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { firstValueFrom } from 'rxjs';
 import { setupServer } from 'msw/node';
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse, passthrough } from 'msw';
 
 import {
   fromHttpRequest,
@@ -207,6 +210,59 @@ describe('GIVEN the `isFromHttpRequestError` and `isFromHttpRequestThrownError` 
           message: 'message'
         })
       ).toEqual(false);
+    });
+  });
+
+  describe('WHEN a timeout is set', () => {
+    it('THEN a request with no response resolves to a timed-out thrown error', async () => {
+      server.resetHandlers(
+        http.get(testUrl, async () => {
+          await delay('infinite');
+          return HttpResponse.json({});
+        })
+      );
+
+      const response = await firstValueFrom(fromHttpRequest<Data>(testUrl, { timeout: 50 }));
+
+      expect(response).toEqual({
+        error: true,
+        kind: 'thrown',
+        message: 'Request timed out after 50ms'
+      });
+    });
+
+    it('THEN a body that stalls after the headers arrive is also timed out', async () => {
+      const stalledServer = createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.write('{"name":');
+      });
+      await new Promise<void>(resolve => stalledServer.listen(0, '127.0.0.1', resolve));
+      const { port } = stalledServer.address() as AddressInfo;
+      server.resetHandlers(http.get(/127\.0\.0\.1/, () => passthrough()));
+
+      try {
+        const response = await firstValueFrom(
+          fromHttpRequest<Data>(`http://127.0.0.1:${port}/`, { timeout: 100 })
+        );
+        expect(response).toEqual({
+          error: true,
+          kind: 'thrown',
+          message: 'Request timed out after 100ms'
+        });
+      } finally {
+        stalledServer.closeAllConnections();
+        await new Promise(resolve => stalledServer.close(resolve));
+      }
+    });
+
+    it('THEN the timer starts on subscribe, so a reused observable is not already expired', async () => {
+      server.resetHandlers(successfulRequestHandler);
+      const request$ = fromHttpRequest<Data>(testUrl, { timeout: 50 });
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      await expect(firstValueFrom(request$)).resolves.toEqual({ name: 'David', sid: 'some id' });
+      await expect(firstValueFrom(request$)).resolves.toEqual({ name: 'David', sid: 'some id' });
     });
   });
 });
