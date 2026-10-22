@@ -17,6 +17,7 @@
     "build": "next build",
     "dev": "next dev",
     "start": "next start",
+    "lint": "eslint .",
     "debug": "yarn cross-env NODE_ENV=development mosaic serve -c ./mosaic.config.mjs -p 8080",
     "deploy": "echo 'DO NOTHING'",
     "docker:build": "docker build . --tag mosaic-site:latest",

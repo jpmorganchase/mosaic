@@ -53,7 +53,6 @@ const secretIsRejected =
   DEV_PLACEHOLDER_SECRETS.has(configuredSecret);
 
 if (secretIsRejected) {
-  // eslint-disable-next-line no-console
   console.error(
     '[mosaic-site] AUTH_SECRET is the public development placeholder; Auth.js stays ' +
       'disabled. Generate a real secret with `openssl rand -base64 32`.'
@@ -68,11 +67,11 @@ if (secretIsRejected) {
  *
  * Note: `process.env.AUTH_SECRET` and `MOSAIC_AUTH_ENABLED` are NOT
  * `NEXT_PUBLIC_` vars, so on the client both resolve to `undefined`
- * and `AUTH_ENABLED` always evaluates to `false`. The client must
- * therefore NOT use this flag to gate `<SessionProvider>` — see
- * `app/providers.tsx`, which mounts the provider unconditionally and
- * relies on the server's stub handlers to make `useSession()`
- * settle to `null` on no-auth deployments.
+ * and `AUTH_ENABLED` always evaluates to `false`. Client code must not
+ * import this flag; the root layout (a Server Component) passes the
+ * server-side value to `<Providers authEnabled>` instead. `<SessionProvider>`
+ * is still mounted either way — with `session={null}` when auth is off,
+ * so `useSession()` settles to `null` without calling `/api/auth/session`.
  */
 export const AUTH_ENABLED =
   !secretIsRejected && (process.env.MOSAIC_AUTH_ENABLED === 'true' || Boolean(configuredSecret));
@@ -85,7 +84,6 @@ if (
   // Implicit-enable path: secret is set but the explicit flag isn't.
   // Honour it (deploys that had `AUTH_SECRET` predate the flag) but
   // warn so the operator can make it explicit going forward.
-  // eslint-disable-next-line no-console
   console.warn(
     '[mosaic-site] Auth is enabled because AUTH_SECRET is set; ' +
       'set MOSAIC_AUTH_ENABLED=true to make this explicit.'
@@ -120,7 +118,6 @@ export function isAuthorizedEditor(user: { email?: string | null } | null | unde
 }
 
 if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC_EDITORS?.trim()) {
-  // eslint-disable-next-line no-console
   console.warn(
     '[mosaic-site] MOSAIC_EDITORS is not set, so nobody can sign in or edit. ' +
       'Set it to a comma-separated list of emails, @domains or `*`.'
@@ -212,7 +209,6 @@ if (AUTH_ENABLED) {
     process.env.NODE_ENV === 'production' &&
     (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET)
   ) {
-    // eslint-disable-next-line no-console
     console.warn(
       '[mosaic-site] GitHub provider is registered but GITHUB_ID and/or ' +
         'GITHUB_SECRET is unset. Sign-in will fail with an opaque OAuth error.'
@@ -240,7 +236,6 @@ if (AUTH_ENABLED) {
         }
       })
     );
-    // eslint-disable-next-line no-console
     console.warn(
       '[mosaic-site] MOSAIC_DEV_FAKE_AUTH is enabled — anyone can sign in. ' +
         'Do NOT enable this in production.'

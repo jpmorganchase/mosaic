@@ -183,6 +183,25 @@ const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
   return mosaicStore;
 };
 
+/**
+ * Replaces the page state of an existing store with a new seed, keeping
+ * the reader's colour mode and the store's actions.
+ *
+ * A store created with `initializeStore` keeps its first seed. When a
+ * mounted page receives new server data without remounting (for example
+ * after `router.refresh()`), call this so store-driven UI (sidebar, table
+ * of contents, breadcrumbs, …) follows the new data. Keys missing from
+ * `preloadedState` go back to their defaults instead of keeping stale
+ * values.
+ */
+function reseedStore(mosaicStore: StoreApi<SiteState>, preloadedState: Partial<SiteState> = {}) {
+  const { colorMode, actions } = mosaicStore.getState();
+  mosaicStore.setState(
+    { ...getDefaultInitialState(), ...preloadedState, colorMode, actions },
+    true
+  );
+}
+
 function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
   // Server side code: For SSR & SSG, always use a new store.
   if (typeof window === 'undefined' || isSSR) {
@@ -244,4 +263,12 @@ function useStore<T>(
   return useZustandStore(storeFromContext, selector, equalityFn);
 }
 
-export { useCreateStore, StoreProvider, useStore, initializeStore, registerStore, disposeStore };
+export {
+  useCreateStore,
+  StoreProvider,
+  useStore,
+  initializeStore,
+  registerStore,
+  disposeStore,
+  reseedStore
+};

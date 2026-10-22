@@ -29,7 +29,7 @@
  *   late for hydration. `initializeStore(seed)` returns a fully-
  *   populated store synchronously, matching SSR exactly.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
@@ -39,33 +39,36 @@ import {
   disposeStore,
   initializeStore,
   registerStore,
+  reseedStore,
   StoreProvider,
   useCreateStore
 } from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  // `<SessionProvider>` is rendered without a `session` prop so the
-  // client fetches it lazily via `/api/auth/session` after mount. This
-  // keeps the root layout independent of Auth.js configuration: a
-  // missing `AUTH_SECRET` or OAuth env var degrades to `session: null`
-  // on the client instead of crashing SSR (which would bypass
-  // `error.tsx` and surface as Next's generic "A server error
-  // occurred" fallback).
+export function Providers({
+  authEnabled,
+  children
+}: {
+  /** Server-side `AUTH_ENABLED` from `src/auth.ts`, passed down by the root layout. */
+  authEnabled: boolean;
+  children: React.ReactNode;
+}) {
+  // `<SessionProvider>` is mounted **unconditionally**, because
+  // `useSession()` callers (`AppHeaderControls`, `RouteMetadata`,
+  // `Metadata`) throw without one.
   //
-  // The provider is mounted **unconditionally**. The `AUTH_ENABLED`
-  // gate in `src/auth.ts` is a server-only build-time read of
-  // `process.env.AUTH_SECRET` / `MOSAIC_AUTH_ENABLED`, neither of
-  // which is a `NEXT_PUBLIC_` var — so on the client both resolve to
-  // `undefined` and `AUTH_ENABLED` collapses to `false` regardless of
-  // server config. That would leave `useSession()` callers
-  // (`AppHeaderControls`, `RouteMetadata`, `Metadata`) without a
-  // provider in the tree and throw `[next-auth]: useSession must be
-  // wrapped in a <SessionProvider />`. On no-auth deployments the
-  // server's stub handlers answer `/api/auth/session` with `null`, which
-  // `<SessionProvider>` reads as "no session" and settles to `null` —
-  // cheap, and the only correct shape.
+  // With auth enabled it gets no `session` prop, so the client fetches
+  // the session lazily via `/api/auth/session` after mount. This keeps
+  // the root layout independent of Auth.js configuration: a missing
+  // `AUTH_SECRET` or OAuth env var degrades to `session: null` on the
+  // client instead of crashing SSR (which would bypass `error.tsx`).
+  //
+  // With auth disabled it gets `session={null}`: the provider treats
+  // that as "already known, nobody is signed in" and never calls
+  // `/api/auth/session`, saving a request on every page load. The flag
+  // comes from the server because `AUTH_ENABLED` reads non-public env
+  // vars that are `undefined` in the browser.
   //
   // Default-seeded store so the layout's `ThemeProvider`
   // (`useColorMode()`) always has a store in context — required even
@@ -74,7 +77,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // that would cause a hydration mismatch.
   const createStore = useCreateStore({});
   return (
-    <SessionProvider>
+    <SessionProvider session={authEnabled ? undefined : null}>
       <StoreProvider value={createStore()}>
         <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
       </StoreProvider>
@@ -88,11 +91,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
  * reference across re-renders. The nested `<StoreProvider>` overrides
  * the layout's default store for everything inside this subtree.
  *
- * Note: this intentionally does *not* re-seed when `storeProps`
- * changes during the lifetime of a mounted page — App Router unmounts
- * and remounts the page subtree on every route change, so the
- * `useState` initializer runs fresh per navigation, which is the
- * behaviour we want.
+ * Navigating to another route remounts the page subtree, so the
+ * `useState` initializer runs fresh per navigation. `router.refresh()`
+ * (dev live reload, the 404 recovery) re-renders the page with new
+ * server data *without* remounting it, so the store is re-seeded
+ * whenever a new `storeProps` object arrives. The layout effect applies
+ * it before paint, so store-driven UI (sidebar, table of contents,
+ * breadcrumbs) never shows the old page next to the new body.
  *
  * `isEditing` is the server's view of `?edit=1` / `?new=1`. Passing it
  * to `LayoutProvider` keeps `useSearchParams()` out of the view path, so
@@ -108,6 +113,12 @@ export function StoreShell({
   children: React.ReactNode;
 }) {
   const [store] = useState(() => initializeStore(storeProps));
+  const seededWith = useRef(storeProps);
+  useLayoutEffect(() => {
+    if (seededWith.current === storeProps) return;
+    seededWith.current = storeProps;
+    reseedStore(store, storeProps);
+  }, [store, storeProps]);
   // Registers the store for colour-mode sync while mounted and releases
   // it (listeners, sibling-store set) when the page unmounts. Re-registers
   // after React StrictMode's simulated unmount in development.

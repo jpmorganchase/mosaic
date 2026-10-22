@@ -43,10 +43,12 @@ You can copy the `site` directory from this repository into your project. The si
 > - `src/auth.ts` — Auth.js v5 wiring (`handlers`, `auth`, `signIn`,
 >   `signOut`).
 >
-> `providers.tsx` mounts `<SessionProvider>` without a `session` prop, so
-> the browser fetches the session after the page loads and sites without
-> auth still render. Keep that pattern when you copy the directory; the
-> site's `README.md` lists the other patterns to preserve.
+> `providers.tsx` mounts `<SessionProvider>` without a server-resolved
+> session: with auth enabled the browser fetches the session after the
+> page loads, and with auth disabled the layout passes `session={null}`
+> so no session request is made. Keep that pattern when you copy the
+> directory; the site's `README.md` lists the other patterns to
+> preserve.
 >
 > Upgrading a site built on the Pages Router? See
 > [Migrate to the App Router](./migrate-to-app-router).

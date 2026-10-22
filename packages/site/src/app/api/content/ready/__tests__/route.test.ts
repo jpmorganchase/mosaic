@@ -9,7 +9,7 @@
  *   - 404 in non-dev → client stops polling.
  *   - `ready: true` in snapshot modes → fast-path, no upstream call.
  *   - `ready: true` after a successful upstream probe → client
- *     calls `router.refresh()`.
+ *     reloads the page if its URL now resolves.
  *   - `ready: false` when the upstream is unreachable or 404s →
  *     client polls again on the next tick.
  *

@@ -159,6 +159,27 @@ function deriveSharedConfigUrlPath(pathname: string): string {
   return matches?.length ? matches[1] : '';
 }
 
+/**
+ * Route params reach the loaders percent-encoded (`/docs/a%20b`), but
+ * snapshot files and S3 keys use the decoded name (`docs/a b`).
+ *
+ * Returns `undefined` for malformed encodings and for paths that, once
+ * decoded, could step outside the snapshot: `.`/`..` segments (for
+ * example from an encoded `..%2F`), backslashes and NUL bytes. Callers
+ * treat that as "not found".
+ */
+function decodeSnapshotPath(urlPath: string): string | undefined {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    return undefined;
+  }
+  if (decoded.includes('\\') || decoded.includes('\0')) return undefined;
+  if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return undefined;
+  return decoded;
+}
+
 function safeJsonParse<T = unknown>(raw: string | null | undefined, source: string): T | undefined {
   if (raw == null) return undefined;
   const trimmed = String(raw).trim();
@@ -177,8 +198,10 @@ const loadSharedConfigImpl = async (
   contentUrl: string
 ): Promise<SharedConfig | undefined> => {
   if (mode === 'snapshot-file') {
-    const { snapshotDir } = getSnapshotFileConfig(urlPath);
-    const filePath = path.join(process.cwd(), snapshotDir, urlPath, 'shared-config.json');
+    const snapshotPath = decodeSnapshotPath(urlPath);
+    if (snapshotPath === undefined) return undefined;
+    const { snapshotDir } = getSnapshotFileConfig(snapshotPath);
+    const filePath = path.join(process.cwd(), snapshotDir, snapshotPath, 'shared-config.json');
     try {
       await fs.promises.stat(filePath);
     } catch {
@@ -190,7 +213,9 @@ const loadSharedConfigImpl = async (
   }
 
   if (mode === 'snapshot-s3') {
-    const s3Key = `${urlPath}/shared-config.json`.replace(/^\//, '');
+    const snapshotPath = decodeSnapshotPath(urlPath);
+    if (snapshotPath === undefined) return undefined;
+    const s3Key = `${snapshotPath}/shared-config.json`.replace(/^\//, '');
     const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(s3Key);
     const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
     if (!(await keyExists(bucket, s3Key))) return undefined;
@@ -387,8 +412,10 @@ const loadMdxRawImpl = async (
   const normalized = normalizeMdxUrl(pathname);
 
   if (mode === 'snapshot-file') {
-    const { snapshotDir } = getSnapshotFileConfig(normalized);
-    const filePath = path.posix.join(process.cwd(), snapshotDir, normalized);
+    const snapshotPath = decodeSnapshotPath(normalized);
+    if (snapshotPath === undefined) return { kind: 'not-found' };
+    const { snapshotDir } = getSnapshotFileConfig(snapshotPath);
+    const filePath = path.posix.join(process.cwd(), snapshotDir, snapshotPath);
     try {
       const raw = await loadLocalFile(filePath);
       return { kind: 'mdx', raw, frontmatter: parseFrontmatter(raw) };
@@ -398,10 +425,12 @@ const loadMdxRawImpl = async (
   }
 
   if (mode === 'snapshot-s3') {
+    const snapshotPath = decodeSnapshotPath(normalized);
+    if (snapshotPath === undefined) return { kind: 'not-found' };
     try {
-      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(normalized);
+      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(snapshotPath);
       const { loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-      const s3Key = normalized.replace(/^\//, '');
+      const s3Key = snapshotPath.replace(/^\//, '');
       const raw = await loadKey(bucket, s3Key);
       return { kind: 'mdx', raw, frontmatter: parseFrontmatter(raw) };
     } catch {

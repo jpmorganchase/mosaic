@@ -22,7 +22,7 @@ Keep your `mosaic.config.mjs`, your content, your CSS and your own components. T
 ## Before you start
 
 - **Node.js 22.13 or later, or Node.js 24.** The reference Docker images use Node.js 24.
-- **Next.js 16 and React 19.**
+- **Next.js 16.3.3 or later, and React 19.** Earlier Next.js 16 releases (and 15.x before 15.5.24) are affected by critical remote code execution advisories ([GHSA-2xp9-vwfh-vxw4](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4), [GHSA-p293-qw3h-jr36](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36)).
 - **Upgrade every `@jpmorganchase/mosaic-*` package to the same version.** `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` have breaking changes, so don't mix old and new versions.
 - **Install `next-auth` v5** (`next-auth@^5.0.0-beta`) in place of v4.
 - `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` now list `next` as a peer dependency. Your site must depend on `next` directly, which it normally does already.
@@ -47,10 +47,10 @@ Keep your `mosaic.config.mjs`, your content, your CSS and your own components. T
 
 The new site also adds files that have no Pages Router equivalent:
 
-- `not-found.tsx` and `error.tsx`
+- `not-found.tsx`, `error.tsx` and `global-error.tsx`
 - `robots.ts` and `sitemap.ts`
 - `api/revalidate/route.ts`, which clears cached content when the CLI reports an update
-- `api/content/live` and `api/content/ready`, which reload pages in `next dev` when content changes
+- `api/content/live` and `api/content/ready`, which reload pages in `next dev` when content changes, including pages that returned 404 while the CLI was still loading
 
 `next.config.js` is now split into a base config, a config used only when the site runs on a server, and a config for static export.
 
@@ -78,7 +78,7 @@ The file is marked `'use client'`, so the components it registers must work in t
 
 To add your own layouts, replace `mosaicLayouts` in `StoreShell` with `{ ...mosaicLayouts, MyLayout }`. Import global CSS and fonts in `layout.tsx`.
 
-Mount `<SessionProvider>` without a `session` prop. The browser fetches the session after the page loads, so sites without auth still render.
+Mount `<SessionProvider>` without a server-resolved session. When auth is enabled the browser fetches the session after the page loads, so a misconfigured auth setup can't break rendering. When auth is disabled, `layout.tsx` passes `AUTH_ENABLED` to `Providers`, which sets `session={null}` so no session request is made.
 
 ### Data from your own middleware
 
@@ -225,7 +225,7 @@ These haven't changed: `MOSAIC_MODE`, `MOSAIC_ACTIVE_MODE_URL`, `MOSAIC_SNAPSHOT
 
 ## 8. Deploy
 
-- **Docker:** the reference Dockerfiles use Node.js 24 and set `MOSAIC_MODE=active` in both the build and run stages. Do the same in your own images if they read from a running CLI.
+- **Docker:** the reference Dockerfiles use Node.js 24 and set `MOSAIC_MODE=active` in both the build and run stages. Do the same in your own images if they read from a running CLI. They also set `MOSAIC_OUTPUT=standalone` in the build stage, which makes `next.config.js` emit the `.next/standalone` server they copy into the runtime image.
 - **Network:** only the site's server needs to reach the CLI, through `MOSAIC_ACTIVE_MODE_URL` and `MOSAIC_WORKFLOWS_URL`. You no longer need to expose the CLI's `/workflows` endpoint to browsers.
 - **Static export (optional):** `yarn build:static:file` and `yarn build:static:s3` build a fully static `out/` folder that any CDN can serve. See [Static export](../configure/modes/static-export).
 - **Snapshots:** rebuild your snapshots with the new `mosaic build`.
