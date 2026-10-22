@@ -430,6 +430,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   const isEditor = session?.user != null && isAuthorizedEditor(session.user);
   const editing = editRequested && isWritableSource && resolved.kind === 'mdx' && isEditor;
   const creating = newPossible && isWritableSource && isEditor;
+  // A missing page only renders for someone who can create it. Everyone
+  // else gets the 404 a plain view would, not an empty 200 page.
+  if (resolved.kind === 'not-found' && !creating) notFound();
   const editorUser =
     (editing || creating) && session?.user
       ? {
