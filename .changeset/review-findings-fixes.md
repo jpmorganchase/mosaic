@@ -33,7 +33,7 @@ Fix issues found in a review of the App Router site
 
 **`@jpmorganchase/mosaic-content-editor-plugin`**
 
-- The `next` peer dependency is now `^15.5.24 || ^16.3.3`. Earlier
+- The `next` peer dependency is now `^15.5.28 || ^16.4.1`. Earlier
   releases are affected by critical remote code execution advisories
   (GHSA-2xp9-vwfh-vxw4, GHSA-p293-qw3h-jr36).
 

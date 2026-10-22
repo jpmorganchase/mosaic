@@ -49,12 +49,12 @@
     "@types/react": "^19.0.0",
     "clsx": "^2.0.0",
     "gray-matter": "^4.0.3",
-    "next": "^16.3.3",
+    "next": "^16.4.2",
     "next-auth": "^5.0.0-beta.32",
     "next-mdx-remote-client": "^1.0.3"
   },
   "devDependencies": {
-    "@next/env": "^16.2.6",
+    "@next/env": "^16.4.2",
     "@playwright/test": "^1.56.1",
     "@types/node": "^24.0.0",
     "concurrently": "^7.1.0",
