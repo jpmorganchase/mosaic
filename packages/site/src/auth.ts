@@ -34,7 +34,7 @@
  *   so an operator who set the secret but forgot the flag still gets
  *   auth (and a clear warning, not a confusing silent disable).
  */
-import NextAuth, { type NextAuthConfig, type NextAuthResult } from 'next-auth';
+import NextAuth, { type NextAuthConfig, type NextAuthResult, type Profile } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 
@@ -117,6 +117,36 @@ export function isAuthorizedEditor(user: { email?: string | null } | null | unde
     });
 }
 
+/**
+ * Loads the GitHub profile for Auth.js. When the account has no public
+ * email, Auth.js's own loader falls back to the primary (or first)
+ * address without checking that GitHub has verified it, and
+ * `MOSAIC_EDITORS` trusts emails and @domains. This loader only falls
+ * back to a verified address. A public profile email is kept as is
+ * because GitHub only allows a verified address there.
+ */
+export async function loadGitHubProfile({
+  tokens,
+  provider
+}: {
+  tokens: { access_token?: string };
+  provider: { userinfo?: { url: URL | string } };
+}): Promise<Profile> {
+  const url = String(provider.userinfo?.url ?? 'https://api.github.com/user');
+  const headers = { Authorization: `Bearer ${tokens.access_token}`, 'User-Agent': 'mosaic-site' };
+  const profile: Profile = await fetch(url, { headers }).then(res => res.json());
+  if (!profile.email) {
+    const res = await fetch(`${url}/emails`, { headers });
+    const emails: unknown = res.ok ? await res.json() : [];
+    const verified = (Array.isArray(emails) ? emails : []).filter(
+      (entry): entry is { email: string; primary?: boolean } =>
+        entry?.verified === true && typeof entry.email === 'string'
+    );
+    profile.email = (verified.find(entry => entry.primary) ?? verified[0])?.email ?? null;
+  }
+  return profile;
+}
+
 if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC_EDITORS?.trim()) {
   console.warn(
     '[mosaic-site] MOSAIC_EDITORS is not set, so nobody can sign in or edit. ' +
@@ -195,7 +225,8 @@ if (AUTH_ENABLED) {
   const providers: NextAuthConfig['providers'] = [
     GitHub({
       clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET
+      clientSecret: process.env.GITHUB_SECRET,
+      userinfo: { request: loadGitHubProfile }
     })
   ];
 

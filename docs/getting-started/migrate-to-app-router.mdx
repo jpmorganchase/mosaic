@@ -152,7 +152,7 @@ Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-p
 - Remove `NEXTAUTH_URL`. The site trusts the request's host instead.
 - Set `MOSAIC_AUTH_ENABLED=true` to turn sign-in on.
 - `GITHUB_ID`, `GITHUB_SECRET` and the GitHub callback URL (`/api/auth/callback/github`) haven't changed.
-- **Set `MOSAIC_EDITORS`.** It lists who may sign in and edit: comma-separated emails, `@domains`, or `*`. **If it isn't set, nobody can sign in in production.** Set `MOSAIC_EDITORS=*` to keep the old behaviour, where anyone who could sign in could edit.
+- **Set `MOSAIC_EDITORS`.** It lists who may sign in and edit: comma-separated emails, `@domains`, or `*`. Emails and `@domains` only match email addresses that GitHub has verified. **If it isn't set, nobody can sign in in production.** Set `MOSAIC_EDITORS=*` to keep the old behaviour, where anyone who could sign in could edit.
 - In production, the site rejects the placeholder `AUTH_SECRET` from `.env.development`.
 - In `next dev`, `MOSAIC_DEV_FAKE_AUTH=true` signs you in as a test user without GitHub.
 
