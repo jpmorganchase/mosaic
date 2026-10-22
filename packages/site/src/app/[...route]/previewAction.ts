@@ -18,12 +18,15 @@
 import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
-import { auth } from '../../auth';
+import { auth, isAuthorizedEditor } from '../../auth';
 
 export async function compilePreview(markdown: string): Promise<SerializeResult> {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user || !isAuthorizedEditor(session.user)) {
     throw new Error('Unauthorized');
+  }
+  if (typeof markdown !== 'string') {
+    throw new Error('Invalid markdown');
   }
   // `serializeMdxForClient` returns `{ compiledSource, frontmatter,
   // scope }` on success or `{ error, frontmatter, scope }` on

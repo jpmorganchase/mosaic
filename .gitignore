@@ -7,6 +7,11 @@ node_modules
 next-env.d.ts
 **/out/
 
+# Local env overrides / real secrets (Next.js convention). Committed env
+# files must only ever contain non-secret or dev-only placeholder values.
+**/.env.local
+**/.env.*.local
+
 # Dependencies
 **/node_modules
 

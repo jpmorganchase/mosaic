@@ -15,6 +15,6 @@ Next.js 16.3.8 and earlier are affected by
 in 16.4.1 and 15.5.28.
 
 `@jpmorganchase/mosaic-layouts`, `@jpmorganchase/mosaic-site-components` and
-`@jpmorganchase/mosaic-site-middleware` now depend on `next@^16.4.2`, and the
+`@jpmorganchase/mosaic-site-middleware` now require `next@^16.4.2`, and the
 `next` peer range of `@jpmorganchase/mosaic-content-editor-plugin` is now
 `^15.5.28 || ^16.4.1`.

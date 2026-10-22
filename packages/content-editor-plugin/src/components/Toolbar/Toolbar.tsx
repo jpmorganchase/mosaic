@@ -1,5 +1,5 @@
 import { Icon } from '@jpmorganchase/mosaic-components';
-import { useEditMode } from '../../useEditMode';
+import { useEditModeActions } from '../../useEditMode';
 import { SaveButton } from '../SaveButton';
 import { CompileStatus } from '../CompileStatus';
 import { SaveStatePill } from '../SaveStatePill';
@@ -39,7 +39,7 @@ interface ToolbarProps {
  *     textarea anyway.
  */
 const Toolbar = ({ onSave }: ToolbarProps) => {
-  const { stopEditing } = useEditMode();
+  const { stopEditing } = useEditModeActions();
 
   return (
     <BaseToolbar aria-label="page editing toolbar">

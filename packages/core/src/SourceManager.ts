@@ -12,6 +12,7 @@ import type {
 
 import Source from './Source.js';
 import createConfig from './helpers/createConfig.js';
+import { findNewPageOwner } from './findNewPageOwner.js';
 
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
@@ -23,6 +24,11 @@ function logUpdateStatus(sourceId, initOrStartTime) {
   } else {
     console.debug(`[Mosaic][Core] '${sourceId.description}' received updated docs`);
   }
+}
+
+export interface TriggerWorkflowOptions {
+  /** `filePath` doesn't exist yet: the workflow will create it. */
+  newPage?: boolean;
 }
 
 export default class SourceManager {
@@ -62,19 +68,37 @@ export default class SourceManager {
     return () => this.#handlers.delete(handler);
   }
 
+  /**
+   * Runs workflow `name` on the source that owns `filePath`: the source
+   * whose filesystem contains it or, for a page that doesn't exist yet
+   * (`newPage`), the source whose `prefixDir` contains it.
+   *
+   * Resolves to `false`, after reporting an ERROR, when no source owns it.
+   */
   async triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
-    data: unknown
-  ) {
+    data: unknown,
+    { newPage = false }: TriggerWorkflowOptions = {}
+  ): Promise<boolean> {
+    if (newPage) {
+      const owner = findNewPageOwner(this.#sources.values(), filePath, name);
+      if (!owner) {
+        sendWorkflowProgressMessage(`No source can create ${filePath}`, 'ERROR');
+        return false;
+      }
+      owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
+      return true;
+    }
     for (const source of this.#sources.values()) {
       if (await source.isOwner(filePath)) {
         source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
-        return;
+        return true;
       }
     }
     sendWorkflowProgressMessage(`Workflow ${name} not found`, 'ERROR');
+    return false;
   }
 
   getSource(name: string) {

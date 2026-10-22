@@ -71,14 +71,17 @@ export interface EditorBodyProps {
    * `isNewPage: true`. Defaults to `false`.
    */
   isNewPage?: boolean;
+  /** Route of the page; fills in `route` for new pages (see `<Editor route>`). */
+  route?: string;
 }
 
-export function EditorBody({ raw, rawSource, user, isNewPage = false }: EditorBodyProps) {
+export function EditorBody({ raw, rawSource, user, isNewPage = false, route }: EditorBodyProps) {
   return (
     <div className="wrapper">
       <Editor
         content={raw}
         rawSource={rawSource}
+        route={route}
         components={mdxComponents}
         PreviewComponent={
           EditorPreview as ComponentType<{

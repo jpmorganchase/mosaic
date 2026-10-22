@@ -88,6 +88,9 @@ NOTE: Only ${pageExtensions.join(
         };
         if (sourceCapabilities) {
           stamped.sourceCapabilities = sourceCapabilities;
+        } else {
+          // Capabilities come from the source definition only, never from content.
+          delete stamped.sourceCapabilities;
         }
         return pagesResult.concat(stamped);
       }, [])

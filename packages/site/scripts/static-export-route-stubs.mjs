@@ -49,6 +49,11 @@ const ACTIONS = [
     path: 'src/app/[...route]/persistAction.ts',
     exports: ['persistContent'],
     why: 'The persist Server Action requires a server runtime; the content editor is not available in a static export.'
+  },
+  {
+    path: 'src/app/notFoundChromeAction.ts',
+    exports: ['loadNotFoundChrome'],
+    why: 'Static exports have no server to load 404 header data on demand; not-found.tsx bakes it in at build time instead.'
   }
 ];
 function routeStub(route) {
@@ -60,7 +65,9 @@ function routeStub(route) {
 // Restore via 'node scripts/static-export-route-stubs.mjs revert'.
 export const dynamic = 'force-static';
 ${catchAllExport}
-function stub() {
+// Accepts any arguments so code (including tests) type-checked against
+// the stub during the export build still compiles.
+function stub(..._args: unknown[]) {
   return Response.json(
     {
       ok: false,
@@ -81,7 +88,7 @@ function actionStub(action) {
   const exports = action.exports
     .map(
       name =>
-        `export async function ${name}(..._args: any[]): Promise<any> {\n  throw new Error(${JSON.stringify(
+        `export function ${name}(..._args: any[]): any {\n  throw new Error(${JSON.stringify(
           action.why
         )});\n}`
     )
@@ -93,6 +100,8 @@ function actionStub(action) {
 // No 'use server' directive — Server Action modules are unsupported
 // under output: export. The editor branch is unreachable in static
 // builds anyway because auth() is stubbed and editing requires it.
+// Typed \`any\` so callers type-check whatever the real action returns
+// (a promise or an async generator).
 ${exports}
 `;
 }

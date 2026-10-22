@@ -9,6 +9,7 @@ import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/m
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
+import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
 
 function getErrorMessage(error: unknown) {
@@ -16,16 +17,8 @@ function getErrorMessage(error: unknown) {
   return String(error);
 }
 
-/**
- * Escape a string for safe use inside a `new RegExp(...)`. See
- * the matching helper in `BitbucketPullRequestWorkflow.ts`.
- */
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 interface GitHubPullRequestWorkflowData {
-  user: { id: string; name: string; email: string };
+  user: { id?: string; sid?: string; name: string; email: string };
   markdown: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)
@@ -113,7 +106,16 @@ export async function createPullRequest(
 
   const repoInstance: Repo = new Repo(credentials, remote, sourceBranch, repoUrl);
   await repoInstance.init();
-  const userId = user.id.toLowerCase();
+  const rawUserId = user.id ?? user.sid;
+  if (!rawUserId) {
+    sendWorkflowProgressMessage(
+      'Cannot create a pull request: the authenticated user has no id.',
+      'ERROR'
+    );
+    return false;
+  }
+  // Used in the branch name and the worktree directory name.
+  const userId = toSafeIdentifier(String(rawUserId));
 
   sendWorkflowProgressMessage('GitHub clone complete', 'IN_PROGRESS');
 
@@ -125,13 +127,17 @@ export async function createPullRequest(
    * strip out the namespace from the file path.
    * We are interested in the file on disk not in the VFS
    */
-  const pathOnDisk = path.posix.join(
-    repoInstance.dir,
-    subfolder,
-    // `prefixDir` is a config string; escape regex metacharacters
-    // so values like `docs.v2` don't silently match `docsAv2`.
-    filePath.replace(new RegExp(`${escapeRegExp(prefixDir)}/`), '')
-  );
+  const pathInSource = stripPrefixDir(filePath, prefixDir);
+  const pathOnDisk =
+    pathInSource === undefined
+      ? undefined
+      : resolveInside(path.posix.join(repoInstance.dir, subfolder), pathInSource);
+  if (!pathOnDisk) {
+    const error = `Refusing to write ${filePath}: it is outside the source folder (/${prefixDir}).`;
+    sendWorkflowProgressMessage(error, 'ERROR');
+    await repoInstance.removeWorktree(userId);
+    return { error, source: repoInstance.name };
+  }
 
   /**
    * Create vs. edit branch.
