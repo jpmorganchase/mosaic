@@ -80,12 +80,16 @@ function validateInput(input: PersistInput): string | null {
   if (input.targetRoute !== undefined && !isSafeRoute(input.targetRoute)) {
     return 'Invalid target route.';
   }
-  if (typeof input.markdown !== 'string' || input.markdown.length > MAX_MARKDOWN_BYTES) {
+  if (
+    typeof input.markdown !== 'string' ||
+    Buffer.byteLength(input.markdown, 'utf8') > MAX_MARKDOWN_BYTES
+  ) {
     return 'Invalid page content.';
   }
   if (
     input.frontmatter !== undefined &&
-    (typeof input.frontmatter !== 'string' || input.frontmatter.length > MAX_FRONTMATTER_BYTES)
+    (typeof input.frontmatter !== 'string' ||
+      Buffer.byteLength(input.frontmatter, 'utf8') > MAX_FRONTMATTER_BYTES)
   ) {
     return 'Invalid frontmatter.';
   }

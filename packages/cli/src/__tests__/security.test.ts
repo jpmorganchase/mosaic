@@ -47,9 +47,13 @@ describe('GIVEN readSecret', () => {
     expect(readSecret('MOSAIC_WORKFLOWS_SECRET')).toBe('real-secret');
   });
 
-  test('THEN the dev placeholder is ignored in production only', () => {
+  test('THEN the dev placeholder is only accepted in development', () => {
     vi.stubEnv('MOSAIC_WORKFLOWS_SECRET', 'local-dev-workflows-secret');
     vi.stubEnv('NODE_ENV', 'production');
+    expect(readSecret('MOSAIC_WORKFLOWS_SECRET')).toBeUndefined();
+    vi.stubEnv('NODE_ENV', undefined);
+    expect(readSecret('MOSAIC_WORKFLOWS_SECRET')).toBeUndefined();
+    vi.stubEnv('NODE_ENV', 'test');
     expect(readSecret('MOSAIC_WORKFLOWS_SECRET')).toBeUndefined();
     vi.stubEnv('NODE_ENV', 'development');
     expect(readSecret('MOSAIC_WORKFLOWS_SECRET')).toBe('local-dev-workflows-secret');

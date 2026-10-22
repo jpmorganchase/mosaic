@@ -129,6 +129,21 @@ describe('persistContent', () => {
     expect(received).toHaveLength(0);
   });
 
+  // '€' is one UTF-16 code unit but three UTF-8 bytes, so these are under
+  // the caps by `.length` and over them in bytes.
+  it.each([
+    [{ route: '/mosaic/index', markdown: '€'.repeat(1024 * 1024) }, 'Invalid page content.'],
+    [
+      { route: '/mosaic/index', markdown: '# Hi', frontmatter: '€'.repeat(128 * 1024) },
+      'Invalid frontmatter.'
+    ]
+  ])('measures the size caps in UTF-8 bytes (%#)', async (input, message) => {
+    const { persistContent } = await loadAction();
+    const events = await collect(persistContent(input as never));
+    expect(events).toEqual([{ kind: 'error', message }]);
+    expect(received).toHaveLength(0);
+  });
+
   it('rejects users who are not editors', async () => {
     isAuthorizedEditorMock.mockReturnValue(false);
     const { persistContent } = await loadAction();

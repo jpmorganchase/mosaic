@@ -39,12 +39,14 @@ export function resolveInside(
 
 /**
  * Makes a user identifier (sid or email) safe to embed in a git branch
- * name and a worktree directory name.
+ * name and a worktree directory name. Runs of dots are collapsed because
+ * git refuses branch names containing `..`.
  */
 export function toSafeIdentifier(value: string): string {
   const safe = value
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/\.{2,}/g, '.')
     .replace(/^[.-]+/, '')
     .slice(0, 64);
   return safe || 'user';

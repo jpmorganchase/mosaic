@@ -61,6 +61,11 @@ describe('GIVEN toSafeIdentifier', () => {
     expect(toSafeIdentifier('../../etc')).toBe('etc');
     expect(toSafeIdentifier('')).toBe('user');
   });
+
+  test('THEN runs of dots are collapsed so git accepts the branch name', () => {
+    expect(toSafeIdentifier('John..Doe@Corp.com')).toBe('john.doe-corp.com');
+    expect(toSafeIdentifier('a...b')).toBe('a.b');
+  });
 });
 
 describe('GIVEN renamePageIfRequested', () => {

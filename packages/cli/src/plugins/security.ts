@@ -2,16 +2,20 @@ import { timingSafeEqual } from 'node:crypto';
 import type { IncomingHttpHeaders } from 'node:http';
 
 /**
- * Public placeholder values committed in dev env files. They must never
- * unlock anything in production.
+ * Public placeholder values committed in dev env files. They only unlock
+ * anything when `NODE_ENV=development`: unlike Next.js, the CLI doesn't set
+ * `NODE_ENV`, so a deployment that copied them would otherwise accept them.
  */
 const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-workflows-secret']);
 
-/** Returns the configured secret, or `undefined` if unset or a placeholder in production. */
+/**
+ * Returns the configured secret, or `undefined` if it is unset, or a
+ * placeholder outside development.
+ */
 export function readSecret(name: string): string | undefined {
   const value = process.env[name];
   if (!value) return undefined;
-  if (process.env.NODE_ENV === 'production' && DEV_PLACEHOLDER_SECRETS.has(value)) {
+  if (process.env.NODE_ENV !== 'development' && DEV_PLACEHOLDER_SECRETS.has(value)) {
     return undefined;
   }
   return value;

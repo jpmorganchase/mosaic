@@ -18,8 +18,9 @@ Secure the content server and editor, fix the save flow, and slim the App Router
 
 - The `/workflows` WebSocket only runs workflows for messages carrying
   `token` = `MOSAIC_WORKFLOWS_SECRET`; without that env var no workflow
-  runs. Messages are validated (workflow name, user, route) and capped
-  at 5 MB.
+  runs, and the placeholder from `.env.development` only counts when
+  `NODE_ENV=development`. Messages are validated (workflow name, user,
+  route) and capped at 5 MB.
 - Admin endpoints other than `/_mosaic_/tags/list` require
   `MOSAIC_ADMIN_SECRET`: sent as `x-mosaic-admin-secret`, a bearer token,
   or the password of the browser login prompt (HTTP Basic). Without the
