@@ -1956,7 +1956,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-schemas@workspace:packages/schemas"
   dependencies:
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
     zod-validation-error: "npm:^3.4.0"
   languageName: unknown
   linkType: soft
@@ -2117,7 +2117,7 @@ __metadata:
     deepmerge: "npm:^4.2.2"
     msw: "npm:^2.14.6"
     rxjs: "npm:^7.5.5"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -2130,7 +2130,7 @@ __metadata:
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     lodash-es: "npm:^4.17.23"
     rxjs: "npm:^7.5.5"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -2144,7 +2144,7 @@ __metadata:
     msw: "npm:^2.14.6"
     rxjs: "npm:^7.5.5"
     undici: "npm:^8.10.2"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -2156,7 +2156,7 @@ __metadata:
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     fast-glob: "npm:^3.2.12"
     rxjs: "npm:^7.5.5"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -2171,7 +2171,7 @@ __metadata:
     msw: "npm:^2.14.6"
     rxjs: "npm:^7.5.5"
     undici: "npm:^8.10.2"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -2187,7 +2187,7 @@ __metadata:
     msw: "npm:^2.14.6"
     rxjs: "npm:^7.5.5"
     undici: "npm:^8.10.2"
-    zod: "npm:^3.22.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -15438,17 +15438,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.3":
-  version: 3.22.3
-  resolution: "zod@npm:3.22.3"
-  checksum: 10/3aad6e6b61ddceaeb887dccc5f747903e619b09dfd208f6dc30eef15edf3942b8e6cd97a08e080c9c8723575446941edb823a8881c512e00e8dd3085f20659cc
-  languageName: node
-  linkType: hard
-
 "zod@npm:^3.25.0 || ^4.0.0":
   version: 4.4.3
   resolution: "zod@npm:4.4.3"
   checksum: 10/804b9a42aa8f35f2b3c5a8dff906291cb749115f83ee2afe3576d70b5b5c53c965365c7f4967690647a9c54af9838ff232a85ff9577a0a36c44b68bc6cdefe36
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.6.6":
+  version: 4.6.6
+  resolution: "zod@npm:4.6.6"
+  checksum: 10/ce628fb33400b531f48b63ad1bd9b5ab95ec3ac60d4e8025892d90af9ca5d03b168aaaf74071928345ad1b1bcd735a7d5cf33230ece7de885240bb0f2b7bb492
   languageName: node
   linkType: hard
 
