@@ -113,6 +113,23 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
   // re-fire the default-selection effect.
   const parentFolderTouched = useRef(false);
 
+  // The dialog sits in the site's persistent header, so navigation no
+  // longer unmounts it. Start a new draft on every page (including the
+  // page the create flow opens), so the default-selection effect below
+  // picks the current folder instead of keeping the previous page's
+  // values. Adjusted during render so that effect already sees the
+  // cleared fields.
+  const [draftPathname, setDraftPathname] = useState(pathname);
+  if (draftPathname !== pathname) {
+    setDraftPathname(pathname);
+    setParentFolder('');
+    setFilename('');
+    setTitle('');
+  }
+  useEffect(() => {
+    parentFolderTouched.current = false;
+  }, [pathname]);
+
   // Fetch the namespace's folder tree on first dialog open;
   // re-opens are free (cached on the hook). A failure yields an
   // empty list and the ComboBox silently degrades to free-text.
@@ -258,10 +275,9 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
   // flag — otherwise the default-selection effect would be
   // permanently suppressed after the first interaction across
   // every future open of this component instance). We do NOT
-  // clear the field values themselves: an author who closed the
+  // clear the field values on close: an author who closed the
   // dialog by accident expects to find what they had typed when
-  // they reopen it, and the create flow's navigation unmounts the
-  // dialog anyway so accidental state retention is bounded.
+  // they reopen it on the same page.
   useEffect(() => {
     if (!open) {
       parentFolderTouched.current = false;

@@ -1,6 +1,7 @@
 ---
 '@jpmorganchase/mosaic-layouts': patch
 '@jpmorganchase/mosaic-site-components': patch
+'@jpmorganchase/mosaic-content-editor-plugin': patch
 ---
 
 Let a persistent App Router layout render the app header
@@ -13,6 +14,9 @@ Let a persistent App Router layout render the app header
 - `@jpmorganchase/mosaic-site-components`: `Drawer` (the header's mobile
   menu) closes when the pathname changes, so it also closes when the
   header stays mounted across navigations.
+- `@jpmorganchase/mosaic-content-editor-plugin`: the New Page dialog
+  starts a new draft on each page, so it pre-selects the current folder
+  instead of keeping the previous page's values when it stays mounted.
 
 **Reference site (`packages/site`)**
 
