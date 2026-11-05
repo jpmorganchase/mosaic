@@ -1,5 +1,6 @@
 ---
 '@jpmorganchase/mosaic-layouts': patch
+'@jpmorganchase/mosaic-site-components': patch
 ---
 
 Let a persistent App Router layout render the app header
@@ -9,6 +10,9 @@ Let a persistent App Router layout render the app header
   renders it inside `<LayoutHeader>` and wraps the page in
   `<FrameProvider value={{ header: true }}>`; `LayoutBase` then leaves its
   own header out. Without a provider, layouts render the header as before.
+- `@jpmorganchase/mosaic-site-components`: `Drawer` (the header's mobile
+  menu) closes when the pathname changes, so it also closes when the
+  header stays mounted across navigations.
 
 **Reference site (`packages/site`)**
 
