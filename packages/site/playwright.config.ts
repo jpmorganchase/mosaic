@@ -14,8 +14,9 @@ export default defineConfig({
   timeout: 120 * 1000,
   // Test directory
   testDir: path.posix.join(__dirname, 'e2e'),
-  // If a test fails, retry it additional 2 times
-  retries: process.env.CI ? 0 : 2,
+  // Retry a failing test: once in CI, where the retry records a trace, and
+  // twice locally.
+  retries: process.env.CI ? 1 : 2,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e', 'test-results'),
   expect: {
@@ -29,9 +30,10 @@ export default defineConfig({
     headless: true,
     viewport: { width: 2048, height: 720 },
 
-    // Retry a test if its failing with enabled tracing. This allows you to analyse the DOM, console logs, network traffic etc.
+    // Record a trace when a failing test is retried. This allows you to analyse the DOM, console logs, network traffic etc.
     // More information: https://playwright.dev/docs/trace-viewer
-    trace: 'retry-with-trace'
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure'
 
     // All available context options: https://playwright.dev/docs/api/class-browser#browser-new-context
     // contextOptions: {
