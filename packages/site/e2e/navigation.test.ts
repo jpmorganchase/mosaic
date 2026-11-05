@@ -6,7 +6,10 @@ import { test, expect, type Page } from '@playwright/test';
  * keeps the header mounted, the sidebar follows the page into another
  * section, and the router's prefetch and navigation requests
  * succeed. In a static export those requests fetch `.txt` segment files,
- * so `yarn e2e:static` runs this suite against `out/` too.
+ * so run this suite against one too. In `packages/site`: run
+ * `yarn build:static:file`, serve `out/` with a static file server, then
+ * run `PLAYWRIGHT_TEST_BASE_URL=<its URL> yarn e2e navigation`. CI only
+ * runs it against the preview deployment.
  */
 
 const sidebar = (page: Page) => page.getByTestId('vertical-navigation');
@@ -100,5 +103,23 @@ test.describe('Client-side navigation', () => {
     await expectSidebarIn(page, '/mosaic/configure/');
     await expectHeaderKept(page);
     expect(failures).toEqual([]);
+  });
+
+  test.describe('on a narrow screen', () => {
+    test.use({ viewport: { width: 600, height: 900 } });
+
+    test('closes the header drawer after following a link in it', async ({ page }) => {
+      await gotoHydrated(page, '/mosaic/author/index');
+      await markHeader(page);
+
+      await page.getByRole('button', { name: 'show the tab navigation' }).click();
+      const drawer = page.getByRole('dialog');
+      await expect(drawer).toBeVisible();
+      await drawer.getByRole('link', { name: 'Configure', exact: true }).click();
+
+      await expect(page).toHaveURL(/\/mosaic\/configure\/index$/);
+      await expect(drawer).toHaveCount(0);
+      await expectHeaderKept(page);
+    });
   });
 });
