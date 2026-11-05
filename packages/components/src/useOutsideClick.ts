@@ -8,14 +8,15 @@ export const useOutsideClick: (
 ) => RefObject<HTMLDivElement | null> = (triggerRef, callback) => {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    const handleClick = event => {
-      const hasClickedOutsideTrigger =
-        triggerRef?.current === event.target ||
-        (triggerRef?.current?.contains && !triggerRef.current.contains(event.target));
-      const hasClickedOutsideRef =
-        ref?.current === event.target ||
-        (ref?.current?.contains && !ref.current.contains(event.target));
-      if (hasClickedOutsideTrigger && hasClickedOutsideRef) {
+    const handleClick = (event: MouseEvent) => {
+      // `composedPath()` is fixed when the click is dispatched. A click on
+      // an element that the click itself removed (such as a trigger icon
+      // that is swapped out once the drawer opens) is then still inside
+      // its ancestors, whereas `contains()` would see a detached node.
+      const path = event.composedPath();
+      const isOutside = (element: HTMLElement | null | undefined) =>
+        !!element && (element === event.target || !path.includes(element));
+      if (isOutside(triggerRef?.current) && isOutside(ref.current)) {
         callback();
       }
     };
