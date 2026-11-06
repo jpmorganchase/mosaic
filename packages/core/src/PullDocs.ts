@@ -111,7 +111,8 @@ export default class PullDocs {
   /**
    * Runs workflow `name` for `filePath`. Pass `{ newPage: true }` when
    * `filePath` doesn't exist yet, so the owning source is picked by its
-   * `prefixDir`. Resolves to `false` when no source could run it.
+   * `prefixDir`. Resolves once the workflow has finished: `false` when no
+   * source could run it or it failed (an ERROR has been reported).
    */
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
