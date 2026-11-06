@@ -10,24 +10,19 @@ data:
 
 # {meta.title}
 
-When you run a Mosaic site in a snapshot mode (`snapshot-file` or
-`snapshot-s3`), all of its content is fixed at build time. That means you
-can pre-render every page to plain HTML and serve the result from any
-static host — no Node.js runtime required.
+When you run a Mosaic site in `snapshot-file` mode, all of its content is
+fixed at build time. That means you can pre-render every page to plain HTML
+and serve the result from any static host — no Node.js runtime required.
 
-The Mosaic site ships two build scripts that produce a fully-static `out/`
-directory:
+The Mosaic site ships a build script that produces a fully-static `out/`
+directory from a local snapshot directory:
 
 ```bash
-# build against a local snapshot directory
 yarn build:static:file
-
-# build against an S3-hosted snapshot
-yarn build:static:s3
 ```
 
-Both commands set `MOSAIC_OUTPUT=export` and the appropriate `MOSAIC_MODE`,
-then invoke `next build`. The output is a self-contained `out/` directory
+The command sets `MOSAIC_OUTPUT=export` and `MOSAIC_MODE=snapshot-file`,
+then invokes `next build`. The output is a self-contained `out/` directory
 you can upload to S3, Vercel static, Cloudflare Pages, GitHub Pages, or any
 other static host.
 
@@ -48,7 +43,7 @@ other static host.
 
 | Feature                        | Reason                                                               | Workaround                                                                                                       |
 | ------------------------------ | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `active` mode                  | Active mode reads content from a live Mosaic server on every request | Use `snapshot-file` or `snapshot-s3` for the export build                                                        |
+| `active` mode                  | Active mode reads content from a live Mosaic server on every request | Use `snapshot-file` for the export build                                                                         |
 | `next.config.js` `redirects()` | Not supported by `output: 'export'`                                  | Configure redirects at the hosting layer (S3 redirects, CloudFront Functions, Vercel `vercel.json`, Nginx, etc.) |
 | `/api/auth/*` (Auth.js)        | Auth.js needs a server                                               | Auth-gated sites must run in the regular (non-export) build                                                      |
 | `/api/content/preview`         | Same — needs a server                                                | Editor preview requires the regular build                                                                        |

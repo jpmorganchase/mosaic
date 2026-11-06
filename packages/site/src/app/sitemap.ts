@@ -46,7 +46,7 @@ import { resolveSiteOrigin } from '../lib/siteOrigin';
 
 // Snapshot builds (including the static export) generate `/sitemap.xml`
 // from the snapshot at build time and refresh it every five minutes, so
-// a newly uploaded snapshot shows up without a redeploy. Active mode
+// a newly written snapshot shows up without a redeploy. Active mode
 // reads the live Mosaic FS server on every request instead, so new pages
 // show up immediately: it opts into request-time rendering with
 // `connection()`, because route segment config must be a literal and

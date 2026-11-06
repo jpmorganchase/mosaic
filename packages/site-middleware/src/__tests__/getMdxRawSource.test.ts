@@ -134,13 +134,6 @@ describe('getMdxRawSource', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test('short-circuits to unavailable-in-mode for snapshot-s3 without fetching', async () => {
-    const result = await getMdxRawSource('/mosaic/index.mdx', 'snapshot-s3', CONTENT_URL);
-
-    expect(result).toEqual({ kind: 'unavailable-in-mode', mode: 'snapshot-s3' });
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
   test('throws on a non-404 non-2xx so the caller sees real upstream errors', async () => {
     fetchMock.mockResolvedValueOnce(fetchResponse(500, ''));
 

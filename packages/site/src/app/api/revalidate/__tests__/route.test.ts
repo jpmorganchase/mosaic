@@ -35,8 +35,7 @@ vi.mock('../../../../lib/liveReloadBus', () => ({
 
 // The route imports `MOSAIC_CONTENT_CACHE_TAG` from the narrow
 // `/cache-tags` subpath. Mock that exact module ID so the test
-// doesn't pull `cachedLoaders.ts` (which uses fs + S3) into the
-// graph.
+// doesn't pull `cachedLoaders.ts` (which uses fs) into the graph.
 vi.mock('@jpmorganchase/mosaic-site-middleware/cache-tags', () => ({
   MOSAIC_CONTENT_CACHE_TAG: 'mosaic-content'
 }));
