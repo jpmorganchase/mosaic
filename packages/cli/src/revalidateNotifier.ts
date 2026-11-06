@@ -10,7 +10,8 @@
  * changes — which means content updates propagate to the site without
  * a restart and without per-request round-trips.
  *
- * Configuration (env vars on the **CLI process**, not the site):
+ * Configuration (env vars on the **CLI process**, not the site, checked
+ * by `validateServeEnv()` in `env.ts`):
  *
  *   - `MOSAIC_REVALIDATE_URL`     — full URL of the site's revalidate
  *                                   endpoint, e.g.
@@ -18,10 +19,9 @@
  *   - `MOSAIC_REVALIDATE_SECRET`  — shared secret matching the value
  *                                   the site reads from its own env.
  *
- * Both must be set to enable notifications. If either is missing the
- * notifier is a no-op (logs once on startup so the operator knows)
- * — keeps backwards-compat with existing deployments that haven't
- * opted in.
+ * Set both to enable notifications; `mosaic serve` refuses to start when
+ * only one is set. With neither, the notifier is a no-op (logs once on
+ * startup so the operator knows).
  *
  * Debounce: source updates can fire in bursts (e.g. multiple sources
  * settle within a few hundred ms of each other on startup). The first
@@ -45,16 +45,17 @@ interface Notifier {
  * batch. Returns a handle so callers can detach on shutdown; the
  * notifier is otherwise self-contained.
  */
-export function startRevalidateNotifier(mosaic: MosaicCore): Notifier {
-  const url = process.env.MOSAIC_REVALIDATE_URL;
-  const secret = process.env.MOSAIC_REVALIDATE_SECRET;
-
-  if (!url || !secret) {
+export function startRevalidateNotifier(
+  mosaic: MosaicCore,
+  target: { url: string; secret: string } | undefined
+): Notifier {
+  if (!target) {
     console.log(
       '[Mosaic] Revalidate notifier disabled (set MOSAIC_REVALIDATE_URL and MOSAIC_REVALIDATE_SECRET to enable).'
     );
     return { stop() {} };
   }
+  const { url, secret } = target;
 
   let timer: NodeJS.Timeout | undefined;
   let stopped = false;

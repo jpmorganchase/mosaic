@@ -3,6 +3,7 @@ import { program } from 'commander';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { InvalidEnvError } from './env.js';
 import serve from './serve.js';
 import uploadS3Snapshot from './upload-s3-snapshot.js';
 
@@ -45,7 +46,8 @@ if (options.config !== undefined) {
  */
 function dispatch(promise: Promise<unknown>) {
   promise.catch(err => {
-    console.error('[Mosaic][CLI]', err);
+    // An invalid env already lists every problem; a stack trace adds nothing.
+    console.error('[Mosaic][CLI]', err instanceof InvalidEnvError ? err.message : err);
     process.exit(1);
   });
 }

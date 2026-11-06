@@ -29,6 +29,7 @@ import { timingSafeEqual } from 'node:crypto';
 // This route only needs the cache-tag string constant.
 import { MOSAIC_CONTENT_CACHE_TAG } from '@jpmorganchase/mosaic-site-middleware/cache-tags';
 
+import { getSiteConfig } from '../../../lib/config';
 import { notifyContentChanged } from '../../../lib/liveReloadBus';
 
 export const dynamic = 'force-dynamic';
@@ -63,16 +64,11 @@ function secretsMatch(provided: string, configured: string): boolean {
   return timingSafeEqual(providedBuf, configuredBuf);
 }
 
-// Public placeholder committed in `.env.development`; never valid in production.
-const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-not-a-secret']);
-
 export async function POST(req: NextRequest) {
-  const configured = process.env.MOSAIC_REVALIDATE_SECRET;
-  const isPlaceholder =
-    process.env.NODE_ENV === 'production' &&
-    configured !== undefined &&
-    DEV_PLACEHOLDER_SECRETS.has(configured);
-  if (!configured || isPlaceholder) {
+  // `lib/config.ts` treats the public placeholder committed in
+  // `.env.development` as unset in production (`secretIsPlaceholder`).
+  const { secret: configured, secretIsPlaceholder: isPlaceholder } = getSiteConfig().revalidate;
+  if (!configured) {
     return Response.json(
       {
         ok: false,
