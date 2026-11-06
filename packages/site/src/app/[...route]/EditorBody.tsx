@@ -9,21 +9,29 @@
  * fetched on the EDIT/CREATE branches. VIEW-mode visitors never
  * download it.
  *
- * Both Server Actions are passed in as props (rather than imported
- * inside the editor plugin) so the plugin stays decoupled from this
- * specific Next app. `EditorPreview` adapts the editor's
- * `PreviewComponent` contract to `<MDXClient />`, reusing the same
- * MDX component registry as the production page render.
+ * The preview Server Action and the save function are passed in as props
+ * (rather than imported inside the editor plugin) so the plugin stays
+ * decoupled from this specific Next app. Saving starts the workflow with
+ * the `startSave` Server Action, then follows its progress over
+ * Server-Sent Events with the plugin's `subscribeToSave`.
+ * `EditorPreview` adapts the editor's `PreviewComponent` contract to
+ * `<MDXClient />`, reusing the same MDX component registry as the
+ * production page render.
  */
 import { ComponentType } from 'react';
 import { MDXClient } from 'next-mdx-remote-client';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
-import { Editor, type EditorUser } from '@jpmorganchase/mosaic-content-editor-plugin';
+import {
+  Editor,
+  subscribeToSave,
+  type EditorUser,
+  type PersistEvent
+} from '@jpmorganchase/mosaic-content-editor-plugin';
 import type { MdxRawSourceResult } from '@jpmorganchase/mosaic-site-middleware';
 
 import { mdxComponents } from './MdxComponents';
 import { compilePreview } from './previewAction';
-import { persistContent } from './persistAction';
+import { startSave } from './persistAction';
 
 interface PreviewProps {
   source: SerializeResult | undefined;
@@ -44,6 +52,16 @@ function EditorPreview({ source, components }: PreviewProps) {
       components={components as Record<string, ComponentType<unknown>>}
     />
   );
+}
+
+// Typed from the action so the static-export stub of it still type-checks.
+async function persist(
+  input: Parameters<typeof startSave>[0]
+): Promise<AsyncIterable<PersistEvent>> {
+  const started = await startSave(input);
+  // The save dialog reports a thrown error like an `error` event.
+  if ('error' in started) throw new Error(started.error);
+  return subscribeToSave(started.jobId);
 }
 
 export interface EditorBodyProps {
@@ -90,7 +108,7 @@ export function EditorBody({ raw, rawSource, user, isNewPage = false, route }: E
           }>
         }
         compilePreview={compilePreview}
-        persist={persistContent}
+        persist={persist}
         user={user}
         isNewPage={isNewPage}
       />

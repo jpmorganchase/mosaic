@@ -1,4 +1,5 @@
 import { describe, expect, test, vi, beforeAll, afterAll, beforeEach } from 'vitest';
+import type { AddressInfo } from 'node:net';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import serve, { server } from '../serve';
 
@@ -574,203 +575,395 @@ describe('GIVEN the serve command', () => {
     });
   });
 
-  describe('AND WHEN running a workflow over the websocket', () => {
+  describe('AND WHEN running a workflow over HTTP and following it over SSE', () => {
+    const user = { sid: 'dreid', name: 'David Reid', email: 'email.address@something.com' };
+    const auth = { authorization: `Bearer ${WORKFLOWS_SECRET}` };
+    const prMessage = { links: { self: [{ href: 'https://example.test/pr/1' }] } };
+
     beforeEach(() => {
       mockExistsFn.mockReset();
       mockRealpathFn.mockReset();
       mockStatFn.mockReset();
       mockTriggerWorkflowFn.mockReset();
+      delete process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
     });
 
-    const user = { sid: 'dreid', name: 'David Reid', email: 'email.address@something.com' };
-
-    async function sendWorkflowMessage(payload: unknown) {
-      const ws = await server.injectWS('/workflows');
-      const reply = new Promise<Record<string, unknown>>(resolve => {
-        ws.once('message', data => resolve(JSON.parse(data.toString())));
-      });
-      ws.send(typeof payload === 'string' ? payload : JSON.stringify(payload));
-      const message = await reply;
-      ws.terminate();
-      return message;
+    function givenAnExistingPage(pagePath = '/file/path.mdx') {
+      mockExistsFn.mockResolvedValueOnce(true);
+      mockStatFn.mockResolvedValueOnce({ isDirectory: () => false });
+      mockRealpathFn.mockResolvedValueOnce(pagePath);
     }
 
-    test('THEN workflows are refused when MOSAIC_WORKFLOWS_SECRET is unset', async () => {
-      delete process.env.MOSAIC_WORKFLOWS_SECRET;
-      try {
-        const reply = await sendWorkflowMessage({
+    function startJob(payload: unknown, headers: Record<string, string> = auth) {
+      return server.inject({
+        method: 'POST',
+        url: '/workflows/jobs',
+        headers: { 'content-type': 'application/json', ...headers },
+        payload: typeof payload === 'string' ? payload : JSON.stringify(payload)
+      });
+    }
+
+    async function startedJobId(payload: unknown) {
+      const response = await startJob(payload);
+      expect(response.statusCode).toEqual(202);
+      return response.json().jobId as string;
+    }
+
+    function getEvents(
+      jobId: string,
+      { query = `user=${user.sid}`, headers = auth }: { query?: string; headers?: object } = {}
+    ) {
+      return server.inject({
+        method: 'GET',
+        url: `/workflows/jobs/${jobId}/events?${query}`,
+        headers: { ...headers }
+      });
+    }
+
+    const sse = (id: number, event: string, data: unknown) =>
+      `id: ${id}\nevent: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+    const starting = sse(1, 'progress', {
+      status: 'IN_PROGRESS',
+      message: 'Starting workflow save'
+    });
+
+    describe('AND WHEN authenticating', () => {
+      test('THEN workflows are refused with a 503 when MOSAIC_WORKFLOWS_SECRET is unset', async () => {
+        delete process.env.MOSAIC_WORKFLOWS_SECRET;
+        try {
+          const start = await startJob({ user, route: '/file/path', name: 'save' });
+          expect(start.statusCode).toEqual(503);
+          expect(start.json().error).toMatch(/MOSAIC_WORKFLOWS_SECRET/);
+          const events = await getEvents('any');
+          expect(events.statusCode).toEqual(503);
+          expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+        } finally {
+          process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
+        }
+      });
+
+      test('THEN the development placeholder secret is refused outside development', async () => {
+        process.env.MOSAIC_WORKFLOWS_SECRET = 'local-dev-workflows-secret';
+        try {
+          const start = await startJob(
+            { user, route: '/file/path', name: 'save' },
+            { authorization: 'Bearer local-dev-workflows-secret' }
+          );
+          expect(start.statusCode).toEqual(503);
+        } finally {
+          process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
+        }
+      });
+
+      test('THEN a missing or wrong secret gets a 401', async () => {
+        const missing = await startJob({ user, route: '/file/path', name: 'save' }, {});
+        expect(missing.statusCode).toEqual(401);
+        expect(missing.json()).toEqual({ error: 'Unauthorized.' });
+
+        const wrong = await startJob(
+          { user, route: '/file/path', name: 'save' },
+          { authorization: 'Bearer not-the-secret' }
+        );
+        expect(wrong.statusCode).toEqual(401);
+
+        const events = await getEvents('any', { headers: { authorization: 'Bearer nope' } });
+        expect(events.statusCode).toEqual(401);
+        expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('AND WHEN the request is invalid', () => {
+      test.each([
+        [{ user, route: '/file/path' }, 'Workflow name is required'],
+        [{ route: '/file/path', name: 'save' }, 'Workflow must be run for a user'],
+        [{ user, route: '/file/../../etc/passwd', name: 'save' }, 'Workflow route is invalid'],
+        [
+          { user, route: '/file/path', targetRoute: '/file/..\\..\\x.mdx', name: 'save' },
+          'Workflow target route is invalid'
+        ],
+        [[1, 2], 'Workflow request must be a JSON object']
+      ])('THEN %j gets a 400', async (payload, error) => {
+        const response = await startJob(payload);
+        expect(response.statusCode).toEqual(400);
+        expect(response.json()).toEqual({ error });
+        expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+      });
+
+      test('THEN a body that is not JSON gets a 400', async () => {
+        const response = await startJob('{not json');
+        expect(response.statusCode).toEqual(400);
+        expect(typeof response.json().error).toEqual('string');
+      });
+
+      test('THEN a body over 5 MB gets a 413', async () => {
+        const response = await startJob({
           user,
           route: '/file/path',
           name: 'save',
-          token: WORKFLOWS_SECRET
+          markdown: 'x'.repeat(5 * 1024 * 1024)
         });
-        expect(reply.status).toEqual('ERROR');
-        expect(reply.message).toMatch(/MOSAIC_WORKFLOWS_SECRET/);
+        expect(response.statusCode).toEqual(413);
         expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
-      } finally {
-        process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
-      }
-    });
-
-    test('THEN the workflow is not run with a wrong token', async () => {
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        name: 'save',
-        token: 'not-the-secret'
       });
-      expect(reply).toEqual({ status: 'ERROR', message: 'Unauthorized.' });
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
-    });
 
-    test('THEN the workflow is not run without providing the workflow name', async () => {
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        token: WORKFLOWS_SECRET
+      test('THEN a page that does not exist gets a 404', async () => {
+        mockExistsFn.mockResolvedValueOnce(false);
+        const response = await startJob({ user, route: '/file/path', name: 'save' });
+        expect(response.statusCode).toEqual(404);
+        expect(response.json()).toEqual({ error: '/file/path not found' });
+        expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
       });
-      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow name is required' });
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
-    });
 
-    test('THEN the workflow is not run for a route that escapes its folder', async () => {
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/../../etc/passwd',
-        name: 'save',
-        token: WORKFLOWS_SECRET
+      test('THEN creating a page that already exists gets a 409', async () => {
+        mockExistsFn.mockResolvedValueOnce(true);
+        const response = await startJob({
+          user,
+          route: '/file/path',
+          isNewPage: true,
+          name: 'save'
+        });
+        expect(response.statusCode).toEqual(409);
+        expect(response.json()).toEqual({ error: '/file/path.mdx already exists' });
+        expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
       });
-      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow route is invalid' });
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
     });
 
-    test('THEN the workflow is not run for a rename target that escapes its folder', async () => {
-      mockExistsFn.mockResolvedValue(true);
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        targetRoute: '/file/..\\..\\x.mdx',
-        name: 'save',
-        token: WORKFLOWS_SECRET
+    test('THEN the workflow runs for an existing page and its progress is streamed', async () => {
+      givenAnExistingPage();
+      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+        send('Saved page', 'IN_PROGRESS');
+        send(prMessage, 'COMPLETE');
+        return true;
       });
-      expect(reply).toEqual({ status: 'ERROR', message: 'Workflow target route is invalid' });
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
-    });
 
-    test('THEN the workflow is run if the page exists and echoes the caller channel', async () => {
-      mockExistsFn.mockResolvedValueOnce(true);
-      mockStatFn.mockResolvedValueOnce({ isDirectory: () => false });
-      mockRealpathFn.mockResolvedValueOnce('/file/path.mdx');
-
-      const reply = await sendWorkflowMessage({
+      const jobId = await startedJobId({
         user,
         route: '/file/path',
         markdown: '### This is a title',
         name: 'save',
-        channel: 'abc123',
-        token: WORKFLOWS_SECRET
+        token: 'ignored',
+        channel: 'ignored'
       });
 
-      expect(reply).toEqual({
-        status: 'SUCCESS',
-        message: 'Workflow save has started',
-        channel: 'abc123'
-      });
+      expect(jobId).toMatch(/^[0-9a-f-]{36}$/);
       expect(mockTriggerWorkflowFn).toBeCalledTimes(1);
-      const [, name, filePath, data] = mockTriggerWorkflowFn.mock.calls[0];
+      const [, name, filePath, data, options] = mockTriggerWorkflowFn.mock.calls[0];
       expect(name).toEqual('save');
       expect(filePath).toEqual('/file/path.mdx');
-      // The token never reaches the workflow.
+      expect(options).toBeUndefined();
+      // Legacy `token` and `channel` fields never reach the workflow.
       expect(data).toEqual({ user, markdown: '### This is a title' });
+
+      const events = await getEvents(jobId);
+      expect(events.statusCode).toEqual(200);
+      expect(events.headers['content-type']).toEqual('text/event-stream; charset=utf-8');
+      expect(events.headers['cache-control']).toEqual('no-cache, no-transform');
+      expect(events.headers.connection).toEqual('keep-alive');
+      expect(events.headers['x-accel-buffering']).toEqual('no');
+      expect(events.body).toEqual(
+        starting +
+          sse(2, 'progress', { status: 'IN_PROGRESS', message: 'Saved page' }) +
+          sse(3, 'done', { status: 'SUCCESS', message: prMessage })
+      );
+    });
+
+    test('THEN events are delivered while the workflow is still running', async () => {
+      givenAnExistingPage();
+      let finish: () => void = () => {};
+      mockTriggerWorkflowFn.mockImplementationOnce(
+        send =>
+          new Promise(resolve => {
+            finish = () => {
+              send('Saved page', 'IN_PROGRESS');
+              resolve(true);
+            };
+          })
+      );
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+
+      const events = getEvents(jobId);
+      await new Promise(resolve => setTimeout(resolve, 20));
+      finish();
+
+      expect((await events).body).toEqual(
+        starting +
+          sse(2, 'progress', { status: 'IN_PROGRESS', message: 'Saved page' }) +
+          sse(3, 'done', { status: 'SUCCESS', message: 'Workflow save finished' })
+      );
+    });
+
+    test('THEN the stream is flushed to a real HTTP client as events happen', async () => {
+      givenAnExistingPage();
+      let finish: () => void = () => {};
+      mockTriggerWorkflowFn.mockImplementationOnce(
+        send =>
+          new Promise(resolve => {
+            finish = () => {
+              send(prMessage, 'COMPLETE');
+              resolve(true);
+            };
+          })
+      );
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+      const { port } = server.server.address() as AddressInfo;
+
+      const response = await fetch(
+        `http://127.0.0.1:${port}/workflows/jobs/${jobId}/events?user=${user.sid}`,
+        { headers: auth }
+      );
+      expect(response.status).toEqual(200);
+      const reader = (response.body as ReadableStream<Uint8Array>).getReader();
+      const decoder = new TextDecoder();
+      expect(decoder.decode((await reader.read()).value)).toEqual(starting);
+
+      finish();
+      let rest = '';
+      for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+        rest += decoder.decode(chunk.value);
+      }
+      expect(rest).toEqual(sse(2, 'done', { status: 'SUCCESS', message: prMessage }));
     });
 
     test('THEN the workflow is run for the index page if a directory path is provided', async () => {
       mockExistsFn.mockResolvedValueOnce(true);
       mockStatFn.mockResolvedValueOnce({ isDirectory: () => true });
       mockRealpathFn.mockResolvedValueOnce('/file/path/index.mdx');
+      mockTriggerWorkflowFn.mockResolvedValueOnce(true);
 
-      await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        name: 'save',
-        token: WORKFLOWS_SECRET
-      });
+      await startedJobId({ user, route: '/file/path', name: 'save' });
 
       expect(mockRealpathFn).toHaveBeenCalledWith('/file/path/index');
       expect(mockTriggerWorkflowFn.mock.calls[0][2]).toEqual('/file/path/index.mdx');
     });
 
-    test('THEN the workflow is not run if the page does not exist', async () => {
-      mockExistsFn.mockResolvedValueOnce(false);
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        name: 'save',
-        channel: 'abc123',
-        token: WORKFLOWS_SECRET
+    test('THEN an existing page no source owns is reported as an ERROR', async () => {
+      givenAnExistingPage();
+      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+        send('Workflow save not found', 'ERROR');
+        return false;
       });
-      expect(reply).toEqual({
-        status: 'ERROR',
-        message: '/file/path not found',
-        channel: 'abc123'
-      });
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+
+      const events = await getEvents(jobId);
+      expect(events.body).toEqual(
+        starting + sse(2, 'done', { status: 'ERROR', message: 'Workflow save not found' })
+      );
+      expect(events.body).not.toContain('SUCCESS');
+    });
+
+    test('THEN a workflow that throws is reported as an ERROR', async () => {
+      givenAnExistingPage();
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockTriggerWorkflowFn.mockRejectedValueOnce(new Error('boom'));
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+
+      const events = await getEvents(jobId);
+      expect(events.body).toEqual(starting + sse(2, 'done', { status: 'ERROR', message: 'boom' }));
+      errorSpy.mockRestore();
+    });
+
+    test('THEN a workflow that does not finish in MOSAIC_WORKFLOWS_TIMEOUT_MS fails', async () => {
+      process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '50';
+      givenAnExistingPage();
+      mockTriggerWorkflowFn.mockImplementationOnce(() => new Promise(() => {}));
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+
+      const events = await getEvents(jobId);
+      expect(events.body).toEqual(
+        starting +
+          sse(2, 'done', {
+            status: 'ERROR',
+            message: 'The workflow did not finish within 50 ms.'
+          })
+      );
     });
 
     test('THEN a new page is passed to core to pick its owning source', async () => {
       mockExistsFn.mockResolvedValue(false);
-      mockTriggerWorkflowFn.mockResolvedValueOnce(true);
+      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+        send(prMessage, 'COMPLETE');
+        return true;
+      });
 
-      const reply = await sendWorkflowMessage({
+      const jobId = await startedJobId({
         user,
         route: '/file/nested/new-page',
         markdown: '# New',
         isNewPage: true,
-        name: 'save',
-        token: WORKFLOWS_SECRET
+        name: 'save'
       });
 
-      expect(reply.status).toEqual('SUCCESS');
       const [, , filePath, data, options] = mockTriggerWorkflowFn.mock.calls[0];
       expect(filePath).toEqual('/file/nested/new-page.mdx');
       expect(options).toEqual({ newPage: true });
       expect(data).toEqual({ user, markdown: '# New', isNewPage: true });
+      expect((await getEvents(jobId)).body).toContain(
+        sse(2, 'done', { status: 'SUCCESS', message: prMessage })
+      );
     });
 
-    test('THEN a new page no source can create only reports the error', async () => {
+    test('THEN a new page no source can create is reported as an ERROR', async () => {
       mockExistsFn.mockResolvedValue(false);
       mockTriggerWorkflowFn.mockImplementationOnce(async send => {
-        await new Promise(resolve => setTimeout(resolve));
         send('No source can create /elsewhere/new-page.mdx', 'ERROR');
         return false;
       });
 
-      const reply = await sendWorkflowMessage({
+      const jobId = await startedJobId({
         user,
         route: '/elsewhere/new-page',
         isNewPage: true,
-        name: 'save',
-        token: WORKFLOWS_SECRET
+        name: 'save'
       });
 
-      expect(reply).toMatchObject({
-        status: 'ERROR',
-        message: 'No source can create /elsewhere/new-page.mdx'
-      });
+      expect((await getEvents(jobId)).body).toEqual(
+        starting +
+          sse(2, 'done', {
+            status: 'ERROR',
+            message: 'No source can create /elsewhere/new-page.mdx'
+          })
+      );
     });
 
-    test('THEN creating a page that already exists is refused', async () => {
-      mockExistsFn.mockResolvedValue(true);
-      const reply = await sendWorkflowMessage({
-        user,
-        route: '/file/path',
-        isNewPage: true,
-        name: 'save',
-        token: WORKFLOWS_SECRET
+    describe('AND WHEN following a job', () => {
+      async function finishedJob() {
+        givenAnExistingPage();
+        mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+          send('Saved page', 'IN_PROGRESS');
+          send(prMessage, 'COMPLETE');
+          return true;
+        });
+        return startedJobId({ user, route: '/file/path', name: 'save' });
+      }
+
+      test('THEN only the events after Last-Event-ID are replayed', async () => {
+        const jobId = await finishedJob();
+        const fromHeader = await getEvents(jobId, {
+          headers: { ...auth, 'last-event-id': '2' }
+        });
+        expect(fromHeader.body).toEqual(sse(3, 'done', { status: 'SUCCESS', message: prMessage }));
+
+        const fromQuery = await getEvents(jobId, { query: `user=${user.sid}&lastEventId=1` });
+        expect(fromQuery.body).toEqual(
+          sse(2, 'progress', { status: 'IN_PROGRESS', message: 'Saved page' }) +
+            sse(3, 'done', { status: 'SUCCESS', message: prMessage })
+        );
       });
-      expect(reply.status).toEqual('ERROR');
-      expect(reply.message).toEqual('/file/path.mdx already exists');
-      expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+
+      test('THEN a client that already saw done gets it again', async () => {
+        const jobId = await finishedJob();
+        const events = await getEvents(jobId, { headers: { ...auth, 'last-event-id': '3' } });
+        expect(events.body).toEqual(sse(3, 'done', { status: 'SUCCESS', message: prMessage }));
+      });
+
+      test('THEN another user, a missing user or an unknown job gets a 404', async () => {
+        const jobId = await finishedJob();
+        const otherUser = await getEvents(jobId, { query: 'user=someone-else' });
+        expect(otherUser.statusCode).toEqual(404);
+        expect(otherUser.json()).toEqual({ error: 'Workflow job not found' });
+        expect((await getEvents(jobId, { query: '' })).statusCode).toEqual(404);
+        expect((await getEvents('00000000-0000-0000-0000-000000000000')).statusCode).toEqual(404);
+      });
     });
   });
 

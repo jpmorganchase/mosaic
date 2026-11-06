@@ -18,5 +18,4 @@ export type SendSourceWorkflowMessage = (message: any, status: SourceWorkflowMes
 export type SourceWorkflowMessageEvent = {
   status: SourceWorkflowMessageStatus;
   message: any;
-  channel?: string;
 };

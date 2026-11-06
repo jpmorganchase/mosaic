@@ -8,6 +8,27 @@
 yarn add @jpmorganchase/mosaic-content-editor-plugin
 ```
 
+## Saving
+
+`<Editor persist={...}>` takes a function that starts a save and returns its progress as an async iterable of `PersistEvent`s (`progress`, then `complete` or `error`). A thrown error is shown as a failed save.
+
+The reference site starts the save on its server and follows it over Server-Sent Events with `subscribeToSave`:
+
+```tsx
+import { Editor, subscribeToSave } from '@jpmorganchase/mosaic-content-editor-plugin';
+import { startSave } from './persistAction'; // Server Action returning { jobId } or { error }
+
+async function persist(input) {
+  const started = await startSave(input);
+  if ('error' in started) throw new Error(started.error);
+  return subscribeToSave(started.jobId);
+}
+
+<Editor persist={persist} {...otherProps} />;
+```
+
+`subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`, and closes the stream after `done`. If the stream drops, `EventSource` reconnects and resumes from the last event it received; after `options.maxReconnects` failed attempts in a row (default 3), or if the server refuses the stream, the save is reported as an error.
+
 ## Keyboard shortcuts
 
 Shortcuts are available while the editor is mounted (`?edit=1`). On macOS the `Mod` modifier is `⌘`; on Windows / Linux it's `Ctrl`.

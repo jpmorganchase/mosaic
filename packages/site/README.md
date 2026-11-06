@@ -43,14 +43,15 @@ packages/site/
         │   ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
         │   ├── EditorBody.tsx     # Lexical editor host (edit / create only)
         │   ├── previewAction.ts   # Server Action: editor preview compile
-        │   ├── persistAction.ts   # Server Action: save → workflows backend
+        │   ├── persistAction.ts   # Server Action: starts a save on the workflows backend
         │   ├── CanonicalizeUrl.tsx
         │   └── RouteMetadata.tsx
         └── api/
             ├── auth/[...nextauth]/route.ts   # Auth.js v5 handlers.GET/POST
             ├── content/live/route.ts         # dev-only live-reload stream
             ├── content/ready/route.ts        # dev-only upstream readiness probe
-            └── revalidate/route.ts           # cache revalidation webhook
+            ├── revalidate/route.ts           # cache revalidation webhook
+            └── workflows/[jobId]/events/route.ts # save progress (SSE from the CLI)
 ```
 
 ## Build modes
@@ -106,8 +107,7 @@ environment settings). None of them should be committed with real values.
 | `GITHUB_ID`, `GITHUB_SECRET`                      | GitHub OAuth app for sign-in.                                                                                                               |
 | `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. GitHub emails must be verified. **Unset means nobody in production.**  |
 | `NEXT_PUBLIC_ENABLE_LOGIN`                        | `true` shows the Login control and editor buttons.                                                                                          |
-| `MOSAIC_WORKFLOWS_URL`, `MOSAIC_WORKFLOWS_SECRET` | WebSocket URL of the CLI's `/workflows` endpoint and the shared secret it requires (the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`). |
-| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                     | How long a save may run before it is reported as failed (default 5 minutes).                                                                |
+| `MOSAIC_WORKFLOWS_URL`, `MOSAIC_WORKFLOWS_SECRET` | Base URL of the CLI that runs saves, e.g. `http://mosaic-fs:8080` (an old `ws://` URL still works), and the shared secret the CLI requires. |
 
 ## Customising
 
@@ -150,10 +150,11 @@ the resolution of a real bug.
 4. **Skip `connection()` and `searchParams` in snapshot builds.** Calling
    them opts the route out of static pre-rendering. Use a cheap
    conditional **before** the `await`.
-5. **Keep the auth checks inside the Server Actions.** Server Actions
-   are public endpoints; `persistContent` and `compilePreview` check
-   the session and `MOSAIC_EDITORS` themselves, and `persistContent`
-   validates every route before forwarding it.
+5. **Keep the auth checks inside the Server Actions and route handlers.**
+   Both are public endpoints; `startSave`, `compilePreview` and
+   `/api/workflows/[jobId]/events` check the session and
+   `MOSAIC_EDITORS` themselves, and `startSave` validates every route
+   before forwarding it.
 6. **Use the `next.config.js` three-config split.** Static export
    cannot tolerate `redirects()` or optimised images; the regular
    build wants both. Don't collapse them back into one config.
