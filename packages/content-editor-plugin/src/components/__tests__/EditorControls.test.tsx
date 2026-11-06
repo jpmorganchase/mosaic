@@ -4,7 +4,7 @@
  * Targets the contract that downstream sites rely on: two toolbar
  * buttons (new-page + edit), disabled while logged out, labelled
  * correctly in edit vs view mode, and the edit button toggles via
- * `useEditMode`. The full create/cancel side-effects are covered by
+ * `useEditModeActions`. The full create/cancel side-effects are covered by
  * `useEditMode.test.tsx`; this file just keeps the wiring honest.
  *
  * NewPageDialog is stubbed because instantiating Salt's full Dialog
@@ -21,11 +21,8 @@ const stopEditing = vi.fn();
 let isEditingState = false;
 
 vi.mock('../../useEditMode', () => ({
-  useEditMode: () => ({
-    isEditing: isEditingState,
-    startEditing,
-    stopEditing
-  })
+  useIsEditing: () => isEditingState,
+  useEditModeActions: () => ({ startEditing, stopEditing })
 }));
 
 vi.mock('../NewPageDialog', () => ({

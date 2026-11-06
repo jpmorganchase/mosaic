@@ -72,11 +72,14 @@ The exact knobs live in `packages/site/next.config.js` and
    catch-all page (`app/[...route]/page.tsx`) reads the snapshot's
    `sitemap.xml` at build time and emits one static page per entry. In
    non-snapshot builds it short-circuits to a fully-dynamic route.
-3. **API route stubs.** `scripts/static-export-route-stubs.mjs` backs up
-   each `route.ts` to `route.ts.bak` and writes a static stub (HTTP 501 +
-   literal `dynamic = 'force-static'`) before the build, and restores
-   the originals afterwards — even if the build fails. If a build is
-   interrupted, run `yarn build:static:revert` to restore manually.
+3. **API route and Server Action stubs.** `scripts/static-export-route-stubs.mjs`
+   backs up each `route.ts` and Server Action module to `<file>.bak` and
+   writes a static stub (HTTP 501 + literal `dynamic = 'force-static'`
+   for routes, a throwing function for actions) before the build, and
+   restores the originals afterwards — even if the build fails. If a
+   build is interrupted, run `yarn build:static:revert` to restore
+   manually. Because there is no server to load it on demand, the 404
+   page's header data is read at build time instead.
 
 ## Serving the output
 

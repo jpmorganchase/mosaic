@@ -38,7 +38,16 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
     return reply.code(200).send('OK');
   });
 
-  server.use(cors());
+  // Cross-origin browser access is opt-in: the admin and content routes
+  // must not be readable from arbitrary web pages. Set
+  // `MOSAIC_CORS_ORIGINS` (comma-separated) to allow specific origins.
+  const corsOrigins = (process.env.MOSAIC_CORS_ORIGINS ?? '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+  if (corsOrigins.length > 0) {
+    server.use(cors({ origin: corsOrigins }));
+  }
 
   /**
    * Run the server

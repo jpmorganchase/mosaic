@@ -110,8 +110,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
       const url = storiesUrl || `${storyUrlPrefix}/index.json`;
       return new Request(url, {
         dispatcher,
-        headers,
-        signal: AbortSignal.timeout(requestTimeout)
+        headers
       });
     });
 
@@ -119,6 +118,7 @@ const StorybookSource: Source<StorybookSourceOptions, StorybookPage> = {
       {
         prefixDir,
         ...restOptions,
+        requestTimeout,
         configuredRequests,
         transformer: transformStorybookPages,
         transformerOptions: storiesConfig

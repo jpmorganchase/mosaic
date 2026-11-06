@@ -39,6 +39,7 @@ import { PersistStatus } from './PersistStatus';
 import { Dialog } from '../Dialog';
 import { Diff, useDiff } from './Diff';
 import style from './index.css';
+import { hasUnsafeRouteSegments } from '../../utils/routeSegments';
 
 interface InfoProps {
   isRaising: boolean;
@@ -288,6 +289,9 @@ export const PersistDialog = ({
     // eslint-disable-next-line no-control-regex
     if (/[\s<>:"|?*\x00-\x1f]/.test(value)) return 'Path contains invalid characters.';
     if (value.endsWith('/')) return 'Path must end with a file name.';
+    if (hasUnsafeRouteSegments(value)) {
+      return 'Path cannot contain empty, "." or ".." segments or backslashes.';
+    }
     const origExt = meta.route.match(/\.[^./]+$/)?.[0] ?? '';
     const newExt = value.match(/\.[^./]+$/)?.[0] ?? '';
     if (origExt && newExt !== origExt) {

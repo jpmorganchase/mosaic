@@ -1,7 +1,13 @@
 export { default as Editor } from './components/Editor';
 export { EditorControls } from './components/EditorControls';
 export { NewPageDialog, type NewPageDialogProps } from './components/NewPageDialog';
-export { useEditMode, type EditMode } from './useEditMode';
+export {
+  useEditMode,
+  useEditModeActions,
+  useIsEditing,
+  EditModeProvider,
+  type EditMode
+} from './useEditMode';
 export {
   LayoutNamesProvider,
   useLayoutNames,

@@ -111,7 +111,7 @@ interface GitRepoOptions {
 }
 
 export type RawSourceResolution =
-  | { kind: 'resolved'; filePath: string; namespace: string }
+  | { kind: 'resolved'; filePath: string; namespace: string; rootDir: string }
   | { kind: 'no-matching-source'; url: string }
   | { kind: 'unsupported-source'; modulePath: string; namespace: string };
 
@@ -247,7 +247,7 @@ export function resolveRawSourcePath(
       return { kind: 'no-matching-source', url: normalised };
     }
 
-    return { kind: 'resolved', filePath, namespace: source.namespace };
+    return { kind: 'resolved', filePath, namespace: source.namespace, rootDir: resolvedRoot };
   }
 
   return { kind: 'no-matching-source', url: normalised };

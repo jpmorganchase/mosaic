@@ -12,16 +12,27 @@ export default async function build(config, targetDir, options) {
     options: { ...source.options, cache: false }
   }));
   const scope = options.scope && options.scope.split(',');
-  const mosaic = new MosaicCore(config);
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
+  const pathDirFromTarget = path.relative(path.resolve(targetDir), path.resolve(pathDir));
+  if (
+    pathDirFromTarget === '' ||
+    pathDirFromTarget === '..' ||
+    pathDirFromTarget.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(pathDirFromTarget)
+  ) {
+    throw new Error(
+      `Snapshot name '${options.name}' must be a folder inside the output directory '${targetDir}', because that folder is emptied before the build.`
+    );
+  }
+
+  const mosaic = new MosaicCore(config);
 
   // Clear out the target directory
-  try {
-    const items = await fs.promises.readdir(pathDir);
-    await Promise.all(items.map(item => fs.promises.rm(path.join(pathDir, item))));
-  } catch {
-    await fs.promises.mkdir(pathDir, { recursive: true });
-  }
+  await fs.promises.mkdir(pathDir, { recursive: true });
+  const items = await fs.promises.readdir(pathDir);
+  await Promise.all(
+    items.map(item => fs.promises.rm(path.join(pathDir, item), { recursive: true, force: true }))
+  );
 
   await mosaic.start();
   // If `scope` arg was used, scope the filesystem to those namespaces

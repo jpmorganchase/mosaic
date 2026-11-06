@@ -13,6 +13,7 @@
  *
  * Server-only — importing this from a client component throws.
  */
+import { createHash } from 'node:crypto';
 import { serialize, type SerializeResult } from 'next-mdx-remote-client/serialize';
 import { compile } from '@mdx-js/mdx';
 import remarkGfm from 'remark-gfm';
@@ -26,6 +27,32 @@ import {
 
 if (typeof window !== 'undefined') {
   throw new Error('serializeMdxForClient.ts must not be imported on the client.');
+}
+
+/**
+ * Successful compiles for the default pipeline, keyed by a hash of the
+ * source. Compiling (MDX + shiki) is the most expensive step of a page
+ * render and is deterministic for a given source, so identical pages —
+ * every re-visit in active mode, every editor preview of unchanged
+ * text — reuse the result. Bounded LRU: `Map` keeps insertion order.
+ */
+const COMPILE_CACHE_MAX_ENTRIES = 200;
+const compileCache = new Map<string, SerializeResult>();
+
+function readCompileCache(key: string): SerializeResult | undefined {
+  const hit = compileCache.get(key);
+  if (hit) {
+    compileCache.delete(key);
+    compileCache.set(key, hit);
+  }
+  return hit;
+}
+
+function writeCompileCache(key: string, result: SerializeResult) {
+  compileCache.set(key, result);
+  if (compileCache.size > COMPILE_CACHE_MAX_ENTRIES) {
+    compileCache.delete(compileCache.keys().next().value as string);
+  }
 }
 
 export interface SerializeMdxForClientOptions {
@@ -78,6 +105,22 @@ export async function serializeMdxForClient<
     scope,
     highlight = true
   } = options;
+
+  // Only the default pipeline is cacheable: custom plugins and scope
+  // values can't be keyed reliably. Treat the result as read-only.
+  const cacheKey =
+    rehypePlugins.length === 0 &&
+    remarkPlugins.length === 0 &&
+    scope === undefined &&
+    typeof highlight === 'boolean'
+      ? createHash('sha256')
+          .update(`${parseFrontmatter}\u0000${highlight}\u0000${source}`)
+          .digest('hex')
+      : undefined;
+  if (cacheKey) {
+    const cached = readCompileCache(cacheKey);
+    if (cached) return cached as SerializeResult<TFrontmatter>;
+  }
 
   // Built once and reused by both the primary `serialize` and the
   // error-recovery re-`compile` so they walk identical plugin chains.
@@ -157,6 +200,10 @@ export async function serializeMdxForClient<
       }
       if (typeof probe.reason === 'string') err.reason = probe.reason;
     }
+  }
+
+  if (cacheKey && !('error' in result && result.error)) {
+    writeCompileCache(cacheKey, result as SerializeResult);
   }
 
   return result;

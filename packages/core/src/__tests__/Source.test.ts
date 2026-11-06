@@ -112,6 +112,17 @@ describe('GIVEN Source', () => {
     ).toHaveProperty('triggerWorkflow');
   });
 
+  test('THEN it exposes its normalised prefixDir and workflow names', () => {
+    const create = (options: Record<string, unknown>) =>
+      new Source({ modulePath: 'plugin', namespace: 'test-namespace' }, options, [], [], {}, [
+        { name: 'save', options: {}, action: vi.fn() }
+      ]);
+    expect(create({ prefixDir: '/mosaic/docs/' }).prefixDir).toBe('mosaic/docs');
+    expect(create({}).prefixDir).toBeUndefined();
+    expect(create({}).hasWorkflow('save')).toBe(true);
+    expect(create({}).hasWorkflow('publish')).toBe(false);
+  });
+
   describe('WHEN calling `use`', () => {
     let source: Source;
 
@@ -437,6 +448,16 @@ describe('GIVEN Source', () => {
         data: { name: 'test' }
       });
       expect(actionSpy.mock.calls[0][4]).toEqual({ data: { name: 'test' } });
+    });
+
+    test('THEN a failing workflow is reported as an ERROR instead of an unhandled rejection', async () => {
+      actionSpy.mockRejectedValueOnce(new Error('boom'));
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      source.triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {});
+      await vi.waitFor(() => expect(sendWorkflowProgressMessageSpy).toHaveBeenCalledTimes(1));
+      expect(sendWorkflowProgressMessageSpy.mock.calls[0][0]).toMatch(/failed: boom/);
+      expect(sendWorkflowProgressMessageSpy.mock.calls[0][1]).toEqual('ERROR');
+      errorSpy.mockRestore();
     });
 
     describe('AND WHEN there is no matching workflow', () => {

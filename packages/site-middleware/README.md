@@ -1,12 +1,13 @@
 # Mosaic Site Middleware
 
-`@jpmorganchase/mosaic-site-middleware` contains the server-side
-middleware functions and request-pipeline runner that a Mosaic site uses
-to assemble per-page props (resolved MDX, sitemap, search index, session,
-etc.).
+`@jpmorganchase/mosaic-site-middleware` contains the server-side loaders
+a Mosaic App Router site uses to read content (MDX pages, shared config,
+the search index, the sitemap) from whichever source the current
+`MOSAIC_MODE` points at, plus the MDX pipeline that compiles pages for
+the browser.
 
-Middleware functions are **server-side only** and cannot be run in the
-browser.
+Everything in this package is **server-only**; importing it from a
+client component throws.
 
 ## Installation
 
@@ -14,112 +15,84 @@ browser.
 yarn add @jpmorganchase/mosaic-site-middleware
 ```
 
-## Primary API (App Router)
+`next` (16) and `react` (19) are peer dependencies.
 
-A Mosaic site running on the Next.js App Router wires the middleware
-chain inside its catch-all RSC route:
+## Usage (App Router)
 
 ```tsx
 // src/app/[...route]/page.tsx
-import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import {
-  fromAppRouter,
-  runMiddleware,
-  withMosaicMode,
-  withMDXContent,
-  withSession,
-  withSearchIndex,
-  withSharedConfig
+  getMdxRaw,
+  getSearchData,
+  getSharedConfig,
+  resolveMosaicMode,
+  serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
 export default async function Page({ params }: { params: Promise<{ route: string[] }> }) {
-  const [{ route }, hdrs] = await Promise.all([params, headers()]);
-  const ctx = fromAppRouter({
-    pathname: '/' + route.join('/'),
-    headers: hdrs
-  });
+  const { route } = await params;
+  const pathname = '/' + route.join('/');
+  const { mode, contentUrl } = resolveMosaicMode();
 
-  const result = await runMiddleware(ctx, [
-    withMosaicMode,
-    withSharedConfig,
-    withSession,
-    withMDXContent,
-    withSearchIndex
+  const [mdx, sharedConfig, search] = await Promise.all([
+    getMdxRaw(pathname, mode, contentUrl),
+    getSharedConfig(pathname, mode, contentUrl),
+    getSearchData(mode, contentUrl)
   ]);
+  if (mdx.kind === 'redirect') redirect(mdx.destination);
+  if (mdx.kind === 'not-found') notFound();
 
-  if (result.kind === 'redirect') redirect(result.destination);
-  if (result.kind === 'not-found') notFound();
-  if (result.kind === 'error') throw new Error(result.message);
-  return <BodyServer {...result.props} />;
+  const source = await serializeMdxForClient(mdx.raw);
+  // Render `source` with a client `<MDXClient />` renderer, e.g.
+  // `createMdxRenderer` from `@jpmorganchase/mosaic-site-components`.
 }
 ```
 
-### `fromAppRouter({ pathname, search?, headers })`
+See `packages/site/src/app/[...route]/page.tsx` for the full reference
+implementation (edit gating, folder → index redirects, metadata).
 
-Builds a `MosaicRequestContext` from an App Router server-component
-request. `headers` is the value returned by Next's `headers()`. Returns a
-context object that every `with*` middleware understands.
+## Loaders
 
-### `runMiddleware(ctx, middlewares, options?)`
+| Export                                           | Returns                                                                     |
+| ------------------------------------------------ | --------------------------------------------------------------------------- |
+| `resolveMosaicMode()`                            | `{ mode, contentUrl }` from `MOSAIC_MODE` / `MOSAIC_<MODE>_MODE_URL`.       |
+| `getMdxRaw(pathname, mode, contentUrl)`          | `{ kind: 'mdx', raw, frontmatter }`, `{ kind: 'redirect' }` or `not-found`. |
+| `getSharedConfig(pathname, mode, contentUrl)`    | The subtree's shared config (header, footer, …) or `undefined`.             |
+| `getSearchData(mode, contentUrl)`                | `{ searchIndex, searchConfig }`.                                            |
+| `getMdxRawSource(pathname, mode, contentUrl)`    | The page's on-disk bytes (active mode only), for the editor.                |
+| `getTagSuggestions(mode, contentUrl)`            | Tag names known to the content server, for the editor.                      |
+| `loadSitemap()`                                  | Every page pathname, e.g. for `generateStaticParams`.                       |
+| `MOSAIC_CONTENT_CACHE_TAG` (also `./cache-tags`) | The cache tag to invalidate with `revalidateTag`.                           |
 
-Runs the middleware chain in order and returns a discriminated union:
+### Caching
 
-```text
-| { kind: 'props'; props }
-| { kind: 'redirect'; destination; permanent? }
-| { kind: 'not-found' }
-| { kind: 'error'; status; message? }
-```
+Each loader is deduplicated per request with `React.cache` and, across
+requests, with `unstable_cache` tagged `MOSAIC_CONTENT_CACHE_TAG`:
 
-The runner is router-agnostic. It is the **only** entry point site code
-should call.
+- Snapshot modes always cache. Invalidate with
+  `revalidateTag(MOSAIC_CONTENT_CACHE_TAG, { expire: 0 })`, e.g. from a
+  webhook route.
+- Active mode reads the live Mosaic CLI on every request unless
+  `MOSAIC_ACTIVE_MODE_CACHE=true`. Enable that only when the CLI's
+  revalidate notification reaches every site instance.
+- Negative results (not-found pages, missing files, empty lookups) are
+  never stored.
+- `MOSAIC_DISABLE_LOADER_CACHE=true` bypasses the cross-request cache
+  entirely (local development).
 
-## Server-rendered MDX
+## MDX pipeline
 
-`compileMdxRsc(source, { scope, components })` compiles an MDX document
-on the server and returns `{ content, frontmatter, exports, error? }`
-where `content` is a `JSX.Element` you can render directly inside an RSC.
-No `next-mdx-remote` is shipped to the browser.
-
-The editor's in-browser preview uses a separate client entry
-(`next-mdx-remote-client`) loaded via `next/dynamic({ ssr: false })`, so
-non-editor readers never pay for it.
-
-## Static export
-
-`loadSitemap()` reads `sitemap.xml` from the active snapshot source
-(local snapshot dir for `snapshot-file`, S3 bucket for `snapshot-s3`)
-and returns host-stripped pathnames. Use it from `generateStaticParams`
-in the catch-all route to enumerate every page at build time. See the
-[static export docs](../../docs/configure/modes/static-export.mdx) for
-the full pattern.
+`serializeMdxForClient(source, options?)` compiles MDX on the server
+(GFM, heading slugs, server-side shiki highlighting) into a JSON-safe
+`{ compiledSource, frontmatter, scope }` payload for `<MDXClient />`
+from `next-mdx-remote-client`. Compile errors are returned on
+`result.error` with line/column information. Results for the default
+pipeline are cached in-process by content hash; treat them as read-only.
 
 ## Pages Router?
 
-**Not supported.** The legacy `fromGetServerSidePropsContext` /
-`fromPagesRouter` adapter was removed once every first-party Mosaic site
-cut over to the App Router. If you are migrating a site that is still on
-`src/pages/`, follow the Pages→App migration recipe — there is no
-compatibility shim to lean on.
-
-`createMiddlewareRunner` still exists in this package, but it is an
-internal helper used by the individual `with*` middleware bodies (which
-historically typed their `context` parameter as
-`GetServerSidePropsContext`). Site code should call `runMiddleware`, not
-`createMiddlewareRunner`, directly.
-
-## Included middleware
-
-- `withMosaicMode` — resolves `MOSAIC_MODE` + content URL up-front and
-  carries them on the context.
-- `withSharedConfig` — loads `shared-config.json` from the content
-  source.
-- `withSession` — server-side Auth.js session resolution (via `auth()`).
-- `withMDXContent` — fetches the MDX source for the current pathname,
-  resolves frontmatter `$ref` aliases, and runs the configured remark /
-  rehype plugin chain.
-- `withSearchIndex` — loads the per-namespace search index for the
-  search UI.
-- `middlewarePresets` — opinionated default chains you can spread into
-  your `runMiddleware` call.
+**Not supported.** The Pages Router middleware (`withMDXContent`,
+`withSearchIndex`, `withSharedConfig`, `withSession`, …) was removed
+when the reference site moved to the App Router. Port
+`getServerSideProps` code to the loaders above.

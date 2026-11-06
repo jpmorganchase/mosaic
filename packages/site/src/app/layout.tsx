@@ -16,20 +16,19 @@ import '@jpmorganchase/mosaic-sitemap-component/index.css';
 import '../css/index.css';
 
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
+import { AUTH_ENABLED } from '../auth';
 import { amplitude, openSans, ptMono } from '../fonts';
 import { resolveSiteOrigin } from '../lib/siteOrigin';
 import { LiveReload } from './LiveReload';
 import { Providers } from './providers';
 
-// Theme-mode script injected before hydration to prevent dark-mode FOUC.
-// Rendered via `next/script` with `strategy="beforeInteractive"` so Next
-// inlines it into the document `<head>` at SSR and does NOT re-render it
-// through React on the client. A bare `<script dangerouslySetInnerHTML>`
-// inside the JSX tree trips React 19's "scripts inside React components
-// are never executed when rendering on the client" warning during
-// client-side re-renders (HMR, route transitions), even though the SSR
-// emit is correct. `beforeInteractive` is what this script needs anyway —
-// it must run before any React render reads `data-mode`.
+// Theme-mode script that sets `data-mode` on `<html>` from
+// `localStorage` before first paint, preventing a dark-mode FOUC. It is
+// a plain inline `<script>` in the `<head>` below, so the browser runs
+// it while parsing the server HTML, before React hydrates. React never
+// executes scripts it renders on the client, which is fine: the root
+// layout's `<head>` is only rendered on full page loads, which is all
+// this script needs.
 const themePrefScript = `
   try {
     const theme = JSON.parse(localStorage.getItem("mosaic-theme-pref")).state.colorMode || "light";
@@ -38,12 +37,14 @@ const themePrefScript = `
 `;
 
 // `<SessionProvider>` (in `./providers`) is rendered without a
-// server-resolved `session` prop; the client fetches it lazily via
-// `/api/auth/session` after mount. This keeps the root layout
-// independent of Auth.js configuration. A missing `AUTH_SECRET` or
-// OAuth env var degrades to `session: null` on the client instead of
-// throwing in the layout (which would bypass `error.tsx` and surface
-// as Next's generic "A server error occurred" fallback page).
+// server-resolved `session` prop; when auth is enabled the client
+// fetches it lazily via `/api/auth/session` after mount. This keeps the
+// root layout independent of Auth.js configuration. A missing
+// `AUTH_SECRET` or OAuth env var degrades to `session: null` on the
+// client instead of throwing in the layout (which would bypass
+// `error.tsx` and surface as Next's generic "A server error occurred"
+// fallback page). Only the build-time `AUTH_ENABLED` flag is passed
+// down, so no-auth deployments skip the session request entirely.
 
 // Static-export builds (`MOSAIC_OUTPUT=export`) skip the
 // "missing NEXT_PUBLIC_SITE_URL" warning below because absolute URLs
@@ -105,7 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themePrefScript }} />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers authEnabled={AUTH_ENABLED}>{children}</Providers>
         {isDevelopment && <LiveReload />}
       </body>
     </html>

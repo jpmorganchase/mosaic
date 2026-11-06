@@ -1,30 +1,62 @@
 'use client';
 
 /**
- * Client wrapper for the 404 body so the global `<AppHeader>` (and the
- * rest of the layout chrome) renders inside the same store + provider
+ * Client body of the 404 page: the global `<AppHeader>` and the rest of
+ * the layout chrome around `<Page404>`, inside the same store + provider
  * tree the regular pages use.
  *
- * The server-side `not-found.tsx` resolves `sharedConfig` + search data
- * (mirroring what `[...route]/page.tsx` passes to `<StoreShell>`),
- * hands them in as `storeProps`, and lets this component mount the
- * client subtree: `<StoreShell>` → `<Page404 />`. The layout chrome
- * (`<LayoutBase>` + `<AppHeader>`) is contributed by `<StoreShell>`'s
- * own `<LayoutProvider>`, which defaults to `FullWidth` — wrapping our
- * children in `<LayoutBase Header={<AppHeader/>}><LayoutFullWidth>…`.
- * Mounting another `<LayoutBase>` here would double the header.
+ * The header/footer data is loaded here, only when a 404 is actually on
+ * screen (see `notFoundChromeAction.ts` for why it can't be loaded in
+ * `not-found.tsx` on the server). Until it arrives the page renders
+ * without a header; `<StoreShell>` re-seeds its store when the new
+ * `storeProps` land. Static exports have no server to answer the
+ * action, so `not-found.tsx` passes `initialChrome` loaded at build
+ * time instead.
  *
- * `<Page404>` itself reads context (image / link providers, `useRoute`,
+ * The layout chrome (`<LayoutBase>` + `<AppHeader>`) comes from
+ * `<StoreShell>`'s `<LayoutProvider>`, which defaults to `FullWidth`.
+ * Mounting another `<LayoutBase>` here would double the header.
+ * `<Page404>` reads context (image / link providers, `useRoute`,
  * `useAppHeader`), so it has to live in the client graph.
  */
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Page404 } from '@jpmorganchase/mosaic-site-components/404';
 
+import { NotFoundRecovery } from './NotFoundRecovery';
+import { loadNotFoundChrome } from './notFoundChromeAction';
 import { StoreShell } from './providers';
 
-export function NotFoundBody({ storeProps }: { storeProps: Record<string, unknown> }) {
+const NO_CHROME: Record<string, unknown> = {};
+
+// Dev-only: recover automatically from the 404s served while the Mosaic
+// CLI is still loading content (see `NotFoundRecovery.tsx`).
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+export function NotFoundBody({ initialChrome }: { initialChrome?: Record<string, unknown> }) {
+  const pathname = usePathname();
+  const [chrome, setChrome] = useState(initialChrome ?? NO_CHROME);
+
+  useEffect(() => {
+    if (initialChrome) return undefined;
+    let cancelled = false;
+    loadNotFoundChrome(pathname).then(
+      loaded => {
+        if (!cancelled) setChrome(loaded);
+      },
+      () => {
+        // Keep the header-less 404; the page is still usable.
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [initialChrome, pathname]);
+
   return (
-    <StoreShell storeProps={storeProps}>
+    <StoreShell storeProps={chrome}>
       <Page404 />
+      {isDevelopment && <NotFoundRecovery />}
     </StoreShell>
   );
 }

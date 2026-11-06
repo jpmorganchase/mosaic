@@ -106,13 +106,40 @@ interface BrokenLinksPluginOptions {
   proxyEndpoint?: string;
 }
 
+const PAGE_CHECK_CONCURRENCY = 4;
+
+async function checkPage(
+  { fullPath, content }: { fullPath: string; content: string },
+  options: BrokenLinksPluginOptions
+) {
+  try {
+    const ast = processor.parse(content);
+    const headings = await findPageHeadings(ast);
+    await checkPageLinks(ast, options, fullPath, headings);
+  } catch (error) {
+    console.warn(`[Mosaic][Plugin-BrokenLinks] Could not check the links in ${fullPath}`, error);
+  }
+}
+
+async function checkPages(pages: BrokenLinksPluginPage[], options: BrokenLinksPluginOptions) {
+  // Snapshot the content now, because later plugins may rewrite it.
+  const queue = pages
+    .filter(page => typeof page.content === 'string')
+    .map(({ fullPath, content }) => ({ fullPath, content: content as string }));
+  const worker = async () => {
+    for (let page = queue.shift(); page; page = queue.shift()) {
+      await checkPage(page, options);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(PAGE_CHECK_CONCURRENCY, queue.length) }, worker));
+}
+
 const BrokenLinksPlugin: PluginType<BrokenLinksPluginPage, BrokenLinksPluginOptions> = {
   async $afterSource(pages, _, options) {
-    pages.forEach(async page => {
-      const ast = await processor.parse(page.content);
-      const headings = await findPageHeadings(ast);
-      await checkPageLinks(ast, options, page.fullPath, headings);
-    });
+    // Links between pages are checked over HTTP against the running Mosaic
+    // server, so this runs in the background instead of holding up the source
+    // update. `checkPages` handles its own errors.
+    checkPages(pages, options);
 
     return pages;
   }

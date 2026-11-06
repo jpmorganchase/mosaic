@@ -68,7 +68,8 @@ describe('resolveRawSourcePath', () => {
     expect(result).toEqual({
       kind: 'resolved',
       filePath: path.resolve('/abs/content', 'getting-started/index.mdx'),
-      namespace: 'mosaic'
+      namespace: 'mosaic',
+      rootDir: path.resolve('/abs/content')
     });
   });
 
@@ -77,7 +78,8 @@ describe('resolveRawSourcePath', () => {
     expect(result).toEqual({
       kind: 'resolved',
       filePath: path.resolve('/abs/root-content', 'topic/page.mdx'),
-      namespace: 'root'
+      namespace: 'root',
+      rootDir: path.resolve('/abs/root-content')
     });
   });
 
@@ -119,7 +121,8 @@ describe('resolveRawSourcePath', () => {
     expect(result).toEqual({
       kind: 'resolved',
       filePath: path.resolve(expectedRoot, 'getting-started/index.mdx'),
-      namespace: 'docs'
+      namespace: 'docs',
+      rootDir: path.resolve(expectedRoot)
     });
   });
 

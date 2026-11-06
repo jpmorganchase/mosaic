@@ -247,6 +247,19 @@ export default class Source {
     return isFileInSource;
   }
 
+  /**
+   * The folder this source's pages are mounted at, without leading or
+   * trailing slashes, or `undefined` when the source has no `prefixDir`.
+   */
+  get prefixDir(): string | undefined {
+    const { prefixDir } = this.#mergedOptions;
+    return typeof prefixDir === 'string' ? prefixDir.replace(/^\/+|\/+$/g, '') : undefined;
+  }
+
+  hasWorkflow(name: string) {
+    return this.#workflows.some(workflow => workflow.name === name);
+  }
+
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
@@ -274,13 +287,30 @@ export default class Source {
     const triggeredWorkflow = foundWorkflows[0];
 
     if (triggeredWorkflow) {
-      triggeredWorkflow.action(
-        sendWorkflowProgressMessage,
-        this.#mergedOptions,
-        triggeredWorkflow.options,
-        filePath,
-        data
-      );
+      // Workflows are async and run outside any request; an uncaught
+      // rejection here would take down the whole server, and the
+      // caller would never hear back. Report it as an ERROR instead.
+      const reportFailure = (error: unknown) => {
+        console.error(`[Mosaic][Source] workflow ${name} failed`, error);
+        sendWorkflowProgressMessage(
+          `[Mosaic][Source] workflow ${name} failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          'ERROR'
+        );
+      };
+      try {
+        const result: unknown = triggeredWorkflow.action(
+          sendWorkflowProgressMessage,
+          this.#mergedOptions,
+          triggeredWorkflow.options,
+          filePath,
+          data
+        );
+        if (result instanceof Promise) result.catch(reportFailure);
+      } catch (error) {
+        reportFailure(error);
+      }
     }
   }
 

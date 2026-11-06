@@ -16,6 +16,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
+# This image talks to a running Mosaic server rather than a snapshot
+ENV MOSAIC_MODE=active
+# Emit .next/standalone, which the runner stage copies (see next.config.js)
+ENV MOSAIC_OUTPUT=standalone
 RUN yarn build
 
 
@@ -24,6 +28,7 @@ FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV MOSAIC_MODE=active
 ENV MOSAIC_ACTIVE_MODE_URL=http://mosaic-fs:8080
 
 RUN addgroup --system --gid 1001 nodejs

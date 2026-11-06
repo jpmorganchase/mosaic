@@ -17,8 +17,9 @@ export function SearchInput() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSearch = e => {
-    setSearchTerm(e.target.value);
-    const results = performSearch(searchIndex, searchTerm, searchConfig);
+    const nextTerm = e.target.value;
+    setSearchTerm(nextTerm);
+    const results = performSearch(searchIndex, nextTerm, searchConfig);
     setSearchResults(results);
     setListVisibility(true);
   };

@@ -1,23 +1,32 @@
 /**
  * Mosaic site Next config.
  *
- * Two build targets are supported:
+ * `MOSAIC_OUTPUT` picks the build target:
  *
- *  1. Default — full Next.js App Router build. Supports active mode (SSR
- *     per request) and snapshot modes (pre-rendered at build time via
- *     `generateStaticParams` in `src/app/[...route]/page.tsx`).
+ *  1. Unset — full Next.js App Router build for `next start`. Supports
+ *     active mode (SSR per request) and snapshot modes (pre-rendered at
+ *     build time via `generateStaticParams` in
+ *     `src/app/[...route]/page.tsx`).
  *
- *  2. `MOSAIC_OUTPUT=export` — fully static export. Only valid when
- *     MOSAIC_MODE is `snapshot-file` or `snapshot-s3`. In this mode we:
+ *  2. `standalone` — the same build plus `output: 'standalone'`, which
+ *     the Dockerfiles copy from `.next/standalone` and run with
+ *     `node server.js`. (`next start` doesn't support standalone output,
+ *     which is why it isn't the default.) Docker builds start from a
+ *     clean layer, so Turbopack's build cache is not written.
+ *
+ *  3. `export` — fully static export. Only valid when MOSAIC_MODE is
+ *     `snapshot-file` or `snapshot-s3`. In this mode we:
  *       - set `output: 'export'`
  *       - drop `redirects()` (unsupported in export builds; express them
  *         via the hosting layer, e.g. S3 / CloudFront rules, when
  *         deploying a static export).
- *       - API routes (`/api/auth/*`, `/api/content/preview`) are not
- *         emitted; consumers needing them must use the default build
- *         target.
+ *       - run against stubs of the API route handlers (501) and Server
+ *         Actions (see `scripts/static-export-route-stubs.mjs`), so
+ *         sign-in, the content editor and cache revalidation need one of
+ *         the server targets above.
  */
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
+const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
 const mosaicMode = process.env.MOSAIC_MODE || 'active';
 
 if (isExport && !mosaicMode.startsWith('snapshot')) {
@@ -30,8 +39,10 @@ if (isExport && !mosaicMode.startsWith('snapshot')) {
 
 /** @type {import('next').NextConfig} */
 const baseConfig = {
+  // Build caches (webpack's or Turbopack's) are never needed at runtime;
+  // keep them out of traced server bundles and standalone output.
   outputFileTracingExcludes: {
-    '*': ['**/.next/cache/webpack']
+    '*': ['**/.next/cache/**']
   },
   outputFileTracingIncludes: {
     '/*': ['snapshots/**/*']
@@ -58,8 +69,8 @@ const baseConfig = {
     optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
   },
   images: {
-    domains: [
-      /** Insert the domains where you will load images from */
+    remotePatterns: [
+      /** Insert the remote hosts you will load images from, e.g. { protocol: 'https', hostname: 'images.example.com' } */
       /* https://nextjs.org/docs/messages/next-image-unconfigured-host */
     ]
   },
@@ -95,6 +106,15 @@ const exportConfig = {
   trailingSlash: false
 };
 
+/** @type {import('next').NextConfig} */
+const standaloneConfig = {
+  output: 'standalone',
+  experimental: {
+    ...baseConfig.experimental,
+    turbopackFileSystemCacheForBuild: false
+  }
+};
+
 module.exports = isExport
   ? { ...baseConfig, ...exportConfig }
-  : { ...baseConfig, ...dynamicOnlyConfig };
+  : { ...baseConfig, ...dynamicOnlyConfig, ...(isStandalone ? standaloneConfig : {}) };
