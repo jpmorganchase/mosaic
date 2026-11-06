@@ -234,6 +234,9 @@ export default class Repo {
    */
   #commitDateCache: Map<string, { revision: string; date: number }> = new Map();
 
+  /** One entry per active `onCommitChange` subscription; see {@link checkForChanges}. */
+  #commitChangeChecks: Set<() => Promise<void>> = new Set();
+
   constructor(credentials: string, remote = 'origin', branch: string, repo: string) {
     if (!repo) {
       throw new Error('Repo is a required option.');
@@ -278,7 +281,7 @@ export default class Repo {
   ) {
     const updatedFilesGen = updatedFilesGenerator(this, disableAutoPullChanges);
 
-    let intervalId: NodeJS.Timeout | null = setInterval(async () => {
+    const runCheck = async () => {
       try {
         if (this.#cloned) {
           const { value: updatedFiles } = await updatedFilesGen.next();
@@ -292,9 +295,35 @@ export default class Repo {
         unsubscribe();
         errCallback(e);
       }
-    }, updateInterval);
+    };
+
+    // Checks never overlap. A check requested while one is running (a
+    // webhook arriving mid-poll) runs once more afterwards, since the
+    // running `git fetch` may have started before the push; further
+    // requests share that queued run.
+    let running: Promise<void> | null = null;
+    let queued: Promise<void> | null = null;
+    const check = (): Promise<void> => {
+      if (!running) {
+        running = runCheck().finally(() => {
+          running = null;
+        });
+        return running;
+      }
+      if (!queued) {
+        queued = running.then(() => {
+          queued = null;
+          return check();
+        });
+      }
+      return queued;
+    };
+
+    let intervalId: NodeJS.Timeout | null = setInterval(check, updateInterval);
+    this.#commitChangeChecks.add(check);
 
     const unsubscribe = () => {
+      this.#commitChangeChecks.delete(check);
       if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
@@ -302,6 +331,16 @@ export default class Repo {
     };
 
     return unsubscribe;
+  }
+
+  /**
+   * Runs the `onCommitChange` checks now instead of waiting for their next
+   * interval, e.g. when a push webhook arrives. Changes reach the
+   * subscribers' callbacks as usual. Resolves once the checks are done; a
+   * no-op until the repository is cloned.
+   */
+  async checkForChanges() {
+    await Promise.all(Array.from(this.#commitChangeChecks, check => check()));
   }
 
   async pull() {

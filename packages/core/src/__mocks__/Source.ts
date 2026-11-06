@@ -29,6 +29,7 @@ Source.prototype.invokeAfterUpdate = () =>
     setTimeout(resolve);
   });
 Source.prototype.requestCacheClear = vi.fn();
+Source.prototype.refresh = vi.fn();
 Source.prototype.start = vi.fn();
 Source.prototype.stop = vi.fn();
 Source.prototype.use = vi.fn();
