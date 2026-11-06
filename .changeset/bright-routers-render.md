@@ -91,10 +91,10 @@ removed, and a new static-export build target has been added.
 - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
   `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
   auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
-- **Static-export build target.** `yarn build:static:file` and
-  `yarn build:static:s3` produce a fully-static `out/` directory
-  servable from any CDN with no Node runtime. Gated behind
-  `MOSAIC_OUTPUT=export` and a snapshot mode.
+- **Static-export build target.** `yarn build:static:file` produces a
+  fully-static `out/` directory servable from any CDN with no Node
+  runtime. Gated behind `MOSAIC_OUTPUT=export` and
+  `MOSAIC_MODE=snapshot-file`.
 - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
   / `exportConfig`.
 

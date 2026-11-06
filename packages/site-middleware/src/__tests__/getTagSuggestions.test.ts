@@ -92,13 +92,6 @@ describe('getTagSuggestions', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test('short-circuits to [] for snapshot-s3 without fetching', async () => {
-    const result = await getTagSuggestions('snapshot-s3', CONTENT_URL);
-
-    expect(result).toEqual([]);
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
   test('returns [] when contentUrl is empty (no upstream configured)', async () => {
     const result = await getTagSuggestions('active', '');
 

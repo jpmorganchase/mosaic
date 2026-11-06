@@ -7,7 +7,7 @@
  * acts on the response shape:
  *
  *   - 404 in non-dev → client stops polling.
- *   - `ready: true` in snapshot modes → fast-path, no upstream call.
+ *   - `ready: true` in snapshot mode → fast-path, no upstream call.
  *   - `ready: true` after a successful upstream probe → client
  *     reloads the page if its URL now resolves.
  *   - `ready: false` when the upstream is unreachable or 404s →
@@ -21,7 +21,7 @@ import { beforeEach, describe, expect, it, vi, afterEach } from 'vitest';
 
 vi.mock('@jpmorganchase/mosaic-site-middleware', () => ({
   // The route reads only `resolveMosaicMode()`; stubbing the whole
-  // module keeps the middleware's fs/S3 imports out of this test's
+  // module keeps the middleware's fs imports out of this test's
   // graph and lets each case dictate the (mode, contentUrl) it wants
   // the route to see.
   resolveMosaicMode: vi.fn()
@@ -81,7 +81,7 @@ describe('/api/content/ready (production gate)', () => {
   });
 });
 
-describe('/api/content/ready (snapshot modes)', () => {
+describe('/api/content/ready (snapshot mode)', () => {
   it('reports ready immediately for snapshot-file without probing', async () => {
     const resolveMosaicMode = await getResolveMode();
     resolveMosaicMode.mockReturnValue({ mode: 'snapshot-file', contentUrl: '' });
@@ -93,19 +93,6 @@ describe('/api/content/ready (snapshot modes)', () => {
 
     expect(body).toEqual({ ready: true, mode: 'snapshot-file' });
     // The whole point of snapshot fast-path: no upstream probe.
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
-  it('reports ready immediately for snapshot-s3 without probing', async () => {
-    const resolveMosaicMode = await getResolveMode();
-    resolveMosaicMode.mockReturnValue({ mode: 'snapshot-s3', contentUrl: '' });
-    const fetchSpy = vi.spyOn(globalThis, 'fetch');
-
-    const { GET } = await loadRoute();
-    const response = await GET();
-    const body = await response.json();
-
-    expect(body).toEqual({ ready: true, mode: 'snapshot-s3' });
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

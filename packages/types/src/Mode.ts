@@ -8,9 +8,6 @@
  * `snapshot-file`
  * In this mode, previously created snapshot files are loaded from a local directory.
  *
- * `snapshot-s3`
- * In this mode, previously created snapshot files are loaded from an S3 bucket.
- *
  * (A snapshot is an immutable/persisted copy of `active` content, created separately)
  */
-export type MosaicMode = 'active' | 'snapshot-file' | 'snapshot-s3';
+export type MosaicMode = 'active' | 'snapshot-file';
