@@ -3,8 +3,8 @@ import { test, expect, type Page } from '@playwright/test';
 /**
  * Client-side navigation. The other suites load every page directly, so
  * these cover what only happens after hydration: the namespace layout
- * keeps the header mounted, the section layout supplies each section's
- * sidebar tree, and the router's prefetch and navigation requests
+ * keeps the header mounted, the sidebar follows the page into another
+ * section, and the router's prefetch and navigation requests
  * succeed. In a static export those requests fetch `.txt` segment files,
  * so `yarn e2e:static` runs this suite against `out/` too.
  */
