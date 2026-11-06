@@ -46,11 +46,50 @@ development.
 
 ## Workflows
 
-The editor's save workflow runs over the `/workflows` WebSocket. It uses the server's repository
-credentials, so it only runs for messages that carry a `token` equal to the CLI's
-`MOSAIC_WORKFLOWS_SECRET`; without that variable no workflow runs. The site sends the same value from
-its own `MOSAIC_WORKFLOWS_SECRET` (see `packages/site/README.md`). The placeholder value committed in
-the site's `.env.development` is ignored unless `NODE_ENV=development`.
+The editor's save workflow runs over plain HTTP, with progress streamed as Server-Sent Events (SSE).
+No WebSocket is needed. The workflows use the server's repository credentials, so every request must
+send the CLI's `MOSAIC_WORKFLOWS_SECRET` as a bearer token (or in an `x-mosaic-workflows-secret`
+header). Without that variable no workflow runs. The site sends the same value from its own
+`MOSAIC_WORKFLOWS_SECRET` (see `packages/site/README.md`). The placeholder value committed in the
+site's `.env.development` is ignored unless `NODE_ENV=development`.
+
+- **`POST /workflows/jobs`** starts a workflow. The JSON body (up to 5 MB) names the workflow and the
+  user, and carries the page's route and content:
+
+  ```json
+  {
+    "name": "save",
+    "user": { "sid": "jdoe", "name": "Jane Doe", "email": "jane@example.com" },
+    "route": "/mosaic/index",
+    "markdown": "# Hello"
+  }
+  ```
+
+  It can also carry `frontmatter`, `targetRoute` (rename) and `isNewPage: true` (create). The CLI
+  responds `202 { "jobId": "…" }`, or with `{ "error": "…" }` and `400` (invalid request), `401`
+  (wrong secret), `404` (page not found), `409` (new page already exists), `413` (too large) or `503`
+  (secret not configured, or too many workflows running).
+
+- **`GET /workflows/jobs/:jobId/events?user=<sid>`** streams the job's progress as
+  `text/event-stream`. `user` must be the user the job was started for, otherwise the response is
+  `404`. Each update is an `event: progress` with `data: { "status", "message" }`, and the stream ends
+  with one `event: done` whose `status` is `SUCCESS` (with the workflow's result as `message`) or
+  `ERROR`. Events have ids, so a client that reconnects with `Last-Event-ID` (or `?lastEventId=`) only
+  gets the events it missed. The CLI sends a `: ping` comment every 15 seconds to keep proxies from
+  closing the stream.
+
+  ```
+  curl -N -H "Authorization: Bearer $MOSAIC_WORKFLOWS_SECRET" \
+    "http://localhost:8080/workflows/jobs/$JOB_ID/events?user=jdoe"
+  ```
+
+A job fails if it hasn't finished after `MOSAIC_WORKFLOWS_TIMEOUT_MS` (read by the CLI, default 5
+minutes). Jobs are kept in memory, up to 100 jobs with up to 500 events each, and a finished job is
+kept for 10 minutes. Jobs are lost when the CLI restarts, so a save in progress at that moment is
+reported as failed. If you run several CLI instances, a job's events request must reach the instance
+that started it: point `MOSAIC_WORKFLOWS_URL` at one instance, or use sticky routing in your load
+balancer. Proxies in front of the CLI must not buffer `text/event-stream` responses (the CLI sends
+`X-Accel-Buffering: no` for nginx).
 
 ## Browser access (CORS)
 
