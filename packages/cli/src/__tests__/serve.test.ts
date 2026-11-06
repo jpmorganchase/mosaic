@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { describe, expect, test, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import serve, { server } from '../serve';
@@ -47,6 +48,8 @@ const mockStopSourceFn = vi.fn().mockResolvedValue(true);
 const mockAddSourceFn = vi.fn();
 const mockTriggerWorkflowFn = vi.fn();
 const mockRestartSourceFn = vi.fn().mockResolvedValue(true);
+const mockRefreshSourceFn = vi.fn().mockResolvedValue(true);
+const mockGetSourceDefinitionFn = vi.fn();
 const mockListSourcesFn = vi
   .fn()
   .mockResolvedValue(mosaicConfig.sources.map((source, index) => ({ index, ...source })));
@@ -79,6 +82,8 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
       start: vi.fn(),
       addSource: mockAddSourceFn,
       restartSource: mockRestartSourceFn,
+      refreshSource: mockRefreshSourceFn,
+      getSourceDefinition: mockGetSourceDefinitionFn,
       stopSource: mockStopSourceFn,
       listSources: mockListSourcesFn,
       triggerWorkflow: mockTriggerWorkflowFn,
@@ -92,7 +97,8 @@ const WORKFLOWS_SECRET = 'workflows-test-secret';
 const adminHeaders = { 'x-mosaic-admin-secret': ADMIN_SECRET };
 const ORIGINAL_ENV = {
   MOSAIC_ADMIN_SECRET: process.env.MOSAIC_ADMIN_SECRET,
-  MOSAIC_WORKFLOWS_SECRET: process.env.MOSAIC_WORKFLOWS_SECRET
+  MOSAIC_WORKFLOWS_SECRET: process.env.MOSAIC_WORKFLOWS_SECRET,
+  MOSAIC_BITBUCKET_WEBHOOK_SECRET: process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET
 };
 
 function restoreEnv(name: keyof typeof ORIGINAL_ENV) {
@@ -571,6 +577,43 @@ describe('GIVEN the serve command', () => {
       expect(response.statusCode).toEqual(500);
       expect(response.headers['content-type']).toEqual('application/text');
       expect(response.payload).toEqual('oopsy');
+    });
+  });
+
+  describe('AND WHEN Bitbucket delivers a webhook', () => {
+    const WEBHOOK_SECRET = 'bitbucket-test-secret';
+    const ping = (headers: Record<string, string> = {}) =>
+      server.inject({
+        method: 'POST',
+        url: '/_mosaic_/webhooks/bitbucket',
+        headers: {
+          'content-type': 'application/json',
+          'x-event-key': 'diagnostics:ping',
+          ...headers
+        },
+        payload: '{"test":true}'
+      });
+    const signature = `sha256=${createHmac('sha256', WEBHOOK_SECRET)
+      .update('{"test":true}')
+      .digest('hex')}`;
+
+    beforeEach(() => {
+      process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET = WEBHOOK_SECRET;
+    });
+    afterAll(() => restoreEnv('MOSAIC_BITBUCKET_WEBHOOK_SECRET'));
+
+    test('THEN the endpoint does not exist when MOSAIC_BITBUCKET_WEBHOOK_SECRET is unset', async () => {
+      delete process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET;
+      const response = await ping({ 'x-hub-signature': signature });
+      expect(response.statusCode).toEqual(404);
+    });
+
+    test('THEN it needs the webhook signature, not the admin secret', async () => {
+      const unsigned = await ping(adminHeaders);
+      expect(unsigned.statusCode).toEqual(401);
+
+      const signed = await ping({ 'x-hub-signature': signature });
+      expect(signed.statusCode).toEqual(200);
     });
   });
 
