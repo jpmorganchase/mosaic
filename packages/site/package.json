@@ -30,7 +30,7 @@
     "build:static:revert": "node scripts/static-export-route-stubs.mjs revert",
     "serve:snapshot:file": "yarn cross-env MOSAIC_MODE=\"snapshot-file\" concurrently --kill-others -n next -p \"[{name}]\" \"yarn dev\"",
     "serve:snapshot:s3": "yarn cross-env MOSAIC_MODE=\"snapshot-s3\" concurrently --kill-others -n next -p \"[{name}]\" \"yarn dev\"",
-    "serve": "yarn cross-env NODE_ENV=development MOSAIC_REVALIDATE_URL=http://localhost:3000/api/revalidate MOSAIC_REVALIDATE_SECRET=local-dev-not-a-secret concurrently --kill-others -n next,mosaic -p \"[{name}]\" \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\""
+    "serve": "yarn cross-env NODE_ENV=development concurrently --kill-others -n next,mosaic -p \"[{name}]\" \"yarn dev\" \"yarn mosaic serve -c ./mosaic.config.mjs\""
   },
   "dependencies": {
     "@jpmorganchase/mosaic-cli": "^0.1.0-beta.98",
@@ -51,7 +51,8 @@
     "gray-matter": "^4.0.3",
     "next": "^16.4.2",
     "next-auth": "^5.0.0-beta.32",
-    "next-mdx-remote-client": "^1.0.3"
+    "next-mdx-remote-client": "^1.0.3",
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@next/env": "^16.4.2",

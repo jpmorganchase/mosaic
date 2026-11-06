@@ -56,3 +56,25 @@ the site's `.env.development` is ignored unless `NODE_ENV=development`.
 
 The CLI sends no CORS headers by default, so web pages on other origins can't read its responses. Set
 `MOSAIC_CORS_ORIGINS` to a comma-separated list of origins to allow specific ones.
+
+## Environment variables
+
+`mosaic serve` checks these when it starts, before any source loads. If a value is invalid it exits
+with code 1 and lists every problem as `NAME: reason`. Empty values count as unset.
+
+| Variable                        | Values                                                            | Default                                   | Purpose                                                                                                                                    |
+| ------------------------------- | ----------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MOSAIC_ADMIN_SECRET`           | Secret, not blank                                                 | Unset: admin API open only in development | Protects the admin endpoints (see [Authentication](#authentication)).                                                                      |
+| `MOSAIC_WORKFLOWS_SECRET`       | Secret, not blank                                                 | Unset: no workflow runs                   | Required in every `/workflows` message (see [Workflows](#workflows)).                                                                      |
+| `MOSAIC_CORS_ORIGINS`           | Comma-separated origins, each `scheme://host[:port]` with no path | Unset: no CORS headers                    | Origins allowed to read the CLI from a browser. Write them as the browser sends them, e.g. `https://docs.example.com` (no trailing slash). |
+| `MOSAIC_REVALIDATE_URL`         | http(s) URL. Needs `MOSAIC_REVALIDATE_SECRET`                     | Unset: the site is not notified           | The site's revalidate endpoint, e.g. `https://docs.example.com/api/revalidate`. The CLI calls it whenever a source updates.                |
+| `MOSAIC_REVALIDATE_SECRET`      | Secret, not blank                                                 | –                                         | Sent to `MOSAIC_REVALIDATE_URL`; the same value as the site's `MOSAIC_REVALIDATE_SECRET`.                                                  |
+| `MOSAIC_SOURCE_BOOT_TIMEOUT_MS` | Whole number of milliseconds up to 2147483647; `0` waits forever  | `60000`                                   | How long a source may take to start before `mosaic serve` gives up on it.                                                                  |
+| `BITBUCKET_API_URL`             | http(s) URL                                                       | –                                         | Bitbucket REST API used by the Bitbucket save workflow, e.g. `https://bitbucket.example.com/rest/api/1.0`.                                 |
+| `NODE_ENV`                      | `development` or anything else                                    | Unset                                     | `development` opens the admin API without a secret and accepts the placeholder `MOSAIC_WORKFLOWS_SECRET`. Not validated.                   |
+
+The placeholder `MOSAIC_WORKFLOWS_SECRET` committed in the site's `.env.development` is not an error;
+outside development it simply counts as unset. `mosaic upload` reads `MOSAIC_S3_BUCKET`,
+`MOSAIC_S3_REGION`, `MOSAIC_S3_ACCESS_KEY_ID` and `MOSAIC_S3_SECRET_ACCESS_KEY` and stops if any is
+missing. For the site's variables, see the
+[site README](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/README.md#environment-variables).
