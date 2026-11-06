@@ -5,9 +5,9 @@
  *
  * Controlled via `open` / `onOpenChange` props from the parent
  * (no global page-state flag). The save itself calls a host-
- * supplied Server Action that streams progress events; the
- * dialog consumes the stream inside `useTransition` so the
- * pending flag is driven by React.
+ * supplied `persist` function that returns progress events (see
+ * `subscribeToSave`); the dialog consumes them inside
+ * `useTransition` so the pending flag is driven by React.
  *
  * On open the dialog snapshots the current markdown, the
  * authored frontmatter slice, and seeds the rename input from
@@ -134,9 +134,10 @@ export interface PersistDialogProps {
    */
   originalAuthoredFrontmatter?: string;
   /**
-   * Host-supplied Server Action that streams progress events for a
-   * save. Passed in so the plugin stays decoupled from any specific
-   * Next app.
+   * Host-supplied function that starts a save and returns its progress
+   * events, e.g. a Server Action that starts the save followed by
+   * `subscribeToSave(jobId)`. Passed in so the plugin stays decoupled
+   * from any specific Next app.
    */
   persist?: (input: {
     route: string;
