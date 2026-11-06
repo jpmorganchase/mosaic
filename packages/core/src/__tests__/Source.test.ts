@@ -220,6 +220,40 @@ describe('GIVEN Source', () => {
     });
   });
 
+  describe('WHEN calling `refresh`', () => {
+    let workerMock: { closed: boolean; refresh: MockedFunction<any>; on(): void; once(): void };
+
+    afterEach(() => {
+      (WorkerSubscription as MockedFunction<any>).mockRestore();
+    });
+    beforeEach(() => {
+      workerMock = { closed: false, refresh: vi.fn().mockResolvedValue(true), on() {}, once() {} };
+      (WorkerSubscription as MockedFunction<any>).mockImplementation(
+        function WorkerSubscriptionMock() {
+          return workerMock;
+        }
+      );
+    });
+
+    test('THEN the worker is asked to refresh and its answer is returned', async () => {
+      const source = new Source({ modulePath: 'plugin', namespace: 'test-namespace' });
+      await source.start();
+
+      await expect(source.refresh()).resolves.toBe(true);
+      expect(workerMock.refresh).toHaveBeenCalledTimes(1);
+    });
+
+    test('THEN a source that has not started or has stopped cannot be refreshed', async () => {
+      const source = new Source({ modulePath: 'plugin', namespace: 'test-namespace' });
+      await expect(source.refresh()).rejects.toThrow(/is not running/);
+
+      await source.start();
+      workerMock.closed = true;
+      await expect(source.refresh()).rejects.toThrow(/is not running/);
+      expect(workerMock.refresh).not.toHaveBeenCalled();
+    });
+  });
+
   describe('WHEN events fire', () => {
     const workerHandlers: {
       exit: (code: number) => void;

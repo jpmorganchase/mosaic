@@ -84,4 +84,14 @@ export type Source<TOptions = Record<string, unknown>, TPage extends Page = Page
    * (currently: nothing opted in).
    */
   capabilities?: SourceCapabilities;
+  /**
+   * Optional. Check the source's backing store for changes now instead of
+   * waiting for the next scheduled check, e.g. when a push webhook arrives.
+   *
+   * Called in the source's worker with the same options as `create`, after
+   * `create`. Changed pages must be emitted on the observable `create`
+   * returned; the returned promise only signals that the check is done.
+   * Sources without it are refreshed by their schedule only.
+   */
+  refresh?(options: TOptions): Promise<void> | void;
 };

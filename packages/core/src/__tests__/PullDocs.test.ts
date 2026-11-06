@@ -134,6 +134,27 @@ describe('GIVEN PullDocs', () => {
           expect(onSourceUpdateSpy).toHaveBeenCalled();
         });
       });
+
+      describe('AND a source is refreshed', () => {
+        test('THEN the source manager refreshes it', async () => {
+          (SourceManager.prototype.refreshSource as MockedFunction<any>).mockResolvedValueOnce(
+            true
+          );
+          await expect(pullDocs.refreshSource('source#1234')).resolves.toBe(true);
+          expect(SourceManager.prototype.refreshSource).toHaveBeenCalledWith('source#1234');
+        });
+      });
+
+      describe('AND a source definition is requested', () => {
+        test('THEN the source manager returns it', () => {
+          const definition = { modulePath: 'source-module', namespace: 'namespace' };
+          (SourceManager.prototype.getSourceDefinition as MockedFunction<any>).mockReturnValueOnce(
+            definition
+          );
+          expect(pullDocs.getSourceDefinition('source#1234')).toBe(definition);
+          expect(SourceManager.prototype.getSourceDefinition).toHaveBeenCalledWith('source#1234');
+        });
+      });
     });
   });
 });

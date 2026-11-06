@@ -92,6 +92,10 @@ export type GitRepoSourceOptions = z.infer<typeof schema>;
  */
 const repoRegistry = new Map<string, Repo>();
 
+function getRepoKey(repoUrl: string, branch: string, remote: string) {
+  return `${repoUrl}#${branch}#${remote}`;
+}
+
 function getOrCreateRepo(
   credentials: string,
   remote: string,
@@ -103,7 +107,7 @@ function getOrCreateRepo(
   // a clone (the second token would just be ignored on the shared
   // `Repo`, which is the same behaviour as two `localFolderSource`s
   // reading the same path).
-  const key = `${repoUrl}#${branch}#${remote}`;
+  const key = getRepoKey(repoUrl, branch, remote);
   let repo = repoRegistry.get(key);
   if (!repo) {
     repo = new Repo(credentials, remote, branch, repoUrl);
@@ -181,6 +185,16 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
     );
 
     return concat(init$, pages$).pipe(delay(schedule.initialDelayMs));
+  },
+  /**
+   * Fetches now instead of waiting for `checkIntervalMins`, e.g. when a push
+   * webhook arrives. New commits flow through the same path as a scheduled
+   * check: the worktree is reset, the folder watcher re-reads the changed
+   * files and the source emits.
+   */
+  async refresh(options) {
+    const { repo: repoUrl, branch, remote } = options;
+    await repoRegistry.get(getRepoKey(repoUrl, branch, remote))?.checkForChanges();
   }
 };
 

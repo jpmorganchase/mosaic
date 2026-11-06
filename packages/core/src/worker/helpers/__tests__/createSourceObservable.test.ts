@@ -2,7 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { firstValueFrom } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 
-import createSourceObservable from '../createSourceObservable.js';
+import createSourceObservable, { getSourceRefresh } from '../createSourceObservable.js';
+import { refresh } from './fixtures/sourceWithRefresh.js';
 
 function workerData(fixture: string) {
   return {
@@ -34,5 +35,20 @@ describe('GIVEN createSourceObservable', () => {
     const [page] = await firstValueFrom(source$);
 
     expect(page.sourceCapabilities).toEqual({ writable: false });
+  });
+
+  test("THEN the source's refresh hook is bound to its options", async () => {
+    const data = { ...workerData('sourceWithRefresh'), options: { branch: 'main' } };
+
+    const sourceRefresh = await getSourceRefresh(data as never);
+    await sourceRefresh?.();
+
+    expect(refresh).toHaveBeenCalledWith({ branch: 'main' });
+  });
+
+  test('THEN there is no refresh hook when the source does not implement one', async () => {
+    expect(
+      await getSourceRefresh(workerData('sourceWithoutCapabilities') as never)
+    ).toBeUndefined();
   });
 });

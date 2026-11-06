@@ -61,3 +61,72 @@ export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PA
     }
 
 ```
+
+## Refresh on push (Bitbucket webhooks)
+
+A git repo source checks its repository for new commits every `checkIntervalMins` (30 minutes by
+default, see [Schedules](./schedules)). Bitbucket Data Center can tell the Mosaic CLI about a push
+instead, so merged changes appear within seconds.
+
+### Set up
+
+1. Generate a secret, for example with `openssl rand -hex 32`, and set it as
+   `MOSAIC_BITBUCKET_WEBHOOK_SECRET` on the CLI process. Without it the endpoint doesn't exist (`404`).
+2. In Bitbucket, open the repository's **Repository settings → Webhooks** and create a webhook:
+   - **URL:** `https://<your Mosaic CLI host>/_mosaic_/webhooks/bitbucket`
+   - **Secret:** the value of `MOSAIC_BITBUCKET_WEBHOOK_SECRET`
+   - **Events:** **Repository → Push**
+3. Select **Test connection**. The CLI answers `200`.
+
+Bitbucket must be able to reach the CLI over HTTP(S), so open any firewall or proxy in between for
+this path. The endpoint doesn't use `MOSAIC_ADMIN_SECRET`: it only accepts requests signed with the
+webhook secret (the `X-Hub-Signature` header).
+
+### What happens on a push
+
+The CLI looks for running git repo sources whose `options.repo` is the pushed repository and whose
+`options.branch` was pushed. Repositories match on project key and repository slug, ignoring case
+and credentials, so the `https://host/scm/PROJ/repo.git`,
+`ssh://git@host:7999/proj/repo.git` and `https://host/projects/PROJ/repos/repo` forms all work.
+
+The CLI replies `202` straight away, with the names of the matching sources, and refreshes them in
+the background. Pushes that reach the same source within 5 seconds are combined into one refresh. A
+refresh does what a scheduled check does: it fetches, resets the clone to the new commit and
+re-reads the changed pages, while the source keeps serving its current pages. If
+`MOSAIC_REVALIDATE_URL` is set, the site is then told to revalidate as for any other update.
+
+| Response | When                                                                               |
+| -------- | ---------------------------------------------------------------------------------- |
+| `200`    | Bitbucket's **Test connection** (`diagnostics:ping`)                               |
+| `202`    | A push was received; `sources` lists the sources being refreshed (it may be empty) |
+| `202`    | Any other event; it is ignored                                                     |
+| `400`    | The push payload isn't valid                                                       |
+| `401`    | The `X-Hub-Signature` header is missing or doesn't match the body and the secret   |
+| `404`    | `MOSAIC_BITBUCKET_WEBHOOK_SECRET` isn't set                                        |
+| `413`    | The body is larger than 1 MB                                                       |
+
+To test the endpoint by hand, sign the body with the secret:
+
+```
+body='{"test":true}'
+signature=$(printf '%s' "$body" | openssl dgst -sha256 -hmac "$MOSAIC_BITBUCKET_WEBHOOK_SECRET" | sed 's/^.* //')
+curl -X POST http://localhost:8080/_mosaic_/webhooks/bitbucket \
+  -H 'Content-Type: application/json' \
+  -H 'X-Event-Key: diagnostics:ping' \
+  -H "X-Hub-Signature: sha256=$signature" \
+  -d "$body"
+```
+
+### Things to know
+
+- **Polling stays on.** A delivery the CLI misses (it was restarting, or the network dropped it) is
+  picked up at the next scheduled check. With webhooks in place you can make that check less
+  frequent, for example `schedule: { checkIntervalMins: 240, initialDelayMs: 1000 }` on the source
+  (see [Schedules](./schedules)).
+- **Several CLI instances** each check on their own schedule, but only the instance that receives
+  the webhook refreshes straight away. If the webhook URL points at a load balancer, the other
+  instances catch up at their next check; add a webhook per instance if they must all update at
+  once.
+- **Snapshot and static deployments** have no running CLI to call. Trigger a rebuild from your CI
+  pipeline on push instead.
+- Only Bitbucket Data Center push events are supported. Bitbucket Cloud and GitHub webhooks are not.

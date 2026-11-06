@@ -118,6 +118,14 @@ export default class SourceManager {
     }
   }
 
+  async refreshSource(name: string): Promise<boolean> {
+    const source = this.getSource(name);
+    if (!source) {
+      throw new Error(`[Mosaic] source ${name} was not found so can't be refreshed`);
+    }
+    return source.refresh();
+  }
+
   addSource(
     sourceDefinition: SourceModuleDefinition,
     options: Record<string, unknown>
