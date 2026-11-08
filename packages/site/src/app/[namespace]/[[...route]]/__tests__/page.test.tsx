@@ -67,7 +67,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe.each(['active', 'snapshot-file', 'snapshot-s3'] as const)(
+describe.each(['active', 'snapshot-file'] as const)(
   'document routing in %s mode',
   mode => {
     beforeEach(() => {

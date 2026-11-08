@@ -27,9 +27,13 @@ it:
   `https://example.com/`. Browsers never send those, so they never
   matched; the error suggests the origin to use.
 - A blank (whitespace-only) `MOSAIC_ADMIN_SECRET`,
-  `MOSAIC_WORKFLOWS_SECRET` or `MOSAIC_REVALIDATE_SECRET`.
+  `MOSAIC_WORKFLOWS_SECRET`, `MOSAIC_BITBUCKET_WEBHOOK_SECRET` or
+  `MOSAIC_REVALIDATE_SECRET`.
 - A `MOSAIC_SOURCE_BOOT_TIMEOUT_MS` that isn't a whole number of
   milliseconds (`0` still waits forever).
+- A `MOSAIC_WORKFLOWS_TIMEOUT_MS` that isn't a whole number of
+  milliseconds between 1 and 2147483647. Larger values made every save
+  time out at once.
 
 The placeholder `MOSAIC_WORKFLOWS_SECRET` from `.env.development` is not
 an error: outside `NODE_ENV=development` it still counts as unset.
@@ -46,12 +50,11 @@ keeps running.
 images can still be built without them. Configurations that now stop a
 production server:
 
-- `MOSAIC_MODE` other than `active`, `snapshot-file` or `snapshot-s3`,
+- `MOSAIC_MODE` other than `active` or `snapshot-file`,
   and `MOSAIC_OUTPUT` other than `export` or `standalone`.
 - A missing `MOSAIC_ACTIVE_MODE_URL` in active mode (the default when
-  `MOSAIC_MODE` is unset), `MOSAIC_SNAPSHOT_DIR` in `snapshot-file` mode
-  or any `MOSAIC_S3_*` variable in `snapshot-s3` mode. Every page failed
-  to load without them.
+  `MOSAIC_MODE` is unset), or `MOSAIC_SNAPSHOT_DIR` in `snapshot-file`
+  mode. Every page failed to load without them.
 - `MOSAIC_ACTIVE_MODE_URL` or `NEXT_PUBLIC_SITE_URL` that isn't an
   absolute http(s) URL (an invalid `NEXT_PUBLIC_SITE_URL` used to fall
   back to `http://localhost:3000` with a warning), and
@@ -64,9 +67,6 @@ production server:
   `true` ever turned one on, so `TRUE` or `1` silently meant off.
 - A `MOSAIC_EDITORS` entry that isn't an email address, an `@domain` or
   `*`, such as `*@corp.com`, which never matched anyone.
-- A `MOSAIC_WORKFLOWS_TIMEOUT_MS` that isn't a whole number of
-  milliseconds between 1 and 2147483647. Larger values made every save
-  time out at once.
 
 Valid configurations behave as before. The placeholder `AUTH_SECRET` and
 `MOSAIC_REVALIDATE_SECRET` from `.env.development` are still ignored in
