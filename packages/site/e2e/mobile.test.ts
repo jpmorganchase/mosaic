@@ -71,14 +71,13 @@ test.describe('On a narrow screen', () => {
   const fits = [
     '/mosaic/author/index',
     '/mosaic/configure/index',
-    '/mosaic/author/markdown-syntax'
+    '/mosaic/author/markdown-syntax',
+    '/mosaic/index',
+    '/mosaic/getting-started/index'
   ];
-  // Known overflows: the home page's hero and the card grid on Getting Started.
-  const overflows = ['/mosaic/index', '/mosaic/getting-started/index'];
 
-  for (const path of [...fits, ...overflows]) {
+  for (const path of fits) {
     test(`${path} fits the screen without scrolling sideways`, async ({ page }) => {
-      test.fixme(overflows.includes(path), 'Wider than the screen; layout fix pending');
       await gotoHydrated(page, path);
       const { scrollWidth, innerWidth } = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
