@@ -1,5 +1,9 @@
 /**
- * Namespace layout (`/mosaic/...`).
+ * Persistent layout for a leading URL segment (`/mosaic/...`).
+ *
+ * The segment is a rendering boundary, not a source namespace: sources
+ * may omit their URL prefix, and aliases may live at the site root.
+ * The optional catch-all resolves all of those through the same loaders.
  *
  * Next.js keeps this layout mounted while the reader navigates within
  * the namespace, so it loads the data shared by every page of the
@@ -42,6 +46,7 @@ export default async function NamespaceLayout({
   return (
     <NamespaceFrame
       data={{
+        route: `/${namespace}/index`,
         sharedConfig: withCapabilityBypass(sharedConfig),
         searchIndex: search.searchIndex,
         searchConfig: search.searchConfig

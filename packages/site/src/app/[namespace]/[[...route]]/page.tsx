@@ -1,13 +1,11 @@
 /**
  * Top-level App Router catch-all (WS-3 / WS-9).
  *
- * Data loading: the three independent inputs — `sharedConfig`
- * (header/footer/nav), `searchData` (site-wide search index), and the
- * raw MDX text — are resolved in parallel via three
- * `cache()`+`unstable_cache()`-wrapped primitives exported by
- * `mosaic-site-middleware`. Wall-clock per request is `max(steps)`
- * instead of `sum(steps)`, and identical reads across pages (notably
- * the site-wide search files) collapse to a single backing fetch.
+ * Data loading: `resolveContent` loads the shared config
+ * (header/footer/nav) and raw MDX text in parallel using the cached
+ * primitives exported by `mosaic-site-middleware`. The persistent
+ * layout loads the site-wide search index once per frame. Identical
+ * reads collapse to a single backing fetch.
  * Invalidation is by `revalidateTag('mosaic-content')` from
  * `app/api/revalidate/route.ts`.
  *
@@ -91,10 +89,19 @@ const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 export async function generateStaticParams(): Promise<{ namespace: string; route: string[] }[]> {
   if (!shouldPrerenderSnapshot) return [];
   const urls = await loadSitemap();
-  return urls
-    .map(url => url.replace(/^\//, '').split('/').filter(Boolean))
-    .filter(segments => segments.length > 1)
-    .map(([namespace, ...route]) => ({ namespace, route }));
+  const routes = new Map<string, { namespace: string; route: string[] }>();
+  for (const url of urls) {
+    const [namespace, ...route] = url.split('/').filter(Boolean);
+    if (!namespace) continue;
+    routes.set([namespace, ...route].join('/'), { namespace, route });
+    // Export the short URL of a known top-level index too. The page
+    // resolver decides whether it is a document, alias or folder; the
+    // first URL segment alone does not identify a source namespace.
+    if (route.length === 1 && route[0] === 'index') {
+      routes.set(namespace, { namespace, route: [] });
+    }
+  }
+  return [...routes.values()];
 }
 
 /**
@@ -307,6 +314,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   }
   const storeProps = {
     ...frontmatterRest,
+    route: canonicalPathname ?? resolvedPathname,
     sharedConfig: mergedSharedConfig
   };
 
@@ -512,9 +520,13 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       {canonicalPathname && isFolderIndexRedirect(pathname, canonicalPathname) && (
         <CanonicalizeUrl canonical={canonicalPathname} />
       )}
-      {/* Hands this page's shared config (header overrides, writability)
-          and edit state to the namespace layout's persistent header. */}
-      <FrameSync sharedConfig={mergedSharedConfig} isEditing={editing || creating} />
+      {/* The header and body resolve relative URLs from the same canonical
+          content route, even when this request uses a short URL or alias. */}
+      <FrameSync
+        route={storeProps.route}
+        sharedConfig={mergedSharedConfig}
+        isEditing={editing || creating}
+      />
       <RouteMetadata />
       {editing || creating ? (
         <EditorBody

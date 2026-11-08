@@ -40,8 +40,8 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
 /**
  * One resolved view of the route.
  *
- * `originalPathname` is the URL the user requested (the `[...route]`
- * params); `pathname` is where the content lives after following any
+ * `originalPathname` is the URL the user requested (the namespace and
+ * optional route params); `pathname` is where the content lives after following any
  * folder→index hops. They differ when the user lands on `/dp/products`
  * and the file is `/dp/products/index`, which lets the editor save
  * against the file while the page renders under the requested URL.

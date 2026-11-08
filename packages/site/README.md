@@ -34,12 +34,11 @@ packages/site/
         ├── global-error.tsx    # root layout error boundary
         ├── robots.ts           # robots.txt generation
         ├── sitemap.ts          # sitemap.xml generation
-        ├── [namespace]/        # one namespace, e.g. /mosaic
+        ├── [namespace]/        # leading URL segment, e.g. /mosaic
         │   ├── layout.tsx      # loads namespace data once; persistent header
         │   ├── NamespaceFrame.tsx # frame store, header, <FrameSync>
-        │   ├── page.tsx        # /<namespace> → /<namespace>/index
         │   ├── not-found.tsx   # 404 inside the namespace (header included)
-        │   └── [...route]/     # catch-all route
+        │   └── [[...route]]/   # optional catch-all, including root documents/aliases
         │       ├── page.tsx    # loads content, gates the editor, renders the page
         │       ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
         │       ├── BodyServer.tsx     # renders compiled MDX with <MdxRenderer>
@@ -122,7 +121,7 @@ Three files cover the vast majority of customisations:
 2. **`src/app/providers.tsx`** — the client-side provider stack (Salt
    theme, Mosaic store, Auth.js session) and the per-route
    `<StoreShell>` (layout / image / link providers).
-3. **`src/app/[namespace]/[...route]/MdxComponents.ts`** — the registry of components
+3. **`src/app/[namespace]/[[...route]]/MdxComponents.ts`** — the registry of components
    reachable from MDX. This is where you add your own components (see
    [Custom Components](../../docs/configure/theme/custom-components.mdx)).
 
@@ -176,8 +175,21 @@ the resolution of a real bug.
    page.** The layout stays mounted while the reader navigates within the
    namespace, so its data (shared config, search index) is sent once and
    the header isn't rebuilt. A layout can't see the page it wraps, so
-   page-specific header data reaches it through `<FrameSync>` after the
-   page mounts.
+   page-specific header data and the canonical content route reach it
+   through `<FrameSync>` after the page mounts. Relative header links
+   and images use that canonical route, including `/index`, even when
+   the browser URL is an alias. Initial server HTML uses the layout's
+   fallback config and matching index route; the page's route/config
+   pair takes over before the first client paint.
+10. **Resolve single-segment URLs through the content loaders.** The
+    `[namespace]` segment groups renders; it does not establish which
+    source owns a page. Sources may omit `prefixDir`, and aliases may
+    live at the site root. `[[...route]]` therefore also handles `/about`
+    and `/quickstart`, without appending `/index`. The loaders still
+    resolve real folder index pages such as `/mosaic`.
+
+Only the header persists. Each page continues to load its own sidebar
+tree, so navigation follows the current content in active mode.
 
 ## Migrating an older Mosaic site
 
