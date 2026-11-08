@@ -36,7 +36,9 @@ const SiteMapPlugin: PluginType<
         .join('\n')
     );
 
-    const urlSet = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n ${urls}\n\n</urlset>`;
+    const urlSet = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n ${urls.join(
+      '\n'
+    )}\n\n</urlset>`;
     await sharedFilesystem.promises.writeFile('/sitemap.xml', urlSet);
   },
   // Store a sitemap for just this source
