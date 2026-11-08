@@ -18,6 +18,7 @@ import '../css/index.css';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { AUTH_ENABLED } from '../auth';
 import { amplitude, openSans, ptMono } from '../fonts';
+import { getSiteConfig } from '../lib/config';
 import { resolveSiteOrigin } from '../lib/siteOrigin';
 import { LiveReload } from './LiveReload';
 import { Providers } from './providers';
@@ -49,7 +50,7 @@ const themePrefScript = `
 // Static-export builds (`MOSAIC_OUTPUT=export`) skip the
 // "missing NEXT_PUBLIC_SITE_URL" warning below because absolute URLs
 // aren't meaningful for a snapshot served from an arbitrary origin.
-const isStaticExport = process.env.MOSAIC_OUTPUT === 'export';
+const { staticExport: isStaticExport, siteUrl } = getSiteConfig();
 
 // Dev-only auto-refresh: render `<LiveReload />` (opens an SSE
 // connection to `/api/content/live` and calls `router.refresh()` on
@@ -70,7 +71,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * sitemap/robots routes silently use the same fallback.
  */
 const siteOrigin = resolveSiteOrigin();
-if (process.env.NODE_ENV === 'production' && !isStaticExport && !process.env.NEXT_PUBLIC_SITE_URL) {
+if (process.env.NODE_ENV === 'production' && !isStaticExport && !siteUrl) {
   console.warn(
     `[mosaic-site] NEXT_PUBLIC_SITE_URL is not set in a production build; OG/Twitter cards and sitemap URLs will use ${siteOrigin} as a placeholder.`
   );

@@ -166,6 +166,21 @@ export default class PullDocs {
     }
   }
 
+  /**
+   * Asks a running source to check for changes now instead of waiting for
+   * its schedule. Unlike `restartSource`, its pages stay served and its
+   * caches are kept. Resolves to `false` when the source doesn't support
+   * refreshing (its module has no `refresh` hook).
+   */
+  async refreshSource(name: string): Promise<boolean> {
+    return this.#sourceManager.refreshSource(name);
+  }
+
+  /** The definition a running source was started with. */
+  getSourceDefinition(name: string): SourceModuleDefinition | undefined {
+    return this.#sourceManager.getSourceDefinition(name);
+  }
+
   async listSources() {
     return this.#sourceManager.listSources();
   }

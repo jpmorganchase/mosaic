@@ -19,9 +19,10 @@ import {
   resolveMosaicMode
 } from '@jpmorganchase/mosaic-site-middleware';
 
+import { getSiteConfig } from '../lib/config';
 import { NotFoundBody } from './NotFoundBody';
 
-const isStaticExport = process.env.MOSAIC_OUTPUT === 'export';
+const isStaticExport = getSiteConfig().staticExport;
 
 export default async function NotFound() {
   if (!isStaticExport) return <NotFoundBody />;

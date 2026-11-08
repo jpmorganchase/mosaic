@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { describe, expect, test, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { AddressInfo } from 'node:net';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
@@ -49,6 +50,8 @@ const mockStopSourceFn = vi.fn().mockResolvedValue(true);
 const mockAddSourceFn = vi.fn();
 const mockTriggerWorkflowFn = vi.fn();
 const mockRestartSourceFn = vi.fn().mockResolvedValue(true);
+const mockRefreshSourceFn = vi.fn().mockResolvedValue(true);
+const mockGetSourceDefinitionFn = vi.fn();
 const mockListSourcesFn = vi
   .fn()
   .mockResolvedValue(mosaicConfig.sources.map((source, index) => ({ index, ...source })));
@@ -81,6 +84,8 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
       start: vi.fn(),
       addSource: mockAddSourceFn,
       restartSource: mockRestartSourceFn,
+      refreshSource: mockRefreshSourceFn,
+      getSourceDefinition: mockGetSourceDefinitionFn,
       stopSource: mockStopSourceFn,
       listSources: mockListSourcesFn,
       triggerWorkflow: mockTriggerWorkflowFn,
@@ -94,7 +99,9 @@ const WORKFLOWS_SECRET = 'workflows-test-secret';
 const adminHeaders = { 'x-mosaic-admin-secret': ADMIN_SECRET };
 const ORIGINAL_ENV = {
   MOSAIC_ADMIN_SECRET: process.env.MOSAIC_ADMIN_SECRET,
-  MOSAIC_WORKFLOWS_SECRET: process.env.MOSAIC_WORKFLOWS_SECRET
+  MOSAIC_WORKFLOWS_SECRET: process.env.MOSAIC_WORKFLOWS_SECRET,
+  MOSAIC_WORKFLOWS_TIMEOUT_MS: process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS,
+  MOSAIC_BITBUCKET_WEBHOOK_SECRET: process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET
 };
 
 function restoreEnv(name: keyof typeof ORIGINAL_ENV) {
@@ -106,6 +113,7 @@ describe('GIVEN the serve command', () => {
   beforeAll(async () => {
     process.env.MOSAIC_ADMIN_SECRET = ADMIN_SECRET;
     process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
+    process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '300000';
     await serve(mosaicConfig, 0, undefined /** scope */);
   });
 
@@ -113,6 +121,7 @@ describe('GIVEN the serve command', () => {
     await server.close();
     restoreEnv('MOSAIC_ADMIN_SECRET');
     restoreEnv('MOSAIC_WORKFLOWS_SECRET');
+    restoreEnv('MOSAIC_WORKFLOWS_TIMEOUT_MS');
   });
 
   test('THEN a mosaic instance is created and available to server plugins', async () => {
@@ -576,6 +585,43 @@ describe('GIVEN the serve command', () => {
     });
   });
 
+  describe('AND WHEN Bitbucket delivers a webhook', () => {
+    const WEBHOOK_SECRET = 'bitbucket-test-secret';
+    const ping = (headers: Record<string, string> = {}) =>
+      server.inject({
+        method: 'POST',
+        url: '/_mosaic_/webhooks/bitbucket',
+        headers: {
+          'content-type': 'application/json',
+          'x-event-key': 'diagnostics:ping',
+          ...headers
+        },
+        payload: '{"test":true}'
+      });
+    const signature = `sha256=${createHmac('sha256', WEBHOOK_SECRET)
+      .update('{"test":true}')
+      .digest('hex')}`;
+
+    beforeEach(() => {
+      process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET = WEBHOOK_SECRET;
+    });
+    afterAll(() => restoreEnv('MOSAIC_BITBUCKET_WEBHOOK_SECRET'));
+
+    test('THEN the endpoint does not exist when MOSAIC_BITBUCKET_WEBHOOK_SECRET is unset', async () => {
+      delete process.env.MOSAIC_BITBUCKET_WEBHOOK_SECRET;
+      const response = await ping({ 'x-hub-signature': signature });
+      expect(response.statusCode).toEqual(404);
+    });
+
+    test('THEN it needs the webhook signature, not the admin secret', async () => {
+      const unsigned = await ping(adminHeaders);
+      expect(unsigned.statusCode).toEqual(401);
+
+      const signed = await ping({ 'x-hub-signature': signature });
+      expect(signed.statusCode).toEqual(200);
+    });
+  });
+
   describe('AND WHEN running a workflow over HTTP and following it over SSE', () => {
     const user = { sid: 'dreid', name: 'David Reid', email: 'email.address@something.com' };
     const auth = { authorization: `Bearer ${WORKFLOWS_SECRET}` };
@@ -586,7 +632,6 @@ describe('GIVEN the serve command', () => {
       mockRealpathFn.mockReset();
       mockStatFn.mockReset();
       mockTriggerWorkflowFn.mockReset();
-      delete process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
     });
 
     function givenAnExistingPage(pagePath = '/file/path.mdx') {
@@ -884,52 +929,21 @@ describe('GIVEN the serve command', () => {
       errorSpy.mockRestore();
     });
 
-    test('THEN a workflow that does not finish in MOSAIC_WORKFLOWS_TIMEOUT_MS fails', async () => {
-      process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '50';
-      givenAnExistingPage();
-      mockTriggerWorkflowFn.mockImplementationOnce(() => new Promise(() => {}));
-      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
-
-      const events = await getEvents(jobId);
-      expect(events.body).toEqual(
-        starting +
-          sse(2, 'done', {
-            status: 'ERROR',
-            message: 'The workflow did not finish within 50 ms.'
-          })
-      );
-    });
-
-    test.each(['0', '-1', '1.5', '2147483648', 'Infinity', 'invalid'])(
-      'THEN an invalid timeout %s cannot start a workflow',
-      async timeout => {
-        process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = timeout;
+    test('THEN jobs keep the timeout validated at startup when the environment later changes', async () => {
+      const previous = process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
+      process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = 'invalid';
+      try {
         givenAnExistingPage();
-        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        try {
-          const response = await startJob({ user, route: '/file/path', name: 'save' });
-          expect(response.statusCode).toEqual(500);
-          expect(response.json().error).toContain('MOSAIC_WORKFLOWS_TIMEOUT_MS');
-          expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
-        } finally {
-          errorSpy.mockRestore();
-        }
+        mockTriggerWorkflowFn.mockResolvedValueOnce(true);
+
+        const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+        const events = await getEvents(jobId);
+        expect(events.body).toContain('"status":"SUCCESS"');
+        expect(events.body).not.toContain('ERROR');
+      } finally {
+        if (previous === undefined) delete process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
+        else process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = previous;
       }
-    );
-
-    test('THEN the maximum supported timeout does not overflow into an immediate failure', async () => {
-      process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '2147483647';
-      givenAnExistingPage();
-      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
-        await new Promise(resolve => setTimeout(resolve, 20));
-        send(prMessage, 'COMPLETE');
-        return true;
-      });
-
-      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
-      const events = await getEvents(jobId);
-      expect(events.body).toContain(sse(2, 'done', { status: 'SUCCESS', message: prMessage }));
-      expect(events.body).not.toContain('ERROR');
     });
 
     test('THEN a new page is passed to core to pick its owning source', async () => {

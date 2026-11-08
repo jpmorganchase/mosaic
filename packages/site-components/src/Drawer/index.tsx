@@ -39,7 +39,13 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
       <div ref={triggerRef}>
         <TriggerElement open={open} onClick={handleNavigationToggle} />
       </div>
-      <SaltDrawer className={styles.root} position={side} open={open} ref={rootRef}>
+      <SaltDrawer
+        className={styles.root}
+        position={side}
+        open={open}
+        onOpenChange={setOpen}
+        ref={rootRef}
+      >
         <DrawerCloseButton onClick={handleNavigationToggle} />
         {children}
       </SaltDrawer>

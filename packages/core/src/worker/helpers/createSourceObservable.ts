@@ -26,6 +26,21 @@ async function getSourceDefinitionExports(modulePath): Promise<Source> {
   return api;
 }
 
+/**
+ * The source's optional `refresh` hook bound to its options, or `undefined`
+ * when the source module doesn't implement one.
+ */
+export async function getSourceRefresh({
+  modulePath,
+  options
+}: Pick<WorkerData, 'modulePath' | 'options'>): Promise<(() => Promise<void>) | undefined> {
+  const api = await getSourceDefinitionExports(modulePath);
+  if (typeof api.refresh !== 'function') return undefined;
+  return async () => {
+    await api.refresh(options);
+  };
+}
+
 function createPageTest(ignorePages, pageExtensions) {
   const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
   const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);

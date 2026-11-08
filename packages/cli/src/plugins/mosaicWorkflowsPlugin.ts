@@ -12,6 +12,8 @@ import {
 } from './workflowJobs.js';
 
 export interface FastifyMosaicWorkflowsPluginOptions {
+  /** Maximum job duration, validated once by `mosaic serve` at startup. */
+  timeoutMs: number;
   /** Limits of the in-memory job store. */
   jobs?: WorkflowJobStoreOptions;
   /** Interval between `: ping` comments on an events stream. Default 15 seconds. */
@@ -20,7 +22,6 @@ export interface FastifyMosaicWorkflowsPluginOptions {
 
 /** Largest workflow request accepted (markdown + frontmatter + metadata). */
 const MAX_WORKFLOW_REQUEST_BYTES = 5 * 1024 * 1024;
-const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
 const SECRET_HEADER = 'x-mosaic-workflows-secret';
 
 type WorkflowUser = { id?: string; sid?: string; name?: string; email?: string };
@@ -52,16 +53,6 @@ function validateWorkflowRequest(body: unknown): WorkflowRequest | string {
     return 'Workflow target route is invalid';
   }
   return request as WorkflowRequest;
-}
-
-function jobTimeoutMs() {
-  const configured = process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
-  if (configured === undefined || configured === '') return DEFAULT_TIMEOUT_MS;
-  const value = Number(configured);
-  if (!Number.isInteger(value) || value < 1 || value > 2147483647) {
-    throw new Error('MOSAIC_WORKFLOWS_TIMEOUT_MS must be an integer between 1 and 2147483647.');
-  }
-  return value;
 }
 
 function parseLastEventId(value: unknown) {
@@ -125,7 +116,7 @@ async function runWorkflow(
 
 async function mosaicWorkflows(
   fastify: FastifyInstance,
-  { jobs: jobOptions, pingIntervalMs }: FastifyMosaicWorkflowsPluginOptions
+  { timeoutMs, jobs: jobOptions, pingIntervalMs }: FastifyMosaicWorkflowsPluginOptions
 ) {
   const { fs, core } = fastify.mosaic;
   const jobs = new WorkflowJobStore(jobOptions);
@@ -180,7 +171,7 @@ async function mosaicWorkflows(
         pagePath = (await fs.promises.realpath(route)) as string;
       }
 
-      const job = jobs.create(userId, jobTimeoutMs());
+      const job = jobs.create(userId, timeoutMs);
       if (!job) {
         return reply
           .code(503)

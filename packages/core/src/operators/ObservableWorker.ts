@@ -35,12 +35,18 @@ function buildExecArgv(): string[] {
   return out;
 }
 
-export default function from<T>(workerData: WorkerData) {
+/**
+ * Runs a source worker for as long as the returned observable is
+ * subscribed, emitting the messages it posts. Values emitted by
+ * `toWorker$` are posted to the worker.
+ */
+export default function from<T>(workerData: WorkerData, toWorker$?: Observable<unknown>) {
   return new Observable<T>(observer => {
     const worker = new Worker(require.resolve('../worker/Source.worker'), {
       workerData,
       execArgv: buildExecArgv()
     });
+    const toWorkerSubscription = toWorker$?.subscribe(message => worker.postMessage(message));
     worker.on('message', message => observer.next(message));
     worker.once('error', error => observer.error(error));
     worker.once('exit', code => {
@@ -52,6 +58,7 @@ export default function from<T>(workerData: WorkerData) {
     });
 
     return () => {
+      toWorkerSubscription?.unsubscribe();
       worker.terminate();
     };
   });

@@ -18,11 +18,11 @@ Fix issues found in a review of the App Router site
 
 **`@jpmorganchase/mosaic-site-middleware`**
 
-- In snapshot modes, `getMdxRaw` and `getSharedConfig` decode
-  percent-encoded routes before reading files or S3 keys, so pages whose
-  names contain spaces or non-ASCII characters are found. Decoded paths
-  that would leave the snapshot (`..` or `.` segments, backslashes, NUL
-  bytes) are treated as not found.
+- In `snapshot-file` mode, `getMdxRaw` and `getSharedConfig` decode
+  percent-encoded routes before reading files, so pages whose names
+  contain spaces or non-ASCII characters are found. Decoded paths that
+  would leave the snapshot (`..` or `.` segments, backslashes, NUL bytes)
+  are treated as not found.
 
 **`@jpmorganchase/mosaic-site-components`**
 

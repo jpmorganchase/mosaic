@@ -38,21 +38,17 @@ import NextAuth, { type NextAuthConfig, type NextAuthResult, type Profile } from
 import Credentials from 'next-auth/providers/credentials';
 import GitHub from 'next-auth/providers/github';
 
+import { getSiteConfig } from './lib/config';
+
 /**
- * Placeholder secrets that ship in committed dev env files. They are
- * public, so a production deployment that ends up with one of them (e.g.
- * copied from `.env.development`) would let anyone forge session cookies.
- * In production we treat them as "no secret" and keep Auth.js disabled.
+ * Auth env vars, read through `lib/config.ts`. In production the public
+ * placeholder secret from `.env.development` counts as "no secret"
+ * (`secretIsPlaceholder`), which keeps Auth.js disabled: anyone could
+ * forge session cookies with it.
  */
-const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-auth-secret-not-for-production']);
+const authEnv = getSiteConfig().auth;
 
-const configuredSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-const secretIsRejected =
-  process.env.NODE_ENV === 'production' &&
-  configuredSecret !== undefined &&
-  DEV_PLACEHOLDER_SECRETS.has(configuredSecret);
-
-if (secretIsRejected) {
+if (authEnv.secretIsPlaceholder) {
   console.error(
     '[mosaic-site] AUTH_SECRET is the public development placeholder; Auth.js stays ' +
       'disabled. Generate a real secret with `openssl rand -base64 32`.'
@@ -65,22 +61,18 @@ if (secretIsRejected) {
  * stub exports below are what server callers receive (no `next-auth`
  * runtime cost on the server, no `AUTH_SECRET` required).
  *
- * Note: `process.env.AUTH_SECRET` and `MOSAIC_AUTH_ENABLED` are NOT
- * `NEXT_PUBLIC_` vars, so on the client both resolve to `undefined`
- * and `AUTH_ENABLED` always evaluates to `false`. Client code must not
- * import this flag; the root layout (a Server Component) passes the
- * server-side value to `<Providers authEnabled>` instead. `<SessionProvider>`
- * is still mounted either way — with `session={null}` when auth is off,
- * so `useSession()` settles to `null` without calling `/api/auth/session`.
+ * Note: `AUTH_SECRET` and `MOSAIC_AUTH_ENABLED` are NOT `NEXT_PUBLIC_`
+ * vars and this module is server-only (it reads `lib/config.ts`). Client
+ * code must not import this flag; the root layout (a Server Component)
+ * passes the server-side value to `<Providers authEnabled>` instead.
+ * `<SessionProvider>` is still mounted either way — with `session={null}`
+ * when auth is off, so `useSession()` settles to `null` without calling
+ * `/api/auth/session`.
  */
 export const AUTH_ENABLED =
-  !secretIsRejected && (process.env.MOSAIC_AUTH_ENABLED === 'true' || Boolean(configuredSecret));
+  !authEnv.secretIsPlaceholder && (authEnv.explicitlyEnabled || Boolean(authEnv.secret));
 
-if (
-  AUTH_ENABLED &&
-  process.env.MOSAIC_AUTH_ENABLED !== 'true' &&
-  process.env.NODE_ENV === 'production'
-) {
+if (AUTH_ENABLED && !authEnv.explicitlyEnabled && process.env.NODE_ENV === 'production') {
   // Implicit-enable path: secret is set but the explicit flag isn't.
   // Honour it (deploys that had `AUTH_SECRET` predate the flag) but
   // warn so the operator can make it explicit going forward.
@@ -103,18 +95,14 @@ if (
  */
 export function isAuthorizedEditor(user: { email?: string | null } | null | undefined): boolean {
   if (!user) return false;
-  const configured = process.env.MOSAIC_EDITORS?.trim();
-  if (!configured) return process.env.NODE_ENV !== 'production';
+  const { editors } = authEnv;
+  if (!editors) return process.env.NODE_ENV !== 'production';
   const email = user.email?.trim().toLowerCase();
-  return configured
-    .split(',')
-    .map(entry => entry.trim().toLowerCase())
-    .filter(Boolean)
-    .some(entry => {
-      if (entry === '*') return true;
-      if (!email) return false;
-      return entry.startsWith('@') ? email.endsWith(entry) : email === entry;
-    });
+  return editors.some(entry => {
+    if (entry === '*') return true;
+    if (!email) return false;
+    return entry.startsWith('@') ? email.endsWith(entry) : email === entry;
+  });
 }
 
 /**
@@ -147,7 +135,7 @@ export async function loadGitHubProfile({
   return profile;
 }
 
-if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC_EDITORS?.trim()) {
+if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !authEnv.editors) {
   console.warn(
     '[mosaic-site] MOSAIC_EDITORS is not set, so nobody can sign in or edit. ' +
       'Set it to a comma-separated list of emails, @domains or `*`.'
@@ -168,9 +156,7 @@ if (AUTH_ENABLED && process.env.NODE_ENV === 'production' && !process.env.MOSAIC
  * runtime for the credentials to flow through.
  */
 const FAKE_AUTH_ENABLED =
-  AUTH_ENABLED &&
-  process.env.NODE_ENV !== 'production' &&
-  process.env.MOSAIC_DEV_FAKE_AUTH === 'true';
+  AUTH_ENABLED && process.env.NODE_ENV !== 'production' && getSiteConfig().dev.fakeAuth;
 
 // ---------------------------------------------------------------------------
 // No-auth stub exports (used when AUTH_ENABLED === false)
@@ -224,8 +210,8 @@ let authConfig: NextAuthConfig | undefined;
 if (AUTH_ENABLED) {
   const providers: NextAuthConfig['providers'] = [
     GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
+      clientId: authEnv.githubId,
+      clientSecret: authEnv.githubSecret,
       userinfo: { request: loadGitHubProfile }
     })
   ];
@@ -236,10 +222,7 @@ if (AUTH_ENABLED) {
   // logs instead of in the first sign-in attempt. Dev runs
   // typically rely on MOSAIC_DEV_FAKE_AUTH so a missing GitHub
   // config is expected.
-  if (
-    process.env.NODE_ENV === 'production' &&
-    (!process.env.GITHUB_ID || !process.env.GITHUB_SECRET)
-  ) {
+  if (process.env.NODE_ENV === 'production' && (!authEnv.githubId || !authEnv.githubSecret)) {
     console.warn(
       '[mosaic-site] GitHub provider is registered but GITHUB_ID and/or ' +
         'GITHUB_SECRET is unset. Sign-in will fail with an opaque OAuth error.'
@@ -277,7 +260,7 @@ if (AUTH_ENABLED) {
     // In v5 the default secret env var is `AUTH_SECRET`. Fall back to the
     // legacy `NEXTAUTH_SECRET` so existing deployments keep working
     // through the v4 → v5 migration window.
-    secret: configuredSecret,
+    secret: authEnv.secret,
     // Auth.js v5 requires `trustHost` to be true for any non-Vercel
     // deployment (self-hosted Docker, Kubernetes, etc.). Mosaic ships
     // both, so opt in unconditionally; the host header is already

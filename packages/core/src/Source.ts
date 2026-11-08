@@ -107,6 +107,18 @@ export default class Source {
   }
 
   /**
+   * Asks the source to check for changes now instead of waiting for its
+   * schedule. Resolves to `false` when the source module has no `refresh`
+   * hook. Changed pages arrive through `onUpdate` as usual.
+   */
+  refresh(): Promise<boolean> {
+    if (!this.#worker || this.#worker.closed) {
+      return Promise.reject(new Error(`[Mosaic][Source] '${this.id.description}' is not running`));
+    }
+    return this.#worker.refresh();
+  }
+
+  /**
    * Called when another source (not this one) has changed.
    * This source can then ask its plugins if they also want to clear their cache in response to the other source's change.
    */

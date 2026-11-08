@@ -10,6 +10,7 @@
  * `MOSAIC_WORKFLOWS_SECRET` as a bearer token.
  */
 import { auth, isAuthorizedEditor } from '../auth';
+import { getSiteConfig } from './config';
 
 let warnedAboutWebSocketUrl = false;
 
@@ -22,7 +23,7 @@ let warnedAboutWebSocketUrl = false;
  * converted to `http://` / `https://`, with a one-time deprecation warning.
  */
 export function getWorkflowsBaseUrl(): string | undefined {
-  const configured = process.env.MOSAIC_WORKFLOWS_URL?.trim();
+  const configured = getSiteConfig().workflows.url.trim();
   if (!configured) return undefined;
   let url = configured.replace(/\/workflows\/?$/, '');
   if (/^wss?:\/\//i.test(url)) {
@@ -39,7 +40,7 @@ export function getWorkflowsBaseUrl(): string | undefined {
 }
 
 export function getWorkflowsSecret(): string | undefined {
-  return process.env.MOSAIC_WORKFLOWS_SECRET || undefined;
+  return getSiteConfig().workflows.secret || undefined;
 }
 
 export interface WorkflowUser {
