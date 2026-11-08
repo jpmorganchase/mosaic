@@ -1,8 +1,43 @@
 import { JSDOM } from 'jsdom';
+import { Volume } from 'memfs';
 import { describe, expect, test, vi } from 'vitest';
+import FileAccess from '../../../core/src/filesystems/FileAccess';
+import MutableVolume from '../../../core/src/filesystems/MutableVolume';
 import SiteMapPlugin from '../SiteMapPlugin';
 
 describe('SiteMapPlugin', () => {
+  test('excludes internal data only from the sitemap while preserving shared ignore rules', async () => {
+    const filesystem = new MutableVolume(
+      new FileAccess(
+        Volume.fromJSON({
+          '/salt/index.mdx': '# Salt',
+          '/salt/components/button.mdx': '# Button',
+          '/salt/shared-config.json': '{}',
+          '/salt-github/core-1.74.0.json': '{"title":"Core release"}'
+        })
+      ),
+      'salt'
+    );
+    const setData = vi.fn();
+    const beforeSend = SiteMapPlugin.$beforeSend!;
+
+    await beforeSend(
+      filesystem,
+      {
+        config: { setData },
+        ignorePages: ['shared-config.json']
+      } as unknown as Parameters<typeof beforeSend>[1],
+      { siteUrl: 'https://www.saltdesignsystem.com/', exclude: ['**/salt-github/**'] }
+    );
+
+    expect(setData).toHaveBeenCalledWith({
+      sitemaps: [['/salt/index.mdx', '/salt/components/button.mdx']]
+    });
+    expect(String(await filesystem.promises.readFile('/salt-github/core-1.74.0.json'))).toBe(
+      '{"title":"Core release"}'
+    );
+  });
+
   test('merges multiple sources, including empty sources, without text between URL elements', async () => {
     const writeFile = vi.fn().mockResolvedValue(undefined);
     const afterUpdate = SiteMapPlugin.afterUpdate!;

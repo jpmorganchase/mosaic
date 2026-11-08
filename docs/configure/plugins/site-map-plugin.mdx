@@ -15,9 +15,10 @@ This plugin runs with no special priority.
 
 ## Options
 
-| Property | Description                                                                                         |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| siteUrl  | The site URL. Used as the prefix for loc entries in the sitemap as these must start with a protocol |
+| Property | Description                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| siteUrl  | The site URL. Used as the prefix for loc entries in the sitemap as these must start with a protocol                             |
+| exclude  | Optional array of glob patterns to omit from the sitemap. Matching records remain available to other plugins. Defaults to `[]`. |
 
 ## Adding to Mosaic
 
@@ -33,6 +34,19 @@ plugins: [
   // other plugins
 ];
 ```
+
+For a site that combines documentation with internal release data, exclude the
+data source's prefix without removing it from the Mosaic filesystem:
+
+```js
+options: {
+  siteUrl: 'https://www.saltdesignsystem.com',
+  exclude: ['**/salt-github/**']
+}
+```
+
+These patterns apply to source filesystem paths. The plugin also respects the
+site's existing `ignorePages` rules.
 
 ## Visualiser
 
