@@ -18,12 +18,16 @@
  * Returning a string `origin` (rather than the full `URL`) because the
  * callers either want `${origin}/path` strings or pass it to
  * `new URL(path, origin)` — both prefer the plain origin.
+ *
+ * A server that starts with an invalid value in production stops at
+ * startup (`lib/config.ts`); the fallback below still covers `next build`.
  */
+import { getSiteConfig } from './config';
 
 const FALLBACK_ORIGIN = 'http://localhost:3000';
 
 export function resolveSiteOrigin(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL;
+  const fromEnv = getSiteConfig().siteUrl;
   if (fromEnv) {
     try {
       return new URL(fromEnv).origin;

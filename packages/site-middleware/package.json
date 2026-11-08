@@ -35,15 +35,11 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@smithy/util-stream": "^4.6.3",
     "@types/hast": "^3.0.4",
-    "aws-sdk-client-mock": "^4.0.0",
     "next": "^16.4.2",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1053.0",
-    "@aws-sdk/types": "^3.973.9",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
@@ -51,7 +47,6 @@
     "deepmerge": "^4.2.2",
     "gray-matter": "^4.0.3",
     "hast-util-properties-to-mdx-jsx-attributes": "^1.0.0",
-    "md5": "^2.3.0",
     "mdast-util-from-markdown": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
     "mdast-util-mdx-jsx": "^3.0.0",

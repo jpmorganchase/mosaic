@@ -21,9 +21,10 @@ packages/site/
 │   └── static-export-route-stubs.mjs   # apply/revert API stubs for static export
 └── src/
     ├── auth.ts                 # Auth.js v5 (handlers, auth, signIn, signOut) + editor allowlist
+    ├── instrumentation.ts      # validates the env when the server starts
     ├── css/                    # global styles (imported from layout.tsx only)
     ├── fonts/                  # next/font wiring
-    ├── lib/                    # site origin, route validation, dev live-reload bus
+    ├── lib/                    # env config, site origin, route validation, dev live-reload bus
     └── app/
         ├── layout.tsx          # root layout, global CSS, theme script
         ├── providers.tsx       # 'use client' providers + per-route <StoreShell>
@@ -94,20 +95,43 @@ overrides in `.env.local` (gitignored).
 Set these per deployment (for example in your hosting provider's
 environment settings). None of them should be committed with real values.
 
-| Variable                                          | Purpose                                                                                                                                     |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MOSAIC_MODE`                                     | `active` (`next dev` default), `snapshot-file` (`next build` / `next start` default) or `snapshot-s3`.                                      |
-| `MOSAIC_ACTIVE_MODE_URL`                          | Mosaic CLI content server, e.g. `http://mosaic-fs:8080` (active mode).                                                                      |
-| `MOSAIC_SNAPSHOT_DIR`                             | Snapshot folder for `snapshot-file` (defaults to `snapshots/latest` via `.env`).                                                            |
-| `NEXT_PUBLIC_SITE_URL`                            | Canonical origin for metadata, `sitemap.xml` and `robots.txt`.                                                                              |
-| `MOSAIC_REVALIDATE_SECRET`                        | Shared secret for `POST /api/revalidate`; the CLI sends it with `MOSAIC_REVALIDATE_URL`.                                                    |
-| `MOSAIC_ACTIVE_MODE_CACHE`                        | `true` caches active-mode reads until the CLI's revalidate call. Only when that call reaches every site instance.                           |
-| `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED`              | Enable Auth.js (the editor sign-in). Generate the secret with `openssl rand -base64 32`.                                                    |
-| `GITHUB_ID`, `GITHUB_SECRET`                      | GitHub OAuth app for sign-in.                                                                                                               |
-| `MOSAIC_EDITORS`                                  | Who may sign in and edit: comma-separated emails, `@domains` or `*`. GitHub emails must be verified. **Unset means nobody in production.**  |
-| `NEXT_PUBLIC_ENABLE_LOGIN`                        | `true` shows the Login control and editor buttons.                                                                                          |
-| `MOSAIC_WORKFLOWS_URL`, `MOSAIC_WORKFLOWS_SECRET` | WebSocket URL of the CLI's `/workflows` endpoint and the shared secret it requires (the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`). |
-| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                     | How long a save may run before it is reported as failed (default 5 minutes).                                                                |
+**Validated at startup.** `src/lib/config.ts` checks every variable below
+when a server starts (`next start`, `next dev`, the standalone
+`server.js`), not during `next build`, so an image can be built without its
+runtime secrets. With `NODE_ENV=production` an invalid configuration
+stops the server (exit code 1) with one error that lists every problem as
+`NAME: reason`; in development the same list is logged and the server
+keeps running. Empty
+values count as unset, and flags only accept `true` or `false`.
+
+`NEXT_PUBLIC_*` values are inlined when you build, so set them for
+`next build`.
+
+| Variable                                                                                         | Values                                                             | Default                                                  | Purpose                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MOSAIC_MODE`                                                                                    | `active` or `snapshot-file`                         | `active` (`.env.production` sets `snapshot-file`)        | Where content comes from.                                                                                                                                |
+| `MOSAIC_ACTIVE_MODE_URL`                                                                         | http(s) URL. Required in `active` mode                             | –                                                        | Mosaic CLI content server, e.g. `http://mosaic-fs:8080`.                                                                                                 |
+| `MOSAIC_SNAPSHOT_DIR`                                                                            | Path. Required in `snapshot-file` mode                             | `snapshots/latest` (set in `.env`)                       | Snapshot folder, relative to the site.                                                                                                                   |
+| `MOSAIC_OUTPUT`                                                                                  | `export` or `standalone`                                           | Unset: a build for `next start`                          | Build target (see `next.config.js`). `export` needs a snapshot mode.                                                                                     |
+| `NEXT_PUBLIC_SITE_URL`                                                                           | Absolute http(s) URL                                               | `http://localhost:3000`, with a warning in production    | Canonical origin for metadata, `sitemap.xml` and `robots.txt`.                                                                                           |
+| `NEXT_PUBLIC_ENABLE_LOGIN`                                                                       | `true` or `false`                                                  | `false`                                                  | Shows the Login control and editor buttons.                                                                                                              |
+| `NEXT_PUBLIC_OPTIMIZE_IMAGES`                                                                    | `true` or `false`                                                  | `false` (`.env.production` sets `true`)                  | Lets Next.js optimise images rendered by `site-components`.                                                                                              |
+| `MOSAIC_ACTIVE_MODE_CACHE`                                                                       | `true` or `false`                                                  | `false`                                                  | `true` caches active-mode reads until the CLI's revalidate call. Only when that call reaches every site instance.                                        |
+| `MOSAIC_DISABLE_LOADER_CACHE`                                                                    | `true` or `false`                                                  | `false`                                                  | `true` bypasses the cross-request content cache. For local work on snapshot files.                                                                       |
+| `MOSAIC_REVALIDATE_SECRET`                                                                       | Secret                                                             | Unset: `POST /api/revalidate` answers 503                | Shared secret for `POST /api/revalidate`; the CLI sends it to `MOSAIC_REVALIDATE_URL`. In production the `.env.development` placeholder counts as unset. |
+| `MOSAIC_AUTH_ENABLED`                                                                            | `true` or `false`                                                  | `false`                                                  | Turns sign-in (Auth.js) on. Setting `AUTH_SECRET` alone also turns it on, with a warning.                                                                |
+| `AUTH_SECRET` (or the legacy `NEXTAUTH_SECRET`)                                                  | Secret                                                             | –                                                        | Auth.js secret. Generate it with `openssl rand -base64 32`. In production the `.env.development` placeholder counts as unset and auth stays off.         |
+| `GITHUB_ID`, `GITHUB_SECRET`                                                                     | Text and secret                                                    | –                                                        | GitHub OAuth app for sign-in.                                                                                                                            |
+| `MOSAIC_EDITORS`                                                                                 | Comma-separated emails, `@domains` or `*`                          | Unset: everyone in development, **nobody in production** | Who may sign in and edit. GitHub emails must be verified.                                                                                                |
+| `MOSAIC_WORKFLOWS_URL`                                                                           | ws(s) or http(s) URL. Needs `MOSAIC_WORKFLOWS_SECRET`              | Unset: saves are reported as not configured              | The CLI's `/workflows` endpoint.                                                                                                                         |
+| `MOSAIC_WORKFLOWS_SECRET`                                                                        | Secret                                                             | –                                                        | Shared secret for saves; the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`.                                                                          |
+| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                                                                    | Whole number of milliseconds, 1 to 2147483647                      | `300000` (5 minutes)                                     | How long a save may run before it is reported as failed.                                                                                                 |
+| `MOSAIC_DEV_FAKE_AUTH`                                                                           | `true` or `false`                                                  | `false`                                                  | Development only: a sign-in that accepts anyone. Ignored in production.                                                                                  |
+| `MOSAIC_DEV_BYPASS_CAPABILITY_GATE`                                                              | `true` or `false`                                                  | `false`                                                  | Development only: shows the editor on every page. Ignored in production.                                                                                 |
+
+`SITE_URL` is read by `mosaic.config.mjs` (the CLI's sitemap plugin), not
+by the site. For the CLI's own variables, see
+[Admin](../../docs/configure/admin/index.mdx#environment-variables).
 
 ## Customising
 

@@ -7,7 +7,7 @@ from nginx — **no Node.js runtime in the production image**.
 
 - A snapshot to build against. Generate one with
   `yarn workspace @jpmorganchase/mosaic-site gen:snapshot` (lands in
-  `packages/site/snapshots/latest/`), or arrange S3 access.
+  `packages/site/snapshots/latest/`).
 - Docker 20.10+ (uses BuildKit syntax for the inline nginx config).
 
 ## Build
@@ -15,18 +15,10 @@ from nginx — **no Node.js runtime in the production image**.
 From the repo root:
 
 ```bash
-# snapshot-file mode (default)
 docker build -f examples/docker/static-export/Dockerfile -t mosaic-static .
-
-# snapshot-s3 mode
-docker build \
-  -f examples/docker/static-export/Dockerfile \
-  --build-arg MOSAIC_MODE=snapshot-s3 \
-  -t mosaic-static-s3 .
 ```
 
-The build runs `yarn build:static:file` (or `build:static:s3`) inside
-`packages/site`, which:
+The build runs `yarn build:static:file` inside `packages/site`, which:
 
 1. Applies the API-route stubs (`scripts/static-export-route-stubs.mjs`).
 2. Runs `next build` with `MOSAIC_OUTPUT=export`.

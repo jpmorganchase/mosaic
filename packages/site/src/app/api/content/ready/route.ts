@@ -21,10 +21,10 @@
  *      secret (it may point at an internal host); we don't want to
  *      expose it to the client.
  *
- * Snapshot modes don't have a cold start (the bytes are on disk /
- * in S3 at boot time), so the endpoint reports `ready: true`
- * immediately in those modes. The client then checks the URL once,
- * finds it still 404s (the page genuinely doesn't exist) and stops.
+ * Snapshot mode doesn't have a cold start (the bytes are on disk at
+ * boot time), so the endpoint reports `ready: true` immediately in
+ * that mode. The client then checks the URL once, finds it still
+ * 404s (the page genuinely doesn't exist) and stops.
  *
  * Production gating: dev-only by design — see the
  * `process.env.NODE_ENV` guard. The route still exists in prod
@@ -49,11 +49,10 @@ export async function GET(): Promise<Response> {
 
   const { mode, contentUrl } = resolveMosaicMode();
 
-  // Snapshot modes are ready as soon as the Next.js server is up —
-  // the bytes are either on local disk or pre-loaded into S3 long
-  // before the request lands. Report ready immediately so the
-  // recovery component checks the URL once and stops (snapshot 404s
-  // are real 404s).
+  // Snapshot mode is ready as soon as the Next.js server is up —
+  // the bytes are on local disk long before the request lands.
+  // Report ready immediately so the recovery component checks the
+  // URL once and stops (snapshot 404s are real 404s).
   if (mode !== 'active') {
     return Response.json({ ready: true, mode });
   }

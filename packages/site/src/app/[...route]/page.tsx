@@ -47,6 +47,7 @@ import {
 } from '@jpmorganchase/mosaic-site-middleware';
 
 import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../auth';
+import { getSiteConfig } from '../../lib/config';
 import { StoreShell } from '../providers';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
@@ -83,7 +84,8 @@ interface PageProps {
 // Setting `dynamic = 'force-dynamic'` would defeat the snapshot
 // pre-render and was only needed earlier as a workaround for a
 // conditional that App Router refuses to statically analyse.
-const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
+const siteConfig = getSiteConfig();
+const isSnapshotMode = siteConfig.mode.startsWith('snapshot');
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 
@@ -111,7 +113,7 @@ const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
  * (overridden) capability snapshot.
  */
 const CAPABILITY_GATE_BYPASSED =
-  process.env.NODE_ENV !== 'production' && process.env.MOSAIC_DEV_BYPASS_CAPABILITY_GATE === 'true';
+  process.env.NODE_ENV !== 'production' && siteConfig.dev.bypassCapabilityGate;
 
 if (CAPABILITY_GATE_BYPASSED) {
   console.warn(
