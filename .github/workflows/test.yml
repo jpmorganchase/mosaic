@@ -6,8 +6,8 @@ name: Test
 on:
   push:
     branches: [main, 'release/**']
+  # Every PR, including stacked PRs that target another PR's branch.
   pull_request:
-    branches: [main, 'release/**']
 
 jobs:
   test:
