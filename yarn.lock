@@ -1341,7 +1341,7 @@ __metadata:
     del-cli: "npm:^6.0.0"
     hoist-non-react-statics: "npm:^3.3.2"
     lodash-es: "npm:^4.17.23"
-    react: "npm:^19.0.0"
+    react: "npm:^19.1.0"
     react-live: "npm:^4.0.0"
     react-markdown: "npm:^9.0.0"
     react-table: "npm:^7.8.0"
@@ -11735,13 +11735,6 @@ __metadata:
     react: ">=16.6.0"
     react-dom: ">=16.6.0"
   checksum: 10/ca32d3fd2168c976c5d90a317f25d5f5cd723608b415fb3b9006f9d793c8965c619562d0884503a3e44e4b06efbca4fdd1520f30e58ca3e00a0890e637d55419
-  languageName: node
-  linkType: hard
-
-"react@npm:^19.0.0":
-  version: 19.2.4
-  resolution: "react@npm:19.2.4"
-  checksum: 10/18179fe217f67eb2d0bc61cd04e7ad3c282ea09a1dface7eacd71816f62609f4bbf566c447c704335284deb8397b00bca084e0cd60e6f437279a7498e2d0bfe0
   languageName: node
   linkType: hard
 
