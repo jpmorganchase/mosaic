@@ -111,7 +111,8 @@ export default class PullDocs {
   /**
    * Runs workflow `name` for `filePath`. Pass `{ newPage: true }` when
    * `filePath` doesn't exist yet, so the owning source is picked by its
-   * `prefixDir`. Resolves to `false` when no source could run it.
+   * `prefixDir`. Resolves once the workflow has finished: `false` when no
+   * source could run it or it failed (an ERROR has been reported).
    */
   triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
@@ -163,6 +164,21 @@ export default class PullDocs {
     } else {
       throw new Error(`[Mosaic] source ${name} was not found so can't be restarted`);
     }
+  }
+
+  /**
+   * Asks a running source to check for changes now instead of waiting for
+   * its schedule. Unlike `restartSource`, its pages stay served and its
+   * caches are kept. Resolves to `false` when the source doesn't support
+   * refreshing (its module has no `refresh` hook).
+   */
+  async refreshSource(name: string): Promise<boolean> {
+    return this.#sourceManager.refreshSource(name);
+  }
+
+  /** The definition a running source was started with. */
+  getSourceDefinition(name: string): SourceModuleDefinition | undefined {
+    return this.#sourceManager.getSourceDefinition(name);
   }
 
   async listSources() {

@@ -220,6 +220,40 @@ describe('GIVEN Source', () => {
     });
   });
 
+  describe('WHEN calling `refresh`', () => {
+    let workerMock: { closed: boolean; refresh: MockedFunction<any>; on(): void; once(): void };
+
+    afterEach(() => {
+      (WorkerSubscription as MockedFunction<any>).mockRestore();
+    });
+    beforeEach(() => {
+      workerMock = { closed: false, refresh: vi.fn().mockResolvedValue(true), on() {}, once() {} };
+      (WorkerSubscription as MockedFunction<any>).mockImplementation(
+        function WorkerSubscriptionMock() {
+          return workerMock;
+        }
+      );
+    });
+
+    test('THEN the worker is asked to refresh and its answer is returned', async () => {
+      const source = new Source({ modulePath: 'plugin', namespace: 'test-namespace' });
+      await source.start();
+
+      await expect(source.refresh()).resolves.toBe(true);
+      expect(workerMock.refresh).toHaveBeenCalledTimes(1);
+    });
+
+    test('THEN a source that has not started or has stopped cannot be refreshed', async () => {
+      const source = new Source({ modulePath: 'plugin', namespace: 'test-namespace' });
+      await expect(source.refresh()).rejects.toThrow(/is not running/);
+
+      await source.start();
+      workerMock.closed = true;
+      await expect(source.refresh()).rejects.toThrow(/is not running/);
+      expect(workerMock.refresh).not.toHaveBeenCalled();
+    });
+  });
+
   describe('WHEN events fire', () => {
     const workerHandlers: {
       exit: (code: number) => void;
@@ -459,6 +493,68 @@ describe('GIVEN Source', () => {
       expect(sendWorkflowProgressMessageSpy.mock.calls[0][1]).toEqual('ERROR');
       errorSpy.mockRestore();
     });
+
+    test('THEN it resolves once the workflow action has finished', async () => {
+      let finishAction: () => void = () => {};
+      actionSpy.mockImplementationOnce(
+        () => new Promise<void>(resolve => (finishAction = resolve))
+      );
+      let settled = false;
+      const result = source
+        .triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {})
+        .then(ran => {
+          settled = true;
+          return ran;
+        });
+      await new Promise(resolve => setTimeout(resolve));
+      expect(settled).toBe(false);
+      finishAction();
+      await expect(result).resolves.toBe(true);
+    });
+
+    test('THEN it resolves to false when the workflow fails', async () => {
+      actionSpy.mockRejectedValueOnce(new Error('boom'));
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await expect(
+        source.triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {})
+      ).resolves.toBe(false);
+      errorSpy.mockRestore();
+    });
+
+    test('THEN an explicit false result is reported as a failed workflow', async () => {
+      actionSpy.mockResolvedValueOnce(false);
+
+      await expect(
+        source.triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {})
+      ).resolves.toBe(false);
+      expect(sendWorkflowProgressMessageSpy).toHaveBeenCalledExactlyOnceWith(
+        '[Mosaic][Source] workflow workflow-name did not complete',
+        'ERROR'
+      );
+    });
+
+    test.each([false, { error: 'Cannot create this page' }])(
+      'THEN a workflow that reports an error stays failed without a duplicate message (returning %j)',
+      async result => {
+        actionSpy.mockImplementationOnce(async send => {
+          send('Cannot create this page', 'ERROR');
+          return result;
+        });
+
+        await expect(
+          source.triggerWorkflow(
+            sendWorkflowProgressMessageSpy,
+            'workflow-name',
+            '/path/to/file',
+            {}
+          )
+        ).resolves.toBe(false);
+        expect(sendWorkflowProgressMessageSpy).toHaveBeenCalledExactlyOnceWith(
+          'Cannot create this page',
+          'ERROR'
+        );
+      }
+    );
 
     describe('AND WHEN there is no matching workflow', () => {
       test('THEN an error is sent', () => {

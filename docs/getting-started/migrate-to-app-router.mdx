@@ -7,7 +7,7 @@ sidebar:
 
 # {meta.title}
 
-The reference Mosaic site (`packages/site`) has moved from the Next.js Pages Router to the App Router. A follow-up release secured the editor and the content server, and changed some deployment defaults. This guide covers everything you need to change if your site was copied from the old Pages Router site, or if you run the Mosaic CLI (`mosaic serve`, `mosaic build` or `mosaic upload`).
+The reference Mosaic site (`packages/site`) has moved from the Next.js Pages Router to the App Router. A follow-up release secured the editor and the content server, changed some deployment defaults, and removed `snapshot-s3` mode and `mosaic upload`. This guide covers everything you need to change if your site was copied from the old Pages Router site, or if you run the Mosaic CLI (`mosaic serve`, `mosaic build` or `mosaic upload`).
 
 Your site uses the old layout if it has `src/pages/_app.tsx` and `src/pages/[...route].tsx`.
 
@@ -37,7 +37,7 @@ Keep your `mosaic.config.mjs`, your content, your CSS and your own components. T
 | `src/pages/index.tsx` (redirect)            | `src/app/page.tsx`                                                                                                      |
 | `src/pages/api/auth/[...nextauth].ts`       | `src/auth.ts` and `src/app/api/auth/[...nextauth]/route.ts`                                                             |
 | `src/pages/api/content/preview.ts`          | `src/app/[namespace]/[[...route]]/previewAction.ts` (Server Action)                                                     |
-| Browser WebSocket to the CLI's `/workflows` | `src/app/[namespace]/[[...route]]/persistAction.ts` (Server Action)                                                     |
+| Browser WebSocket to the CLI's `/workflows` | `src/app/[namespace]/[[...route]]/persistAction.ts` (Server Action) and `src/app/api/workflows/[jobId]/events/route.ts` |
 | `components` object in `_app.tsx`           | `src/app/[namespace]/[[...route]]/MdxComponents.ts`                                                                     |
 | `Metadata` component with `next/head`       | `generateMetadata` in `src/app/[namespace]/[[...route]]/page.tsx`                                                       |
 | `src/types/mosaic.ts`                       | Removed                                                                                                                 |
@@ -136,6 +136,8 @@ If you use static export, add your route to `ROUTES` in `scripts/static-export-r
 | `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                       |
 | `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                       |
 
+`mosaic-schemas` no longer exports `snapshotS3EnvSchema` or `S3LoaderProcessEnv`, and `MosaicMode` in `mosaic-types` is now `'active' | 'snapshot-file'`.
+
 The loaders are cached and tagged with `MOSAIC_CONTENT_CACHE_TAG`. Import the tag from `@jpmorganchase/mosaic-site-middleware/cache-tags` if you revalidate it yourself.
 
 The editor plugin now uses Lexical 0.45 instead of 0.17:
@@ -166,8 +168,9 @@ Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-p
 
 - **The editor only appears on pages from a writable source.** A source must declare `capabilities: { writable: true }`. `source-git-repo` does; `source-local-folder`, `source-http` and the other read-only sources don't. If you wrote your own source and want it to be editable, add `capabilities` to it. Frontmatter can't turn editing on.
 - **Preview and save now run on the site's server.** The browser no longer connects to the CLI. Replace `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL` with `MOSAIC_WORKFLOWS_URL`, which is only read on the server.
+- **Saves no longer use WebSockets.** Set `MOSAIC_WORKFLOWS_URL` to the CLI's base HTTP URL, such as `http://mosaic-fs:8080`. The site starts a save with an HTTP request to the CLI, and the editor follows its progress with Server-Sent Events through the site's `/api/workflows/<jobId>/events` route. An old `ws://…/workflows` value still works, but logs a warning.
 - **Set `MOSAIC_WORKFLOWS_SECRET` to the same value on the site and the CLI.** If the CLI doesn't have it, no save will run.
-- Saves that take longer than `MOSAIC_WORKFLOWS_TIMEOUT_MS` (5 minutes by default) are reported as failed.
+- Saves that take longer than `MOSAIC_WORKFLOWS_TIMEOUT_MS` (set on the CLI, 5 minutes by default) are reported as failed.
 - Authors can create new pages from the editor.
 - In `next dev`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` shows the editor on every page. It has no effect in production.
 
@@ -186,6 +189,10 @@ If your `mosaic.config.mjs` loads env files with `@next/env`, only load the deve
 
 **Production builds now default to snapshot mode.** `.env.production` sets `MOSAIC_MODE=snapshot-file`. If your site reads content from a running Mosaic CLI, set `MOSAIC_MODE=active` explicitly. Values set in the environment take precedence over `.env.production`.
 
+**Both the site and the CLI check their variables when they start.** A production site (`next start` or the standalone `server.js`) and `mosaic serve` exit with code 1 on an invalid value, and list every problem as `NAME: reason`; `next dev` only logs the list. `next build` doesn't check runtime variables, so you can still build an image without them. Copy `src/instrumentation.ts` and `src/lib/config.ts` from the reference site to get the site checks. The full lists, with types and defaults, are in the [site README](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/README.md#environment-variables) and the [Admin](../configure/admin/index#environment-variables) page.
+
+**`snapshot-s3` mode is removed.** `MOSAIC_MODE` is now `active` or `snapshot-file`, and the reference site refuses to start or build with any other value. If you kept snapshots in S3, download the snapshot folder before you build (for example `aws s3 sync s3://your-bucket snapshots/latest`), then set `MOSAIC_MODE=snapshot-file` and point `MOSAIC_SNAPSHOT_DIR` at that folder, relative to the site's folder. The `build:static:s3` and `serve:snapshot:s3` scripts are gone too; use `build:static:file` and `serve:snapshot:file`.
+
 ### Site: renamed or removed
 
 | Before                                | Now                                                    |
@@ -196,6 +203,7 @@ If your `mosaic.config.mjs` loads env files with `@next/env`, only load the deve
 | `NEXT_PUBLIC_MOSAIC_IBCE_PREVIEW_URL` | Remove. Preview is a Server Action.                    |
 | `OPTIMIZE_IMAGES`                     | `NEXT_PUBLIC_OPTIMIZE_IMAGES`                          |
 | `MOSAIC_ENABLE_SOURCE_PUSH`           | Remove. Nothing reads it.                              |
+| `MOSAIC_S3_*`                         | Remove, with `snapshot-s3` mode (see above).           |
 
 ### Site: new
 
@@ -204,36 +212,38 @@ If your `mosaic.config.mjs` loads env files with `@next/env`, only load the deve
 | `MOSAIC_AUTH_ENABLED`                                                                      | `true` turns sign-in on.                                                                                                          |
 | `MOSAIC_EDITORS`                                                                           | Who may sign in and edit. If it isn't set, nobody can in production.                                                              |
 | `MOSAIC_WORKFLOWS_SECRET`                                                                  | Shared secret for saves. Use the same value as the CLI.                                                                           |
-| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                                                              | How long a save may take (default 5 minutes).                                                                                     |
 | `NEXT_PUBLIC_SITE_URL`                                                                     | The site's public URL, used for canonical URLs, `sitemap.xml` and `robots.txt`. Set it at build time.                             |
 | `MOSAIC_REVALIDATE_SECRET`                                                                 | Protects `POST /api/revalidate`. Use the same value as the CLI.                                                                   |
 | `MOSAIC_ACTIVE_MODE_CACHE`                                                                 | `true` caches content in active mode until the CLI calls `/api/revalidate`. Only use it if that call reaches every site instance. |
 | `MOSAIC_DEV_FAKE_AUTH`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE`, `MOSAIC_DISABLE_LOADER_CACHE` | Only for `next dev`.                                                                                                              |
 
-These haven't changed: `MOSAIC_MODE`, `MOSAIC_ACTIVE_MODE_URL`, `MOSAIC_SNAPSHOT_DIR`, `GITHUB_ID`, `GITHUB_SECRET`, `NEXT_PUBLIC_ENABLE_LOGIN` and `SITE_URL`.
+These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value), `MOSAIC_ACTIVE_MODE_URL`, `MOSAIC_SNAPSHOT_DIR`, `GITHUB_ID`, `GITHUB_SECRET`, `NEXT_PUBLIC_ENABLE_LOGIN` and `SITE_URL`.
 
 ### CLI: new
 
 | Variable                                            | Purpose                                                                                                                                                                                                                                          |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `MOSAIC_WORKFLOWS_SECRET`                           | Required for saves. The `/workflows` endpoint ignores any message without it.                                                                                                                                                                    |
+| `MOSAIC_WORKFLOWS_SECRET`                           | Required for saves. The workflows endpoints (`/workflows/jobs`) refuse any request without it.                                                                                                                                                   |
+| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                       | How long a save may take before it is reported as failed (default 5 minutes). It used to be read by the site.                                                                                                                                    |
 | `MOSAIC_ADMIN_SECRET`                               | Protects the [admin API](../configure/admin/index). Send it in the `x-mosaic-admin-secret` header, as a bearer token, or as the password in the browser's login prompt. If it isn't set, the admin API is only open when `NODE_ENV=development`. |
 | `MOSAIC_CORS_ORIGINS`                               | Comma-separated origins allowed to call the CLI from a browser. CORS is now off by default.                                                                                                                                                      |
-| `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates.                                                                                                                                                         |
+| `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates. `mosaic serve` refuses to start when the URL is set without the secret.                                                                                 |
+| `MOSAIC_BITBUCKET_WEBHOOK_SECRET`                   | Optional. Enables `POST /_mosaic_/webhooks/bitbucket`, which refreshes git repo sources as soon as Bitbucket reports a push. See [Refresh on push](../configure/sources/git-repo-source#refresh-on-push-bitbucket-webhooks).                     |
 
 ## 7. Check how the CLI behaves
 
+- **The `/workflows` WebSocket is gone.** Saves start with `POST /workflows/jobs` and report progress as Server-Sent Events from `GET /workflows/jobs/:jobId/events`. See [Workflows](../configure/admin/index#workflows).
 - **CORS is off by default.** The CLI used to allow every origin. The site calls the CLI from its server, so it doesn't need CORS. Only set `MOSAIC_CORS_ORIGINS` if a browser calls the CLI directly.
 - **The admin API needs a secret outside development.** Only `/_mosaic_/tags/list` stays open. If an SSO proxy in front of the CLI uses the `Authorization` header, send the secret in `x-mosaic-admin-secret`.
 - **`mosaic build` empties the snapshot folder** (`--out` joined with `--name`) before writing it, so deleted pages no longer linger. It rejects a `--name` that points at the output folder itself or outside it, such as `.` or `../x`.
-- **`mosaic upload` fails if any file fails to upload.** CI jobs that used to pass despite failed uploads will now fail.
+- **`mosaic upload` is removed**, with its `-S` / `--snapshot` option. If you still want a copy of your snapshots in S3, upload the folder yourself, for example with `aws s3 sync snapshots/latest s3://your-bucket`.
 - **Sources now honour `requestTimeout`.** The HTTP, Readme, Storybook and Figma sources apply it, and it defaults to 5 seconds. Raise `requestTimeout` for any source that regularly takes longer to respond.
 
 ## 8. Deploy
 
 - **Docker:** the reference Dockerfiles use Node.js 24 and set `MOSAIC_MODE=active` in both the build and run stages. Do the same in your own images if they read from a running CLI. They also set `MOSAIC_OUTPUT=standalone` in the build stage, which makes `next.config.js` emit the `.next/standalone` server they copy into the runtime image.
-- **Network:** only the site's server needs to reach the CLI, through `MOSAIC_ACTIVE_MODE_URL` and `MOSAIC_WORKFLOWS_URL`. You no longer need to expose the CLI's `/workflows` endpoint to browsers.
-- **Static export (optional):** `yarn build:static:file` and `yarn build:static:s3` build a fully static `out/` folder that any CDN can serve. See [Static export](../configure/modes/static-export).
+- **Network:** only the site's server needs to reach the CLI, through `MOSAIC_ACTIVE_MODE_URL` and `MOSAIC_WORKFLOWS_URL`, over plain HTTP. You no longer need to expose the CLI to browsers or allow WebSockets. Proxies must not buffer `text/event-stream` responses, from the CLI or from the site's `/api/workflows/` routes. If you run several CLI instances, a save's progress must be read from the instance that started it.
+- **Static export (optional):** `yarn build:static:file` builds a fully static `out/` folder that any CDN can serve. See [Static export](../configure/modes/static-export).
 - **Snapshots:** rebuild your snapshots with the new `mosaic build`.
 
 ## Checklist
@@ -246,6 +256,6 @@ These haven't changed: `MOSAIC_MODE`, `MOSAIC_ACTIVE_MODE_URL`, `MOSAIC_SNAPSHOT
 6. Set `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED` and `MOSAIC_EDITORS` on the site.
 7. Set the same `MOSAIC_WORKFLOWS_SECRET` on the site and the CLI.
 8. Set `MOSAIC_ADMIN_SECRET`, and `MOSAIC_CORS_ORIGINS` if needed, on the CLI.
-9. Set `MOSAIC_MODE=active` if your site reads from a running CLI.
+9. Set `MOSAIC_MODE=active` if your site reads from a running CLI, or `MOSAIC_MODE=snapshot-file` if it used `snapshot-s3`.
 10. Set `NEXT_PUBLIC_SITE_URL` when you build the site.
 11. Run `yarn build && yarn start`, open a few pages, sign in, then edit and save a page from a Git source.

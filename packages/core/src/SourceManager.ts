@@ -73,7 +73,9 @@ export default class SourceManager {
    * whose filesystem contains it or, for a page that doesn't exist yet
    * (`newPage`), the source whose `prefixDir` contains it.
    *
-   * Resolves to `false`, after reporting an ERROR, when no source owns it.
+   * Resolves once the workflow has finished: `true` when it ran, `false`,
+   * after reporting an ERROR, when no source owns the file or the workflow
+   * is missing or failed.
    */
   async triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
@@ -88,13 +90,11 @@ export default class SourceManager {
         sendWorkflowProgressMessage(`No source can create ${filePath}`, 'ERROR');
         return false;
       }
-      owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
-      return true;
+      return owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
     }
     for (const source of this.#sources.values()) {
       if (await source.isOwner(filePath)) {
-        source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
-        return true;
+        return source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
       }
     }
     sendWorkflowProgressMessage(`Workflow ${name} not found`, 'ERROR');
@@ -116,6 +116,14 @@ export default class SourceManager {
     } else {
       throw new Error(`[Mosaic] source ${name} was not found so can't be stopped`);
     }
+  }
+
+  async refreshSource(name: string): Promise<boolean> {
+    const source = this.getSource(name);
+    if (!source) {
+      throw new Error(`[Mosaic] source ${name} was not found so can't be refreshed`);
+    }
+    return source.refresh();
   }
 
   addSource(

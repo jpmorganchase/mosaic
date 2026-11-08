@@ -107,6 +107,18 @@ export default class Source {
   }
 
   /**
+   * Asks the source to check for changes now instead of waiting for its
+   * schedule. Resolves to `false` when the source module has no `refresh`
+   * hook. Changed pages arrive through `onUpdate` as usual.
+   */
+  refresh(): Promise<boolean> {
+    if (!this.#worker || this.#worker.closed) {
+      return Promise.reject(new Error(`[Mosaic][Source] '${this.id.description}' is not running`));
+    }
+    return this.#worker.refresh();
+  }
+
+  /**
    * Called when another source (not this one) has changed.
    * This source can then ask its plugins if they also want to clear their cache in response to the other source's change.
    */
@@ -260,12 +272,17 @@ export default class Source {
     return this.#workflows.some(workflow => workflow.name === name);
   }
 
-  triggerWorkflow(
+  /**
+   * Runs workflow `name` and resolves once it has finished: `true` when
+   * it ran, `false` (after reporting an ERROR) when it is missing,
+   * ambiguous or failed. Never rejects.
+   */
+  async triggerWorkflow(
     sendWorkflowProgressMessage: SendSourceWorkflowMessage,
     name: string,
     filePath: string,
     data: unknown
-  ) {
+  ): Promise<boolean> {
     const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
 
     if (foundWorkflows.length === 0) {
@@ -273,7 +290,7 @@ export default class Source {
         `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`,
         'ERROR'
       );
-      return;
+      return false;
     }
 
     if (foundWorkflows.length > 1) {
@@ -281,36 +298,39 @@ export default class Source {
         `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`,
         'ERROR'
       );
-      return;
+      return false;
     }
 
-    const triggeredWorkflow = foundWorkflows[0];
-
-    if (triggeredWorkflow) {
-      // Workflows are async and run outside any request; an uncaught
-      // rejection here would take down the whole server, and the
-      // caller would never hear back. Report it as an ERROR instead.
-      const reportFailure = (error: unknown) => {
-        console.error(`[Mosaic][Source] workflow ${name} failed`, error);
-        sendWorkflowProgressMessage(
-          `[Mosaic][Source] workflow ${name} failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-          'ERROR'
-        );
-      };
-      try {
-        const result: unknown = triggeredWorkflow.action(
-          sendWorkflowProgressMessage,
-          this.#mergedOptions,
-          triggeredWorkflow.options,
-          filePath,
-          data
-        );
-        if (result instanceof Promise) result.catch(reportFailure);
-      } catch (error) {
-        reportFailure(error);
+    const [triggeredWorkflow] = foundWorkflows;
+    let reportedFailure = false;
+    const report: SendSourceWorkflowMessage = (message, status) => {
+      if (status === 'ERROR') reportedFailure = true;
+      sendWorkflowProgressMessage(message, status);
+    };
+    try {
+      const result = await triggeredWorkflow.action(
+        report,
+        this.#mergedOptions,
+        triggeredWorkflow.options,
+        filePath,
+        data
+      );
+      if (result === false && !reportedFailure) {
+        report(`[Mosaic][Source] workflow ${name} did not complete`, 'ERROR');
       }
+      return result !== false && !reportedFailure;
+    } catch (error) {
+      // Workflows run outside any request; an uncaught rejection here
+      // would take down the whole server, and the caller would never
+      // hear back. Report it as an ERROR instead.
+      console.error(`[Mosaic][Source] workflow ${name} failed`, error);
+      sendWorkflowProgressMessage(
+        `[Mosaic][Source] workflow ${name} failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        'ERROR'
+      );
+      return false;
     }
   }
 

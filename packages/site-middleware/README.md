@@ -70,7 +70,7 @@ implementation (edit gating, folder → index redirects, metadata).
 Each loader is deduplicated per request with `React.cache` and, across
 requests, with `unstable_cache` tagged `MOSAIC_CONTENT_CACHE_TAG`:
 
-- Snapshot modes always cache. Invalidate with
+- Snapshot mode always caches. Invalidate with
   `revalidateTag(MOSAIC_CONTENT_CACHE_TAG, { expire: 0 })`, e.g. from a
   webhook route.
 - Active mode reads the live Mosaic CLI on every request unless

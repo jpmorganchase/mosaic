@@ -1,11 +1,10 @@
 /**
  * Sitemap loader used by App Router `generateStaticParams` in snapshot
- * modes, and by the App Router `/sitemap.xml` route + New-Page dialog
+ * mode, and by the App Router `/sitemap.xml` route + New-Page dialog
  * in active mode. Reads `sitemap.xml` from whichever source is
  * authoritative for the current `MOSAIC_MODE`:
  *
  *   - `snapshot-file` → local snapshot dir on disk
- *   - `snapshot-s3`   → configured S3 bucket
  *   - `active`        → the live Mosaic FS server at
  *     `MOSAIC_ACTIVE_MODE_URL/sitemap.xml`
  *
@@ -17,12 +16,7 @@
 import path from 'path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 
-import {
-  createS3Loader,
-  getSnapshotFileConfig,
-  getSnapshotS3Config,
-  loadLocalFile
-} from './loaders/index.js';
+import { getSnapshotFileConfig, loadLocalFile } from './loaders/index.js';
 
 /** Read the resolved Mosaic mode + content URL from env. */
 export function resolveMosaicMode(): { mode: MosaicMode; contentUrl: string } {
@@ -39,7 +33,6 @@ export function resolveMosaicMode(): { mode: MosaicMode; contentUrl: string } {
  *
  * Source per mode:
  *   - `snapshot-file` → `<snapshotDir>/sitemap.xml` on disk;
- *   - `snapshot-s3`   → `sitemap.xml` in the configured S3 bucket;
  *   - `active`        → live `${MOSAIC_ACTIVE_MODE_URL}/sitemap.xml`
  *                       served by the Mosaic FS server. This is the only
  *                       view the New-Page dialog has of the namespace
@@ -55,12 +48,6 @@ export async function loadSitemap(): Promise<string[]> {
       const { snapshotDir } = getSnapshotFileConfig('sitemap.xml');
       const fullPath = path.posix.join(process.cwd(), snapshotDir, 'sitemap.xml');
       xml = await loadLocalFile(fullPath);
-    } else if (mode === 'snapshot-s3') {
-      const { bucket, region, accessKeyId, secretAccessKey } = getSnapshotS3Config('sitemap.xml');
-      const { loadKey, keyExists } = createS3Loader(region, accessKeyId, secretAccessKey);
-      if (await keyExists(bucket, 'sitemap.xml')) {
-        xml = await loadKey(bucket, 'sitemap.xml');
-      }
     } else if (mode === 'active') {
       // Active mode: the live Mosaic FS server is the only source of
       // truth for what pages exist right now (the snapshot on disk may

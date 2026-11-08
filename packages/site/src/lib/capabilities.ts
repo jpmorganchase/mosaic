@@ -1,4 +1,5 @@
 import type { SharedConfig } from '@jpmorganchase/mosaic-store';
+import { getSiteConfig } from './config';
 
 /**
  * Dev-only escape hatch for the source-capability gate.
@@ -23,7 +24,7 @@ import type { SharedConfig } from '@jpmorganchase/mosaic-store';
  * without any parallel env-var coordination.
  */
 export const CAPABILITY_GATE_BYPASSED =
-  process.env.NODE_ENV !== 'production' && process.env.MOSAIC_DEV_BYPASS_CAPABILITY_GATE === 'true';
+  process.env.NODE_ENV !== 'production' && getSiteConfig().dev.bypassCapabilityGate;
 
 if (CAPABILITY_GATE_BYPASSED) {
   console.warn(

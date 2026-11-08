@@ -3,8 +3,8 @@ import { program } from 'commander';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { InvalidEnvError } from './env.js';
 import serve from './serve.js';
-import uploadS3Snapshot from './upload-s3-snapshot.js';
 
 import build from './build.js';
 
@@ -13,8 +13,7 @@ program
   .option('-o, --out <string>', 'Output directory', '.tmp/.mosaic-build')
   .option('-s, --scope <strings>', 'Command separated namespaces')
   .option('-p, --port <number>', 'Port to serve on', '8080')
-  .option('-n, --name <string>', 'Snapshot name')
-  .option('-S, --snapshot <string>', 'Snapshot path');
+  .option('-n, --name <string>', 'Snapshot name');
 
 program.parse();
 
@@ -45,7 +44,8 @@ if (options.config !== undefined) {
  */
 function dispatch(promise: Promise<unknown>) {
   promise.catch(err => {
-    console.error('[Mosaic][CLI]', err);
+    // An invalid env already lists every problem; a stack trace adds nothing.
+    console.error('[Mosaic][CLI]', err instanceof InvalidEnvError ? err.message : err);
     process.exit(1);
   });
 }
@@ -55,7 +55,4 @@ if (program.args[0] === 'build') {
 }
 if (program.args[0] === 'serve') {
   dispatch(serve(config.default, options.port, options.scope && options.scope.split(',')));
-}
-if (program.args[0] === 'upload') {
-  dispatch(uploadS3Snapshot(path.resolve(process.cwd(), options.snapshot)));
 }

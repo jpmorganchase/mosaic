@@ -45,6 +45,7 @@ import {
 
 import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../auth';
 import { withCapabilityBypass } from '../../../lib/capabilities';
+import { getSiteConfig } from '../../../lib/config';
 import { StoreShell } from '../../providers';
 import { FrameSync } from '../NamespaceFrame';
 import { BodyServer } from './BodyServer';
@@ -82,7 +83,8 @@ interface PageProps {
 // Setting `dynamic = 'force-dynamic'` would defeat the snapshot
 // pre-render and was only needed earlier as a workaround for a
 // conditional that App Router refuses to statically analyse.
-const isSnapshotMode = process.env.MOSAIC_MODE?.startsWith('snapshot') ?? false;
+const siteConfig = getSiteConfig();
+const isSnapshotMode = siteConfig.mode.startsWith('snapshot');
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 

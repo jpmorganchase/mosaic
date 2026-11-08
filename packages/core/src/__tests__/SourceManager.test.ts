@@ -397,4 +397,32 @@ describe('GIVEN SourceManager', () => {
       });
     });
   });
+
+  describe('WHEN refreshing a source', () => {
+    let sourceManager: SourceManager;
+    beforeEach(async () => {
+      (Source.prototype.refresh as MockedFunction<any>).mockReset();
+      sourceManager = new SourceManager({}, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 1', modulePath: 'source-module' }, {});
+      scheduleOnStartCallback();
+      await sourceManager.addSource({ name: 'source 2', modulePath: 'source-module' }, {});
+    });
+
+    test('THEN only the named source is refreshed and its answer is returned', async () => {
+      (Source.prototype.refresh as MockedFunction<any>).mockResolvedValue(true);
+      await expect(sourceManager.refreshSource('source 2')).resolves.toBe(true);
+      expect(Source.prototype.refresh).toHaveBeenCalledTimes(1);
+      expect(
+        (Source.prototype.refresh as MockedFunction<any>).mock.contexts[0].id.description
+      ).toBe('source 2');
+    });
+
+    test('THEN refreshing an unknown source is rejected', async () => {
+      await expect(sourceManager.refreshSource('source 3')).rejects.toThrow(
+        /source 3 was not found/
+      );
+      expect(Source.prototype.refresh).not.toHaveBeenCalled();
+    });
+  });
 });

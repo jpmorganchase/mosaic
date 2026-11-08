@@ -4,7 +4,7 @@
  * `MOSAIC_OUTPUT` picks the build target:
  *
  *  1. Unset — full Next.js App Router build for `next start`. Supports
- *     active mode (SSR per request) and snapshot modes (pre-rendered at
+ *     active mode (SSR per request) and snapshot mode (pre-rendered at
  *     build time via `generateStaticParams` in
  *     `src/app/[namespace]/[[...route]]/page.tsx`).
  *
@@ -15,7 +15,7 @@
  *     clean layer, so Turbopack's build cache is not written.
  *
  *  3. `export` — fully static export. Only valid when MOSAIC_MODE is
- *     `snapshot-file` or `snapshot-s3`. In this mode we:
+ *     `snapshot-file`. In this mode we:
  *       - set `output: 'export'`
  *       - drop `redirects()` (unsupported in export builds; express them
  *         via the hosting layer, e.g. S3 / CloudFront rules, when
@@ -29,11 +29,20 @@ const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
 const mosaicMode = process.env.MOSAIC_MODE || 'active';
 
-if (isExport && !mosaicMode.startsWith('snapshot')) {
+if (mosaicMode !== 'active' && mosaicMode !== 'snapshot-file') {
+  // Fail loudly: an unknown mode (e.g. the removed `snapshot-s3`) would
+  // otherwise fall through to active-mode fetches with no content URL.
+  throw new Error(
+    `[mosaic-site] Unsupported MOSAIC_MODE "${mosaicMode}". ` +
+      'Set MOSAIC_MODE to "active" or "snapshot-file".'
+  );
+}
+
+if (isExport && mosaicMode !== 'snapshot-file') {
   // Fail loudly rather than producing a broken export.
   throw new Error(
     `[mosaic-site] MOSAIC_OUTPUT=export requires a snapshot MOSAIC_MODE (got "${mosaicMode}"). ` +
-      'Set MOSAIC_MODE to "snapshot-file" or "snapshot-s3" before building.'
+      'Set MOSAIC_MODE to "snapshot-file" before building.'
   );
 }
 

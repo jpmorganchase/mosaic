@@ -11,20 +11,21 @@ There are several admin urls exposed by Mosaic that provide an insight into how 
 
 ## Endpoints
 
-| Endpoint                   | Method | Description                                   | Params                 |
-| -------------------------- | ------ | --------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file  | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON  | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources        | n/a                    |
-| `/_mosaic_/source/add`     | POST   | Adds the source                               | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name       | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name    | name                   |
-| `/_mosaic_/tags/list`      | GET    | Returns the tag names known to the filesystem | n/a                    |
+| Endpoint                       | Method | Description                                              | Params                 |
+| ------------------------------ | ------ | -------------------------------------------------------- | ---------------------- |
+| `/_mosaic_/config`             | GET    | Returns the JSON from the Mosaic config file             | n/a                    |
+| `/_mosaic_/content/dump`       | GET    | Returns the entire mosaic filesystem as JSON             | n/a                    |
+| `/_mosaic_/sources/list`       | GET    | Returns a collection of active sources                   | n/a                    |
+| `/_mosaic_/source/add`         | POST   | Adds the source                                          | definition & isPreview |
+| `/_mosaic_/source/stop`        | PUT    | Stops the source with the provided name                  | name                   |
+| `/_mosaic_/source/restart`     | PUT    | Restarts the source with the provided name               | name                   |
+| `/_mosaic_/tags/list`          | GET    | Returns the tag names known to the filesystem            | n/a                    |
+| `/_mosaic_/webhooks/bitbucket` | POST   | Refreshes git repo sources when Bitbucket reports a push | Bitbucket push event   |
 
 ## Authentication
 
-Every endpoint except `/_mosaic_/tags/list` can reveal or change server state, so they are protected
-by `MOSAIC_ADMIN_SECRET` on the CLI process:
+Every endpoint except `/_mosaic_/tags/list` and `/_mosaic_/webhooks/bitbucket` can reveal or change
+server state, so they are protected by `MOSAIC_ADMIN_SECRET` on the CLI process:
 
 - **Secret set:** requests must send it. Opening an endpoint in a browser shows a login prompt; enter
   any username and the secret as the password. From scripts, send it as a bearer token (or in an
@@ -44,15 +45,83 @@ by `MOSAIC_ADMIN_SECRET` on the CLI process:
 Basic auth sends the secret base64-encoded, not encrypted, so only use it over HTTPS outside local
 development.
 
+## Bitbucket webhooks
+
+`/_mosaic_/webhooks/bitbucket` receives Bitbucket Data Center push events, so git repo sources pick up
+new commits within seconds instead of at their next scheduled check. Bitbucket can't send the admin
+secret, so the endpoint checks the webhook's signature instead: it only exists when
+`MOSAIC_BITBUCKET_WEBHOOK_SECRET` is set, and rejects requests that aren't signed with it (`401`).
+See [Refresh on push](../sources/git-repo-source#refresh-on-push-bitbucket-webhooks) for the setup.
+
 ## Workflows
 
-The editor's save workflow runs over the `/workflows` WebSocket. It uses the server's repository
-credentials, so it only runs for messages that carry a `token` equal to the CLI's
-`MOSAIC_WORKFLOWS_SECRET`; without that variable no workflow runs. The site sends the same value from
-its own `MOSAIC_WORKFLOWS_SECRET` (see `packages/site/README.md`). The placeholder value committed in
-the site's `.env.development` is ignored unless `NODE_ENV=development`.
+The editor's save workflow runs over plain HTTP, with progress streamed as Server-Sent Events (SSE).
+No WebSocket is needed. The workflows use the server's repository credentials, so every request must
+send the CLI's `MOSAIC_WORKFLOWS_SECRET` as a bearer token (or in an `x-mosaic-workflows-secret`
+header). Without that variable no workflow runs. The site sends the same value from its own
+`MOSAIC_WORKFLOWS_SECRET` (see `packages/site/README.md`). The placeholder value committed in the
+site's `.env.development` is ignored unless `NODE_ENV=development`.
+
+- **`POST /workflows/jobs`** starts a workflow. The JSON body (up to 5 MB) names the workflow and the
+  user, and carries the page's route and content:
+
+  ```json
+  {
+    "name": "save",
+    "user": { "sid": "jdoe", "name": "Jane Doe", "email": "jane@example.com" },
+    "route": "/mosaic/index",
+    "markdown": "# Hello"
+  }
+  ```
+
+  It can also carry `frontmatter`, `targetRoute` (rename) and `isNewPage: true` (create). The CLI
+  responds `202 { "jobId": "…" }`, or with `{ "error": "…" }` and `400` (invalid request), `401`
+  (wrong secret), `404` (page not found), `409` (new page already exists), `413` (too large) or `503`
+  (secret not configured, or too many workflows running).
+
+- **`GET /workflows/jobs/:jobId/events?user=<sid>`** streams the job's progress as
+  `text/event-stream`. `user` must be the user the job was started for, otherwise the response is
+  `404`. Each update is an `event: progress` with `data: { "status", "message" }`, and the stream ends
+  with one `event: done` whose `status` is `SUCCESS` (with the workflow's result as `message`) or
+  `ERROR`. Events have ids, so a client that reconnects with `Last-Event-ID` (or `?lastEventId=`) only
+  gets the events it missed. The CLI sends a `: ping` comment every 15 seconds to keep proxies from
+  closing the stream.
+
+  ```
+  curl -N -H "Authorization: Bearer $MOSAIC_WORKFLOWS_SECRET" \
+    "http://localhost:8080/workflows/jobs/$JOB_ID/events?user=jdoe"
+  ```
+
+A job fails if it hasn't finished after `MOSAIC_WORKFLOWS_TIMEOUT_MS` (validated when the CLI starts,
+default 5 minutes). Jobs are kept in memory, up to 100 jobs with up to 500 events each, and a finished job is
+kept for 10 minutes. Jobs are lost when the CLI restarts, so a save in progress at that moment is
+reported as failed. If you run several CLI instances, a job's events request must reach the instance
+that started it: point `MOSAIC_WORKFLOWS_URL` at one instance, or use sticky routing in your load
+balancer. Proxies in front of the CLI must not buffer `text/event-stream` responses (the CLI sends
+`X-Accel-Buffering: no` for nginx).
 
 ## Browser access (CORS)
 
 The CLI sends no CORS headers by default, so web pages on other origins can't read its responses. Set
 `MOSAIC_CORS_ORIGINS` to a comma-separated list of origins to allow specific ones.
+
+## Environment variables
+
+`mosaic serve` checks these when it starts, before any source loads. If a value is invalid it exits
+with code 1 and lists every problem as `NAME: reason`. Empty values count as unset.
+
+| Variable                        | Values                                                            | Default                                   | Purpose                                                                                                                                    |
+| ------------------------------- | ----------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MOSAIC_ADMIN_SECRET`           | Secret, not blank                                                 | Unset: admin API open only in development | Protects the admin endpoints (see [Authentication](#authentication)).                                                                      |
+| `MOSAIC_WORKFLOWS_SECRET`       | Secret, not blank                                                 | Unset: no workflow runs                   | Authenticates workflow HTTP requests using a bearer token or `x-mosaic-workflows-secret` header (see [Workflows](#workflows)).             |
+| `MOSAIC_WORKFLOWS_TIMEOUT_MS`   | Integer milliseconds from 1 to 2147483647                         | `300000` (5 minutes)                      | Maximum duration of a workflow before its job fails. Validated once when the CLI starts.                                                   |
+| `MOSAIC_CORS_ORIGINS`           | Comma-separated origins, each `scheme://host[:port]` with no path | Unset: no CORS headers                    | Origins allowed to read the CLI from a browser. Write them as the browser sends them, e.g. `https://docs.example.com` (no trailing slash). |
+| `MOSAIC_REVALIDATE_URL`         | http(s) URL. Needs `MOSAIC_REVALIDATE_SECRET`                     | Unset: the site is not notified           | The site's revalidate endpoint, e.g. `https://docs.example.com/api/revalidate`. The CLI calls it whenever a source updates.                |
+| `MOSAIC_REVALIDATE_SECRET`      | Secret, not blank                                                 | –                                         | Sent to `MOSAIC_REVALIDATE_URL`; the same value as the site's `MOSAIC_REVALIDATE_SECRET`.                                                  |
+| `MOSAIC_SOURCE_BOOT_TIMEOUT_MS` | Whole number of milliseconds up to 2147483647; `0` waits forever  | `60000`                                   | How long a source may take to start before `mosaic serve` gives up on it.                                                                  |
+| `BITBUCKET_API_URL`             | http(s) URL                                                       | –                                         | Bitbucket REST API used by the Bitbucket save workflow, e.g. `https://bitbucket.example.com/rest/api/1.0`.                                 |
+| `NODE_ENV`                      | `development` or anything else                                    | Unset                                     | `development` opens the admin API without a secret and accepts the placeholder `MOSAIC_WORKFLOWS_SECRET`. Not validated.                   |
+
+The placeholder `MOSAIC_WORKFLOWS_SECRET` committed in the site's `.env.development` is not an error;
+outside development it simply counts as unset. For the site's variables, see the
+[site README](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/README.md#environment-variables).

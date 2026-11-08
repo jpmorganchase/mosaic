@@ -31,7 +31,6 @@
     "lint": {},
     "serve": {},
     "serve:snapshot:file": {},
-    "serve:snapshot:s3": {},
     "test": {},
     "types": {}
   },

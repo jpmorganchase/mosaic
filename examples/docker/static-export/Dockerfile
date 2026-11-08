@@ -3,8 +3,8 @@
 # examples/docker/static-export/Dockerfile
 #
 # Two-stage build that produces a static-only Mosaic site served by nginx.
-# Requires `MOSAIC_MODE=snapshot-file` or `MOSAIC_MODE=snapshot-s3` at build
-# time (active mode cannot be statically exported).
+# Builds in `MOSAIC_MODE=snapshot-file` (active mode cannot be statically
+# exported).
 #
 # The resulting image has NO Node.js runtime — only nginx serving the
 # pre-rendered HTML/JS/CSS from `out/`.
@@ -21,20 +21,14 @@ RUN yarn --frozen-lockfile && yarn cache clean --all;
 # Source
 COPY . .
 
-# Snapshots (file mode). For snapshot-s3, omit this COPY and provide
-# MOSAIC_SNAPSHOT_S3_BUCKET / AWS creds via --build-arg + RUN secrets.
-ARG MOSAIC_MODE=snapshot-file
-ENV MOSAIC_MODE=$MOSAIC_MODE
+# The snapshot is read from packages/site/snapshots/latest, copied above.
+ENV MOSAIC_MODE=snapshot-file
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # build:static:file applies the API-route stubs, runs `next build` with
 # MOSAIC_OUTPUT=export, and reverts the stubs whether the build succeeds
 # or fails. The result lands in packages/site/out/.
-RUN if [ "$MOSAIC_MODE" = "snapshot-s3" ]; then \
-      yarn workspace @jpmorganchase/mosaic-site build:static:s3; \
-    else \
-      yarn workspace @jpmorganchase/mosaic-site build:static:file; \
-    fi
+RUN yarn workspace @jpmorganchase/mosaic-site build:static:file
 
 # ---- runtime ----------------------------------------------------------------
 FROM nginx:1.27-alpine AS runner

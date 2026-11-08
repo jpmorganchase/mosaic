@@ -11,7 +11,7 @@ import FileAccess from '../filesystems/FileAccess.js';
 import MutableVolume from '../filesystems/MutableVolume.js';
 import createConfig from '../helpers/createConfig.js';
 import { bindPluginMethods, bindSerialiser } from '../plugin/index.js';
-import createSourceObservable from './helpers/createSourceObservable.js';
+import createSourceObservable, { getSourceRefresh } from './helpers/createSourceObservable.js';
 
 const trackPluginErrors = (errors: PluginErrors, lifecycleMethod: string) => {
   const errorsBuffer = Buffer.from(JSON.stringify({ errors, lifecycleMethod }));
@@ -121,6 +121,29 @@ if (isMainThread) {
         throw err instanceof Error ? err : new Error(String(err));
       }
     });
+
+  // `Source.refresh()` in the main thread asks the source to check for
+  // changes now. Any changed pages arrive through the pipeline above; the
+  // reply only says whether the check ran.
+  const refresh = await getSourceRefresh(workerData);
+  parentPort.on('message', async (message: { type?: string; id?: number }) => {
+    if (message?.type !== 'refresh') return;
+    const reply = (result: { refreshed: boolean } | { error: string }) =>
+      parentPort.postMessage({ type: 'refresh', data: { id: message.id, ...result } });
+    if (!refresh) {
+      reply({ refreshed: false });
+      return;
+    }
+    try {
+      await refresh();
+      reply({ refreshed: true });
+    } catch (e) {
+      reply({ error: e instanceof Error ? e.message : String(e) });
+    }
+  });
+  // Listening for messages would otherwise keep a worker alive after its
+  // source has finished.
+  parentPort.unref();
 
   if (workerData.options.cache !== false) {
     try {

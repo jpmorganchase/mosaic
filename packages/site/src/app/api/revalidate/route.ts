@@ -6,7 +6,7 @@
  * next page render re-reads from the snapshot or upstream.
  *
  * Typical wiring: the Mosaic CLI (`@jpmorganchase/mosaic-cli`) POSTs
- * here after it finishes writing a new snapshot to disk / S3. In
+ * here after it finishes writing a new snapshot to disk. In
  * production deployments any CMS webhook can do the same.
  *
  * Security: the endpoint requires a shared secret in
@@ -23,12 +23,13 @@ import type { NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 // Import from the narrow `/cache-tags` subpath rather than the
 // package root. The barrel re-exports `cachedLoaders.ts`, which uses
-// dynamic `process.cwd()` filesystem calls and the S3 SDK; pulling
-// that file into this route's Next.js NFT trace caused Turbopack to
-// warn that "the whole project was traced unintentionally" on build.
+// dynamic `process.cwd()` filesystem calls; pulling that file into
+// this route's Next.js NFT trace caused Turbopack to warn that "the
+// whole project was traced unintentionally" on build.
 // This route only needs the cache-tag string constant.
 import { MOSAIC_CONTENT_CACHE_TAG } from '@jpmorganchase/mosaic-site-middleware/cache-tags';
 
+import { getSiteConfig } from '../../../lib/config';
 import { notifyContentChanged } from '../../../lib/liveReloadBus';
 
 export const dynamic = 'force-dynamic';
@@ -63,16 +64,11 @@ function secretsMatch(provided: string, configured: string): boolean {
   return timingSafeEqual(providedBuf, configuredBuf);
 }
 
-// Public placeholder committed in `.env.development`; never valid in production.
-const DEV_PLACEHOLDER_SECRETS = new Set(['local-dev-not-a-secret']);
-
 export async function POST(req: NextRequest) {
-  const configured = process.env.MOSAIC_REVALIDATE_SECRET;
-  const isPlaceholder =
-    process.env.NODE_ENV === 'production' &&
-    configured !== undefined &&
-    DEV_PLACEHOLDER_SECRETS.has(configured);
-  if (!configured || isPlaceholder) {
+  // `lib/config.ts` treats the public placeholder committed in
+  // `.env.development` as unset in production (`secretIsPlaceholder`).
+  const { secret: configured, secretIsPlaceholder: isPlaceholder } = getSiteConfig().revalidate;
+  if (!configured) {
     return Response.json(
       {
         ok: false,

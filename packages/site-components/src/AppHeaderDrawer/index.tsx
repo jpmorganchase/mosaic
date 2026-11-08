@@ -7,8 +7,14 @@ import { VerticalNavigation, VerticalNavigationProps } from '../VerticalNavigati
 import styles from './styles.css';
 
 const TriggerElement: React.FC<TriggerElementProps> = ({ open, onClick: handleClick }) => (
-  <Button className={styles.toggleButton} variant="secondary" onClick={handleClick}>
-    {open ? null : <Icon aria-label="show the tab navigation" name="menu" />}
+  <Button
+    className={styles.toggleButton}
+    variant="secondary"
+    onClick={handleClick}
+    aria-label="show the tab navigation"
+    aria-expanded={open}
+  >
+    {open ? null : <Icon aria-hidden="true" name="menu" />}
   </Button>
 );
 

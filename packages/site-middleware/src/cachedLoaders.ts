@@ -42,12 +42,7 @@ import matter from 'gray-matter';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import type { SharedConfig } from '@jpmorganchase/mosaic-store';
 
-import {
-  createS3Loader,
-  getSnapshotFileConfig,
-  getSnapshotS3Config,
-  loadLocalFile
-} from './loaders/index.js';
+import { getSnapshotFileConfig, loadLocalFile } from './loaders/index.js';
 import { MOSAIC_CONTENT_CACHE_TAG } from './cacheTags.js';
 
 if (typeof window !== 'undefined') {
@@ -58,7 +53,7 @@ if (typeof window !== 'undefined') {
  * Re-export so existing callers can continue to import this constant
  * from `cachedLoaders`. New callers (notably the `/api/revalidate`
  * route handler) should import from `./cacheTags.js` directly so
- * Next.js' NFT trace doesn't pull in this file's fs/S3 dependencies.
+ * Next.js' NFT trace doesn't pull in this file's fs dependencies.
  * The Mosaic CLI (or a CMS webhook) can mark every entry stale at
  * once with `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)` — see
  * `packages/site/src/app/api/revalidate/route.ts`.
@@ -83,8 +78,8 @@ const cacheDisabled = process.env.MOSAIC_DISABLE_LOADER_CACHE === 'true';
  * when that notification reaches every site instance (a single instance,
  * or a shared cache handler) — otherwise instances serve stale content.
  *
- * Snapshot modes (`snapshot-file`, `snapshot-s3`) always cache: their
- * bytes are stable until the next snapshot is published.
+ * `snapshot-file` mode always caches: its bytes are stable until the
+ * next snapshot is published.
  */
 const activeModeCacheEnabled = process.env.MOSAIC_ACTIVE_MODE_CACHE === 'true';
 
@@ -161,7 +156,7 @@ function deriveSharedConfigUrlPath(pathname: string): string {
 
 /**
  * Route params reach the loaders percent-encoded (`/docs/a%20b`), but
- * snapshot files and S3 keys use the decoded name (`docs/a b`).
+ * snapshot files use the decoded name (`docs/a b`).
  *
  * Returns `undefined` for malformed encodings and for paths that, once
  * decoded, could step outside the snapshot: `.`/`..` segments (for
@@ -209,18 +204,6 @@ const loadSharedConfigImpl = async (
     }
     const raw = await loadLocalFile(filePath);
     const parsed = safeJsonParse<{ config: SharedConfig }>(raw, filePath);
-    return parsed?.config;
-  }
-
-  if (mode === 'snapshot-s3') {
-    const snapshotPath = decodeSnapshotPath(urlPath);
-    if (snapshotPath === undefined) return undefined;
-    const s3Key = `${snapshotPath}/shared-config.json`.replace(/^\//, '');
-    const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(s3Key);
-    const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-    if (!(await keyExists(bucket, s3Key))) return undefined;
-    const raw = await loadKey(bucket, s3Key);
-    const parsed = safeJsonParse<{ config: SharedConfig }>(raw, `s3://${bucket}/${s3Key}`);
     return parsed?.config;
   }
 
@@ -286,14 +269,6 @@ async function readSnapshotJsonFile(targetFile: string): Promise<unknown | undef
   return safeJsonParse(raw, filePath);
 }
 
-async function readSnapshotS3Json(targetKey: string): Promise<unknown | undefined> {
-  const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(targetKey);
-  const { keyExists, loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-  if (!(await keyExists(bucket, targetKey))) return undefined;
-  const raw = await loadKey(bucket, targetKey);
-  return safeJsonParse(raw, `s3://${bucket}/${targetKey}`);
-}
-
 async function fetchUpstreamJson(
   contentUrl: string,
   targetPath: string
@@ -324,13 +299,6 @@ const loadSearchDataImpl = async (
     ]);
     return { searchIndex, searchConfig };
   }
-  if (mode === 'snapshot-s3') {
-    const [searchIndex, searchConfig] = await Promise.all([
-      readSnapshotS3Json(SEARCH_DATA_FILE),
-      readSnapshotS3Json(SEARCH_CONFIG_FILE)
-    ]);
-    return { searchIndex, searchConfig };
-  }
   const [searchIndex, searchConfig] = await Promise.all([
     fetchUpstreamJson(contentUrl, SEARCH_DATA_FILE),
     fetchUpstreamJson(contentUrl, SEARCH_CONFIG_FILE)
@@ -351,7 +319,7 @@ const loadSearchDataCached = withCrossRequestCache(
 /**
  * Resolve the (site-wide) search index + config. Identical for every
  * page in a deployment, so this cache key is keyed on the mode
- * (snapshot-file / snapshot-s3 / active) rather than per-route; once
+ * (snapshot-file / active) rather than per-route; once
  * loaded it's reused across all subsequent page renders until
  * `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)` invalidates.
  */
@@ -424,20 +392,6 @@ const loadMdxRawImpl = async (
     }
   }
 
-  if (mode === 'snapshot-s3') {
-    const snapshotPath = decodeSnapshotPath(normalized);
-    if (snapshotPath === undefined) return { kind: 'not-found' };
-    try {
-      const { accessKeyId, bucket, region, secretAccessKey } = getSnapshotS3Config(snapshotPath);
-      const { loadKey } = createS3Loader(region, accessKeyId, secretAccessKey);
-      const s3Key = snapshotPath.replace(/^\//, '');
-      const raw = await loadKey(bucket, s3Key);
-      return { kind: 'mdx', raw, frontmatter: parseFrontmatter(raw) };
-    } catch {
-      return { kind: 'not-found' };
-    }
-  }
-
   // Active mode. `cache: 'no-store'` — see the equivalent comment
   // in `loadSharedConfigImpl`. The dominant cost (avoiding a refetch
   // of the same page within one render) is handled by the
@@ -472,7 +426,7 @@ const loadMdxRawCached = withCrossRequestCache(
  * discriminated outcomes so the caller can dispatch to `redirect()` /
  * `notFound()` / render without needing to inspect HTTP status codes.
  *
- * Caching note: snapshot modes cache the raw text cross-request
+ * Caching note: snapshot mode caches the raw text cross-request
  * (the bytes are immutable until the next snapshot rebuild, which
  * expires them via `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)`). Active
  * mode only does so with `MOSAIC_ACTIVE_MODE_CACHE=true`, and 404s are
@@ -559,12 +513,12 @@ const loadMdxRawSourceImpl = async (
   mode: MosaicMode,
   contentUrl: string
 ): Promise<MdxRawSourceResult> => {
-  // Snapshot modes serve the post-plugin VFS — there's no
+  // Snapshot mode serves the post-plugin VFS — there's no
   // "raw source" concept on the snapshot side. Returning a
   // distinct status (rather than falling through to a 404)
   // lets the editor render a clear "raw source unavailable in
   // snapshot mode" hint instead of guessing.
-  if (mode === 'snapshot-file' || mode === 'snapshot-s3') {
+  if (mode === 'snapshot-file') {
     return { kind: 'unavailable-in-mode', mode };
   }
 
@@ -654,14 +608,14 @@ const loadTagSuggestionsImpl = async (
   mode: MosaicMode,
   contentUrl: string
 ): Promise<readonly string[]> => {
-  // Snapshot modes don't ship a `/.tags` enumeration endpoint —
+  // Snapshot mode doesn't ship a `/.tags` enumeration endpoint —
   // the snapshot dir holds the post-plugin VFS bytes but no
   // sidecar listing. Returning `[]` (rather than throwing or a
   // distinct status) lets the host wire `<TagSuggestionsProvider>`
   // unconditionally: in snapshot mode authors get a free-text
   // ComboBox with an empty dropdown, in active mode they get
   // typeahead — same affordance, graceful degradation.
-  if (mode === 'snapshot-file' || mode === 'snapshot-s3') {
+  if (mode === 'snapshot-file') {
     return [];
   }
 
@@ -719,7 +673,7 @@ const loadTagSuggestionsCached = withCrossRequestCache(
  *
  * Active mode hits the CLI's admin endpoint `/_mosaic_/tags/list`
  * (which reads the `$TagPlugin`-populated `/.tags` directory of
- * the union FS). Snapshot modes return `[]` — there's no
+ * the union FS). Snapshot mode returns `[]` — there's no
  * enumeration endpoint for the snapshot dir, and the editor's
  * ComboBox accepts free-text anyway, so the degraded experience
  * is "no dropdown suggestions" rather than "editor broken".

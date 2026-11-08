@@ -23,9 +23,8 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useOutsideClick(triggerRef, () => setOpen(false));
 
-  // The router's pathname rather than the store's `route`: the header's
-  // drawer lives in a layout that stays mounted across navigations, and
-  // its store isn't given the page's route.
+  // Follow the browser pathname so navigation between aliases of the same
+  // canonical document also closes a drawer in the persistent header.
   const pathname = usePathname();
 
   const handleNavigationToggle = () => {
@@ -42,7 +41,13 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
       <div ref={triggerRef}>
         <TriggerElement open={open} onClick={handleNavigationToggle} />
       </div>
-      <SaltDrawer className={styles.root} position={side} open={open} ref={rootRef}>
+      <SaltDrawer
+        className={styles.root}
+        position={side}
+        open={open}
+        onOpenChange={setOpen}
+        ref={rootRef}
+      >
         <DrawerCloseButton onClick={handleNavigationToggle} />
         {children}
       </SaltDrawer>
