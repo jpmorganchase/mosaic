@@ -1860,8 +1860,8 @@ __metadata:
     jsdom: "npm:^25.0.0"
     lint-staged: "npm:^13.0.3"
     prettier: "npm:^2.7.1"
-    react: "npm:^19.0.0"
-    react-dom: "npm:^19.0.0"
+    react: "npm:^19.1.0"
+    react-dom: "npm:^19.1.0"
     resize-observer-polyfill: "npm:1.5.1"
     turbo: "npm:^2.9.14"
     typescript: "npm:^5.0.0"
@@ -11567,17 +11567,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^19.0.0":
-  version: 19.2.4
-  resolution: "react-dom@npm:19.2.4"
-  dependencies:
-    scheduler: "npm:^0.27.0"
-  peerDependencies:
-    react: ^19.2.4
-  checksum: 10/ec17721a8cb131bc33480a9f738bc5bbfe4bd11b11cf69f3f473605346578a329ad26ceef6ef0761ea67a4b455803407dd7ed4ba3d8a5abd2cee8c32d221e498
-  languageName: node
-  linkType: hard
-
 "react-dom@npm:^19.1.0":
   version: 19.3.1
   resolution: "react-dom@npm:19.3.1"
@@ -12407,13 +12396,6 @@ __metadata:
   dependencies:
     xmlchars: "npm:^2.2.0"
   checksum: 10/97b50daf6ca3a153e89842efa18a862e446248296622b7473c169c84c823ee8a16e4a43bac2f73f11fc8cb9168c73fbb0d73340f26552bac17970e9052367aa9
-  languageName: node
-  linkType: hard
-
-"scheduler@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "scheduler@npm:0.27.0"
-  checksum: 10/eab3c3a8373195173e59c147224fc30dabe6dd453f248f5e610e8458512a5a2ee3a06465dc400ebfe6d35c9f5b7f3bb6b2e41c88c86fd177c25a73e7286a1e06
   languageName: node
   linkType: hard
 
