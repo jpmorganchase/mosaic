@@ -41,6 +41,21 @@ test.describe('On a narrow screen', () => {
     await expect(drawer).toHaveCount(0);
   });
 
+  for (const name of ['show the tab navigation', 'show the main navigation']) {
+    test(`${name} closes with Escape and returns focus`, async ({ page }) => {
+      await gotoHydrated(page, '/mosaic/author/index');
+      const trigger = page.getByRole('button', { name });
+      await trigger.click();
+      const drawer = page.getByRole('dialog');
+      await expect(drawer).toBeVisible();
+
+      await page.keyboard.press('Escape');
+
+      await expect(drawer).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+    });
+  }
+
   test('the page navigation opens in a drawer and follows a link', async ({ page }) => {
     await gotoHydrated(page, '/mosaic/author/index');
 
