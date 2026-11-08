@@ -90,6 +90,31 @@ describe('subscribeToSave', () => {
     expect(events).toEqual([{ kind: 'complete', prHref: null }]);
   });
 
+  test.each([
+    ['the shared completion shape', { pullRequestUrl: 'https://github.com/example/docs/pull/1' }],
+    ['an older GitHub workflow', 'https://github.com/example/docs/pull/1']
+  ])('reads a pull request link from %s', async (_description, message) => {
+    const { events, done, source } = subscribe();
+    await tick();
+    source().emit('done', { status: 'SUCCESS', message });
+    await done;
+
+    expect(events).toEqual([
+      { kind: 'complete', prHref: 'https://github.com/example/docs/pull/1' }
+    ]);
+  });
+
+  test.each(['Workflow save finished', 'javascript:alert(1)', '/not-an-absolute-url'])(
+    'does not treat %s as a pull request URL',
+    async message => {
+      const { events, done, source } = subscribe();
+      await tick();
+      source().emit('done', { status: 'SUCCESS', message });
+      await done;
+      expect(events).toEqual([{ kind: 'complete', prHref: null }]);
+    }
+  );
+
   test('maps a failed done event to an error', async () => {
     const { events, done, source } = subscribe();
     await tick();

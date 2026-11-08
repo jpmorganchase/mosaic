@@ -4,7 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import matter from 'gray-matter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
-import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/mosaic-types';
+import type {
+  SendSourceWorkflowMessage,
+  SourceWorkflow,
+  SourceWorkflowCompletion
+} from '@jpmorganchase/mosaic-types';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
@@ -64,8 +68,8 @@ async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || !markdown) {
-    // indicate to the plugin runner that no save happened
+  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+    sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
 
@@ -323,7 +327,10 @@ async function createPullRequest(
       return result;
     }
 
-    sendWorkflowProgressMessage(result, 'COMPLETE');
+    const completion: SourceWorkflowCompletion = {
+      pullRequestUrl: (result as { links?: { self?: { href?: string }[] } })?.links?.self?.[0]?.href
+    };
+    sendWorkflowProgressMessage(completion, 'COMPLETE');
     return result;
   } catch (e) {
     // Any throw between createWorktree and the PR call lands

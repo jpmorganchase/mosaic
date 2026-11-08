@@ -43,14 +43,14 @@ import { hasUnsafeRouteSegments } from '../../utils/routeSegments';
 
 interface InfoProps {
   isRaising: boolean;
-  prHref: string | null;
+  saved: boolean;
   error: string | null;
   /** When `true` the create-page wording is rendered. */
   isNewPage: boolean;
 }
 
-const Info: FC<InfoProps> = ({ isRaising, prHref, error, isNewPage }) =>
-  !isRaising && !prHref && !error ? (
+const Info: FC<InfoProps> = ({ isRaising, saved, error, isNewPage }) =>
+  !isRaising && !saved && !error ? (
     isNewPage ? (
       <>
         <P2>
@@ -188,6 +188,7 @@ export const PersistDialog = ({
   isNewPage = false
 }: PersistDialogProps) => {
   const [isRaising, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
   const [prHref, setPrHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<SourceWorkflowMessageEvent[]>([]);
@@ -221,7 +222,7 @@ export const PersistDialog = ({
   const [targetRoute, setTargetRoute] = useState<string>('');
   const { markSaving, markSaved, markSaveFailed } = useSaveState();
 
-  const state = prHref !== null ? 'success' : 'info';
+  const state = saved ? 'success' : 'info';
 
   // Capture the editor's markdown once when the dialog transitions
   // from closed -> open (and we're not in a post-save state).
@@ -234,7 +235,7 @@ export const PersistDialog = ({
       setTargetRoute('');
       return;
     }
-    if (prHref !== null) return;
+    if (saved) return;
     if (!getCurrentMarkdown) return;
     setPendingMarkdown(getCurrentMarkdown());
     // Snapshot the authored frontmatter alongside the body so the
@@ -250,7 +251,7 @@ export const PersistDialog = ({
     // an edit, so re-opening should start fresh from the
     // on-disk route rather than from abandoned typing.
     if (typeof meta.route === 'string') setTargetRoute(meta.route);
-    // We deliberately omit `prHref` from the dep array: this effect
+    // We deliberately omit `saved` from the dep array: this effect
     // should only re-run on open transitions, not when the success
     // state changes (the snapshot taken at open is still the
     // correct one). `getCurrentMarkdown` is identity-stable per
@@ -385,6 +386,7 @@ export const PersistDialog = ({
     // mid-flight; the in-flight transition would still resolve and
     // try to setState on an unmounted dialog.
     if (isRaising) return;
+    setSaved(false);
     setPrHref(null);
     setError(null);
     setProgress([]);
@@ -396,6 +398,7 @@ export const PersistDialog = ({
       setError('Save is not configured for this app.');
       return;
     }
+    setSaved(false);
     setPrHref(null);
     setError(null);
     setProgress([]);
@@ -485,6 +488,7 @@ export const PersistDialog = ({
             // a stale `progress` array.
             setProgress(prev => [...prev, event.message]);
           } else if (event.kind === 'complete') {
+            setSaved(true);
             setPrHref(event.prHref);
           } else if (event.kind === 'error') {
             sawError = true;
@@ -506,12 +510,18 @@ export const PersistDialog = ({
       <DialogHeader
         className={style.title}
         header={
-          prHref ? 'Pull Request Created Successfully' : isNewPage ? 'Create Page' : 'Save Changes'
+          saved
+            ? prHref
+              ? 'Pull Request Created Successfully'
+              : 'Changes Saved Successfully'
+            : isNewPage
+            ? 'Create Page'
+            : 'Save Changes'
         }
       />
       <DialogContent>
-        {(isRaising || error) && !prHref && <PersistStatus error={error} progress={progress} />}
-        <Info isRaising={isRaising} prHref={prHref} error={error} isNewPage={isNewPage} />
+        {(isRaising || error) && !saved && <PersistStatus error={error} progress={progress} />}
+        <Info isRaising={isRaising} saved={saved} error={error} isNewPage={isNewPage} />
         {/*
           Rename row (edit mode only): only show in the pre-save /
           no-error state, and only when the host wired a route
@@ -523,7 +533,7 @@ export const PersistDialog = ({
           already picked by the author in the New-Page dialog.
         */}
         {!isRaising &&
-          !prHref &&
+          !saved &&
           !error &&
           typeof meta.route === 'string' &&
           (isNewPage ? (
@@ -567,7 +577,7 @@ export const PersistDialog = ({
         */}
         {!isNewPage &&
           !isRaising &&
-          !prHref &&
+          !saved &&
           !error &&
           originalMarkdown !== undefined &&
           pendingMarkdown !== undefined && (
@@ -578,16 +588,17 @@ export const PersistDialog = ({
             A Pull Request for your changes has been created
           </Link>
         )}
+        {!isRaising && saved && !prHref && <P2>Your changes were saved successfully.</P2>}
       </DialogContent>
       <DialogActions>
         <Button disabled={isRaising} onClick={resetAndClose}>
-          {!prHref ? 'Cancel' : 'Done'}
+          {saved ? 'Done' : 'Cancel'}
         </Button>
         <Button
           disabled={
             persist === undefined ||
             isRaising ||
-            prHref !== null ||
+            saved ||
             renameError !== null ||
             !hasChangesToSubmit
           }

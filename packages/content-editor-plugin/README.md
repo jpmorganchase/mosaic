@@ -29,6 +29,8 @@ async function persist(input) {
 
 `subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`, and closes the stream after `done`. If the stream drops, `EventSource` reconnects and resumes from the last event it received; after `options.maxReconnects` failed attempts in a row (default 3), or if the server refuses the stream, the save is reported as an error.
 
+Successful GitHub and Bitbucket workflows send `message: { pullRequestUrl }`, where the URL opens the pull request in a browser. `subscribeToSave` also accepts older GitHub URL strings and Bitbucket `links.self` responses. A successful workflow may omit the URL: the dialog still confirms the save and prevents another submission.
+
 ## Keyboard shortcuts
 
 Shortcuts are available while the editor is mounted (`?edit=1`). On macOS the `Mod` modifier is `⌘`; on Windows / Linux it's `Ctrl`.

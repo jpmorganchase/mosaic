@@ -1,6 +1,7 @@
 import { describe, expect, test, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { AddressInfo } from 'node:net';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
+import Source from '../../../core/src/Source';
 import serve, { server } from '../serve';
 
 const mosaicConfig: MosaicConfig = {
@@ -851,6 +852,27 @@ describe('GIVEN the serve command', () => {
       expect(events.body).not.toContain('SUCCESS');
     });
 
+    test('THEN an action returning false remains failed across the source and HTTP job boundary', async () => {
+      const source = new Source(
+        { modulePath: 'test-workflow-source', namespace: 'test' },
+        {},
+        [],
+        [],
+        server.mosaic.fs,
+        [{ name: 'save', action: async () => false }]
+      );
+      givenAnExistingPage();
+      mockTriggerWorkflowFn.mockImplementationOnce((send, name, filePath, data) =>
+        source.triggerWorkflow(send, name, filePath, data)
+      );
+
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+      const events = await getEvents(jobId);
+      expect(events.body).toContain('event: done');
+      expect(events.body).toContain('"status":"ERROR"');
+      expect(events.body).not.toContain('SUCCESS');
+    });
+
     test('THEN a workflow that throws is reported as an ERROR', async () => {
       givenAnExistingPage();
       const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -876,6 +898,38 @@ describe('GIVEN the serve command', () => {
             message: 'The workflow did not finish within 50 ms.'
           })
       );
+    });
+
+    test.each(['0', '-1', '1.5', '2147483648', 'Infinity', 'invalid'])(
+      'THEN an invalid timeout %s cannot start a workflow',
+      async timeout => {
+        process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = timeout;
+        givenAnExistingPage();
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        try {
+          const response = await startJob({ user, route: '/file/path', name: 'save' });
+          expect(response.statusCode).toEqual(500);
+          expect(response.json().error).toContain('MOSAIC_WORKFLOWS_TIMEOUT_MS');
+          expect(mockTriggerWorkflowFn).not.toHaveBeenCalled();
+        } finally {
+          errorSpy.mockRestore();
+        }
+      }
+    );
+
+    test('THEN the maximum supported timeout does not overflow into an immediate failure', async () => {
+      process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '2147483647';
+      givenAnExistingPage();
+      mockTriggerWorkflowFn.mockImplementationOnce(async send => {
+        await new Promise(resolve => setTimeout(resolve, 20));
+        send(prMessage, 'COMPLETE');
+        return true;
+      });
+
+      const jobId = await startedJobId({ user, route: '/file/path', name: 'save' });
+      const events = await getEvents(jobId);
+      expect(events.body).toContain(sse(2, 'done', { status: 'SUCCESS', message: prMessage }));
+      expect(events.body).not.toContain('ERROR');
     });
 
     test('THEN a new page is passed to core to pick its owning source', async () => {

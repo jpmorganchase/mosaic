@@ -5,7 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import matter from 'gray-matter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
-import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/mosaic-types';
+import type {
+  SendSourceWorkflowMessage,
+  SourceWorkflow,
+  SourceWorkflowCompletion
+} from '@jpmorganchase/mosaic-types';
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
@@ -100,7 +104,8 @@ export async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || !markdown) {
+  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+    sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
 
@@ -321,6 +326,7 @@ export async function createPullRequest(
   sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
 
   let prResult: string | { error: string; source: string } | null;
+  let pullRequestUrl: string | undefined;
 
   // Per-action commit message + PR title so the resulting PR
   // reads naturally as "created" vs. "updated". The base
@@ -357,6 +363,7 @@ export async function createPullRequest(
      */
     if (result.status === 201) {
       prResult = result.data.url;
+      pullRequestUrl = result.data.html_url;
     } else {
       throw new Error(`${result.data.status} - ${result.data.message}`);
     }
@@ -404,7 +411,8 @@ export async function createPullRequest(
     return prResult;
   }
 
-  sendWorkflowProgressMessage(prResult, 'COMPLETE');
+  const completion: SourceWorkflowCompletion = { pullRequestUrl };
+  sendWorkflowProgressMessage(completion, 'COMPLETE');
   return prResult;
 }
 

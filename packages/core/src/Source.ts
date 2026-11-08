@@ -290,15 +290,23 @@ export default class Source {
     }
 
     const [triggeredWorkflow] = foundWorkflows;
+    let reportedFailure = false;
+    const report: SendSourceWorkflowMessage = (message, status) => {
+      if (status === 'ERROR') reportedFailure = true;
+      sendWorkflowProgressMessage(message, status);
+    };
     try {
-      await triggeredWorkflow.action(
-        sendWorkflowProgressMessage,
+      const result = await triggeredWorkflow.action(
+        report,
         this.#mergedOptions,
         triggeredWorkflow.options,
         filePath,
         data
       );
-      return true;
+      if (result === false && !reportedFailure) {
+        report(`[Mosaic][Source] workflow ${name} did not complete`, 'ERROR');
+      }
+      return result !== false && !reportedFailure;
     } catch (error) {
       // Workflows run outside any request; an uncaught rejection here
       // would take down the whole server, and the caller would never

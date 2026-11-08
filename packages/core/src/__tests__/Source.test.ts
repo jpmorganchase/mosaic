@@ -487,6 +487,41 @@ describe('GIVEN Source', () => {
       errorSpy.mockRestore();
     });
 
+    test('THEN an explicit false result is reported as a failed workflow', async () => {
+      actionSpy.mockResolvedValueOnce(false);
+
+      await expect(
+        source.triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {})
+      ).resolves.toBe(false);
+      expect(sendWorkflowProgressMessageSpy).toHaveBeenCalledExactlyOnceWith(
+        '[Mosaic][Source] workflow workflow-name did not complete',
+        'ERROR'
+      );
+    });
+
+    test.each([false, { error: 'Cannot create this page' }])(
+      'THEN a workflow that reports an error stays failed without a duplicate message (returning %j)',
+      async result => {
+        actionSpy.mockImplementationOnce(async send => {
+          send('Cannot create this page', 'ERROR');
+          return result;
+        });
+
+        await expect(
+          source.triggerWorkflow(
+            sendWorkflowProgressMessageSpy,
+            'workflow-name',
+            '/path/to/file',
+            {}
+          )
+        ).resolves.toBe(false);
+        expect(sendWorkflowProgressMessageSpy).toHaveBeenCalledExactlyOnceWith(
+          'Cannot create this page',
+          'ERROR'
+        );
+      }
+    );
+
     describe('AND WHEN there is no matching workflow', () => {
       test('THEN an error is sent', () => {
         source.triggerWorkflow(

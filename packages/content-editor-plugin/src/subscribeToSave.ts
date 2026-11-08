@@ -46,11 +46,23 @@ function parse(data: string): DoneData | null {
   }
 }
 
-/** Bitbucket-style pull request link, when the workflow returned one. */
+/** Reads the shared completion shape and responses from older workflow hosts. */
 function prHrefOf(message: unknown): string | null {
-  const href = (message as { links?: { self?: { href?: unknown }[] } } | null | undefined)?.links
-    ?.self?.[0]?.href;
-  return typeof href === 'string' ? href : null;
+  const result = message as
+    | { pullRequestUrl?: unknown; links?: { self?: { href?: unknown }[] } }
+    | null
+    | undefined;
+  const href =
+    typeof message === 'string'
+      ? message
+      : result?.pullRequestUrl ?? result?.links?.self?.[0]?.href;
+  if (typeof href !== 'string') return null;
+  try {
+    const url = new URL(href);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? href : null;
+  } catch {
+    return null;
+  }
 }
 
 /**

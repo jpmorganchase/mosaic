@@ -55,8 +55,13 @@ function validateWorkflowRequest(body: unknown): WorkflowRequest | string {
 }
 
 function jobTimeoutMs() {
-  const value = Number(process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS);
-  return Number.isFinite(value) && value > 0 ? value : DEFAULT_TIMEOUT_MS;
+  const configured = process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
+  if (configured === undefined || configured === '') return DEFAULT_TIMEOUT_MS;
+  const value = Number(configured);
+  if (!Number.isInteger(value) || value < 1 || value > 2147483647) {
+    throw new Error('MOSAIC_WORKFLOWS_TIMEOUT_MS must be an integer between 1 and 2147483647.');
+  }
+  return value;
 }
 
 function parseLastEventId(value: unknown) {

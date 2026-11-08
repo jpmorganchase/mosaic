@@ -3,6 +3,7 @@
 '@jpmorganchase/mosaic-content-editor-plugin': minor
 '@jpmorganchase/mosaic-core': patch
 '@jpmorganchase/mosaic-types': major
+'@jpmorganchase/mosaic-workflows': major
 ---
 
 Run editor saves over HTTP and Server-Sent Events instead of a WebSocket
@@ -31,7 +32,8 @@ left off.
   wrong. Invalid requests get `400 { error }`, a missing page `404` and an
   existing new page `409`; the `channel` field is gone.
 - `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is now read by the
-  CLI, which fails jobs that run longer. The site no longer reads it.
+  CLI, which fails jobs that run longer. Values must be integers from
+  1 to 2147483647. The site no longer reads it.
 - Jobs are kept in memory (finished jobs for 10 minutes, at most 100 jobs
   and 500 events per job), so they are lost when the CLI restarts. With
   several CLI instances, a job's events must be read from the instance
@@ -53,6 +55,14 @@ left off.
 
 - `SourceWorkflowMessageEvent` no longer has a `channel` field.
 
+**`@jpmorganchase/mosaic-workflows`**
+
+- GitHub and Bitbucket workflows send `COMPLETE` with
+  `{ pullRequestUrl }` instead of provider-specific response data. Custom
+  event consumers should read this browser-facing URL. The action return
+  values are unchanged, and `subscribeToSave` still accepts older GitHub
+  URL strings and Bitbucket `links.self` messages.
+
 ### Fixes
 
 - Saving an existing page no longer reports "Workflow save has started"
@@ -60,6 +70,12 @@ left off.
   reports its real outcome. `triggerWorkflow` in
   `@jpmorganchase/mosaic-core` resolves when the workflow finishes rather
   than when it starts.
+- Actions returning `false` or reporting `ERROR` remain failed through
+  the source and job layers instead of being reported as successful.
+- GitHub and Bitbucket saves accept a new page with frontmatter and an
+  empty body, as the editor does. Empty edits are still rejected.
+- The editor shows a successful result and disables repeat submission
+  even when the successful workflow returns no pull request URL.
 
 ### Additions
 
