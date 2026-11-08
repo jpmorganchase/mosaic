@@ -89,7 +89,7 @@ export interface EditorBodyProps {
    * `isNewPage: true`. Defaults to `false`.
    */
   isNewPage?: boolean;
-  /** Route of the page; fills in `route` for new pages (see `<Editor route>`). */
+  /** Backing route used for saves; also fills preview metadata for new pages. */
   route?: string;
 }
 

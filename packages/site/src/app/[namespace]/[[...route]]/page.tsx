@@ -254,14 +254,10 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   const isWritableSource = sharedConfig?.sourceCapabilities?.writable === true;
   if (resolved.kind === 'not-found' && !(newPossible && isWritableSource)) notFound();
 
-  // The pathname the editor (and any downstream raw-source /
-  // persist call) should treat as authoritative. Differs from the
-  // user-requested `pathname` only when we followed a folder→index
-  // redirect server-side — in that case `resolved.pathname` is
-  // the on-disk canonical (e.g. `/dp/products/index`), which is
-  // what the workflows layer needs for save targets and what
-  // `getMdxRawSource` is keyed on.
-  const resolvedPathname = resolved.kind === 'mdx' ? resolved.pathname : pathname;
+  // The backing file is authoritative for raw-source reads and saves.
+  // An alias or authored public permalink can live in another folder;
+  // neither should become the editor's save target or select its source.
+  const resolvedPathname = resolved.kind === 'mdx' ? resolved.sourcePathname : pathname;
   // The route search engines index for this page (see `canonicalRoute`).
   // Undefined for the create flow: the page doesn't exist yet.
   const canonicalPathname =
@@ -331,11 +327,10 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // no edit branch to redirect to, so just fall through and
   // render view mode.
   //
-  // Use `resolvedPathname` so a hand-typed `/foo?new=1` against a
-  // folder that resolves to `/foo/index` redirects to the
-  // canonical edit URL, not to the folder shorthand.
+  // Send readers to the public canonical edit URL. The editor still
+  // receives the backing file as its raw-source/save target below.
   if (newRequested && resolved.kind === 'mdx' && isWritableSource) {
-    redirect(`${resolvedPathname}?edit=1&existed=1`);
+    redirect(`${canonicalPathname ?? resolvedPathname}?edit=1&existed=1`);
   }
 
   // Edit-mode gate: only honour `?edit=1` for signed-in users on a

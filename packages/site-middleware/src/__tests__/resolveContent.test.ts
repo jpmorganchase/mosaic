@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const getMdxRaw = vi.fn();
 const getSharedConfig = vi.fn();
-vi.mock('@jpmorganchase/mosaic-site-middleware', () => ({ getMdxRaw, getSharedConfig }));
+vi.mock('../cachedLoaders.js', () => ({ getMdxRaw, getSharedConfig }));
 // `React.cache` only memoises inside a server render; make it a no-op so
 // every call reaches the mocked loaders.
 vi.mock('react', async () => ({
@@ -11,7 +11,7 @@ vi.mock('react', async () => ({
 }));
 
 const { MAX_INTERNAL_REDIRECT_HOPS, canonicalRoute, isFolderIndexRedirect, resolveContent } =
-  await import('../resolveContent');
+  await import('../resolveContent.js');
 
 const mdx = (title: string) => ({ kind: 'mdx', raw: `# ${title}`, frontmatter: { title } });
 const sharedConfigFor = (pathname: string) => ({ header: { title: `header for ${pathname}` } });
@@ -32,6 +32,7 @@ describe('resolveContent', () => {
       kind: 'mdx',
       originalPathname: '/docs/page',
       pathname: '/docs/page',
+      sourcePathname: '/docs/page',
       mdx: mdx('Page'),
       sharedConfig: sharedConfigFor('/docs/page')
     });
@@ -57,6 +58,49 @@ describe('resolveContent', () => {
       '/docs/folder',
       '/docs/folder/index'
     ]);
+  });
+
+  test('does not reread a normal document config just because fullPath has an extension', async () => {
+    getMdxRaw.mockResolvedValue({
+      ...mdx('Page'),
+      frontmatter: { route: '/docs/page', fullPath: '/docs/page.mdx' }
+    });
+
+    expect(await resolveContent('/docs/page', 'active', 'http://content')).toMatchObject({
+      pathname: '/docs/page',
+      sourcePathname: '/docs/page.mdx',
+      sharedConfig: sharedConfigFor('/docs/page')
+    });
+    expect(getSharedConfig).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not borrow alias-folder capabilities when the backing config is missing', async () => {
+    getMdxRaw.mockResolvedValue({
+      ...mdx('Page'),
+      frontmatter: { route: '/docs/page', fullPath: '/docs/page.mdx' }
+    });
+    getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname === '/alias' ? { sourceCapabilities: { writable: true } } : undefined
+    );
+
+    expect(await resolveContent('/alias', 'active', 'http://content')).toMatchObject({
+      sourcePathname: '/docs/page.mdx',
+      sharedConfig: undefined
+    });
+  });
+
+  test('ignores unsafe source metadata instead of selecting another folder', async () => {
+    getMdxRaw.mockResolvedValue({
+      ...mdx('Page'),
+      frontmatter: { route: '/public/page', fullPath: '/docs/../other/page.mdx' }
+    });
+
+    expect(await resolveContent('/docs/page', 'active', 'http://content')).toMatchObject({
+      pathname: '/public/page',
+      sourcePathname: '/docs/page',
+      sharedConfig: sharedConfigFor('/docs/page')
+    });
+    expect(getSharedConfig).toHaveBeenCalledTimes(1);
   });
 
   test('surfaces any other redirect to the caller', async () => {
