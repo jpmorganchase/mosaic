@@ -20,8 +20,8 @@
  *                                   the site reads from its own env.
  *
  * Set both to enable notifications; `mosaic serve` refuses to start when
- * only one is set. With neither, the notifier is a no-op (logs once on
- * startup so the operator knows).
+ * the URL is set without a secret. Without the URL, the notifier is a
+ * no-op (logs once on startup so the operator knows).
  *
  * Debounce: source updates can fire in bursts (e.g. multiple sources
  * settle within a few hundred ms of each other on startup). The first

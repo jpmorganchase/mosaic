@@ -84,16 +84,9 @@ export interface SiteConfig {
   };
 }
 
-const MOSAIC_MODES: readonly MosaicMode[] = ['active', 'snapshot-file', 'snapshot-s3'];
+const MOSAIC_MODES: readonly MosaicMode[] = ['active', 'snapshot-file'];
 
 const MOSAIC_OUTPUTS = ['export', 'standalone'] as const;
-
-const S3_VARS = [
-  'MOSAIC_S3_BUCKET',
-  'MOSAIC_S3_REGION',
-  'MOSAIC_S3_ACCESS_KEY_ID',
-  'MOSAIC_S3_SECRET_ACCESS_KEY'
-] as const;
 
 /**
  * Public placeholder secrets committed in `.env.development`. With
@@ -163,10 +156,6 @@ export const siteEnvSchema = z
     MOSAIC_OUTPUT: oneOf(MOSAIC_OUTPUTS),
     MOSAIC_ACTIVE_MODE_URL: httpUrl,
     MOSAIC_SNAPSHOT_DIR: z.string().optional(),
-    MOSAIC_S3_BUCKET: z.string().optional(),
-    MOSAIC_S3_REGION: z.string().optional(),
-    MOSAIC_S3_ACCESS_KEY_ID: z.string().optional(),
-    MOSAIC_S3_SECRET_ACCESS_KEY: z.string().optional(),
     MOSAIC_ACTIVE_MODE_CACHE: booleanFlag,
     MOSAIC_DISABLE_LOADER_CACHE: booleanFlag,
     NEXT_PUBLIC_SITE_URL: httpUrl,
@@ -198,7 +187,6 @@ export const siteEnvSchema = z
     const modeWhen = `when MOSAIC_MODE is ${mode}${env.MOSAIC_MODE ? '' : ' (the default)'}`;
     if (mode === 'active') requireVar('MOSAIC_ACTIVE_MODE_URL', modeWhen);
     if (mode === 'snapshot-file') requireVar('MOSAIC_SNAPSHOT_DIR', modeWhen);
-    if (mode === 'snapshot-s3') S3_VARS.forEach(name => requireVar(name, modeWhen));
     if (!isUnset(env.MOSAIC_WORKFLOWS_URL)) {
       requireVar('MOSAIC_WORKFLOWS_SECRET', 'when MOSAIC_WORKFLOWS_URL is set');
     }

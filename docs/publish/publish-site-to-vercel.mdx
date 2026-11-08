@@ -15,19 +15,19 @@ As the [vercel platform](https://vercel.com/) hosts static content you will need
 
 ## Two deployment shapes
 
-Mosaic supports two production builds against the snapshot modes:
+Mosaic supports two production builds in `snapshot-file` mode:
 
 1. **Default SSR build** — `yarn build` + `yarn start` (or Vercel's
    default Next.js runtime). Pages are pre-rendered at build time via
    `generateStaticParams` but the Node runtime stays in the deployment
    so the `/api/*` route handlers (auth, content-editor preview, cache
    revalidation webhook) keep working.
-2. **Fully static export** — `yarn build:static:file` (or
-   `build:static:s3`). Emits a CDN-shippable `out/` directory with no
-   Node runtime needed. The `/api/*` route handlers are replaced with
-   501 stubs at build time (see `scripts/static-export-route-stubs.mjs`
-   for the why), so this target is for read-only sites with no auth
-   and no in-browser content editor.
+2. **Fully static export** — `yarn build:static:file`. Emits a
+   CDN-shippable `out/` directory with no Node runtime needed. The
+   `/api/*` route handlers are replaced with 501 stubs at build time
+   (see `scripts/static-export-route-stubs.mjs` for the why), so this
+   target is for read-only sites with no auth and no in-browser content
+   editor.
 
 The instructions below assume the default SSR build. For the static
 target, point your hosting at `out/` instead of letting Vercel build

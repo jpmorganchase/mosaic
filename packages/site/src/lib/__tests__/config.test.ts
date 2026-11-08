@@ -3,46 +3,20 @@
  * aggregated `NAME: reason` list, production vs development behaviour, and
  * the typed values call sites read.
  */
+import { readFileSync } from 'node:fs';
+import { parseEnv } from 'node:util';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { checkSiteEnv, readSiteConfig, validateSiteConfig, type SiteEnv } from '../config';
 
 /** `.env` + `.env.development`, as `next dev` sees them. */
-const DEV_ENV: SiteEnv = {
-  NODE_ENV: 'development',
-  NEXT_PUBLIC_ENABLE_LOGIN: 'true',
-  SITE_URL: 'https://mosaic-mosaic-dev-team.vercel.app/',
-  MOSAIC_MODE: 'active',
-  MOSAIC_ACTIVE_MODE_URL: 'http://localhost:8080',
-  MOSAIC_SNAPSHOT_DIR: 'snapshots/latest',
-  NEXT_PUBLIC_OPTIMIZE_IMAGES: 'false',
-  NEXT_PUBLIC_SITE_URL: 'http://localhost:3000',
-  MOSAIC_DISABLE_LOADER_CACHE: 'true',
-  MOSAIC_REVALIDATE_SECRET: 'local-dev-not-a-secret',
-  MOSAIC_REVALIDATE_URL: 'http://localhost:3000/api/revalidate',
-  MOSAIC_WORKFLOWS_URL: 'ws://localhost:8080/workflows',
-  MOSAIC_WORKFLOWS_SECRET: 'local-dev-workflows-secret',
-  AUTH_SECRET: 'local-dev-auth-secret-not-for-production',
-  MOSAIC_DEV_FAKE_AUTH: 'true',
-  MOSAIC_DEV_BYPASS_CAPABILITY_GATE: 'true'
-};
-
-/** `.env` + `.env.production`, as `next build` / `next start` see them. */
-const PROD_ENV: SiteEnv = {
-  NODE_ENV: 'production',
-  NEXT_PUBLIC_ENABLE_LOGIN: 'false',
-  SITE_URL: 'https://mosaic-mosaic-dev-team.vercel.app/',
-  MOSAIC_MODE: 'snapshot-file',
-  MOSAIC_SNAPSHOT_DIR: 'snapshots/latest',
-  NEXT_PUBLIC_OPTIMIZE_IMAGES: 'true'
-};
-
-const S3_ENV: SiteEnv = {
-  MOSAIC_S3_BUCKET: 'bucket',
-  MOSAIC_S3_REGION: 'eu-west-2',
-  MOSAIC_S3_ACCESS_KEY_ID: 'key-id',
-  MOSAIC_S3_SECRET_ACCESS_KEY: 'key-secret'
-};
+const readCommittedEnv = (mode: 'development' | 'production'): SiteEnv => ({
+  ...parseEnv(readFileSync(new URL('../../../.env', import.meta.url), 'utf8')),
+  ...parseEnv(readFileSync(new URL(`../../../.env.${mode}`, import.meta.url), 'utf8')),
+  NODE_ENV: mode
+});
+const DEV_ENV = readCommittedEnv('development');
+const PROD_ENV = readCommittedEnv('production');
 
 const TIMEOUT_REASON = 'must be a whole number of milliseconds between 1 and 2147483647';
 
@@ -76,7 +50,6 @@ describe('checkSiteEnv', () => {
         MOSAIC_ACTIVE_MODE_CACHE: 'false'
       }
     ],
-    ['a snapshot-s3 deployment', { NODE_ENV: 'production', MOSAIC_MODE: 'snapshot-s3', ...S3_ENV }],
     ['empty values, which count as unset', { ...PROD_ENV, MOSAIC_OUTPUT: '', MOSAIC_EDITORS: '' }]
   ])('accepts %s', (_name, env) => {
     expect(checkSiteEnv(env)).toEqual([]);
@@ -84,7 +57,7 @@ describe('checkSiteEnv', () => {
 
   it('rejects an unknown MOSAIC_MODE and skips the mode-specific checks', () => {
     expect(check({ MOSAIC_MODE: 'bogus', MOSAIC_SNAPSHOT_DIR: undefined })).toEqual([
-      'MOSAIC_MODE: must be one of active, snapshot-file, snapshot-s3 (got "bogus")'
+      'MOSAIC_MODE: must be one of active, snapshot-file (got "bogus")'
     ]);
   });
 
@@ -118,15 +91,9 @@ describe('checkSiteEnv', () => {
     ]);
   });
 
-  it('requires every S3 variable in snapshot-s3 mode', () => {
-    expect(check({ MOSAIC_MODE: 'snapshot-s3', ...S3_ENV, MOSAIC_S3_REGION: '' })).toEqual([
-      'MOSAIC_S3_REGION: is required when MOSAIC_MODE is snapshot-s3'
-    ]);
+  it('rejects the removed snapshot-s3 mode', () => {
     expect(check({ MOSAIC_MODE: 'snapshot-s3' })).toEqual([
-      'MOSAIC_S3_BUCKET: is required when MOSAIC_MODE is snapshot-s3',
-      'MOSAIC_S3_REGION: is required when MOSAIC_MODE is snapshot-s3',
-      'MOSAIC_S3_ACCESS_KEY_ID: is required when MOSAIC_MODE is snapshot-s3',
-      'MOSAIC_S3_SECRET_ACCESS_KEY: is required when MOSAIC_MODE is snapshot-s3'
+      'MOSAIC_MODE: must be one of active, snapshot-file (got "snapshot-s3")'
     ]);
   });
 
@@ -250,7 +217,7 @@ describe('validateSiteConfig', () => {
     expect(() => validateSiteConfig({ ...PROD_ENV, ...invalid })).toThrow(
       [
         '[mosaic-site] Invalid configuration in environment variables:',
-        '  - MOSAIC_MODE: must be one of active, snapshot-file, snapshot-s3 (got "bogus")',
+        '  - MOSAIC_MODE: must be one of active, snapshot-file (got "bogus")',
         '  - MOSAIC_EDITORS: "not-an-email" is not an email address, an @domain or *'
       ].join('\n')
     );
@@ -381,10 +348,10 @@ describe('readSiteConfig', () => {
 describe('getSiteConfig', () => {
   it('reads the process env once', async () => {
     vi.resetModules();
-    vi.stubEnv('MOSAIC_MODE', 'snapshot-s3');
+    vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
     const { getSiteConfig } = await import('../config');
     const first = getSiteConfig();
-    expect(first.mode).toBe('snapshot-s3');
+    expect(first.mode).toBe('snapshot-file');
     vi.stubEnv('MOSAIC_MODE', 'active');
     expect(getSiteConfig()).toBe(first);
   });

@@ -27,7 +27,7 @@ describe('register', () => {
     await register();
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining(
-        '  - MOSAIC_MODE: must be one of active, snapshot-file, snapshot-s3 (got "bogus")'
+        '  - MOSAIC_MODE: must be one of active, snapshot-file (got "bogus")'
       )
     );
     expect(exitSpy).toHaveBeenCalledWith(1);

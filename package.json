@@ -29,7 +29,6 @@
     "prettier:ci": "prettier --check .",
     "prettier": "prettier --write .",
     "serve:snapshot:file": "turbo run serve:snapshot:file --filter=@jpmorganchase/mosaic-site",
-    "serve:snapshot:s3": "turbo run serve:snapshot:s3 --filter=@jpmorganchase/mosaic-site",
     "serve": "turbo run serve --filter=@jpmorganchase/mosaic-site",
     "start": "turbo run start --filter=@jpmorganchase/mosaic-site",
     "test:client": "vitest --project=client",

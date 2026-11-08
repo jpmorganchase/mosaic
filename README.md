@@ -24,10 +24,7 @@ Create the required environment variables
 
 A snapshot is an immutable copy of the content pulled from your configured data sources.
 
-To create a snapshot of your content for serving as a SGS, you have 2 modes.
-
-- `snapshot-file` mode, creates and stores snapshots as files within in this repo so you can deploy your site and content together
-- `snapshot-s3` mode, pulls your snapshot from a remote S3 bucket and enables you to deploy site and content seperately
+To serve a snapshot as a SGS, use `snapshot-file` mode, which reads snapshots stored as files within this repo so you can deploy your site and content together.
 
 ### To create a snapshot of your content
 
@@ -38,20 +35,6 @@ To create a snapshot of your content for serving as a SGS, you have 2 modes.
 
 This will create a snapshot in `packages/site/public/snapshots/latest`.
 
-### To upload your snapshot to an S3 bucket
-
-```
-> export MOSAIC_S3_ACCESS_KEY_ID="<S3 bucket access key>"
-> export MOSAIC_S3_SECRET_ACCESS_KEY="<S3 bucket secret access key>"
-> export MOSAIC_S3_REGION="<S3 bucket region>"
-> export MOSAIC_S3_BUCKET="<S3 bucket name>"
-> yarn mosaic upload -S <path to snapshot directory>
-```
-
 ### To serve from local snapshot
 
 `yarn serve:snapshot:file`
-
-### To serve from an S3 bucket
-
-`yarn serve:snapshot:s3`
