@@ -60,7 +60,8 @@ describe('WorkflowJob', () => {
     expect(job.status).toEqual('error');
     expect(job.events.at(-1)?.data).toEqual({
       status: 'ERROR',
-      message: 'The workflow did not finish within 5 minutes.'
+      message:
+        'The workflow did not finish within 5 minutes. It may still finish. Check for its result before retrying.'
     });
   });
 

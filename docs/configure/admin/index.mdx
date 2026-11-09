@@ -93,7 +93,9 @@ site's `.env.development` is ignored unless `NODE_ENV=development`.
   ```
 
 A job fails if it hasn't finished after `MOSAIC_WORKFLOWS_TIMEOUT_MS` (validated when the CLI starts,
-default 5 minutes). Jobs are kept in memory, up to 100 jobs with up to 500 events each, and a finished job is
+default 5 minutes). A timeout ends progress reporting, while the workflow can still finish. The same editor
+cannot retry the workflow for that page until it stops. Check for the result before retrying.
+Jobs are kept in memory, up to 100 jobs with up to 500 events each, and a finished job is
 kept for 10 minutes. Jobs are lost when the CLI restarts, so a save in progress at that moment is
 reported as failed. If you run several CLI instances, a job's events request must reach the instance
 that started it: point `MOSAIC_WORKFLOWS_URL` at one instance, or use sticky routing in your load
