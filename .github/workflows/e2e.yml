@@ -3,22 +3,11 @@ on:
   # Every PR, including stacked PRs that target another PR's branch.
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  site_preview:
-    name: Site Preview
-    runs-on: ubuntu-latest
-    outputs:
-      preview_url: ${{ steps.waitForVercelPreviewDeployment.outputs.url }}
-    steps:
-      - name: Wait for Vercel preview deployment to be ready
-        uses: patrickedqvist/wait-for-vercel-preview@v1.3.1
-        id: waitForVercelPreviewDeployment
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          max_timeout: 1500
-          check_interval: 10
   test_e2e:
-    needs: site_preview
     name: Playwright tests
     timeout-minutes: 60
     # Playwright 1.56 has no browser builds for Ubuntu 26.04, which
@@ -27,21 +16,25 @@ jobs:
     steps:
       - name: Prepare testing env
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: 'yarn'
       - name: Install Dependencies
         run: yarn
+      - name: Build the reference site
+        run: yarn build:site
       - name: Install Playwright Browsers
         # apt can stall on the runner's Ubuntu mirror; fail fast instead of
         # using up the job timeout.
         timeout-minutes: 10
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: yarn run e2e
+        run: yarn workspace @jpmorganchase/mosaic-site e2e
         env:
-          PLAYWRIGHT_TEST_BASE_URL: ${{ needs.site_preview.outputs.preview_url }}
+          PLAYWRIGHT_START_SITE: 'true'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
