@@ -43,17 +43,21 @@ async function serverWithTimeout(
   return app;
 }
 
-async function runJob(app: FastifyInstance) {
-  const started = await app.inject({
+function startJob(app: FastifyInstance, sid = user.sid) {
+  return app.inject({
     method: 'POST',
     url: '/workflows/jobs',
     headers,
-    payload: { user, route: '/docs/page', name: 'save' }
+    payload: { user: { sid }, route: '/docs/page', name: 'save' }
   });
+}
+
+async function runJob(app: FastifyInstance, sid = user.sid) {
+  const started = await startJob(app, sid);
   expect(started.statusCode).toBe(202);
   return app.inject({
     method: 'GET',
-    url: `/workflows/jobs/${started.json().jobId}/events?user=${user.sid}`,
+    url: `/workflows/jobs/${started.json().jobId}/events?user=${sid}`,
     headers
   });
 }
@@ -83,6 +87,39 @@ describe('workflow timeout configuration at the HTTP plugin boundary', () => {
       expect(events.body).toContain('"status":"SUCCESS"');
       expect(events.body).not.toContain('ERROR');
     } finally {
+      await app.close();
+    }
+  });
+
+  test('rejects a retry of a timed-out save until its execution settles', async () => {
+    let finish = () => {};
+    const waiting = new Promise<void>(resolve => {
+      finish = resolve;
+    });
+    const run = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        await waiting;
+        return true;
+      })
+      .mockResolvedValue(true);
+    const app = await serverWithTimeout('50', run);
+    try {
+      const events = await runJob(app);
+      expect(events.body).toContain('It may still finish.');
+      const retry = await startJob(app);
+      expect(retry.statusCode).toBe(409);
+      expect(run).toHaveBeenCalledTimes(1);
+
+      const otherUser = await runJob(app, 'another-editor');
+      expect(otherUser.body).toContain('"status":"SUCCESS"');
+      finish();
+      await waiting;
+      const afterSettling = await runJob(app);
+      expect(afterSettling.body).toContain('"status":"SUCCESS"');
+      expect(run).toHaveBeenCalledTimes(3);
+    } finally {
+      finish();
       await app.close();
     }
   });
