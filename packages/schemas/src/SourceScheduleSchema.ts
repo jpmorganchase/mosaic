@@ -20,10 +20,13 @@ export const sourceScheduleSchema = z.object({
    */
   retryDelayMins: z.number().optional().default(5),
   /**
-   *  Maximum number of retry attempts
+   * Maximum number of retry attempts. Use Infinity to keep retrying.
    * @default 100
    */
-  maxRetries: z.number().optional().default(100),
+  maxRetries: z
+    .union([z.number(), z.literal(Infinity)])
+    .optional()
+    .default(100),
   /**
    * If true, when a source recovers and emits pages it's retry counter is returned to zero
    * See: https://rxjs.dev/api/index/interface/RetryConfig

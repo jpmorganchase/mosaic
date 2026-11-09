@@ -21,6 +21,15 @@ describe('Mosaic configuration validation', () => {
     });
   });
 
+  test('allows unlimited retries in the source schedule', () => {
+    const { schedule } = mosaicConfigSchema.parse({
+      ...config,
+      schedule: { checkIntervalMins: 30, initialDelayMs: 1000, maxRetries: Infinity }
+    });
+
+    expect(schedule.maxRetries).toBe(Infinity);
+  });
+
   test('accepts infinite priorities for plugins that must run first or last', () => {
     const plugins = [
       { modulePath: 'first', priority: Infinity },
