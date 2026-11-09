@@ -10,7 +10,6 @@ const mocks = vi.hoisted(() => ({
   createWorktree: vi.fn(),
   removeWorktree: vi.fn(),
   createPullRequest: vi.fn(),
-  configureGitUser: vi.fn(),
   addChanges: vi.fn(),
   commitChanges: vi.fn(),
   pushBranch: vi.fn(),
@@ -29,7 +28,6 @@ vi.mock('@jpmorganchase/mosaic-source-git-repo', () => ({
     createWorktree = mocks.createWorktree;
     removeWorktree = mocks.removeWorktree;
     createPullRequest = mocks.createPullRequest;
-    configureGitUser = mocks.configureGitUser;
     addChanges = mocks.addChanges;
     commitChanges = mocks.commitChanges;
     pushBranch = mocks.pushBranch;
@@ -130,4 +128,41 @@ describe.each([
     expect(send).toHaveBeenCalledWith(expect.any(String), 'ERROR');
     expect(mocks.init).not.toHaveBeenCalled();
   });
+
+  test('uses separate worktrees for simultaneous saves by the same editor', async () => {
+    await Promise.all(
+      [route, '/docs/another-section.mdx'].map(filePath =>
+        workflow.action(vi.fn(), sourceOptions, workflowOptions, filePath, {
+          user,
+          markdown: 'New page',
+          frontmatter: 'title: New section',
+          isNewPage: true
+        })
+      )
+    );
+
+    expect(mocks.createWorktree).toHaveBeenCalledTimes(2);
+    const [[firstId, firstBranch], [secondId, secondBranch]] = mocks.createWorktree.mock.calls;
+    expect(firstId).not.toBe(secondId);
+    expect(firstBranch).toBe(`editor-${firstId}`);
+    expect(secondBranch).toBe(`editor-${secondId}`);
+    expect(mocks.removeWorktree).toHaveBeenCalledWith(firstId);
+    expect(mocks.removeWorktree).toHaveBeenCalledWith(secondId);
+  });
+});
+
+test('cleans up the GitHub worktree when reading an existing page fails', async () => {
+  await expect(
+    GitHubPullRequestWorkflow.action(
+      vi.fn(),
+      sourceOptions,
+      GitHubPullRequestWorkflow.options,
+      route,
+      { user, markdown: 'An edit' }
+    )
+  ).rejects.toThrow(/ENOENT/);
+
+  const [[worktreeId]] = mocks.createWorktree.mock.calls;
+  expect(mocks.removeWorktree).toHaveBeenCalledWith(worktreeId);
+  expect(mocks.githubRequest).not.toHaveBeenCalled();
 });
