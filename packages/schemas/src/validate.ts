@@ -1,11 +1,11 @@
-import { z, ZodTypeAny } from 'zod';
+import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 
-export function validateMosaicSchema<T extends ZodTypeAny>(
+export function validateMosaicSchema<T extends z.ZodType>(
   schema: T,
   options: Record<string, unknown>,
   exitOnError = true
-): z.infer<typeof schema> {
+): z.output<T> {
   try {
     return schema.parse(options);
   } catch (err: any) {
@@ -19,5 +19,5 @@ export function validateMosaicSchema<T extends ZodTypeAny>(
       process.exit(1);
     }
   }
-  return {};
+  return {} as z.output<T>;
 }

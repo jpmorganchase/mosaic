@@ -5,7 +5,10 @@ export const pluginModuleSchema = z.object({
    * Path to the JS file for this plugin (can either export a `default` module with lifecycle methods,
    * or export the methods individually)
    */
-  modulePath: z.string({ required_error: 'A path to the plugin module is required.' }),
+  modulePath: z.string({
+    error: issue =>
+      issue.input === undefined ? 'A path to the plugin module is required.' : undefined
+  }),
   /**
    * Set to true to prevent the plugin from running
    */
@@ -21,7 +24,7 @@ export const pluginModuleSchema = z.object({
   /**
    * The importance of this plugin. This highest number plugin will be run first
    */
-  priority: z.number().optional(),
+  priority: z.union([z.number(), z.literal([Infinity, -Infinity])]).optional(),
   /**
    * Set to true to prevent the plugin from running when a source has a "preview" namespace
    */

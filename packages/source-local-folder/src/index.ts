@@ -96,10 +96,7 @@ export const schema = z.object({
   /**
    * Collection of file extensions to look for
    */
-  extensions: z
-    .string({ required_error: 'Please provide the collection of file extensions to look for' })
-    .array()
-    .nonempty(),
+  extensions: z.tuple([z.string()], z.string()),
   /**
    * Add to use a folder prefix
    */
@@ -107,7 +104,9 @@ export const schema = z.object({
   /**
    * The root directory containing docs
    */
-  rootDir: z.string({ required_error: 'Please provide a root directory name' })
+  rootDir: z.string({
+    error: issue => (issue.input === undefined ? 'Please provide a root directory name' : undefined)
+  })
 });
 
 export type LocalFolderSourceOptions = z.infer<typeof schema>;

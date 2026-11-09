@@ -34,7 +34,10 @@ export const schema = z.object({
    */
   repo: z
     .string({
-      required_error: ' The repo URL is required.  Include the protocol and `.git` suffix'
+      error: issue =>
+        issue.input === undefined
+          ? ' The repo URL is required.  Include the protocol and `.git` suffix'
+          : undefined
     })
     .url()
     .endsWith('.git'),
@@ -48,26 +51,37 @@ export const schema = z.object({
   /**
    * The git branch name to checkout
    */
-  branch: z.string({ required_error: ' Please provide the name of the branch to checkout' }),
+  branch: z.string({
+    error: issue =>
+      issue.input === undefined ? ' Please provide the name of the branch to checkout' : undefined
+  }),
   /**
    * The name of the git remote to use
    */
-  remote: z.string({ required_error: 'Please provide the name of the git remote to use' }),
+  remote: z.string({
+    error: issue =>
+      issue.input === undefined ? 'Please provide the name of the git remote to use' : undefined
+  }),
   /**
    * The folder within the git repository that contains the docs
    */
   subfolder: z.string({
-    required_error:
-      'Please provide the name of the folder within the repository that contains the docs'
+    error: issue =>
+      issue.input === undefined
+        ? 'Please provide the name of the folder within the repository that contains the docs'
+        : undefined
   }),
   /**
    * Collection of file extensions to look for
    */
-  extensions: fileExtensionSchema.array().nonempty(),
+  extensions: z.tuple([fileExtensionSchema], fileExtensionSchema),
   /**
    * Add to use a folder prefix
    */
-  prefixDir: z.string({ required_error: 'Please provide a prefix directory name' }),
+  prefixDir: z.string({
+    error: issue =>
+      issue.input === undefined ? 'Please provide a prefix directory name' : undefined
+  }),
   /**
    * If true, repo is pulled once
    */
