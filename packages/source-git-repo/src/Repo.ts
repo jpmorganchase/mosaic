@@ -217,6 +217,7 @@ function createRepoURL(repo: string, credentials: string) {
 export default class Repo {
   #cloned = false;
   #dir = '';
+  #saveWorktreeDir?: string;
   #cloneRootDir = '';
   #worktreeRootDir = '';
   #remote = '';
@@ -751,20 +752,16 @@ export default class Repo {
       this.#worktreeRootDir,
       { discardStdout: true }
     );
+    this.#saveWorktreeDir = this.#dir;
     console.debug(`[Mosaic][Source-Git] Creating linked worktree for ${sid}`);
   }
 
   async removeWorktree(sid: string) {
-    // The worktree dir we're removing is the one currently held in
-    // `this.#dir` — `createWorktree` sets it. We capture it BEFORE
-    // running `git worktree remove` because the operation should
-    // be idempotent: even if git's registry is already cleaned
-    // up (e.g. a previous `removeWorktree` ran on the same `sid`,
-    // or `createWorktree`'s own idempotency-guard already pruned
-    // it), we still want to clear the dir from disk so the next
-    // `createWorktree` doesn't see a stale directory and crash
-    // with "'<dir>' already exists".
-    const worktreeDir = this.#dir;
+    // Both the PR helper and its caller can clean up. After the first
+    // removal, #dir points to the shared source checkout again.
+    const worktreeDir = this.#saveWorktreeDir;
+    if (!worktreeDir) return;
+    this.#saveWorktreeDir = undefined;
     console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${worktreeDir}`);
 
     // Run `git worktree remove` from the CLONE root, not from
@@ -877,7 +874,17 @@ export default class Repo {
   async commitChanges(name: string, email: string, commitMessage: string) {
     await spawn(
       'git',
-      ['commit', '-m', `${commitMessage}`, '--author', `${name}<${email}>`],
+      [
+        '-c',
+        `user.name=${name}`,
+        '-c',
+        `user.email=${email}`,
+        'commit',
+        '-m',
+        commitMessage,
+        '--author',
+        `${name}<${email}>`
+      ],
       this.#dir,
       { discardStdout: true }
     );
@@ -930,7 +937,6 @@ export default class Repo {
     // log line lets someone clean up).
     let branchPushed = false;
     try {
-      await this.configureGitUser(user.name, user.email);
       await this.addChanges();
       await this.commitChanges(user.name, user.email, commitMessage);
       await this.pushBranch(branchName);
@@ -998,16 +1004,13 @@ export default class Repo {
         source: `${this.#name}`
       };
     } finally {
-      // Idempotent with the workflow's outer finally — both call
-      // `removeWorktree(sid)`, and the second is a no-op since
-      // `removeWorktree` itself is idempotent.
+      // A second cleanup by the workflow is safe.
       try {
         await this.removeWorktree(sid);
       } catch (e) {
         console.warn(
           `[Mosaic][Source-Git] removeWorktree failed for '${sid}' in createPullRequest finally: ` +
-            `${(e as Error).message}. The next createWorktree call will recover via its ` +
-            `idempotency guard.`
+            `${(e as Error).message}`
         );
       }
     }
