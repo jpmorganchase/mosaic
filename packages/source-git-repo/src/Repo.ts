@@ -1,6 +1,7 @@
 import cp from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
+import { lock } from 'proper-lockfile';
 
 import { getCloneRootDir } from './getWorktreeDir.js';
 
@@ -284,7 +285,9 @@ export default class Repo {
     const runCheck = async () => {
       try {
         if (this.#cloned) {
-          const { value: updatedFiles } = await updatedFilesGen.next();
+          const { value: updatedFiles } = await this.#withCheckoutLock(() =>
+            updatedFilesGen.next()
+          );
 
           if (updatedFiles && (disableAutoPullChanges || updatedFiles.length)) {
             callback(updatedFiles);
@@ -294,16 +297,18 @@ export default class Repo {
         console.warn(`[Mosaic][Source-Git] Unsubscribing from \`onCommitChange\` for ${this.name}`);
         unsubscribe();
         errCallback(e);
+        throw e;
       }
     };
 
-    // Checks never overlap. A check requested while one is running (a
+    // Checks in this subscription never overlap. A check requested while one is running (a
     // webhook arriving mid-poll) runs once more afterwards, since the
     // running `git fetch` may have started before the push; further
     // requests share that queued run.
     let running: Promise<void> | null = null;
     let queued: Promise<void> | null = null;
     const check = (): Promise<void> => {
+      if (!intervalId) return Promise.resolve();
       if (!running) {
         running = runCheck().finally(() => {
           running = null;
@@ -311,15 +316,19 @@ export default class Repo {
         return running;
       }
       if (!queued) {
-        queued = running.then(() => {
-          queued = null;
-          return check();
-        });
+        queued = running
+          .finally(() => {
+            queued = null;
+          })
+          .then(check);
       }
       return queued;
     };
 
-    let intervalId: NodeJS.Timeout | null = setInterval(check, updateInterval);
+    let intervalId: NodeJS.Timeout | null = setInterval(() => {
+      // The source error callback already reported this polling failure.
+      void check().catch(() => {});
+    }, updateInterval);
     this.#commitChangeChecks.add(check);
 
     const unsubscribe = () => {
@@ -554,6 +563,26 @@ export default class Repo {
   }
 
   async init() {
+    await fs.mkdir(path.dirname(this.#cloneRootDir), { recursive: true });
+    return this.#withCheckoutLock(() => this.#init());
+  }
+
+  async #withCheckoutLock<T>(operation: () => Promise<T>): Promise<T> {
+    // Each source has its own worker, but its Git refs and worktrees are on
+    // shared disk. The lock also covers initialization of a missing clone.
+    const release = await lock(this.#cloneRootDir, {
+      realpath: false,
+      stale: 60_000,
+      retries: { retries: 300, factor: 2, minTimeout: 50, maxTimeout: 1000, randomize: true }
+    });
+    try {
+      return await operation();
+    } finally {
+      await release();
+    }
+  }
+
+  async #init() {
     try {
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
         console.debug(`[Mosaic][Source-Git] Creating main worktree for repo '${this.#name}'`);
