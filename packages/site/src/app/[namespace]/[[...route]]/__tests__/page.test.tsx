@@ -67,62 +67,59 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe.each(['active', 'snapshot-file'] as const)(
-  'document routing in %s mode',
-  mode => {
-    beforeEach(() => {
-      vi.stubEnv('MOSAIC_MODE', mode);
-      loaders.resolveMosaicMode.mockReturnValue({ mode, contentUrl: 'http://content' });
-      loaders.getMdxRaw.mockImplementation(async (pathname: string) => {
-        if (pathname === '/about') return document('About', '/about');
-        if (pathname === '/quickstart') return document('Quick start', '/docs/start/index');
-        if (pathname === '/docs/index') return document('Docs home', '/docs/index');
-        if (pathname === '/docs') {
-          return mode === 'active'
-            ? { kind: 'redirect', destination: '/docs/index' }
-            : document('Docs home', '/docs/index');
-        }
-        return { kind: 'not-found' };
-      });
+describe.each(['active', 'snapshot-file'] as const)('document routing in %s mode', mode => {
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_MODE', mode);
+    loaders.resolveMosaicMode.mockReturnValue({ mode, contentUrl: 'http://content' });
+    loaders.getMdxRaw.mockImplementation(async (pathname: string) => {
+      if (pathname === '/about') return document('About', '/about');
+      if (pathname === '/quickstart') return document('Quick start', '/docs/start/index');
+      if (pathname === '/docs/index') return document('Docs home', '/docs/index');
+      if (pathname === '/docs') {
+        return mode === 'active'
+          ? { kind: 'redirect', destination: '/docs/index' }
+          : document('Docs home', '/docs/index');
+      }
+      return { kind: 'not-found' };
     });
+  });
 
-    test('renders a root-level document without inventing an index redirect', async () => {
-      const { default: Page } = await import('../page');
-      const html = renderToStaticMarkup(await Page(request('about')));
+  test('renders a root-level document without inventing an index redirect', async () => {
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(request('about')));
 
-      expect(html).toContain('<article>About</article>');
-      expect(html).toContain('data-frame-route="/about"');
-      expect(loaders.getMdxRaw).toHaveBeenCalledWith('/about', mode, 'http://content');
-      expect(loaders.getMdxRaw).not.toHaveBeenCalledWith('/about/index', mode, 'http://content');
-    });
+    expect(html).toContain('<article>About</article>');
+    expect(html).toContain('data-frame-route="/about"');
+    expect(loaders.getMdxRaw).toHaveBeenCalledWith('/about', mode, 'http://content');
+    expect(loaders.getMdxRaw).not.toHaveBeenCalledWith('/about/index', mode, 'http://content');
+  });
 
-    test('keeps the canonical route of a root-level alias for the header and metadata', async () => {
-      const { default: Page, generateMetadata } = await import('../page');
-      const html = renderToStaticMarkup(await Page(request('quickstart')));
-      const metadata = await generateMetadata(request('quickstart'));
+  test('keeps the canonical route of a root-level alias for the header and metadata', async () => {
+    const { default: Page, generateMetadata } = await import('../page');
+    const html = renderToStaticMarkup(await Page(request('quickstart')));
+    const metadata = await generateMetadata(request('quickstart'));
 
-      expect(html).toContain('<article>Quick start</article>');
-      expect(html).toContain('data-frame-route="/docs/start/index"');
-      expect(html).not.toContain('data-canonical-url');
-      expect(metadata.alternates?.canonical).toBe('/docs/start/index');
-    });
+    expect(html).toContain('<article>Quick start</article>');
+    expect(html).toContain('data-frame-route="/docs/start/index"');
+    expect(html).not.toContain('data-canonical-url');
+    expect(metadata.alternates?.canonical).toBe('/docs/start/index');
+  });
 
-    test('continues to resolve a real top-level folder index', async () => {
-      const { default: Page } = await import('../page');
-      const html = renderToStaticMarkup(await Page(request('docs')));
+  test('continues to resolve a real top-level folder index', async () => {
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(request('docs')));
 
-      expect(html).toContain('<article>Docs home</article>');
-      expect(html).toContain('data-frame-route="/docs/index"');
-      expect(html).toContain('data-canonical-url="/docs/index"');
-    });
+    expect(html).toContain('<article>Docs home</article>');
+    expect(html).toContain('data-frame-route="/docs/index"');
+    expect(html).toContain('data-canonical-url="/docs/index"');
+  });
 
-    test('returns a 404 for a missing single-segment document', async () => {
-      const { default: Page } = await import('../page');
+  test('returns a 404 for a missing single-segment document', async () => {
+    const { default: Page } = await import('../page');
 
-      await expect(Page(request('missing'))).rejects.toThrow('not-found');
-    });
-  }
-);
+    await expect(Page(request('missing'))).rejects.toThrow('not-found');
+  });
+});
 
 describe('static document paths', () => {
   test('includes root documents, aliases and known index shorthand paths', async () => {
