@@ -7,7 +7,6 @@
 '@jpmorganchase/mosaic-plugins': patch
 '@jpmorganchase/mosaic-cli': patch
 '@jpmorganchase/mosaic-components': patch
-'@jpmorganchase/mosaic-site': patch
 ---
 
 Fix request timeouts, background work that failed silently, snapshot cleanup, and editor capability spoofing
