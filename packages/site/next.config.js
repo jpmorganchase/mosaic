@@ -25,6 +25,10 @@
  *         sign-in, the content editor and cache revalidation need one of
  *         the server targets above.
  */
+const { copyFileSync, existsSync } = require('node:fs');
+const { resolve } = require('node:path');
+const { PHASE_PRODUCTION_BUILD } = require('next/constants');
+
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
 const mosaicMode = process.env.MOSAIC_MODE || 'active';
@@ -124,6 +128,17 @@ const standaloneConfig = {
   }
 };
 
-module.exports = isExport
-  ? { ...baseConfig, ...exportConfig }
-  : { ...baseConfig, ...dynamicOnlyConfig, ...(isStandalone ? standaloneConfig : {}) };
+module.exports = phase => {
+  const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
+  if (phase === PHASE_PRODUCTION_BUILD && mosaicMode === 'snapshot-file' && snapshotDir) {
+    // A clean checkout has the index in the snapshot. Expose it at the URL used by search.
+    const snapshotIndex = resolve(__dirname, snapshotDir, 'search-data.json');
+    const publicIndex = resolve(__dirname, 'public', 'search-data.json');
+    if (snapshotIndex !== publicIndex && existsSync(snapshotIndex)) {
+      copyFileSync(snapshotIndex, publicIndex);
+    }
+  }
+  return isExport
+    ? { ...baseConfig, ...exportConfig }
+    : { ...baseConfig, ...dynamicOnlyConfig, ...(isStandalone ? standaloneConfig : {}) };
+};
