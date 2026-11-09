@@ -126,8 +126,8 @@ export async function createPullRequest(
 
   const worktreeId = uuidv4();
   const branchName = `${userId}-${worktreeId}`;
-  await repoInstance.createWorktree(worktreeId, branchName);
   try {
+    await repoInstance.createWorktree(worktreeId, branchName);
     sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
 
     /**

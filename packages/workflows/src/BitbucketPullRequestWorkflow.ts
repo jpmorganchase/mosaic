@@ -115,30 +115,10 @@ async function createPullRequest(
 
   const worktreeId = uuidv4();
   const branchName = `${sidLower}-${worktreeId}`;
-  await repoInstance.createWorktree(worktreeId, branchName);
-  sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
-
-  /**
-   * Single try/finally covering everything between the worktree
-   * being created and the PR being raised. Without this every
-   * early-return (file already exists, missing frontmatter, parse
-   * error, rename refused) and every async throw (mkdir,
-   * readFile, deserialise, matter(), stripUndefined, serialise,
-   * writeFile) leaves the worktree on disk — recoverable by the
-   * idempotency guard in `Repo.createWorktree` on the *next* save,
-   * but still an observable leak and an opaque crash for the
-   * current one. The finally arm guarantees cleanup; the catch
-   * arm converts any uncaught throw into a normal ERROR event so
-   * the editor's progress dialog always resolves (instead of the
-   * dialog hanging on the bare-socket-close path we already
-   * handled defensively in persistAction.ts).
-   *
-   * `repoInstance.createPullRequest` (called below) has its OWN
-   * try/finally that calls `removeWorktree` — that's fine, it's
-   * idempotent (the second `git worktree remove` is harmlessly
-   * `--force`d). Belt and braces.
-   */
   try {
+    await repoInstance.createWorktree(worktreeId, branchName);
+    sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
+
     /**
      * strip out the namespace from the file path.
      * We are interested in the file on disk not in the VFS

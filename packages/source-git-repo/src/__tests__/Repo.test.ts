@@ -150,6 +150,15 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
         'second@example.test/second@example.test'
       );
 
+      git(sourceDir, 'worktree', 'lock', firstDir);
+      const remove = vi
+        .spyOn(fs.promises, 'rm')
+        .mockRejectedValueOnce(new Error('Temporary removal failure'));
+      await repo.removeWorktree('save-first');
+      expect(remove).toHaveBeenCalledWith(firstDir, { recursive: true, force: true });
+      expect(fs.existsSync(firstDir)).toBe(true);
+      git(sourceDir, 'worktree', 'unlock', firstDir);
+
       await repo.removeWorktree('save-first');
       await repo.removeWorktree('save-first');
       expect(fs.existsSync(firstDir)).toBe(false);
@@ -161,6 +170,22 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
         secondRepo.removeWorktree('save-second')
       ]);
     }
+  });
+
+  test('THEN cleanup removes a worktree left behind by a failed checkout hook', async () => {
+    await repo.init();
+    const sourceDir = repo.dir;
+    const hooksDir = path.join(path.dirname(path.dirname(sourceDir)), '.git', 'hooks');
+    fs.writeFileSync(path.join(hooksDir, 'post-checkout'), '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+    const saveDir = path.join(path.dirname(sourceDir), 'failed-save');
+
+    await expect(repo.createWorktree('failed-save', 'editor-failed-save')).rejects.toThrow();
+    expect(fs.existsSync(saveDir)).toBe(true);
+
+    await repo.removeWorktree('failed-save');
+    expect(fs.existsSync(saveDir)).toBe(false);
+    expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('failed-save');
+    expect(fs.existsSync(sourceDir)).toBe(true);
   });
 
   test('THEN a failed on-demand fetch is reported to the caller', async () => {
