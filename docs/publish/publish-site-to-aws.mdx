@@ -32,7 +32,8 @@ crawlers can't discover the sitemap.
 
 Falls back to `http://localhost:3000` in local dev. A production build
 without it still works but logs a loud warning at boot and produces
-broken social cards / SEO.
+broken social cards / SEO. If it is set but isn't an absolute `http(s)`
+URL, the site refuses to start.
 
 Add the following build settings
 

@@ -1333,6 +1333,7 @@ __metadata:
     fastify: "npm:^5.12.5"
     fastify-plugin: "npm:^6.0.0"
     md5: "npm:*"
+    zod: "npm:^3.22.3"
   bin:
     mosaic: ./dist/index.mjs
   languageName: unknown
@@ -1659,6 +1660,7 @@ __metadata:
     next-mdx-remote-client: "npm:^1.0.3"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
+    zod: "npm:^3.22.3"
   languageName: unknown
   linkType: soft
 

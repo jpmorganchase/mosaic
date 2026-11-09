@@ -26,6 +26,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { auth, isAuthorizedEditor } from '../../auth';
+import { getSiteConfig } from '../../lib/config';
 import { isSafeRoute } from '../../lib/routes';
 import type { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
@@ -66,10 +67,6 @@ export type PersistEvent =
   | { kind: 'complete'; prHref: string | null }
   | { kind: 'error'; message: string };
 
-const WORKFLOWS_URL = process.env.MOSAIC_WORKFLOWS_URL ?? '';
-const WORKFLOWS_SECRET = process.env.MOSAIC_WORKFLOWS_SECRET ?? '';
-const WORKFLOWS_TIMEOUT_MS = Number(process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS) || 5 * 60 * 1000;
-
 const MAX_MARKDOWN_BYTES = 2 * 1024 * 1024;
 const MAX_FRONTMATTER_BYTES = 256 * 1024;
 
@@ -105,7 +102,8 @@ export async function* persistContent(
   // Cheap synchronous guard first — skip the auth() call (which is
   // request-scoped but still does work) if the workflow URL isn't
   // even configured.
-  if (!WORKFLOWS_URL || !WORKFLOWS_SECRET) {
+  const { url: workflowsUrl, secret: workflowsSecret, timeoutMs } = getSiteConfig().workflows;
+  if (!workflowsUrl || !workflowsSecret) {
     yield {
       kind: 'error',
       message: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.'
@@ -140,7 +138,7 @@ export async function* persistContent(
 
   let socket: WebSocket;
   try {
-    socket = new WebSocket(WORKFLOWS_URL);
+    socket = new WebSocket(workflowsUrl);
   } catch (e) {
     yield {
       kind: 'error',
@@ -188,12 +186,12 @@ export async function* persistContent(
   const timeout = setTimeout(() => {
     push({ kind: 'error', message: 'Timed out waiting for the workflows backend.' });
     finish();
-  }, WORKFLOWS_TIMEOUT_MS);
+  }, timeoutMs);
 
   socket.addEventListener('open', () => {
     socket.send(
       JSON.stringify({
-        token: WORKFLOWS_SECRET,
+        token: workflowsSecret,
         user: { sid, name: sessionUser.name ?? '', email: sessionUser.email },
         route: input.route,
         markdown: input.markdown,

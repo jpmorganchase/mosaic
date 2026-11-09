@@ -83,4 +83,5 @@ Set this **per environment**:
 If the variable is missing in a production build the site still works, but
 absolute URLs in metadata/sitemap/robots will fall back to localhost and
 social cards / SEO will be broken. The site logs a warning at boot in that
-case.
+case. If it is set but isn't an absolute `http(s)` URL, the site refuses to
+start.

@@ -182,6 +182,8 @@ If your `mosaic.config.mjs` loads env files with `@next/env`, only load the deve
 
 **Production builds now default to snapshot mode.** `.env.production` sets `MOSAIC_MODE=snapshot-file`. If your site reads content from a running Mosaic CLI, set `MOSAIC_MODE=active` explicitly. Values set in the environment take precedence over `.env.production`.
 
+**Both the site and the CLI check their variables when they start.** A production site (`next start` or the standalone `server.js`) and `mosaic serve` exit with code 1 on an invalid value, and list every problem as `NAME: reason`; `next dev` only logs the list. `next build` doesn't check runtime variables, so you can still build an image without them. Copy `src/instrumentation.ts` and `src/lib/config.ts` from the reference site to get the site checks. The full lists, with types and defaults, are in the [site README](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/README.md#environment-variables) and the [Admin](../configure/admin/index#environment-variables) page.
+
 **`snapshot-s3` mode is removed.** `MOSAIC_MODE` is now `active` or `snapshot-file`, and the reference site refuses to start or build with any other value. If you kept snapshots in S3, download the snapshot folder before you build (for example `aws s3 sync s3://your-bucket snapshots/latest`), then set `MOSAIC_MODE=snapshot-file` and point `MOSAIC_SNAPSHOT_DIR` at that folder, relative to the site's folder. The `build:static:s3` and `serve:snapshot:s3` scripts are gone too; use `build:static:file` and `serve:snapshot:file`.
 
 ### Site: renamed or removed
@@ -218,7 +220,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 | `MOSAIC_WORKFLOWS_SECRET`                           | Required for saves. The `/workflows` endpoint ignores any message without it.                                                                                                                                                                    |
 | `MOSAIC_ADMIN_SECRET`                               | Protects the [admin API](../configure/admin/index). Send it in the `x-mosaic-admin-secret` header, as a bearer token, or as the password in the browser's login prompt. If it isn't set, the admin API is only open when `NODE_ENV=development`. |
 | `MOSAIC_CORS_ORIGINS`                               | Comma-separated origins allowed to call the CLI from a browser. CORS is now off by default.                                                                                                                                                      |
-| `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates.                                                                                                                                                         |
+| `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates. `mosaic serve` refuses to start when the URL is set without the secret.                                                                                 |
 
 ## 7. Check how the CLI behaves
 

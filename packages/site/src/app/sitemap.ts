@@ -42,6 +42,7 @@ import type { MetadataRoute } from 'next';
 import { connection } from 'next/server';
 import { loadSitemap } from '@jpmorganchase/mosaic-site-middleware';
 
+import { getSiteConfig } from '../lib/config';
 import { resolveSiteOrigin } from '../lib/siteOrigin';
 
 // Snapshot builds (including the static export) generate `/sitemap.xml`
@@ -55,7 +56,7 @@ import { resolveSiteOrigin } from '../lib/siteOrigin';
 // `revalidate = 0` made the export fail.
 export const revalidate = 300;
 
-const isActiveMode = (process.env.MOSAIC_MODE || 'active') === 'active';
+const isActiveMode = getSiteConfig().mode === 'active';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (isActiveMode) await connection();
