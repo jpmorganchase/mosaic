@@ -26,9 +26,7 @@ describe('register', () => {
     const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);
     await register();
     expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        '  - MOSAIC_MODE: must be one of active, snapshot-file (got "bogus")'
-      )
+      expect.stringContaining('  - MOSAIC_MODE: must be one of active, snapshot-file (got "bogus")')
     );
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
