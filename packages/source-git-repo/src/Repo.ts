@@ -777,12 +777,25 @@ export default class Repo {
         discardStdout: true
       });
     } catch (e) {
-      // A partial checkout may have a directory without a registered worktree.
       console.warn(
         `[Mosaic][Source-Git] git worktree remove failed for '${worktreeDir}'; ` +
-          `falling back to filesystem cleanup. (${(e as Error).message})`
+          `checking whether it is still registered. (${getErrorMessage(e)})`
       );
       try {
+        const worktrees = await spawn(
+          'git',
+          ['worktree', 'list', '--porcelain', '-z'],
+          this.#cloneRootDir
+        );
+        const parent = await fs
+          .realpath(path.dirname(worktreeDir))
+          .catch(() => path.dirname(worktreeDir));
+        const checkout = path.join(parent, path.basename(worktreeDir));
+        const registered = worktrees
+          .split('\0')
+          .some(entry => entry.startsWith('worktree ') && !path.relative(checkout, entry.slice(9)));
+        // Preserve registered worktrees when Git refuses to remove them.
+        if (registered) return;
         await fs.rm(worktreeDir, { recursive: true, force: true });
       } catch (error) {
         // Keep the target available for a second cleanup attempt.
