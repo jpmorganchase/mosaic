@@ -151,17 +151,15 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       );
 
       git(sourceDir, 'worktree', 'lock', firstDir);
-      const remove = vi
-        .spyOn(fs.promises, 'rm')
-        .mockRejectedValueOnce(new Error('Temporary removal failure'));
       await repo.removeWorktree('save-first');
-      expect(remove).toHaveBeenCalledWith(firstDir, { recursive: true, force: true });
-      expect(fs.existsSync(firstDir)).toBe(true);
+      expect(fs.readFileSync(path.join(firstDir, 'index.mdx'), 'utf8')).toBe('# First edit');
+      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).toContain('locked');
       git(sourceDir, 'worktree', 'unlock', firstDir);
 
       await repo.removeWorktree('save-first');
       await repo.removeWorktree('save-first');
       expect(fs.existsSync(firstDir)).toBe(false);
+      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('save-first');
       expect(fs.readFileSync(path.join(sourceDir, 'index.mdx'), 'utf8')).toBe('# Index');
       expect(fs.readFileSync(path.join(secondDir, 'index.mdx'), 'utf8')).toBe('# Second edit');
     } finally {
@@ -185,6 +183,19 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     await repo.removeWorktree('failed-save');
     expect(fs.existsSync(saveDir)).toBe(false);
     expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('failed-save');
+    expect(fs.existsSync(sourceDir)).toBe(true);
+  });
+
+  test('THEN cleanup can remove an unregistered save directory', async () => {
+    await repo.init();
+    const sourceDir = repo.dir;
+    await repo.createWorktree('unregistered-save', 'editor-unregistered-save');
+    const saveDir = repo.dir;
+    git(sourceDir, 'worktree', 'remove', '--force', saveDir);
+    fs.mkdirSync(saveDir);
+
+    await repo.removeWorktree('unregistered-save');
+    expect(fs.existsSync(saveDir)).toBe(false);
     expect(fs.existsSync(sourceDir)).toBe(true);
   });
 
