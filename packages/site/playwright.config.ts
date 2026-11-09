@@ -19,6 +19,10 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 2,
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: path.join(__dirname, 'e2e', 'test-results'),
+  webServer:
+    process.env.PLAYWRIGHT_START_SITE === 'true' && !process.env.PLAYWRIGHT_TEST_BASE_URL
+      ? { command: 'yarn start', url: `${baseURL}/mosaic/index`, timeout: 120_000 }
+      : undefined,
   expect: {
     toHaveScreenshot: { threshold: 0.3, maxDiffPixelRatio: 0.3 }
   },
