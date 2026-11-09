@@ -120,6 +120,7 @@ async function mosaicWorkflows(
 ) {
   const { fs, core } = fastify.mosaic;
   const jobs = new WorkflowJobStore(jobOptions);
+  const runningExecutions = new Set<string>();
   const openStreams = new Set<() => void>();
 
   fastify.addHook('preClose', async () => {
@@ -171,13 +172,24 @@ async function mosaicWorkflows(
         pagePath = (await fs.promises.realpath(route)) as string;
       }
 
-      const job = jobs.create(userId, timeoutMs);
+      // A terminal SSE event (including timeout) can precede the end of
+      // the actual write. Keep a retry out of the original save's worktree.
+      const executionKey = JSON.stringify([userId, name, pagePath]);
+      if (runningExecutions.has(executionKey)) {
+        return reply.code(409).send({
+          error:
+            'Your previous workflow for this page is still running. Check for its result before retrying.'
+        });
+      }
+      const job =
+        runningExecutions.size < jobs.capacity ? jobs.create(userId, timeoutMs) : undefined;
       if (!job) {
         return reply
           .code(503)
           .header('Retry-After', '30')
           .send({ error: 'Too many workflows are running. Try again shortly.' });
       }
+      runningExecutions.add(executionKey);
       job.progress('IN_PROGRESS', `Starting workflow ${name}`);
       // New pages don't exist yet, so core picks the owning source by its
       // prefixDir and reports an ERROR itself when none owns them.
@@ -188,7 +200,7 @@ async function mosaicWorkflows(
             ? core.triggerWorkflow(send, name, pagePath, data, { newPage: true })
             : core.triggerWorkflow(send, name, pagePath, data),
         name
-      );
+      ).finally(() => runningExecutions.delete(executionKey));
       return reply.code(202).send({ jobId: job.id });
     }
   );
