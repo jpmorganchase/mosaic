@@ -110,11 +110,12 @@ async function createPullRequest(
     );
     return false;
   }
-  // Used in the branch name and the worktree directory name.
+  // Keep the editor prefix on the published branch.
   const sidLower = toSafeIdentifier(user.sid);
 
-  const branchName = `${sidLower}-${uuidv4()}`;
-  await repoInstance.createWorktree(sidLower, branchName);
+  const worktreeId = uuidv4();
+  const branchName = `${sidLower}-${worktreeId}`;
+  await repoInstance.createWorktree(worktreeId, branchName);
   sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
 
   /**
@@ -339,18 +340,12 @@ async function createPullRequest(
     sendWorkflowProgressMessage(`Save failed: ${getErrorMessage(e)}`, 'ERROR');
     return false;
   } finally {
-    // Idempotent: matches `Repo.createPullRequest`'s own
-    // `removeWorktree` in its finally arm. Running it twice is
-    // harmless (`--force`), running it zero times leaks the
-    // worktree. The catch arm above already turned every throw
-    // into an ERROR event, so this finally always runs cleanly
-    // even when the workflow body errored mid-flight.
+    // Also clean up when the save ends before calling createPullRequest.
     try {
-      await repoInstance.removeWorktree(sidLower);
+      await repoInstance.removeWorktree(worktreeId);
     } catch (e) {
       console.warn(
-        `[Mosaic][Workflows] removeWorktree failed for '${sidLower}': ${getErrorMessage(e)}. ` +
-          `The next save will recover via the idempotency guard in Repo.createWorktree.`
+        `[Mosaic][Workflows] removeWorktree failed for '${worktreeId}': ${getErrorMessage(e)}.`
       );
     }
   }

@@ -117,6 +117,52 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     }
   }, 15_000);
 
+  test('THEN separate save worktrees retain their edits and cleanup preserves the source', async () => {
+    const secondRepo = new Repo(
+      '',
+      'origin',
+      'main',
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+    await Promise.all([repo.init(), secondRepo.init()]);
+    const sourceDir = repo.dir;
+
+    await Promise.all([
+      repo.createWorktree('save-first', 'editor-first'),
+      secondRepo.createWorktree('save-second', 'editor-second')
+    ]);
+    const firstDir = repo.dir;
+    const secondDir = secondRepo.dir;
+    try {
+      fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
+      fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
+      await Promise.all([repo.addChanges(), secondRepo.addChanges()]);
+      await Promise.all([
+        repo.commitChanges('First Editor', 'first@example.test', 'First save'),
+        secondRepo.commitChanges('Second Editor', 'second@example.test', 'Second save')
+      ]);
+      expect(git(firstDir, 'show', 'HEAD:index.mdx').trim()).toBe('# First edit');
+      expect(git(secondDir, 'show', 'HEAD:index.mdx').trim()).toBe('# Second edit');
+      expect(git(firstDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+        'first@example.test/first@example.test'
+      );
+      expect(git(secondDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+        'second@example.test/second@example.test'
+      );
+
+      await repo.removeWorktree('save-first');
+      await repo.removeWorktree('save-first');
+      expect(fs.existsSync(firstDir)).toBe(false);
+      expect(fs.readFileSync(path.join(sourceDir, 'index.mdx'), 'utf8')).toBe('# Index');
+      expect(fs.readFileSync(path.join(secondDir, 'index.mdx'), 'utf8')).toBe('# Second edit');
+    } finally {
+      await Promise.all([
+        repo.removeWorktree('save-first'),
+        secondRepo.removeWorktree('save-second')
+      ]);
+    }
+  });
+
   test('THEN a failed on-demand fetch is reported to the caller', async () => {
     await repo.init();
     const failure = new Error('Fetch failed');
