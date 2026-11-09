@@ -54,7 +54,12 @@ export class WorkflowJob {
     this.#now = now;
     if (timeoutMs > 0) {
       this.#timer = setTimeout(
-        () => this.fail(`The workflow did not finish within ${formatDuration(timeoutMs)}.`),
+        () =>
+          this.fail(
+            `The workflow did not finish within ${formatDuration(
+              timeoutMs
+            )}. It may still finish. Check for its result before retrying.`
+          ),
         timeoutMs
       );
       this.#timer.unref?.();
@@ -141,6 +146,10 @@ export class WorkflowJobStore {
 
   get size() {
     return this.#jobs.size;
+  }
+
+  get capacity() {
+    return this.#maxJobs;
   }
 
   /**

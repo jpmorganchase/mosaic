@@ -95,6 +95,38 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
+  test('THEN separate instances can refresh the same checkout concurrently', async () => {
+    const second = new Repo(
+      '',
+      'origin',
+      'main',
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+    await Promise.all([repo.init(), second.init()]);
+    expect(second.dir).toBe(repo.dir);
+    const onError = vi.fn();
+    unsubscribe = repo.onCommitChange(vi.fn(), onError, false, HOUR_MS);
+    const unsubscribeSecond = second.onCommitChange(vi.fn(), onError, false, HOUR_MS);
+    try {
+      push('shared-page.mdx', '# Shared page');
+      await Promise.all([repo.checkForChanges(), second.checkForChanges()]);
+      expect(onError).not.toHaveBeenCalled();
+      expect(fs.readFileSync(path.join(repo.dir, 'shared-page.mdx'), 'utf8')).toBe('# Shared page');
+    } finally {
+      unsubscribeSecond();
+    }
+  }, 15_000);
+
+  test('THEN a failed on-demand fetch is reported to the caller', async () => {
+    await repo.init();
+    const failure = new Error('Fetch failed');
+    vi.spyOn(repo, 'fetch').mockRejectedValue(failure);
+    const onError = vi.fn();
+    unsubscribe = repo.onCommitChange(vi.fn(), onError, false, HOUR_MS);
+    await expect(repo.checkForChanges()).rejects.toThrow(failure);
+    expect(onError).toHaveBeenCalledWith(failure);
+  });
+
   test('THEN `checkForChanges` does nothing once unsubscribed', async () => {
     await repo.init();
     const fetchSpy = vi.spyOn(repo, 'fetch');

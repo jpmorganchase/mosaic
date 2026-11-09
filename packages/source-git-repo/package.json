@@ -31,11 +31,15 @@
     "url": "git+https://github.com/jpmorganchase/mosaic.git",
     "directory": "packages/source-git-repo"
   },
+  "devDependencies": {
+    "@types/proper-lockfile": "^4.1.4"
+  },
   "dependencies": {
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
     "lodash-es": "^4.17.23",
+    "proper-lockfile": "^4.1.2",
     "rxjs": "^7.5.5",
     "zod": "^3.22.3"
   }
