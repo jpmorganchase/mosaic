@@ -746,13 +746,14 @@ export default class Repo {
       );
     }
 
+    // A failed checkout or post-checkout hook can leave a worktree behind.
+    this.#saveWorktreeDir = this.#dir;
     await spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
       this.#worktreeRootDir,
       { discardStdout: true }
     );
-    this.#saveWorktreeDir = this.#dir;
     console.debug(`[Mosaic][Source-Git] Creating linked worktree for ${sid}`);
   }
 
@@ -761,7 +762,6 @@ export default class Repo {
     // removal, #dir points to the shared source checkout again.
     const worktreeDir = this.#saveWorktreeDir;
     if (!worktreeDir) return;
-    this.#saveWorktreeDir = undefined;
     console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${worktreeDir}`);
 
     // Run `git worktree remove` from the CLONE root, not from
@@ -777,38 +777,32 @@ export default class Repo {
         discardStdout: true
       });
     } catch (e) {
-      // `git worktree remove` fails when the worktree isn't
-      // registered (it was already removed, or `createWorktree`'s
-      // idempotency guard pruned it). Fall through to the fs
-      // cleanup below; warn so we have a paper trail in case the
-      // failure was actually something else.
+      // A partial checkout may have a directory without a registered worktree.
       console.warn(
         `[Mosaic][Source-Git] git worktree remove failed for '${worktreeDir}'; ` +
           `falling back to filesystem cleanup. (${(e as Error).message})`
       );
-    }
-
-    // Catch-all: drop the dir from disk if it still exists.
-    // `force: true` makes this a no-op when the dir is already
-    // gone. This is what guarantees `createWorktree` sees a
-    // clean slate next time — the line we depend on most.
-    try {
-      await fs.rm(worktreeDir, { recursive: true, force: true });
-    } catch (e) {
-      // Genuinely unexpected; not fatal because `createWorktree`
-      // has its own belt-and-braces cleanup, but log so we
-      // notice if it becomes a pattern.
-      console.warn(
-        `[Mosaic][Source-Git] fs.rm of removed worktree dir failed for '${worktreeDir}': ` +
-          `${(e as Error).message}`
-      );
+      try {
+        await fs.rm(worktreeDir, { recursive: true, force: true });
+      } catch (error) {
+        // Keep the target available for a second cleanup attempt.
+        console.warn(
+          `[Mosaic][Source-Git] Could not remove worktree '${worktreeDir}': ${getErrorMessage(
+            error
+          )}`
+        );
+        return;
+      }
     }
 
     // Reset `#dir` back to the canonical branch worktree so any
     // subsequent calls on this Repo instance (e.g. another save
     // for the same user, or a refresh fetch) go through the
     // shared branch worktree instead of the now-removed sid one.
-    this.#dir = path.join(this.#worktreeRootDir, this.#branch);
+    if (this.#saveWorktreeDir === worktreeDir) {
+      this.#saveWorktreeDir = undefined;
+      this.#dir = path.join(this.#worktreeRootDir, this.#branch);
+    }
     console.debug(`[Mosaic][Source-Git] Removed linked worktree for ${sid}`);
   }
 
