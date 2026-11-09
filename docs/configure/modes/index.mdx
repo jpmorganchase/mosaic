@@ -10,11 +10,10 @@ data:
 
 # {meta.title}
 
-Mosaic can operate in 3 different modes
+Mosaic can operate in 2 different modes
 
 - `active`
 - `snapshot-file`
-- `snapshot-s3`
 
 ## Active updates
 
@@ -28,7 +27,7 @@ Read the [active](./active) configuration docs.
 
 Consider a snapshot as a directory of static content previously pulled from your content sources, which does not update itself.
 
-In a snapshot mode, the snapshot does update itself.
+In snapshot mode, the snapshot does not update itself.
 
 ### File based snapshots
 
@@ -36,15 +35,9 @@ In `snapshot-file` mode, immutable snapshots of content are loaded at startup fr
 
 Read the [snapshot-file](./snapshot-file) configuration docs.
 
-### S3 based snapshots
-
-In `snapshot-s3` mode, snapshots of content are loaded at startup from a remote S3 bucket.
-
-Read the [snapshot-s3](./snapshot-s3) configuration docs.
-
 ## Static export
 
-Either snapshot mode can additionally be built as a fully-static site
+A `snapshot-file` site can additionally be built as a fully-static site
 (`out/` directory of HTML) servable from any CDN with no Node runtime.
 
 Read the [static export](./static-export) docs.

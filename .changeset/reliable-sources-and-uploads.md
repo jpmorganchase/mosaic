@@ -23,9 +23,6 @@ Fix request timeouts, background work that failed silently, snapshot cleanup, an
 - **`BrokenLinksPlugin`** still checks links in the background, but checks at
   most four pages at a time. A page that fails to parse or check is logged
   instead of causing an unhandled rejection.
-- **`mosaic upload`** waits for every file to upload, uploads at most eight at a
-  time, sends files as raw bytes (binary files were corrupted by utf-8
-  decoding), and exits with an error if any upload fails.
 - **`mosaic build`** now empties the snapshot folder completely. Previously
   sub-folders were never removed, so deleted or renamed pages lingered. A
   `--name` that resolves to the output directory itself or outside it (for

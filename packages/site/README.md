@@ -55,15 +55,13 @@ packages/site/
 
 ## Build modes
 
-The site supports three Mosaic content modes plus a static-export target:
+The site supports two Mosaic content modes plus a static-export target:
 
 | Command                               | Mode                                         | Output                                       |
 | ------------------------------------- | -------------------------------------------- | -------------------------------------------- |
 | `yarn build`                          | `snapshot-file` (default, `.env.production`) | Node server, content from local snapshot dir |
 | `MOSAIC_MODE=active yarn build`       | `active`                                     | Dynamic Node server, pulls content live      |
-| `MOSAIC_MODE=snapshot-s3 yarn build`  | `snapshot-s3`                                | Node server, content from S3 bucket          |
 | `yarn build:static:file`              | `snapshot-file` + `MOSAIC_OUTPUT=export`     | Static `out/` directory, no Node runtime     |
-| `yarn build:static:s3`                | `snapshot-s3` + `MOSAIC_OUTPUT=export`       | Static `out/` directory, no Node runtime     |
 | `MOSAIC_OUTPUT=standalone yarn build` | any server mode                              | `.next/standalone` server for Docker images  |
 
 See [`docs/configure/modes/`](../../docs/configure/modes/index.mdx) for
@@ -76,7 +74,6 @@ for the static export details.
 ```bash
 yarn serve                  # active mode, with mosaic content server
 yarn serve:snapshot:file    # snapshot-file mode against ./snapshots
-yarn serve:snapshot:s3      # snapshot-s3 mode against your configured bucket
 yarn e2e                    # Playwright end-to-end suite
 yarn gen:snapshot           # produce a fresh snapshot under ./snapshots
 ```
@@ -96,7 +93,7 @@ environment settings). None of them should be committed with real values.
 
 | Variable                                          | Purpose                                                                                                                                     |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MOSAIC_MODE`                                     | `active` (`next dev` default), `snapshot-file` (`next build` / `next start` default) or `snapshot-s3`.                                      |
+| `MOSAIC_MODE`                                     | `active` (`next dev` default) or `snapshot-file` (`next build` / `next start` default).                                                     |
 | `MOSAIC_ACTIVE_MODE_URL`                          | Mosaic CLI content server, e.g. `http://mosaic-fs:8080` (active mode).                                                                      |
 | `MOSAIC_SNAPSHOT_DIR`                             | Snapshot folder for `snapshot-file` (defaults to `snapshots/latest` via `.env`).                                                            |
 | `NEXT_PUBLIC_SITE_URL`                            | Canonical origin for metadata, `sitemap.xml` and `robots.txt`.                                                                              |
