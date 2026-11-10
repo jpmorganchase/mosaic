@@ -96,6 +96,40 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
   });
 
+  test('THEN a queued refresh survives failed initialization and runs after retry', async () => {
+    const initError = new Error('Failed to configure clone');
+    let finishConfigure!: () => void;
+    const configuring = new Promise<void>(resolve => {
+      finishConfigure = resolve;
+    });
+    const configure = vi
+      .spyOn(repo, 'ensureSingleBranchFetchRefspec')
+      .mockImplementationOnce(async () => {
+        await configuring;
+        throw initError;
+      });
+    const check = vi.spyOn(repo, 'checkForChanges');
+    const onChange = vi.fn();
+    const onError = vi.fn();
+
+    await repo.checkForChanges();
+    const failed = expect(repo.init()).rejects.toThrow(initError);
+    try {
+      await vi.waitFor(() => expect(configure).toHaveBeenCalledTimes(1), { timeout: 3000 });
+      push('pending.mdx', '# Pending');
+      unsubscribe = repo.onCommitChange(onChange, onError, false, HOUR_MS);
+      expect(check).toHaveBeenCalledTimes(1);
+    } finally {
+      finishConfigure();
+      await failed;
+    }
+
+    await repo.init();
+    await vi.waitFor(() => expect(onChange).toHaveBeenCalledTimes(1), { timeout: 3000 });
+    expect(onError).not.toHaveBeenCalled();
+    expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
+  });
+
   test('THEN checks requested while one is running are coalesced into one more check', async () => {
     await repo.init();
     const fetchSpy = vi.spyOn(repo, 'fetch');
