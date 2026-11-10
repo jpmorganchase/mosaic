@@ -216,6 +216,8 @@ function createRepoURL(repo: string, credentials: string) {
 
 export default class Repo {
   #cloned = false;
+  // The main clone exists before its linked worktree is ready for refreshes.
+  #ready = false;
   #dir = '';
   #saveWorktreeDir?: string;
   #cloneRootDir = '';
@@ -286,7 +288,7 @@ export default class Repo {
 
     const runCheck = async () => {
       try {
-        if (this.#cloned) {
+        if (this.#ready) {
           const { value: updatedFiles } = await this.#withCheckoutLock(() =>
             updatedFilesGen.next()
           );
@@ -352,7 +354,7 @@ export default class Repo {
    * requests are coalesced into one check when both are ready.
    */
   async checkForChanges() {
-    if (!this.#cloned || this.#commitChangeChecks.size === 0) {
+    if (!this.#ready || this.#commitChangeChecks.size === 0) {
       this.#refreshPending = true;
       return;
     }
@@ -360,7 +362,7 @@ export default class Repo {
   }
 
   #flushPendingRefresh() {
-    if (this.#refreshPending && this.#cloned && this.#commitChangeChecks.size > 0) {
+    if (this.#refreshPending && this.#ready && this.#commitChangeChecks.size > 0) {
       this.#refreshPending = false;
       // The source error callback reports failures once the queued check runs.
       void this.checkForChanges().catch(() => {});
@@ -579,7 +581,11 @@ export default class Repo {
 
   async init() {
     await fs.mkdir(path.dirname(this.#cloneRootDir), { recursive: true });
-    await this.#withCheckoutLock(() => this.#init());
+    await this.#withCheckoutLock(async () => {
+      this.#ready = false;
+      await this.#init();
+      this.#ready = true;
+    });
     this.#flushPendingRefresh();
   }
 
