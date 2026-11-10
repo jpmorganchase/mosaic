@@ -63,13 +63,32 @@ async function runJob(app: FastifyInstance, sid = user.sid) {
 }
 
 describe('workflow timeout configuration at the HTTP plugin boundary', () => {
-  test('fails an unfinished job after the validated timeout', async () => {
-    const app = await serverWithTimeout('50', () => new Promise(() => {}));
+  test('fails an unfinished job after the validated timeout even if it sent COMPLETE', async () => {
+    const app = await serverWithTimeout('50', send => {
+      send('Provisional result', 'COMPLETE');
+      return new Promise(() => {});
+    });
     try {
       const events = await runJob(app);
       expect(events.body).toContain('event: done');
       expect(events.body).toContain('"status":"ERROR"');
       expect(events.body).toContain('The workflow did not finish within 50 ms.');
+      expect(events.body).not.toContain('SUCCESS');
+    } finally {
+      await app.close();
+    }
+  });
+
+  test('reports a workflow error sent after COMPLETE', async () => {
+    const app = await serverWithTimeout('1000', async send => {
+      send('Provisional result', 'COMPLETE');
+      await Promise.resolve();
+      send('Save failed', 'ERROR');
+      return false;
+    });
+    try {
+      const events = await runJob(app);
+      expect(events.body).toContain('"status":"ERROR","message":"Save failed"');
       expect(events.body).not.toContain('SUCCESS');
     } finally {
       await app.close();
