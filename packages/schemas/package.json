@@ -32,7 +32,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "zod": "^3.22.3",
+    "zod": "^4.6.6",
     "zod-validation-error": "^3.4.0"
   }
 }
