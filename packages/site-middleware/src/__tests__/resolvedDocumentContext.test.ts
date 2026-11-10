@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -29,7 +28,11 @@ function write(relativePath: string, contents: string) {
 }
 
 beforeAll(async () => {
-  snapshotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'mosaic-document-context-'));
+  // Snapshot config takes a relative path. Keep the fixture on the checkout
+  // drive even when Windows puts the system temp directory on another drive.
+  const tempRoot = path.resolve('.tmp');
+  fs.mkdirSync(tempRoot, { recursive: true });
+  snapshotRoot = fs.mkdtempSync(path.join(tempRoot, 'mosaic-document-context-'));
   // Real pipeline output: metadata describes the backing document, while
   // shared configuration lives only in a separate JSON file.
   write(
