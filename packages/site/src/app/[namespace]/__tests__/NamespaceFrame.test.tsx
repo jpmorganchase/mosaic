@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom/vitest';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { useAppHeader } from '@jpmorganchase/mosaic-store';
 import { useResolveRelativeUrl } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
@@ -35,7 +35,15 @@ vi.mock('@jpmorganchase/mosaic-content-editor-plugin/useEditMode', () => ({
 }));
 vi.mock('@jpmorganchase/mosaic-site-components/Image/index', () => ({ Image: () => null }));
 vi.mock('@jpmorganchase/mosaic-site-components/Link', () => ({ Link: () => null }));
+vi.mock('@jpmorganchase/mosaic-site-components/404', () => ({
+  Page404: () => <h1>Page Not Found</h1>
+}));
+vi.mock('next/navigation', () => ({ usePathname: () => window.location.pathname }));
+vi.mock('../../providers', () => ({
+  StoreShell: ({ children }: { children: ReactNode }) => children
+}));
 
+import { NotFoundBody } from '../../NotFoundBody';
 import { FrameSync, NamespaceFrame } from '../NamespaceFrame';
 
 const sharedConfig = {
@@ -151,5 +159,41 @@ describe('NamespaceFrame relative URLs', () => {
       'src',
       '/docs/new-logo.svg'
     );
+  });
+
+  test('loads section navigation after a 404 mounts and falls back for other sections', async () => {
+    const sectionConfig = { header: { ...sharedConfig.header, logo: './guide-logo.svg' } };
+    const loadSharedConfigAction = vi
+      .fn()
+      .mockResolvedValueOnce(sectionConfig)
+      .mockRejectedValueOnce(new Error('Config unavailable'));
+    const view = () => (
+      <NamespaceFrame data={data}>
+        <NotFoundBody loadSharedConfigAction={loadSharedConfigAction} />
+      </NamespaceFrame>
+    );
+
+    window.history.replaceState(null, '', '/docs/guide/missing');
+    const { rerender } = render(view());
+
+    expect(screen.getByRole('heading', { name: 'Page Not Found' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Homepage' })).toHaveAttribute('href', '/docs/index');
+    expect(loadSharedConfigAction).toHaveBeenCalledWith('/docs/guide/missing');
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Homepage' })).toHaveAttribute(
+        'href',
+        '/docs/guide/index'
+      );
+      expect(screen.getByRole('img', { name: 'Homepage' })).toHaveAttribute(
+        'src',
+        '/docs/guide/guide-logo.svg'
+      );
+    });
+
+    window.history.replaceState(null, '', '/docs/api/missing');
+    rerender(view());
+
+    expect(screen.getByRole('link', { name: 'Homepage' })).toHaveAttribute('href', '/docs/index');
+    expect(loadSharedConfigAction).toHaveBeenCalledWith('/docs/api/missing');
   });
 });
