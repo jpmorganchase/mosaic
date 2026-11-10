@@ -80,6 +80,22 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     expect(fs.readFileSync(path.join(repo.dir, 'new-page.mdx'), 'utf8')).toBe('# New page');
   });
 
+  test('THEN checks requested before subscription run once when a subscriber is ready', async () => {
+    await repo.init();
+    push('pending.mdx', '# Pending');
+    const fetchSpy = vi.spyOn(repo, 'fetch');
+
+    await Promise.all([repo.checkForChanges(), repo.checkForChanges()]);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    const onChange = vi.fn();
+    unsubscribe = repo.onCommitChange(onChange, vi.fn(), false, HOUR_MS);
+
+    await vi.waitFor(() => expect(onChange).toHaveBeenCalledTimes(1), { timeout: 3000 });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
+  });
+
   test('THEN checks requested while one is running are coalesced into one more check', async () => {
     await repo.init();
     const fetchSpy = vi.spyOn(repo, 'fetch');
