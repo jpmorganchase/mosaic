@@ -288,9 +288,15 @@ export default class Repo {
     const runCheck = async () => {
       try {
         if (this.#ready) {
-          const { value: updatedFiles } = await this.#withCheckoutLock(() =>
-            updatedFilesGen.next()
-          );
+          const updatedFiles = await this.#withCheckoutLock(async () => {
+            if (!this.#ready) {
+              // Initialization can fail while this check is waiting for the lock.
+              this.#refreshPending = true;
+              return undefined;
+            }
+            const { value } = await updatedFilesGen.next();
+            return value;
+          });
 
           if (updatedFiles && (disableAutoPullChanges || updatedFiles.length)) {
             callback(updatedFiles);

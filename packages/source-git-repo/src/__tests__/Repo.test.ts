@@ -3,10 +3,16 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import * as lockfile from 'proper-lockfile';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import Repo from '../Repo';
 import GitRepoSource from '../index';
+
+vi.mock('proper-lockfile', async importOriginal => {
+  const actual = await importOriginal<typeof lockfile>();
+  return { ...actual, lock: vi.fn(actual.lock) };
+});
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -55,6 +61,7 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     unsubscribe?.();
     unsubscribe = undefined;
     vi.restoreAllMocks();
+    vi.mocked(lockfile.lock).mockReset();
     fs.rmSync(projectDir, { recursive: true, force: true });
     fs.rmSync(path.join(process.cwd(), '.tmp/.cloned_docs', path.basename(projectDir)), {
       recursive: true,
@@ -128,6 +135,41 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     await vi.waitFor(() => expect(onChange).toHaveBeenCalledTimes(1), { timeout: 3000 });
     expect(onError).not.toHaveBeenCalled();
     expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
+  });
+
+  test('THEN a refresh waiting for the lock is queued again after reinitialization fails', async () => {
+    await repo.init();
+    const onError = vi.fn();
+    unsubscribe = repo.onCommitChange(vi.fn(), onError, false, HOUR_MS);
+    const check = vi.spyOn(repo, 'checkForChanges');
+    const fetch = vi.spyOn(repo, 'fetch');
+    const initError = new Error('Failed to reconfigure clone');
+    vi.spyOn(repo, 'ensureSingleBranchFetchRefspec').mockRejectedValueOnce(initError);
+
+    let resumeCheck!: () => void;
+    const waiting = new Promise<void>(resolve => {
+      resumeCheck = resolve;
+    });
+    const { lock: acquire } = await vi.importActual<typeof lockfile>('proper-lockfile');
+    vi.mocked(lockfile.lock).mockImplementationOnce(async (...args) => {
+      await waiting;
+      return acquire(...args);
+    });
+
+    const checking = repo.checkForChanges();
+    try {
+      await expect(repo.init()).rejects.toThrow(initError);
+    } finally {
+      resumeCheck();
+      await checking;
+    }
+    expect(fetch).not.toHaveBeenCalled();
+
+    await repo.init();
+    expect(check).toHaveBeenCalledTimes(2);
+    await check.mock.results[1].value;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(onError).not.toHaveBeenCalled();
   });
 
   test('THEN checks requested while one is running are coalesced into one more check', async () => {
