@@ -237,6 +237,7 @@ export default class Repo {
 
   /** One entry per active `onCommitChange` subscription; see {@link checkForChanges}. */
   #commitChangeChecks: Set<() => Promise<void>> = new Set();
+  #refreshPending = false;
 
   constructor(credentials: string, remote = 'origin', branch: string, repo: string) {
     if (!repo) {
@@ -339,17 +340,30 @@ export default class Repo {
       }
     };
 
+    this.#flushPendingRefresh();
     return unsubscribe;
   }
 
   /**
    * Runs the `onCommitChange` checks now instead of waiting for their next
    * interval, e.g. when a push webhook arrives. Changes reach the
-   * subscribers' callbacks as usual. Resolves once the checks are done; a
-   * no-op until the repository is cloned.
+   * subscribers' callbacks as usual. Before initialization or subscription,
+   * requests are coalesced into one check when both are ready.
    */
   async checkForChanges() {
+    if (!this.#cloned || this.#commitChangeChecks.size === 0) {
+      this.#refreshPending = true;
+      return;
+    }
     await Promise.all(Array.from(this.#commitChangeChecks, check => check()));
+  }
+
+  #flushPendingRefresh() {
+    if (this.#refreshPending && this.#cloned && this.#commitChangeChecks.size > 0) {
+      this.#refreshPending = false;
+      // The source error callback reports failures once the queued check runs.
+      void this.checkForChanges().catch(() => {});
+    }
   }
 
   async pull() {
@@ -564,7 +578,8 @@ export default class Repo {
 
   async init() {
     await fs.mkdir(path.dirname(this.#cloneRootDir), { recursive: true });
-    return this.#withCheckoutLock(() => this.#init());
+    await this.#withCheckoutLock(() => this.#init());
+    this.#flushPendingRefresh();
   }
 
   async #withCheckoutLock<T>(operation: () => Promise<T>): Promise<T> {
