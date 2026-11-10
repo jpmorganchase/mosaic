@@ -62,6 +62,20 @@ function subscribe(jobId = 'job-1', maxReconnects?: number) {
 const tick = () => new Promise(resolve => setTimeout(resolve));
 
 describe('subscribeToSave', () => {
+  test('closes the stream when iteration stops while waiting for an event', async () => {
+    FakeEventSource.instances = [];
+    const stream = subscribeToSave('job-1', { EventSource: FakeEventSource });
+    const pending = stream.next();
+    const source = FakeEventSource.instances[0];
+    expect(source.closed).toBe(false);
+
+    const stopped = stream.return();
+
+    expect(source.closed).toBe(true);
+    await expect(pending).resolves.toEqual({ done: true, value: undefined });
+    await expect(stopped).resolves.toEqual({ done: true, value: undefined });
+  });
+
   test('maps progress and a successful done event, then closes the stream', async () => {
     const { events, done, source } = subscribe('job/1');
     await tick();

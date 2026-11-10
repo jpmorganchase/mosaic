@@ -79,7 +79,7 @@ function prHrefOf(message: unknown): string | null {
  *
  * Stopping the iteration early closes the `EventSource`.
  */
-export async function* subscribeToSave(
+export function subscribeToSave(
   jobId: string,
   {
     url = `/api/workflows/${encodeURIComponent(jobId)}/events`,
@@ -87,6 +87,29 @@ export async function* subscribeToSave(
     EventSource: EventSourceImpl = (globalThis as { EventSource?: EventSourceConstructor })
       .EventSource
   }: SubscribeToSaveOptions = {}
+): AsyncGenerator<PersistEvent, void, unknown> {
+  const controller = new AbortController();
+  const stream = followSaveEvents(url, maxReconnects, EventSourceImpl, controller.signal);
+  const finish = stream.return.bind(stream);
+  const fail = stream.throw.bind(stream);
+  // A generator's return and throw wait for any pending next() to settle.
+  // Wake that reader and close the connection before queuing either operation.
+  stream.return = value => {
+    controller.abort();
+    return finish(value);
+  };
+  stream.throw = error => {
+    controller.abort();
+    return fail(error);
+  };
+  return stream;
+}
+
+async function* followSaveEvents(
+  url: string,
+  maxReconnects: number,
+  EventSourceImpl: EventSourceConstructor | undefined,
+  signal: AbortSignal
 ): AsyncGenerator<PersistEvent, void, unknown> {
   if (!EventSourceImpl) {
     yield { kind: 'error', message: 'This browser cannot follow the progress of a save.' };
@@ -98,6 +121,16 @@ export async function* subscribeToSave(
   let finished = false;
   let failures = 0;
   let wake: (() => void) | null = null;
+
+  const abort = () => {
+    queue.length = 0;
+    if (!finished) {
+      finished = true;
+      source.close();
+    }
+    wake?.();
+    wake = null;
+  };
 
   const push = (event: PersistEvent, last = false) => {
     if (finished) return;
@@ -145,6 +178,7 @@ export async function* subscribeToSave(
     }
   });
 
+  signal.addEventListener('abort', abort, { once: true });
   try {
     while (true) {
       const next = queue.shift();
@@ -159,7 +193,7 @@ export async function* subscribeToSave(
       }
     }
   } finally {
-    finished = true;
-    source.close();
+    signal.removeEventListener('abort', abort);
+    abort();
   }
 }

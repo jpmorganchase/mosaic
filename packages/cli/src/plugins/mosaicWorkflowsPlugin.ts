@@ -88,26 +88,25 @@ function sendRequestError(error: FastifyError, _request: FastifyRequest, reply: 
 }
 
 /**
- * Turns the workflow's progress messages into job events: `COMPLETE`
- * finishes the job successfully, `ERROR` fails it and anything else is
- * progress. The job also finishes when the workflow settles, so one that
- * never sends `COMPLETE` still ends, and a workflow that can't run (no
- * source owns the route, missing workflow, thrown error) fails it.
+ * Relays progress and errors immediately. A `COMPLETE` message supplies
+ * the result once the workflow has successfully settled. Workflows that
+ * finish without a `COMPLETE` message get a default result.
  */
 async function runWorkflow(
   job: WorkflowJob,
   run: (send: SendSourceWorkflowMessage) => Promise<boolean>,
   name: string
 ) {
+  let completion: { message: unknown } | undefined;
   const send: SendSourceWorkflowMessage = (message, status) => {
     if (status === 'ERROR') job.fail(message);
-    else if (status === 'COMPLETE') job.succeed(message);
+    else if (status === 'COMPLETE') completion ??= { message };
     else job.progress(status, message);
   };
   try {
     const ran = await run(send);
     if (ran === false) job.fail(`Workflow ${name} could not be run`);
-    else job.succeed(`Workflow ${name} finished`);
+    else job.succeed(completion ? completion.message : `Workflow ${name} finished`);
   } catch (e) {
     console.error(`[Mosaic] Workflow ${name} failed`, e);
     job.fail(e instanceof Error ? e.message : `Workflow ${name} failed`);
