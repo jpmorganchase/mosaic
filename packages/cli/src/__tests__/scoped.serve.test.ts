@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, afterAll, vi } from 'vitest';
+import { describe, expect, test, afterAll, vi } from 'vitest';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 import serve, { server } from '../serve';
 
@@ -61,15 +61,15 @@ vi.mock('@jpmorganchase/mosaic-core', () => ({
 }));
 
 describe('GIVEN the serve command with a scope', () => {
-  beforeAll(async () => {
-    await serve(mosaicConfig, 0, ['docs'] /** scope */);
-  });
-
   afterAll(async () => {
     await server.close();
   });
 
   test('THEN a scoped filesystem is used', async () => {
+    // Serve inside the test: Vitest 5 clears mock history before each test
+    // (`clearMocks`), so calls made in `beforeAll` would not be visible here.
+    await serve(mosaicConfig, 0, ['docs'] /** scope */);
+
     expect(mockScopeFn).toBeCalledTimes(1);
     expect(mockScopeFn.mock.calls[0][0]).toEqual(['docs']);
   });

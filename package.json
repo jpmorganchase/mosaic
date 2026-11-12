@@ -57,7 +57,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vanilla-extract/esbuild-plugin": "^2.3.22",
-    "@vitest/coverage-istanbul": "^4.0.0",
+    "@vitest/coverage-istanbul": "^5.1.0",
     "eslint": "^10.4.0",
     "eslint-config-airbnb-extended": "^2.3.2",
     "eslint-config-next": "^16.1.6",
@@ -82,7 +82,8 @@
     "resize-observer-polyfill": "1.5.1",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^4.1.11"
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
   "dependencies": {
     "turbo": "^2.9.14"
