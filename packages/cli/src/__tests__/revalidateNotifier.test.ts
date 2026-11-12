@@ -25,7 +25,7 @@ function setup(fetchMock: ReturnType<typeof vi.fn>) {
   };
   stop = startRevalidateNotifier(core as unknown as MosaicCore, {
     url: 'http://site.test/api/revalidate',
-    secret: 'synthetic-notifier-secret'
+    secret: 'test-token-placeholder'
   }).stop;
   return () => update();
 }
