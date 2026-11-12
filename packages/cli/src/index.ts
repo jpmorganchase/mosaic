@@ -13,6 +13,7 @@ program
   .option('-o, --out <string>', 'Output directory', '.tmp/.mosaic-build')
   .option('-s, --scope <strings>', 'Command separated namespaces')
   .option('-p, --port <number>', 'Port to serve on', '8080')
+  .option('--host <string>', 'Host or IP address to bind to', 'localhost')
   .option('-n, --name <string>', 'Snapshot name');
 
 program.parse();
@@ -54,5 +55,7 @@ if (program.args[0] === 'build') {
   dispatch(build(config.default, path.resolve(process.cwd(), options.out), options));
 }
 if (program.args[0] === 'serve') {
-  dispatch(serve(config.default, options.port, options.scope && options.scope.split(',')));
+  dispatch(
+    serve(config.default, options.port, options.scope && options.scope.split(','), options.host)
+  );
 }

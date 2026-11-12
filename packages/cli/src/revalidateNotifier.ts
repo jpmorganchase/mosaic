@@ -28,7 +28,9 @@
  * event in a burst fires immediately (leading edge) so a single save
  * isn't delayed; any further events arriving inside the
  * `DEBOUNCE_MS` window are coalesced into one trailing flush so the
- * site sees at most two cache flushes per burst regardless of N.
+ * site sees at most two cache flushes per burst regardless of N. Failed
+ * deliveries stay pending and retry with bounded backoff; requests have a
+ * ten-second deadline and only one request may be active at a time.
  */
 import type MosaicCore from '@jpmorganchase/mosaic-core';
 
@@ -58,69 +60,79 @@ export function startRevalidateNotifier(
   const { url, secret } = target;
 
   let timer: NodeJS.Timeout | undefined;
+  let deadline: NodeJS.Timeout | undefined;
+  let controller: AbortController | undefined;
   let stopped = false;
-  // True while we're inside the suppression window opened by a leading-edge
-  // fire. Reset to false after `DEBOUNCE_MS` of idleness.
-  let firedThisWindow = false;
-  // Set when an event arrives during the suppression window; drives the
-  // trailing flush so changes that landed inside the window aren't lost.
-  let pendingTrailing = false;
+  let inFlight = false;
+  let generation = 0;
+  let acknowledged = 0;
+  let lastStarted = -Infinity;
+  let retryDelay = 1000;
 
-  const fire = async () => {
-    timer = undefined;
-    if (stopped) return;
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-mosaic-revalidate-secret': secret
-        }
-      });
-      if (!response.ok) {
-        const body = await response.text().catch(() => '');
-        console.warn(
-          `[Mosaic] Revalidate POST to ${url} returned ${response.status} ${
-            response.statusText
-          } ${body.slice(0, 200)}`
-        );
-        return;
-      }
-      console.log(`[Mosaic] Revalidated site cache at ${url}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`[Mosaic] Revalidate POST to ${url} failed: ${message}`);
-    }
-  };
-
-  const armResetTimer = () => {
+  const arm = (delay: number) => {
     timer = setTimeout(() => {
       timer = undefined;
-      // Suppression window closed. If anything arrived after the leading
-      // fire, flush the coalesced trailing notification now — which itself
-      // counts as the leading edge of a new window.
-      const shouldTrailing = pendingTrailing;
-      firedThisWindow = false;
-      pendingTrailing = false;
-      if (shouldTrailing) {
-        firedThisWindow = true;
-        void fire();
-        armResetTimer();
+      void fire();
+    }, delay);
+  };
+
+  const fire = async () => {
+    if (stopped || inFlight || acknowledged === generation) return;
+    inFlight = true;
+    lastStarted = Date.now();
+    const sending = generation;
+    controller = new AbortController();
+    try {
+      const timeout = new Promise<never>((_resolve, reject) => {
+        deadline = setTimeout(() => {
+          controller?.abort();
+          reject(new Error('request timed out'));
+        }, 10_000);
+      });
+      const response = await Promise.race([
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-mosaic-revalidate-secret': secret
+          },
+          signal: controller.signal
+        }),
+        timeout
+      ]);
+      // No response payload is needed, including on failure.
+      void response.body?.cancel().catch(() => {});
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      acknowledged = sending;
+      retryDelay = 1000;
+      console.log(`[Mosaic] Revalidated site cache at ${url}`);
+    } catch (error) {
+      if (!stopped) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`[Mosaic] Revalidate POST to ${url} failed: ${message}; retrying.`);
+        arm(retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30_000);
       }
-    }, DEBOUNCE_MS);
+    } finally {
+      if (deadline) clearTimeout(deadline);
+      deadline = undefined;
+      controller = undefined;
+      inFlight = false;
+      // Updates received during the request belong to a newer generation;
+      // acknowledging the sent generation must not discard them.
+      if (!stopped && !timer && acknowledged !== generation) {
+        arm(Math.max(0, DEBOUNCE_MS - (Date.now() - lastStarted)));
+      }
+    }
   };
 
   const schedule = () => {
     if (stopped) return;
-    if (!firedThisWindow) {
-      // Leading edge: fire immediately, open the suppression window.
-      firedThisWindow = true;
-      void fire();
-      armResetTimer();
-      return;
-    }
-    // Inside the window — coalesce into a single trailing flush.
-    pendingTrailing = true;
+    generation++;
+    if (inFlight || timer) return;
+    const delay = DEBOUNCE_MS - (Date.now() - lastStarted);
+    if (delay > 0) arm(delay);
+    else void fire();
   };
 
   mosaic.onSourceUpdate(schedule);
@@ -129,6 +141,8 @@ export function startRevalidateNotifier(
   return {
     stop() {
       stopped = true;
+      controller?.abort();
+      if (deadline) clearTimeout(deadline);
       if (timer) {
         clearTimeout(timer);
         timer = undefined;

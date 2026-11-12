@@ -8,7 +8,7 @@ import fastifyMosaicAdmin from './plugins/mosaicAdminPlugin.js';
 import fastifyMosaicWebhooks from './plugins/mosaicWebhooksPlugin.js';
 import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
 import { createMosaicInstance } from './plugins/createMosaicInstance.js';
-import { validateServeEnv } from './env.js';
+import { validateServeEnv, validateHost } from './env.js';
 import { startRevalidateNotifier } from './revalidateNotifier.js';
 
 const MOSAIC_ADMIN_PREFIX = '_mosaic_';
@@ -18,7 +18,13 @@ export const server = Fastify({
   pluginTimeout: 20000
 });
 
-export default async function serve(config: MosaicConfig, port: number, scope?: string[]) {
+export default async function serve(
+  config: MosaicConfig,
+  port: number,
+  scope?: string[],
+  host = 'localhost'
+) {
+  validateHost(host);
   // Refuse to start, listing every problem, before any source boots.
   const env = validateServeEnv();
   const mosaic = await createMosaicInstance(config);
@@ -27,7 +33,8 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
   // a source emits an update. No-op unless `MOSAIC_REVALIDATE_URL` and
   // `MOSAIC_REVALIDATE_SECRET` are set in the CLI process env. See
   // `revalidateNotifier.ts` for the contract.
-  startRevalidateNotifier(mosaic, env.revalidate);
+  const notifier = startRevalidateNotifier(mosaic, env.revalidate);
+  server.addHook('onClose', async () => notifier.stop());
 
   await server.register(middie);
   await server.register(fastifyMosaic, { config, scope, mosaic });
@@ -58,9 +65,9 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
    */
   const start = async () => {
     try {
-      await server.listen({ port });
+      await server.listen({ port, host });
       console.log(
-        `[Mosaic] Listening on port ${port}${
+        `[Mosaic] Listening on ${host}:${port}${
           Array.isArray(scope) ? ` (scoped to ${scope.join(', ')})` : ''
         }`
       );

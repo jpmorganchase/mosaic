@@ -92,4 +92,16 @@ describe('GIVEN the serve command with an invalid env', () => {
     );
     expect(stderr).not.toContain('at validateServeEnv');
   });
+  test.skipIf(!existsSync(cliBin))(
+    'THEN the built CLI forwards and validates --host before startup',
+    () => {
+      const { status, stderr } = spawnSync(
+        process.execPath,
+        [cliBin, 'serve', '-c', './mosaic.config.mjs', '--host', 'http://localhost:8080'],
+        { cwd: cliRoot, encoding: 'utf8', timeout: 30_000 }
+      );
+      expect(status).toBe(1);
+      expect(stderr).toContain('Invalid --host: expected a hostname or IP address');
+    }
+  );
 });
