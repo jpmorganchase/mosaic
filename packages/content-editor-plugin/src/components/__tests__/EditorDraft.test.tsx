@@ -183,3 +183,19 @@ test('reseeds safely when authored bytes become available for the same document'
   expect(screen.getByRole('textbox', { name: 'Markdown source editor' })).toHaveValue(body);
   expect(screen.getByRole('button', { name: 'Review save' })).toBeEnabled();
 });
+
+test('preserves body edits when Visual mode rerenders after consuming its mode bridge', async () => {
+  modeState.mode = 'source';
+  const view = mountEditor();
+  await screen.findByTestId('split-ready');
+  const edited = 'A different length draft body.';
+  fireEvent.change(screen.getByRole('textbox', { name: 'Markdown source editor' }), {
+    target: { value: edited }
+  });
+  view.changeMode('wysiwyg');
+  // Preview/context updates rerender the shell after the bridge installer
+  // clears its one-use seed. They must not create a new Lexical editor.
+  view.rerender(<Editor {...view.props} />);
+  view.changeMode('source');
+  expect(screen.getByRole('textbox', { name: 'Markdown source editor' })).toHaveValue(edited);
+});

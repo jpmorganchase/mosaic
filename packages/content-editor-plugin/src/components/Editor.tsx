@@ -708,7 +708,6 @@ const EditorInner: FC<EditorProps> = ({
               <ScrollableSection className={styles.focused} ref={containerRef}>
                 {mode === 'wysiwyg' ? (
                   <WysiwygShell
-                    key={`wys-${seed.markdown.length}-${seed.blockIndex}`}
                     seed={seed}
                     compilePreview={compilePreviewWithFrontmatter}
                     getCurrentMarkdownRef={getCurrentMarkdownRef}
