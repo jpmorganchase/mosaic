@@ -10642,7 +10642,7 @@ __metadata:
     undici: "npm:^8.4.1"
     which: "npm:^7.0.0"
   bin:
-    node-gyp: ./bin/node-gyp.js
+    node-gyp: bin/node-gyp.js
   checksum: 10/808fa8e3ccf2528eb5ade4f9b7e9b98cae26e02846d8ec08e4d6b23a2069a3211255e9100648cb5054a98a1343183601b5eb312d61091beeadea35035ecb15ab
   languageName: node
   linkType: hard
@@ -13037,8 +13037,8 @@ __metadata:
     tinyglobby: "npm:^0.2.11"
     ts-interface-checker: "npm:^0.1.9"
   bin:
-    sucrase: ./bin/sucrase
-    sucrase-node: ./bin/sucrase-node
+    sucrase: bin/sucrase
+    sucrase-node: bin/sucrase-node
   checksum: 10/539f5c6ebc1ff8d449a89eb52b8c8944a730b9840ddadbd299a7d89ebcf16c3f4bc9aa59e1f2e112a502e5cf1508f7e02065f0e97c0435eb9a7058e997dfff5a
   languageName: node
   linkType: hard
@@ -14331,7 +14331,7 @@ __metadata:
   dependencies:
     isexe: "npm:^4.0.0"
   bin:
-    node-which: ./bin/which.js
+    node-which: bin/which.js
   checksum: 10/913a43ac10df37602ba9795a004dd7ab12ba7dd592aca1f08ec333be1fdd6a49bbf119a88c3f8d0ea70eeb6251726e77069251424d73000299a0a840ed000732
   languageName: node
   linkType: hard
