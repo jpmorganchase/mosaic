@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import checkLinks from 'check-links';
+import { checkLinks } from '../utils/checkLinks.js';
 
 import BrokenLinksPlugin from '../BrokenLinksPlugin';
 
-vi.mock('check-links', () => ({ default: vi.fn() }));
+vi.mock('../utils/checkLinks.js', () => ({ checkLinks: vi.fn() }));
 
 const checkLinksMock = vi.mocked(checkLinks);
 const options = { baseUrl: 'http://localhost:8080' };

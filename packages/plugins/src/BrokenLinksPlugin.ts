@@ -2,11 +2,8 @@ import path from 'node:path';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import { remark } from 'remark';
 import remarkMdx from 'remark-mdx';
-import checkLinks from 'check-links';
 import { visit } from 'unist-util-visit';
-import proxyAgentPkg from 'https-proxy-agent';
-
-const { HttpsProxyAgent } = proxyAgentPkg;
+import { checkLinks } from './utils/checkLinks.js';
 
 async function checkPageLinks(
   ast: unknown,
@@ -60,15 +57,7 @@ async function checkPageLinks(
 
   visit(ast, ['link', 'image', 'definition'], aggregate);
   const links = Object.keys(urlToNodes);
-  const checkLinksOptions = options.proxyEndpoint
-    ? {
-        agent: {
-          https: new HttpsProxyAgent(options.proxyEndpoint)
-        }
-      }
-    : {};
-
-  const results = await checkLinks(links, checkLinksOptions);
+  const results = await checkLinks(links, { proxyEndpoint: options.proxyEndpoint });
   links.forEach(link => {
     const result = results[link];
 
