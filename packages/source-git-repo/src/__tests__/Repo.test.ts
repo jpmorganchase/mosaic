@@ -239,6 +239,88 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     }
   }, 15_000);
 
+  test('THEN separate save worktrees retain their edits and cleanup preserves the source', async () => {
+    const secondRepo = new Repo(
+      '',
+      'origin',
+      'main',
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+    await Promise.all([repo.init(), secondRepo.init()]);
+    const sourceDir = repo.dir;
+
+    await Promise.all([
+      repo.createWorktree('save-first', 'editor-first'),
+      secondRepo.createWorktree('save-second', 'editor-second')
+    ]);
+    const firstDir = repo.dir;
+    const secondDir = secondRepo.dir;
+    try {
+      fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
+      fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
+      await Promise.all([repo.addChanges(), secondRepo.addChanges()]);
+      await Promise.all([
+        repo.commitChanges('First Editor', 'first@example.test', 'First save'),
+        secondRepo.commitChanges('Second Editor', 'second@example.test', 'Second save')
+      ]);
+      expect(git(firstDir, 'show', 'HEAD:index.mdx').trim()).toBe('# First edit');
+      expect(git(secondDir, 'show', 'HEAD:index.mdx').trim()).toBe('# Second edit');
+      expect(git(firstDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+        'first@example.test/first@example.test'
+      );
+      expect(git(secondDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+        'second@example.test/second@example.test'
+      );
+
+      git(sourceDir, 'worktree', 'lock', firstDir);
+      await repo.removeWorktree('save-first');
+      expect(fs.readFileSync(path.join(firstDir, 'index.mdx'), 'utf8')).toBe('# First edit');
+      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).toContain('locked');
+      git(sourceDir, 'worktree', 'unlock', firstDir);
+
+      await repo.removeWorktree('save-first');
+      await repo.removeWorktree('save-first');
+      expect(fs.existsSync(firstDir)).toBe(false);
+      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('save-first');
+      expect(fs.readFileSync(path.join(sourceDir, 'index.mdx'), 'utf8')).toBe('# Index');
+      expect(fs.readFileSync(path.join(secondDir, 'index.mdx'), 'utf8')).toBe('# Second edit');
+    } finally {
+      await Promise.all([
+        repo.removeWorktree('save-first'),
+        secondRepo.removeWorktree('save-second')
+      ]);
+    }
+  });
+
+  test('THEN cleanup removes a worktree left behind by a failed checkout hook', async () => {
+    await repo.init();
+    const sourceDir = repo.dir;
+    const hooksDir = path.join(path.dirname(path.dirname(sourceDir)), '.git', 'hooks');
+    fs.writeFileSync(path.join(hooksDir, 'post-checkout'), '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+    const saveDir = path.join(path.dirname(sourceDir), 'failed-save');
+
+    await expect(repo.createWorktree('failed-save', 'editor-failed-save')).rejects.toThrow();
+    expect(fs.existsSync(saveDir)).toBe(true);
+
+    await repo.removeWorktree('failed-save');
+    expect(fs.existsSync(saveDir)).toBe(false);
+    expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('failed-save');
+    expect(fs.existsSync(sourceDir)).toBe(true);
+  });
+
+  test('THEN cleanup can remove an unregistered save directory', async () => {
+    await repo.init();
+    const sourceDir = repo.dir;
+    await repo.createWorktree('unregistered-save', 'editor-unregistered-save');
+    const saveDir = repo.dir;
+    git(sourceDir, 'worktree', 'remove', '--force', saveDir);
+    fs.mkdirSync(saveDir);
+
+    await repo.removeWorktree('unregistered-save');
+    expect(fs.existsSync(saveDir)).toBe(false);
+    expect(fs.existsSync(sourceDir)).toBe(true);
+  });
+
   test('THEN a failed on-demand fetch is reported to the caller', async () => {
     await repo.init();
     const failure = new Error('Fetch failed');

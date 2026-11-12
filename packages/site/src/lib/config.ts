@@ -72,8 +72,6 @@ export interface SiteConfig {
     url: string;
     /** `MOSAIC_WORKFLOWS_SECRET`; empty when unset. */
     secret: string;
-    /** `MOSAIC_WORKFLOWS_TIMEOUT_MS`; 5 minutes by default. */
-    timeoutMs: number;
   };
   /** Development-only switches. Callers still check `NODE_ENV`. */
   dev: {
@@ -95,10 +93,6 @@ const MOSAIC_OUTPUTS = ['export', 'standalone'] as const;
  */
 const DEV_PLACEHOLDER_AUTH_SECRETS = new Set(['local-dev-auth-secret-not-for-production']);
 const DEV_PLACEHOLDER_REVALIDATE_SECRETS = new Set(['local-dev-not-a-secret']);
-
-const DEFAULT_WORKFLOWS_TIMEOUT_MS = 5 * 60 * 1000;
-/** Largest delay `setTimeout` honours; longer ones fire immediately. */
-const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 
 const isUnset = (value: string | undefined): value is undefined | '' =>
   value === undefined || value === '';
@@ -169,11 +163,6 @@ export const siteEnvSchema = z
         : 'must be an absolute ws(s) or http(s) URL'
     ),
     MOSAIC_WORKFLOWS_SECRET: z.string().optional(),
-    MOSAIC_WORKFLOWS_TIMEOUT_MS: optionalVar(value =>
-      /^\d+$/.test(value) && Number(value) > 0 && Number(value) <= MAX_TIMEOUT_MS
-        ? undefined
-        : `must be a whole number of milliseconds between 1 and ${MAX_TIMEOUT_MS} (got "${value}")`
-    ),
     MOSAIC_DEV_FAKE_AUTH: booleanFlag,
     MOSAIC_DEV_BYPASS_CAPABILITY_GATE: booleanFlag
   })
@@ -238,8 +227,7 @@ export function readSiteConfig(env: SiteEnv): SiteConfig {
     },
     workflows: {
       url: env.MOSAIC_WORKFLOWS_URL ?? '',
-      secret: env.MOSAIC_WORKFLOWS_SECRET ?? '',
-      timeoutMs: Number(env.MOSAIC_WORKFLOWS_TIMEOUT_MS) || DEFAULT_WORKFLOWS_TIMEOUT_MS
+      secret: env.MOSAIC_WORKFLOWS_SECRET ?? ''
     },
     dev: {
       fakeAuth: env.MOSAIC_DEV_FAKE_AUTH === 'true',

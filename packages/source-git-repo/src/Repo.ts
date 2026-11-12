@@ -219,6 +219,7 @@ export default class Repo {
   // The main clone exists before its linked worktree is ready for refreshes.
   #ready = false;
   #dir = '';
+  #saveWorktreeDir?: string;
   #cloneRootDir = '';
   #worktreeRootDir = '';
   #remote = '';
@@ -772,6 +773,8 @@ export default class Repo {
       );
     }
 
+    // A failed checkout or post-checkout hook can leave a worktree behind.
+    this.#saveWorktreeDir = this.#dir;
     await spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
@@ -782,16 +785,10 @@ export default class Repo {
   }
 
   async removeWorktree(sid: string) {
-    // The worktree dir we're removing is the one currently held in
-    // `this.#dir` — `createWorktree` sets it. We capture it BEFORE
-    // running `git worktree remove` because the operation should
-    // be idempotent: even if git's registry is already cleaned
-    // up (e.g. a previous `removeWorktree` ran on the same `sid`,
-    // or `createWorktree`'s own idempotency-guard already pruned
-    // it), we still want to clear the dir from disk so the next
-    // `createWorktree` doesn't see a stale directory and crash
-    // with "'<dir>' already exists".
-    const worktreeDir = this.#dir;
+    // Both the PR helper and its caller can clean up. After the first
+    // removal, #dir points to the shared source checkout again.
+    const worktreeDir = this.#saveWorktreeDir;
+    if (!worktreeDir) return;
     console.debug(`[Mosaic][Source-Git] Removing worktree for content save @ ${worktreeDir}`);
 
     // Run `git worktree remove` from the CLONE root, not from
@@ -807,38 +804,45 @@ export default class Repo {
         discardStdout: true
       });
     } catch (e) {
-      // `git worktree remove` fails when the worktree isn't
-      // registered (it was already removed, or `createWorktree`'s
-      // idempotency guard pruned it). Fall through to the fs
-      // cleanup below; warn so we have a paper trail in case the
-      // failure was actually something else.
       console.warn(
         `[Mosaic][Source-Git] git worktree remove failed for '${worktreeDir}'; ` +
-          `falling back to filesystem cleanup. (${(e as Error).message})`
+          `checking whether it is still registered. (${getErrorMessage(e)})`
       );
-    }
-
-    // Catch-all: drop the dir from disk if it still exists.
-    // `force: true` makes this a no-op when the dir is already
-    // gone. This is what guarantees `createWorktree` sees a
-    // clean slate next time — the line we depend on most.
-    try {
-      await fs.rm(worktreeDir, { recursive: true, force: true });
-    } catch (e) {
-      // Genuinely unexpected; not fatal because `createWorktree`
-      // has its own belt-and-braces cleanup, but log so we
-      // notice if it becomes a pattern.
-      console.warn(
-        `[Mosaic][Source-Git] fs.rm of removed worktree dir failed for '${worktreeDir}': ` +
-          `${(e as Error).message}`
-      );
+      try {
+        const worktrees = await spawn(
+          'git',
+          ['worktree', 'list', '--porcelain', '-z'],
+          this.#cloneRootDir
+        );
+        const parent = await fs
+          .realpath(path.dirname(worktreeDir))
+          .catch(() => path.dirname(worktreeDir));
+        const checkout = path.join(parent, path.basename(worktreeDir));
+        const registered = worktrees
+          .split('\0')
+          .some(entry => entry.startsWith('worktree ') && !path.relative(checkout, entry.slice(9)));
+        // Preserve registered worktrees when Git refuses to remove them.
+        if (registered) return;
+        await fs.rm(worktreeDir, { recursive: true, force: true });
+      } catch (error) {
+        // Keep the target available for a second cleanup attempt.
+        console.warn(
+          `[Mosaic][Source-Git] Could not remove worktree '${worktreeDir}': ${getErrorMessage(
+            error
+          )}`
+        );
+        return;
+      }
     }
 
     // Reset `#dir` back to the canonical branch worktree so any
     // subsequent calls on this Repo instance (e.g. another save
     // for the same user, or a refresh fetch) go through the
     // shared branch worktree instead of the now-removed sid one.
-    this.#dir = path.join(this.#worktreeRootDir, this.#branch);
+    if (this.#saveWorktreeDir === worktreeDir) {
+      this.#saveWorktreeDir = undefined;
+      this.#dir = path.join(this.#worktreeRootDir, this.#branch);
+    }
     console.debug(`[Mosaic][Source-Git] Removed linked worktree for ${sid}`);
   }
 
@@ -904,7 +908,17 @@ export default class Repo {
   async commitChanges(name: string, email: string, commitMessage: string) {
     await spawn(
       'git',
-      ['commit', '-m', `${commitMessage}`, '--author', `${name}<${email}>`],
+      [
+        '-c',
+        `user.name=${name}`,
+        '-c',
+        `user.email=${email}`,
+        'commit',
+        '-m',
+        commitMessage,
+        '--author',
+        `${name}<${email}>`
+      ],
       this.#dir,
       { discardStdout: true }
     );
@@ -957,7 +971,6 @@ export default class Repo {
     // log line lets someone clean up).
     let branchPushed = false;
     try {
-      await this.configureGitUser(user.name, user.email);
       await this.addChanges();
       await this.commitChanges(user.name, user.email, commitMessage);
       await this.pushBranch(branchName);
@@ -1025,16 +1038,13 @@ export default class Repo {
         source: `${this.#name}`
       };
     } finally {
-      // Idempotent with the workflow's outer finally — both call
-      // `removeWorktree(sid)`, and the second is a no-op since
-      // `removeWorktree` itself is idempotent.
+      // A second cleanup by the workflow is safe.
       try {
         await this.removeWorktree(sid);
       } catch (e) {
         console.warn(
           `[Mosaic][Source-Git] removeWorktree failed for '${sid}' in createPullRequest finally: ` +
-            `${(e as Error).message}. The next createWorktree call will recover via its ` +
-            `idempotency guard.`
+            `${(e as Error).message}`
         );
       }
     }

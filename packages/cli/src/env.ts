@@ -15,6 +15,8 @@ export type CliEnv = Record<string, string | undefined>;
 export interface ServeEnv {
   /** `MOSAIC_CORS_ORIGINS`, split and trimmed. Empty: no CORS headers. */
   corsOrigins: string[];
+  /** Maximum workflow job duration, in milliseconds. Default: 5 minutes. */
+  workflowsTimeoutMs: number;
   /** Set when `MOSAIC_REVALIDATE_URL` and `MOSAIC_REVALIDATE_SECRET` are. */
   revalidate: { url: string; secret: string } | undefined;
 }
@@ -37,6 +39,7 @@ export class InvalidEnvError extends Error {
 
 /** Largest delay `setTimeout` honours; longer ones fire immediately. */
 const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+const DEFAULT_WORKFLOWS_TIMEOUT_MS = 5 * 60 * 1000;
 
 const isUnset = (value: string | undefined): value is undefined | '' =>
   value === undefined || value === '';
@@ -88,6 +91,11 @@ export const serveEnvSchema = z
   .object({
     MOSAIC_ADMIN_SECRET: secret,
     MOSAIC_WORKFLOWS_SECRET: secret,
+    MOSAIC_WORKFLOWS_TIMEOUT_MS: optionalVar(value =>
+      /^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= MAX_TIMEOUT_MS
+        ? []
+        : [`must be an integer between 1 and ${MAX_TIMEOUT_MS} (got "${value}")`]
+    ),
     MOSAIC_BITBUCKET_WEBHOOK_SECRET: secret,
     MOSAIC_CORS_ORIGINS: originList,
     MOSAIC_REVALIDATE_URL: httpUrl,
@@ -136,8 +144,12 @@ export function validateServeEnv(env: CliEnv = process.env): ServeEnv {
   if (problems.length > 0) throw new InvalidEnvError(problems);
   const url = env.MOSAIC_REVALIDATE_URL;
   const revalidateSecret = env.MOSAIC_REVALIDATE_SECRET;
+  const workflowsTimeout = env.MOSAIC_WORKFLOWS_TIMEOUT_MS;
   return {
     corsOrigins: splitList(env.MOSAIC_CORS_ORIGINS),
+    workflowsTimeoutMs: isUnset(workflowsTimeout)
+      ? DEFAULT_WORKFLOWS_TIMEOUT_MS
+      : Number(workflowsTimeout),
     revalidate: url && revalidateSecret ? { url, secret: revalidateSecret } : undefined
   };
 }

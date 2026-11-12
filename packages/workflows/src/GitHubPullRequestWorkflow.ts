@@ -5,7 +5,11 @@ import { v4 as uuidv4 } from 'uuid';
 import matter from 'gray-matter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
-import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/mosaic-types';
+import type {
+  SendSourceWorkflowMessage,
+  SourceWorkflow,
+  SourceWorkflowCompletion
+} from '@jpmorganchase/mosaic-types';
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
@@ -100,7 +104,8 @@ export async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || !markdown) {
+  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+    sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
 
@@ -114,298 +119,301 @@ export async function createPullRequest(
     );
     return false;
   }
-  // Used in the branch name and the worktree directory name.
+  // Keep the editor prefix on the published branch.
   const userId = toSafeIdentifier(String(rawUserId));
 
   sendWorkflowProgressMessage('GitHub clone complete', 'IN_PROGRESS');
 
-  const branchName = `${userId}-${uuidv4()}`;
-  await repoInstance.createWorktree(userId, branchName);
-  sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
-
-  /**
-   * strip out the namespace from the file path.
-   * We are interested in the file on disk not in the VFS
-   */
-  const pathInSource = stripPrefixDir(filePath, prefixDir);
-  const pathOnDisk =
-    pathInSource === undefined
-      ? undefined
-      : resolveInside(path.posix.join(repoInstance.dir, subfolder), pathInSource);
-  if (!pathOnDisk) {
-    const error = `Refusing to write ${filePath}: it is outside the source folder (/${prefixDir}).`;
-    sendWorkflowProgressMessage(error, 'ERROR');
-    await repoInstance.removeWorktree(userId);
-    return { error, source: repoInstance.name };
-  }
-
-  /**
-   * Create vs. edit branch.
-   *
-   * - Edit: read the on-disk file, deserialise it for its
-   *   frontmatter, optionally swap in the editor's authored
-   *   slice, write the body back.
-   * - Create: the file doesn't exist yet, so skip the readFile
-   *   entirely; require the editor to have sent a frontmatter
-   *   slice (a new page must at minimum specify a title);
-   *   create the parent directory tree; and refuse if a file is
-   *   already present at the target path (race protection —
-   *   `git add -A` would otherwise quietly commit whichever
-   *   clobber won).
-   */
-  let nextMeta: Record<string, unknown>;
-  if (isNewPage) {
-    // Race-protection: if two authors picked the same new
-    // route concurrently and the other one's PR already
-    // landed (or their session also created the file in this
-    // worktree), bail loudly rather than overwriting.
-    try {
-      await fs.promises.access(pathOnDisk);
-      const error = `Refusing to create: ${filePath} already exists.`;
-      sendWorkflowProgressMessage(error, 'ERROR');
-      await repoInstance.removeWorktree(userId);
-      return { error, source: repoInstance.name };
-    } catch {
-      // Doesn't exist — proceed with the create.
-    }
-
-    if (typeof frontmatter !== 'string') {
-      const error =
-        'Refusing to create: a new page requires authored frontmatter (at least a title).';
-      sendWorkflowProgressMessage(error, 'ERROR');
-      await repoInstance.removeWorktree(userId);
-      return { error, source: repoInstance.name };
-    }
-
-    try {
-      nextMeta = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
-      // `fullPath` is a required field on the on-disk Page type
-      // and is normally re-attached from the disk read on the
-      // edit path. For a brand-new page there's no on-disk
-      // source, so we synthesise it from the VFS `filePath`
-      // (which is what the serialiser uses for path-dependent
-      // decisions anyway). Downstream regenerators (sidebar,
-      // breadcrumbs) recompute their own `fullPath`-derived
-      // fields, so this value is only ever the on-disk hint.
-      nextMeta.fullPath = filePath;
-    } catch (e) {
-      const error = `Could not parse authored frontmatter for new page: ${getErrorMessage(e)}`;
-      sendWorkflowProgressMessage(error, 'ERROR');
-      await repoInstance.removeWorktree(userId);
-      return { error, source: repoInstance.name };
-    }
-
-    await fs.promises.mkdir(path.posix.dirname(pathOnDisk), { recursive: true });
-    sendWorkflowProgressMessage('Creating new page', 'IN_PROGRESS');
-  } else {
-    const rawPage = await fs.promises.readFile(pathOnDisk);
-    const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
-
-    /**
-     * Choose the frontmatter that will be written to disk.
-     *
-     * If the editor sent an authored slice we parse it and use it
-     * verbatim. Otherwise we keep `metadata` (the frontmatter we
-     * just read off disk) as-is, preserving the historical
-     * body-only behaviour for callers that haven't opted in.
-     *
-     * Parse failures fall back to the on-disk metadata and emit a
-     * warning so the body change still lands rather than failing
-     * silently.
-     *
-     * `fullPath` is re-attached from disk because it's a
-     * server-side filesystem coordinate, not authored metadata —
-     * the editor's YAML neither carries nor should carry it.
-     * Every other Page field is optional, so a missing key in the
-     * parsed YAML is treated as a deliberate deletion (matching
-     * what a manual editor edit would do).
-     */
-    nextMeta = metadata as Record<string, unknown>;
-    if (typeof frontmatter === 'string') {
-      try {
-        const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
-        // Preserve `fullPath` from the on-disk metadata, but ONLY
-        // when it's actually set. Writing `fullPath: undefined`
-        // here would propagate an `undefined` field into
-        // `updatedPage` → `js-yaml` refuses to dump `undefined`
-        // and throws `YAMLException: unacceptable kind of an
-        // object to dump [object Undefined]`. The serialiser
-        // destructures `{ content, ...meta }`, so a missing key
-        // is fine; an explicit-undefined key is not. See
-        // `./stripUndefined.ts` for the belt-and-braces guard
-        // applied below.
-        const preservedFullPath = (metadata as { fullPath?: unknown }).fullPath;
-        nextMeta =
-          preservedFullPath !== undefined
-            ? { ...parsed, fullPath: preservedFullPath }
-            : { ...parsed };
-        sendWorkflowProgressMessage('Applied authored frontmatter', 'IN_PROGRESS');
-      } catch (e) {
-        sendWorkflowProgressMessage(
-          `Could not parse authored frontmatter (${getErrorMessage(
-            e
-          )}); keeping on-disk frontmatter.`,
-          'IN_PROGRESS'
-        );
-      }
-    }
-  }
-
-  // Final scrub: strip any `undefined` values from the
-  // frontmatter tree before handing it to `gray-matter` →
-  // `js-yaml`. See `./stripUndefined.ts` for the full rationale —
-  // a single stray `undefined` anywhere in the tree crashes the
-  // whole save with an opaque `YAMLException`, and the producers
-  // can be subtle (object spreads, ref-placeholder merges, future
-  // plugin contributions). This guard runs last so it catches
-  // every code path above, including ones we don't anticipate.
-  const cleanMeta = stripUndefined(nextMeta) as Record<string, unknown>;
-  const updatedPage = { ...cleanMeta, content: markdown } as unknown as Parameters<
-    typeof mdx.serialise
-  >[1];
-  if (!isNewPage) {
-    sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
-  }
-  await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
-  sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
-
-  /**
-   * Optional file rename for file-based routing — see
-   * `./renamePageIfRequested.ts` for the full contract and
-   * safety rails. On rejection we abort the PR before
-   * `addChanges` so the worktree is never left in a half-edited
-   * state.
-   */
-  if (typeof targetRoute === 'string' && targetRoute !== filePath) {
-    const renameResult = await renamePageIfRequested({
-      filePath,
-      targetRoute,
-      prefixDir,
-      subfolder,
-      repoDir: repoInstance.dir,
-      pathOnDisk,
-      sendWorkflowProgressMessage
-    });
-    if (!renameResult.ok) {
-      sendWorkflowProgressMessage(renameResult.error, 'ERROR');
-      await repoInstance.removeWorktree(userId);
-      return { error: renameResult.error, source: repoInstance.name };
-    }
-  }
-
-  /** create a new fetcher with proxy agent configured if required. */
-  const fetcher: typeof undiciFetch = proxyEndpoint
-    ? (url, opts) => {
-        return undiciFetch(url, {
-          ...opts,
-          dispatcher: new ProxyAgent({
-            uri: proxyEndpoint,
-            keepAliveTimeout: 10,
-            keepAliveMaxTimeout: 10
-          })
-        });
-      }
-    : undiciFetch;
-
-  const token = credentials.split(':')[1];
-
-  // get a new client
-  const githubClient = new Octokit({
-    auth: token,
-    request: {
-      fetch: fetcher,
-      timeout: 5000
-    }
-  });
-
-  sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
-
-  let prResult: string | { error: string; source: string } | null;
-
-  // Per-action commit message + PR title so the resulting PR
-  // reads naturally as "created" vs. "updated". The base
-  // `commitMessage(filePath)` is preserved as the workflow
-  // option default so callers that haven't opted in still see
-  // their configured copy.
-  const action = isNewPage ? 'created' : 'updated';
-  const commitMsg = isNewPage
-    ? commitMessage(filePath).replace('updated content', 'created content')
-    : commitMessage(filePath);
-  const prTitle = `${titlePrefix} - Content ${action} - ${filePath}`;
-
+  const worktreeId = uuidv4();
+  const branchName = `${userId}-${worktreeId}`;
   try {
-    await repoInstance.configureGitUser(user.name, user.email);
-    await repoInstance.addChanges();
-    await repoInstance.commitChanges(user.name, user.email, commitMsg);
-    await repoInstance.pushBranch(branchName);
+    await repoInstance.createWorktree(worktreeId, branchName);
+    sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
 
-    const result = await githubClient.request(`POST ${apiEndpoint}`, {
-      owner: repoInstance.projectName,
-      repo: repoInstance.repoName,
-      title: prTitle,
-      body: commitMsg,
-      head: branchName,
-      base: sourceBranch,
-      headers: {
-        'X-GitHub-Api-Version': '2022-11-28'
+    /**
+     * strip out the namespace from the file path.
+     * We are interested in the file on disk not in the VFS
+     */
+    const pathInSource = stripPrefixDir(filePath, prefixDir);
+    const pathOnDisk =
+      pathInSource === undefined
+        ? undefined
+        : resolveInside(path.posix.join(repoInstance.dir, subfolder), pathInSource);
+    if (!pathOnDisk) {
+      const error = `Refusing to write ${filePath}: it is outside the source folder (/${prefixDir}).`;
+      sendWorkflowProgressMessage(error, 'ERROR');
+      return { error, source: repoInstance.name };
+    }
+
+    /**
+     * Create vs. edit branch.
+     *
+     * - Edit: read the on-disk file, deserialise it for its
+     *   frontmatter, optionally swap in the editor's authored
+     *   slice, write the body back.
+     * - Create: the file doesn't exist yet, so skip the readFile
+     *   entirely; require the editor to have sent a frontmatter
+     *   slice (a new page must at minimum specify a title);
+     *   create the parent directory tree; and refuse if a file is
+     *   already present at the target path (race protection —
+     *   `git add -A` would otherwise quietly commit whichever
+     *   clobber won).
+     */
+    let nextMeta: Record<string, unknown>;
+    if (isNewPage) {
+      // Race-protection: if two authors picked the same new
+      // route concurrently and the other one's PR already
+      // landed (or their session also created the file in this
+      // worktree), bail loudly rather than overwriting.
+      try {
+        await fs.promises.access(pathOnDisk);
+        const error = `Refusing to create: ${filePath} already exists.`;
+        sendWorkflowProgressMessage(error, 'ERROR');
+        return { error, source: repoInstance.name };
+      } catch {
+        // Doesn't exist — proceed with the create.
+      }
+
+      if (typeof frontmatter !== 'string') {
+        const error =
+          'Refusing to create: a new page requires authored frontmatter (at least a title).';
+        sendWorkflowProgressMessage(error, 'ERROR');
+        return { error, source: repoInstance.name };
+      }
+
+      try {
+        nextMeta = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
+        // `fullPath` is a required field on the on-disk Page type
+        // and is normally re-attached from the disk read on the
+        // edit path. For a brand-new page there's no on-disk
+        // source, so we synthesise it from the VFS `filePath`
+        // (which is what the serialiser uses for path-dependent
+        // decisions anyway). Downstream regenerators (sidebar,
+        // breadcrumbs) recompute their own `fullPath`-derived
+        // fields, so this value is only ever the on-disk hint.
+        nextMeta.fullPath = filePath;
+      } catch (e) {
+        const error = `Could not parse authored frontmatter for new page: ${getErrorMessage(e)}`;
+        sendWorkflowProgressMessage(error, 'ERROR');
+        return { error, source: repoInstance.name };
+      }
+
+      await fs.promises.mkdir(path.posix.dirname(pathOnDisk), { recursive: true });
+      sendWorkflowProgressMessage('Creating new page', 'IN_PROGRESS');
+    } else {
+      const rawPage = await fs.promises.readFile(pathOnDisk);
+      const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
+
+      /**
+       * Choose the frontmatter that will be written to disk.
+       *
+       * If the editor sent an authored slice we parse it and use it
+       * verbatim. Otherwise we keep `metadata` (the frontmatter we
+       * just read off disk) as-is, preserving the historical
+       * body-only behaviour for callers that haven't opted in.
+       *
+       * Parse failures fall back to the on-disk metadata and emit a
+       * warning so the body change still lands rather than failing
+       * silently.
+       *
+       * `fullPath` is re-attached from disk because it's a
+       * server-side filesystem coordinate, not authored metadata —
+       * the editor's YAML neither carries nor should carry it.
+       * Every other Page field is optional, so a missing key in the
+       * parsed YAML is treated as a deliberate deletion (matching
+       * what a manual editor edit would do).
+       */
+      nextMeta = metadata as Record<string, unknown>;
+      if (typeof frontmatter === 'string') {
+        try {
+          const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+            string,
+            unknown
+          >;
+          // Preserve `fullPath` from the on-disk metadata, but ONLY
+          // when it's actually set. Writing `fullPath: undefined`
+          // here would propagate an `undefined` field into
+          // `updatedPage` → `js-yaml` refuses to dump `undefined`
+          // and throws `YAMLException: unacceptable kind of an
+          // object to dump [object Undefined]`. The serialiser
+          // destructures `{ content, ...meta }`, so a missing key
+          // is fine; an explicit-undefined key is not. See
+          // `./stripUndefined.ts` for the belt-and-braces guard
+          // applied below.
+          const preservedFullPath = (metadata as { fullPath?: unknown }).fullPath;
+          nextMeta =
+            preservedFullPath !== undefined
+              ? { ...parsed, fullPath: preservedFullPath }
+              : { ...parsed };
+          sendWorkflowProgressMessage('Applied authored frontmatter', 'IN_PROGRESS');
+        } catch (e) {
+          sendWorkflowProgressMessage(
+            `Could not parse authored frontmatter (${getErrorMessage(
+              e
+            )}); keeping on-disk frontmatter.`,
+            'IN_PROGRESS'
+          );
+        }
+      }
+    }
+
+    // Final scrub: strip any `undefined` values from the
+    // frontmatter tree before handing it to `gray-matter` →
+    // `js-yaml`. See `./stripUndefined.ts` for the full rationale —
+    // a single stray `undefined` anywhere in the tree crashes the
+    // whole save with an opaque `YAMLException`, and the producers
+    // can be subtle (object spreads, ref-placeholder merges, future
+    // plugin contributions). This guard runs last so it catches
+    // every code path above, including ones we don't anticipate.
+    const cleanMeta = stripUndefined(nextMeta) as Record<string, unknown>;
+    const updatedPage = { ...cleanMeta, content: markdown } as unknown as Parameters<
+      typeof mdx.serialise
+    >[1];
+    if (!isNewPage) {
+      sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
+    }
+    await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
+    sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
+
+    /**
+     * Optional file rename for file-based routing — see
+     * `./renamePageIfRequested.ts` for the full contract and
+     * safety rails. On rejection we abort the PR before
+     * `addChanges` so the worktree is never left in a half-edited
+     * state.
+     */
+    if (typeof targetRoute === 'string' && targetRoute !== filePath) {
+      const renameResult = await renamePageIfRequested({
+        filePath,
+        targetRoute,
+        prefixDir,
+        subfolder,
+        repoDir: repoInstance.dir,
+        pathOnDisk,
+        sendWorkflowProgressMessage
+      });
+      if (!renameResult.ok) {
+        sendWorkflowProgressMessage(renameResult.error, 'ERROR');
+        return { error: renameResult.error, source: repoInstance.name };
+      }
+    }
+
+    /** create a new fetcher with proxy agent configured if required. */
+    const fetcher: typeof undiciFetch = proxyEndpoint
+      ? (url, opts) => {
+          return undiciFetch(url, {
+            ...opts,
+            dispatcher: new ProxyAgent({
+              uri: proxyEndpoint,
+              keepAliveTimeout: 10,
+              keepAliveMaxTimeout: 10
+            })
+          });
+        }
+      : undiciFetch;
+
+    const token = credentials.split(':')[1];
+
+    // get a new client
+    const githubClient = new Octokit({
+      auth: token,
+      request: {
+        fetch: fetcher,
+        timeout: 5000
       }
     });
 
-    /**
-     * https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request
-     * Status 201 = created
-     */
-    if (result.status === 201) {
-      prResult = result.data.url;
-    } else {
-      throw new Error(`${result.data.status} - ${result.data.message}`);
+    sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
+
+    let prResult: string | { error: string; source: string } | null;
+    let pullRequestUrl: string | undefined;
+
+    // Per-action commit message + PR title so the resulting PR
+    // reads naturally as "created" vs. "updated". The base
+    // `commitMessage(filePath)` is preserved as the workflow
+    // option default so callers that haven't opted in still see
+    // their configured copy.
+    const action = isNewPage ? 'created' : 'updated';
+    const commitMsg = isNewPage
+      ? commitMessage(filePath).replace('updated content', 'created content')
+      : commitMessage(filePath);
+    const prTitle = `${titlePrefix} - Content ${action} - ${filePath}`;
+
+    try {
+      await repoInstance.addChanges();
+      await repoInstance.commitChanges(user.name, user.email, commitMsg);
+      await repoInstance.pushBranch(branchName);
+
+      const result = await githubClient.request(`POST ${apiEndpoint}`, {
+        owner: repoInstance.projectName,
+        repo: repoInstance.repoName,
+        title: prTitle,
+        body: commitMsg,
+        head: branchName,
+        base: sourceBranch,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+
+      /**
+       * https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request
+       * Status 201 = created
+       */
+      if (result.status === 201) {
+        prResult = result.data.url;
+        pullRequestUrl = result.data.html_url;
+      } else {
+        throw new Error(`${result.data.status} - ${result.data.message}`);
+      }
+    } catch (e: unknown) {
+      console.group('[Mosaic][Workflows] Pull Request Error');
+      console.log('fullPath', filePath);
+      console.log('Head', branchName);
+      console.log('Base', sourceBranch);
+      console.error(e);
+      console.groupEnd();
+
+      prResult = {
+        error: `Error creating Pull Request: ${getErrorMessage(e)} `,
+        source: `${repoInstance.name}`
+      };
+      // If we got past `pushBranch` before the API call failed, the
+      // branch is now sitting on the remote with no PR pointing at
+      // it. We can't reliably distinguish "push succeeded, API
+      // failed" from "push failed" at this point (the caller log
+      // above has the stack), so warn unconditionally; operators
+      // can grep this line to find orphan branches that may need
+      // pruning on the remote.
+      console.warn(
+        `[Mosaic][Workflows] Pushed branch '${branchName}' may now be orphaned on the remote ` +
+          `(PR creation failed after push). If the branch exists on the remote and no PR was raised, ` +
+          `it can be deleted manually.`
+      );
     }
-  } catch (e: unknown) {
-    console.group('[Mosaic][Workflows] Pull Request Error');
-    console.log('fullPath', filePath);
-    console.log('Head', branchName);
-    console.log('Base', sourceBranch);
-    console.error(e);
-    console.groupEnd();
 
-    prResult = {
-      error: `Error creating Pull Request: ${getErrorMessage(e)} `,
-      source: `${repoInstance.name}`
-    };
-    // If we got past `pushBranch` before the API call failed, the
-    // branch is now sitting on the remote with no PR pointing at
-    // it. We can't reliably distinguish "push succeeded, API
-    // failed" from "push failed" at this point (the caller log
-    // above has the stack), so warn unconditionally; operators
-    // can grep this line to find orphan branches that may need
-    // pruning on the remote.
-    console.warn(
-      `[Mosaic][Workflows] Pushed branch '${branchName}' may now be orphaned on the remote ` +
-        `(PR creation failed after push). If the branch exists on the remote and no PR was raised, ` +
-        `it can be deleted manually.`
-    );
-  } finally {
-    await repoInstance.removeWorktree(userId);
-  }
+    // `prResult` is either a success URL string or an
+    // `{ error, source }` object. Sending the error shape with
+    // status `COMPLETE` makes the editor treat a failed PR as
+    // success and silently drop the user's work — the dialog
+    // closes with no PR link visible. Detect the shape and route
+    // to the right status.
+    if (prResult && typeof prResult === 'object' && 'error' in prResult) {
+      sendWorkflowProgressMessage(
+        typeof (prResult as { error?: unknown }).error === 'string'
+          ? (prResult as { error: string }).error
+          : 'Pull request creation failed.',
+        'ERROR'
+      );
+      return prResult;
+    }
 
-  // `prResult` is either a success URL string or an
-  // `{ error, source }` object. Sending the error shape with
-  // status `COMPLETE` makes the editor treat a failed PR as
-  // success and silently drop the user's work — the dialog
-  // closes with no PR link visible. Detect the shape and route
-  // to the right status.
-  if (prResult && typeof prResult === 'object' && 'error' in prResult) {
-    sendWorkflowProgressMessage(
-      typeof (prResult as { error?: unknown }).error === 'string'
-        ? (prResult as { error: string }).error
-        : 'Pull request creation failed.',
-      'ERROR'
-    );
+    const completion: SourceWorkflowCompletion = { pullRequestUrl };
+    sendWorkflowProgressMessage(completion, 'COMPLETE');
     return prResult;
+  } finally {
+    await repoInstance.removeWorktree(worktreeId);
   }
-
-  sendWorkflowProgressMessage(prResult, 'COMPLETE');
-  return prResult;
 }
 
 const workflow: SourceWorkflow = {

@@ -1,34 +1,24 @@
 'use server';
 
 /**
- * Server Action that creates a Pull Request for the edited page.
+ * Server Action that starts the save workflow for the edited page.
  *
- * Opens a WebSocket to the workflows backend (server-side, using
- * Node 22+'s native `WebSocket`) and streams progress events back to
- * the editor as an async generator. Replaces the previous
- * `useWorkflowFeed` client-side WebSocket; `MOSAIC_WORKFLOWS_URL` is
- * now server-only (was `NEXT_PUBLIC_*`).
+ * It asks the Mosaic CLI to start the workflow (`POST
+ * <MOSAIC_WORKFLOWS_URL>/workflows/jobs`) and returns the job id; the
+ * editor then follows the job's progress through
+ * `/api/workflows/<jobId>/events` (Server-Sent Events), which proxies the
+ * CLI's event stream. Plain HTTP and SSE, so saves work where WebSockets
+ * aren't allowed, and a dropped progress stream reconnects and replays
+ * what it missed.
  *
  * Auth: required and checked inside the action — Server Actions are
  * public endpoints and `page.tsx`'s auth gate doesn't apply when the
  * action is invoked directly. The user must also be an authorised
  * editor (`MOSAIC_EDITORS`), and every route is validated before it is
- * forwarded.
- *
- * The workflows backend authenticates us with `MOSAIC_WORKFLOWS_SECRET`
- * (sent as `token` on each message). A save that doesn't finish within
- * `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is reported as an
- * error, and the socket is always closed when the stream ends or the
- * caller stops reading.
- *
- * Serverless caveat: one open socket per save. In platforms with a
- * per-request runtime cap, saves that exceed it are cut short.
+ * forwarded. The CLI authenticates us with `MOSAIC_WORKFLOWS_SECRET`.
  */
-import { randomUUID } from 'node:crypto';
-import { auth, isAuthorizedEditor } from '../../auth';
-import { getSiteConfig } from '../../lib/config';
+import { checkEditor, getWorkflowsBaseUrl, getWorkflowsSecret } from '../../lib/workflows';
 import { isSafeRoute } from '../../lib/routes';
-import type { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
 
 export interface PersistInput {
   /** Route the edited content lives at, e.g. `/foo/bar`. */
@@ -62,10 +52,10 @@ export interface PersistInput {
   isNewPage?: boolean;
 }
 
-export type PersistEvent =
-  | { kind: 'progress'; message: SourceWorkflowMessageEvent }
-  | { kind: 'complete'; prHref: string | null }
-  | { kind: 'error'; message: string };
+export type StartSaveResult = { jobId: string } | { error: string };
+
+/** How long to wait for the CLI to accept the job (not for the save itself). */
+const START_TIMEOUT_MS = 30_000;
 
 const MAX_MARKDOWN_BYTES = 2 * 1024 * 1024;
 const MAX_FRONTMATTER_BYTES = 256 * 1024;
@@ -96,181 +86,59 @@ function validateInput(input: PersistInput): string | null {
   return null;
 }
 
-export async function* persistContent(
-  input: PersistInput
-): AsyncGenerator<PersistEvent, void, unknown> {
-  // Cheap synchronous guard first — skip the auth() call (which is
-  // request-scoped but still does work) if the workflow URL isn't
-  // even configured.
-  const { url: workflowsUrl, secret: workflowsSecret, timeoutMs } = getSiteConfig().workflows;
-  if (!workflowsUrl || !workflowsSecret) {
-    yield {
-      kind: 'error',
-      message: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.'
-    };
-    return;
+export async function startSave(input: PersistInput): Promise<StartSaveResult> {
+  const baseUrl = getWorkflowsBaseUrl();
+  const secret = getWorkflowsSecret();
+  if (!baseUrl || !secret) {
+    return { error: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.' };
   }
 
-  const session = await auth();
-  const sessionUser = session?.user;
-  if (!sessionUser?.email) {
-    yield { kind: 'error', message: 'Not authenticated.' };
-    return;
-  }
-  if (!isAuthorizedEditor(sessionUser)) {
-    yield { kind: 'error', message: 'You are not allowed to edit this site.' };
-    return;
-  }
+  const editor = await checkEditor();
+  if (!editor.ok) return { error: editor.error };
 
   const invalid = validateInput(input);
-  if (invalid) {
-    yield { kind: 'error', message: invalid };
-    return;
-  }
+  if (invalid) return { error: invalid };
 
-  // Prefer a domain-specific `sid` when the host has wired one into
-  // the session callback; fall back to email.
-  const sid = (sessionUser as { sid?: string }).sid ?? sessionUser.email;
-  // Unique per save. The workflows backend echoes it back on every
-  // progress message so concurrent saves (e.g. two tabs) sharing a
-  // backend can tell their messages apart.
-  const channel = randomUUID();
-
-  let socket: WebSocket;
+  let response: Response;
   try {
-    socket = new WebSocket(workflowsUrl);
-  } catch (e) {
-    yield {
-      kind: 'error',
-      message: e instanceof Error ? e.message : 'Failed to open workflows connection.'
-    };
-    return;
-  }
-
-  // Bridge the event-emitter shape of `WebSocket` onto a promise
-  // queue so the consumer can `for await` over it. Pending events
-  // are buffered until pulled; a pending pull resolves immediately
-  // if a buffered event is already waiting.
-  const queue: PersistEvent[] = [];
-  let pending: ((event: PersistEvent | null) => void) | null = null;
-  let done = false;
-
-  const push = (event: PersistEvent) => {
-    if (done) return;
-    if (pending) {
-      const fn = pending;
-      pending = null;
-      fn(event);
-    } else {
-      queue.push(event);
-    }
-  };
-
-  const finish = () => {
-    if (done) return;
-    done = true;
-    // Only ever called after `timeout` below is initialised.
-    clearTimeout(timeout);
-    if (pending) {
-      const fn = pending;
-      pending = null;
-      fn(null);
-    }
-    try {
-      socket.close();
-    } catch {
-      /* already closed */
-    }
-  };
-
-  const timeout = setTimeout(() => {
-    push({ kind: 'error', message: 'Timed out waiting for the workflows backend.' });
-    finish();
-  }, timeoutMs);
-
-  socket.addEventListener('open', () => {
-    socket.send(
-      JSON.stringify({
-        token: workflowsSecret,
-        user: { sid, name: sessionUser.name ?? '', email: sessionUser.email },
+    response = await fetch(`${baseUrl}/workflows/jobs`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${secret}`
+      },
+      body: JSON.stringify({
+        name: 'save',
+        user: editor.user,
         route: input.route,
         markdown: input.markdown,
         // Only include the key when the editor actually sent
         // frontmatter — workflows that haven't opted in branch on
-        // `typeof frontmatter === 'string'`, so an explicit
-        // `undefined` here is functionally equivalent to omitting
-        // it but cleaner over the wire.
+        // `typeof frontmatter === 'string'`.
         ...(typeof input.frontmatter === 'string' ? { frontmatter: input.frontmatter } : {}),
         ...(typeof input.targetRoute === 'string' && input.targetRoute !== input.route
           ? { targetRoute: input.targetRoute }
           : {}),
-        // Forward the create-page flag verbatim. We never
-        // send `false` on the wire — absent === edit, present
-        // === create — so the workflow's destructure stays
-        // clean and consumers that don't know about the field
-        // see nothing new.
-        ...(input.isNewPage ? { isNewPage: true } : {}),
-        name: 'save',
-        channel
-      })
-    );
-  });
-
-  socket.addEventListener('message', (msg: MessageEvent) => {
-    let parsed: SourceWorkflowMessageEvent;
-    try {
-      parsed = JSON.parse(typeof msg.data === 'string' ? msg.data : String(msg.data));
-    } catch (e) {
-      push({
-        kind: 'error',
-        message: e instanceof Error ? `Malformed workflow message: ${e.message}` : String(e)
-      });
-      finish();
-      return;
-    }
-    if (parsed.channel && parsed.channel !== channel) return; // not ours
-    if (parsed.status === 'ERROR') {
-      push({
-        kind: 'error',
-        message:
-          typeof parsed.message === 'string'
-            ? parsed.message
-            : 'Workflow reported an unspecified error.'
-      });
-      finish();
-    } else if (parsed.status === 'COMPLETE') {
-      const prHref =
-        (parsed.message as { links?: { self?: { href?: string }[] } } | undefined)?.links?.self?.[0]
-          ?.href ?? null;
-      push({ kind: 'complete', prHref });
-      finish();
-    } else {
-      push({ kind: 'progress', message: parsed });
-    }
-  });
-
-  socket.addEventListener('error', () => {
-    push({ kind: 'error', message: 'Workflows websocket error.' });
-    finish();
-  });
-  socket.addEventListener('close', () => finish());
-
-  // Consumer loop — yield events as they arrive, exit when finish()
-  // signals end-of-stream. `finally` closes the socket and clears the
-  // timeout if the caller stops reading early.
-  try {
-    while (!done || queue.length > 0) {
-      if (queue.length > 0) {
-        yield queue.shift() as PersistEvent;
-        continue;
-      }
-      const next = await new Promise<PersistEvent | null>(resolve => {
-        pending = resolve;
-      });
-      if (next === null) return;
-      yield next;
-    }
-  } finally {
-    finish();
+        // Never send `false`: absent === edit, present === create.
+        ...(input.isNewPage ? { isNewPage: true } : {})
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(START_TIMEOUT_MS)
+    });
+  } catch (e) {
+    console.error('[mosaic-site] Could not reach the workflows backend', e);
+    return { error: 'Could not reach the workflows backend.' };
   }
+
+  const body = (await response.json().catch(() => null)) as {
+    jobId?: unknown;
+    error?: unknown;
+  } | null;
+  if (response.status === 202 && typeof body?.jobId === 'string') return { jobId: body.jobId };
+  return {
+    error:
+      typeof body?.error === 'string' && body.error
+        ? body.error
+        : `The workflows backend responded with ${response.status}.`
+  };
 }

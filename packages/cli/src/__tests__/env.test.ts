@@ -12,6 +12,7 @@ describe('GIVEN checkServeEnv', () => {
       {
         MOSAIC_ADMIN_SECRET: 'admin-secret',
         MOSAIC_WORKFLOWS_SECRET: 'workflows-secret',
+        MOSAIC_WORKFLOWS_TIMEOUT_MS: '45000',
         MOSAIC_CORS_ORIGINS: 'https://docs.example.com, http://localhost:3000 ,http://[::1]:3000,',
         MOSAIC_REVALIDATE_URL: 'https://docs.example.com/api/revalidate',
         MOSAIC_REVALIDATE_SECRET: 'revalidate-secret',
@@ -19,7 +20,10 @@ describe('GIVEN checkServeEnv', () => {
         BITBUCKET_API_URL: 'https://bitbucket.example.com/rest/api/1.0'
       }
     ],
-    ['empty values, which count as unset', { MOSAIC_CORS_ORIGINS: '', MOSAIC_REVALIDATE_URL: '' }],
+    [
+      'empty values, which count as unset',
+      { MOSAIC_CORS_ORIGINS: '', MOSAIC_REVALIDATE_URL: '', MOSAIC_WORKFLOWS_TIMEOUT_MS: '' }
+    ],
     [
       'the dev placeholder outside development',
       { MOSAIC_WORKFLOWS_SECRET: 'local-dev-workflows-secret' }
@@ -81,6 +85,15 @@ describe('GIVEN checkServeEnv', () => {
     }
   );
 
+  test.each(['0', '-1', '1.5', '2147483648', 'Infinity', 'invalid', '   '])(
+    'THEN MOSAIC_WORKFLOWS_TIMEOUT_MS=%s is rejected',
+    value => {
+      expect(checkServeEnv({ MOSAIC_WORKFLOWS_TIMEOUT_MS: value })).toEqual([
+        `MOSAIC_WORKFLOWS_TIMEOUT_MS: must be an integer between 1 and 2147483647 (got "${value}")`
+      ]);
+    }
+  );
+
   test('THEN an invalid BITBUCKET_API_URL is rejected', () => {
     expect(checkServeEnv({ BITBUCKET_API_URL: 'bitbucket.example.com' })).toEqual([
       'BITBUCKET_API_URL: must be an absolute http(s) URL'
@@ -93,14 +106,33 @@ describe('GIVEN validateServeEnv', () => {
     expect(
       validateServeEnv({
         MOSAIC_CORS_ORIGINS: ' https://docs.example.com ,http://localhost:3000,',
+        MOSAIC_WORKFLOWS_TIMEOUT_MS: '45000',
         MOSAIC_REVALIDATE_URL: 'http://localhost:3000/api/revalidate',
         MOSAIC_REVALIDATE_SECRET: 'secret'
       })
     ).toEqual({
       corsOrigins: ['https://docs.example.com', 'http://localhost:3000'],
+      workflowsTimeoutMs: 45000,
       revalidate: { url: 'http://localhost:3000/api/revalidate', secret: 'secret' }
     });
-    expect(validateServeEnv({})).toEqual({ corsOrigins: [], revalidate: undefined });
+    expect(validateServeEnv({})).toEqual({
+      corsOrigins: [],
+      workflowsTimeoutMs: 300000,
+      revalidate: undefined
+    });
+  });
+
+  test.each(['1', '2147483647'])(
+    'THEN workflow timeout boundary %s is returned in milliseconds',
+    value => {
+      expect(validateServeEnv({ MOSAIC_WORKFLOWS_TIMEOUT_MS: value }).workflowsTimeoutMs).toBe(
+        Number(value)
+      );
+    }
+  );
+
+  test('THEN an empty workflow timeout uses the five-minute default', () => {
+    expect(validateServeEnv({ MOSAIC_WORKFLOWS_TIMEOUT_MS: '' }).workflowsTimeoutMs).toBe(300000);
   });
 
   test('THEN it throws one error listing every problem', () => {

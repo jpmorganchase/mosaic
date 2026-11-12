@@ -44,14 +44,15 @@ packages/site/
         │   ├── EditorBodyLazy.tsx # client-side lazy wrapper around the editor
         │   ├── EditorBody.tsx     # Lexical editor host (edit / create only)
         │   ├── previewAction.ts   # Server Action: editor preview compile
-        │   ├── persistAction.ts   # Server Action: save → workflows backend
+        │   ├── persistAction.ts   # Server Action: starts a save on the workflows backend
         │   ├── CanonicalizeUrl.tsx
         │   └── RouteMetadata.tsx
         └── api/
             ├── auth/[...nextauth]/route.ts   # Auth.js v5 handlers.GET/POST
             ├── content/live/route.ts         # dev-only live-reload stream
             ├── content/ready/route.ts        # dev-only upstream readiness probe
-            └── revalidate/route.ts           # cache revalidation webhook
+            ├── revalidate/route.ts           # cache revalidation webhook
+            └── workflows/[jobId]/events/route.ts # save progress (SSE from the CLI)
 ```
 
 ## Build modes
@@ -120,9 +121,8 @@ values count as unset, and flags only accept `true` or `false`.
 | `AUTH_SECRET` (or the legacy `NEXTAUTH_SECRET`) | Secret                                                | –                                                        | Auth.js secret. Generate it with `openssl rand -base64 32`. In production the `.env.development` placeholder counts as unset and auth stays off.         |
 | `GITHUB_ID`, `GITHUB_SECRET`                    | Text and secret                                       | –                                                        | GitHub OAuth app for sign-in.                                                                                                                            |
 | `MOSAIC_EDITORS`                                | Comma-separated emails, `@domains` or `*`             | Unset: everyone in development, **nobody in production** | Who may sign in and edit. GitHub emails must be verified.                                                                                                |
-| `MOSAIC_WORKFLOWS_URL`                          | ws(s) or http(s) URL. Needs `MOSAIC_WORKFLOWS_SECRET` | Unset: saves are reported as not configured              | The CLI's `/workflows` endpoint.                                                                                                                         |
+| `MOSAIC_WORKFLOWS_URL`                          | ws(s) or http(s) URL. Needs `MOSAIC_WORKFLOWS_SECRET` | Unset: saves are reported as not configured              | Base HTTP URL of the CLI that runs saves, e.g. `http://mosaic-fs:8080`; legacy ws(s) URLs are converted with a warning.                                  |
 | `MOSAIC_WORKFLOWS_SECRET`                       | Secret                                                | –                                                        | Shared secret for saves; the same value as the CLI's `MOSAIC_WORKFLOWS_SECRET`.                                                                          |
-| `MOSAIC_WORKFLOWS_TIMEOUT_MS`                   | Whole number of milliseconds, 1 to 2147483647         | `300000` (5 minutes)                                     | How long a save may run before it is reported as failed.                                                                                                 |
 | `MOSAIC_DEV_FAKE_AUTH`                          | `true` or `false`                                     | `false`                                                  | Development only: a sign-in that accepts anyone. Ignored in production.                                                                                  |
 | `MOSAIC_DEV_BYPASS_CAPABILITY_GATE`             | `true` or `false`                                     | `false`                                                  | Development only: shows the editor on every page. Ignored in production.                                                                                 |
 
@@ -171,10 +171,11 @@ the resolution of a real bug.
 4. **Skip `connection()` and `searchParams` in snapshot builds.** Calling
    them opts the route out of static pre-rendering. Use a cheap
    conditional **before** the `await`.
-5. **Keep the auth checks inside the Server Actions.** Server Actions
-   are public endpoints; `persistContent` and `compilePreview` check
-   the session and `MOSAIC_EDITORS` themselves, and `persistContent`
-   validates every route before forwarding it.
+5. **Keep the auth checks inside the Server Actions and route handlers.**
+   Both are public endpoints; `startSave`, `compilePreview` and
+   `/api/workflows/[jobId]/events` check the session and
+   `MOSAIC_EDITORS` themselves, and `startSave` validates every route
+   before forwarding it.
 6. **Use the `next.config.js` three-config split.** Static export
    cannot tolerate `redirects()` or optimised images; the regular
    build wants both. Don't collapse them back into one config.

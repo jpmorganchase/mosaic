@@ -161,6 +161,11 @@ export interface EditorProps {
   components: Record<string, unknown>;
   PreviewComponent: ComponentType<PreviewComponentProps>;
   compilePreview: (markdown: string) => Promise<SerializeResult>;
+  /**
+   * Saves the page and returns its progress events. Typically starts the
+   * save with a Server Action that returns a job id and follows it with
+   * `subscribeToSave(jobId)`. A thrown error is shown as a failed save.
+   */
   persist?: (input: {
     route: string;
     markdown: string;

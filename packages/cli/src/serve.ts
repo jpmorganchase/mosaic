@@ -31,7 +31,7 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
 
   await server.register(middie);
   await server.register(fastifyMosaic, { config, scope, mosaic });
-  await server.register(fastifyMosaicWorkflows);
+  await server.register(fastifyMosaicWorkflows, { timeoutMs: env.workflowsTimeoutMs });
   await server.register(fastifyMosaicAdmin, {
     prefix: MOSAIC_ADMIN_PREFIX,
     enableSourcePush: config.enableSourcePush

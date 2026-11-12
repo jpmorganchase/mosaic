@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@fastify/middie": "^9.3.3",
-    "@fastify/websocket": "^11.2.0",
     "@jpmorganchase/mosaic-core": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-source-git-repo": "^0.1.0-beta.98",
@@ -58,7 +57,6 @@
     "deepmerge": "^4.2.2",
     "fastify": "^5.12.5",
     "fastify-plugin": "^6.0.0",
-    "md5": "*",
     "zod": "^3.22.3"
   }
 }

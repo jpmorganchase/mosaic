@@ -18,8 +18,6 @@ const readCommittedEnv = (mode: 'development' | 'production'): SiteEnv => ({
 const DEV_ENV = readCommittedEnv('development');
 const PROD_ENV = readCommittedEnv('production');
 
-const TIMEOUT_REASON = 'must be a whole number of milliseconds between 1 and 2147483647';
-
 /** Problems with the production env plus `env`. */
 const check = (env: SiteEnv) => checkSiteEnv({ ...PROD_ENV, ...env });
 
@@ -46,7 +44,6 @@ describe('checkSiteEnv', () => {
         MOSAIC_EDITORS: 'Alice@Example.com, @corp.test ,*,',
         MOSAIC_WORKFLOWS_URL: 'wss://mosaic-fs.internal/workflows',
         MOSAIC_WORKFLOWS_SECRET: 'workflows-secret',
-        MOSAIC_WORKFLOWS_TIMEOUT_MS: '60000',
         MOSAIC_ACTIVE_MODE_CACHE: 'false'
       }
     ],
@@ -159,19 +156,6 @@ describe('checkSiteEnv', () => {
     expect(check({ MOSAIC_WORKFLOWS_SECRET: 's' })).toEqual([]);
   });
 
-  it.each(['1', '300000', '2147483647'])('accepts MOSAIC_WORKFLOWS_TIMEOUT_MS=%s', value => {
-    expect(check({ MOSAIC_WORKFLOWS_TIMEOUT_MS: value })).toEqual([]);
-  });
-
-  it.each(['0', '-5', '1.5', '1e3', 'abc', '2147483648'])(
-    'rejects MOSAIC_WORKFLOWS_TIMEOUT_MS=%s',
-    value => {
-      expect(check({ MOSAIC_WORKFLOWS_TIMEOUT_MS: value })).toEqual([
-        `MOSAIC_WORKFLOWS_TIMEOUT_MS: ${TIMEOUT_REASON} (got "${value}")`
-      ]);
-    }
-  );
-
   it.each(['docs.example.com', '/docs', 'ftp://docs.example.com'])(
     'rejects NEXT_PUBLIC_SITE_URL=%s',
     value => {
@@ -197,13 +181,11 @@ describe('checkSiteEnv', () => {
         MOSAIC_MODE: 'active',
         MOSAIC_ACTIVE_MODE_CACHE: 'yes',
         MOSAIC_EDITORS: 'not-an-email',
-        MOSAIC_WORKFLOWS_URL: 'ws://localhost:8080/workflows',
-        MOSAIC_WORKFLOWS_TIMEOUT_MS: 'soon'
+        MOSAIC_WORKFLOWS_URL: 'ws://localhost:8080/workflows'
       })
     ).toEqual([
       'MOSAIC_ACTIVE_MODE_CACHE: must be "true" or "false" (got "yes")',
       'MOSAIC_EDITORS: "not-an-email" is not an email address, an @domain or *',
-      `MOSAIC_WORKFLOWS_TIMEOUT_MS: ${TIMEOUT_REASON} (got "soon")`,
       'MOSAIC_ACTIVE_MODE_URL: is required when MOSAIC_MODE is active',
       'MOSAIC_WORKFLOWS_SECRET: is required when MOSAIC_WORKFLOWS_URL is set'
     ]);
@@ -265,7 +247,7 @@ describe('readSiteConfig', () => {
         editors: undefined
       },
       revalidate: { secret: undefined, secretIsPlaceholder: false },
-      workflows: { url: '', secret: '', timeoutMs: 300000 },
+      workflows: { url: '', secret: '' },
       dev: { fakeAuth: false, bypassCapabilityGate: false }
     });
   });
@@ -277,9 +259,8 @@ describe('readSiteConfig', () => {
     expect(config.auth.secret).toBe('local-dev-auth-secret-not-for-production');
     expect(config.revalidate.secret).toBe('local-dev-not-a-secret');
     expect(config.workflows).toEqual({
-      url: 'ws://localhost:8080/workflows',
-      secret: 'local-dev-workflows-secret',
-      timeoutMs: 300000
+      url: 'http://localhost:8080',
+      secret: 'local-dev-workflows-secret'
     });
     expect(config.dev).toEqual({ fakeAuth: true, bypassCapabilityGate: true });
   });
@@ -335,13 +316,11 @@ describe('readSiteConfig', () => {
     const config = readSiteConfig({
       MOSAIC_MODE: 'bogus',
       MOSAIC_OUTPUT: 'export',
-      MOSAIC_AUTH_ENABLED: 'TRUE',
-      MOSAIC_WORKFLOWS_TIMEOUT_MS: 'soon'
+      MOSAIC_AUTH_ENABLED: 'TRUE'
     });
     expect(config.mode).toBe('bogus');
     expect(config.staticExport).toBe(true);
     expect(config.auth.explicitlyEnabled).toBe(false);
-    expect(config.workflows.timeoutMs).toBe(300000);
   });
 });
 

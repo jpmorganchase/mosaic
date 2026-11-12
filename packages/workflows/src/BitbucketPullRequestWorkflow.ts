@@ -4,7 +4,11 @@ import { v4 as uuidv4 } from 'uuid';
 import matter from 'gray-matter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
-import type { SendSourceWorkflowMessage, SourceWorkflow } from '@jpmorganchase/mosaic-types';
+import type {
+  SendSourceWorkflowMessage,
+  SourceWorkflow,
+  SourceWorkflowCompletion
+} from '@jpmorganchase/mosaic-types';
 
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
@@ -64,8 +68,8 @@ async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || !markdown) {
-    // indicate to the plugin runner that no save happened
+  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+    sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
 
@@ -106,34 +110,15 @@ async function createPullRequest(
     );
     return false;
   }
-  // Used in the branch name and the worktree directory name.
+  // Keep the editor prefix on the published branch.
   const sidLower = toSafeIdentifier(user.sid);
 
-  const branchName = `${sidLower}-${uuidv4()}`;
-  await repoInstance.createWorktree(sidLower, branchName);
-  sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
-
-  /**
-   * Single try/finally covering everything between the worktree
-   * being created and the PR being raised. Without this every
-   * early-return (file already exists, missing frontmatter, parse
-   * error, rename refused) and every async throw (mkdir,
-   * readFile, deserialise, matter(), stripUndefined, serialise,
-   * writeFile) leaves the worktree on disk — recoverable by the
-   * idempotency guard in `Repo.createWorktree` on the *next* save,
-   * but still an observable leak and an opaque crash for the
-   * current one. The finally arm guarantees cleanup; the catch
-   * arm converts any uncaught throw into a normal ERROR event so
-   * the editor's progress dialog always resolves (instead of the
-   * dialog hanging on the bare-socket-close path we already
-   * handled defensively in persistAction.ts).
-   *
-   * `repoInstance.createPullRequest` (called below) has its OWN
-   * try/finally that calls `removeWorktree` — that's fine, it's
-   * idempotent (the second `git worktree remove` is harmlessly
-   * `--force`d). Belt and braces.
-   */
+  const worktreeId = uuidv4();
+  const branchName = `${sidLower}-${worktreeId}`;
   try {
+    await repoInstance.createWorktree(worktreeId, branchName);
+    sendWorkflowProgressMessage('Created git worktree', 'IN_PROGRESS');
+
     /**
      * strip out the namespace from the file path.
      * We are interested in the file on disk not in the VFS
@@ -323,7 +308,10 @@ async function createPullRequest(
       return result;
     }
 
-    sendWorkflowProgressMessage(result, 'COMPLETE');
+    const completion: SourceWorkflowCompletion = {
+      pullRequestUrl: (result as { links?: { self?: { href?: string }[] } })?.links?.self?.[0]?.href
+    };
+    sendWorkflowProgressMessage(completion, 'COMPLETE');
     return result;
   } catch (e) {
     // Any throw between createWorktree and the PR call lands
@@ -332,18 +320,12 @@ async function createPullRequest(
     sendWorkflowProgressMessage(`Save failed: ${getErrorMessage(e)}`, 'ERROR');
     return false;
   } finally {
-    // Idempotent: matches `Repo.createPullRequest`'s own
-    // `removeWorktree` in its finally arm. Running it twice is
-    // harmless (`--force`), running it zero times leaks the
-    // worktree. The catch arm above already turned every throw
-    // into an ERROR event, so this finally always runs cleanly
-    // even when the workflow body errored mid-flight.
+    // Also clean up when the save ends before calling createPullRequest.
     try {
-      await repoInstance.removeWorktree(sidLower);
+      await repoInstance.removeWorktree(worktreeId);
     } catch (e) {
       console.warn(
-        `[Mosaic][Workflows] removeWorktree failed for '${sidLower}': ${getErrorMessage(e)}. ` +
-          `The next save will recover via the idempotency guard in Repo.createWorktree.`
+        `[Mosaic][Workflows] removeWorktree failed for '${worktreeId}': ${getErrorMessage(e)}.`
       );
     }
   }
