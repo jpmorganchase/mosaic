@@ -35,6 +35,31 @@ async function persist(input) {
 
 Successful GitHub and Bitbucket workflows send `message: { pullRequestUrl }`, where the URL opens the pull request in a browser. `subscribeToSave` also accepts older GitHub URL strings and Bitbucket `links.self` responses. A successful workflow may omit the URL: the dialog still confirms the save and prevents another submission.
 
+## Navigation protection
+
+Dirty drafts and pending saves prompt before ordinary links or programmatic navigation. Completed saves do not prompt. Back/Forward navigation within the same document is guarded when the browser exposes a **cancelable Navigation API `navigate` event**. Keep editing retains the mounted editor; Discard follows the original history entry. Mode-only switches in edit and create sessions are allowed.
+
+This does not provide universal Back/Forward protection: browsers without the Navigation API, and traversals the browser marks non-cancelable, continue normally and can lose unsaved drafts. Browsers deliberately limit cancellation of repeated traversal attempts. Cross-document navigation continues to rely on the native `beforeunload` prompt. See the [HTML navigation specification](https://html.spec.whatwg.org/dev/nav-history-apis.html#the-navigate-event).
+
+The reference site's production regression uses synthetic loopback content, a synthetic authenticated session, and local workflow events; it never writes to a repository. After building internal packages and an active site, run it from the repository root:
+
+```sh
+yarn build
+MOSAIC_MODE=active \
+MOSAIC_ACTIVE_MODE_URL=http://127.0.0.1:1 \
+MOSAIC_AUTH_ENABLED=true \
+MOSAIC_EDITORS=editor@example.test \
+AUTH_SECRET=test-token-placeholder \
+yarn workspace @jpmorganchase/mosaic-site build
+node packages/site/scripts/check-editor-history.mjs
+MOSAIC_TEST_BROWSER=firefox node packages/site/scripts/check-editor-history.mjs
+MOSAIC_TEST_BROWSER=webkit node packages/site/scripts/check-editor-history.mjs
+```
+
+Install the corresponding Playwright browsers first. `MOSAIC_TEST_BROWSER_EXECUTABLE` optionally selects an existing browser binary. The check fails if a browser cannot provide the required traversal protection; this distinguishes a compatibility limit from a successful regression run.
+
+The focused CI job runs Chromium and Firefox. WebKit remains a separate diagnostic: in WebKit 27.2, a second Back after Keep editing uses a native `beforeunload` prompt instead of another cancelable `navigate` event. Dismissing that prompt retains the draft, but it does not satisfy the harness's custom-dialog/history-ordering expectations. The harness logs and dismisses native prompts; it never automatically consents to discard work.
+
 ## Keyboard shortcuts
 
 Shortcuts are available while the editor is mounted (`?edit=1`). On macOS the `Mod` modifier is `⌘`; on Windows / Linux it's `Ctrl`.
