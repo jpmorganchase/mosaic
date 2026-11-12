@@ -52,6 +52,10 @@ if (isExport && mosaicMode !== 'snapshot-file') {
 
 /** @type {import('next').NextConfig} */
 const baseConfig = {
+  // TEMPORARY: Vercel's deploy step fails with "Cannot patch preview comments
+  // when immutable static file upload is enabled" even on Next 16.4. Opt out of
+  // immutable asset upload on Vercel until Vercel fixes its version check.
+  ...(process.env.VERCEL ? { supportsImmutableAssets: false } : {}),
   // Build caches (webpack's or Turbopack's) are never needed at runtime;
   // keep them out of traced server bundles and standalone output.
   outputFileTracingExcludes: {
