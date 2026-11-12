@@ -1,7 +1,8 @@
+import { createPageTest } from './utils/createPageTest.js';
 import path from 'path';
 import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
 import { sidebarSortConfigSchema, type SortConfig } from '@jpmorganchase/mosaic-schemas';
-import { cloneDeep, escapeRegExp } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 
 import {
   isDataNode,
@@ -105,13 +106,6 @@ interface SidebarPluginOptions {
    */
   rootDirGlob: string;
 }
-
-const createPageTest = (ignorePages, pageExtensions) => {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-};
 
 /**
  * Directories create groups of pages, the index file within that group is assigned GROUP_DEFAULT_PRIORITY

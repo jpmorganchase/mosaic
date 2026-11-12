@@ -38,6 +38,8 @@ export default class Source {
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
   #schedule: SourceSchedule;
+  #pendingUpdate: Promise<void> = Promise.resolve();
+  #stopped = true;
   pluginErrors: any = {};
 
   config: MutableData<Record<string, unknown>>;
@@ -101,6 +103,7 @@ export default class Source {
     if (this.#worker && this.#worker.closed) {
       throw new Error('Cannot stop source that has not started');
     }
+    this.#stopped = true;
     if (this.#worker) {
       this.#worker.stop();
     }
@@ -232,6 +235,7 @@ export default class Source {
     });
     worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
     worker.once(EVENT.EXIT, () => {
+      this.#stopped = true;
       this.#emitter.emit(EVENT.EXIT);
       this.#emitter.removeAllListeners();
       // this.filesystem.reset();
@@ -244,10 +248,27 @@ export default class Source {
   async start() {
     this.serialiser = await bindSerialiser(this.#serialisers);
     this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
+    this.#stopped = false;
     this.#worker = this.#createWorker();
-    this.#worker.on(EVENT.UPDATE, async ({ data: { pages, symlinks, data } }) => {
-      this.config = createConfig(data);
-      this.#emitter.emit(EVENT.UPDATE, { pages, symlinks, data });
+    const worker = this.#worker;
+    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }) => {
+      // EventEmitter does not await async listeners. Keep the complete update
+      // (including its config) together until every publication listener settles.
+      this.#pendingUpdate = this.#pendingUpdate
+        .then(async () => {
+          if (this.#stopped || this.#worker !== worker) return;
+          this.config = createConfig(data);
+          for (const listener of this.#emitter.listeners(EVENT.UPDATE)) {
+            if (this.#stopped) return;
+            await listener({ pages, symlinks, data });
+          }
+        })
+        .catch(error => {
+          if (!this.#stopped) {
+            this.#emitter.emit(EVENT.ERROR, error);
+            this.stop();
+          }
+        });
     });
     this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
       this.pluginErrors[`${lifecycleMethod}`] = errors;

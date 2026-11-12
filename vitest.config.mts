@@ -79,16 +79,7 @@ export default defineConfig({
             // and publishing (scripts/snapshot).
             'scripts/snapshot/__tests__/*.test.mjs'
           ],
-          exclude: [
-            ...COMMON_EXCLUDES,
-            // `WorkerSubscription.test.ts` predates the vitest
-            // migration and relies on jest's auto-mock behaviour
-            // for `worker_threads`. Migrating it needs the
-            // child-worker spin-up rewritten as an explicit
-            // `vi.mock(...)` factory; until then the suite stays
-            // excluded so the rest of the server project runs green.
-            '**/WorkerSubscription.test.ts'
-          ]
+          exclude: COMMON_EXCLUDES
         }
       },
       {

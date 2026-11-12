@@ -1,9 +1,9 @@
-import { escapeRegExp } from 'lodash-es';
 import path from 'node:path';
 
+/** Literal suffix matching: an empty ignore list excludes no pages. */
 export function createPageTest(ignorePages: string[], pageExtensions: string[]) {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
+  return (file: string) =>
+    pageExtensions.some(extension => file.endsWith(extension)) &&
+    !ignorePages.some(ignored => file.endsWith(ignored)) &&
+    !path.basename(file).startsWith('.');
 }

@@ -5,7 +5,7 @@ import { MosaicConfig, IUnionVolume } from '@jpmorganchase/mosaic-types';
 import path from 'node:path';
 import fs from 'node:fs';
 
-import { resolveRawSourcePath } from './resolveRawSourcePath.js';
+import { normaliseRawSourceUrl, resolveRawSourcePath } from './resolveRawSourcePath.js';
 
 export interface FastifyMosaicPluginOptions {
   config: MosaicConfig;
@@ -67,15 +67,25 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
    * route-matching prefers it for matching URLs.
    */
   fastify.get(`${RAW_ROUTE_PREFIX}/*`, async (req: FastifyRequest, reply: FastifyReply) => {
-    // Strip the route prefix to get the page URL the editor
-    // intended. The wildcard parameter gives us the URL without
-    // the prefix already, but we round-trip through `req.url`
-    // to keep encoded characters (spaces in filenames, etc.)
-    // intact — Fastify's params decoder mangles `%20` to ` `,
-    // which then breaks the disk read.
-    const pageUrl = req.url.slice(RAW_ROUTE_PREFIX.length) || '/';
+    // Use the same decoded document path for ownership and disk resolution;
+    // query parameters are not part of an authored filename.
+    const pageUrl = normaliseRawSourceUrl(req.url.slice(RAW_ROUTE_PREFIX.length) || '/');
+    if (pageUrl === undefined) {
+      reply.header('X-Mosaic-Raw-Status', 'no-matching-source');
+      reply.status(404).send();
+      return;
+    }
 
-    const resolution = resolveRawSourcePath(pageUrl, config.sources);
+    const scopedSources = Array.isArray(scope)
+      ? config.sources.filter(source => scope.includes(source.namespace))
+      : config.sources;
+    const owner = await mosaic.getSourceDefinitionForPath(pageUrl, scope);
+    // Published content uses its actual owner. Unpublished authored files (e.g.
+    // JSON under an MDX source) retain the raw route's existing fallback contract.
+    const resolution = resolveRawSourcePath(
+      req.url.slice(RAW_ROUTE_PREFIX.length),
+      owner ? [owner] : scopedSources
+    );
 
     if (resolution.kind === 'no-matching-source') {
       reply.header('X-Mosaic-Raw-Status', 'no-matching-source');
