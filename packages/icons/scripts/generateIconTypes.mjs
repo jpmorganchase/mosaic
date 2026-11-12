@@ -1,5 +1,5 @@
 import esbuild from 'esbuild';
-import glob from 'fast-glob';
+import { globSync } from 'tinyglobby';
 
 import { saltIconNames } from './saltIconNames.mjs';
 
@@ -7,7 +7,9 @@ const packageName = process.env.npm_package_name;
 
 try {
   await esbuild.build({
-    entryPoints: glob.sync(['../../node_modules/@salt-ds/icons/dist-es/components/*.js']),
+    entryPoints: globSync(['../../node_modules/@salt-ds/icons/dist-es/components/*.js'], {
+      expandDirectories: false
+    }),
     bundle: false,
     outdir: '.tmp',
     plugins: [saltIconNames]

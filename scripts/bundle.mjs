@@ -1,7 +1,7 @@
 import esbuild from 'esbuild';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import glob from 'fast-glob';
+import { globSync } from 'tinyglobby';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
 
@@ -51,7 +51,8 @@ const useClientDirectivePlugin = {
 
 try {
   const context = await esbuild.context({
-    entryPoints: glob.sync(['src/**/*.ts?(x)', 'src/*.ts?(x)'], {
+    entryPoints: globSync(['src/**/*.ts?(x)', 'src/*.ts?(x)'], {
+      expandDirectories: false,
       ignore: ['**/__tests__', 'src/labs']
     }),
     loader: {

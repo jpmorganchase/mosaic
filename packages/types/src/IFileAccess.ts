@@ -1,4 +1,4 @@
-import type { Options, Pattern, Entry } from 'fast-glob';
+import type { GlobOptions } from 'tinyglobby';
 import type { DirectoryJSON, IFs } from 'memfs';
 import type { PathLike } from 'fs';
 import type { Page } from './Page.js';
@@ -11,7 +11,10 @@ export interface IFileAccess
     IFs['promises'],
     'mkdir' | 'readdir' | 'readFile' | 'realpath' | 'stat' | 'unlink' | 'symlink' | 'writeFile'
   > {
-  glob(pattern: Pattern, options?: Omit<Options, 'absolute' | 'fs'>): Promise<string[] | Entry[]>;
+  glob(
+    pattern: string | string[],
+    options?: Omit<GlobOptions, 'absolute' | 'fs' | 'patterns'>
+  ): Promise<string[]>;
   toJSON(): DirectoryJSON;
   fromJSON(json: DirectoryJSON): void;
   exists(file: PathLike): Promise<boolean>;

@@ -1,12 +1,14 @@
 import path from 'path';
-import glob from 'fast-glob';
+import { isDynamicPattern } from 'tinyglobby';
 import { set } from 'lodash-es';
 
 function createFileGlob(url, pageExtensions) {
+  // `**.mdx` only matches top-level files in tinyglobby; fast-glob treated it as `**/*.mdx`.
+  const base = /^(\.\/)?\*\*$/.test(url) ? `${url}/*` : url;
   if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
+    return `${base}${pageExtensions[0]}`;
   }
-  return `${url}{${pageExtensions.join(',')}}`;
+  return `${base}{${pageExtensions.join(',')}}`;
 }
 
 export default async function normaliseRefs(
@@ -28,8 +30,10 @@ export default async function normaliseRefs(
 
     const fullUrl = path.posix.resolve(path.posix.dirname(filepath), url);
 
-    if (!glob.isDynamicPattern(url)) {
-      if (!(await filesystem.promises.exists(fullUrl))) {
+    const refExists = await filesystem.promises.exists(fullUrl);
+    // A page that exists is a page reference even when its name looks like a glob, e.g. `page(1).mdx`.
+    if (refExists || !isDynamicPattern(url)) {
+      if (!refExists) {
         throw new Error(
           `A \`$ref\` for '${filepath}' pointed to page '${fullUrl}' - which could not be found.`
         );
