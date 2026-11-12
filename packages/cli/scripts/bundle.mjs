@@ -19,7 +19,7 @@ try {
     splitting: true,
     minify: true,
     format: 'esm',
-    target: ['es2022', 'node18'],
+    target: ['node24'],
     platform: 'node',
     plugins: [nodeExternalsPlugin()]
   });

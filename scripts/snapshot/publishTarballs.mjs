@@ -19,7 +19,6 @@ import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { appendFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { checkSnapshotTarballs, readPublicPackageNames } from './validateTarballs.mjs';
 
@@ -154,7 +153,7 @@ async function main() {
     console.error('Usage: node scripts/snapshot/publishTarballs.mjs <tarball dir> [--dry-run]');
     process.exit(2);
   }
-  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const repoRoot = path.resolve(import.meta.dirname, '..', '..');
 
   let result;
   try {
@@ -176,6 +175,6 @@ async function main() {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   await main();
 }

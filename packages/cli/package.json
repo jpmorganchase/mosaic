@@ -16,7 +16,7 @@
     "./fs.config.js": "./fs.config.js"
   },
   "engines": {
-    "node": ">=18.0.0 || >=20.0.0"
+    "node": ">=24"
   },
   "bin": {
     "mosaic": "./dist/index.mjs"

@@ -38,7 +38,7 @@
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch",
-    "extensions:smoke": "node --experimental-strip-types --no-warnings scripts/extensions-smoke.ts"
+    "extensions:smoke": "node scripts/extensions-smoke.ts"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
