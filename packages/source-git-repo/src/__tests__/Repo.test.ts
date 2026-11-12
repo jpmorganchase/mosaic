@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, type SpawnOptions } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,6 +9,19 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import Repo from '../Repo';
 import GitRepoSource from '../index';
 
+vi.mock('child_process', async importOriginal => {
+  const actual = await importOriginal<typeof import('child_process')>();
+  return {
+    ...actual,
+    default: {
+      ...actual,
+      spawn(command: string, args: readonly string[], options: SpawnOptions) {
+        return actual.spawn(command, args, { ...options, env: fixtureGitEnv(options.env) });
+      }
+    }
+  };
+});
+
 vi.mock('proper-lockfile', async importOriginal => {
   const actual = await importOriginal<typeof lockfile>();
   return { ...actual, lock: vi.fn(actual.lock) };
@@ -16,11 +29,16 @@ vi.mock('proper-lockfile', async importOriginal => {
 
 const HOUR_MS = 60 * 60 * 1000;
 
+function fixtureGitEnv(env = process.env) {
+  // Git must stop before the enclosing checkout if fixture teardown races a child process.
+  return { ...env, GIT_CEILING_DIRECTORIES: path.resolve('.tmp') };
+}
+
 function git(cwd: string, ...args: string[]) {
   return execFileSync(
     'git',
     ['-c', 'user.name=Mosaic Test', '-c', 'user.email=test@example.com', ...args],
-    { cwd, stdio: 'pipe' }
+    { cwd, stdio: 'pipe', env: fixtureGitEnv() }
   ).toString();
 }
 
@@ -67,6 +85,18 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       recursive: true,
       force: true
     });
+  });
+
+  test('THEN a fixture directory without Git metadata cannot reach the enclosing checkout', async () => {
+    await repo.init();
+    // Both the worktree and its clone can lose their metadata during teardown.
+    const cloneRoot = path.resolve('.tmp/.cloned_docs', path.basename(projectDir), 'docs');
+    expect(repo.dir).toBe(path.join(cloneRoot, '.mosaic-worktrees', 'main'));
+    const cloneGitDir = path.join(cloneRoot, '.git');
+    fs.renameSync(cloneGitDir, path.join(cloneRoot, 'git-metadata-backup'));
+    fs.unlinkSync(path.join(repo.dir, '.git'));
+
+    await expect(repo.currentLocalRevision()).rejects.toThrow('not a git repository');
   });
 
   test('THEN `checkForChanges` picks up a push without waiting for the interval', async () => {
