@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useRoute } from '@jpmorganchase/mosaic-store';
+import { usePathname } from 'next/navigation';
 import { Drawer as SaltDrawer, DrawerCloseButton } from '@salt-ds/core';
 import { useOutsideClick } from '@jpmorganchase/mosaic-components';
 import styles from './styles.css';
@@ -23,7 +23,9 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useOutsideClick(triggerRef, () => setOpen(false));
 
-  const { route } = useRoute();
+  // Follow the browser pathname so navigation between aliases of the same
+  // canonical document also closes a drawer in the persistent header.
+  const pathname = usePathname();
 
   const handleNavigationToggle = () => {
     setOpen(!open);
@@ -32,7 +34,7 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
   useEffect(() => {
     // Close drawer whenever a page loads
     setOpen(false);
-  }, [route]);
+  }, [pathname]);
 
   return (
     <>

@@ -1,13 +1,11 @@
 /**
  * Top-level App Router catch-all (WS-3 / WS-9).
  *
- * Data loading: the three independent inputs — `sharedConfig`
- * (header/footer/nav), `searchData` (site-wide search index), and the
- * raw MDX text — are resolved in parallel via three
- * `cache()`+`unstable_cache()`-wrapped primitives exported by
- * `mosaic-site-middleware`. Wall-clock per request is `max(steps)`
- * instead of `sum(steps)`, and identical reads across pages (notably
- * the site-wide search files) collapse to a single backing fetch.
+ * Data loading: `resolveContent` loads the shared config
+ * (header/footer/nav) and raw MDX text in parallel using the cached
+ * primitives exported by `mosaic-site-middleware`. The persistent
+ * layout loads the site-wide search index once per frame. Identical
+ * reads collapse to a single backing fetch.
  * Invalidation is by `revalidateTag('mosaic-content')` from
  * `app/api/revalidate/route.ts`.
  *
@@ -40,15 +38,16 @@ import { connection } from 'next/server';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRawSource,
-  getSearchData,
   loadSitemap,
   resolveMosaicMode,
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
-import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../auth';
-import { getSiteConfig } from '../../lib/config';
-import { StoreShell } from '../providers';
+import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../auth';
+import { withCapabilityBypass } from '../../../lib/capabilities';
+import { getSiteConfig } from '../../../lib/config';
+import { StoreShell } from '../../providers';
+import { FrameSync } from '../NamespaceFrame';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
 // The Lexical editor is lazy-loaded from a Client Component wrapper so
@@ -59,7 +58,7 @@ import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 import { canonicalRoute, isFolderIndexRedirect, resolveContent } from './resolveContent';
 
 interface PageProps {
-  params: Promise<{ route?: string[] }>;
+  params: Promise<{ namespace: string; route?: string[] }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -89,47 +88,22 @@ const isSnapshotMode = siteConfig.mode.startsWith('snapshot');
 const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 
-/**
- * Dev-only escape hatch for the source-capability gate.
- *
- * The gate (see the edit/create branch below) hides the editor on
- * pages whose owning source has not declared `capabilities.writable
- * = true`. In this repo's own dev environment the docs are served
- * via `source-local-folder`, which is correctly non-writable —
- * which would also lock out the editor's own e2e tests (and any
- * hand-iteration against local content).
- *
- * Setting `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` makes every page
- * present as if it were from a writable source. The bypass is
- * hard-guarded against production: `NODE_ENV` must not be
- * `production`, and a boot-time warning fires so the leak is
- * impossible to miss.
- *
- * The bypass works by rewriting the per-route `sharedConfig` to
- * force `sourceCapabilities.writable = true` before the page
- * renders. That keeps the override server-side and means the
- * client-side `useSourceCapabilities()` hook needs no parallel
- * env-var coordination — both server and browser see the same
- * (overridden) capability snapshot.
- */
-const CAPABILITY_GATE_BYPASSED =
-  process.env.NODE_ENV !== 'production' && siteConfig.dev.bypassCapabilityGate;
-
-if (CAPABILITY_GATE_BYPASSED) {
-  console.warn(
-    '[mosaic-site] MOSAIC_DEV_BYPASS_CAPABILITY_GATE is enabled — ' +
-      'the editor is mounted on every page regardless of source ' +
-      'writability. Do NOT enable this in production.'
-  );
-}
-
-export async function generateStaticParams(): Promise<{ route: string[] }[]> {
+export async function generateStaticParams(): Promise<{ namespace: string; route: string[] }[]> {
   if (!shouldPrerenderSnapshot) return [];
   const urls = await loadSitemap();
-  return urls
-    .map(url => url.replace(/^\//, '').split('/').filter(Boolean))
-    .filter(segments => segments.length > 0)
-    .map(route => ({ route }));
+  const routes = new Map<string, { namespace: string; route: string[] }>();
+  for (const url of urls) {
+    const [namespace, ...route] = url.split('/').filter(Boolean);
+    if (!namespace) continue;
+    routes.set([namespace, ...route].join('/'), { namespace, route });
+    // Export the short URL of a known top-level index too. The page
+    // resolver decides whether it is a document, alias or folder; the
+    // first URL segment alone does not identify a source namespace.
+    if (route.length === 1 && route[0] === 'index') {
+      routes.set(namespace, { namespace, route: [] });
+    }
+  }
+  return [...routes.values()];
 }
 
 /**
@@ -144,7 +118,7 @@ const resolveRouteInputs = cache(
   async (
     params: PageProps['params']
   ): Promise<{ pathname: string; mode: MosaicMode; contentUrl: string }> => {
-    const [{ route = [] }] = await Promise.all([
+    const [{ namespace, route = [] }] = await Promise.all([
       params,
       // Opt into request-time rendering whenever we are NOT
       // pre-rendering. In a production snapshot build we want the route
@@ -154,7 +128,7 @@ const resolveRouteInputs = cache(
       // mandatory regardless.
       shouldPrerenderSnapshot ? Promise.resolve() : connection()
     ]);
-    const pathname = '/' + route.join('/');
+    const pathname = '/' + [namespace, ...route].join('/');
     const { mode, contentUrl } = resolveMosaicMode();
     return { pathname, mode, contentUrl };
   }
@@ -230,8 +204,8 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // transparently follows any folder→index redirect the upstream
   // returns for `pathname`. The same call ran from
   // `generateMetadata` is request-cached so we pay nothing extra
-  // here. `getSearchData` and `searchParams` are independent and
-  // fetched in parallel alongside.
+  // here. The search index belongs to the namespace layout, which
+  // loads it once per section rather than with every page.
   //
   // `searchParams` is awaited alongside them so the `?edit=1`
   // check costs no extra latency — but only when we're *not*
@@ -239,9 +213,8 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // prerender promotes the route to dynamic and breaks the build;
   // the EDIT branch is unreachable in static export anyway
   // (`auth()` is stubbed).
-  const [resolved, search, sp] = await Promise.all([
+  const [resolved, sp] = await Promise.all([
     resolveContent(pathname, mode, contentUrl),
-    getSearchData(mode, contentUrl),
     shouldPrerenderSnapshot
       ? (Promise.resolve({}) as Promise<Record<string, string | string[] | undefined>>)
       : searchParams
@@ -269,16 +242,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // preserved. A miss carries the shared config of the folder the
   // missing page would live in, so the same gate covers the create
   // flow; apply the bypass before discriminating.
-  const sharedConfigOriginal = resolved.sharedConfig;
-  const sharedConfig = CAPABILITY_GATE_BYPASSED
-    ? {
-        ...(sharedConfigOriginal ?? {}),
-        sourceCapabilities: {
-          ...(sharedConfigOriginal?.sourceCapabilities ?? {}),
-          writable: true
-        }
-      }
-    : sharedConfigOriginal;
+  const sharedConfig = withCapabilityBypass(resolved.sharedConfig);
 
   // Source-capability gate. Absent capabilities (no shared-config
   // for the subtree, or a source that hasn't opted in) means
@@ -351,9 +315,8 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     };
   }
   const storeProps = {
-    searchIndex: search.searchIndex,
-    searchConfig: search.searchConfig,
     ...frontmatterRest,
+    route: canonicalPathname ?? resolvedPathname,
     sharedConfig: mergedSharedConfig
   };
 
@@ -559,6 +522,13 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
       {canonicalPathname && isFolderIndexRedirect(pathname, canonicalPathname) && (
         <CanonicalizeUrl canonical={canonicalPathname} />
       )}
+      {/* The header and body resolve relative URLs from the same canonical
+          content route, even when this request uses a short URL or alias. */}
+      <FrameSync
+        route={storeProps.route}
+        sharedConfig={mergedSharedConfig}
+        isEditing={editing || creating}
+      />
       <RouteMetadata />
       {editing || creating ? (
         <EditorBody

@@ -46,19 +46,19 @@ const ROUTES = [
 ];
 const ACTIONS = [
   {
-    path: 'src/app/[...route]/previewAction.ts',
+    path: 'src/app/[namespace]/notFoundChromeAction.ts',
+    exports: ['loadNotFoundSharedConfig'],
+    why: 'Section config is looked up at runtime; the static export uses the prebuilt 404.'
+  },
+  {
+    path: 'src/app/[namespace]/[[...route]]/previewAction.ts',
     exports: ['compilePreview'],
     why: 'The MDX preview Server Action requires a server runtime; the content editor is not available in a static export.'
   },
   {
-    path: 'src/app/[...route]/persistAction.ts',
+    path: 'src/app/[namespace]/[[...route]]/persistAction.ts',
     exports: ['startSave'],
     why: 'The save Server Action requires a server runtime; the content editor is not available in a static export.'
-  },
-  {
-    path: 'src/app/notFoundChromeAction.ts',
-    exports: ['loadNotFoundChrome'],
-    why: 'Static exports have no server to load 404 header data on demand; not-found.tsx bakes it in at build time instead.'
   }
 ];
 function routeStub(route) {
@@ -105,8 +105,7 @@ function actionStub(action) {
 // Restore via 'node scripts/static-export-route-stubs.mjs revert'.
 //
 // No 'use server' directive — Server Action modules are unsupported
-// under output: export. The editor branch is unreachable in static
-// builds anyway because auth() is stubbed and editing requires it.
+// under output: export. Static builds skip calls to these actions.
 // Typed \`any\` so callers type-check whatever the real action returns
 // (a promise or an async generator).
 ${exports}

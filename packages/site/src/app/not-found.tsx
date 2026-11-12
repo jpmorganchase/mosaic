@@ -1,17 +1,14 @@
 /**
- * Global 404.
+ * Global 404, for URLs outside a namespace and the static export's
+ * `404.html`. Namespace 404s use `app/[namespace]/not-found.tsx`, which
+ * renders inside the namespace layout with its header.
  *
- * Next.js renders this component as part of *every* page response (it
- * is the root not-found boundary's fallback), not only when a page is
- * missing. So it does no data loading on the server: `<NotFoundBody>`
- * loads the header/footer data from the browser, and only when a 404 is
- * actually shown.
- *
- * The exception is a static export, which has no server to answer that
- * request. There this runs once at build time to bake the site-root
- * shared config (`getSharedConfig('/')`) and the search data into
- * `404.html`. If they are missing the page still renders, just without
- * a header.
+ * Next.js renders this component as part of every page response (it is
+ * the root not-found boundary's fallback), so it does no data loading on
+ * the server. The exception is a static export: there this runs once at
+ * build time to bake the site-root shared config (`getSharedConfig('/')`)
+ * and the search data into `404.html`. If they are missing the page
+ * still renders, just without a header.
  */
 import {
   getSearchData,

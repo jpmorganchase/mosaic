@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const authMock = vi.fn();
 const isAuthorizedEditorMock = vi.fn();
-vi.mock('../../../auth', () => ({
+vi.mock('../../../../auth', () => ({
   auth: authMock,
   isAuthorizedEditor: isAuthorizedEditorMock
 }));

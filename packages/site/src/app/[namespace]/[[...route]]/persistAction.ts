@@ -17,8 +17,8 @@
  * editor (`MOSAIC_EDITORS`), and every route is validated before it is
  * forwarded. The CLI authenticates us with `MOSAIC_WORKFLOWS_SECRET`.
  */
-import { checkEditor, getWorkflowsBaseUrl, getWorkflowsSecret } from '../../lib/workflows';
-import { isSafeRoute } from '../../lib/routes';
+import { checkEditor, getWorkflowsBaseUrl, getWorkflowsSecret } from '../../../lib/workflows';
+import { isSafeRoute } from '../../../lib/routes';
 
 export interface PersistInput {
   /** Route the edited content lives at, e.g. `/foo/bar`. */
