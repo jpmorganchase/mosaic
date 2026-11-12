@@ -12,6 +12,10 @@ yarn add @jpmorganchase/mosaic-content-editor-plugin
 
 `<Editor persist={...}>` takes a function that starts a save and returns its progress as an async iterable of `PersistEvent`s (`progress`, then `complete` or `error`). A thrown error is shown as a failed save.
 
+For existing pages, supply `rawSource={{ kind: 'raw', bytes, namespace }}` with the original source file and `route` with its backing path. The editor seeds the editable body and frontmatter from these authored bytes; `content` supplies processed metadata for the preview. If the original source cannot be loaded, saving is disabled so expanded fragments and other plugin output cannot overwrite the source. A new page may use its authored `content` template with `isNewPage`.
+
+Frontmatter drafts, including invalid YAML, survive mode switches. Correct invalid edits before saving. Changing the backing route or source namespace starts a fresh editor session. Source directives are preserved in saves; the preview compiles authored MDX and does not run the source's build plugins, so it may differ from the published rendering of included fragments.
+
 The reference site starts the save on its server and follows it over Server-Sent Events with `subscribeToSave`:
 
 ```tsx

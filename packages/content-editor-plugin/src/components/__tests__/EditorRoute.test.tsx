@@ -36,6 +36,7 @@ test('saves and renames the host backing file while preserving the public previe
   render(
     <Editor
       content={content}
+      rawSource={{ kind: 'raw', bytes: content, namespace: 'docs' }}
       route="/docs/start/page.mdx"
       components={{}}
       PreviewComponent={Preview}
@@ -64,6 +65,7 @@ test('retains frontmatter route as the save fallback for hosts without an explic
   render(
     <Editor
       content={content}
+      rawSource={{ kind: 'raw', bytes: content, namespace: 'docs' }}
       components={{}}
       PreviewComponent={Preview}
       compilePreview={compilePreview}
