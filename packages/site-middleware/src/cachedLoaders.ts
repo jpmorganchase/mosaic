@@ -259,7 +259,10 @@ async function readSnapshotJsonFile(targetFile: string): Promise<unknown | undef
   // `urlPath` arg to `getSnapshotFileConfig` is only used to pick the
   // active snapshot dir. Pass empty.
   const { snapshotDir } = getSnapshotFileConfig('');
-  const filePath = path.join(process.cwd(), snapshotDir, targetFile);
+  // The snapshot dir comes from the environment, so Turbopack would trace the
+  // whole project for this path. Sites include their snapshots explicitly with
+  // `outputFileTracingIncludes`, so skip tracing it.
+  const filePath = path.join(/*turbopackIgnore: true*/ process.cwd(), snapshotDir, targetFile);
   try {
     await fs.promises.stat(filePath);
   } catch {
