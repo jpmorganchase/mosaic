@@ -1320,6 +1320,7 @@ __metadata:
     "@fastify/middie": "npm:^9.3.6"
     "@jpmorganchase/mosaic-core": "workspace:^"
     "@jpmorganchase/mosaic-plugins": "workspace:^"
+    "@jpmorganchase/mosaic-schemas": "workspace:^"
     "@jpmorganchase/mosaic-source-git-repo": "workspace:^"
     "@jpmorganchase/mosaic-source-local-folder": "workspace:^"
     "@jpmorganchase/mosaic-types": "workspace:^"
@@ -1374,6 +1375,7 @@ __metadata:
     "@floating-ui/react": "npm:^0.26.6"
     "@jpmorganchase/mosaic-components": "workspace:^"
     "@jpmorganchase/mosaic-icons": "workspace:^"
+    "@jpmorganchase/mosaic-schemas": "workspace:^"
     "@jpmorganchase/mosaic-serialisers": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
     "@jpmorganchase/mosaic-types": "workspace:^"
@@ -1639,6 +1641,7 @@ __metadata:
     "@jpmorganchase/mosaic-components": "workspace:^"
     "@jpmorganchase/mosaic-content-editor-plugin": "workspace:^"
     "@jpmorganchase/mosaic-layouts": "workspace:^"
+    "@jpmorganchase/mosaic-schemas": "workspace:^"
     "@jpmorganchase/mosaic-serialisers": "workspace:^"
     "@jpmorganchase/mosaic-site-components": "workspace:^"
     "@jpmorganchase/mosaic-site-middleware": "workspace:^"
@@ -1825,6 +1828,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-workflows@workspace:packages/workflows"
   dependencies:
+    "@jpmorganchase/mosaic-schemas": "workspace:^"
     "@jpmorganchase/mosaic-serialisers": "workspace:^"
     "@jpmorganchase/mosaic-source-git-repo": "workspace:^"
     "@jpmorganchase/mosaic-types": "workspace:^"

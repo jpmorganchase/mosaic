@@ -19,38 +19,18 @@
  */
 import { checkEditor, getWorkflowsBaseUrl, getWorkflowsSecret } from '../../../lib/workflows';
 import { isSafeRoute } from '../../../lib/routes';
+import { workflowDefaultsSchema } from '@jpmorganchase/mosaic-schemas';
+import {
+  validateCommitMessage,
+  normalizeCommitMessage
+} from '@jpmorganchase/mosaic-schemas/commitMessage';
+import type {
+  EditorSaveInput,
+  WorkflowDefaults,
+  WorkflowDefaultsInput
+} from '@jpmorganchase/mosaic-types';
 
-export interface PersistInput {
-  /** Route the edited content lives at, e.g. `/foo/bar`. */
-  route: string;
-  /** New markdown content (YAML front matter included). */
-  markdown: string;
-  /**
-   * Optional authored frontmatter (bare YAML, no `---` fences)
-   * from the editor's Frontmatter tab. Forwarded verbatim to the
-   * workflow; when omitted, the workflow keeps the on-disk
-   * frontmatter unchanged.
-   */
-  frontmatter?: string;
-  /**
-   * Optional new VFS route for a file rename (Mosaic uses
-   * file-based routing, so renaming = moving the page's URL).
-   * Forwarded verbatim to the workflow; when omitted or equal
-   * to `route` no rename happens.
-   */
-  targetRoute?: string;
-  /**
-   * When `true` the workflow treats `route` as a brand-new
-   * page rather than an edit of an existing one — skips the
-   * on-disk readFile, creates the parent directory tree, and
-   * requires `frontmatter` to be present. Forwarded verbatim
-   * to the workflow.
-   *
-   * Set by the editor's create-page dialog; never set by an
-   * edit save.
-   */
-  isNewPage?: boolean;
-}
+export type PersistInput = EditorSaveInput;
 
 export type StartSaveResult = { jobId: string } | { error: string };
 
@@ -60,12 +40,58 @@ const START_TIMEOUT_MS = 30_000;
 const MAX_MARKDOWN_BYTES = 2 * 1024 * 1024;
 const MAX_FRONTMATTER_BYTES = 256 * 1024;
 
-/** Returns an error message for an invalid payload, `null` when it's fine. */
-function validateInput(input: PersistInput): string | null {
+function validateDefaultsInput(input: WorkflowDefaultsInput): string | null {
   if (!input || typeof input !== 'object') return 'Invalid save request.';
   if (!isSafeRoute(input.route)) return 'Invalid page route.';
   if (input.targetRoute !== undefined && !isSafeRoute(input.targetRoute)) {
     return 'Invalid target route.';
+  }
+  if (input.isNewPage !== undefined && typeof input.isNewPage !== 'boolean')
+    return 'Invalid save request.';
+  return null;
+}
+
+/** Resolve source defaults without allocating a save job. Authorization applies to this action too. */
+export async function getSaveDefaults(
+  input: WorkflowDefaultsInput
+): Promise<WorkflowDefaults | { error: string }> {
+  const baseUrl = getWorkflowsBaseUrl();
+  const secret = getWorkflowsSecret();
+  if (!baseUrl || !secret)
+    return { error: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.' };
+  const editor = await checkEditor();
+  if (!editor.ok) return { error: editor.error };
+  const invalid = validateDefaultsInput(input);
+  if (invalid) return { error: invalid };
+  try {
+    const response = await fetch(`${baseUrl}/workflows/defaults`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${secret}` },
+      body: JSON.stringify({
+        name: 'save',
+        user: editor.user,
+        route: input.route,
+        ...(input.targetRoute !== undefined ? { targetRoute: input.targetRoute } : {}),
+        ...(input.isNewPage ? { isNewPage: true } : {})
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(START_TIMEOUT_MS)
+    });
+    const parsed = workflowDefaultsSchema.safeParse(await response.json());
+    if (response.ok && parsed.success) return parsed.data;
+  } catch {
+    // Defaults errors must not leak provider/source configuration to the browser.
+  }
+  return { error: 'Could not load the commit message. Try again.' };
+}
+
+/** Returns an error message for an invalid payload, `null` when it's fine. */
+function validateInput(input: PersistInput): string | null {
+  const routeError = validateDefaultsInput(input);
+  if (routeError) return routeError;
+  if (input.commitMessage !== undefined) {
+    const messageError = validateCommitMessage(input.commitMessage);
+    if (messageError) return messageError;
   }
   if (
     typeof input.markdown !== 'string' ||
@@ -79,9 +105,6 @@ function validateInput(input: PersistInput): string | null {
       Buffer.byteLength(input.frontmatter, 'utf8') > MAX_FRONTMATTER_BYTES)
   ) {
     return 'Invalid frontmatter.';
-  }
-  if (input.isNewPage !== undefined && typeof input.isNewPage !== 'boolean') {
-    return 'Invalid save request.';
   }
   return null;
 }
@@ -112,6 +135,9 @@ export async function startSave(input: PersistInput): Promise<StartSaveResult> {
         user: editor.user,
         route: input.route,
         markdown: input.markdown,
+        ...(input.commitMessage !== undefined
+          ? { commitMessage: normalizeCommitMessage(input.commitMessage) }
+          : {}),
         // Only include the key when the editor actually sent
         // frontmatter — workflows that haven't opted in branch on
         // `typeof frontmatter === 'string'`.

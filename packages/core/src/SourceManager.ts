@@ -7,7 +7,8 @@ import type {
   SendSourceWorkflowMessage,
   SerialiserModuleDefinition,
   SourceModuleDefinition,
-  SourceSchedule
+  SourceSchedule,
+  WorkflowDefaultsInput
 } from '@jpmorganchase/mosaic-types';
 
 import Source from './Source.js';
@@ -84,21 +85,34 @@ export default class SourceManager {
     data: unknown,
     { newPage = false }: TriggerWorkflowOptions = {}
   ): Promise<boolean> {
-    if (newPage) {
-      const owner = findNewPageOwner(this.#sources.values(), filePath, name);
-      if (!owner) {
-        sendWorkflowProgressMessage(`No source can create ${filePath}`, 'ERROR');
-        return false;
-      }
-      return owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
-    }
-    for (const source of this.#sources.values()) {
-      if (await source.isOwner(filePath)) {
-        return source.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
-      }
-    }
-    sendWorkflowProgressMessage(`Workflow ${name} not found`, 'ERROR');
+    const owner = await this.#findWorkflowOwner(name, filePath, newPage);
+    if (owner) return owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
+    sendWorkflowProgressMessage(
+      newPage ? `No source can create ${filePath}` : `Workflow ${name} not found`,
+      'ERROR'
+    );
     return false;
+  }
+
+  async #findWorkflowOwner(name: string, filePath: string, newPage: boolean) {
+    if (newPage) return findNewPageOwner(this.#sources.values(), filePath, name);
+    for (const source of this.#sources.values()) {
+      if (await source.isOwner(filePath)) return source;
+    }
+    return undefined;
+  }
+
+  async prepareWorkflow(
+    name: string,
+    filePath: string,
+    input: Omit<WorkflowDefaultsInput, 'route'>
+  ) {
+    const owner = await this.#findWorkflowOwner(name, filePath, input.isNewPage === true);
+    if (!owner)
+      throw new Error(
+        input.isNewPage ? `No source can create ${filePath}` : `Workflow ${name} not found`
+      );
+    return owner.prepareWorkflow(name, filePath, input);
   }
 
   getSource(name: string) {

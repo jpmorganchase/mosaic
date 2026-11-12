@@ -13,6 +13,11 @@
       "import": "./dist/index.js",
       "node": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./commitMessage": {
+      "types": "./dist/commitMessage.d.ts",
+      "import": "./dist/commitMessage.js",
+      "default": "./dist/commitMessage.js"
     }
   },
   "engines": {

@@ -62,6 +62,64 @@ export MOSAIC_DOCS_CLONE_CREDENTIALS="<repo username>:<Personal Access Token (PA
 
 ```
 
+## Editor commit messages
+
+Set the save workflow's `commitMessage` option on each source to choose its default. Both
+`GitHubPullRequestWorkflow` and `BitbucketPullRequestWorkflow` accept a string or a callback:
+
+```js
+import { applyWorkflowOptions, GitHubPullRequestWorkflow } from '@jpmorganchase/mosaic-workflows';
+
+const source = {
+  modulePath: '@jpmorganchase/mosaic-source-git-repo',
+  namespace: 'handbook',
+  options: {
+    // Your repository, credentials, branch, subfolder and prefixDir settings.
+  },
+  workflows: [
+    applyWorkflowOptions(GitHubPullRequestWorkflow, {
+      commitMessage: (filePath, { action, targetRoute }) =>
+        `docs(handbook): ${action} ${filePath}${targetRoute ? ` to ${targetRoute}` : ''}`,
+      titlePrefix: 'Handbook'
+    })
+  ]
+};
+```
+
+The callback runs on the server. Its first argument remains the backing virtual filesystem path,
+so existing one-argument callbacks still work. The second argument contains `action` (`create`,
+`update` or `rename`) and, when supplied, `targetRoute`. The source selected for the page supplies
+the default; the browser cannot select a different source. New pages follow the same ownership
+rules as saving a new page.
+
+The reference editor shows this default in **Commit message**, where the author can enter a summary
+and optional body. **Reset to default** restores the current suggestion. A rename updates the
+suggestion until the author edits it. Author text survives a failed save and closing/reopening the
+dialog for the same document; it resets after a successful save or a document change. Editing only
+the message does not enable saving an otherwise unchanged page.
+
+The submitted message takes precedence over the source default. With neither configured nor
+submitted, the built-in messages are `docs: update <filePath>`, `docs: create <filePath>` and
+`docs: rename <filePath> to <targetRoute>`. These replace the old ticket-specific fallback. Configured
+and submitted text is never rewritten for create or rename operations.
+
+Messages must contain non-whitespace text, fit within 8 KiB of UTF-8, and contain no control
+characters other than line endings. CRLF is normalized to LF; other text is preserved, with Git
+adding a terminal newline when the message has none. Explicitly
+blank messages are errors, while omitting the override keeps the configured default.
+
+Both providers use the first nonempty message line, trimmed, as the pull request summary. A nonempty
+`titlePrefix` is prepended as `<titlePrefix> - <summary>`; set it to `''` to use the summary alone.
+The default prefix remains `Mosaic Docs`. The commit receives the full message, including its body.
+The final squash message is controlled by repository settings and the reviewer.
+
+Custom editor hosts opt in by passing `loadSaveDefaults` to `Editor` and forwarding the optional
+`commitMessage` in their persist handler. Hosts without that loader retain their existing save flow
+and show no message control. A custom workflow can expose a side-effect-free `prepare` hook returning
+`{ supportsCommitMessage: true, commitMessage: '...' }`; it must also honor and validate submitted
+messages in its action. Without the hook, defaults report `{ supportsCommitMessage: false }` and
+the editor uses the existing save flow.
+
 ## Refresh on push (Bitbucket webhooks)
 
 A git repo source checks its repository for new commits every `checkIntervalMins` (30 minutes by

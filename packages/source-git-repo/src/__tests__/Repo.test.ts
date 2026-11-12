@@ -259,10 +259,19 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
       fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
       await Promise.all([repo.addChanges(), secondRepo.addChanges()]);
+      const firstMessage = '\n  First save  \n\nBody with trailing spaces.  \n\n';
       await Promise.all([
-        repo.commitChanges('First Editor', 'first@example.test', 'First save'),
+        repo.commitChanges('First Editor', 'first@example.test', firstMessage),
         secondRepo.commitChanges('Second Editor', 'second@example.test', 'Second save')
       ]);
+      // Inspect the stored commit object, avoiding git log's formatting cleanup.
+      expect(git(firstDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')).toBe(
+        firstMessage
+      );
+      // Git adds its structural terminal newline when the input has none.
+      expect(git(secondDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')).toBe(
+        'Second save\n'
+      );
       expect(git(firstDir, 'show', 'HEAD:index.mdx').trim()).toBe('# First edit');
       expect(git(secondDir, 'show', 'HEAD:index.mdx').trim()).toBe('# Second edit');
       expect(git(firstDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(

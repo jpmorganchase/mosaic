@@ -149,6 +149,71 @@ describe.each([
     expect(mocks.removeWorktree).toHaveBeenCalledWith(firstId);
     expect(mocks.removeWorktree).toHaveBeenCalledWith(secondId);
   });
+
+  test('uses the exact author message for the commit and its first line for the prefixed PR title', async () => {
+    await workflow.action(
+      vi.fn(),
+      sourceOptions,
+      { ...workflowOptions, titlePrefix: 'Docs' },
+      route,
+      {
+        user,
+        markdown: 'New page',
+        frontmatter: 'title: New',
+        isNewPage: true,
+        commitMessage: 'Explain the change\r\n\r\nDetailed updated content explanation.'
+      }
+    );
+    const message = 'Explain the change\n\nDetailed updated content explanation.';
+    if (_provider === 'GitHub') {
+      expect(mocks.commitChanges).toHaveBeenCalledWith(user.name, user.email, message);
+      expect(mocks.githubRequest.mock.calls[0][1]).toMatchObject({
+        title: 'Docs - Explain the change',
+        body: message
+      });
+    } else {
+      expect(mocks.createPullRequest.mock.calls[0][5]).toBe(message);
+      expect(JSON.parse(mocks.createPullRequest.mock.calls[0][4]).title).toBe(
+        'Docs - Explain the change'
+      );
+    }
+  });
+
+  test('inspects configured defaults without initializing Git or mutating the workflow export', async () => {
+    const configured = vi.fn(() => 'custom updated content');
+    expect(
+      await workflow.prepare(
+        sourceOptions,
+        { ...workflowOptions, commitMessage: configured },
+        route,
+        { isNewPage: true }
+      )
+    ).toEqual({ supportsCommitMessage: true, commitMessage: 'custom updated content' });
+    expect(configured).toHaveBeenCalledWith(route, { action: 'create' });
+    expect(mocks.init).not.toHaveBeenCalled();
+    expect(mocks.createWorktree).not.toHaveBeenCalled();
+    expect(mocks.githubRequest).not.toHaveBeenCalled();
+    expect(mocks.createPullRequest).not.toHaveBeenCalled();
+  });
+
+  test.each(['', ' \n ', 'invalid\0message', 'é'.repeat(4097), 123])(
+    'rejects invalid overrides before Git writes',
+    async commitMessage => {
+      const send = vi.fn();
+      expect(
+        await workflow.action(send, sourceOptions, workflowOptions, route, {
+          user,
+          markdown: 'New page',
+          frontmatter: 'title: New',
+          isNewPage: true,
+          commitMessage
+        })
+      ).toBe(false);
+      expect(send).toHaveBeenCalledWith(expect.any(String), 'ERROR');
+      expect(mocks.init).not.toHaveBeenCalled();
+      expect(mocks.createWorktree).not.toHaveBeenCalled();
+    }
+  );
 });
 
 test('cleans up the GitHub worktree when reading an existing page fails', async () => {

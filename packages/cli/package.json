@@ -50,6 +50,7 @@
     "@fastify/middie": "^9.3.6",
     "@jpmorganchase/mosaic-core": "workspace:^",
     "@jpmorganchase/mosaic-plugins": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
     "@jpmorganchase/mosaic-source-git-repo": "workspace:^",
     "@jpmorganchase/mosaic-source-local-folder": "workspace:^",
     "commander": "^9.4.1",

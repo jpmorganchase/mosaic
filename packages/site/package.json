@@ -35,6 +35,7 @@
     "@jpmorganchase/mosaic-components": "workspace:^",
     "@jpmorganchase/mosaic-content-editor-plugin": "workspace:^",
     "@jpmorganchase/mosaic-layouts": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
     "@jpmorganchase/mosaic-serialisers": "workspace:^",
     "@jpmorganchase/mosaic-site-components": "workspace:^",
     "@jpmorganchase/mosaic-site-middleware": "workspace:^",

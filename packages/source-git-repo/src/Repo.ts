@@ -914,6 +914,7 @@ export default class Repo {
         '-c',
         `user.email=${email}`,
         'commit',
+        '--cleanup=verbatim',
         '-m',
         commitMessage,
         '--author',

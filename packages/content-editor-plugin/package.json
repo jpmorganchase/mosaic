@@ -48,6 +48,7 @@
     "@floating-ui/react": "^0.26.6",
     "@jpmorganchase/mosaic-components": "workspace:^",
     "@jpmorganchase/mosaic-icons": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
     "@jpmorganchase/mosaic-serialisers": "workspace:^",
     "@jpmorganchase/mosaic-theme": "workspace:^",
     "@jpmorganchase/mosaic-types": "workspace:^",
