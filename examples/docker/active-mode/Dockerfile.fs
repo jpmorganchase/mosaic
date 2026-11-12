@@ -17,7 +17,7 @@ COPY --from=builder /app/docs ./docs
 COPY --from=builder /app/packages/cli/mosaic.config.mjs ./mosaic.config.mjs
 COPY --from=builder /app/packages/cli/fs.config.js ./fs.config.js
 RUN mkdir .tmp && chown node:node .tmp
-ENV NODE_ENV=production
+ENV NODE_ENV=production PORT=8080
 USER node
 EXPOSE 8080
-CMD ["node", "packages/cli/dist/index.mjs", "serve", "-c", "./mosaic.config.mjs", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["sh", "-c", "exec node packages/cli/dist/index.mjs serve -c ./mosaic.config.mjs --host 0.0.0.0 --port \"$PORT\""]
