@@ -77,8 +77,10 @@ interface PageProps {
 //     dev` would defeat hot-reload because the route's RSC payload
 //     would be cached after first render and the underlying
 //     `fs.readFile` for the MDX would never run again.
-//   - Active build → `generateStaticParams` returns `[]`; every
-//     request is rendered on demand.
+//   - Active build → a synthetic path lets Next encounter `connection()`
+//     during its build probe and classify this route as request-time rendered.
+//     Returning [] instead opts into on-demand static generation, whose first
+//     request would then fail when it reaches the request-only APIs.
 //
 // Setting `dynamic = 'force-dynamic'` would defeat the snapshot
 // pre-render and was only needed earlier as a workaround for a
@@ -89,7 +91,11 @@ const isProductionBuild = process.env.NODE_ENV === 'production';
 const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
 
 export async function generateStaticParams(): Promise<{ namespace: string; route: string[] }[]> {
-  if (!shouldPrerenderSnapshot) return [];
+  if (!shouldPrerenderSnapshot) {
+    // `connection()` below stops this page's prerender before resolving its
+    // synthetic pathname. No page is emitted for this build-only probe.
+    return [{ namespace: '__mosaic_dynamic_probe__', route: [] }];
+  }
   const urls = await loadSitemap();
   const routes = new Map<string, { namespace: string; route: string[] }>();
   for (const url of urls) {
