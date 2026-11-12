@@ -1,19 +1,20 @@
 /**
  * Recursively remove `undefined` values from a frontmatter tree
- * before it's handed to `gray-matter` → `js-yaml`.
+ * before it's handed to `stringifyFrontmatter` → `js-yaml`.
  *
  * Why this exists
  * ---------------
- * `js-yaml`'s `safeDump` (which `gray-matter.stringify` calls)
- * throws `YAMLException: unacceptable kind of an object to dump
- * [object Undefined]` on the first `undefined` it encounters,
- * anywhere in the tree. The most common producer in the workflow
+ * `gray-matter`'s `js-yaml` 3 dumper, which Mosaic used before
+ * `stringifyFrontmatter`, threw `YAMLException: unacceptable kind of
+ * an object to dump [object Undefined]` on the first `undefined` it
+ * encountered, anywhere in the tree. `js-yaml` 4's `dump` drops
+ * `undefined` object keys instead, but still writes `undefined`
+ * array elements as `null`. The most common producer in the workflow
  * code is an explicit `key: undefined` injection in an object
  * spread (e.g. preserving an on-disk-derived `fullPath` that
- * happens not to be set yet) — `key in object` is true, the value
- * is undefined, and the dumper bails. A single stray field breaks
- * the whole save and surfaces to the editor as an opaque
- * workflow-crash.
+ * happens not to be set yet) — `key in object` is true and the value
+ * is undefined. Stripping first keeps the saved YAML free of values
+ * the author never wrote.
  *
  * Semantics
  * ---------

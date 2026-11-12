@@ -1374,6 +1374,7 @@ __metadata:
     "@floating-ui/react": "npm:^0.26.6"
     "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-icons": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-theme": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@lexical/code": "npm:^0.45.0"
@@ -1393,7 +1394,6 @@ __metadata:
     clsx: "npm:^2.0.0"
     concurrently: "npm:^7.1.0"
     diff: "npm:^9.0.0"
-    gray-matter: "npm:^4.0.3"
     lexical: "npm:^0.45.0"
     lodash-es: "npm:^4.17.23"
     react-split: "npm:^2.0.14"
@@ -1547,7 +1547,8 @@ __metadata:
   resolution: "@jpmorganchase/mosaic-serialisers@workspace:packages/serialisers"
   dependencies:
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
-    gray-matter: "npm:^4.0.3"
+    "@types/js-yaml": "npm:^4.0.9"
+    js-yaml: "npm:^4.3.2"
   languageName: unknown
   linkType: soft
 
@@ -1587,12 +1588,12 @@ __metadata:
   resolution: "@jpmorganchase/mosaic-site-middleware@workspace:packages/site-middleware"
   dependencies:
     "@jpmorganchase/mosaic-schemas": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-store": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@mdx-js/mdx": "npm:^3.0.1"
     "@types/hast": "npm:^3.0.4"
     deepmerge: "npm:^4.2.2"
-    gray-matter: "npm:^4.0.3"
     hast-util-properties-to-mdx-jsx-attributes: "npm:^1.0.0"
     mdast-util-from-markdown: "npm:^2.0.0"
     mdast-util-mdx: "npm:^3.0.0"
@@ -1639,6 +1640,7 @@ __metadata:
     "@jpmorganchase/mosaic-components": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-content-editor-plugin": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-layouts": "npm:^0.1.0-beta.98"
+    "@jpmorganchase/mosaic-serialisers": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-site-components": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-site-middleware": "npm:^0.1.0-beta.98"
     "@jpmorganchase/mosaic-site-preset-styles": "npm:^0.1.0-beta.98"
@@ -1655,7 +1657,6 @@ __metadata:
     clsx: "npm:^2.0.0"
     concurrently: "npm:^7.1.0"
     cross-env: "npm:^7.0.3"
-    gray-matter: "npm:^4.0.3"
     next: "npm:^16.4.2"
     next-auth: "npm:^5.0.0-beta.32"
     next-mdx-remote-client: "npm:^2.1.12"
@@ -1830,7 +1831,6 @@ __metadata:
     "@jpmorganchase/mosaic-types": "npm:^0.1.0-beta.98"
     "@octokit/core": "npm:^6.1.2"
     "@types/uuid": "npm:^8.3.4"
-    gray-matter: "npm:^4.0.3"
     undici: "npm:^8.12.4"
     uuid: "npm:^11.0.0"
   languageName: unknown
@@ -4179,6 +4179,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/js-yaml@npm:^4.0.9":
+  version: 4.0.9
+  resolution: "@types/js-yaml@npm:4.0.9"
+  checksum: 10/a0ce595db8a987904badd21fc50f9f444cb73069f4b95a76cc222e0a17b3ff180669059c763ec314bc4c3ce284379177a9da80e83c5f650c6c1310cafbfaa8e6
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -4984,7 +4991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"argparse@npm:^1.0.10, argparse@npm:^1.0.7":
+"argparse@npm:^1.0.10":
   version: 1.0.10
   resolution: "argparse@npm:1.0.10"
   dependencies:
@@ -7268,16 +7275,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esprima@npm:^4.0.0":
-  version: 4.0.1
-  resolution: "esprima@npm:4.0.1"
-  bin:
-    esparse: ./bin/esparse.js
-    esvalidate: ./bin/esvalidate.js
-  checksum: 10/f1d3c622ad992421362294f7acf866aa9409fbad4eb2e8fa230bd33944ce371d32279667b242d8b8907ec2b6ad7353a717f3c0e60e748873a34a7905174bc0eb
-  languageName: node
-  linkType: hard
-
 "esquery@npm:^1.7.0":
   version: 1.7.0
   resolution: "esquery@npm:1.7.0"
@@ -7441,15 +7438,6 @@ __metadata:
   version: 3.1.3
   resolution: "exponential-backoff@npm:3.1.3"
   checksum: 10/ca25962b4bbab943b7c4ed0b5228e263833a5063c65e1cdeac4be9afad350aae5466e8e619b5051f4f8d37b2144a2d6e8fcc771b6cc82934f7dade2f964f652c
-  languageName: node
-  linkType: hard
-
-"extend-shallow@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "extend-shallow@npm:2.0.1"
-  dependencies:
-    is-extendable: "npm:^0.1.0"
-  checksum: 10/8fb58d9d7a511f4baf78d383e637bd7d2e80843bd9cd0853649108ea835208fb614da502a553acc30208e1325240bb7cc4a68473021612496bb89725483656d8
   languageName: node
   linkType: hard
 
@@ -8038,18 +8026,6 @@ __metadata:
   version: 16.14.0
   resolution: "graphql@npm:16.14.0"
   checksum: 10/019bed00a1d62c90d38bd8971f827af9be479bd1935ac990b62edce8dbe5d9e1d93cae72e986199fdeb7108ee83e3f73c7492989ec08fcaf446b6bd79d533741
-  languageName: node
-  linkType: hard
-
-"gray-matter@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "gray-matter@npm:4.0.3"
-  dependencies:
-    js-yaml: "npm:^3.13.1"
-    kind-of: "npm:^6.0.2"
-    section-matter: "npm:^1.0.0"
-    strip-bom-string: "npm:^1.0.0"
-  checksum: 10/9a8f146a7a918d2524d5d60e0b4d45729f5bca54aa41247f971d9e4bc984943fda58159435763d463ec2abc8a0e238e807bd9b05e3a48f4a613a325c9dd5ad0c
   languageName: node
   linkType: hard
 
@@ -8654,13 +8630,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-extendable@npm:^0.1.0":
-  version: 0.1.1
-  resolution: "is-extendable@npm:0.1.1"
-  checksum: 10/3875571d20a7563772ecc7a5f36cb03167e9be31ad259041b4a8f73f33f885441f778cee1f1fe0085eb4bc71679b9d8c923690003a36a6a5fdf8023e6e3f0672
-  languageName: node
-  linkType: hard
-
 "is-extglob@npm:^2.1.1":
   version: 2.1.1
   resolution: "is-extglob@npm:2.1.1"
@@ -8970,18 +8939,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^3.13.1":
-  version: 3.15.2
-  resolution: "js-yaml@npm:3.15.2"
-  dependencies:
-    argparse: "npm:^1.0.7"
-    esprima: "npm:^4.0.0"
-  bin:
-    js-yaml: bin/js-yaml.js
-  checksum: 10/320b5471c1b7309a15d9c0068ba273e2da7382a369038a9746c92ef649087c3d6d2a5c676810154efb4eb2ca9584179c8ae14e2fc2e4bd558d964e6bf4fafd3d
-  languageName: node
-  linkType: hard
-
 "js-yaml@npm:^5.4.2":
   version: 5.5.0
   resolution: "js-yaml@npm:5.5.0"
@@ -9118,13 +9075,6 @@ __metadata:
   dependencies:
     "@keyv/serialize": "npm:^1.1.1"
   checksum: 10/b8d2c354dade07cb4cb6ccffe6495c1a32a67cf9f066a9660eeaea974ab9d8b94dd568b4e71b23f217f587d3e07b558fa6e48158baea1a0bc9514bb15c1de555
-  languageName: node
-  linkType: hard
-
-"kind-of@npm:^6.0.0, kind-of@npm:^6.0.2":
-  version: 6.0.3
-  resolution: "kind-of@npm:6.0.3"
-  checksum: 10/5873d303fb36aad875b7538798867da2ae5c9e328d67194b0162a3659a627d22f742fc9c4ae95cd1704132a24b00cae5041fc00c0f6ef937dc17080dc4dbb962
   languageName: node
   linkType: hard
 
@@ -12315,16 +12265,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"section-matter@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "section-matter@npm:1.0.0"
-  dependencies:
-    extend-shallow: "npm:^2.0.1"
-    kind-of: "npm:^6.0.0"
-  checksum: 10/cedfda3a9238f66942d92531fe043dd134702a462cdc9e254cd6aa418c66ca0d229900e4da78ffd1a07051e7b239251c4dc4748e9d1c76bf41a37bff7a478556
-  languageName: node
-  linkType: hard
-
 "secure-json-parse@npm:^4.0.0":
   version: 4.0.0
   resolution: "secure-json-parse@npm:4.0.0"
@@ -12933,13 +12873,6 @@ __metadata:
   dependencies:
     ansi-regex: "npm:^6.0.1"
   checksum: 10/07b3142f515d673e05d2da1ae07bba1eb2ba3b588135a38dea598ca11913b6e9487a9f2c9bed4c74cd31e554012b4503d9fb7e6034c7324973854feea2319110
-  languageName: node
-  linkType: hard
-
-"strip-bom-string@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "strip-bom-string@npm:1.0.0"
-  checksum: 10/5635a3656d8512a2c194d6c8d5dee7ef0dde6802f7be9413b91e201981ad4132506656d9cf14137f019fd50f0269390d91c7f6a2601b1bee039a4859cfce4934
   languageName: node
   linkType: hard
 

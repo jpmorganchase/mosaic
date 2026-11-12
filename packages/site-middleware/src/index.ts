@@ -13,7 +13,7 @@ export * from './cachedLoaders.js';
 // Canonical document/config context, including aliases and folder indexes.
 export * from './resolveContent.js';
 // Standalone cache-tag constants — importable without dragging in
-// `cachedLoaders.ts`' fs/gray-matter dependencies. The
+// `cachedLoaders.ts`' fs/front matter dependencies. The
 // `/api/revalidate` route imports from here directly so Next.js' NFT
 // trace stays small.
 export * from './cacheTags.js';

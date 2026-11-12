@@ -23,7 +23,7 @@ import { isSafeRoute } from '../../../lib/routes';
 export interface PersistInput {
   /** Route the edited content lives at, e.g. `/foo/bar`. */
   route: string;
-  /** New markdown content (gray-matter front-matter included). */
+  /** New markdown content (YAML front matter included). */
   markdown: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)

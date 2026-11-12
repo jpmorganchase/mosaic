@@ -23,7 +23,7 @@
  */
 
 import { useMemo } from 'react';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 
 import type { RawSourceInput } from '../Editor';
 import { FrontmatterEditor } from './FrontmatterEditor';
@@ -82,7 +82,7 @@ export const FrontmatterPanel = ({
   const parsedRaw = useMemo(() => {
     if (rawSource?.kind !== 'raw') return null;
     try {
-      const { data } = matter(rawSource.bytes);
+      const { data } = parseFrontmatter(rawSource.bytes);
       return (data ?? {}) as Record<string, unknown>;
     } catch (e) {
       console.warn('[mosaic-content-editor] Failed to parse raw frontmatter:', e);

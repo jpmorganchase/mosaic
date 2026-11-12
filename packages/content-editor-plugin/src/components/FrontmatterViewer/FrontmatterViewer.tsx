@@ -52,12 +52,15 @@
  * fidelity for those shapes or balloon into a per-field schema
  * map we'd have to keep in sync with every layout / plugin.
  * YAML matches the on-disk representation byte-for-byte
- * (`gray-matter.stringify` is the same code path that wrote
+ * (`stringifyFrontmatter` is the same code path that wrote
  * the file), so authors recognise the layout instantly.
  */
 
 import { useMemo } from 'react';
-import matter from 'gray-matter';
+import {
+  parseFrontmatter,
+  stringifyFrontmatter
+} from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { Banner, BannerContent, Text } from '@salt-ds/core';
 
 import type { RawSourceInput } from '../Editor';
@@ -90,9 +93,9 @@ export interface FrontmatterViewerProps {
  * Empty / missing meta serialises to a placeholder so the pane
  * doesn't look broken on pages that genuinely have none.
  *
- * gray-matter is happy to stringify with an empty body; we then
+ * `stringifyFrontmatter` is happy to stringify with an empty body; we then
  * slice off the leading/trailing fence lines it adds. Using
- * gray-matter (rather than `js-yaml` directly) keeps the output
+ * `stringifyFrontmatter` (rather than `js-yaml` directly) keeps the output
  * formatting consistent with what's written to disk by the
  * persist workflow.
  */
@@ -101,9 +104,9 @@ function metaToYaml(meta: Record<string, unknown> | undefined): string {
     return '# No frontmatter on this page.';
   }
   try {
-    const full = matter.stringify('', meta);
+    const full = stringifyFrontmatter('', meta);
     // Strip trailing whitespace BEFORE removing the closing
-    // fence — gray-matter emits `---\n\n` for non-trivial values
+    // fence — `stringifyFrontmatter` emits `---\n\n` for non-trivial values
     // and the naive `/---\r?\n?$/` regex wouldn't anchor across
     // the blank line, leaving a stray `---` at the bottom of
     // the pane.
@@ -124,12 +127,12 @@ function metaToYaml(meta: Record<string, unknown> | undefined): string {
  * Parse the YAML frontmatter out of a raw `.mdx`/`.md` file. The
  * raw bytes come from `/_mosaic-raw/*` (see `getMdxRawSource` in
  * `mosaic-site-middleware`), which is the on-disk file verbatim
- * — `matter()` returns exactly what `git diff` would show in the
+ * — `parseFrontmatter()` returns exactly what `git diff` would show in the
  * frontmatter block.
  */
 function parseRawFrontmatter(bytes: string): Record<string, unknown> {
   try {
-    const { data } = matter(bytes);
+    const { data } = parseFrontmatter(bytes);
     return (data ?? {}) as Record<string, unknown>;
   } catch (e) {
     console.warn('[mosaic-content-editor] Failed to parse raw frontmatter:', e);

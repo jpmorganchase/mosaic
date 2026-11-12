@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
 import type {
@@ -162,7 +162,10 @@ async function createPullRequest(
       }
 
       try {
-        nextMeta = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
+        nextMeta = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+          string,
+          unknown
+        >;
         // See the matching synthesise note in
         // `GitHubPullRequestWorkflow.ts` — the on-disk `Page`
         // type requires `fullPath`, but for a brand-new page
@@ -190,7 +193,7 @@ async function createPullRequest(
       nextMeta = metadata as Record<string, unknown>;
       if (typeof frontmatter === 'string') {
         try {
-          const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+          const parsed = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
             string,
             unknown
           >;
@@ -220,7 +223,7 @@ async function createPullRequest(
     }
 
     // Belt-and-braces guard: strip every `undefined` value from the
-    // frontmatter tree before handing it to `gray-matter` →
+    // frontmatter tree before handing it to `stringifyFrontmatter` →
     // `js-yaml`. See `./stripUndefined.ts` for the full rationale.
     const cleanMeta = stripUndefined(nextMeta) as Record<string, unknown>;
     const updatedPage = { ...cleanMeta, content: markdown } as unknown as Parameters<

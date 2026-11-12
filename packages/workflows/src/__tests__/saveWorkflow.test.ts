@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -96,7 +96,7 @@ describe.each([
       isNewPage: true
     });
 
-    const written = matter(
+    const written = parseFrontmatter(
       await fs.promises.readFile(path.join(mocks.repoDir, 'content/new-section.mdx'))
     );
     expect(written.data).toMatchObject({ title: 'New section', layout: 'DetailBase' });
