@@ -1,0 +1,15 @@
+.git
+plans
+**/node_modules
+**/.tmp
+**/.turbo
+**/dist
+**/.next
+**/out
+**/coverage
+**/test-results
+**/.env
+**/.env.*
+.yarn/cache
+.yarn/install-state.gz
+.yarn/unplugged

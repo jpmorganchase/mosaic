@@ -1,37 +1,23 @@
-FROM node:24-alpine AS  base
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
-
-# Install dependencies only when needed
-FROM base AS deps
+FROM node:24-bookworm-slim AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY package.json yarn.lock* ./
-RUN  yarn --frozen-lockfile && yarn cache clean --all;
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# The root context includes every workspace manifest and the pinned Yarn release.
 COPY . .
-RUN yarn build:cli
+RUN corepack enable && yarn install --immutable
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN yarn build
 
-
-# Production image, copy all the files and run mosaic
-FROM base AS runner
+FROM node:24-bookworm-slim AS runner
+RUN apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 mosaicfs
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder --chown=mosaicfs:nodejs /app/dist ./
-COPY --from=builder --chown=mosaicfs:nodejs /app/mosaic.config.mjs ./
-RUN mkdir ./docs
-RUN chown -R mosaicfs:nodejs ./docs
-RUN chown mosaicfs:nodejs ./
-
-USER mosaicfs:nodejs
+COPY --from=builder /app/node_modules ./node_modules
+# Keep workspace targets for the node_modules links and dynamically loaded plugins.
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/docs ./docs
+COPY --from=builder /app/packages/cli/mosaic.config.mjs ./mosaic.config.mjs
+COPY --from=builder /app/packages/cli/fs.config.js ./fs.config.js
+RUN mkdir .tmp && chown node:node .tmp
+ENV NODE_ENV=production
+USER node
 EXPOSE 8080
-
-ENV PORT=8080
-
-CMD ["sh", "-c", "node index.mjs serve -c ./mosaic.config.mjs --port ${PORT}"]
+CMD ["node", "packages/cli/dist/index.mjs", "serve", "-c", "./mosaic.config.mjs", "--host", "0.0.0.0", "--port", "8080"]

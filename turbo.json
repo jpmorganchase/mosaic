@@ -4,35 +4,168 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**"],
+      "env": [
+        "MOSAIC_MODE",
+        "MOSAIC_OUTPUT",
+        "MOSAIC_SNAPSHOT_DIR",
+        "MOSAIC_ACTIVE_MODE_URL",
+        "MOSAIC_ACTIVE_MODE_CACHE",
+        "MOSAIC_DISABLE_LOADER_CACHE",
+        "MOSAIC_AUTH_ENABLED",
+        "MOSAIC_EDITORS",
+        "MOSAIC_DEV_FAKE_AUTH",
+        "MOSAIC_DEV_BYPASS_CAPABILITY_GATE",
+        "SITE_URL",
+        "AUTH_SECRET",
+        "NEXTAUTH_SECRET"
+      ]
     },
     "build:snapshot": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
     },
     "build:snapshot:latest": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
     },
     "clean": {},
     "dev": {
-      "cache": false
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
     },
     "deploy": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
     },
     "e2e": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "NEXT_PUBLIC_*",
+        "PLAYWRIGHT_*",
+        "SITE_URL",
+        "BITBUCKET_API_URL"
+      ]
     },
     "e2e:codegen": {
       "cache": false
     },
     "gen:snapshot": {
-      "outputs": ["./packages/site/public/snapshots/latest/**"]
+      "cache": false,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
     },
     "lint": {},
-    "serve": {},
-    "serve:snapshot:file": {},
+    "serve": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
+    },
+    "serve:snapshot:file": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
+    },
     "test": {},
-    "types": {}
+    "types": {},
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "MOSAIC_*",
+        "AUTH_*",
+        "NEXTAUTH_*",
+        "NEXT_PUBLIC_*",
+        "SITE_URL",
+        "PORT",
+        "HOSTNAME",
+        "GITHUB_ID",
+        "GITHUB_SECRET",
+        "BITBUCKET_API_URL"
+      ]
+    }
   },
   "globalDependencies": ["tsconfig.json"]
 }

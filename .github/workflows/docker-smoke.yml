@@ -1,0 +1,26 @@
+name: Docker examples
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'examples/docker/**'
+      - '.dockerignore'
+      - '.github/workflows/docker-smoke.yml'
+      - 'turbo.json'
+      - 'packages/**'
+      - 'yarn.lock'
+      - 'package.json'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [active, snapshot, static]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build and serve the documented root-context images
+        run: bash examples/docker/smoke.sh ${{ matrix.mode }}

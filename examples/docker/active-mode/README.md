@@ -12,7 +12,8 @@ repos appear without a redeploy.
 | `Dockerfile.fs`   | `mosaic-fs`   | Runs `mosaic serve` — the content/file server                                |
 | `Dockerfile.site` | `mosaic-site` | Runs the Next.js site (App Router), reads content from `mosaic-fs` over HTTP |
 
-The site image is built from `packages/site`, which is App Router only
+All images use the repository root as their build context. The site in
+`packages/site` is App Router only
 (see [`packages/site/README.md`](../../../packages/site/README.md)). It
 talks to `mosaic-fs` via `MOSAIC_ACTIVE_MODE_URL=http://mosaic-fs:8080`.
 
@@ -37,9 +38,11 @@ docker run -d --name mosaic-site --network mosaic-net -p 3000:3000 mosaic-site
 # → http://localhost:3000/mosaic/index
 ```
 
-The mosaic-site `package.json` already ships `docker:build` and
-`docker:start` scripts that wrap a single-container variant of the same
-thing.
+The content image includes the checked-in `docs/` and uses the CLI example
+configuration. Mount your content at `/app/docs` or supply a custom configuration
+for another source. The CLI binds to `0.0.0.0` explicitly; local `mosaic serve`
+continues to default to `localhost`. Set `--host` when using another bind address.
+The site runner uses the generated `packages/site/server.js` from Next standalone output.
 
 ## When to use this
 

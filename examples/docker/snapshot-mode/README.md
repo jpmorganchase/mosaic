@@ -9,16 +9,17 @@ The site image is built from `packages/site`, which is App Router only
 
 ## Prerequisites
 
-Generate a snapshot first:
+The checked-in `packages/site/snapshots/latest` works out of the box. To refresh it:
 
 ```bash
+yarn install --immutable
+yarn build
 yarn workspace @jpmorganchase/mosaic-site gen:snapshot
 # → packages/site/snapshots/latest/
 ```
 
-The Dockerfile expects a `snapshots/` directory at the build context
-root. You can either run the build from `packages/site/` directly or
-symlink/copy the directory into the build context.
+Always build from the repository root. The Dockerfile installs all workspaces
+with the pinned Yarn release and reads `packages/site/snapshots/latest`.
 
 ## Build & run
 
@@ -32,9 +33,10 @@ docker run --rm -p 3000:3000 mosaic-snapshot
 
 ## How it works
 
-The Dockerfile uses a separate `snapshots` build stage so a snapshot
-change does not invalidate the dependency-install or build layers. At
-runtime the container sets:
+The Dockerfile builds internal packages and the site, then copies Next
+standalone output and the snapshot into the same monorepo layout. Snapshot
+changes intentionally rebuild the site so pre-rendered data stays consistent.
+At runtime the container sets:
 
 - `MOSAIC_MODE=snapshot-file`
 - `MOSAIC_SNAPSHOT_DIR=snapshots/latest`
