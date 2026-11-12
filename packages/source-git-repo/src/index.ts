@@ -11,7 +11,6 @@ import {
   startWith
 } from 'rxjs';
 import path from 'path';
-import { merge as lodashMerge } from 'lodash-es';
 import { z } from 'zod';
 
 import type { Page, Source } from '@jpmorganchase/mosaic-types';
@@ -24,6 +23,7 @@ import localFolderSource from '@jpmorganchase/mosaic-source-local-folder';
 
 import Repo from './Repo.js';
 import fromCommitChange from './fromCommitChange.js';
+import buildLastModified from './buildLastModified.js';
 
 export { Repo };
 export { getWorktreeDir } from './getWorktreeDir.js';
@@ -211,40 +211,5 @@ const GitRepoSource: Source<GitRepoSourceOptions> = {
     await repoRegistry.get(getRepoKey(repoUrl, branch, remote))?.checkForChanges();
   }
 };
-
-/**
- * Build the `pages` array enriched with `lastModified` for the current
- * emission. Primes the per-page commit-date cache in `repo` via a
- * single bulk `git log` for `rootDir`'s subtree, then per-page lookups
- * are O(1) map hits.
- */
-async function buildLastModified(
-  repo: Repo,
-  rootDir: string,
-  prefixDir: string | undefined,
-  pages: Page[]
-): Promise<Page[]> {
-  if (!pages.length) return pages;
-
-  const subfolderRel = path.relative(repo.dir, rootDir) || '.';
-  // Side-effect: populates `repo`'s commit-date cache for everything
-  // under `subfolderRel`. We don't use the returned `Map` directly
-  // because the per-page lookup below also handles paths the bulk
-  // call missed (e.g. file additions between the bulk call and the
-  // per-page resolve).
-  await repo.getLatestCommitDateMap(subfolderRel);
-
-  const out: Page[] = [];
-  for (const page of pages) {
-    const baseDir = path.join(rootDir, page.fullPath.replace(prefixDir || '', ''));
-    const relPath = path.relative(repo.dir, baseDir);
-    out.push(
-      lodashMerge({}, page, {
-        lastModified: await repo.getLatestCommitDate(relPath)
-      })
-    );
-  }
-  return out;
-}
 
 export default GitRepoSource;

@@ -1,4 +1,5 @@
 import { execFileSync, type SpawnOptions } from 'node:child_process';
+import cp from 'child_process';
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -97,6 +98,51 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     fs.unlinkSync(path.join(repo.dir, '.git'));
 
     await expect(repo.currentLocalRevision()).rejects.toThrow('not a git repository');
+  });
+
+  test('THEN timestamp batches pin both bulk and fallback queries to their captured revision', async () => {
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    const expected =
+      Number(git(repo.dir, 'log', '-1', '--format=%ct', revision!, '--', 'index.mdx').trim()) *
+      1000;
+    const commands = vi.spyOn(cp, 'spawn');
+    const dates = await repo.getLatestCommitDateMap('.', revision);
+    expect(dates.get('index.mdx')).toBe(expected);
+    expect(await repo.getLatestCommitDate('index.mdx', revision)).toBe(expected);
+    expect(commands.mock.calls.filter(([, args]) => args?.[0] === 'rev-parse')).toHaveLength(0);
+    expect(commands.mock.calls.filter(([, args]) => args?.[0] === 'log')).toHaveLength(1);
+
+    repo.invalidateCommitDateCache();
+    expect(await repo.getLatestCommitDate('index.mdx', revision)).toBe(expected);
+    expect(commands.mock.calls.at(-1)?.[1]).toEqual([
+      'log',
+      '-1',
+      '--format=%ct',
+      revision,
+      '--',
+      'index.mdx'
+    ]);
+    const before = Date.now();
+    expect(await repo.getLatestCommitDate('missing.mdx', revision)).toBeGreaterThanOrEqual(before);
+  });
+
+  test('THEN the timestamp cache does not reuse a prior revision after HEAD advances', async () => {
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    await repo.getLatestCommitDateMap('.', revision);
+    push('index.mdx', '# Updated');
+    await repo.fetch();
+    await repo.reset();
+    const commands = vi.spyOn(cp, 'spawn');
+    const expected =
+      Number(git(repo.dir, 'log', '-1', '--format=%ct', '--', 'index.mdx').trim()) * 1000;
+    expect(await repo.getLatestCommitDate('index.mdx')).toBe(expected);
+    const current = await repo.currentLocalRevision();
+    expect(current).not.toBe(revision);
+    expect(
+      commands.mock.calls.some(([, args]) => args?.[0] === 'log' && args.includes(current!))
+    ).toBe(true);
   });
 
   test('THEN `checkForChanges` picks up a push without waiting for the interval', async () => {
