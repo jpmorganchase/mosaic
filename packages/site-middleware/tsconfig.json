@@ -2,6 +2,9 @@
   "extends": "../../tsconfig.bundle.json",
   "compilerOptions": {
     "emitDeclarationOnly": false,
+    // The MDX serializer exposes its types through package exports.
+    // This package is consumed by the Next.js host's bundler.
+    "moduleResolution": "bundler",
     "rootDir": "./src",
     "outDir": "./dist"
   },

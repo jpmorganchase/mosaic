@@ -181,9 +181,10 @@ export interface EditorProps {
    */
   isNewPage?: boolean;
   /**
-   * Route of the page being edited. Used when the content's own
-   * frontmatter doesn't carry a `route` — always the case for a
-   * brand-new page, whose template only has authored keys.
+   * Backing route to save, supplied by the host. Takes precedence over
+   * the public frontmatter route for persistence, so aliases and
+   * permalinks still edit their source file. Also supplies the preview
+   * route when a new page's template has no frontmatter route.
    */
   route?: string;
 }
@@ -216,6 +217,9 @@ const EditorInner: FC<EditorProps> = ({
     () => (typeof parsedMeta.route === 'string' || !route ? parsedMeta : { ...parsedMeta, route }),
     [parsedMeta, route]
   );
+  // Keep public navigation metadata in the preview. Only persistence
+  // uses the host's backing file, including rename source/extension.
+  const saveMeta = useMemo(() => (route ? { ...meta, route } : meta), [meta, route]);
   const { mode } = useEditorMode();
 
   const sourceHandleRef = useRef<SourceEditorHandle | null>(null);
@@ -681,7 +685,7 @@ const EditorInner: FC<EditorProps> = ({
             <PersistDialog
               open={saveOpen}
               onOpenChange={setSaveOpen}
-              meta={meta}
+              meta={saveMeta}
               // Prefer the round-tripped baseline (captured on
               // the first WYSIWYG mount) so the diff compares
               // Lexical-output against Lexical-output and isn't

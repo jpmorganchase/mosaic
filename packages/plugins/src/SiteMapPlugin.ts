@@ -7,6 +7,8 @@ interface SiteMapPluginConfigData {
 
 interface SiteMapPluginOptions {
   siteUrl: string;
+  /** Glob patterns excluded only from the sitemap, not from other plugins. */
+  exclude?: string[];
 }
 
 const SiteMapPlugin: PluginType<
@@ -36,16 +38,18 @@ const SiteMapPlugin: PluginType<
         .join('\n')
     );
 
-    const urlSet = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n ${urls}\n\n</urlset>`;
+    const urlSet = `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n ${urls.join(
+      '\n'
+    )}\n\n</urlset>`;
     await sharedFilesystem.promises.writeFile('/sitemap.xml', urlSet);
   },
   // Store a sitemap for just this source
-  async $beforeSend(mutableFilesystem, { config, ignorePages }) {
+  async $beforeSend(mutableFilesystem, { config, ignorePages }, options) {
     config.setData({
       sitemaps: [
         (await mutableFilesystem.promises.glob('**', {
           onlyFiles: true,
-          ignore: ignorePages.map(ignore => `**/${ignore}`),
+          ignore: [...ignorePages.map(ignore => `**/${ignore}`), ...(options?.exclude ?? [])],
           cwd: '/'
         })) as Array<string>
       ]

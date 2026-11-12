@@ -39,7 +39,7 @@ const Salt = { Card, GridItem, GridLayout, SplitLayout, StackLayout, Text };
 
 const hostComponents = { Salt, Sitemap };
 
-export const mdxComponents = {
+export const mdxComponents: typeof mosaicDefaultComponents & typeof hostComponents = {
   ...mosaicDefaultComponents,
   ...hostComponents
 };

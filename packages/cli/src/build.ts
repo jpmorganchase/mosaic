@@ -34,13 +34,19 @@ export default async function build(config, targetDir, options) {
     items.map(item => fs.promises.rm(path.join(pathDir, item), { recursive: true, force: true }))
   );
 
-  await mosaic.start();
-  // If `scope` arg was used, scope the filesystem to those namespaces
-  const filesystem = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
-  let calls = 0;
-  mosaic.onSourceUpdate(async () => {
+  const sourceCount = config.sources.filter(source => !source.disabled).length;
+  const updatedSources = new Set<symbol>();
+  let startupComplete = false;
+  let writingSnapshot = false;
+  const writeSnapshot = async () => {
     try {
-      if (++calls === config.sources.length) {
+      if (startupComplete && !writingSnapshot && updatedSources.size === sourceCount) {
+        writingSnapshot = true;
+        // Scoping copies the mounted source filesystems, so wait until startup
+        // has mounted every source before constructing the scoped view.
+        const filesystem = Array.isArray(scope)
+          ? mosaic.filesystem.scope(scope)
+          : mosaic.filesystem;
         const symlinks = filesystem.symlinksToJSON();
         const allFiles = await filesystem.promises.glob('**', {
           cwd: '/',
@@ -110,14 +116,30 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
         process.chdir(pwd);
         console.log(
           `[Mosaic] filesystem for ${
-            Array.isArray(scope) ? scope.length : config.sources.length
+            Array.isArray(scope) ? scope.length : sourceCount
           } source(s) written to disk at '${pathDir}'`
         );
-        mosaic.stop();
+        unsubscribe();
+        await mosaic.stop();
       }
     } catch (e) {
       console.error(e);
       process.exit(1);
     }
+  };
+
+  // A fast source can publish its first snapshot while another source is still
+  // starting. Subscribe first, and count sources rather than repeated updates.
+  const unsubscribe = mosaic.onSourceUpdate((_filesystem, source) => {
+    updatedSources.add(source.id);
+    return writeSnapshot();
   });
+  try {
+    await mosaic.start();
+    startupComplete = true;
+    await writeSnapshot();
+  } catch (error) {
+    unsubscribe();
+    throw error;
+  }
 }

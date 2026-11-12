@@ -1,6 +1,5 @@
-import React, { ReactElement, useEffect } from 'react';
+import React, { ReactElement, useEffect, useMemo } from 'react';
 import warning from 'warning';
-import { useMemoOne } from 'use-memo-one';
 
 import { View } from './View';
 import type { ViewProps } from './View';
@@ -13,7 +12,7 @@ export type ViewStackProps<T> = {
 
 export function ViewStack<T>({ children, currentViewId }: ViewStackProps<T>) {
   let defaultView: ReactElement | null = null;
-  const childrenArray = useMemoOne(
+  const childrenArray = useMemo(
     () => React.Children.toArray(children) as ReactElement<ViewProps<T>>[],
     [children]
   );

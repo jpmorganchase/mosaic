@@ -15,6 +15,12 @@
   "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
+    "./frame": {
+      "types": "./dist/Frame/index.d.ts",
+      "import": "./dist/Frame/index.js",
+      "node": "./dist/Frame/index.js",
+      "default": "./dist/Frame/index.js"
+    },
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
