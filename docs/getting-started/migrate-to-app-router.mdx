@@ -221,6 +221,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 | `MOSAIC_ADMIN_SECRET`                               | Protects the [admin API](../configure/admin/index). Send it in the `x-mosaic-admin-secret` header, as a bearer token, or as the password in the browser's login prompt. If it isn't set, the admin API is only open when `NODE_ENV=development`. |
 | `MOSAIC_CORS_ORIGINS`                               | Comma-separated origins allowed to call the CLI from a browser. CORS is now off by default.                                                                                                                                                      |
 | `MOSAIC_REVALIDATE_URL`, `MOSAIC_REVALIDATE_SECRET` | When both are set, the CLI calls the site's `/api/revalidate` whenever a source updates. `mosaic serve` refuses to start when the URL is set without the secret.                                                                                 |
+| `MOSAIC_BITBUCKET_WEBHOOK_SECRET`                   | Optional. Enables `POST /_mosaic_/webhooks/bitbucket`, which refreshes git repo sources as soon as Bitbucket reports a push. See [Refresh on push](../configure/sources/git-repo-source#refresh-on-push-bitbucket-webhooks).                     |
 
 ## 7. Check how the CLI behaves
 

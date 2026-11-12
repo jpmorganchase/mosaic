@@ -11,20 +11,21 @@ There are several admin urls exposed by Mosaic that provide an insight into how 
 
 ## Endpoints
 
-| Endpoint                   | Method | Description                                   | Params                 |
-| -------------------------- | ------ | --------------------------------------------- | ---------------------- |
-| `/_mosaic_/config`         | GET    | Returns the JSON from the Mosaic config file  | n/a                    |
-| `/_mosaic_/content/dump`   | GET    | Returns the entire mosaic filesystem as JSON  | n/a                    |
-| `/_mosaic_/sources/list`   | GET    | Returns a collection of active sources        | n/a                    |
-| `/_mosaic_/source/add`     | POST   | Adds the source                               | definition & isPreview |
-| `/_mosaic_/source/stop`    | PUT    | Stops the source with the provided name       | name                   |
-| `/_mosaic_/source/restart` | PUT    | Restarts the source with the provided name    | name                   |
-| `/_mosaic_/tags/list`      | GET    | Returns the tag names known to the filesystem | n/a                    |
+| Endpoint                       | Method | Description                                              | Params                 |
+| ------------------------------ | ------ | -------------------------------------------------------- | ---------------------- |
+| `/_mosaic_/config`             | GET    | Returns the JSON from the Mosaic config file             | n/a                    |
+| `/_mosaic_/content/dump`       | GET    | Returns the entire mosaic filesystem as JSON             | n/a                    |
+| `/_mosaic_/sources/list`       | GET    | Returns a collection of active sources                   | n/a                    |
+| `/_mosaic_/source/add`         | POST   | Adds the source                                          | definition & isPreview |
+| `/_mosaic_/source/stop`        | PUT    | Stops the source with the provided name                  | name                   |
+| `/_mosaic_/source/restart`     | PUT    | Restarts the source with the provided name               | name                   |
+| `/_mosaic_/tags/list`          | GET    | Returns the tag names known to the filesystem            | n/a                    |
+| `/_mosaic_/webhooks/bitbucket` | POST   | Refreshes git repo sources when Bitbucket reports a push | Bitbucket push event   |
 
 ## Authentication
 
-Every endpoint except `/_mosaic_/tags/list` can reveal or change server state, so they are protected
-by `MOSAIC_ADMIN_SECRET` on the CLI process:
+Every endpoint except `/_mosaic_/tags/list` and `/_mosaic_/webhooks/bitbucket` can reveal or change
+server state, so they are protected by `MOSAIC_ADMIN_SECRET` on the CLI process:
 
 - **Secret set:** requests must send it. Opening an endpoint in a browser shows a login prompt; enter
   any username and the secret as the password. From scripts, send it as a bearer token (or in an
@@ -43,6 +44,14 @@ by `MOSAIC_ADMIN_SECRET` on the CLI process:
 
 Basic auth sends the secret base64-encoded, not encrypted, so only use it over HTTPS outside local
 development.
+
+## Bitbucket webhooks
+
+`/_mosaic_/webhooks/bitbucket` receives Bitbucket Data Center push events, so git repo sources pick up
+new commits within seconds instead of at their next scheduled check. Bitbucket can't send the admin
+secret, so the endpoint checks the webhook's signature instead: it only exists when
+`MOSAIC_BITBUCKET_WEBHOOK_SECRET` is set, and rejects requests that aren't signed with it (`401`).
+See [Refresh on push](../sources/git-repo-source#refresh-on-push-bitbucket-webhooks) for the setup.
 
 ## Workflows
 

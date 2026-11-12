@@ -29,7 +29,7 @@ describe('GIVEN checkServeEnv', () => {
     expect(checkServeEnv(env)).toEqual([]);
   });
 
-  test.each(['MOSAIC_ADMIN_SECRET', 'MOSAIC_WORKFLOWS_SECRET'])(
+  test.each(['MOSAIC_ADMIN_SECRET', 'MOSAIC_WORKFLOWS_SECRET', 'MOSAIC_BITBUCKET_WEBHOOK_SECRET'])(
     'THEN a blank %s is rejected',
     name => {
       expect(checkServeEnv({ [name]: '   ' })).toEqual([`${name}: must not be blank`]);

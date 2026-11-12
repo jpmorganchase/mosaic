@@ -1,6 +1,7 @@
 import cp from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
+import { lock } from 'proper-lockfile';
 
 import { getCloneRootDir } from './getWorktreeDir.js';
 
@@ -215,6 +216,8 @@ function createRepoURL(repo: string, credentials: string) {
 
 export default class Repo {
   #cloned = false;
+  // The main clone exists before its linked worktree is ready for refreshes.
+  #ready = false;
   #dir = '';
   #cloneRootDir = '';
   #worktreeRootDir = '';
@@ -233,6 +236,10 @@ export default class Repo {
    * O(changed-pages) once primed.
    */
   #commitDateCache: Map<string, { revision: string; date: number }> = new Map();
+
+  /** One entry per active `onCommitChange` subscription; see {@link checkForChanges}. */
+  #commitChangeChecks: Set<() => Promise<void>> = new Set();
+  #refreshPending = false;
 
   constructor(credentials: string, remote = 'origin', branch: string, repo: string) {
     if (!repo) {
@@ -278,10 +285,18 @@ export default class Repo {
   ) {
     const updatedFilesGen = updatedFilesGenerator(this, disableAutoPullChanges);
 
-    let intervalId: NodeJS.Timeout | null = setInterval(async () => {
+    const runCheck = async () => {
       try {
-        if (this.#cloned) {
-          const { value: updatedFiles } = await updatedFilesGen.next();
+        if (this.#ready) {
+          const updatedFiles = await this.#withCheckoutLock(async () => {
+            if (!this.#ready) {
+              // Initialization can fail while this check is waiting for the lock.
+              this.#refreshPending = true;
+              return undefined;
+            }
+            const { value } = await updatedFilesGen.next();
+            return value;
+          });
 
           if (updatedFiles && (disableAutoPullChanges || updatedFiles.length)) {
             callback(updatedFiles);
@@ -291,17 +306,72 @@ export default class Repo {
         console.warn(`[Mosaic][Source-Git] Unsubscribing from \`onCommitChange\` for ${this.name}`);
         unsubscribe();
         errCallback(e);
+        throw e;
       }
+    };
+
+    // Checks in this subscription never overlap. A check requested while one is running (a
+    // webhook arriving mid-poll) runs once more afterwards, since the
+    // running `git fetch` may have started before the push; further
+    // requests share that queued run.
+    let running: Promise<void> | null = null;
+    let queued: Promise<void> | null = null;
+    const check = (): Promise<void> => {
+      if (!intervalId) return Promise.resolve();
+      if (!running) {
+        running = runCheck().finally(() => {
+          running = null;
+        });
+        return running;
+      }
+      if (!queued) {
+        queued = running
+          .finally(() => {
+            queued = null;
+          })
+          .then(check);
+      }
+      return queued;
+    };
+
+    let intervalId: NodeJS.Timeout | null = setInterval(() => {
+      // The source error callback already reported this polling failure.
+      void check().catch(() => {});
     }, updateInterval);
+    this.#commitChangeChecks.add(check);
 
     const unsubscribe = () => {
+      this.#commitChangeChecks.delete(check);
       if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
       }
     };
 
+    this.#flushPendingRefresh();
     return unsubscribe;
+  }
+
+  /**
+   * Runs the `onCommitChange` checks now instead of waiting for their next
+   * interval, e.g. when a push webhook arrives. Changes reach the
+   * subscribers' callbacks as usual. Before initialization or subscription,
+   * requests are coalesced into one check when both are ready.
+   */
+  async checkForChanges() {
+    if (!this.#ready || this.#commitChangeChecks.size === 0) {
+      this.#refreshPending = true;
+      return;
+    }
+    await Promise.all(Array.from(this.#commitChangeChecks, check => check()));
+  }
+
+  #flushPendingRefresh() {
+    if (this.#refreshPending && this.#ready && this.#commitChangeChecks.size > 0) {
+      this.#refreshPending = false;
+      // The source error callback reports failures once the queued check runs.
+      void this.checkForChanges().catch(() => {});
+    }
   }
 
   async pull() {
@@ -515,6 +585,31 @@ export default class Repo {
   }
 
   async init() {
+    await fs.mkdir(path.dirname(this.#cloneRootDir), { recursive: true });
+    await this.#withCheckoutLock(async () => {
+      this.#ready = false;
+      await this.#init();
+      this.#ready = true;
+    });
+    this.#flushPendingRefresh();
+  }
+
+  async #withCheckoutLock<T>(operation: () => Promise<T>): Promise<T> {
+    // Each source has its own worker, but its Git refs and worktrees are on
+    // shared disk. The lock also covers initialization of a missing clone.
+    const release = await lock(this.#cloneRootDir, {
+      realpath: false,
+      stale: 60_000,
+      retries: { retries: 300, factor: 2, minTimeout: 50, maxTimeout: 1000, randomize: true }
+    });
+    try {
+      return await operation();
+    } finally {
+      await release();
+    }
+  }
+
+  async #init() {
     try {
       if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
         console.debug(`[Mosaic][Source-Git] Creating main worktree for repo '${this.#name}'`);

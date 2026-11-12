@@ -5,6 +5,7 @@ import middie from '@fastify/middie';
 
 import fastifyMosaic from './plugins/mosaicFastifyPlugin.js';
 import fastifyMosaicAdmin from './plugins/mosaicAdminPlugin.js';
+import fastifyMosaicWebhooks from './plugins/mosaicWebhooksPlugin.js';
 import fastifyMosaicWorkflows from './plugins/mosaicWorkflowsPlugin.js';
 import { createMosaicInstance } from './plugins/createMosaicInstance.js';
 import { validateServeEnv } from './env.js';
@@ -35,6 +36,10 @@ export default async function serve(config: MosaicConfig, port: number, scope?: 
     prefix: MOSAIC_ADMIN_PREFIX,
     enableSourcePush: config.enableSourcePush
   });
+  // Bitbucket push webhooks refresh git-repo sources straight away instead
+  // of at their next scheduled check. Signed with
+  // `MOSAIC_BITBUCKET_WEBHOOK_SECRET`; disabled without it.
+  await server.register(fastifyMosaicWebhooks, { prefix: `/${MOSAIC_ADMIN_PREFIX}` });
 
   // intentionally unused request parameter
   server.get('/actuator/keepalive', async (_request, reply) => {

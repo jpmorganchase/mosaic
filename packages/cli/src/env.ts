@@ -88,6 +88,7 @@ export const serveEnvSchema = z
   .object({
     MOSAIC_ADMIN_SECRET: secret,
     MOSAIC_WORKFLOWS_SECRET: secret,
+    MOSAIC_BITBUCKET_WEBHOOK_SECRET: secret,
     MOSAIC_CORS_ORIGINS: originList,
     MOSAIC_REVALIDATE_URL: httpUrl,
     MOSAIC_REVALIDATE_SECRET: secret,
