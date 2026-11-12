@@ -17,10 +17,8 @@ afterEach(() => vi.restoreAllMocks());
 
 test('Git errors preserve safe diagnostics while scrubbing repeated URLs and echoed credentials', async () => {
   const credential = 'audit-user:synthetic token/@';
-  const url = `https://${credential
-    .split(':')
-    .map(encodeURIComponent)
-    .join(':')}@example.test/docs.git`;
+  const encodedCredential = credential.split(':').map(encodeURIComponent).join(':');
+  const url = `https://${encodedCredential}@example.test/docs.git`;
   vi.spyOn(console, 'debug').mockImplementation(() => {});
   vi.spyOn(cp, 'spawn').mockImplementation(() => {
     const child = Object.assign(new EventEmitter(), {
