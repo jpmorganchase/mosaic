@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
 export const credentialsSchema = z
-  .string({ required_error: 'Please provide credentials to access the repository' })
+  .string({
+    error: issue =>
+      issue.input === undefined ? 'Please provide credentials to access the repository' : undefined
+  })
   .regex(/[:]/, 'credentials must be in the form username:token');

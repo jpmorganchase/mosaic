@@ -29,7 +29,7 @@ const readMeSchema = z.object({
 });
 export const schema = baseSchema.merge(
   z.object({
-    readme: z.array(readMeSchema).nonempty()
+    readme: z.tuple([readMeSchema], readMeSchema)
   })
 );
 

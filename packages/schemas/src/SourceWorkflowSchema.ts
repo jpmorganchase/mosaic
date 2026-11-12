@@ -12,7 +12,7 @@ export const sourceWorkflowSchema = z.object({
   /**
    * action to run when workflow is triggered
    */
-  action: z.any()
+  action: z.any().optional()
 });
 
 export type SourceWorkflow = z.infer<typeof sourceWorkflowSchema>;

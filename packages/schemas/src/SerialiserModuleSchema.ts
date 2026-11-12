@@ -4,7 +4,8 @@ import { pluginModuleSchema } from './PluginModuleSchema.js';
 export const serialiserModuleSchema = pluginModuleSchema.merge(
   z.object({
     filter: z
-      .any({ required_error: 'A regex is required to filter pages' })
+      .any()
+      .optional()
       .transform(val => new RegExp(val))
   })
 );

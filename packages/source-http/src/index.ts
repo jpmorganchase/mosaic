@@ -15,10 +15,10 @@ export { createHttpSource, HttpSourceResponseTransformerType, httpSourceCreatorS
 
 export const schema = httpSourceCreatorSchema.merge(
   z.object({
-    transformResponseToPagesModulePath: z.string({
-      description: `The path to a module that exports a function to transform request responses into Pages. The transformer must be a default export.
+    transformResponseToPagesModulePath: z.string().describe(
+      `The path to a module that exports a function to transform request responses into Pages. The transformer must be a default export.
       If omitted, the raw request responses are returned unmodified`
-    })
+    )
   })
 );
 

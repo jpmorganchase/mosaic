@@ -30,7 +30,9 @@ export type HttpSourceResponseTransformerType<TResponse, TPage> = ResponseTransf
 export const httpSourceCreatorSchema = z.object({
   schedule: sourceScheduleSchema.optional(),
   endpoints: z.array(z.string().url()).optional().default([]),
-  prefixDir: z.string({ required_error: 'Please provide a prefixDir' }),
+  prefixDir: z.string({
+    error: issue => (issue.input === undefined ? 'Please provide a prefixDir' : undefined)
+  }),
   requestTimeout: z.number().optional().default(5000),
   proxyEndpoint: z.string().url().optional(),
   noProxy: z

@@ -15,28 +15,22 @@ const baseSchema = httpSourceCreatorSchema.omit({
   transformerOptions: true // stories is the prop we need for this so no point duplicating it in source config
 });
 
-export const schema = baseSchema.merge(
-  z.object({
-    stories: z
-      .array(
-        z.object({
-          description: z.string(),
-          storiesUrl: z.string().url().optional(),
-          storyUrlPrefix: z.string().url(),
-          proxyEndpoint: z.string().url().optional(),
-          meta: z
-            .object({ tags: z.array(z.string()).optional(), data: z.object({}).passthrough() })
-            .optional(),
-          filter: z
-            .any()
-            .transform(val => new RegExp(val))
-            .optional(),
-          filterTags: z.array(z.string()).optional()
-        })
-      )
-      .nonempty()
-  })
-);
+const storySchema = z.object({
+  description: z.string(),
+  storiesUrl: z.string().url().optional(),
+  storyUrlPrefix: z.string().url(),
+  proxyEndpoint: z.string().url().optional(),
+  meta: z
+    .object({ tags: z.array(z.string()).optional(), data: z.object({}).passthrough() })
+    .optional(),
+  filter: z
+    .any()
+    .transform(val => new RegExp(val))
+    .optional(),
+  filterTags: z.array(z.string()).optional()
+});
+
+export const schema = baseSchema.extend({ stories: z.tuple([storySchema], storySchema) });
 
 export type StorybookSourceOptions = z.infer<typeof schema>;
 

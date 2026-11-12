@@ -57,6 +57,6 @@
     "deepmerge": "^4.2.2",
     "fastify": "^5.12.5",
     "fastify-plugin": "^6.0.0",
-    "zod": "^3.22.3"
+    "zod": "^4.6.7"
   }
 }
