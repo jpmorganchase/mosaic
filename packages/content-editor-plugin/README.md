@@ -37,7 +37,7 @@ Successful GitHub and Bitbucket workflows send `message: { pullRequestUrl }`, wh
 
 ## Navigation protection
 
-Dirty drafts and pending saves prompt before ordinary links or programmatic navigation. Completed saves do not prompt. Back/Forward navigation within the same document is guarded when the browser exposes a **cancelable Navigation API `navigate` event**. Keep editing retains the mounted editor; Discard follows the original history entry. Mode-only switches in edit and create sessions are allowed.
+Dirty drafts and pending saves prompt before ordinary links or programmatic navigation. Completed saves do not prompt until the draft changes again, including through undo or redo. Back/Forward navigation within the same document is guarded when the browser exposes a **cancelable Navigation API `navigate` event**. Keep editing retains the mounted editor; Discard follows the original history entry. Mode-only switches in edit and create sessions are allowed.
 
 This does not provide universal Back/Forward protection: browsers without the Navigation API, and traversals the browser marks non-cancelable, continue normally and can lose unsaved drafts. Browsers deliberately limit cancellation of repeated traversal attempts. Cross-document navigation continues to rely on the native `beforeunload` prompt. See the [HTML navigation specification](https://html.spec.whatwg.org/dev/nav-history-apis.html#the-navigate-event).
 

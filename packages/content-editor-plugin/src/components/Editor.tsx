@@ -218,10 +218,11 @@ const EditorInner: FC<EditorProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   // Processed metadata belongs to the preview. Only authored bytes may
   // seed a save: plugins can expand fragments or otherwise rewrite bodies.
-  const { data: parsedMeta } = parseFrontmatter(content);
-  const { content: markdown } = parseFrontmatter(
-    rawSource?.kind === 'raw' ? rawSource.bytes : content
-  );
+  // Memoised so `meta` and the debounced compilers derived from it keep
+  // their identity; a new identity cancels any pending preview compile.
+  const parsedMeta = useMemo(() => parseFrontmatter(content).data, [content]);
+  const authoredInput = rawSource?.kind === 'raw' ? rawSource.bytes : content;
+  const markdown = useMemo(() => parseFrontmatter(authoredInput).content, [authoredInput]);
   const hasAuthoredSource = rawSource?.kind === 'raw' || isNewPage;
   const canSave = hasAuthoredSource && !hasInvalidFrontmatterEdits;
   const meta = useMemo(
@@ -623,9 +624,12 @@ const EditorInner: FC<EditorProps> = ({
     const yaml = frontmatterSnapshotRef.current?.();
     setHasInvalidFrontmatterEdits(yaml === undefined);
     if (typeof yaml === 'string') {
+      // Compare with the previous draft, not the on-disk baseline: after a
+      // save, reverting a field to its on-disk value is still unsaved work.
+      const previousYaml = lastAuthoredYamlRef.current ?? originalFrontmatterYamlRef.current;
       lastAuthoredYamlRef.current = yaml;
       // Frontmatter-only edits must arm the unsaved-changes guard too.
-      if (yaml !== originalFrontmatterYamlRef.current) markDirty();
+      if (yaml !== previousYaml) markDirty();
     } else {
       // Invalid drafts are still unsaved work, even without serializable YAML.
       markDirty();
