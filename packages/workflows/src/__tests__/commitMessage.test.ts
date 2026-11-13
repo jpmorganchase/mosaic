@@ -44,4 +44,16 @@ describe('source commit messages', () => {
     expect(commitMessageTitle('\nSummary\n\nBody', 'Docs')).toBe('Docs - Summary');
     expect(commitMessageTitle('Summary\nBody', '')).toBe('Summary');
   });
+
+  test('bounds the complete provider title including a long prefix', () => {
+    expect(commitMessageTitle('a'.repeat(255), '')).toBe('a'.repeat(255));
+    expect(commitMessageTitle('a'.repeat(248), 'Docs')).toBe(`Docs - ${'a'.repeat(248)}`);
+    expect(commitMessageTitle('a'.repeat(300), 'Docs')).toBe(`Docs - ${'a'.repeat(247)}…`);
+    expect(commitMessageTitle('Summary', 'p'.repeat(300))).toBe(`${'p'.repeat(254)}…`);
+  });
+
+  test('does not split a supplementary Unicode character at the title boundary', () => {
+    expect(commitMessageTitle(`${'a'.repeat(253)}📝 more`, '')).toBe(`${'a'.repeat(253)}…`);
+    expect(commitMessageTitle(`${'a'.repeat(252)}📝 more`, '')).toBe(`${'a'.repeat(252)}📝…`);
+  });
 });

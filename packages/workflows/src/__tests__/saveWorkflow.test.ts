@@ -179,6 +179,32 @@ describe.each([
     }
   });
 
+  test('bounds a long provider title while retaining the full author commit message', async () => {
+    const message = `${'Detailed summary '.repeat(30)}\n\nFull commit body.`;
+    const send = vi.fn();
+    await workflow.action(send, sourceOptions, { ...workflowOptions, titlePrefix: 'Docs' }, route, {
+      user,
+      markdown: 'New page',
+      frontmatter: 'title: New',
+      isNewPage: true,
+      commitMessage: message
+    });
+    const title =
+      _provider === 'GitHub'
+        ? mocks.githubRequest.mock.calls[0][1].title
+        : JSON.parse(mocks.createPullRequest.mock.calls[0][4]).title;
+    expect(title.length).toBeLessThanOrEqual(255);
+    expect(title).toMatch(/^Docs - Detailed summary /);
+    expect(title.endsWith('…')).toBe(true);
+    if (_provider === 'GitHub') {
+      expect(mocks.commitChanges).toHaveBeenCalledWith(user.name, user.email, message);
+      expect(mocks.githubRequest.mock.calls[0][1].body).toBe(message);
+    } else {
+      expect(mocks.createPullRequest.mock.calls[0][5]).toBe(message);
+    }
+    expect(send).toHaveBeenLastCalledWith({ pullRequestUrl }, 'COMPLETE');
+  });
+
   test('inspects configured defaults without initializing Git or mutating the workflow export', async () => {
     const configured = vi.fn(() => 'custom updated content');
     expect(

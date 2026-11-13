@@ -110,6 +110,8 @@ blank messages are errors, while omitting the override keeps the configured defa
 
 Both providers use the first nonempty message line, trimmed, as the pull request summary. A nonempty
 `titlePrefix` is prepended as `<titlePrefix> - <summary>`; set it to `''` to use the summary alone.
+Long pull request titles are shortened to fit provider limits, including the prefix. The full commit
+message is preserved.
 The default prefix remains `Mosaic Docs`. The commit receives the full message, including its body.
 The final squash message is controlled by repository settings and the reviewer.
 

@@ -48,7 +48,15 @@ export function commitMessageTitle(message: string, prefix: string): string {
       .split('\n')
       .find(line => line.trim())
       ?.trim() ?? '';
-  return prefix ? `${prefix} - ${summary}` : summary;
+  const title = prefix ? `${prefix} - ${summary}` : summary;
+  // Keep provider titles bounded independently of the full Git commit message.
+  // Include the prefix in the budget and avoid splitting a UTF-16 surrogate pair.
+  const maxTitleLength = 255;
+  if (title.length <= maxTitleLength) return title;
+  return `${title
+    .slice(0, maxTitleLength - 1)
+    .replace(/[\uD800-\uDBFF]$/, '')
+    .trimEnd()}…`;
 }
 
 export const prepareCommitMessage: SourceWorkflowPrepare = (
