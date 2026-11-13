@@ -68,6 +68,33 @@ describe('GIVEN the ReadingTimePlugin', () => {
     });
   });
 
+  describe('AND WHEN the default empty ignore list is used', () => {
+    beforeEach(async () => {
+      updatedPages =
+        (await $afterSource?.(
+          [
+            {
+              fullPath: '/FolderA/index.mdx',
+              route: 'route/folderA/index.mdx',
+              title: 'Folder A Index'
+            },
+            {
+              fullPath: '/FolderA/.hidden.mdx',
+              route: 'route/folderA/.hidden.mdx',
+              title: 'Hidden page'
+            }
+          ],
+          { ignorePages: [], pageExtensions: ['.mdx'] },
+          {}
+        )) || [];
+    });
+
+    test('THEN visible pages still have the reading time metadata', () => {
+      expect(updatedPages[0].readingTime).toBeDefined();
+      expect(updatedPages[1].readingTime).not.toBeDefined();
+    });
+  });
+
   describe('AND WHEN a page itself is ignored', () => {
     const pageExtensions = ['.mdx'];
     const ignorePages = ['index.mdx'];
