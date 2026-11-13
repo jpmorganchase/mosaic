@@ -337,7 +337,7 @@ export const PersistDialog = ({
       return hasBody || hasFrontmatter;
     }
     // Body delta. Trailing-whitespace is normalised because the
-    // baseline comes from gray-matter (preserves the file's
+    // baseline comes from `parseFrontmatter` (preserves the file's
     // trailing newline) while the snapshot comes from Lexical's
     // `$convertToMarkdownString` (its own opinion). Comparing
     // raw strings would enable the CTA on a freshly-opened page

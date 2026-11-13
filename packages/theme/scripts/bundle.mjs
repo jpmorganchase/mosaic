@@ -1,6 +1,6 @@
 import esbuild from 'esbuild';
 import { vanillaExtractPlugin } from '@vanilla-extract/esbuild-plugin';
-import glob from 'fast-glob';
+import { globSync } from 'tinyglobby';
 
 import { publicImageResolver } from './publicImageResolver.mjs';
 
@@ -9,7 +9,8 @@ const watchEnabled = args[0] === 'watch';
 const packageName = process.env.npm_package_name;
 
 try {
-  const entries = glob.sync(['src/index.ts', 'src/**/index.ts'], {
+  const entries = globSync(['src/index.ts', 'src/**/index.ts'], {
+    expandDirectories: false,
     dot: true
   });
 

@@ -411,7 +411,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Sanitisation: strip `---` (would break out of the
   // frontmatter block) before injection. Trim to bound the
   // string the user can dump into the template. The actual YAML
-  // quoting / escaping is handled by `gray-matter.stringify`
+  // quoting / escaping is handled by `stringifyFrontmatter`
   // inside `composeTemplate`, so we don't have to think about
   // embedded newlines, quotes, or backticks here.
   //

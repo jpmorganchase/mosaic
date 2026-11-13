@@ -8,6 +8,12 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
+    "./frontmatter": {
+      "types": "./dist/frontmatter.d.ts",
+      "import": "./dist/frontmatter.js",
+      "node": "./dist/frontmatter.js",
+      "default": "./dist/frontmatter.js"
+    },
     "./mdx": {
       "types": "./dist/mdx.d.ts",
       "import": "./dist/mdx.js",
@@ -48,6 +54,9 @@
   },
   "dependencies": {
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
-    "gray-matter": "^4.0.3"
+    "js-yaml": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9"
   }
 }

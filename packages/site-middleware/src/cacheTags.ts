@@ -4,7 +4,7 @@
  *
  * Kept in a standalone, side-effect-free module so the revalidate
  * route can import only this constant without dragging the rest of
- * `cachedLoaders.ts` (fs, path, gray-matter, dynamic
+ * `cachedLoaders.ts` (fs, path, front matter parsing, dynamic
  * `process.cwd()` calls) into its Next.js NFT trace. Pulling those
  * in caused Turbopack's "whole project was traced unintentionally"
  * warning on build, because the dynamic filesystem calls defeat the

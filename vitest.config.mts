@@ -68,7 +68,7 @@ export default defineConfig({
         test: {
           name: 'server',
           include: [
-            '**/{cli,core,fromHttpRequest,plugins,schemas,site-middleware,source-figma,source-git-repo,source-http,source-local-folder,source-readme,source-storybook,workflows}/**/__tests__/*.test.[jt]s?(x)',
+            '**/{cli,core,fromHttpRequest,plugins,schemas,serialisers,site-middleware,source-figma,source-git-repo,source-http,source-local-folder,source-readme,source-storybook,workflows}/**/__tests__/*.test.[jt]s?(x)',
             // Catch-all site helpers (e.g. `newPageTemplate.ts`)
             // that are pure server-side TS without React. Site is
             // excluded from coverage by intent (it's the example

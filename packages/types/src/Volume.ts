@@ -1,6 +1,6 @@
 import type { DirectoryJSON, IFs } from 'memfs';
 import type { PathLike } from 'fs';
-import type { Options, Pattern, Entry } from 'fast-glob';
+import type { GlobOptions } from 'tinyglobby';
 
 type TDataOut = string | Buffer;
 
@@ -21,7 +21,7 @@ export interface IVolume {
     'mkdir' | 'readdir' | 'readFile' | 'realpath' | 'stat' | 'symlink' | 'unlink' | 'writeFile'
   > & {
     exists(file: PathLike): Promise<boolean>;
-    glob(pattern: Pattern, options?: Options): Promise<string[] | Entry[]>;
+    glob(pattern: string | string[], options?: Omit<GlobOptions, 'patterns'>): Promise<string[]>;
   };
 }
 export interface IVolumePartiallyMutable extends Omit<IVolume, 'reset' | 'fromJSON'> {

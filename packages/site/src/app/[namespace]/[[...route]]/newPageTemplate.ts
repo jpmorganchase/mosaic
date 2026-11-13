@@ -32,7 +32,7 @@
  *   the server during the page render for `?new=1` requests, before
  *   the editor mounts.
  * - The returned `body` MUST include the YAML frontmatter fence (the
- *   editor parses with `gray-matter`, which expects the standard
+ *   editor parses with `parseFrontmatter`, which expects the standard
  *   `---\n…\n---\n` delimiters). The {@link composeTemplate} helper
  *   takes a structured frontmatter object + body string and assembles
  *   the fence for you — prefer it over hand-rolling the string.
@@ -48,7 +48,7 @@
  * file needs with the editor plugin.
  */
 
-import matter from 'gray-matter';
+import { stringifyFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 
 export interface NewPageTemplateInput {
   /**
@@ -141,7 +141,7 @@ export function buildNewPageTemplate(input: NewPageTemplateInput): NewPageTempla
 /**
  * Serialise a structured template into the raw bytes the editor
  * seeds itself with: standard YAML frontmatter fence followed by
- * the MDX body. `gray-matter.stringify` produces the same shape
+ * the MDX body. `stringifyFrontmatter` produces the same shape
  * the persist workflow writes to disk, so a save right after open
  * round-trips byte-for-byte.
  *
@@ -154,8 +154,8 @@ export function buildNewPageTemplate(input: NewPageTemplateInput): NewPageTempla
  *   `LexicalComposer` or write to disk.
  */
 export function composeTemplate(template: NewPageTemplate): string {
-  // `matter.stringify(body, data)` returns `---\n<yaml>\n---\n<body>`
+  // `stringifyFrontmatter(body, data)` returns `---\n<yaml>\n---\n<body>`
   // with a trailing newline if the body has one — which our default
   // bodies do, so the output is canonical.
-  return matter.stringify(template.body, template.frontmatter);
+  return stringifyFrontmatter(template.body, template.frontmatter);
 }

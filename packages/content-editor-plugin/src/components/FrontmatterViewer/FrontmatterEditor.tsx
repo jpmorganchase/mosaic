@@ -34,7 +34,10 @@
  */
 
 import { SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import matter from 'gray-matter';
+import {
+  parseFrontmatter,
+  stringifyFrontmatter
+} from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import {
   Banner,
   BannerContent,
@@ -201,9 +204,9 @@ function inferRow(key: string, value: unknown): Row {
 }
 
 /**
- * Strip the `---` fences gray-matter wraps around its output.
+ * Strip the `---` fences `stringifyFrontmatter` wraps around its output.
  * Trailing whitespace is collapsed BEFORE the closing fence
- * regex runs — gray-matter emits `---\n\n` for non-scalar
+ * regex runs — `stringifyFrontmatter` emits `---\n\n` for non-scalar
  * values, so a naive `/---\r?\n?$/` misses the fence across
  * the blank line and leaks `---` into the result.
  */
@@ -216,7 +219,7 @@ function stripFences(yaml: string): string {
 
 /**
  * Serialise a single (non-scalar) subtree to YAML. Re-uses
- * `gray-matter.stringify` (via a `{ __value: subtree }` wrapper,
+ * `stringifyFrontmatter` (via a `{ __value: subtree }` wrapper,
  * since the stringifier expects an object) so the result is
  * byte-consistent with what we'd write for the whole document,
  * then strips the fences and the wrapper key.
@@ -227,9 +230,9 @@ function stripFences(yaml: string): string {
  */
 function serialiseSubtreeToYaml(value: unknown): string {
   try {
-    const full = matter.stringify('', { __value: value } as Record<string, unknown>);
+    const full = stringifyFrontmatter('', { __value: value } as Record<string, unknown>);
     const body = stripFences(full);
-    // gray-matter emits `__value:` followed by either an inline
+    // `stringifyFrontmatter` emits `__value:` followed by either an inline
     // scalar or a newline-then-indented block. Unindent the
     // block by 2 spaces (js-yaml's default indent) so the
     // textarea content is left-aligned.
@@ -256,7 +259,7 @@ function serialiseSubtreeToYaml(value: unknown): string {
  */
 function parseSubtreeYaml(yaml: string): unknown {
   const wrapped = `__value: ${yaml.includes('\n') ? `\n${yaml.replace(/^/gm, '  ')}` : yaml}`;
-  const { data } = matter(`---\n${wrapped}\n---\n`);
+  const { data } = parseFrontmatter(`---\n${wrapped}\n---\n`);
   return (data as { __value: unknown }).__value;
 }
 
@@ -319,7 +322,7 @@ function buildObject(rows: Row[]): Record<string, unknown> {
 function serialiseRows(rows: Row[]): string {
   const obj = buildObject(rows);
   if (Object.keys(obj).length === 0) return '';
-  return stripFences(matter.stringify('', obj));
+  return stripFences(stringifyFrontmatter('', obj));
 }
 
 /**

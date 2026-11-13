@@ -39,7 +39,7 @@
     "del-cli": "^6.0.0",
     "esbuild": "^0.28.1",
     "esbuild-node-externals": "^1.23.1",
-    "fast-glob": "^3.3.3",
+    "tinyglobby": "^0.2.17",
     "typescript": "^5.2.2"
   },
   "dependencies": {

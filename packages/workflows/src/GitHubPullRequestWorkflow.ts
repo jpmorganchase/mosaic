@@ -2,7 +2,7 @@ import { Octokit } from '@octokit/core';
 import path from 'node:path';
 import fs from 'node:fs';
 import { v4 as uuidv4 } from 'uuid';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { Repo, GitRepoSourceOptions } from '@jpmorganchase/mosaic-source-git-repo';
 import { mdx } from '@jpmorganchase/mosaic-serialisers';
 import type {
@@ -182,7 +182,10 @@ export async function createPullRequest(
       }
 
       try {
-        nextMeta = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<string, unknown>;
+        nextMeta = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+          string,
+          unknown
+        >;
         // `fullPath` is a required field on the on-disk Page type
         // and is normally re-attached from the disk read on the
         // edit path. For a brand-new page there's no on-disk
@@ -226,7 +229,7 @@ export async function createPullRequest(
       nextMeta = metadata as Record<string, unknown>;
       if (typeof frontmatter === 'string') {
         try {
-          const parsed = (matter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
+          const parsed = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<
             string,
             unknown
           >;
@@ -258,7 +261,7 @@ export async function createPullRequest(
     }
 
     // Final scrub: strip any `undefined` values from the
-    // frontmatter tree before handing it to `gray-matter` →
+    // frontmatter tree before handing it to `stringifyFrontmatter` →
     // `js-yaml`. See `./stripUndefined.ts` for the full rationale —
     // a single stray `undefined` anywhere in the tree crashes the
     // whole save with an opaque `YAMLException`, and the producers

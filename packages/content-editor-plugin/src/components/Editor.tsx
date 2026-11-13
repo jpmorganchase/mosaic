@@ -42,7 +42,10 @@
  */
 
 import { ComponentType, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import matter from 'gray-matter';
+import {
+  parseFrontmatter,
+  stringifyFrontmatter
+} from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { debounce } from 'lodash-es';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
@@ -212,7 +215,7 @@ const EditorInner: FC<EditorProps> = ({
   const { markDirty } = useSaveState();
   const [saveOpen, setSaveOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { data: parsedMeta, content: markdown } = matter(content);
+  const { data: parsedMeta, content: markdown } = parseFrontmatter(content);
   const meta = useMemo(
     () => (typeof parsedMeta.route === 'string' || !route ? parsedMeta : { ...parsedMeta, route }),
     [parsedMeta, route]
@@ -387,11 +390,11 @@ const EditorInner: FC<EditorProps> = ({
       const yaml = frontmatterSnapshotRef.current?.() ?? lastAuthoredYamlRef.current ?? undefined;
       if (typeof yaml === 'string') {
         try {
-          // Wrap with `---` fences so `matter()` parses the
+          // Wrap with `---` fences so `parseFrontmatter()` parses the
           // editor's bare YAML the same way it parses an on-disk
           // file. Empty string (the form's "user removed all
           // frontmatter" output) parses cleanly to `{}`.
-          const parsed = matter(`---\n${yaml}\n---\n`).data;
+          const parsed = parseFrontmatter(`---\n${yaml}\n---\n`).data;
           authored = (parsed ?? {}) as Record<string, unknown>;
         } catch (e) {
           // Defensive — the form already gates broken YAML by
@@ -407,7 +410,7 @@ const EditorInner: FC<EditorProps> = ({
       const combined = authored ? mergeAuthoredFrontmatter(meta, authored) : meta;
       if (!combined || Object.keys(combined).length === 0) return body;
       try {
-        return matter.stringify(body, combined);
+        return stringifyFrontmatter(body, combined);
       } catch (e) {
         console.warn(
           '[mosaic-content-editor] Failed to serialize frontmatter; previewing body only.',
@@ -431,7 +434,7 @@ const EditorInner: FC<EditorProps> = ({
    * Round-tripped body baseline for the save dialog's diff
    * preview.
    *
-   * The on-disk `markdown` (from `gray-matter`) and what
+   * The on-disk `markdown` (from `parseFrontmatter`) and what
    * Lexical's `$convertToMarkdownString` emits aren't
    * byte-identical even on an unedited document — Lexical
    * normalises emphasis markers (`_x_` → `*x*`), list bullet

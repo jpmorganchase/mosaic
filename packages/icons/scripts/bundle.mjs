@@ -1,4 +1,4 @@
-import glob from 'fast-glob';
+import { globSync } from 'tinyglobby';
 import esbuild from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 
@@ -8,7 +8,8 @@ const packageName = process.env.npm_package_name;
 
 try {
   const context = await esbuild.context({
-    entryPoints: glob.sync(['src/**/*.ts?(x)', 'src/*.ts?(x)'], {
+    entryPoints: globSync(['src/**/*.ts?(x)', 'src/*.ts?(x)'], {
+      expandDirectories: false,
       ignore: ['**/__tests__']
     }),
     outdir: './dist',

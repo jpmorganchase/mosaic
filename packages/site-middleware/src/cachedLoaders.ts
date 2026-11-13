@@ -38,7 +38,7 @@ import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
-import matter from 'gray-matter';
+import { parseFrontmatter as parseFrontmatterBlock } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import type { SharedConfig } from '@jpmorganchase/mosaic-store';
 
@@ -357,13 +357,13 @@ function normalizeMdxUrl(url: string): string {
 }
 
 /**
- * Parse only the YAML frontmatter from raw MDX. `gray-matter` is
+ * Parse only the YAML frontmatter from raw MDX. `parseFrontmatter` is
  * regex+YAML — much cheaper than running the full MDX compiler just to
  * read the header block.
  */
 function parseFrontmatter(raw: string): Record<string, unknown> {
   try {
-    const { data } = matter(raw);
+    const { data } = parseFrontmatterBlock(raw);
     return data ?? {};
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

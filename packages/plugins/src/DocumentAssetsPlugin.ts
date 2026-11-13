@@ -1,6 +1,6 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
-import glob from 'fast-glob';
+import { glob } from 'tinyglobby';
 import path from 'path';
 import { escapeRegExp } from 'lodash-es';
 import { unified } from 'unified';
@@ -101,11 +101,17 @@ const DocumentAssetsPlugin: PluginType<Page, DocumentAssetsPluginOptions> = {
 
       let globbedImageDirs;
       try {
-        globbedImageDirs = await glob(assetSubDir, {
-          cwd: resolvedSrcDir,
-          onlyDirectories: true,
-          fs
-        });
+        globbedImageDirs = (
+          await glob(assetSubDir, {
+            cwd: resolvedSrcDir,
+            onlyDirectories: true,
+            expandDirectories: false,
+            fs
+          })
+        )
+          // tinyglobby ends directory matches with a slash and can match the cwd itself.
+          .map(dir => dir.replace(/\/$/, ''))
+          .filter(dir => dir !== '' && dir !== '.');
         if (globbedImageDirs.length === 0) {
           console.warn(
             `[Mosaic][Plugin-DocumentAssets] Warning: No entries found for ${assetSubDir}. It may not exist.`

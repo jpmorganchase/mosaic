@@ -1,5 +1,5 @@
 import path from 'node:path';
-import glob from 'fast-glob';
+import { glob } from 'tinyglobby';
 import { PathLike } from 'node:fs';
 import { createFsFromVolume, DirectoryJSON, vol } from 'memfs';
 
@@ -35,17 +35,25 @@ export default class FileAccess implements IFileAccess {
     // We need a created filesystem, not a Volume, for glob
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#rawReadonlyFs = this.#rawReadonlyFs || createFsFromVolume(this.#adapter as any);
+    const cwd = path.resolve(typeof options?.cwd === 'string' ? options.cwd : process.cwd());
+    const matches = await glob(pattern, {
+      ...options,
+      absolute: true,
+      // Match fast-glob, which Mosaic used before: a directory pattern
+      // matches the directory itself, not everything inside it.
+      expandDirectories: false,
+      fs: this.#rawReadonlyFs
+    });
     const paths = Array.from(
       new Set(
         (
           await Promise.all(
-            (
-              await glob(pattern, {
-                ...options,
-                absolute: true,
-                fs: this.#rawReadonlyFs
-              })
-            ).map(filepath => this.#resolvePath(filepath))
+            matches
+              // tinyglobby marks directories with a trailing slash and can
+              // match the cwd itself; fast-glob did neither.
+              .map(filepath => (filepath.length > 1 ? filepath.replace(/\/$/, '') : filepath))
+              .filter(filepath => filepath !== cwd)
+              .map(filepath => this.#resolvePath(filepath))
           )
         ).sort((a, b) => {
           // Sort by number of path parts, then alphabetically

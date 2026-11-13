@@ -1,5 +1,5 @@
 import { concatMap, debounceTime, merge, Observable, of, switchMap } from 'rxjs';
-import glob from 'fast-glob';
+import { glob } from 'tinyglobby';
 import path from 'path';
 import fs from 'fs';
 import { z } from 'zod';
@@ -9,10 +9,12 @@ import { validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 import fromFsWatch from './fromFsWatch.js';
 
 function createFileGlob(url: string, pageExtensions: string[]) {
+  // `**.mdx` only matches top-level files in tinyglobby; fast-glob treated it as `**/*.mdx`.
+  const base = /^(\.\/)?\*\*$/.test(url) ? `${url}/*` : url;
   if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
+    return `${base}${pageExtensions[0]}`;
   }
-  return `${url}{${pageExtensions.join(',')}}`;
+  return `${base}{${pageExtensions.join(',')}}`;
 }
 
 /**
@@ -144,7 +146,8 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
       switchMap(() =>
         glob(createFileGlob('**', options.extensions), {
           cwd: options.rootDir,
-          onlyFiles: true
+          onlyFiles: true,
+          expandDirectories: false
         })
       ),
       concatMap(async (filepaths: string[]) => {

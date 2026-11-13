@@ -5,10 +5,12 @@ import { mergePageContent } from './utils/mergePageContent.js';
 import { createPageTest } from './utils/createPageTest.js';
 
 function createFileGlob(url, pageExtensions) {
+  // `**.mdx` only matches top-level files in tinyglobby; fast-glob treated it as `**/*.mdx`.
+  const base = /^(\.\/)?\*\*$/.test(url) ? `${url}/*` : url;
   if (pageExtensions.length === 1) {
-    return `${url}${pageExtensions[0]}`;
+    return `${base}${pageExtensions[0]}`;
   }
-  return `${url}{${pageExtensions.join(',')}}`;
+  return `${base}{${pageExtensions.join(',')}}`;
 }
 
 interface LazyPagePluginPage extends Page {
