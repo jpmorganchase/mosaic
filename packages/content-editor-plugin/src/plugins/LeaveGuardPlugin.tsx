@@ -3,7 +3,7 @@
 /**
  * Confirm-on-leave for unsaved editor changes.
  *
- * Three navigation channels can drop work on the floor and each
+ * Four navigation channels can drop work on the floor and each
  * needs its own intercept:
  *
  *   1. Tab close / reload / manual URL bar change
@@ -23,6 +23,11 @@
  *        those for the duration of being dirty and route through the
  *        same dialog. Patches are torn down when the editor goes
  *        clean again or unmounts.
+ *
+ *   4. Same-document browser Back / Forward
+ *      → cancelable Navigation API `navigate` events run before the
+ *        browser commits the traversal and Next handles `popstate`.
+ *        Older browsers and non-cancelable traversals cannot use this guard.
  *
  * Active while the mounted editor has unsaved changes or an in-flight
  * save. A completed save no longer prompts; another edit arms it again.
@@ -113,6 +118,16 @@ function resolveInAppNavigation(event: MouseEvent): string | null {
  */
 let historyPatched = false;
 
+// Keep this structural subset local: the supported TypeScript DOM library
+// predates the Navigation API. Feature detection also supports older browsers.
+interface TraversalNavigation extends EventTarget {
+  traverseTo(key: string): { finished: Promise<unknown> };
+}
+interface TraversalEvent extends Event {
+  navigationType: string;
+  destination: { key: string; url: string; sameDocument: boolean };
+}
+
 export const LeaveGuardPlugin = () => {
   const { saveState } = useSaveState();
   // `saving` is included so a user who clicks
@@ -141,6 +156,41 @@ export const LeaveGuardPlugin = () => {
   // call; the beforeunload handler reads it and lets the unload
   // through unchallenged.
   const suppressBeforeUnloadRef = useRef(false);
+  const allowedTraversalRef = useRef<string | null>(null);
+
+  // (4) Cancel the traversal before the URL or React tree changes. A
+  // popstate listener is too late: Next may already have discarded the editor.
+  useEffect(() => {
+    const navigation = (window as Window & { navigation?: TraversalNavigation }).navigation;
+    if (!navigation) return;
+    const onNavigate = (event: Event) => {
+      const traversal = event as TraversalEvent;
+      if (traversal.navigationType !== 'traverse') return;
+      const { destination } = traversal;
+      if (allowedTraversalRef.current === destination.key) {
+        allowedTraversalRef.current = null;
+        return;
+      }
+      if (!isDirtyRef.current || !event.cancelable || !destination.sameDocument) return;
+      if (isIntraEditorNavigation(new URL(destination.url))) return;
+      event.preventDefault();
+      setPending(() => () => {
+        allowedTraversalRef.current = destination.key;
+        const reset = () => {
+          allowedTraversalRef.current = null;
+          suppressBeforeUnloadRef.current = false;
+        };
+        try {
+          // Replay the original entry, preserving Back/Forward ordering.
+          void navigation.traverseTo(destination.key).finished.then(reset, reset);
+        } catch {
+          reset();
+        }
+      });
+    };
+    navigation.addEventListener('navigate', onNavigate);
+    return () => navigation.removeEventListener('navigate', onNavigate);
+  }, []);
 
   // (1) beforeunload — covers tab close / reload / URL bar.
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, expect, test } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { EditorProvider, useSaveState } from '../../EditorContext';
 import { LeaveGuardPlugin } from '../../plugins/LeaveGuardPlugin';
 
@@ -20,11 +20,12 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  Reflect.deleteProperty(window, 'navigation');
   window.history.replaceState(null, '', '/');
 });
 
 function mountGuard() {
-  render(
+  return render(
     <EditorProvider>
       <StateControls />
       <LeaveGuardPlugin />
@@ -85,4 +86,61 @@ test('retains leave protection for edits made after a save started', () => {
   fireEvent.click(screen.getByText('Saving'));
   fireEvent.click(screen.getByText('Saved'));
   expect(unloadIsPrevented()).toBe(false);
+});
+
+function mockTraversalNavigation() {
+  const navigation = Object.assign(new EventTarget(), {
+    traverseTo: vi.fn((_key: string) => ({ finished: Promise.resolve() }))
+  });
+  Object.defineProperty(window, 'navigation', { configurable: true, value: navigation });
+  const traverse = (url = 'http://localhost/docs/previous', cancelable = true) => {
+    const event = Object.assign(new Event('navigate', { cancelable }), {
+      navigationType: 'traverse',
+      destination: { key: 'previous-entry', url, sameDocument: true }
+    });
+    act(() => navigation.dispatchEvent(event));
+    return event;
+  };
+  return { navigation, traverse };
+}
+
+test.each(['Edit', 'Saving'])(
+  'confirms browser traversal during %s and replays only on discard',
+  state => {
+    const { navigation, traverse } = mockTraversalNavigation();
+    mountGuard();
+    fireEvent.click(screen.getByText(state));
+    expect(traverse().defaultPrevented).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(navigation.traverseTo).not.toHaveBeenCalled();
+    expect(traverse().defaultPrevented).toBe(true);
+    navigation.traverseTo.mockImplementationOnce(() => {
+      expect(traverse().defaultPrevented).toBe(false);
+      return { finished: Promise.resolve() };
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
+    expect(navigation.traverseTo).toHaveBeenCalledExactlyOnceWith('previous-entry');
+  }
+);
+
+test('lets saved drafts, intra-editor modes and non-cancelable browser traversals through', () => {
+  const { traverse } = mockTraversalNavigation();
+  mountGuard();
+  expect(traverse().defaultPrevented).toBe(false);
+  fireEvent.click(screen.getByText('Edit'));
+  expect(traverse('http://localhost/docs/page?edit=1&mode=source').defaultPrevented).toBe(false);
+  expect(traverse(undefined, false).defaultPrevented).toBe(false);
+  fireEvent.click(screen.getByText('Saving'));
+  fireEvent.click(screen.getByText('Saved'));
+  expect(traverse().defaultPrevented).toBe(false);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+test('removes the native traversal listener when the editor unmounts', () => {
+  const { traverse } = mockTraversalNavigation();
+  const view = mountGuard();
+  fireEvent.click(screen.getByText('Edit'));
+  expect(traverse().defaultPrevented).toBe(true);
+  view.unmount();
+  expect(traverse().defaultPrevented).toBe(false);
 });
