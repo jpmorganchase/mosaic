@@ -1,6 +1,7 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { MockAgent, ProxyAgent } from 'undici';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { checkLinks } from '../utils/checkLinks.js';
 
 const requests: string[] = [];
@@ -22,6 +23,12 @@ const server = http.createServer((req, res) => {
   if (path.startsWith('/ok')) return send(200);
   if (path === '/no-head') return send(req.method === 'HEAD' ? 405 : 200);
   if (path === '/redirect') return send(301, { location: '/ok-redirected' });
+  if (path === '/redirect-https') {
+    return send(302, { location: 'https://proxy-only.invalid/ok' });
+  }
+  if (path === '/redirect-https-no-head') {
+    return send(307, { location: 'https://proxy-only.invalid/no-head' });
+  }
   if (path === '/missing') return send(404);
   if (path.startsWith('/flaky') || path === '/down') {
     const left = failuresLeft.get(path) ?? 0;
@@ -125,5 +132,54 @@ describe('GIVEN checkLinks', () => {
     expect(await checkLinks([link], { ...options, proxyEndpoint: 'http://127.0.0.1:1' })).toEqual({
       [link]: { status: 'alive', statusCode: 200 }
     });
+  });
+
+  test('THEN HTTP-to-HTTPS redirects select the proxy for HEAD and the GET fallback', async () => {
+    const proxy = new MockAgent();
+    proxy.disableNetConnect();
+    const destination = proxy.get('https://proxy-only.invalid');
+    destination.intercept({ path: '/ok', method: 'HEAD' }).reply(200);
+    destination.intercept({ path: '/no-head', method: 'HEAD' }).reply(405);
+    destination.intercept({ path: '/no-head', method: 'GET' }).reply(200);
+    // Keep real fetch redirect handling and the direct HTTP connection. Only
+    // replace the proxy transport, so this fails if redirects bypass it.
+    const dispatch = vi
+      .spyOn(ProxyAgent.prototype, 'dispatch')
+      .mockImplementation((options, handler) => proxy.dispatch(options, handler));
+    try {
+      const links = [`${baseUrl}/redirect-https`, `${baseUrl}/redirect-https-no-head`];
+      expect(await checkLinks(links, { ...options, proxyEndpoint: 'http://127.0.0.1:1' })).toEqual({
+        [links[0]]: { status: 'alive', statusCode: 200 },
+        [links[1]]: { status: 'alive', statusCode: 200 }
+      });
+      expect(dispatch).toHaveBeenCalledTimes(3);
+      proxy.assertNoPendingInterceptors();
+    } finally {
+      dispatch.mockRestore();
+      await proxy.close();
+    }
+  });
+
+  test('THEN an HTTPS-to-HTTP redirect leaves the proxy and follows a relative redirect', async () => {
+    const proxy = new MockAgent();
+    proxy.disableNetConnect();
+    proxy
+      .get('https://proxy-only.invalid')
+      .intercept({ path: '/back-to-http', method: 'HEAD' })
+      .reply(302, '', { headers: { location: `${baseUrl}/redirect` } });
+    const dispatch = vi
+      .spyOn(ProxyAgent.prototype, 'dispatch')
+      .mockImplementation((options, handler) => proxy.dispatch(options, handler));
+    try {
+      const link = 'https://proxy-only.invalid/back-to-http';
+      expect(await checkLinks([link], { ...options, proxyEndpoint: 'http://127.0.0.1:1' })).toEqual(
+        { [link]: { status: 'alive', statusCode: 200 } }
+      );
+      expect(dispatch).toHaveBeenCalledTimes(1);
+      proxy.assertNoPendingInterceptors();
+    } finally {
+      dispatch.mockRestore();
+      await proxy.close();
+    }
   });
 });

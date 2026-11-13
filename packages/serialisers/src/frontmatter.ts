@@ -1,4 +1,5 @@
 import { dump, load } from 'js-yaml';
+import { frontmatterSchema } from './frontmatterSchema.js';
 
 /**
  * YAML-only front matter parsing and serialisation.
@@ -60,7 +61,9 @@ export function parseFrontmatter(input: string | Uint8Array): ParsedFrontmatter 
   const closeIndex = rest.indexOf(CLOSE);
   const block = closeIndex === -1 ? rest : rest.slice(0, closeIndex);
   const isEmpty = block.replace(/^\s*#[^\n]+/gm, '').trim() === '';
-  const data = isEmpty ? {} : (load(block) as FrontmatterData | null | undefined) ?? {};
+  const data = isEmpty
+    ? {}
+    : (load(block, { schema: frontmatterSchema }) as FrontmatterData | null | undefined) ?? {};
 
   let content = closeIndex === -1 ? '' : rest.slice(closeIndex + CLOSE.length);
   if (content.startsWith('\r')) {
@@ -75,6 +78,6 @@ export function parseFrontmatter(input: string | Uint8Array): ParsedFrontmatter 
 
 export function stringifyFrontmatter(content: string, data: FrontmatterData): string {
   const body = withTrailingNewline(stripBom(content));
-  const yaml = dump({ ...data }).trim();
+  const yaml = dump({ ...data }, { schema: frontmatterSchema }).trim();
   return yaml === '{}' ? body : `${OPEN}\n${yaml}\n${OPEN}\n${body}`;
 }
