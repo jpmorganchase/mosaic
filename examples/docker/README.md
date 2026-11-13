@@ -3,7 +3,9 @@
 Build all examples from the repository root. The Dockerfiles use the checked-in
 Yarn release and all workspace manifests, build internal packages, then build
 the site when required. `.dockerignore` excludes local dependencies, generated
-builds, Git metadata, audit worktrees and local environment overrides.
+builds, Git metadata, audit worktrees, development env files and local
+environment overrides. The committed `packages/site/.env` and `.env.production`
+defaults are kept, so images build with the same settings as `yarn build:site`.
 
 - [Active mode](active-mode/): separate content and site containers.
 - [Snapshot mode](snapshot-mode/): a standalone Next server with a local snapshot.
