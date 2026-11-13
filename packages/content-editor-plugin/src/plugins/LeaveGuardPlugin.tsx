@@ -24,11 +24,8 @@
  *        same dialog. Patches are torn down when the editor goes
  *        clean again or unmounts.
  *
- * Only active while the editor is `dirty` (or any non-clean state
- * other than `saving` — saves can resolve regardless of leave) AND
- * while `?edit=1` is in the URL. That keeps the guard scoped to the
- * editor session, so a successful save followed by leaving the page
- * doesn't prompt.
+ * Active while the mounted editor has unsaved changes or an in-flight
+ * save. A completed save no longer prompts; another edit arms it again.
  *
  * Implementation lives in a separate plugin (rather than inside
  * `Editor.tsx`) so the leave-guard surface area stays auditable.
@@ -46,9 +43,8 @@ import { Dialog } from '../components/Dialog';
  * spurious. Returns true when:
  *
  *   - the pathname is identical to the current one, AND
- *   - `?edit=1` is still set on the target (we're not exiting edit
- *     mode — exiting edit mode IS a real "leave" that should
- *     prompt), AND
+ *   - both URLs remain in the same edit (`?edit=1`) or create
+ *     (`?new=1`) session, AND
  *   - the only search params that differ are intra-editor view
  *     toggles that the editor handles in-place (currently `mode`,
  *     for the WYSIWYG/Source switcher).
@@ -63,9 +59,10 @@ import { Dialog } from '../components/Dialog';
 const INTRA_EDITOR_PARAMS = new Set(['mode']);
 function isIntraEditorNavigation(target: URL): boolean {
   if (target.pathname !== window.location.pathname) return false;
-  if (target.searchParams.get('edit') !== '1') return false;
   const current = new URLSearchParams(window.location.search);
-  if (current.get('edit') !== '1') return false;
+  const editing = current.get('edit') === '1' && target.searchParams.get('edit') === '1';
+  const creating = current.get('new') === '1' && target.searchParams.get('new') === '1';
+  if (!editing && !creating) return false;
   // Build the union of param keys that appear on either side and
   // diff them. If every differing key is in the intra-editor
   // allowlist, the navigation is in-place.
@@ -118,12 +115,11 @@ let historyPatched = false;
 
 export const LeaveGuardPlugin = () => {
   const { saveState } = useSaveState();
-  // Treat anything other than `clean` as "has unsaved work" for the
-  // purposes of guarding. `saving` is included so a user who clicks
+  // `saving` is included so a user who clicks
   // Save then immediately tries to navigate gets prompted — the save
   // pipeline may still be in flight and tearing the page down would
   // abort it.
-  const isDirty = saveState !== 'clean';
+  const isDirty = saveState === 'dirty' || saveState === 'saving';
 
   // Pending navigation queued behind the confirm dialog. `null` when
   // no prompt is up. Kept as state (not ref) so the dialog re-renders

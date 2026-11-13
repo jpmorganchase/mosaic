@@ -129,7 +129,7 @@ export interface PreviewComponentProps {
  * the Next host's middleware package and the dependency graph
  * keeps flowing in one direction.
  *
- * The editor consumes this in the Frontmatter tab: when
+ * The editor seeds the body and Frontmatter tab from this result: when
  * `kind === 'raw'` the panel mounts the editable
  * `FrontmatterEditor` against the pre-plugin bytes (exactly
  * what `git diff` of the source file would show), and the save
@@ -141,7 +141,7 @@ export interface PreviewComponentProps {
  *
  * Hosts that can't (or choose not to) fetch raw source pass
  * `undefined`; the editor falls back to the read-only viewer
- * without further configuration.
+ * and disables saving existing pages until authored bytes are available.
  */
 export type RawSourceInput =
   | { kind: 'raw'; bytes: string; namespace: string | undefined }
@@ -157,8 +157,8 @@ export interface EditorProps {
    * host in parallel with `content`. See {@link RawSourceInput}.
    *
    * Optional so existing integrations compile unchanged. When
-   * absent the editor behaves as it does today (Frontmatter tab
-   * shows the post-plugin enriched view, read-only).
+   * absent, the editor shows processed content for inspection but disables
+   * saving existing pages: transformed bytes cannot safely replace source.
    */
   rawSource?: RawSourceInput;
   components: Record<string, unknown>;
@@ -214,8 +214,16 @@ const EditorInner: FC<EditorProps> = ({
   const { setError } = useErrorMessage();
   const { markDirty } = useSaveState();
   const [saveOpen, setSaveOpen] = useState(false);
+  const [hasInvalidFrontmatterEdits, setHasInvalidFrontmatterEdits] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { data: parsedMeta, content: markdown } = parseFrontmatter(content);
+  // Processed metadata belongs to the preview. Only authored bytes may
+  // seed a save: plugins can expand fragments or otherwise rewrite bodies.
+  const { data: parsedMeta } = parseFrontmatter(content);
+  const { content: markdown } = parseFrontmatter(
+    rawSource?.kind === 'raw' ? rawSource.bytes : content
+  );
+  const hasAuthoredSource = rawSource?.kind === 'raw' || isNewPage;
+  const canSave = hasAuthoredSource && !hasInvalidFrontmatterEdits;
   const meta = useMemo(
     () => (typeof parsedMeta.route === 'string' || !route ? parsedMeta : { ...parsedMeta, route }),
     [parsedMeta, route]
@@ -232,14 +240,11 @@ const EditorInner: FC<EditorProps> = ({
 
   /**
    * Authored-frontmatter snapshot getter. Installed by
-   * `FrontmatterEditor` when it mounts (i.e. when the user is in
-   * frontmatter mode AND the host supplied a raw source). Read
+   * `FrontmatterEditor` when the host supplied a raw source. Read
    * by two consumers:
    *
    *   - the save dialog, at open time, to capture the YAML for
-   *     the persist payload (returns `undefined` to skip the
-   *     `frontmatter` field when the form is in an unsaveable
-   *     state);
+   *     the persist payload (an invalid authored edit blocks saving);
    *   - `attachFrontmatter` below, on every preview compile, so
    *     the right pane reflects the author's frontmatter edits
    *     live without waiting for a save.
@@ -257,42 +262,9 @@ const EditorInner: FC<EditorProps> = ({
    */
   const frontmatterSnapshotRef = useRef<(() => string | undefined) | null>(null);
 
-  /**
-   * Cache of the last YAML value the frontmatter form produced,
-   * persisted across form mounts. Updated by the parent's
-   * `onAuthoredChange` handler below.
-   *
-   * Why a separate cache and not just `frontmatterSnapshotRef`?
-   * The form clears `snapshotRef` on its own unmount as a
-   * defence against stale getters surviving a route remount.
-   * That's the right behaviour for the save dialog (we'd
-   * rather omit the frontmatter field than ship the previous
-   * page's bytes), but it would also blank the preview the
-   * moment the author flips OUT of the Frontmatter tab — a
-   * regression in editor UX. The cache here is owned by the
-   * parent and outlives any individual form mount, so
-   * `attachFrontmatter` can continue layering the author's
-   * edits over `meta` while the user is in another mode
-   * within the same editing session.
-   *
-   * `null` means "no authored YAML has been observed yet" —
-   * `attachFrontmatter` falls back to `meta` in that case.
-   * Empty string is a legitimate value (the form's "user
-   * removed all frontmatter" signal) and parses cleanly to
-   * `{}` so the merge below resolves to `meta` alone.
-   */
+  // Preview-only cache: invalid YAML drafts keep their last valid preview.
+  // The mounted form remains authoritative for persistence in every mode.
   const lastAuthoredYamlRef = useRef<string | null>(null);
-
-  // Reset the authored-YAML cache when the host hands us a
-  // different `content` prop — that signals a fresh editing
-  // session (typically a route change) and the previous page's
-  // edits should not bleed through. Most hosts also remount
-  // `<Editor>` outright on route change (the `key` prop pattern),
-  // which makes this effect a no-op; the explicit reset is the
-  // safety net for hosts that don't.
-  useEffect(() => {
-    lastAuthoredYamlRef.current = null;
-  }, [content]);
 
   /**
    * Re-prepend YAML frontmatter to the body before the MDX
@@ -371,10 +343,8 @@ const EditorInner: FC<EditorProps> = ({
     (body: string): string => {
       // Live authored frontmatter (when available) overlays the
       // post-plugin `meta`. The form's `snapshotRef` is the
-      // freshest source — it reflects in-progress edits while
-      // the form is mounted; once the form unmounts (mode flip),
-      // it nulls out and we fall back to `lastAuthoredYamlRef`,
-      // a parent-owned cache that survives the form's lifetime.
+      // freshest source in every mode. An invalid draft falls
+      // back to the last valid preview while its form stays intact.
       // Final fallback is `meta` alone, preserving the original
       // behaviour for hosts that don't supply a raw source at
       // all.
@@ -476,8 +446,7 @@ const EditorInner: FC<EditorProps> = ({
   // Lexical editor reference. The conditional swap keeps stale
   // closures from returning the wrong value across mode flips.
   //
-  // Frontmatter mode has no body editor mounted (the viewer is
-  // diagnostic-only), so we freeze the getter to return the
+  // Frontmatter mode has no body editor mounted, so we freeze the getter to return the
   // most-recently-captured body — the bridge snapshot taken
   // when we entered frontmatter mode, or the on-disk markdown
   // if the user opened the editor straight into the
@@ -504,7 +473,7 @@ const EditorInner: FC<EditorProps> = ({
       if (mode === 'frontmatter') {
         // Frontmatter mode has no body editor, so there's nothing
         // new to capture for the bridge — the body couldn't have
-        // changed while the user was in the read-only viewer.
+        // changed while the user was editing frontmatter.
         // Preserve whatever snapshot we already had (set when we
         // entered frontmatter mode); fall back to on-disk markdown
         // if the user opened the editor directly into frontmatter
@@ -539,7 +508,9 @@ const EditorInner: FC<EditorProps> = ({
   // markdown.
   const seed: ModeBridgeSnapshot = bridgeRef.current ?? { markdown, blockIndex: 0 };
 
-  const openSave = useCallback(() => setSaveOpen(true), []);
+  const openSave = useCallback(() => {
+    if (canSave) setSaveOpen(true);
+  }, [canSave]);
   // Save payload is body-only. The Mosaic workflow reads the
   // original file from disk and re-uses its frontmatter (or, when
   // the editor sends an authored slice, swaps in the new YAML and
@@ -551,21 +522,9 @@ const EditorInner: FC<EditorProps> = ({
   // what the author actually edited.
   const getCurrentMarkdown = useCallback(() => getCurrentMarkdownRef.current(), []);
 
-  /**
-   * Stable callback the save dialog calls at open time. Delegates to
-   * the getter `FrontmatterEditor` installed while it is mounted
-   * (`undefined` there means a parse-error / unsaveable state). Once the
-   * author has left the Frontmatter tab the form is unmounted, so fall
-   * back to the last valid YAML it produced — otherwise those edits
-   * would silently be dropped from the save even though the preview
-   * still shows them. `undefined` makes the dialog omit the
-   * `frontmatter` field so the workflow keeps its on-disk fallback.
-   */
-  const getCurrentAuthoredFrontmatter = useCallback(() => {
-    const getter = frontmatterSnapshotRef.current;
-    if (getter) return getter();
-    return lastAuthoredYamlRef.current ?? undefined;
-  }, []);
+  // The form stays mounted across modes. An invalid draft returns
+  // undefined instead of silently substituting an older valid edit.
+  const getCurrentAuthoredFrontmatter = useCallback(() => frontmatterSnapshotRef.current?.(), []);
 
   // -------------------------------------------------------------
   // Frontmatter-driven preview refresh
@@ -651,25 +610,25 @@ const EditorInner: FC<EditorProps> = ({
   );
 
   // Stable wrapper exposed to `FrontmatterEditor` via the panel.
-  // Captures the current YAML into `lastAuthoredYamlRef` so the
-  // preview keeps the author's edits even after they flip out of
-  // frontmatter mode (the form clears its `snapshotRef` on
-  // unmount; the cache here outlives that), then schedules a
-  // debounced recompile.
+  // Captures valid YAML for the preview to retain while an in-progress
+  // edit is invalid, then schedules a debounced recompile.
   //
   // The wrapper identity stays stable across renders so the form
   // doesn't re-debounce on every parent re-render.
   const requestPreviewRecompileFromFrontmatter = useCallback(() => {
-    // `?? null` keeps the cache typed as "string | null" — an
-    // unsaveable form state (parse error, empty required field)
+    // An unsaveable form state (parse error, empty required field)
     // returns `undefined` from the snapshot getter, which we
     // treat as "don't update the cache" so the preview keeps
     // showing the last good edit instead of blanking.
     const yaml = frontmatterSnapshotRef.current?.();
+    setHasInvalidFrontmatterEdits(yaml === undefined);
     if (typeof yaml === 'string') {
       lastAuthoredYamlRef.current = yaml;
       // Frontmatter-only edits must arm the unsaved-changes guard too.
       if (yaml !== originalFrontmatterYamlRef.current) markDirty();
+    } else {
+      // Invalid drafts are still unsaved work, even without serializable YAML.
+      markDirty();
     }
     debouncedRecompileForFrontmatter();
   }, [debouncedRecompileForFrontmatter, markDirty]);
@@ -684,7 +643,16 @@ const EditorInner: FC<EditorProps> = ({
       <FormattingToolbarSlotProvider>
         <div className={styles.root} data-mosaic-editor-root="true">
           <div className={styles.toolbarContainer}>
-            <Toolbar onSave={openSave} />
+            <Toolbar onSave={openSave} saveDisabled={!canSave} />
+            {!hasAuthoredSource && (
+              <p role="status">
+                Saving is unavailable because the original source could not be loaded. Reload the
+                page to try again.
+              </p>
+            )}
+            {hasInvalidFrontmatterEdits && (
+              <p role="status">Correct the invalid fields in Frontmatter before saving.</p>
+            )}
             <PersistDialog
               open={saveOpen}
               onOpenChange={setSaveOpen}
@@ -700,15 +668,14 @@ const EditorInner: FC<EditorProps> = ({
               // there either.
               originalMarkdown={roundTrippedBaselineRef.current ?? markdown}
               getCurrentMarkdown={getCurrentMarkdown}
-              // Authored-frontmatter snapshot. Only meaningful
-              // when the user opened the Frontmatter tab against
-              // a raw source. The dialog decides "omit if
+              // The mounted form supplies authored frontmatter
+              // in every mode. The dialog decides "omit if
               // unchanged / undefined"; the workflow's "no field
               // → keep on-disk bytes" fallback covers everything
               // else.
               getCurrentAuthoredFrontmatter={getCurrentAuthoredFrontmatter}
               originalAuthoredFrontmatter={originalFrontmatterYamlRef.current}
-              persist={persist}
+              persist={canSave ? persist : undefined}
               isNewPage={isNewPage}
             />
             <ShortcutHelpDialog />
@@ -741,7 +708,6 @@ const EditorInner: FC<EditorProps> = ({
               <ScrollableSection className={styles.focused} ref={containerRef}>
                 {mode === 'wysiwyg' ? (
                   <WysiwygShell
-                    key={`wys-${seed.markdown.length}-${seed.blockIndex}`}
                     seed={seed}
                     compilePreview={compilePreviewWithFrontmatter}
                     getCurrentMarkdownRef={getCurrentMarkdownRef}
@@ -756,7 +722,11 @@ const EditorInner: FC<EditorProps> = ({
                     initialCaret={blockStartOffset(seed.markdown, seed.blockIndex)}
                     compilePreview={compilePreviewWithFrontmatter}
                   />
-                ) : (
+                ) : null}
+                {/* Keep the form mounted so even invalid, unparsed draft
+                    entries survive mode switches. `hidden` removes its
+                    controls from layout, focus and the accessibility tree. */}
+                <div hidden={mode !== 'frontmatter'}>
                   <FrontmatterPanel
                     meta={meta}
                     rawSource={rawSource}
@@ -764,7 +734,7 @@ const EditorInner: FC<EditorProps> = ({
                     originalYamlRef={originalFrontmatterYamlRef}
                     onAuthoredChange={requestPreviewRecompileFromFrontmatter}
                   />
-                )}
+                </div>
               </ScrollableSection>
               <ScrollableSection>
                 <PreviewComponent source={previewContent} meta={meta} components={components} />
@@ -1101,7 +1071,12 @@ const WysiwygBridgeInstaller: FC<WysiwygBridgeInstallerProps> = ({
 };
 
 const Editor: FC<EditorProps> = props => (
-  <EditorProvider initialUser={props.user}>
+  <EditorProvider
+    key={`${props.rawSource?.kind ?? 'missing'}:${
+      props.rawSource?.kind === 'raw' ? props.rawSource.namespace ?? '' : ''
+    }:${props.route ?? props.content}`}
+    initialUser={props.user}
+  >
     <EditorInner {...props} />
   </EditorProvider>
 );

@@ -172,6 +172,8 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   const [isCompiling, setIsCompiling] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('clean');
   const [lastSavedAt, setLastSavedAt] = useState<number | undefined>(undefined);
+  const editVersionRef = useRef(0);
+  const savingVersionRef = useRef(0);
 
   // Save-state transitions are funnelled through these stable
   // callbacks so consumers don't have to think about the FSM. They are
@@ -179,11 +181,16 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   // unrelated state changes — important because they feed into Lexical
   // listener registration dep arrays downstream.
   const markDirty = useCallback(() => {
+    editVersionRef.current += 1;
     setSaveState(prev => (prev === 'saving' ? prev : 'dirty'));
   }, []);
-  const markSaving = useCallback(() => setSaveState('saving'), []);
+  const markSaving = useCallback(() => {
+    savingVersionRef.current = editVersionRef.current;
+    setSaveState('saving');
+  }, []);
   const markSaved = useCallback(() => {
-    setSaveState('saved');
+    // A completion only acknowledges the draft captured when saving began.
+    setSaveState(editVersionRef.current === savingVersionRef.current ? 'saved' : 'dirty');
     setLastSavedAt(Date.now());
   }, []);
   const markSaveFailed = useCallback(() => setSaveState('dirty'), []);

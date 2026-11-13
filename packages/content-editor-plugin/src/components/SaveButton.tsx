@@ -3,6 +3,7 @@ import { useSaveState } from '../EditorContext';
 import { ariaKeyshortcuts, formatShortcut, SHORTCUTS } from '../utils/shortcuts';
 interface SaveButtonProps {
   onSave: () => void;
+  disabled?: boolean;
 }
 /**
  * Save-trigger button. Reads its disabled state from the shared
@@ -22,9 +23,9 @@ interface SaveButtonProps {
  * `title` (not a Salt tooltip) — the CTA already says "Save" and
  * wrapping it would require special-casing the disabled state.
  */
-export const SaveButton = ({ onSave }: SaveButtonProps) => {
+export const SaveButton = ({ onSave, disabled = false }: SaveButtonProps) => {
   const { saveState } = useSaveState();
-  const isDisabled = saveState === 'saving';
+  const isDisabled = disabled || saveState === 'saving';
   const shortcutLabel = formatShortcut(SHORTCUTS.save);
   return (
     <Button

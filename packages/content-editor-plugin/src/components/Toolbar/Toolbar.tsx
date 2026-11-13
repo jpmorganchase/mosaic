@@ -13,6 +13,7 @@ import { FormattingToolbarSlotTarget } from '../FormattingToolbarSlot';
 
 interface ToolbarProps {
   onSave: () => void;
+  saveDisabled?: boolean;
 }
 
 /**
@@ -38,7 +39,7 @@ interface ToolbarProps {
  *     UX because formatting buttons can't operate on a raw
  *     textarea anyway.
  */
-const Toolbar = ({ onSave }: ToolbarProps) => {
+const Toolbar = ({ onSave, saveDisabled }: ToolbarProps) => {
   const { stopEditing } = useEditModeActions();
 
   return (
@@ -55,7 +56,7 @@ const Toolbar = ({ onSave }: ToolbarProps) => {
         <ToolbarSeparator />
       </Tooltray>
       <Tooltray aria-label="copy tooltray">
-        <SaveButton onSave={onSave} />
+        <SaveButton onSave={onSave} disabled={saveDisabled} />
       </Tooltray>
     </BaseToolbar>
   );
