@@ -35,7 +35,7 @@
     "directory": "packages/plugins"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^10.1.0",
+    "@apidevtools/json-schema-ref-parser": "^16.0.0",
     "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
     "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
     "@types/github-slugger": "^1.3.0",

@@ -138,7 +138,7 @@ const $RefPlugin: PluginType<RefsPluginPage, unknown, RefsPluginConfigData> = {
         'Cannot set refs after `RefPlugin` has reached `$beforeSend` lifecycle phase.'
       );
     };
-    const normalisedRefs = {};
+    const normalisedRefs: Record<string, RefsPluginPage> = {};
 
     if (config.data.refs) {
       // First pass of refs, normalises any $ref entries to expand wildcards

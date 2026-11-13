@@ -3,7 +3,9 @@ import { defineConfig } from 'vitest/config';
 /**
  * Root vitest config. Vitest 4 removed `defineWorkspace` /
  * `vitest.workspace.mts`; project definitions now live inside the root
- * config under `test.projects`.
+ * config under `test.projects`. Since Vitest 5, these inline projects
+ * inherit the root `test` options (`extends: true` is the default), and
+ * mock call history is cleared before every test (`clearMocks: true`).
  *
  * The two projects mirror what `yarn test:server` / `yarn test:client`
  * were running before the upgrade:
@@ -41,6 +43,9 @@ export default defineConfig({
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
+        // Next.js build output (e.g. `packages/site/.next/types/*.d.ts`)
+        // exists after a local site build and can't be parsed for coverage.
+        '**/.next/**',
         '**/__tests__/**',
         // `packages/theme` is build-time CSS-in-JS only — no test
         // surface and excluding it stops 90% empty coverage rows.
