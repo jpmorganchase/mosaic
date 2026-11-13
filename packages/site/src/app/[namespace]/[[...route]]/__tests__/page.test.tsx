@@ -10,6 +10,7 @@ const loaders = vi.hoisted(() => ({
   resolveMosaicMode: vi.fn()
 }));
 const editor = vi.hoisted(() => ({ enabled: false }));
+const connection = vi.hoisted(() => vi.fn(async () => {}));
 
 vi.mock('../../../../../../site-middleware/src/cachedLoaders.js', () => loaders);
 vi.mock('@jpmorganchase/mosaic-site-middleware', async () => ({
@@ -17,7 +18,7 @@ vi.mock('@jpmorganchase/mosaic-site-middleware', async () => ({
   ...(await vi.importActual('../../../../../../site-middleware/src/resolveContent.js')),
   serializeMdxForClient: async () => ({ compiledSource: '', frontmatter: {} })
 }));
-vi.mock('next/server', () => ({ connection: async () => {} }));
+vi.mock('next/server', () => ({ connection }));
 vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('not-found');
@@ -156,12 +157,19 @@ describe('static document paths', () => {
     ]);
   });
 
-  test('leaves active-mode paths to request-time resolution', async () => {
+  test('probes active-mode rendering without reading content or the sitemap', async () => {
     vi.stubEnv('MOSAIC_MODE', 'active');
-    const { generateStaticParams } = await import('../page');
+    const { default: Page, generateStaticParams } = await import('../page');
 
-    expect(await generateStaticParams()).toEqual([]);
+    const [probe] = await generateStaticParams();
+    expect(probe).toEqual({ namespace: '__mosaic_dynamic_probe__', route: [] });
     expect(loaders.loadSitemap).not.toHaveBeenCalled();
+    connection.mockRejectedValueOnce(new Error('prerender stops at connection'));
+    await expect(Page(request(probe.namespace, probe.route))).rejects.toThrow(
+      'prerender stops at connection'
+    );
+    expect(loaders.getMdxRaw).not.toHaveBeenCalled();
+    expect(loaders.getSharedConfig).not.toHaveBeenCalled();
   });
 });
 
