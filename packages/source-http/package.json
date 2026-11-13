@@ -32,9 +32,9 @@
     "directory": "packages/source-http"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-from-http-request": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-from-http-request": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "rxjs": "^7.5.5",
     "undici": "^8.12.4",
     "zod": "^4.6.7"

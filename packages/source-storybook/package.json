@@ -31,9 +31,9 @@
     "url": "git+https://github.com/jpmorganchase/mosaic.git"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-source-http": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-source-http": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "deepmerge": "^4.2.2",
     "lodash-es": "^4.17.23",
     "rxjs": "^7.5.5",

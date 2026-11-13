@@ -35,9 +35,9 @@
     "@types/proper-lockfile": "^4.1.4"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-source-local-folder": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "lodash-es": "^4.17.23",
     "proper-lockfile": "^4.1.2",
     "rxjs": "^7.5.5",

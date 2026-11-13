@@ -42,9 +42,9 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-icons": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-icons": "workspace:^",
+    "@jpmorganchase/mosaic-store": "workspace:^",
+    "@jpmorganchase/mosaic-theme": "workspace:^",
     "@salt-ds/core": "^1.63.0",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/recipes": "^0.2.1",
