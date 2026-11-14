@@ -39,11 +39,14 @@ export const Image: FC<ImageProps> = forwardRef(
       unoptimized = process.env.NEXT_PUBLIC_OPTIMIZE_IMAGES !== 'true',
       ...rest
     },
-    ref: Ref<HTMLDivElement>
+    ref: Ref<HTMLSpanElement>
   ) => {
     const resolvedSrc = useResolveRelativeUrl(src);
+    // A block-level `<span>` rather than a `<div>`: markdown images sit
+    // inside a paragraph, and a `<div>` there is invalid HTML that the
+    // browser splits out of the `<p>`, causing a hydration mismatch.
     return (
-      <div className={classnames(styles.root, className)} ref={ref}>
+      <span className={classnames(styles.root, className)} ref={ref}>
         {fill || (width && height) ? (
           <NextImage
             alt={alt}
@@ -62,7 +65,7 @@ export const Image: FC<ImageProps> = forwardRef(
             src={src.match(/^(http[s]?:)?\/{1,2}/) === null ? resolvedSrc : src}
           />
         )}
-      </div>
+      </span>
     );
   }
 );

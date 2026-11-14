@@ -5,6 +5,7 @@ export default {
     maxWidth: '100%'
   }),
   root: style({
+    display: 'block',
     position: 'relative'
   }),
   nextImage: style({
