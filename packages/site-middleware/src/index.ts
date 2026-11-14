@@ -17,3 +17,6 @@ export * from './resolveContent.js';
 // `/api/revalidate` route imports from here directly so Next.js' NFT
 // trace stays small.
 export * from './cacheTags.js';
+// `GET` route handler for site search, over `search-records.json`. The
+// search engine itself is the isomorphic `/search` subpath.
+export * from './searchHandler.js';

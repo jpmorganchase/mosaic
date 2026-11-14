@@ -1,11 +1,13 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import Slugger from 'github-slugger';
 import remarkParse from 'remark-parse';
 import { unified, Plugin } from 'unified';
 import remarkStringify from 'remark-stringify';
 import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
 import type { Heading as MarkdownHeading, Root } from 'mdast';
+import { createHeadingSlugger, resolveHeading, type PageValues } from './utils/pageOutline.js';
+
+export { resolveHeading };
 
 type TOCItem = { level: number; id: string; text: string };
 
@@ -21,41 +23,6 @@ interface TableOfContentsPluginConfigData {
   /** Pages with `{meta.*}` tokens that `$afterSource` couldn't resolve, keyed by full path. */
   tableOfContentsUnresolved?: Record<string, true>;
 }
-
-const META_TOKEN = /\{\s*meta((?:\.[A-Za-z_$][\w$]*)+)\s*\}/g;
-
-type PageValues = Record<string, unknown>;
-
-const lookup = (page: PageValues, path: string) =>
-  path
-    .slice(1)
-    .split('.')
-    .reduce<unknown>(
-      (value, key) => (value == null ? undefined : (value as PageValues)[key]),
-      page
-    );
-
-// Only strings and numbers render as text; React renders nothing for booleans and null.
-const asText = (value: unknown) =>
-  typeof value === 'string' || typeof value === 'number' ? String(value) : undefined;
-
-/**
- * Resolves every `{meta.<path>}` token in a heading against the page.
- *
- * `text` keeps tokens that don't resolve, so authors can spot them in the
- * table of contents. `slugText` drops them instead: they render as nothing,
- * and the heading's `id` is built from its rendered text.
- */
-export const resolveHeading = (page: PageValues, heading: string) => {
-  let resolved = true;
-  const text = heading.replace(META_TOKEN, (token, path) => {
-    const value = asText(lookup(page, path));
-    if (value === undefined) resolved = false;
-    return value ?? token;
-  });
-  const slugText = heading.replace(META_TOKEN, (_token, path) => asText(lookup(page, path)) ?? '');
-  return { text: text.trim(), slugText, resolved };
-};
 
 interface Heading {
   depth: number;
@@ -101,12 +68,12 @@ async function buildTableOfContents(
   // Slug every heading, not only the ones listed, as `rehype-slug` does
   // when it gives the rendered headings their ids. Repeated headings are
   // then numbered the same way in both.
-  const slugger = new Slugger();
+  const slug = createHeadingSlugger();
   const items: TOCItem[] = [];
   let resolved = true;
   for (const heading of headings) {
     const parsed = resolveHeading(page as unknown as PageValues, heading.value);
-    const id = slugger.slug(parsed.slugText);
+    const id = slug(parsed.slugText);
     if (heading.depth < minRank || heading.depth > maxRank) continue;
     resolved &&= parsed.resolved;
     items.push({

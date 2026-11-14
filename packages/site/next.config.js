@@ -135,11 +135,14 @@ const standaloneConfig = {
 module.exports = phase => {
   const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
   if (phase === PHASE_PRODUCTION_BUILD && mosaicMode === 'snapshot-file' && snapshotDir) {
-    // A clean checkout has the index in the snapshot. Expose it at the URL used by search.
-    const snapshotIndex = resolve(__dirname, snapshotDir, 'search-data.json');
-    const publicIndex = resolve(__dirname, 'public', 'search-data.json');
-    if (snapshotIndex !== publicIndex && existsSync(snapshotIndex)) {
-      copyFileSync(snapshotIndex, publicIndex);
+    // A clean checkout has the search files in the snapshot. Expose them at the
+    // URLs used by search in the browser, which static exports rely on.
+    for (const file of ['search-data.json', 'search-records.json']) {
+      const snapshotFile = resolve(__dirname, snapshotDir, file);
+      const publicFile = resolve(__dirname, 'public', file);
+      if (snapshotFile !== publicFile && existsSync(snapshotFile)) {
+        copyFileSync(snapshotFile, publicFile);
+      }
     }
   }
   return isExport
