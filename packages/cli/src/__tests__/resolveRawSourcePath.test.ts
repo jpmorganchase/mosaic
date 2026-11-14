@@ -63,6 +63,19 @@ const GIT: SourceModuleDefinition = {
 };
 
 describe('resolveRawSourcePath', () => {
+  test.each(['/mosaic/%2e%2e/secrets.mdx', '/mosaic/%2e%2e%2fsecrets.mdx', '/mosaic/bad%name'])(
+    'rejects encoded traversal or malformed escaping: %s',
+    url => expect(resolveRawSourcePath(url, [LOCAL]).kind).toBe('no-matching-source')
+  );
+
+  test('decodes filenames once and excludes query parameters', () => {
+    const result = resolveRawSourcePath('/mosaic/space%20and%2520.mdx?preview=1', [LOCAL]);
+    expect(result.kind).toBe('resolved');
+    if (result.kind === 'resolved') {
+      expect(result.filePath).toBe(path.resolve('/abs/content', 'space and%20.mdx'));
+    }
+  });
+
   test('resolves a prefixed URL to <rootDir>/<rest>', () => {
     const result = resolveRawSourcePath('/mosaic/getting-started/index.mdx', [LOCAL]);
     expect(result).toEqual({

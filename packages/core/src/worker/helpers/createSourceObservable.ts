@@ -1,8 +1,8 @@
 import { isObservable, map, catchError, throwError } from 'rxjs';
 import type { Observable } from 'rxjs';
-import path from 'path';
-import { escapeRegExp } from 'lodash-es';
 import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
+
+import { createPageTest } from '../../helpers/createPageTest.js';
 
 import { exponentialBackOffRetryStrategy } from './exponentialBackOffRetryStrategy.js';
 
@@ -39,13 +39,6 @@ export async function getSourceRefresh({
   return async () => {
     await api.refresh(options);
   };
-}
-
-function createPageTest(ignorePages, pageExtensions) {
-  const extTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(escapeRegExp).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
 }
 
 export default async function createSourceObservable(
