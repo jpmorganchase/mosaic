@@ -60,7 +60,9 @@ export function SearchInput() {
     <div className={styles.root} ref={wrapperRef}>
       <Input
         bordered
-        aria-label="Search"
+        // Salt's `Input` puts its own props on the wrapper; the label must be
+        // on the `<input>` for it to have an accessible name.
+        inputProps={{ 'aria-label': 'Search' }}
         startAdornment={<Icon name="search" />}
         endAdornment={
           searchTerm.length > 0 && (

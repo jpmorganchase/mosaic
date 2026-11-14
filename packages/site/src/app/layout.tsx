@@ -20,22 +20,9 @@ import { AUTH_ENABLED } from '../auth';
 import { amplitude, openSans, ptMono } from '../fonts';
 import { getSiteConfig } from '../lib/config';
 import { resolveSiteOrigin } from '../lib/siteOrigin';
+import { themePrefScript } from '../lib/themePrefScript';
 import { LiveReload } from './LiveReload';
 import { Providers } from './providers';
-
-// Theme-mode script that sets `data-mode` on `<html>` from
-// `localStorage` before first paint, preventing a dark-mode FOUC. It is
-// a plain inline `<script>` in the `<head>` below, so the browser runs
-// it while parsing the server HTML, before React hydrates. React never
-// executes scripts it renders on the client, which is fine: the root
-// layout's `<head>` is only rendered on full page loads, which is all
-// this script needs.
-const themePrefScript = `
-  try {
-    const theme = JSON.parse(localStorage.getItem("mosaic-theme-pref")).state.colorMode || "light";
-    document.documentElement.setAttribute("data-mode", theme);
-  } catch (e) { /* no-op */ }
-`;
 
 // `<SessionProvider>` (in `./providers`) is rendered without a
 // server-resolved `session` prop; when auth is enabled the client
