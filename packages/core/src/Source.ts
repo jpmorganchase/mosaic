@@ -16,7 +16,9 @@ import type {
   SerialiserModuleDefinition,
   SourceModuleDefinition,
   SourceSchedule,
-  SourceWorkflow
+  SourceWorkflow,
+  WorkflowDefaults,
+  WorkflowDefaultsInput
 } from '@jpmorganchase/mosaic-types';
 
 import FileAccess from './filesystems/FileAccess.js';
@@ -272,6 +274,35 @@ export default class Source {
     return this.#workflows.some(workflow => workflow.name === name);
   }
 
+  #findWorkflow(name: string): { workflow: SourceWorkflow } | { error: string } {
+    const found = this.#workflows.filter(workflow => workflow.name === name);
+    if (found.length === 0) {
+      return {
+        error: `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`
+      };
+    }
+    if (found.length > 1) {
+      return {
+        error: `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`
+      };
+    }
+    return { workflow: found[0] };
+  }
+
+  /** Inspect public save defaults without running the workflow action. */
+  async prepareWorkflow(
+    name: string,
+    filePath: string,
+    input: Omit<WorkflowDefaultsInput, 'route'>
+  ): Promise<WorkflowDefaults> {
+    const found = this.#findWorkflow(name);
+    if ('error' in found) throw new Error(found.error);
+    const { workflow } = found;
+    return workflow.prepare
+      ? workflow.prepare(this.#mergedOptions, workflow.options ?? {}, filePath, input)
+      : { supportsCommitMessage: false };
+  }
+
   /**
    * Runs workflow `name` and resolves once it has finished: `true` when
    * it ran, `false` (after reporting an ERROR) when it is missing,
@@ -283,25 +314,12 @@ export default class Source {
     filePath: string,
     data: unknown
   ): Promise<boolean> {
-    const foundWorkflows = this.#workflows.filter(workflow => workflow.name === name);
-
-    if (foundWorkflows.length === 0) {
-      sendWorkflowProgressMessage(
-        `[Mosaic][Source] workflow ${name} not found for ${this.id.description.toString()}`,
-        'ERROR'
-      );
+    const found = this.#findWorkflow(name);
+    if ('error' in found) {
+      sendWorkflowProgressMessage(found.error, 'ERROR');
       return false;
     }
-
-    if (foundWorkflows.length > 1) {
-      sendWorkflowProgressMessage(
-        `[Mosaic][Source] multiple workflows with "${name}" found for ${this.id.description.toString()}`,
-        'ERROR'
-      );
-      return false;
-    }
-
-    const [triggeredWorkflow] = foundWorkflows;
+    const triggeredWorkflow = found.workflow;
     let reportedFailure = false;
     const report: SendSourceWorkflowMessage = (message, status) => {
       if (status === 'ERROR') reportedFailure = true;

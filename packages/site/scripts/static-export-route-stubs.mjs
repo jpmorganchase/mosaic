@@ -57,7 +57,7 @@ const ACTIONS = [
   },
   {
     path: 'src/app/[namespace]/[[...route]]/persistAction.ts',
-    exports: ['startSave'],
+    exports: ['startSave', 'getSaveDefaults'],
     why: 'The save Server Action requires a server runtime; the content editor is not available in a static export.'
   }
 ];

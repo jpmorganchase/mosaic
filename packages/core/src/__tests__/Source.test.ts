@@ -444,6 +444,58 @@ describe('GIVEN Source', () => {
       sendWorkflowProgressMessageSpy.mockReset();
     });
 
+    test('THEN unsupported workflows explicitly report no message support without invoking the action', async () => {
+      expect(await source.prepareWorkflow('workflow-name', '/path/to/file', {})).toEqual({
+        supportsCommitMessage: false
+      });
+      expect(actionSpy).not.toHaveBeenCalled();
+    });
+
+    test('THEN inspection reports missing workflows', async () => {
+      await expect(source.prepareWorkflow('absent', '/path/to/file', {})).rejects.toThrow(
+        'not found'
+      );
+      expect(actionSpy).not.toHaveBeenCalled();
+    });
+
+    test('THEN configured defaults inspect the workflow without running its action', async () => {
+      const prepare = vi.fn(() => ({
+        supportsCommitMessage: true as const,
+        commitMessage: 'Configured default'
+      }));
+      const workflow = { name: 'save', options: { custom: 'option' }, prepare, action: actionSpy };
+      const configured = new Source(
+        { modulePath: 'plugin', namespace: 'docs' } as never,
+        { prefixDir: 'docs' },
+        [],
+        [],
+        {} as never,
+        [workflow]
+      );
+      expect(
+        await configured.prepareWorkflow('save', '/docs/page.mdx', { isNewPage: true })
+      ).toEqual({ supportsCommitMessage: true, commitMessage: 'Configured default' });
+      expect(prepare).toHaveBeenCalledExactlyOnceWith(
+        { prefixDir: 'docs' },
+        { custom: 'option' },
+        '/docs/page.mdx',
+        { isNewPage: true }
+      );
+      expect(actionSpy).not.toHaveBeenCalled();
+      const ambiguous = new Source(
+        { modulePath: 'plugin', namespace: 'docs' } as never,
+        {},
+        [],
+        [],
+        {} as never,
+        [workflow, workflow]
+      );
+      await expect(ambiguous.prepareWorkflow('save', '/docs/page.mdx', {})).rejects.toThrow(
+        'multiple workflows'
+      );
+      expect(prepare).toHaveBeenCalledOnce();
+    });
+
     test('THEN the workflow action is called', () => {
       source.triggerWorkflow(sendWorkflowProgressMessageSpy, 'workflow-name', '/path/to/file', {
         data: { name: 'test' }

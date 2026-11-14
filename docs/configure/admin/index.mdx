@@ -74,10 +74,34 @@ site's `.env.development` is ignored unless `NODE_ENV=development`.
   }
   ```
 
-  It can also carry `frontmatter`, `targetRoute` (rename) and `isNewPage: true` (create). The CLI
+  It can also carry `frontmatter`, `targetRoute` (rename), `isNewPage: true` (create) and an optional
+  `commitMessage` override. Messages must be nonblank text, at most 8 KiB of UTF-8, without control
+  characters other than LF or CRLF line endings. CRLF becomes LF. Omit the field to use the source's
+  configured default. The CLI
   responds `202 { "jobId": "…" }`, or with `{ "error": "…" }` and `400` (invalid request), `401`
   (wrong secret), `404` (page not found), `409` (new page already exists), `413` (too large) or `503`
   (secret not configured, or too many workflows running).
+
+- **`POST /workflows/defaults`** inspects the selected workflow before saving. It uses the same
+  workflow secret, route normalization and source ownership as `/workflows/jobs`. The site also
+  checks the signed-in editor before calling it. Its JSON body (up to 16 KiB) contains `name`,
+  `user`, `route`, and optionally `targetRoute` and `isNewPage`; it needs no page content:
+
+  ```json
+  {
+    "name": "save",
+    "user": { "sid": "jdoe", "name": "Jane Doe", "email": "jane@example.com" },
+    "route": "/mosaic/index"
+  }
+  ```
+
+  The response is either `{ "supportsCommitMessage": true, "commitMessage": "docs: update ..." }`
+  or `{ "supportsCommitMessage": false }`. Only these fields are returned, never source options or
+  credentials. The response is not cached. This lookup does not allocate a job, run a workflow
+  action, clone a repository or write content. Custom workflow `prepare` hooks must also remain
+  side-effect-free. Invalid requests or defaults return `400`, missing pages `404`, conflicting new
+  pages `409`, wrong secrets `401`, oversized requests `413`, and an unconfigured secret `503`.
+  See [Editor commit messages](../sources/git-repo-source#editor-commit-messages) for source settings.
 
 - **`GET /workflows/jobs/:jobId/events?user=<sid>`** streams the job's progress as
   `text/event-stream`. `user` must be the user the job was started for, otherwise the response is

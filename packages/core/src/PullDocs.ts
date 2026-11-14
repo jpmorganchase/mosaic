@@ -7,7 +7,8 @@ import {
   SourceModuleDefinition,
   PluginModuleDefinition,
   IUnionVolume,
-  SendSourceWorkflowMessage
+  SendSourceWorkflowMessage,
+  WorkflowDefaultsInput
 } from '@jpmorganchase/mosaic-types';
 import { mosaicConfigSchema, validateMosaicSchema } from '@jpmorganchase/mosaic-schemas';
 
@@ -128,6 +129,11 @@ export default class PullDocs {
       data,
       options
     );
+  }
+
+  /** Resolve public defaults using the same source selection as workflow execution. */
+  prepareWorkflow(name: string, filePath: string, input: Omit<WorkflowDefaultsInput, 'route'>) {
+    return this.#sourceManager.prepareWorkflow(name, filePath, input);
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {

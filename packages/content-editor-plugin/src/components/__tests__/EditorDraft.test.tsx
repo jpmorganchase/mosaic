@@ -75,7 +75,7 @@ function mountEditor(overrides: Partial<EditorProps> = {}) {
   return { ...view, props, changeMode };
 }
 
-test.each(['body', 'metadata', 'visual metadata', 'rename'])(
+test.each(['body', 'body across modes', 'metadata', 'visual metadata', 'rename'])(
   'preserves fragment directives in a %s save',
   async change => {
     const persist = vi.fn(async function* (
@@ -100,12 +100,18 @@ test.each(['body', 'metadata', 'visual metadata', 'rename'])(
       view.changeMode('source');
       view.changeMode('frontmatter');
       expect(screen.getByDisplayValue('Draft title')).toBeVisible();
-    } else if (change === 'body') {
+    } else if (change === 'body' || change === 'body across modes') {
       view.changeMode('source');
       expectedBody = body.replace('Original paragraph.', 'Edited paragraph.');
       fireEvent.change(screen.getByRole('textbox', { name: 'Markdown source editor' }), {
         target: { value: expectedBody }
       });
+      if (change === 'body across modes') {
+        view.changeMode('wysiwyg');
+        view.rerender(<Editor {...view.props} />);
+        view.changeMode('source');
+        expectedBody = expectedBody.trimEnd();
+      }
     }
     await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
     if (change === 'rename') {
@@ -246,4 +252,21 @@ test('preserves body edits when Visual mode rerenders after consuming its mode b
   view.rerender(<Editor {...view.props} />);
   view.changeMode('source');
   expect(screen.getByRole('textbox', { name: 'Markdown source editor' })).toHaveValue(edited);
+});
+
+test('pristine mode switches still prevent a message-only save', async () => {
+  modeState.mode = 'source';
+  const persist = vi.fn();
+  const view = mountEditor({
+    persist,
+    loadSaveDefaults: async () => ({ supportsCommitMessage: true, commitMessage: 'Source default' })
+  });
+  await screen.findByTestId('split-ready');
+  view.changeMode('wysiwyg');
+  view.changeMode('source');
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  const message = await screen.findByRole('textbox', { name: 'Commit message' });
+  await userEvent.type(message, ' with an explanation');
+  expect(screen.getByRole('button', { name: 'Raise Pull Request' })).toBeDisabled();
+  expect(persist).not.toHaveBeenCalled();
 });
