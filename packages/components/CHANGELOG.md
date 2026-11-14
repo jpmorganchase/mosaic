@@ -1,5 +1,168 @@
 # @jpmorganchase/mosaic-components
 
+## 1.0.0-beta.99
+
+### Patch Changes
+
+- 2ecdf25: Use React's built-in memoization in ViewStack and remove the use-memo-one dependency, whose peer range does not include React 19.
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- a1df13e: Keep the mobile header drawer open when its menu icon is tapped
+  
+  `useOutsideClick` checked whether a click was inside an element with
+  `contains()` after React had already re-rendered. The header drawer's
+  trigger hides its icon once the drawer opens, so a tap on the icon looked
+  like a click outside and closed the drawer straight away. It now uses the
+  click's `composedPath()`, which is fixed when the click is dispatched.
+- d1c795e: Align React peer dependencies with supported consumers. The store, icons, theme,
+  OpenAPI component and sitemap component accept React 18 or 19 and matching type
+  packages. Components and site components require React 19 types, matching their
+  existing React 19 runtime peer and the Next.js 16 site integration.
+- 915b9ae: Fix request timeouts, background work that failed silently, snapshot cleanup, and editor capability spoofing
+  
+  - **`requestTimeout` now works** for the HTTP, Readme, Storybook and Figma
+    sources. rxjs `fromFetch` replaced the Request's own abort signal, so the
+    timeout was ignored and a hung endpoint stalled the source. `fromHttpRequest`
+    takes a new `{ timeout }` option. It starts a fresh timer for every request,
+    including each scheduled poll, and covers reading the response body.
+  - **Symlinks are applied before the source update continues.** Core no longer
+    starts symlink creation without awaiting it, so `afterUpdate` plugins see
+    every alias, and a failure is reported for that source instead of crashing
+    the process with an unhandled rejection.
+  - **`BrokenLinksPlugin`** still checks links in the background, but checks at
+    most four pages at a time. A page that fails to parse or check is logged
+    instead of causing an unhandled rejection.
+  - **`mosaic build`** now empties the snapshot folder completely. Previously
+    sub-folders were never removed, so deleted or renamed pages lingered. A
+    `--name` that resolves to the output directory itself or outside it (for
+    example `.` or `../x`) is rejected, because that folder is emptied.
+  - **`StickyHeader`** removes its scroll listener on unmount.
+  - **Editor capabilities come only from the source.** Content could turn on the
+    editor for a source that doesn't declare `writable`, either by setting
+    `sourceCapabilities` or `sharedConfig.sourceCapabilities` in frontmatter,
+    by pulling one in with a `$ref`, or by receiving another source's namespace
+    shared config. Core and the site ignore capabilities in page frontmatter.
+    The `SharedConfigPlugin` now sets `sourceCapabilities` in every
+    `shared-config.json` from the source's declared capabilities after refs are
+    resolved, and no longer copies them into another source.
+- Updated dependencies [0c4d822]
+- Updated dependencies [d1c795e]
+- Updated dependencies [2ecdf25]
+- Updated dependencies [915b9ae]
+- Updated dependencies [915b9ae]
+  - @jpmorganchase/mosaic-icons@1.0.0-beta.99
+  - @jpmorganchase/mosaic-store@1.0.0-beta.99
+  - @jpmorganchase/mosaic-theme@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-git-repo",
-  "version": "0.1.0-beta.98",
+  "version": "1.0.0-beta.99",
   "author": "",
   "description": "Mosaic git repository source for core file system",
   "license": "Apache-2.0",
@@ -35,9 +35,9 @@
     "@types/proper-lockfile": "^4.1.4"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-source-local-folder": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "^1.0.0-beta.99",
+    "@jpmorganchase/mosaic-source-local-folder": "^1.0.0-beta.99",
+    "@jpmorganchase/mosaic-types": "^1.0.0-beta.99",
     "lodash-es": "^4.17.23",
     "proper-lockfile": "^4.1.2",
     "rxjs": "^7.5.5",

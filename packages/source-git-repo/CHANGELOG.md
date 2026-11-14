@@ -1,5 +1,180 @@
 # @jpmorganchase/mosaic-source-git-repo
 
+## 1.0.0-beta.99
+
+### Minor Changes
+
+- b581d8b: Refresh git repo sources as soon as Bitbucket reports a push
+  
+  ### Additions
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `POST /_mosaic_/webhooks/bitbucket` receives Bitbucket Data Center
+    "Repository → Push" webhooks. It refreshes the running git repo sources
+    whose `repo` (project key and slug, in any of the `/scm/`, SSH or
+    `/projects/…/repos/…` URL forms) and `branch` match the push, so merged
+    changes appear within seconds instead of at the next scheduled check
+    (30 minutes by default). Pushes within 5 seconds of each other refresh a
+    source once. The CLI replies `202` straight away and refreshes in the
+    background; the site is then revalidated as for any other update.
+  - The endpoint only exists when `MOSAIC_BITBUCKET_WEBHOOK_SECRET` is set. It
+    doesn't use `MOSAIC_ADMIN_SECRET`: requests must carry a valid
+    `X-Hub-Signature` (HMAC-SHA256 of the body with the secret) or get `401`.
+    Bodies are capped at 1 MB.
+  
+  **`@jpmorganchase/mosaic-core`**
+  
+  - `refreshSource(name)` asks a running source to check for changes now.
+    Unlike `restartSource`, the source keeps serving its pages and its caches.
+    It resolves to `false` for sources that can't refresh on demand.
+  - `getSourceDefinition(name)` returns the definition a running source was
+    started with.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - Sources can implement an optional `refresh(options)` hook, which
+    `refreshSource` calls in the source's worker.
+  
+  **`@jpmorganchase/mosaic-source-git-repo`**
+  
+  - Implements `refresh`: it fetches and pulls new commits the same way a
+    scheduled check does.
+  - `Repo.checkForChanges()` runs that check on demand. Checks no longer
+    overlap: one requested while another runs (a webhook during a scheduled
+    fetch) runs once more afterwards.
+  
+  Scheduled checks are unchanged and remain the fallback for missed
+  deliveries. See "Refresh on push" in the git repo source docs.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- 3b956ae: Keep repository credentials out of command failures and Bitbucket save errors. Capture one Git revision per timestamp batch and consume the bulk map directly, avoiding a subprocess for every cached page.
+  
+  Retry failed site invalidations with a request deadline and bounded backoff, preserve updates arriving during delivery, and cancel notification work when the server closes. Add `mosaic serve --host` with the existing loopback default so container deployments can explicitly bind to `0.0.0.0`.
+- Updated dependencies [b581d8b]
+- Updated dependencies [0c4d822]
+- Updated dependencies [5476067]
+- Updated dependencies [915b9ae]
+- Updated dependencies [0c4d822]
+- Updated dependencies [168391e]
+- Updated dependencies [41e8af3]
+- Updated dependencies [5d69155]
+  - @jpmorganchase/mosaic-types@1.0.0-beta.99
+  - @jpmorganchase/mosaic-source-local-folder@1.0.0-beta.99
+  - @jpmorganchase/mosaic-schemas@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes
