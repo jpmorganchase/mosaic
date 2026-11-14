@@ -83,6 +83,12 @@ The file is marked `'use client'`, so the components it registers must work in t
 
 To add your own layouts, replace `mosaicLayouts` in `StoreShell` with `{ ...mosaicLayouts, MyLayout }`. Import global CSS and fonts in `layout.tsx`.
 
+Salt adds its component styles and its theme settings (density, accent, corners and fonts) in the browser, after the page hydrates. Without them in the server HTML, every page changes size as it hydrates. The reference `layout.tsx` adds them to the server HTML, and your `layout.tsx` should do the same:
+
+- Import `@salt-ds/core/css/salt-core.css` and `@salt-ds/icons/css/salt-icon.css` before `@jpmorganchase/mosaic-site-preset-styles/index.css`, so Mosaic's styles still override Salt's.
+- Set `data-accent`, `data-corner`, `data-heading-font` and `data-action-font` on `<html>`, with the values `ThemeProvider` passes to Salt.
+- Use the inline theme script from `src/lib/themePrefScript.ts`. It sets `data-mode` and Salt's density class before the first paint.
+
 The optional catch-all also renders single-segment documents and aliases, such as `/about` or `/quickstart`. The first URL segment is only a boundary for the persistent frame; it does not have to match a source's `namespace` or `prefixDir`. Folder index URLs continue to resolve through the content loaders. The sidebar stays with each page so it follows updated content.
 
 Initial server HTML uses the layout's fallback config and the index route associated with that config. `<FrameSync>` applies the page's canonical route and config before the first client paint; layouts do not receive their child page's route data.

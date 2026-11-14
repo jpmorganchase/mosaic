@@ -1653,6 +1653,7 @@ __metadata:
     "@next/env": "npm:^16.4.6"
     "@playwright/test": "npm:^1.65.0"
     "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/icons": "npm:^1.18.0"
     "@types/node": "npm:^24.0.0"
     "@types/react": "npm:^19.0.0"
     clsx: "npm:^2.0.0"

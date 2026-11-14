@@ -10,6 +10,11 @@
  * First-time visitors have nothing stored, and storage can be blocked or
  * hold a malformed value. All of those fall back to the store's default
  * mode, `light`, rather than leaving `data-mode` unset until hydration.
+ *
+ * It also sets Salt's density class, which `ThemeProvider` would otherwise
+ * add after hydration: Salt's sizes depend on it, so every page grew when it
+ * hydrated. Density is `touch` below Salt's `md` breakpoint (960px) and `low`
+ * from it, as in `ThemeProvider`.
  */
 export const themePrefScript = `
   (function () {
@@ -19,5 +24,7 @@ export const themePrefScript = `
       theme = (stored && stored.state && stored.state.colorMode) || theme;
     } catch (e) { /* storage unavailable or malformed */ }
     document.documentElement.setAttribute("data-mode", theme);
+    var wide = window.matchMedia && window.matchMedia("(min-width: 960px)").matches;
+    document.documentElement.classList.add(wide ? "salt-density-low" : "salt-density-touch");
   })();
 `;

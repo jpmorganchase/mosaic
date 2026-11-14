@@ -11,6 +11,12 @@
 import classnames from 'clsx';
 import type { Metadata } from 'next';
 
+// Salt injects its component styles from the browser only, so the server
+// HTML had none and every page changed size when it hydrated. Its prebuilt
+// styles put them in the server HTML. They come first so Mosaic's overrides
+// still win, as they do over the styles Salt injects at the top of <head>.
+import '@salt-ds/core/css/salt-core.css';
+import '@salt-ds/icons/css/salt-icon.css';
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import '@jpmorganchase/mosaic-sitemap-component/index.css';
 import '../css/index.css';
@@ -79,6 +85,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       // hydration warning for *this* element only. Children are still
       // diffed normally.
       suppressHydrationWarning
+      // `ThemeProvider` sets these through Salt after hydration. Rendering
+      // them here styles the server HTML as it will look once hydrated, so
+      // pages don't change size. Keep them in step with its props.
+      data-accent="teal"
+      data-corner="rounded"
+      data-heading-font="Amplitude"
+      data-action-font="Amplitude"
       className={classnames(
         'salt-theme',
         'salt-theme-next',
