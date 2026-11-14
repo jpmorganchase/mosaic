@@ -13,8 +13,7 @@ import { defineConfig } from 'vitest/config';
  *  - `server` — Node environment, runs server-side suites in
  *    `cli`, `core`, `fromHttpRequest`, `plugins`, `site-middleware`,
  *    and the `source-*` packages, plus pure-TS helpers under
- *    `packages/site/src`. Polyfills `globalThis.Request` so libs like
- *    msw work.
+ *    `packages/site/src`.
  *
  *  - `client` — jsdom environment, runs React-component suites in the
  *    legacy packages (`ReactLive.test.tsx` only) and the broader
@@ -80,7 +79,6 @@ export default defineConfig({
             // and publishing (scripts/snapshot).
             'scripts/snapshot/__tests__/*.test.mjs'
           ],
-          setupFiles: ['./scripts/vitest/vitest.server.setup.mts'],
           exclude: [
             ...COMMON_EXCLUDES,
             // `WorkerSubscription.test.ts` predates the vitest

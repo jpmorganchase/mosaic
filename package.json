@@ -9,7 +9,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^22.13.0 || >=24"
+    "node": ">=24"
   },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",

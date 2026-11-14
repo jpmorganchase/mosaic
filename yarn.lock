@@ -1431,12 +1431,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-from-http-request@workspace:packages/fromHttpRequest"
   dependencies:
-    event-target-polyfill: "npm:^0.0.3"
     fast-content-type-parse: "npm:^1.1.0"
     msw: "npm:^2.14.6"
     rxjs: "npm:^7.5.5"
     undici: "npm:^8.12.4"
-    yet-another-abortcontroller-polyfill: "npm:0.0.4"
   languageName: unknown
   linkType: soft
 
@@ -7303,13 +7301,6 @@ __metadata:
     "@types/node": "npm:*"
     require-like: "npm:>= 0.1.1"
   checksum: 10/27366ad289e679135387e8030a3b4ccfc5cc7719137e4b3192a2fa045924d8f0acecaf62602db490505d18731fbe605cb46a970490dcd3c5647a359441c1a70c
-  languageName: node
-  linkType: hard
-
-"event-target-polyfill@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "event-target-polyfill@npm:0.0.3"
-  checksum: 10/ba3bea3dd57800d239c1a1c7168a7d4b0692a91f4ecc849a51dad85eb0fbf6c4a07dd1536014570685da9ce4436ed39ab3cb67b2540d7f75b87c7ae3f262ce12
   languageName: node
   linkType: hard
 
@@ -14140,13 +14131,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 10/abb3e37678d6e38ea85485ed86ebe0d1e3464c640d7d9069805ea0da12f69d5a32df8e5625e370f9c96dd1c2dc088ab2d0a4dd32af18222ef3c4224a19471576
-  languageName: node
-  linkType: hard
-
-"yet-another-abortcontroller-polyfill@npm:0.0.4":
-  version: 0.0.4
-  resolution: "yet-another-abortcontroller-polyfill@npm:0.0.4"
-  checksum: 10/e6d14a3491c7720cbbff63efd7c3a366afaa4ef4fef804e926e298bb7f8a5dbaf933f44039febc163a930fdefdfcd5a2d92ec80f6d67a35238cb097278e47bc7
   languageName: node
   linkType: hard
 
