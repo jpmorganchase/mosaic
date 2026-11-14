@@ -53,7 +53,7 @@
     "directory": "packages/serialisers"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "js-yaml": "^4.3.2"
   },
   "devDependencies": {

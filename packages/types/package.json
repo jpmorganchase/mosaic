@@ -28,7 +28,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
     "memfs": "^4.0.0",
     "rxjs": "^7.5.5",
     "tinyglobby": "^0.2.17"
