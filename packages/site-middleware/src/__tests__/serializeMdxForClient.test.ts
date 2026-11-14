@@ -39,3 +39,54 @@ describe('serializeMdxForClient compile cache', () => {
     expect(second).not.toBe(first);
   });
 });
+
+describe('serializeMdxForClient heading ids', () => {
+  const compiled = async (source: string, scope?: Record<string, unknown>) => {
+    const result = await serializeMdxForClient(source, { highlight: false, scope });
+    if (!('compiledSource' in result)) throw new Error('compile failed');
+    return result.compiledSource;
+  };
+
+  test('resolves meta tokens in headings before slugging them', async () => {
+    const source = [
+      '---',
+      'title: Card',
+      'data:',
+      '  example: { title: Card example }',
+      '---',
+      '# {meta.title}',
+      '',
+      '## Examples for {meta.title}',
+      '',
+      '## {meta.data.example.title}',
+      ''
+    ].join('\n');
+    const code = await compiled(source);
+    expect(code).toContain('id: "card"');
+    expect(code).toContain('id: "examples-for-card"');
+    expect(code).toContain('id: "card-example"');
+  });
+
+  test('numbers repeated headings consistently when one is a meta token', async () => {
+    const code = await compiled('---\ntitle: Usage\n---\n## {meta.title}\n\n## Usage\n');
+    expect(code).toContain('id: "usage"');
+    expect(code).toContain('id: "usage-1"');
+  });
+
+  test('leaves unresolved and non-text values as expressions', async () => {
+    const code = await compiled(
+      '---\nflag: true\n---\n## About {meta.missing}\n\n## A {meta.flag}\n'
+    );
+    expect(code).toContain('id: "about-"');
+    expect(code).toContain('id: "a-"');
+    expect(code).toContain('meta.missing');
+    expect(code).toContain('meta.flag');
+  });
+
+  test('uses the meta passed in scope', async () => {
+    const code = await compiled('---\ntitle: Ignored\n---\n## {meta.title}\n', {
+      meta: { title: 'From scope' }
+    });
+    expect(code).toContain('id: "from-scope"');
+  });
+});
