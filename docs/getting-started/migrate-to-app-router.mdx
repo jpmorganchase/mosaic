@@ -248,6 +248,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 - **Docker:** the reference Dockerfiles use Node.js 24 and set `MOSAIC_MODE=active` in both the build and run stages. Do the same in your own images if they read from a running CLI. They also set `MOSAIC_OUTPUT=standalone` in the build stage, which makes `next.config.js` emit the `.next/standalone` server they copy into the runtime image.
 - **Network:** only the site's server needs to reach the CLI, through `MOSAIC_ACTIVE_MODE_URL` and `MOSAIC_WORKFLOWS_URL`, over plain HTTP. You no longer need to expose the CLI to browsers or allow WebSockets. Proxies must not buffer `text/event-stream` responses, from the CLI or from the site's `/api/workflows/` routes. If you run several CLI instances, a save's progress must be read from the instance that started it.
 - **Static export (optional):** `yarn build:static:file` builds a fully static `out/` folder that any CDN can serve. See [Static export](../configure/modes/static-export).
+- **Security headers:** the reference `next.config.js` sends `Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'`, `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`, and turns off `X-Powered-By`. Copy them into your config. A static export ignores `next.config.js` headers, so set them in your hosting layer instead. If other sites embed your pages, add their origins to `frame-ancestors`.
 - **Snapshots:** rebuild your snapshots with the new `mosaic build`.
 
 ## Checklist
