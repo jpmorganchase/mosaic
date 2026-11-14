@@ -18,7 +18,13 @@ const missingPage = '/mosaic/test/this-page-does-not-exist';
 /** Console errors a page is expected to log, and why. */
 const expectedErrors: Record<string, RegExp[]> = {
   // The fixture uses a layout that doesn't exist, to test the fallback.
-  '/mosaic/test/layouts/edit': [/^Layout Edit is not supported, defaulting to FullWidth$/]
+  '/mosaic/test/layouts/edit': [/^Layout Edit is not supported, defaulting to FullWidth$/],
+  // DocumentAssetsPlugin links docs images into public/images during
+  // `mosaic build`. CI builds the site from the committed snapshot without
+  // running it, so the page's example image isn't there.
+  '/mosaic/configure/plugins/document-assets-plugin': [
+    /^404 \/images\/mosaic\/configure\/plugins\/images\/mosaic\.jpg$/
+  ]
 };
 
 // A page prefetches each of its links once or twice.
