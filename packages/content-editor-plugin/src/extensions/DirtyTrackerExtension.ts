@@ -70,17 +70,20 @@
  * Filter rationale (preserved verbatim from the React plugin)
  * -----------------------------------------------------------
  * Lexical fires `registerUpdateListener` on every update, including
- * the synthetic `history-merge`/`historic` updates emitted during
- * initial state hydration and undo replay, plus pure selection
- * moves that have no `dirtyElements` / `dirtyLeaves`. Marking the
- * document dirty on any of those would leave the save pill stuck
- * on "Edited" before the user touched a key.
+ * the synthetic `history-merge` updates emitted during initial state
+ * hydration, plus pure selection moves that have no `dirtyElements` /
+ * `dirtyLeaves`. Marking the document dirty on any of those would
+ * leave the save pill stuck on "Edited" before the user touched a key.
  *
- *   - `tags.has('history-merge' | 'historic')` — Lexical's canonical
- *     signal for "this update was caused by us, not by the user".
+ *   - `tags.has('history-merge')` — Lexical's canonical signal for
+ *     "this update was caused by us, not by the user".
  *   - `dirtyElements.size === 0 && dirtyLeaves.size === 0` — the
  *     selection-only case. Lexical fires the update listener for
  *     caret moves too; we don't want those.
+ *
+ * Undo/redo (`historic`) updates are deliberately tracked: after a
+ * save they can restore unsaved content, so they must re-arm the
+ * leave guard.
  *
  * The `armed` flag inside the closure guards the very first
  * update (the initial state load). It's a closure variable rather
@@ -116,7 +119,7 @@ export function registerDirtyTracker(
       armed = true;
       return;
     }
-    if (tags.has('history-merge') || tags.has('historic')) return;
+    if (tags.has('history-merge')) return;
     if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
     markDirty();
   });

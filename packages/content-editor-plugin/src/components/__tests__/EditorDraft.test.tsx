@@ -7,7 +7,8 @@ import type { EditorMode } from '../../useEditorMode';
 const modeState = vi.hoisted(() => ({
   mode: 'frontmatter' as EditorMode,
   prepareModeFlip: undefined as ((mode: EditorMode) => void) | undefined,
-  openSave: undefined as (() => void) | undefined
+  openSave: undefined as (() => void) | undefined,
+  saveState: undefined as string | undefined
 }));
 vi.mock('../../useEditorMode', () => ({ useEditorMode: () => ({ mode: modeState.mode }) }));
 vi.mock('../Toolbar/Toolbar', async () => {
@@ -27,7 +28,15 @@ vi.mock('../Toolbar/Toolbar', async () => {
 vi.mock('../StatusBanner', () => ({ default: () => null }));
 vi.mock('../RouteNoticeBanner', () => ({ default: () => null }));
 vi.mock('../ShortcutHelpDialog', () => ({ ShortcutHelpDialog: () => null }));
-vi.mock('../../plugins/LeaveGuardPlugin', () => ({ LeaveGuardPlugin: () => null }));
+vi.mock('../../plugins/LeaveGuardPlugin', async () => {
+  const { useSaveState } = await import('../../EditorContext');
+  return {
+    LeaveGuardPlugin: () => {
+      modeState.saveState = useSaveState().saveState;
+      return null;
+    }
+  };
+});
 vi.mock('../../plugins/KeyboardShortcutsPlugin', () => ({ KeyboardShortcutsPlugin: () => null }));
 vi.mock('react-split', () => ({
   default: ({ children }: { children: ReactNode }) => (
@@ -138,6 +147,45 @@ test('retains invalid YAML and valid fields through repeated mode round trips', 
     target: { value: 'enabled: false\n' }
   });
   expect(screen.getByRole('button', { name: 'Review save' })).toBeEnabled();
+});
+
+test('recompiles the preview when an invalid frontmatter edit becomes valid', async () => {
+  const compilePreview = vi.fn(async (_source: string) => ({
+    compiledSource: '',
+    frontmatter: {},
+    scope: {}
+  }));
+  mountEditor({ compilePreview });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('enabled: true'), {
+    target: { value: 'enabled: [' }
+  });
+  fireEvent.change(screen.getByDisplayValue('enabled: ['), {
+    target: { value: 'enabled: false\n' }
+  });
+  await waitFor(() =>
+    expect(compilePreview).toHaveBeenCalledWith(expect.stringContaining('enabled: false'))
+  );
+});
+
+test('guards a frontmatter field reverted to its on-disk value after a save', async () => {
+  const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+    yield { kind: 'complete', prHref: null };
+  });
+  mountEditor({ persist });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('Authored title'), {
+    target: { value: 'Draft title' }
+  });
+  expect(modeState.saveState).toBe('dirty');
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+  await waitFor(() => expect(modeState.saveState).toBe('saved'));
+  // The saved change and the on-disk file both differ from this draft.
+  fireEvent.change(screen.getByDisplayValue('Draft title'), {
+    target: { value: 'Authored title' }
+  });
+  expect(modeState.saveState).toBe('dirty');
 });
 
 test('resets the whole draft when the host changes the backing document', async () => {
