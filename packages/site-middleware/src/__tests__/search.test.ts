@@ -71,7 +71,17 @@ const records: SearchRecord[] = [
     description: 'A button that can be on or off.'
   }),
   ...page('/salt/components/dropdown/index', 'Dropdown', {
-    description: 'Select one option from a list.'
+    description: 'Choose one option from a list.',
+    keywords: ['Select', 'Picklist']
+  }),
+  ...page('/salt/patterns/selectable-card', 'Selectable card', {
+    intro: 'A card the reader can choose.'
+  }),
+  ...page('/salt/components/checkbox/index', 'Checkbox', {
+    description: 'Check any number of options.'
+  }),
+  ...page('/salt/patterns/validation', 'Validation', {
+    sections: [['Check', 'Validate each field before you submit.']]
   }),
   ...page('/salt/components/combo-box/index', 'Combo box', {
     description: 'Type to filter a list of options.'
@@ -185,6 +195,22 @@ describe('createSearchIndex', () => {
 
   test('searches keywords', () => {
     expect(hrefs('cta')).toEqual(['/salt/components/button/index']);
+    expect(hrefs('picklist')).toEqual(['/salt/components/dropdown/index']);
+  });
+
+  test('ranks a whole word in keywords with the start of a word in a title', () => {
+    expect(hrefs('select')).toEqual([
+      '/salt/components/dropdown/index',
+      '/salt/patterns/selectable-card'
+    ]);
+  });
+
+  test('ranks the start of a word in a title above the whole word in a heading', () => {
+    // Checkbox also has "Check" in its description, which mustn't hide its title match.
+    expect(hrefs('check')).toEqual([
+      '/salt/components/checkbox/index',
+      '/salt/patterns/validation#check'
+    ]);
   });
 
   test('only returns results that match the most query words', () => {

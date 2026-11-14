@@ -22,7 +22,10 @@ const FIELD_RANK: Record<Field, number> = {
   description: 3,
   text: 4
 };
-const UNMATCHED_RANK = 5;
+// A word matched only as the start of a longer word counts one level lower, so
+// "select" ties the Selectable title with the keyword Select.
+const PREFIX_PENALTY = 1;
+const UNMATCHED_RANK = FIELD_RANK.text + PREFIX_PENALTY + 1;
 // Weights the relevance score: the last tie-break, and which hits are kept when
 // there are more than MAX_CANDIDATES. The ranking itself uses FIELD_RANK.
 const BOOST: Record<Field, number> = {
@@ -140,13 +143,21 @@ interface WordMatch {
 }
 
 /**
- * For each query word: its best match in the hit, and every way it can be
- * spelled in the hit (the word, or a plural, synonym or typo it matched).
+ * For each query word:
+ *
+ * - `best`: its best match in the hit, which counts towards typos and synonyms;
+ * - `cost`: where it matched (see `FIELD_RANK`), from its best match without a
+ *   typo, with a match on only the start of a word one level lower. Typo
+ *   matches count only when the word has no other match;
+ * - `spellings`: every way it's spelled in the hit (the word, or a plural,
+ *   synonym or typo it matched).
  */
 function matchWords(queryWords: QueryWord[], hit: MiniSearchResult) {
   const matched = Object.entries(hit.match) as [string, Field[]][];
   return queryWords.map(queryWord => {
     let best: WordMatch | undefined;
+    let cost = Infinity;
+    let typoCost = Infinity;
     const spellings = new Set([queryWord.word]);
     for (const [term, fields] of matched) {
       const kind = classify(queryWord, term);
@@ -157,6 +168,11 @@ function matchWords(queryWords: QueryWord[], hit: MiniSearchResult) {
         spellings.add(term);
       }
       const rank = Math.min(...fields.map(field => FIELD_RANK[field]));
+      if (kind === 'typo') {
+        typoCost = Math.min(typoCost, rank);
+      } else {
+        cost = Math.min(cost, rank + (kind === 'prefix' ? PREFIX_PENALTY : 0));
+      }
       if (
         !best ||
         KIND_ORDER[kind] < KIND_ORDER[best.kind] ||
@@ -165,7 +181,11 @@ function matchWords(queryWords: QueryWord[], hit: MiniSearchResult) {
         best = { kind, rank, term };
       }
     }
-    return { best, spellings: [...spellings] };
+    return {
+      best,
+      cost: !best ? UNMATCHED_RANK : cost === Infinity ? typoCost : cost,
+      spellings: [...spellings]
+    };
   });
 }
 
@@ -218,7 +238,8 @@ const defaultPageRank = (record: SearchRecord) => (/\/index$/.test(record.route)
  * 3. the current namespace (see `SearchOptions.namespace`);
  * 4. the number of typos;
  * 5. the number of words matched by a synonym;
- * 6. where the words matched: title, then keywords, headings, description and text;
+ * 6. where the words matched: title, then keywords, headings, description and text,
+ *    with a match on only the start of a word counting one place lower;
  * 7. the section heading matching the whole query;
  * 8. `pageRank`;
  * 9. the page introduction before its sections, and outer sections before inner ones;
@@ -346,9 +367,7 @@ export function createSearchIndex(
       const wordsMatched = compactMatch ? queryWords.length : matches.filter(Boolean).length;
       const count = (kind: MatchKind) =>
         compactMatch ? 0 : matches.filter(match => match?.kind === kind).length;
-      const attribute = compactMatch
-        ? 0
-        : matches.reduce((sum, match) => sum + (match?.rank ?? UNMATCHED_RANK), 0);
+      const attribute = compactMatch ? 0 : wordMatches.reduce((sum, { cost }) => sum + cost, 0);
       // Exact when the text is the query as the reader meant it: with any typos,
       // plurals or synonyms swapped for the words they matched, and spaces ignored.
       const spellings = wordMatches.map(match => match.spellings);
