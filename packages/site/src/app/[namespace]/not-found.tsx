@@ -1,5 +1,5 @@
 /**
- * 404 inside a namespace (`notFound()` from `[[...route]]/page.tsx`).
+ * 404 inside a namespace (`notFound()` from `[...route]/page.tsx`).
  *
  * Rendered within the namespace layout, so the persistent header is
  * already on screen. Next.js renders the boundary in ordinary page
