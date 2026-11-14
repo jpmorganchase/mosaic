@@ -18,6 +18,7 @@
  * forwarded. The CLI authenticates us with `MOSAIC_WORKFLOWS_SECRET`.
  */
 import { checkEditor, getWorkflowsBaseUrl, getWorkflowsSecret } from '../../../lib/workflows';
+import { MAX_FRONTMATTER_BYTES, MAX_MARKDOWN_BYTES } from '../../../lib/editorLimits';
 import { isSafeRoute } from '../../../lib/routes';
 
 export interface PersistInput {
@@ -56,9 +57,6 @@ export type StartSaveResult = { jobId: string } | { error: string };
 
 /** How long to wait for the CLI to accept the job (not for the save itself). */
 const START_TIMEOUT_MS = 30_000;
-
-const MAX_MARKDOWN_BYTES = 2 * 1024 * 1024;
-const MAX_FRONTMATTER_BYTES = 256 * 1024;
 
 /** Returns an error message for an invalid payload, `null` when it's fine. */
 function validateInput(input: PersistInput): string | null {

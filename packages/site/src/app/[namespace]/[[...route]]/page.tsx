@@ -97,6 +97,15 @@ export async function generateStaticParams(): Promise<{ namespace: string; route
     return [{ namespace: '__mosaic_dynamic_probe__', route: [] }];
   }
   const urls = await loadSitemap();
+  // `loadSitemap` returns [] when `sitemap.xml` is missing or unreadable.
+  // Prerendering nothing would still produce a "successful" build that
+  // renders every page on its first request, so fail the build instead.
+  if (urls.length === 0) {
+    throw new Error(
+      '[mosaic-site] sitemap.xml is missing or empty, so no pages would be prerendered. ' +
+        'Check that the snapshot was generated with SiteMapPlugin and that MOSAIC_SNAPSHOT_DIR points at it.'
+    );
+  }
   const routes = new Map<string, { namespace: string; route: string[] }>();
   for (const url of urls) {
     const [namespace, ...route] = url.split('/').filter(Boolean);

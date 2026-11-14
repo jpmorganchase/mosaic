@@ -52,7 +52,9 @@ export default async function pluginRunner(
         path.posix.extname(plugin.modulePath)
       );
       console.error(
-        `[Mosaic][Core] '${pluginName}' threw an exception running \`${lifecycleName}\``
+        `[Mosaic][Core] '${pluginName}' threw an exception running \`${lifecycleName}\`${
+          exception?.fullPath ? ` for '${exception.fullPath}'` : ''
+        }`
       );
       console.error(`[Mosaic][Core] ${exception.stack}`);
 
