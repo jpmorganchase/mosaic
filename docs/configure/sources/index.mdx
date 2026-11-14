@@ -78,6 +78,8 @@ Out of the box, Mosaic provides 3 source "types":
 
 Sources must expose an observable interface so it is possible to compose sources together e.g. the Git Repo source uses the Local Folder source internally to watch the cloned folder for changes.
 
+To bring in content from somewhere else, [write a source](./write-a-source).
+
 ## Watching for Updates
 
 When running in [active mode](../modes/active), Mosaic will watch for any changes to the source content and if a change is detected, will initiate a pull of that new content.
