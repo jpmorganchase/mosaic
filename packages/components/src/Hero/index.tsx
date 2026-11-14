@@ -124,7 +124,7 @@ export const Hero: React.FC<React.PropsWithChildren<HeroProps>> = ({
       role="banner"
       {...rest}
     >
-      <div className={styles.heading} role="heading">
+      <div className={styles.heading}>
         {eyebrow ? <Eyebrow className={styles.eyebrow}>{eyebrow}</Eyebrow> : null}
         {typeof title === 'string' ? formatTitle(isFullWidth, title, 'title') : title}
         {datestamp ? (
