@@ -31,12 +31,12 @@ other static host.
 - Every page enumerated by the snapshot's `sitemap.xml` (typically every
   doc in your sources).
 - `robots.txt` and `sitemap.xml`.
-- All static assets from `public/`.
+- All static assets from `public/`, including the snapshot's `search-data.json` and `search-records.json`.
 - Stubbed `app/api/*` route handlers that return HTTP 501. These exist
   only because Next.js refuses to emit a static export when the route
   files are present but cannot be statically pre-rendered; the stubs are
   applied automatically before the build and reverted afterwards. **You
-  cannot use the auth, preview, or revalidate API routes in a static
+  cannot use the auth, preview, revalidate, or search API routes in a static
   export.**
 
 ## What does **not** work in a static export
@@ -48,6 +48,7 @@ other static host.
 | `/api/auth/*` (Auth.js)        | Auth.js needs a server                                               | Auth-gated sites must run in the regular (non-export) build                                                      |
 | `/api/content/preview`         | Same — needs a server                                                | Editor preview requires the regular build                                                                        |
 | `/api/revalidate`              | Same — no ISR in a static export                                     | Re-run the build to publish content changes                                                                      |
+| `/api/search`                  | Same — needs a server                                                | Search `/search-records.json` in the browser with `@jpmorganchase/mosaic-site-middleware/search`                 |
 | `next/image` optimisation      | Disabled in export builds                                            | Images are served as-is (`images.unoptimized: true`)                                                             |
 
 If your site relies on any of these features, deploy the regular Node

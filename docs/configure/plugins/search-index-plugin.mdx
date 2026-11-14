@@ -111,6 +111,39 @@ Results are ranked like Algolia's tie-breaking criteria. Each one only decides b
 
 `highlight(text, result.terms)` splits a title or snippet into matching and other parts, to render the matches without using HTML from the index.
 
+### Search API
+
+`createSearchHandler` from `@jpmorganchase/mosaic-site-middleware` is a `GET` route handler that searches the site's records on the server:
+
+```ts
+// app/api/search/route.ts
+import { createSearchHandler } from '@jpmorganchase/mosaic-site-middleware';
+
+export const dynamic = 'force-dynamic';
+
+export const GET = createSearchHandler({ synonyms: [['dropdown', 'combobox']] });
+```
+
+`GET /api/search?q=date+picker&namespace=salt` responds with `{ query, results }`.
+
+| Parameter  | Description                                                                           |
+| ---------- | ------------------------------------------------------------------------------------- |
+| q          | The query. Longer than 200 characters is cut.                                         |
+| namespace  | Rank results in this namespace first.                                                 |
+| namespaces | Only return results in these namespaces, comma-separated.                             |
+| limit      | The most results, from 1 to the handler's `maxLimit` (50 by default). Defaults to 10. |
+| sections   | The most other matching sections per result, from 0 to 10. Defaults to 3.             |
+
+The handler takes the index options above, and:
+
+- `mode` and `contentUrl`, which default to `MOSAIC_MODE` and its content URL.
+- `maxAge`: in active mode, how long in milliseconds to use the loaded records before checking the content server for new ones. Searches use the loaded records until the check finishes. Defaults to 30 seconds. In snapshot mode, the handler checks the file's modification time on every search.
+- `maxLimit`: the most results a request can ask for. Defaults to 50.
+
+The handler keeps the index in memory rather than in Next's data cache, which doesn't store entries over 2 MB. It responds with 404 when the site has no `search-records.json`, and 503 when the records can't be loaded.
+
+Static exports have no server, so they search in the browser instead: the reference site copies `search-records.json` to `public/` when it builds from a snapshot.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.

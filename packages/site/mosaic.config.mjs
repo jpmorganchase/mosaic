@@ -29,7 +29,7 @@ const siteConfig = {
       priority: -1,
       options: {
         outputDir: './public',
-        assets: ['search-data.json']
+        assets: ['search-data.json', 'search-records.json']
       }
     },
     {
