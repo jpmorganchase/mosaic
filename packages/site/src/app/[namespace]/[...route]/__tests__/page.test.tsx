@@ -137,7 +137,7 @@ describe.each(['active', 'snapshot-file'] as const)('document routing in %s mode
 });
 
 describe('static document paths', () => {
-  test('includes root documents, aliases and known index shorthand paths', async () => {
+  test('splits root documents, aliases and index shorthand paths from deeper pages', async () => {
     vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
     loaders.loadSitemap.mockResolvedValue([
       '/docs/index',
@@ -147,29 +147,70 @@ describe('static document paths', () => {
       '/other/page'
     ]);
     const { generateStaticParams } = await import('../page');
+    const { generateStaticParams: generateNamespaceParams } = await import('../../page');
 
+    // An optional catch-all would also have to serve `/docs` (route: [])
+    // next to `/docs/index`. Next.js treats a lone `index` in an optional
+    // catch-all as empty, so the two collided.
     expect(await generateStaticParams()).toEqual([
       { namespace: 'docs', route: ['index'] },
-      { namespace: 'docs', route: [] },
-      { namespace: 'about', route: [] },
-      { namespace: 'quickstart', route: [] },
       { namespace: 'other', route: ['page'] }
+    ]);
+    expect(await generateNamespaceParams()).toEqual([
+      { namespace: 'docs' },
+      { namespace: 'about' },
+      { namespace: 'quickstart' }
     ]);
   });
 
   test('probes active-mode rendering without reading content or the sitemap', async () => {
     vi.stubEnv('MOSAIC_MODE', 'active');
     const { default: Page, generateStaticParams } = await import('../page');
+    const { default: NamespacePage, generateStaticParams: generateNamespaceParams } = await import(
+      '../../page'
+    );
 
     const [probe] = await generateStaticParams();
-    expect(probe).toEqual({ namespace: '__mosaic_dynamic_probe__', route: [] });
+    const [namespaceProbe] = await generateNamespaceParams();
+    expect(probe).toEqual({ namespace: '__mosaic_dynamic_probe__', route: ['index'] });
+    expect(namespaceProbe).toEqual({ namespace: '__mosaic_dynamic_probe__' });
     expect(loaders.loadSitemap).not.toHaveBeenCalled();
-    connection.mockRejectedValueOnce(new Error('prerender stops at connection'));
+    connection.mockRejectedValue(new Error('prerender stops at connection'));
     await expect(Page(request(probe.namespace, probe.route))).rejects.toThrow(
       'prerender stops at connection'
     );
+    await expect(NamespacePage(request(namespaceProbe.namespace))).rejects.toThrow(
+      'prerender stops at connection'
+    );
+    connection.mockReset();
     expect(loaders.getMdxRaw).not.toHaveBeenCalled();
     expect(loaders.getSharedConfig).not.toHaveBeenCalled();
+  });
+});
+
+describe('namespace root page', () => {
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
+    loaders.resolveMosaicMode.mockReturnValue({ mode: 'snapshot-file', contentUrl: '' });
+    loaders.getMdxRaw.mockImplementation(async (pathname: string) =>
+      pathname === '/about' ? document('About', '/about') : { kind: 'not-found' }
+    );
+  });
+
+  test('renders a root-level document like the catch-all page', async () => {
+    const { default: NamespacePage, generateMetadata } = await import('../../page');
+    const html = renderToStaticMarkup(await NamespacePage(request('about')));
+    const metadata = await generateMetadata(request('about'));
+
+    expect(html).toContain('<article>About</article>');
+    expect(html).toContain('data-frame-route="/about"');
+    expect(metadata.title).toBe('About');
+  });
+
+  test('returns a 404 for a missing namespace root', async () => {
+    const { default: NamespacePage } = await import('../../page');
+
+    await expect(NamespacePage(request('missing'))).rejects.toThrow('not-found');
   });
 });
 

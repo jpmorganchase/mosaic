@@ -38,16 +38,19 @@ import { connection } from 'next/server';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRawSource,
-  loadSitemap,
   resolveMosaicMode,
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
 
 import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../auth';
 import { withCapabilityBypass } from '../../../lib/capabilities';
-import { getSiteConfig } from '../../../lib/config';
 import { StoreShell } from '../../providers';
 import { FrameSync } from '../NamespaceFrame';
+import {
+  DYNAMIC_PROBE_NAMESPACE,
+  loadStaticRouteParams,
+  shouldPrerenderSnapshot
+} from '../staticRouteParams';
 import { BodyServer } from './BodyServer';
 import { CanonicalizeUrl } from './CanonicalizeUrl';
 // The Lexical editor is lazy-loaded from a Client Component wrapper so
@@ -77,39 +80,22 @@ interface PageProps {
 //     dev` would defeat hot-reload because the route's RSC payload
 //     would be cached after first render and the underlying
 //     `fs.readFile` for the MDX would never run again.
-//   - Active build → a synthetic path lets Next encounter `connection()`
-//     during its build probe and classify this route as request-time rendered.
-//     Returning [] instead opts into on-demand static generation, whose first
-//     request would then fail when it reaches the request-only APIs.
+//   - Active build → a synthetic path (see `DYNAMIC_PROBE_NAMESPACE`)
+//     makes Next classify this route as request-time rendered.
 //
 // Setting `dynamic = 'force-dynamic'` would defeat the snapshot
 // pre-render and was only needed earlier as a workaround for a
 // conditional that App Router refuses to statically analyse.
-const siteConfig = getSiteConfig();
-const isSnapshotMode = siteConfig.mode.startsWith('snapshot');
-const isProductionBuild = process.env.NODE_ENV === 'production';
-const shouldPrerenderSnapshot = isSnapshotMode && isProductionBuild;
-
+//
+// Namespace roots (`/mosaic`) and root-level documents (`/about`) have no
+// route segments, so `../page.tsx` renders them; see `../staticRouteParams.ts`.
 export async function generateStaticParams(): Promise<{ namespace: string; route: string[] }[]> {
   if (!shouldPrerenderSnapshot) {
     // `connection()` below stops this page's prerender before resolving its
     // synthetic pathname. No page is emitted for this build-only probe.
-    return [{ namespace: '__mosaic_dynamic_probe__', route: [] }];
+    return [{ namespace: DYNAMIC_PROBE_NAMESPACE, route: ['index'] }];
   }
-  const urls = await loadSitemap();
-  const routes = new Map<string, { namespace: string; route: string[] }>();
-  for (const url of urls) {
-    const [namespace, ...route] = url.split('/').filter(Boolean);
-    if (!namespace) continue;
-    routes.set([namespace, ...route].join('/'), { namespace, route });
-    // Export the short URL of a known top-level index too. The page
-    // resolver decides whether it is a document, alias or folder; the
-    // first URL segment alone does not identify a source namespace.
-    if (route.length === 1 && route[0] === 'index') {
-      routes.set(namespace, { namespace, route: [] });
-    }
-  }
-  return [...routes.values()];
+  return (await loadStaticRouteParams()).filter(({ route }) => route.length > 0);
 }
 
 /**

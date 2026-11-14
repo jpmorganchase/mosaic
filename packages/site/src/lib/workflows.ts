@@ -1,6 +1,6 @@
 /**
  * Server-only helpers shared by the save Server Action
- * (`app/[namespace]/[[...route]]/persistAction.ts`) and the save-progress route
+ * (`app/[namespace]/[...route]/persistAction.ts`) and the save-progress route
  * (`app/api/workflows/[jobId]/events/route.ts`).
  *
  * Saves run on the Mosaic CLI: the action starts a job with

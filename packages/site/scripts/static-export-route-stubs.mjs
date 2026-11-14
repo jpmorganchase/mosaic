@@ -51,12 +51,12 @@ const ACTIONS = [
     why: 'Section config is looked up at runtime; the static export uses the prebuilt 404.'
   },
   {
-    path: 'src/app/[namespace]/[[...route]]/previewAction.ts',
+    path: 'src/app/[namespace]/[...route]/previewAction.ts',
     exports: ['compilePreview'],
     why: 'The MDX preview Server Action requires a server runtime; the content editor is not available in a static export.'
   },
   {
-    path: 'src/app/[namespace]/[[...route]]/persistAction.ts',
+    path: 'src/app/[namespace]/[...route]/persistAction.ts',
     exports: ['startSave'],
     why: 'The save Server Action requires a server runtime; the content editor is not available in a static export.'
   }
