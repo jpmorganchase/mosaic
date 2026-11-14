@@ -55,3 +55,27 @@ describe('GIVEN a Heading', () => {
     expect(screen.getByRole('heading', { level: 6 })).toBeInTheDocument();
   });
 });
+
+describe('GIVEN the markdown headings', () => {
+  test('THEN they rely on the native heading role', () => {
+    const headings = [
+      Heading.H0,
+      Heading.H1,
+      Heading.H2,
+      Heading.H3,
+      Heading.H4,
+      Heading.H5,
+      Heading.H6
+    ];
+    render(
+      <>
+        {headings.map((Component, index) => (
+          <Component key={index}>Heading {index}</Component>
+        ))}
+      </>
+    );
+    for (const element of screen.getAllByRole('heading')) {
+      expect(element).not.toHaveAttribute('role');
+    }
+  });
+});
