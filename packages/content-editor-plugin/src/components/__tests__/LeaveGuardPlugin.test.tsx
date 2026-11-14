@@ -2,6 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { EditorProvider, useSaveState } from '../../EditorContext';
 import { LeaveGuardPlugin } from '../../plugins/LeaveGuardPlugin';
+import { confirmLeave } from '../../leaveGuard';
 
 function StateControls() {
   const { markDirty, markSaving, markSaved, markSaveFailed } = useSaveState();
@@ -143,4 +144,34 @@ test('removes the native traversal listener when the editor unmounts', () => {
   expect(traverse().defaultPrevented).toBe(true);
   view.unmount();
   expect(traverse().defaultPrevented).toBe(false);
+});
+
+test('asks before Cancel or Stop Editing discards unsaved changes', () => {
+  const leaveEditMode = vi.fn(() => window.history.replaceState(null, '', '/docs/page'));
+  const { unmount } = mountGuard();
+
+  act(() => confirmLeave(leaveEditMode));
+  expect(leaveEditMode).toHaveBeenCalledTimes(1);
+  window.history.replaceState(null, '', '/docs/page?edit=1');
+
+  fireEvent.click(screen.getByText('Edit'));
+  act(() => confirmLeave(leaveEditMode));
+  expect(screen.getByRole('dialog')).toBeVisible();
+  expect(leaveEditMode).toHaveBeenCalledTimes(1);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+  expect(leaveEditMode).toHaveBeenCalledTimes(1);
+  expect(window.location.search).toBe('?edit=1');
+
+  act(() => confirmLeave(leaveEditMode));
+  fireEvent.click(screen.getByRole('button', { name: 'Discard changes' }));
+  // The confirmed URL change passes the history guard once; the next one is held.
+  expect(leaveEditMode).toHaveBeenCalledTimes(2);
+  expect(window.location.search).toBe('');
+  act(() => window.history.pushState(null, '', '/docs/elsewhere'));
+  expect(window.location.pathname).toBe('/docs/page');
+
+  unmount();
+  act(() => confirmLeave(leaveEditMode));
+  expect(leaveEditMode).toHaveBeenCalledTimes(3);
 });

@@ -27,6 +27,7 @@ vi.mock('next/navigation', () => ({
 
 import { createElement, type ReactNode } from 'react';
 import { EditModeProvider, useEditMode, useEditModeActions, useIsEditing } from '../useEditMode';
+import { registerLeaveGuard } from '../leaveGuard';
 
 /** Convenience: set the current "URL" the hooks observe. */
 function setUrl(pathname: string, search = '') {
@@ -94,6 +95,23 @@ describe('useEditMode.stopEditing', () => {
     // tied to a create-then-collision flow — it's stale once
     // the user cancels, so we drop it too.
     expect(replace).toHaveBeenCalledWith('/docs/foo?hl=python', { scroll: false });
+  });
+
+  it('asks the mounted editor before leaving edit mode', () => {
+    setUrl('/docs/foo/bar', 'edit=1');
+    let queuedLeave: (() => void) | undefined;
+    const unregister = registerLeaveGuard(leave => {
+      queuedLeave = leave;
+      return true;
+    });
+
+    const { result } = renderHook(() => useEditMode());
+    act(() => result.current.stopEditing());
+    expect(replace).not.toHaveBeenCalled();
+
+    act(() => queuedLeave?.());
+    expect(replace).toHaveBeenCalledWith('/docs/foo/bar', { scroll: false });
+    unregister();
   });
 
   it('falls back to root when the create-mode page is top-level', () => {
