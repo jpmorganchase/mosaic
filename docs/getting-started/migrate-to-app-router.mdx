@@ -55,6 +55,8 @@ The new site also adds files that have no Pages Router equivalent:
 
 `next.config.js` is now split into a base config, a config used only when the site runs on a server, and a config for static export.
 
+If your site uses the content editor, copy `experimental.serverActions.bodySizeLimit` from the reference `next.config.js`. Next.js rejects Server Action requests over 1 MB by default, so without it saves of large pages fail before they reach the CLI.
+
 ## 2. Move your customisations
 
 ### MDX components

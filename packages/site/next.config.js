@@ -83,7 +83,14 @@ const baseConfig = {
   // `lodash-es` is already on Next's default-optimized list (Next 14+)
   // so it doesn't need to be repeated here.
   experimental: {
-    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
+    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons'],
+    // Next.js rejects Server Action bodies over 1 MB by default, but a save
+    // can carry 2 MiB of markdown and 256 KiB of frontmatter
+    // (`src/lib/editorLimits.ts`), and JSON escaping can double that. 5 MB
+    // matches the CLI's limit for `POST /workflows/jobs`.
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
   },
   images: {
     remotePatterns: [
