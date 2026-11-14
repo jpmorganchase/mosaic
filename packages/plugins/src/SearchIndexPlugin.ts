@@ -3,7 +3,7 @@ import markdown from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import { visit } from 'unist-util-visit';
 import type { Node } from 'unist';
-import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type { Page, Plugin as PluginType, SearchRecordsFile } from '@jpmorganchase/mosaic-types';
 
 import {
   buildSearchRecords,
@@ -11,7 +11,7 @@ import {
   type SearchRecordOptions
 } from './utils/searchRecords.js';
 
-export type { SearchRecord, SearchRecordOptions };
+export type { SearchRecord, SearchRecordOptions, SearchRecordsFile };
 
 type LeafNode = Node & {
   value: string;
@@ -42,12 +42,6 @@ interface SearchIndexPluginOptions {
    * section for section-level search. `false` turns the file off.
    */
   records?: SearchRecordOptions | false;
-}
-
-/** The format of `search-records.json`. */
-export interface SearchRecordsFile {
-  version: 1;
-  records: SearchRecord[];
 }
 
 export const SEARCH_RECORDS_FILE = '/search-records.json';

@@ -12,6 +12,7 @@ export * from './IFileAccess.js';
 export * from './Meta.js';
 export * from './MutableData.js';
 export * from './Page.js';
+export * from './SearchRecord.js';
 export * from './Plugin.js';
 export * from './Serialiser.js';
 export * from './Source.js';
