@@ -7,11 +7,12 @@ layout: DetailOverview
 
 The `SearchIndexPlugin` is responsible for generating the search index and configuration information for [Fuse.js](https://www.fusejs.io/) which is the matching engine powering the client-side search functionality of Mosaic sites.
 
-It outputs 3 files:
+It outputs 4 files:
 
 - Full Search Index - `search-data.json`
 - Condensed Search Index - `search-data-condensed.json`
 - Search Configuration - `search-config.json`
+- Search Records - `search-records.json`, for section-level search (see [Search records](#search-records))
 
 ### Full Search Index
 
@@ -38,18 +39,54 @@ Any [options](https://www.fusejs.io/api/options.html) that need to be passed to 
 | threshold        | https://www.fusejs.io/api/options.html#threshold      |
 | keys             | https://www.fusejs.io/api/options.html#keys           |
 
+### Search records
+
+`search-records.json` splits every page into records: one for the text before the first section heading, and one for each section. Results can then link to the section that matched, at `route#anchor`. The anchors are the ids of the rendered headings, and match the [TableOfContentsPlugin](./toc-plugin).
+
+```json
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "/mosaic/configure/index#plugins",
+      "route": "/mosaic/configure/index",
+      "anchor": "plugins",
+      "title": "Configure",
+      "headings": ["Plugins"],
+      "text": "Plugins change pages as they are loaded…",
+      "namespace": "mosaic"
+    }
+  ]
+}
+```
+
+- `headings` lists the section's headings from the outermost in. The introduction record has none.
+- `text` is the section's prose. Code blocks, JSX attributes and MDX expressions are left out, except `{meta.*}` expressions, which are replaced with their values.
+- `fields` holds the frontmatter set with the `records.fields` option. Only the introduction record has it, because it describes the whole page.
+
+To leave a page out of the records, set `search: { exclude: true }` in its frontmatter.
+
 ## Priority
 
-This plugin runs with no special priority.
+The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
 
 ## Options
 
-| Property      | Description                                         |
-| ------------- | --------------------------------------------------- |
-| maxLineLength | TODO                                                |
-| maxLineCount  | TODO                                                |
-| keys          | https://www.fusejs.io/api/options.html#keys         |
-| relevancy     | [search relevancy](#search-relevancy-configuration) |
+| Property      | Description                                                                     |
+| ------------- | ------------------------------------------------------------------------------- |
+| maxLineLength | TODO                                                                            |
+| maxLineCount  | TODO                                                                            |
+| keys          | https://www.fusejs.io/api/options.html#keys                                     |
+| relevancy     | [search relevancy](#search-relevancy-configuration)                             |
+| records       | [Record options](#record-options), or `false` to turn `search-records.json` off |
+
+### Record options
+
+| Property      | Description                                                                                                                                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fields        | Frontmatter to index, as `{ field: path }`. A path is dotted, such as `data.description`. List several paths to use the first one that's set. Defaults to `{ description: ['description', 'data.description'], keywords: ['keywords'] }`. |
+| sectionDepth  | The deepest heading level that starts a new record. Defaults to `3`. Deeper headings stay in their section.                                                                                                                               |
+| maxTextLength | The most characters of text kept per record. Defaults to `4000`.                                                                                                                                                                          |
 
 ## Adding to Mosaic
 
@@ -60,6 +97,7 @@ plugins: [
   {
     modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
     previewDisabled: true,
+    priority: -1.5,
     options: { maxLineLength: 240, maxLineCount: 240 }
   }
   // other plugins

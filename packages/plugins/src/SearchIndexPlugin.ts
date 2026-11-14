@@ -5,6 +5,14 @@ import { visit } from 'unist-util-visit';
 import type { Node } from 'unist';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 
+import {
+  buildSearchRecords,
+  type SearchRecord,
+  type SearchRecordOptions
+} from './utils/searchRecords.js';
+
+export type { SearchRecord, SearchRecordOptions };
+
 type LeafNode = Node & {
   value: string;
 };
@@ -29,7 +37,20 @@ interface SearchIndexPluginOptions {
   maxLineCount?: number;
   keys?: string[];
   relevancy?: SearchRelevancy;
+  /**
+   * Options for `search-records.json`, which holds one record per page
+   * section for section-level search. `false` turns the file off.
+   */
+  records?: SearchRecordOptions | false;
 }
+
+/** The format of `search-records.json`. */
+export interface SearchRecordsFile {
+  version: 1;
+  records: SearchRecord[];
+}
+
+export const SEARCH_RECORDS_FILE = '/search-records.json';
 
 interface Optimization {
   content: string;
@@ -147,17 +168,16 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
    */
   async $beforeSend(
     mutableFilesystem,
-    { config, serialiser, ignorePages },
-    { maxLineLength, maxLineCount, keys: optionKeys }
+    { config, serialiser, ignorePages, pageExtensions },
+    { maxLineLength, maxLineCount, keys: optionKeys, records: recordOptions }
   ) {
+    const pagePaths = (await mutableFilesystem.promises.glob('**', {
+      onlyFiles: true,
+      ignore: ignorePages.map(ignore => `**/${ignore}`),
+      cwd: '/'
+    })) as string[];
     const pages = await Promise.all(
-      (
-        (await mutableFilesystem.promises.glob('**', {
-          onlyFiles: true,
-          ignore: ignorePages.map(ignore => `**/${ignore}`),
-          cwd: '/'
-        })) as string[]
-      ).map(async pagePath => {
+      pagePaths.map(async pagePath => {
         const deserialisedPage = await serialiser.deserialise(
           pagePath,
           await mutableFilesystem.promises.readFile(pagePath)
@@ -200,12 +220,40 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
     config.setData({
       searchIndices: searchDataKeyedByRoute
     });
+
+    if (recordOptions !== false) {
+      const searchRecords: Record<string, SearchRecord> = {};
+      pagePaths.forEach((pagePath, index) => {
+        const page = pages[index] as Page & { search?: { exclude?: boolean } };
+        if (!pageExtensions.some(extension => pagePath.endsWith(extension))) return;
+        if (typeof page.route !== 'string' || page.search?.exclude === true) return;
+        const records = buildSearchRecords(
+          page as Parameters<typeof buildSearchRecords>[0],
+          recordOptions
+        );
+        if (!records) {
+          console.warn(
+            `[Mosaic][Plugin-SearchIndex] ${pagePath} is not valid MDX, so it is left out of search-records.json`
+          );
+          return;
+        }
+        for (const record of records) searchRecords[record.id] = record;
+      });
+      config.setData({ searchRecords });
+    }
   },
   /**
    * Once we have all the sources' search data added to `globalConfig`, convert it
    * to JSON and save it to the filesystem.
    */
   async afterUpdate(_, { sharedFilesystem, globalConfig }, { keys: optionKeys, relevancy }) {
+    if (globalConfig.data.searchRecords) {
+      const file: SearchRecordsFile = {
+        version: 1,
+        records: Object.values(globalConfig.data.searchRecords) as SearchRecord[]
+      };
+      await sharedFilesystem.promises.writeFile(SEARCH_RECORDS_FILE, JSON.stringify(file));
+    }
     if (!globalConfig.data.searchIndices) return;
     const globalSearchIndices = globalConfig.data.searchIndices;
     const searchData = Object.values(globalSearchIndices);
