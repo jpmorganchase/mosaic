@@ -10327,7 +10327,7 @@ __metadata:
     sass:
       optional: true
   bin:
-    next: ./dist/bin/next
+    next: dist/bin/next
   checksum: 10/d6e4b0ab2172345ae64eeae159fec97f62f42438e1c2f2c0288fbc24eab8de2e48737abc96c434184610ba96c098f458df261f14e21fdaa97ed3dcc206e804a1
   languageName: node
   linkType: hard
