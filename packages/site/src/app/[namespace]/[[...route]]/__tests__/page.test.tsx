@@ -157,6 +157,14 @@ describe('static document paths', () => {
     ]);
   });
 
+  test('fails a production snapshot build when the sitemap is missing or empty', async () => {
+    vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
+    loaders.loadSitemap.mockResolvedValue([]);
+    const { generateStaticParams } = await import('../page');
+
+    await expect(generateStaticParams()).rejects.toThrow('sitemap.xml is missing or empty');
+  });
+
   test('probes active-mode rendering without reading content or the sitemap', async () => {
     vi.stubEnv('MOSAIC_MODE', 'active');
     const { default: Page, generateStaticParams } = await import('../page');

@@ -50,8 +50,29 @@ if (isExport && mosaicMode !== 'snapshot-file') {
   );
 }
 
+/**
+ * Security headers for every response from a server build. They hold for
+ * prerendered pages too. A policy for scripts is left out: Next.js's inline
+ * scripts would need a per-request nonce, which makes every page render
+ * dynamically (see "Content Security Policy" in the Next.js docs).
+ * `next.config.js` headers don't apply to static exports, so set the same
+ * headers in the hosting layer when deploying one.
+ */
+const securityHeaders = [
+  // Only this site may frame its pages, which protects the editor's
+  // actions from clickjacking.
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+  },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+];
+
 /** @type {import('next').NextConfig} */
 const baseConfig = {
+  poweredByHeader: false,
   // TEMPORARY: Vercel's deploy step fails with "Cannot patch preview comments
   // when immutable static file upload is enabled" even on Next 16.4. Opt out of
   // immutable asset upload on Vercel until Vercel fixes its version check.
@@ -83,7 +104,14 @@ const baseConfig = {
   // `lodash-es` is already on Next's default-optimized list (Next 14+)
   // so it doesn't need to be repeated here.
   experimental: {
-    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
+    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons'],
+    // Next.js rejects Server Action bodies over 1 MB by default, but a save
+    // can carry 2 MiB of markdown and 256 KiB of frontmatter
+    // (`src/lib/editorLimits.ts`), and JSON escaping can double that. 5 MB
+    // matches the CLI's limit for `POST /workflows/jobs`.
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
   },
   images: {
     remotePatterns: [
@@ -96,6 +124,9 @@ const baseConfig = {
 
 /** @type {import('next').NextConfig} */
 const dynamicOnlyConfig = {
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   rewrites() {
     return {
       beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],

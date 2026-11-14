@@ -375,11 +375,19 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           const groupMap = createGroupMap(includedPages);
           const sidebarData = linkGroupMap(groupMap, rootDir);
           if (sidebarData[0] === undefined) {
-            console.warn(
-              `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}`
+            // The root group only exists when an included page sits directly
+            // in `rootDir`, so say which of the possible causes applies.
+            const pagesInRootDir = pages.filter(
+              page => path.posix.dirname(String(page.fullPath)) === String(rootDir)
             );
-            console.log(
-              '[Mosaic][Plugin-Sidebar] - likely you have a directory without an index file'
+            let reason = 'it contains no pages';
+            if (pages.length > 0 && pagesInRootDir.length === 0) {
+              reason = 'no page sits directly in it; add an index page';
+            } else if (pagesInRootDir.length > 0) {
+              reason = 'every page directly in it sets `sidebar.exclude: true`';
+            }
+            console.warn(
+              `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}: ${reason}`
             );
             return;
           }

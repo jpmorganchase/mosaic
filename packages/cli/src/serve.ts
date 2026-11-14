@@ -72,9 +72,16 @@ export default async function serve(
         }`
       );
     } catch (err) {
-      server.log.error(err);
+      // The Fastify logger is disabled, so `server.log` would print nothing.
+      console.error(listenErrorMessage(err, host, port));
       process.exit(1);
     }
   };
   await start();
+}
+
+export function listenErrorMessage(err: unknown, host: string, port: number) {
+  const { code, message } = (err ?? {}) as NodeJS.ErrnoException;
+  const reason = code === 'EADDRINUSE' ? 'the port is already in use' : message || String(err);
+  return `[Mosaic] Unable to listen on ${host}:${port}: ${reason}`;
 }

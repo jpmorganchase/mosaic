@@ -57,3 +57,41 @@ describe('GIVEN the FragmentPlugin', () => {
     });
   });
 });
+
+describe('GIVEN a page that cannot be parsed', () => {
+  test('THEN the pages after it are still expanded AND the error names every failing page', async () => {
+    const mixedPages: Page[] = [
+      {
+        fullPath: '/fragment.mdx',
+        route: 'route/fragment',
+        title: 'Fragment',
+        content: 'Fragment content.'
+      },
+      { fullPath: '/broken.mdx', route: 'route/broken', title: 'Broken', content: '<Unclosed' },
+      { fullPath: '/also-broken.mdx', route: 'route/also-broken', title: 'Also', content: '{' },
+      {
+        fullPath: '/index.mdx',
+        route: 'route/index',
+        title: 'Index',
+        content: ':fragment{src="./fragment.mdx"}'
+      }
+    ];
+
+    const run = FragmentPlugin.$afterSource!;
+    const result = run(
+      mixedPages,
+      { pageExtensions: ['.mdx'], ignorePages: ['fake'] } as unknown as Parameters<typeof run>[1],
+      {}
+    );
+
+    await expect(result).rejects.toMatchObject({
+      name: 'PluginError',
+      fullPath: '/broken.mdx',
+      message: expect.stringMatching(
+        /Unable to expand fragments in 2 page\(s\):\n {2}- \/broken\.mdx: .+\n {2}- \/also-broken\.mdx: .+/
+      )
+    });
+    expect(mixedPages[3].content).toContain('Fragment content.');
+    expect(mixedPages[1].content).toBe('<Unclosed');
+  });
+});
