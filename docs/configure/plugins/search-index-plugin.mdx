@@ -66,6 +66,51 @@ Any [options](https://www.fusejs.io/api/options.html) that need to be passed to 
 
 To leave a page out of the records, set `search: { exclude: true }` in its frontmatter.
 
+### Searching the records
+
+`@jpmorganchase/mosaic-site-middleware/search` searches the records. It runs on the server and in the browser.
+
+```ts
+import { createSearchIndex, highlight } from '@jpmorganchase/mosaic-site-middleware/search';
+
+// `records` from search-records.json
+const index = createSearchIndex(records, {
+  synonyms: [['dropdown', 'combobox']]
+});
+
+const results = index.search('date picker', { namespace: 'salt' });
+// [{ href: '/salt/components/date-picker/index', title: 'Date picker', snippet, terms, sections: [...] }]
+```
+
+Results are ranked like Algolia's tie-breaking criteria. Each one only decides between results that tie on the ones before it:
+
+1. The number of query words matched. Only results that match the most words are returned, so adding a word narrows the results.
+2. The page title matching the whole query. Plurals, stop words and spaces are ignored, so `datepicker` matches "Date picker".
+3. The current namespace, set with the `namespace` search option.
+4. The number of typos. Words of 4 letters or more can have one typo, and words of 8 or more two.
+5. The number of words matched by a synonym.
+6. Where the words matched: the title, then keywords, headings, description and text.
+7. The section heading matching the whole query.
+8. The `pageRank` option.
+9. The page introduction before its sections, and outer sections before inner ones.
+10. The relevance score (BM25).
+
+| Index option | Description                                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| synonyms     | Groups of single words that mean the same thing. Matches of a synonym rank just below matches of the word itself.                                            |
+| groupBy      | Records with the same group are one result: the best match, with the other matches in `sections`. Defaults to the route. Group tabs of a page together here. |
+| pageRank     | Ranks pages when everything else ties: lower comes first. Defaults to `0` for index pages and `1` for others.                                                |
+
+| Search option     | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| namespace         | Results in this namespace rank above equally good results.    |
+| namespaces        | Only return results in these namespaces.                      |
+| filter            | Only return records this function returns `true` for.         |
+| limit             | The most results to return. Defaults to `10`.                 |
+| sectionsPerResult | The most other matching sections per result. Defaults to `3`. |
+
+`highlight(text, result.terms)` splits a title or snippet into matching and other parts, to render the matches without using HTML from the index.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
