@@ -29,6 +29,12 @@
  *        browser commits the traversal and Next handles `popstate`.
  *        Older browsers and non-cancelable traversals cannot use this guard.
  *
+ *   5. Cancel Editing / Stop Editing
+ *      → these call `router.replace`, which renders the page without
+ *        the editor before (3) sees the URL change. `stopEditing` asks
+ *        through `confirmLeave` first, and a confirmed leave passes
+ *        through (3) once.
+ *
  * Active while the mounted editor has unsaved changes or an in-flight
  * save. A completed save no longer prompts; another edit arms it again.
  *
@@ -40,6 +46,7 @@ import { Button, DialogActions, DialogContent, DialogHeader, StackLayout } from 
 
 import { useSaveState } from '../EditorContext';
 import { Dialog } from '../components/Dialog';
+import { registerLeaveGuard } from '../leaveGuard';
 
 /**
  * `isIntraEditorNavigation` — true when the proposed navigation is
@@ -157,6 +164,23 @@ export const LeaveGuardPlugin = () => {
   // through unchallenged.
   const suppressBeforeUnloadRef = useRef(false);
   const allowedTraversalRef = useRef<string | null>(null);
+  // Set when the reader discards changes to leave edit mode, so the
+  // `router.replace` URL change passes through the history patch (3).
+  const allowNextUrlChangeRef = useRef(false);
+
+  // (5) Cancel Editing / Stop Editing ask here before they navigate.
+  useEffect(
+    () =>
+      registerLeaveGuard(leave => {
+        if (!isDirtyRef.current) return false;
+        setPending(() => () => {
+          allowNextUrlChangeRef.current = true;
+          leave();
+        });
+        return true;
+      }),
+    []
+  );
 
   // (4) Cancel the traversal before the URL or React tree changes. A
   // popstate listener is too late: Next may already have discarded the editor.
@@ -269,6 +293,11 @@ export const LeaveGuardPlugin = () => {
         // navigation) so we let those through unconditionally.
         const target = args[2];
         if (target == null) {
+          real(...args);
+          return;
+        }
+        if (allowNextUrlChangeRef.current) {
+          allowNextUrlChangeRef.current = false;
           real(...args);
           return;
         }

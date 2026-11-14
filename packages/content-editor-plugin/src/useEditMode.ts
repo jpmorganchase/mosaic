@@ -29,6 +29,8 @@
 import { createContext, createElement, useCallback, useContext, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { confirmLeave } from './leaveGuard';
+
 export interface EditMode {
   /** `true` when `?edit=1` is on the current URL. */
   isEditing: boolean;
@@ -118,7 +120,8 @@ export function useEditModeActions(): Pick<EditMode, 'startEditing' | 'stopEditi
       : qs
       ? `${pathname}?${qs}`
       : pathname;
-    router.replace(target, { scroll: false });
+    // The mounted editor asks before unsaved changes are discarded.
+    confirmLeave(() => router.replace(target, { scroll: false }));
   }, [pathname, router]);
 
   return { startEditing, stopEditing };
