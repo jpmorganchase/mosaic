@@ -44,6 +44,49 @@ describe('GIVEN parseFrontmatter', () => {
     );
   });
 
+  test.each([
+    ['018', '018'],
+    ['-019', '-019'],
+    ['012.34', '012.34'],
+    ['012e+4', '012e+4'],
+    ['0o17', '0o17'],
+    ['010', 8],
+    ['-010', -8],
+    ['0b10_10', 10],
+    ['0xA_B', 171],
+    ['1_000', 1000],
+    ['1_000.5', 1000.5],
+    ['1:20', 80],
+    ['-1:20.5', -80.5],
+    ['0.125', 0.125],
+    ['1.2e3', 1200],
+    ['-0', 0],
+    ['-0.0', -0],
+    ['.inf', Infinity],
+    ['-.inf', -Infinity],
+    ['.nan', NaN]
+  ])('THEN the legacy scalar %s keeps its value through a save', (scalar, value) => {
+    const parsed = parseFrontmatter(`---\nvalue: ${scalar}\n---\nbody\n`);
+    expect(parsed.data.value).toEqual(value);
+    expect(parseFrontmatter(stringifyFrontmatter(parsed.content, parsed.data))).toEqual(parsed);
+  });
+
+  test('THEN numeric-looking strings and nested values survive a save', () => {
+    const data = {
+      version: '018',
+      nested: { code: '010', duration: '1:20', list: ['1_000', '1:20.5', '0b10', 8] }
+    };
+    expect(parseFrontmatter(stringifyFrontmatter('body', data)).data).toEqual(data);
+    expect(parseFrontmatter('---\nversion: 018\n---\nbody').data.version).toBe('018');
+  });
+
+  test.each(['!!js/function >\n  function () { return 1; }', '!!js/regexp /test/'])(
+    'THEN unsafe YAML types remain unsupported: %s',
+    scalar => {
+      expect(() => parseFrontmatter(`---\nvalue: ${scalar}\n---\nbody`)).toThrow();
+    }
+  );
+
   describe('WHEN the front matter declares a non-YAML language', () => {
     afterEach(() => {
       delete (globalThis as { __frontmatterEvaluated?: boolean }).__frontmatterEvaluated;

@@ -30,16 +30,24 @@ const CACHE_TTL_MS = 60_000;
 // A link check only needs to know that the page responds, so, like the
 // `check-links` package this replaces, accept self-signed certificates.
 const directAgent = new Agent({ connect: { rejectUnauthorized: false } });
-const proxyAgents = new Map<string, ProxyAgent>();
+const proxyAgents = new Map<string, Dispatcher>();
 const cache = new Map<string, { expires: number; result: Promise<LinkCheckResult> }>();
 
-function dispatcherFor(url: URL, proxyEndpoint?: string): Dispatcher {
-  if (url.protocol !== 'https:' || !proxyEndpoint) {
+function dispatcherFor(proxyEndpoint?: string): Dispatcher {
+  if (!proxyEndpoint) {
     return directAgent;
   }
   let agent = proxyAgents.get(proxyEndpoint);
   if (!agent) {
-    agent = new ProxyAgent(proxyEndpoint);
+    const proxy = new ProxyAgent(proxyEndpoint);
+    // Fetch uses the same dispatcher for the entire redirect chain. Select
+    // the proxy from each dispatched origin, including protocol changes.
+    agent = directAgent.compose(
+      dispatch => (options, handler) =>
+        new URL(options.origin!).protocol === 'https:'
+          ? proxy.dispatch(options, handler)
+          : dispatch(options, handler)
+    );
     proxyAgents.set(proxyEndpoint, agent);
   }
   return agent;
@@ -74,7 +82,7 @@ async function checkLink(
   if (!url || (url.protocol !== 'http:' && url.protocol !== 'https:')) {
     return { status: 'invalid' };
   }
-  const dispatcher = dispatcherFor(url, proxyEndpoint);
+  const dispatcher = dispatcherFor(proxyEndpoint);
 
   // HEAD is cheap but some servers reject it, so fall back to GET, which is
   // retried when the failure looks temporary.
