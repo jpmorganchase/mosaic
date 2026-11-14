@@ -39,6 +39,7 @@ packages/site/
         │   ├── layout.tsx      # loads namespace data once; persistent header
         │   ├── NamespaceFrame.tsx # frame store, header, <FrameSync>
         │   ├── not-found.tsx   # 404 inside the namespace (header included)
+        │   ├── error.tsx       # errors inside the namespace (header included)
         │   ├── page.tsx        # namespace roots and root documents/aliases, e.g. /mosaic, /about
         │   ├── staticRouteParams.ts # prerendered paths for both pages
         │   └── [...route]/     # required catch-all for every other page
