@@ -20,9 +20,11 @@ Heading ranks are used to determine which page headings should be included in th
 
 The plugin output is added to a `tableOfContents` metadata property of a page.
 
+Headings can include `{meta.<path>}` tokens, such as `## Examples for {meta.title}`. The plugin replaces each token with the page's value, including values that come from a `$ref`. A token that doesn't resolve to text stays as it is, so you can spot it in the Table of Contents.
+
 ## Priority
 
-This plugin runs with no special priority.
+This plugin runs with priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`). It resolves tokens that read `$ref` values only after `$RefPlugin` has resolved them, and it needs the page content that `LazyPagePlugin` moves out of the filesystem.
 
 ## Options
 
@@ -39,6 +41,7 @@ Add the following to the `plugins` collection:
 plugins: [
   {
     modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+    priority: -1.5,
     options: {
       minRank: 2,
       maxRank: 3
