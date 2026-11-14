@@ -17,15 +17,44 @@ interface TableOfContentsPluginOptions {
   minRank: Rank;
   maxRank: Rank;
 }
+interface TableOfContentsPluginConfigData {
+  /** Pages with `{meta.*}` tokens that `$afterSource` couldn't resolve, keyed by full path. */
+  tableOfContentsUnresolved?: Record<string, true>;
+}
 
-const getValue = (path, obj) => path.split('.').reduce((acc, c) => acc && acc[c], obj);
-const parsePageHeading = (page, heading) => {
-  let parsedHeading = heading.trim();
-  if (parsedHeading.indexOf('{meta') === 0) {
-    const metaPath = parsedHeading.replace(/^{meta\./, '').replace(/\}$/, '');
-    parsedHeading = getValue(metaPath, page).trim();
-  }
-  return parsedHeading;
+const META_TOKEN = /\{\s*meta((?:\.[A-Za-z_$][\w$]*)+)\s*\}/g;
+
+type PageValues = Record<string, unknown>;
+
+const lookup = (page: PageValues, path: string) =>
+  path
+    .slice(1)
+    .split('.')
+    .reduce<unknown>(
+      (value, key) => (value == null ? undefined : (value as PageValues)[key]),
+      page
+    );
+
+// Only strings and numbers render as text; React renders nothing for booleans and null.
+const asText = (value: unknown) =>
+  typeof value === 'string' || typeof value === 'number' ? String(value) : undefined;
+
+/**
+ * Resolves every `{meta.<path>}` token in a heading against the page.
+ *
+ * `text` keeps tokens that don't resolve, so authors can spot them in the
+ * table of contents. `slugText` drops them instead: they render as nothing,
+ * and the heading's `id` is built from its rendered text.
+ */
+export const resolveHeading = (page: PageValues, heading: string) => {
+  let resolved = true;
+  const text = heading.replace(META_TOKEN, (token, path) => {
+    const value = asText(lookup(page, path));
+    if (value === undefined) resolved = false;
+    return value ?? token;
+  });
+  const slugText = heading.replace(META_TOKEN, (_token, path) => asText(lookup(page, path)) ?? '');
+  return { text: text.trim(), slugText, resolved };
 };
 
 interface Heading {
@@ -61,33 +90,76 @@ const remarkHeadings: Plugin<[], Root> = () => (tree, vfile) => {
   vfile.data.headings = getHeadings(tree);
 };
 
+const processor = unified().use(remarkParse).use(remarkStringify).use(remarkHeadings);
+
+async function buildTableOfContents(
+  page: TableOfContentsPluginPage,
+  { minRank, maxRank }: TableOfContentsPluginOptions
+) {
+  const vfile = await processor.process(page.content);
+  const headings = vfile.data.headings as Heading[];
+  // Slug every heading, not only the ones listed, as `rehype-slug` does
+  // when it gives the rendered headings their ids. Repeated headings are
+  // then numbered the same way in both.
+  const slugger = new Slugger();
+  const items: TOCItem[] = [];
+  let resolved = true;
+  for (const heading of headings) {
+    const parsed = resolveHeading(page as unknown as PageValues, heading.value);
+    const id = slugger.slug(parsed.slugText);
+    if (heading.depth < minRank || heading.depth > maxRank) continue;
+    resolved &&= parsed.resolved;
+    items.push({
+      depth: heading.depth,
+      level: heading.depth - minRank,
+      id,
+      text: parsed.text
+    } as TOCItem);
+  }
+  return { items, resolved };
+}
+
 /**
  * Calculates table of contents from page headings
  */
-const TableOfContentsPlugin: PluginType<TableOfContentsPluginPage, TableOfContentsPluginOptions> = {
-  async $afterSource(pages, _, { minRank, maxRank }) {
-    const processor = unified().use(remarkParse).use(remarkStringify).use(remarkHeadings);
+const TableOfContentsPlugin: PluginType<
+  TableOfContentsPluginPage,
+  TableOfContentsPluginOptions,
+  TableOfContentsPluginConfigData
+> = {
+  async $afterSource(pages, { config }, options) {
+    const unresolved: Record<string, true> = {};
     for (const page of pages) {
-      const slugger = new Slugger();
       if (page.content) {
-        const vfile = await processor.process(page.content);
-        const headings = vfile.data.headings as [{ depth: number; value: string }];
-        const items: TOCItem[] = headings
-          .filter(heading => heading.depth >= minRank && heading.depth <= maxRank)
-          .map(validHeading => {
-            const text = parsePageHeading(page, validHeading.value);
-            return {
-              depth: validHeading.depth,
-              level: validHeading.depth - minRank,
-              id: slugger.slug(text),
-              text
-            };
-          });
+        const { items, resolved } = await buildTableOfContents(page, options);
         page.tableOfContents = items;
+        if (!resolved) unresolved[page.fullPath] = true;
       }
     }
+    config.setData({ tableOfContentsUnresolved: unresolved });
 
     return pages;
+  },
+  /**
+   * `$RefPlugin` resolves `$ref`s in its own `$beforeSend`, so a heading such
+   * as `{meta.data.card.title}`, where `card` is a `$ref`, can only resolve
+   * now. This must run after `$RefPlugin` (priority -1) and before
+   * `LazyPagePlugin` (priority -2) moves page content out of the filesystem.
+   */
+  async $beforeSend(mutableFilesystem, { config, serialiser }, options) {
+    for (const fullPath of Object.keys(config.data.tableOfContentsUnresolved ?? {})) {
+      const page: TableOfContentsPluginPage = await serialiser.deserialise(
+        fullPath,
+        await mutableFilesystem.promises.readFile(fullPath)
+      );
+      if (!page.content) continue;
+      const { items } = await buildTableOfContents(page, options);
+      page.tableOfContents = items;
+      await mutableFilesystem.promises.writeFile(
+        fullPath,
+        await serialiser.serialise(fullPath, page)
+      );
+    }
   }
 };
 

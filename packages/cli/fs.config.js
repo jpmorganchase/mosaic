@@ -72,6 +72,10 @@ export default {
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      // Between `$RefPlugin` (-1) and `LazyPagePlugin` (-2): headings that
+      // read `$ref` values can only be resolved after `$RefPlugin`, and page
+      // content must still be in the filesystem.
+      priority: -1.5,
       options: {
         minRank: 2,
         maxRank: 3

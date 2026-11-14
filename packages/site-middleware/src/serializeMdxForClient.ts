@@ -24,6 +24,7 @@ import {
   highlightCodeBlocks,
   type HighlightCodeBlocksOptions
 } from './plugins/highlightCodeBlocks.js';
+import { resolveHeadingMeta } from './plugins/resolveHeadingMeta.js';
 
 if (typeof window !== 'undefined') {
   throw new Error('serializeMdxForClient.ts must not be imported on the client.');
@@ -132,6 +133,13 @@ export async function serializeMdxForClient<
   const baseRehypePlugins = [
     codeBlocks as any,
     ...(highlightPlugin ? [highlightPlugin as any] : []),
+    // Must run before `rehype-slug`, so headings that contain `{meta.*}`
+    // get the ids the `TableOfContentsPlugin` links to. Uses the same
+    // `meta` the client evaluates the page with (see below).
+    [
+      resolveHeadingMeta,
+      { meta: scope && 'meta' in scope ? (scope.meta as Record<string, unknown>) : undefined }
+    ] as any,
     rehypeSlug as any,
     ...rehypePlugins
   ];
