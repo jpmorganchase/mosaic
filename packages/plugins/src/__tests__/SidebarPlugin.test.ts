@@ -287,3 +287,54 @@ describe('GIVEN the SidebarPlugin', () => {
     );
   });
 });
+
+describe('GIVEN a root folder the SidebarPlugin cannot group', () => {
+  const warningsFor = async (pagePaths: string[], excluded: string[] = []) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const volume = {
+      promises: {
+        glob: vi.fn().mockResolvedValueOnce(['/docs']).mockResolvedValueOnce(pagePaths),
+        readFile: vi.fn((value: string) =>
+          Promise.resolve({
+            fullPath: value,
+            route: `route${value.replace(/\..*$/, '')}`,
+            title: value,
+            ...(excluded.includes(value) ? { sidebar: { exclude: true } } : {})
+          })
+        ),
+        writeFile: vi.fn()
+      }
+    };
+    const run = SidebarPlugin.$beforeSend!;
+    await run(
+      volume as unknown as Parameters<typeof run>[0],
+      {
+        config: { setRef: vi.fn() },
+        serialiser: { deserialise: (_path: string, value: unknown) => Promise.resolve(value) },
+        ignorePages: [],
+        pageExtensions: []
+      } as unknown as Parameters<typeof run>[1],
+      {}
+    );
+    const messages = warn.mock.calls.map(([message]) => message);
+    warn.mockRestore();
+    return messages;
+  };
+
+  test.each([
+    ['it has no pages', [], [], 'it contains no pages'],
+    ['its pages are all in subfolders', ['/docs/sub/index.mdx'], [], 'no page sits directly in it'],
+    [
+      'every page directly in it is excluded',
+      ['/docs/index.mdx', '/docs/page.mdx', '/docs/sub/index.mdx'],
+      ['/docs/index.mdx', '/docs/page.mdx'],
+      'every page directly in it sets `sidebar.exclude: true`'
+    ]
+  ])('WHEN %s THEN the warning says so', async (_case, pagePaths, excluded, reason) => {
+    expect(await warningsFor(pagePaths, excluded)).toEqual([
+      `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for /docs: ${reason}${
+        reason.startsWith('no page') ? '; add an index page' : ''
+      }`
+    ]);
+  });
+});
