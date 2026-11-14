@@ -21,14 +21,7 @@ export default class FileAccess implements IFileAccess {
 
   async readFile(file) {
     const resolvedPath = await this.#resolvePath(file);
-    let result;
-    try {
-      result = await this.#getFileFromCache(resolvedPath);
-    } catch (e) {
-      throw new Error(e);
-    }
-    return result;
-    // return this.#adapter.promises.readFile(resolvedPath);
+    return this.#getFileFromCache(resolvedPath);
   }
 
   async glob(pattern, options) {
@@ -216,48 +209,36 @@ export default class FileAccess implements IFileAccess {
       return null;
     }
 
-    if (await this.#isNonHiddenPageCached(file)) {
-      const cachedItem = this.#cachedPages.get(file);
-      return cachedItem;
+    if (this.#cachedPages.has(file)) {
+      return this.#cachedPages.get(file);
     }
 
-    // Bit of parallel programming needed here, to avoid 2+ requests triggering a file load at the same time and making a race condition
-    // eslint-disable-next-line no-async-promise-executor
-    const loadPagePromise = new Promise(async resolve => {
-      const rawFile = await this.#adapter.promises.readFile(file);
-
-      // if (!this.#pageTest(file)) {
-      //   return resolve(rawFile);
-      // }
-      let fileData = rawFile;
-
-      for (const hook of this.#hooks) {
+    // Snapshot hooks with the load: a reset can install a different generation
+    // of hooks before this read finishes.
+    const hooks = [...this.#hooks];
+    const loadPagePromise = (async () => {
+      let fileData = await this.#adapter.promises.readFile(file);
+      for (const hook of hooks) {
         fileData = await hook(file, fileData);
       }
-      resolve(fileData);
-    });
-
+      return fileData;
+    })();
     this.#cachedPages.set(file, loadPagePromise);
 
-    const result = await loadPagePromise;
-
-    if (this.#frozen) {
-      this.#cachedPages.set(file, result);
-    } else {
-      // Clear the `currentlyResolving` entry
-      this.#cachedPages.delete(file);
+    try {
+      const result = await loadPagePromise;
+      if (this.#cachedPages.get(file) === loadPagePromise) {
+        if (this.#frozen) this.#cachedPages.set(file, result);
+        else this.#cachedPages.delete(file);
+      }
+      return result;
+    } catch (error) {
+      // Never evict a newer read installed after a write/reset/invalidation.
+      if (this.#cachedPages.get(file) === loadPagePromise) {
+        this.#cachedPages.delete(file);
+      }
+      throw error;
     }
-
-    return result;
-
-    // this.#cachedPages.add(file);
-    // return this.#adapter.promises.writeFile(file, JSON.stringify(currentPage));
-  }
-
-  async #isNonHiddenPageCached(fileArg) {
-    const file = await this.#adapter.promises.realpath(fileArg);
-
-    return this.#cachedPages.has(file);
   }
 
   $$freeze() {

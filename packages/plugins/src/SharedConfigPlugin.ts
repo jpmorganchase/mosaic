@@ -46,8 +46,8 @@ function createFileGlob(url, pageExtensions) {
  * If it's not contained, the first component of the resulting path will be .., so that's what we check for
  */
 function isWithin(outer, inner) {
-  const outerParentDir = path.posix.resolve(path.posix.dirname(outer), '../');
-  const innerParentDir = path.posix.resolve(path.posix.dirname(inner), '../');
+  const outerParentDir = path.posix.dirname(outer);
+  const innerParentDir = path.posix.dirname(inner);
   const rel = path.posix.relative(outerParentDir, innerParentDir);
   return !rel.startsWith('../') && rel !== '..';
 }
@@ -257,25 +257,13 @@ const SharedConfigPlugin: PluginType<SharedConfigPluginPage, SharedConfigPluginO
       }
     }
 
-    // apply closest shared config
-    if (sharedConfigFiles.length > 0) {
-      let closestSharedConfigIndex = 0;
-      for (const pagePath of indexPagesWithoutConfig) {
-        for (let i = 0; i < sharedConfigFiles.length; i++) {
-          if (isWithin(sharedConfigFiles[i], pagePath)) {
-            closestSharedConfigIndex = i;
-          }
-        }
-
-        const sharedConfigFile = path.posix.join(
-          path.posix.dirname(String(pagePath)),
-          options.filename
-        );
-
-        const closestSharedConfig = path.posix.resolve(
-          path.dirname(String(pagePath)),
-          sharedConfigFiles[closestSharedConfigIndex]
-        );
+    // Select independently for every page, leaving unrelated roots unaliased.
+    for (const pagePath of indexPagesWithoutConfig) {
+      const closestSharedConfig = sharedConfigFiles
+        .filter(file => isWithin(file, pagePath))
+        .sort((a, b) => b.split('/').length - a.split('/').length)[0];
+      if (closestSharedConfig) {
+        const sharedConfigFile = path.posix.join(path.posix.dirname(pagePath), options.filename);
         config.setAliases(closestSharedConfig, [sharedConfigFile]);
       }
     }

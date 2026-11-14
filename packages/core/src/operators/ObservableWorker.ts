@@ -17,20 +17,14 @@ const require = createRequire(import.meta.url);
  * Node inspector then publishes its discovery URL on `localhost:9229/json`
  * (the parent's port) alongside the parent target.
  *
- * Memory-limit flags from `NODE_OPTIONS` (`--max-old-space-size` etc.)
- * are NOT auto-inherited by workers either, so we forward those too.
- * Without that, the worker is stuck at Node's ~512MB default no matter
- * what the parent had configured.
+ * Workers inherit V8 memory settings from the parent environment. V8 flags
+ * are not supported in Worker.execArgv and must not be forwarded here.
  */
-function buildExecArgv(): string[] {
+export function buildExecArgv(): string[] {
   const out: string[] = [];
   const parentOpts = process.env.NODE_OPTIONS ?? '';
   if (/--inspect(=|$|\s)/.test(parentOpts) || /--inspect-brk(=|$|\s)/.test(parentOpts)) {
     out.push('--inspect=0.0.0.0:0');
-  }
-  for (const flag of ['--max-old-space-size', '--max-semi-space-size']) {
-    const m = parentOpts.match(new RegExp(`${flag}=(\\d+)`));
-    if (m) out.push(`${flag}=${m[1]}`);
   }
   return out;
 }

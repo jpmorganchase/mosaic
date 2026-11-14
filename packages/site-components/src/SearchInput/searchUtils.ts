@@ -78,8 +78,8 @@ export const highlightMatch = (text: string, index: Index) => {
   return `${escapeHtml(parts[0])}<strong>${escapeHtml(parts[1])}</strong>${escapeHtml(parts[2])}`;
 };
 
-export const getBestMatch = (matches: Match[], fallback: string) => {
-  const matchesWithIndex = matches
+export const getBestMatch = (matches: Match[] | undefined, fallback: string) => {
+  const matchesWithIndex = (matches ?? [])
     .filter(match => match.key !== 'title' && match.key !== 'route')
     .map(match => ({
       ...match,
@@ -96,7 +96,7 @@ export const getBestMatch = (matches: Match[], fallback: string) => {
 
 export const parseSearchResults = (results): SearchResult[] =>
   results.map(result => {
-    const fallbackContent = result.item.content ? result.item.content[0] : result.title;
+    const fallbackContent = result.item.content?.[0] ?? result.item.title;
     const bestMatch = getBestMatch(result.matches, fallbackContent);
     return {
       title: result.item.title,

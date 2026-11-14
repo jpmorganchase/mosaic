@@ -27,6 +27,7 @@ export default class PullDocs {
   #sourceManager: SourceManager;
   #ufs = new Union() as IUnionFs & { fss: MutableVolume[] };
   #vfs: IUnionVolume;
+  #sourceDefinitionsByVolume = new WeakMap<MutableVolume, SourceModuleDefinition>();
 
   /**
    *
@@ -146,6 +147,7 @@ export default class PullDocs {
       }
     });
 
+    this.#sourceDefinitionsByVolume.set(source.filesystem, sourceDefinition);
     this.#ufs.use(source.filesystem as unknown as IUnionFs);
 
     return source;
@@ -174,6 +176,22 @@ export default class PullDocs {
    */
   async refreshSource(name: string): Promise<boolean> {
     return this.#sourceManager.refreshSource(name);
+  }
+
+  /** Resolve the owner using the same mounted-volume order as ordinary reads. */
+  async getSourceDefinitionForPath(
+    filePath: string,
+    namespaces?: string[]
+  ): Promise<SourceModuleDefinition | undefined> {
+    // unionfs tries the most recently registered volume first, which can differ
+    // from config declaration order when sources start asynchronously.
+    for (const volume of [...this.#ufs.fss].reverse()) {
+      if (namespaces && !namespaces.includes(volume.namespace)) continue;
+      if (await volume.promises.exists(filePath)) {
+        return this.#sourceDefinitionsByVolume.get(volume);
+      }
+    }
+    return undefined;
   }
 
   /** The definition a running source was started with. */

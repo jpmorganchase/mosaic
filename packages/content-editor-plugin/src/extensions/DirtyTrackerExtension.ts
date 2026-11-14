@@ -60,7 +60,7 @@
  *
  * The extension is NOT exercised by `scripts/extensions-smoke.ts`
  * — see that file's top-of-file comment for the constraint
- * (`--experimental-strip-types` can't resolve the transitive
+ * (Node's type stripping can't resolve the transitive
  * extensionless imports we pick up from `../EditorContext` and
  * `../utils/`). It is fully exercised at runtime, every mount,
  * by the React adapter calling `registerDirtyTracker(editor, markDirty)`

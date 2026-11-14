@@ -1,8 +1,8 @@
+import { createPageTest } from './utils/createPageTest.js';
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import fs from 'fs';
 import { glob } from 'tinyglobby';
 import path from 'path';
-import { escapeRegExp } from 'lodash-es';
 import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import remarkParse from 'remark-parse';
@@ -42,14 +42,6 @@ function isUrl(assetPath: string): boolean {
   }
   return false;
 }
-
-const createPageTest = (ignorePages: string[], pageExtensions: string[]) => {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-
-  return (file: string) =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-};
 
 function remarkRewriteImagePaths(newPrefix: string) {
   return (tree: any) => {

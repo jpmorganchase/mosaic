@@ -16,10 +16,8 @@
  *   revert — restore from `<file>.bak` and delete the backup.
  */
 import { writeFileSync, existsSync, renameSync, unlinkSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const siteRoot = resolve(__dirname, '..');
+import { resolve } from 'node:path';
+const siteRoot = resolve(import.meta.dirname, '..');
 const ROUTES = [
   {
     path: 'src/app/api/auth/[...nextauth]/route.ts',

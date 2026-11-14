@@ -35,6 +35,7 @@ import fastifyMosaic from '../plugins/mosaicFastifyPlugin';
 vi.mock('@jpmorganchase/mosaic-core', () => ({
   default: vi.fn().mockImplementation(function MosaicCoreMock() {
     return {
+      getSourceDefinitionForPath: vi.fn().mockResolvedValue(undefined),
       filesystem: {
         promises: {
           // The catch-all `/*` route hits these; returning

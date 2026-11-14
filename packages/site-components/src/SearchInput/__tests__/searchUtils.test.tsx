@@ -1,6 +1,44 @@
 import { describe, test, expect } from 'vitest';
-import { calculateBestIndex, getBestMatch, highlightMatch } from '../searchUtils';
+import { calculateBestIndex, getBestMatch, highlightMatch, performSearch } from '../searchUtils';
+import SearchIndexPlugin from '../../../../plugins/src/SearchIndexPlugin.js';
 import type { Index, Match } from '../searchUtils';
+
+test('searches the generated index with match metadata disabled and escapes fallback text', async () => {
+  const files = new Map<string, string>();
+  await SearchIndexPlugin.afterUpdate!(
+    {} as never,
+    {
+      sharedFilesystem: {
+        promises: {
+          writeFile: async (path: string, value: string) => {
+            files.set(path, value);
+          }
+        }
+      },
+      globalConfig: {
+        data: {
+          searchIndices: {
+            '/one': { route: '/one', title: 'Needle', content: ['Needle <script>bad</script>'] },
+            '/two': { route: '/two', title: 'Needle <b>title</b>' }
+          }
+        }
+      }
+    } as never,
+    { relevancy: { includeMatches: false } }
+  );
+  const index = JSON.parse(files.get('/search-data.json')!);
+  const config = JSON.parse(files.get('/search-config.json')!);
+  expect(config.includeMatches).toBe(false);
+  const results = performSearch(index, 'Needle', config);
+  expect(results).toHaveLength(2);
+  expect(results.find(item => item.route === '/one')!.content).toBe(
+    'Needle &lt;script&gt;bad&lt;/script&gt;'
+  );
+  expect(results.find(item => item.route === '/two')!.content).toBe(
+    'Needle &lt;b&gt;title&lt;/b&gt;'
+  );
+  expect(performSearch(index, 'zzzzzzzz', config)).toEqual([]);
+});
 
 describe('GIVEN a list of search results', () => {
   describe('WHEN parsing match indices', () => {

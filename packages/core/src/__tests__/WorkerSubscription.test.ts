@@ -4,7 +4,24 @@ import { Worker } from 'node:worker_threads';
 
 import WorkerSubscription, { EVENT } from '../WorkerSubscription';
 
-vi.mock('node:worker_threads');
+vi.mock('node:module', () => ({
+  createRequire: () => ({ resolve: () => '/fixtures/Source.worker.js' })
+}));
+
+vi.mock('node:worker_threads', () => ({
+  Worker: vi.fn(
+    class MockWorker {
+      on() {
+        return this;
+      }
+      once() {
+        return this;
+      }
+      terminate() {}
+      postMessage() {}
+    }
+  )
+}));
 
 const utf8Encoder = new TextEncoder();
 
@@ -303,7 +320,8 @@ describe('GIVEN WorkerSubscription', () => {
         plugins: [],
         modulePath: 'module',
         options: { primary: true }
-      }
+      },
+      execArgv: []
     });
   });
 });

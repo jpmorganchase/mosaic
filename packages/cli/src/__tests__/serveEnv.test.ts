@@ -1,7 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import type { MosaicConfig } from '@jpmorganchase/mosaic-types';
 
@@ -19,7 +18,7 @@ const mosaicConfig = {
   sources: []
 } as unknown as MosaicConfig;
 
-const cliRoot = fileURLToPath(new URL('../..', import.meta.url));
+const cliRoot = path.resolve(import.meta.dirname, '../..');
 const cliBin = path.join(cliRoot, 'dist', 'index.mjs');
 
 afterEach(() => {
