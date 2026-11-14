@@ -246,10 +246,14 @@ jobs:
       - name: Create snapshot versions
         # The added changeset guarantees a version bump; the fixed
         # @jpmorganchase/* group takes every package to the snapshot version.
+        # Changesets leaves `workspace:^` alone, and `yarn pack` would publish
+        # it as `^0.0.0-snapshot-<timestamp>`, which later snapshots also
+        # satisfy. Pin internal dependencies to this exact snapshot instead.
         run: |
           rm -f .changeset/pre.json
           printf -- "---\n'@jpmorganchase/mosaic-types': patch\n---\n\nSnapshot release\n" > .changeset/snapshot-release.md
           yarn changeset version --snapshot snapshot
+          sed -i 's/"workspace:\^"/"workspace:*"/' packages/*/package.json
       - name: Build
         run: yarn build
       - name: Pack packages

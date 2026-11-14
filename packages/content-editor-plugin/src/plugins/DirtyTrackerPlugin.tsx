@@ -16,6 +16,9 @@
  *  - `dirtyElements.size === 0 && dirtyLeaves.size === 0` is the
  *    selection-only case (pure caret moves); skip.
  *
+ * Undo/redo (`historic`) updates are user edits: after a save they can
+ * restore unsaved content, so they must re-arm the leave guard.
+ *
  * A small `useRef` armed-after-first-update guard prevents the very
  * first update (the initial state load) from also marking dirty, even
  * if it somehow slips past the tag filter.
@@ -37,7 +40,7 @@ export const DirtyTrackerPlugin = () => {
         armedRef.current = true;
         return;
       }
-      if (tags.has('history-merge') || tags.has('historic')) return;
+      if (tags.has('history-merge')) return;
       if (dirtyElements.size === 0 && dirtyLeaves.size === 0) return;
       markDirty();
     });

@@ -7,7 +7,8 @@ import type { EditorMode } from '../../useEditorMode';
 const modeState = vi.hoisted(() => ({
   mode: 'frontmatter' as EditorMode,
   prepareModeFlip: undefined as ((mode: EditorMode) => void) | undefined,
-  openSave: undefined as (() => void) | undefined
+  openSave: undefined as (() => void) | undefined,
+  saveState: undefined as string | undefined
 }));
 vi.mock('../../useEditorMode', () => ({ useEditorMode: () => ({ mode: modeState.mode }) }));
 vi.mock('../Toolbar/Toolbar', async () => {
@@ -27,7 +28,15 @@ vi.mock('../Toolbar/Toolbar', async () => {
 vi.mock('../StatusBanner', () => ({ default: () => null }));
 vi.mock('../RouteNoticeBanner', () => ({ default: () => null }));
 vi.mock('../ShortcutHelpDialog', () => ({ ShortcutHelpDialog: () => null }));
-vi.mock('../../plugins/LeaveGuardPlugin', () => ({ LeaveGuardPlugin: () => null }));
+vi.mock('../../plugins/LeaveGuardPlugin', async () => {
+  const { useSaveState } = await import('../../EditorContext');
+  return {
+    LeaveGuardPlugin: () => {
+      modeState.saveState = useSaveState().saveState;
+      return null;
+    }
+  };
+});
 vi.mock('../../plugins/KeyboardShortcutsPlugin', () => ({ KeyboardShortcutsPlugin: () => null }));
 vi.mock('react-split', () => ({
   default: ({ children }: { children: ReactNode }) => (
@@ -66,7 +75,7 @@ function mountEditor(overrides: Partial<EditorProps> = {}) {
   return { ...view, props, changeMode };
 }
 
-test.each(['body', 'metadata', 'visual metadata', 'rename'])(
+test.each(['body', 'body across modes', 'metadata', 'visual metadata', 'rename'])(
   'preserves fragment directives in a %s save',
   async change => {
     const persist = vi.fn(async function* (
@@ -91,12 +100,18 @@ test.each(['body', 'metadata', 'visual metadata', 'rename'])(
       view.changeMode('source');
       view.changeMode('frontmatter');
       expect(screen.getByDisplayValue('Draft title')).toBeVisible();
-    } else if (change === 'body') {
+    } else if (change === 'body' || change === 'body across modes') {
       view.changeMode('source');
       expectedBody = body.replace('Original paragraph.', 'Edited paragraph.');
       fireEvent.change(screen.getByRole('textbox', { name: 'Markdown source editor' }), {
         target: { value: expectedBody }
       });
+      if (change === 'body across modes') {
+        view.changeMode('wysiwyg');
+        view.rerender(<Editor {...view.props} />);
+        view.changeMode('source');
+        expectedBody = expectedBody.trimEnd();
+      }
     }
     await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
     if (change === 'rename') {
@@ -138,6 +153,45 @@ test('retains invalid YAML and valid fields through repeated mode round trips', 
     target: { value: 'enabled: false\n' }
   });
   expect(screen.getByRole('button', { name: 'Review save' })).toBeEnabled();
+});
+
+test('recompiles the preview when an invalid frontmatter edit becomes valid', async () => {
+  const compilePreview = vi.fn(async (_source: string) => ({
+    compiledSource: '',
+    frontmatter: {},
+    scope: {}
+  }));
+  mountEditor({ compilePreview });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('enabled: true'), {
+    target: { value: 'enabled: [' }
+  });
+  fireEvent.change(screen.getByDisplayValue('enabled: ['), {
+    target: { value: 'enabled: false\n' }
+  });
+  await waitFor(() =>
+    expect(compilePreview).toHaveBeenCalledWith(expect.stringContaining('enabled: false'))
+  );
+});
+
+test('guards a frontmatter field reverted to its on-disk value after a save', async () => {
+  const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+    yield { kind: 'complete', prHref: null };
+  });
+  mountEditor({ persist });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('Authored title'), {
+    target: { value: 'Draft title' }
+  });
+  expect(modeState.saveState).toBe('dirty');
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+  await waitFor(() => expect(modeState.saveState).toBe('saved'));
+  // The saved change and the on-disk file both differ from this draft.
+  fireEvent.change(screen.getByDisplayValue('Draft title'), {
+    target: { value: 'Authored title' }
+  });
+  expect(modeState.saveState).toBe('dirty');
 });
 
 test('resets the whole draft when the host changes the backing document', async () => {
@@ -198,4 +252,21 @@ test('preserves body edits when Visual mode rerenders after consuming its mode b
   view.rerender(<Editor {...view.props} />);
   view.changeMode('source');
   expect(screen.getByRole('textbox', { name: 'Markdown source editor' })).toHaveValue(edited);
+});
+
+test('pristine mode switches still prevent a message-only save', async () => {
+  modeState.mode = 'source';
+  const persist = vi.fn();
+  const view = mountEditor({
+    persist,
+    loadSaveDefaults: async () => ({ supportsCommitMessage: true, commitMessage: 'Source default' })
+  });
+  await screen.findByTestId('split-ready');
+  view.changeMode('wysiwyg');
+  view.changeMode('source');
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  const message = await screen.findByRole('textbox', { name: 'Commit message' });
+  await userEvent.type(message, ' with an explanation');
+  expect(screen.getByRole('button', { name: 'Raise Pull Request' })).toBeDisabled();
+  expect(persist).not.toHaveBeenCalled();
 });

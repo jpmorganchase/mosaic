@@ -15,6 +15,12 @@ import { ProxyAgent, fetch as undiciFetch } from 'undici';
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
+import {
+  resolveCommitMessage,
+  commitMessageTitle,
+  prepareCommitMessage,
+  type CommitMessageOption
+} from './commitMessage.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -24,6 +30,7 @@ function getErrorMessage(error: unknown) {
 interface GitHubPullRequestWorkflowData {
   user: { id?: string; sid?: string; name: string; email: string };
   markdown: string;
+  commitMessage?: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)
    * from the in-browser editor's Frontmatter tab. When present
@@ -83,7 +90,7 @@ interface GitHubPullRequestWorkflowData {
 
 interface GitHubPullRequestWorkflowOptions {
   apiEndpoint: string;
-  commitMessage: (filePath: string) => string;
+  commitMessage?: CommitMessageOption;
   titlePrefix: string;
   proxyEndpoint?: string;
 }
@@ -93,7 +100,14 @@ export async function createPullRequest(
   sourceOptions: GitRepoSourceOptions,
   { apiEndpoint, commitMessage, titlePrefix, proxyEndpoint }: GitHubPullRequestWorkflowOptions,
   filePath: string,
-  { user, markdown, frontmatter, targetRoute, isNewPage }: GitHubPullRequestWorkflowData
+  {
+    user,
+    markdown,
+    frontmatter,
+    targetRoute,
+    isNewPage,
+    commitMessage: messageOverride
+  }: GitHubPullRequestWorkflowData
 ) {
   const {
     credentials,
@@ -106,6 +120,18 @@ export async function createPullRequest(
 
   if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
     sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
+    return false;
+  }
+
+  let commitMsg: string;
+  try {
+    commitMsg = resolveCommitMessage(commitMessage, filePath, {
+      isNewPage,
+      targetRoute,
+      commitMessage: messageOverride
+    });
+  } catch (error) {
+    sendWorkflowProgressMessage(getErrorMessage(error), 'ERROR');
     return false;
   }
 
@@ -331,16 +357,7 @@ export async function createPullRequest(
     let prResult: string | { error: string; source: string } | null;
     let pullRequestUrl: string | undefined;
 
-    // Per-action commit message + PR title so the resulting PR
-    // reads naturally as "created" vs. "updated". The base
-    // `commitMessage(filePath)` is preserved as the workflow
-    // option default so callers that haven't opted in still see
-    // their configured copy.
-    const action = isNewPage ? 'created' : 'updated';
-    const commitMsg = isNewPage
-      ? commitMessage(filePath).replace('updated content', 'created content')
-      : commitMessage(filePath);
-    const prTitle = `${titlePrefix} - Content ${action} - ${filePath}`;
+    const prTitle = commitMessageTitle(commitMsg, titlePrefix);
 
     try {
       await repoInstance.addChanges();
@@ -424,8 +441,9 @@ const workflow: SourceWorkflow = {
   options: {
     titlePrefix: 'Mosaic Docs',
     apiEndpoint: 'https://api.github.com/repos/{owner}/{repo}/pulls',
-    commitMessage: (filePath: string) => `docs: updated content ${filePath} (UIE-7026)`
+    commitMessage: undefined
   },
+  prepare: prepareCommitMessage,
   action: createPullRequest
 };
 

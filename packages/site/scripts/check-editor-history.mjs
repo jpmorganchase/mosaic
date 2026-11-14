@@ -17,7 +17,19 @@ let saveEvents;
 const saves = [];
 const content = http.createServer(async (request, response) => {
   const pathname = new URL(request.url, 'http://fixture.test').pathname;
-  if (pathname === '/workflows/jobs' && request.method === 'POST') {
+  if (pathname === '/workflows/defaults' && request.method === 'POST') {
+    let body = '';
+    for await (const chunk of request) body += chunk;
+    const input = JSON.parse(body);
+    assert.equal(request.headers.authorization, 'Bearer test-token-placeholder');
+    response.writeHead(200, { 'Content-Type': 'application/json' });
+    response.end(
+      JSON.stringify({
+        supportsCommitMessage: true,
+        commitMessage: `docs: ${input.isNewPage ? 'create' : 'update'} ${input.route}`
+      })
+    );
+  } else if (pathname === '/workflows/jobs' && request.method === 'POST') {
     let body = '';
     for await (const chunk of request) body += chunk;
     saves.push(JSON.parse(body));
@@ -200,9 +212,32 @@ try {
 
   // A real local Server Action and SSE stream exercise saving and saved states.
   await body.press(process.platform === 'darwin' ? 'Meta+s' : 'Control+s');
+  const commitMessage = page.getByRole('textbox', { name: 'Commit message', exact: true });
+  await expect(commitMessage).toHaveValue('docs: update /docs/page.mdx');
+  const resetMessage = page.getByRole('button', { name: 'Reset to default', exact: true });
+  await resetMessage.scrollIntoViewIfNeeded();
+  await expect(resetMessage).toBeInViewport();
+  await resetMessage.click();
+  const filePath = page.getByRole('textbox', { name: 'File path', exact: true });
+  await filePath.scrollIntoViewIfNeeded();
+  await expect(filePath).toBeInViewport();
+  await commitMessage.fill('Explain the editor change\n\nKeep the authored message.');
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await page.getByLabel('Visual editor (WYSIWYG)', { exact: true }).click();
+  await expect(page.locator('[contenteditable="true"]')).toBeVisible();
+  await page.getByLabel('Source editor (raw markdown)', { exact: true }).click();
+  await expect(body).toHaveValue('Next draft');
+  await body.press(process.platform === 'darwin' ? 'Meta+s' : 'Control+s');
+  await expect(commitMessage).toHaveValue(
+    'Explain the editor change\n\nKeep the authored message.'
+  );
   await page.getByRole('button', { name: 'Raise Pull Request', exact: true }).click();
   await expect.poll(() => Boolean(saveEvents)).toBe(true);
   assert.equal(saves[0].markdown, 'Next draft');
+  assert.equal(saves[0].commitMessage, 'Explain the editor change\n\nKeep the authored message.');
+  console.log(
+    'PASS: Source message defaults, scrollable controls and exact author message across editor modes.'
+  );
   await back();
   await expect(guard).toBeVisible();
   await page.getByRole('button', { name: 'Keep editing' }).click();

@@ -10,4 +10,5 @@ export * from './PluginModuleSchema.js';
 export * from './SerialiserModuleSchema.js';
 export * from './SourceModuleSchema.js';
 export * from './SourceWorkflowSchema.js';
+export * from './WorkflowDefaultsSchema.js';
 export * from './SourceScheduleSchema.js';

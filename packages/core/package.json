@@ -33,10 +33,10 @@
     "directory": "packages/core"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-plugins": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-plugins": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-serialisers": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "lodash-es": "^4.17.23",
     "md5": "*",
     "memfs": "^4.0.0",

@@ -1,5 +1,7 @@
 import { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
+import { workflowDefaultsSchema } from '@jpmorganchase/mosaic-schemas';
+import { validateCommitMessage } from '@jpmorganchase/mosaic-schemas/commitMessage';
 import path from 'node:path';
 import type { SendSourceWorkflowMessage } from '@jpmorganchase/mosaic-types';
 
@@ -51,6 +53,12 @@ function validateWorkflowRequest(body: unknown): WorkflowRequest | string {
   if (!isSafeRoute(request.route)) return 'Workflow route is invalid';
   if (request.targetRoute !== undefined && !isSafeRoute(request.targetRoute)) {
     return 'Workflow target route is invalid';
+  }
+  if (request.isNewPage !== undefined && typeof request.isNewPage !== 'boolean')
+    return 'Invalid new-page flag';
+  if (request.commitMessage !== undefined) {
+    const error = validateCommitMessage(request.commitMessage);
+    if (error) return error;
   }
   return request as WorkflowRequest;
 }
@@ -126,6 +134,51 @@ async function mosaicWorkflows(
     for (const close of openStreams) close();
   });
 
+  // Shared by defaults inspection and execution, including alias and directory resolution.
+  async function resolveWorkflowPath(
+    route: string,
+    newPage: boolean
+  ): Promise<{ pagePath: string } | { status: number; error: string }> {
+    if (newPage) {
+      const pagePath = /\.mdx?$/.test(route) ? route : `${route}.mdx`;
+      if (await fs.promises.exists(pagePath))
+        return { status: 409, error: `${pagePath} already exists` };
+      return { pagePath };
+    }
+    if (!(await fs.promises.exists(route))) return { status: 404, error: `${route} not found` };
+    const resolved = (await fs.promises.stat(route)).isDirectory()
+      ? path.posix.join(route, 'index')
+      : route;
+    return { pagePath: (await fs.promises.realpath(resolved)) as string };
+  }
+
+  fastify.post(
+    '/workflows/defaults',
+    {
+      bodyLimit: 16 * 1024,
+      onRequest: requireWorkflowsSecret,
+      errorHandler: sendRequestError
+    },
+    async (request, reply) => {
+      const parsed = validateWorkflowRequest(request.body);
+      if (typeof parsed === 'string') return reply.code(400).send({ error: parsed });
+      const resolved = await resolveWorkflowPath(parsed.route, parsed.isNewPage === true);
+      if ('error' in resolved) return reply.code(resolved.status).send({ error: resolved.error });
+      try {
+        const defaults = await core.prepareWorkflow(parsed.name, resolved.pagePath, {
+          ...(parsed.isNewPage === true ? { isNewPage: true } : {}),
+          ...(typeof parsed.targetRoute === 'string' ? { targetRoute: parsed.targetRoute } : {})
+        });
+        // A custom workflow's return value is untrusted, too. Strip all extra fields.
+        return reply
+          .header('Cache-Control', 'no-store')
+          .send(workflowDefaultsSchema.parse(defaults));
+      } catch {
+        return reply.code(400).send({ error: 'Could not load workflow defaults.' });
+      }
+    }
+  );
+
   /**
    * Start a workflow. Responds `202 { jobId }`; follow the job with
    * `GET /workflows/jobs/:id/events`.
@@ -155,21 +208,9 @@ async function mosaicWorkflows(
       const data = { user, ...restParams };
       const newPage = restParams.isNewPage === true;
 
-      let pagePath: string;
-      if (newPage) {
-        pagePath = /\.mdx?$/.test(routeReq) ? routeReq : `${routeReq}.mdx`;
-        if (await fs.promises.exists(pagePath)) {
-          return reply.code(409).send({ error: `${pagePath} already exists` });
-        }
-      } else {
-        if (!(await fs.promises.exists(routeReq))) {
-          return reply.code(404).send({ error: `${routeReq} not found` });
-        }
-        const route = (await fs.promises.stat(routeReq)).isDirectory()
-          ? path.posix.join(routeReq, 'index')
-          : routeReq;
-        pagePath = (await fs.promises.realpath(route)) as string;
-      }
+      const resolved = await resolveWorkflowPath(routeReq, newPage);
+      if ('error' in resolved) return reply.code(resolved.status).send({ error: resolved.error });
+      const { pagePath } = resolved;
 
       // A terminal SSE event (including timeout) can precede the end of
       // the actual write. Keep a retry out of the original save's worktree.

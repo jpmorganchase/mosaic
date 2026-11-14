@@ -32,8 +32,8 @@
     "directory": "packages/source-local-folder"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "rxjs": "^7.5.5",
     "tinyglobby": "^0.2.17",
     "zod": "^4.6.7"

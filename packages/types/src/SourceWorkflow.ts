@@ -1,3 +1,5 @@
+import type { SourceWorkflowPrepare, WorkflowDefaultsInput } from '@jpmorganchase/mosaic-schemas';
+
 export type SourceWorkflowAction<TSourceOptions, TOptions> = (
   sendWorkflowProgressMessage: SendSourceWorkflowMessage,
   sourceOptions: TSourceOptions,
@@ -9,6 +11,7 @@ export type SourceWorkflow<TSourceOptions = unknown, TOptions = Record<string, u
   name: string;
   options?: TOptions;
   action: SourceWorkflowAction<TSourceOptions, TOptions>;
+  prepare?: SourceWorkflowPrepare;
 };
 
 export type SourceWorkflowMessageStatus = 'SUCCESS' | 'ERROR' | 'IN_PROGRESS' | 'COMPLETE';
@@ -25,3 +28,11 @@ export type SourceWorkflowMessageEvent = {
   status: SourceWorkflowMessageStatus;
   message: any;
 };
+export type { WorkflowDefaults, WorkflowDefaultsInput } from '@jpmorganchase/mosaic-schemas';
+
+/** Additive editor save contract shared by hosts and the save dialog. */
+export interface EditorSaveInput extends WorkflowDefaultsInput {
+  markdown: string;
+  frontmatter?: string;
+  commitMessage?: string;
+}

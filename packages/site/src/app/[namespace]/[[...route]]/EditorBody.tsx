@@ -31,7 +31,7 @@ import type { MdxRawSourceResult } from '@jpmorganchase/mosaic-site-middleware';
 
 import { mdxComponents } from './MdxComponents';
 import { compilePreview } from './previewAction';
-import { startSave } from './persistAction';
+import { startSave, getSaveDefaults } from './persistAction';
 
 interface PreviewProps {
   source: SerializeResult | undefined;
@@ -62,6 +62,12 @@ async function persist(
   // The save dialog reports a thrown error like an `error` event.
   if ('error' in started) throw new Error(started.error);
   return subscribeToSave(started.jobId);
+}
+
+async function loadSaveDefaults(input: Parameters<typeof getSaveDefaults>[0]) {
+  const result = await getSaveDefaults(input);
+  if ('error' in result) throw new Error(result.error);
+  return result;
 }
 
 export interface EditorBodyProps {
@@ -109,6 +115,7 @@ export function EditorBody({ raw, rawSource, user, isNewPage = false, route }: E
         }
         compilePreview={compilePreview}
         persist={persist}
+        loadSaveDefaults={loadSaveDefaults}
         user={user}
         isNewPage={isNewPage}
       />

@@ -1,5 +1,11 @@
 'use client';
 
+import type {
+  EditorSaveInput,
+  WorkflowDefaults,
+  WorkflowDefaultsInput
+} from '@jpmorganchase/mosaic-types';
+
 /**
  * Editor shell that owns mode switching.
  *
@@ -165,14 +171,18 @@ export interface EditorProps {
   PreviewComponent: ComponentType<PreviewComponentProps>;
   compilePreview: (markdown: string) => Promise<SerializeResult>;
   /**
+   * Opts into editable commit messages. The host must resolve defaults on the
+   * server and forward the optional commitMessage from its persist handler.
+   */
+  loadSaveDefaults?: (input: WorkflowDefaultsInput) => Promise<WorkflowDefaults>;
+  /**
    * Saves the page and returns its progress events. Typically starts the
    * save with a Server Action that returns a job id and follows it with
    * `subscribeToSave(jobId)`. A thrown error is shown as a failed save.
    */
-  persist?: (input: {
-    route: string;
-    markdown: string;
-  }) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  persist?: (
+    input: EditorSaveInput
+  ) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
   user?: EditorUser;
   /**
    * When `true` this editor session is for *creating* a
@@ -204,6 +214,7 @@ const EditorInner: FC<EditorProps> = ({
   rawSource,
   compilePreview,
   persist,
+  loadSaveDefaults,
   PreviewComponent,
   isNewPage = false,
   route
@@ -218,10 +229,11 @@ const EditorInner: FC<EditorProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   // Processed metadata belongs to the preview. Only authored bytes may
   // seed a save: plugins can expand fragments or otherwise rewrite bodies.
-  const { data: parsedMeta } = parseFrontmatter(content);
-  const { content: markdown } = parseFrontmatter(
-    rawSource?.kind === 'raw' ? rawSource.bytes : content
-  );
+  // Memoised so `meta` and the debounced compilers derived from it keep
+  // their identity; a new identity cancels any pending preview compile.
+  const parsedMeta = useMemo(() => parseFrontmatter(content).data, [content]);
+  const authoredInput = rawSource?.kind === 'raw' ? rawSource.bytes : content;
+  const markdown = useMemo(() => parseFrontmatter(authoredInput).content, [authoredInput]);
   const hasAuthoredSource = rawSource?.kind === 'raw' || isNewPage;
   const canSave = hasAuthoredSource && !hasInvalidFrontmatterEdits;
   const meta = useMemo(
@@ -416,7 +428,7 @@ const EditorInner: FC<EditorProps> = ({
    * the Save CTA we added so authors could open the dialog to
    * rename a file without editing the body.
    *
-   * Fix: capture the round-tripped baseline ONCE on the first
+   * Capture the round-tripped baseline once on a pristine
    * WYSIWYG mount (the bridge installer is the only thing in
    * this tree that has the live editor ref), so subsequent
    * diff comparisons are between Lexical output and Lexical
@@ -623,9 +635,12 @@ const EditorInner: FC<EditorProps> = ({
     const yaml = frontmatterSnapshotRef.current?.();
     setHasInvalidFrontmatterEdits(yaml === undefined);
     if (typeof yaml === 'string') {
+      // Compare with the previous draft, not the on-disk baseline: after a
+      // save, reverting a field to its on-disk value is still unsaved work.
+      const previousYaml = lastAuthoredYamlRef.current ?? originalFrontmatterYamlRef.current;
       lastAuthoredYamlRef.current = yaml;
       // Frontmatter-only edits must arm the unsaved-changes guard too.
-      if (yaml !== originalFrontmatterYamlRef.current) markDirty();
+      if (yaml !== previousYaml) markDirty();
     } else {
       // Invalid drafts are still unsaved work, even without serializable YAML.
       markDirty();
@@ -676,6 +691,7 @@ const EditorInner: FC<EditorProps> = ({
               getCurrentAuthoredFrontmatter={getCurrentAuthoredFrontmatter}
               originalAuthoredFrontmatter={originalFrontmatterYamlRef.current}
               persist={canSave ? persist : undefined}
+              loadSaveDefaults={loadSaveDefaults}
               isNewPage={isNewPage}
             />
             <ShortcutHelpDialog />
@@ -709,6 +725,7 @@ const EditorInner: FC<EditorProps> = ({
                 {mode === 'wysiwyg' ? (
                   <WysiwygShell
                     seed={seed}
+                    originalMarkdown={markdown}
                     compilePreview={compilePreviewWithFrontmatter}
                     getCurrentMarkdownRef={getCurrentMarkdownRef}
                     wysiwygBlockIndexRef={wysiwygBlockIndexRef}
@@ -855,13 +872,14 @@ const SplitContainer: FC<SplitContainerProps> = ({ isNewPage, children }) => {
 
 interface WysiwygShellProps {
   seed: ModeBridgeSnapshot;
+  originalMarkdown: string;
   compilePreview: EditorProps['compilePreview'];
   getCurrentMarkdownRef: React.RefObject<() => string>;
   wysiwygBlockIndexRef: React.RefObject<number>;
   bridgeRef: React.RefObject<ModeBridgeSnapshot | null>;
   /**
    * Round-tripped baseline target. The bridge installer writes
-   * to it once on first WYSIWYG mount so the save dialog can
+   * to it once on a pristine WYSIWYG mount so the save dialog can
    * diff Lexical-output against Lexical-output (eliminating
    * pipeline-noise phantom diffs).
    */
@@ -870,6 +888,7 @@ interface WysiwygShellProps {
 
 const WysiwygShell: FC<WysiwygShellProps> = ({
   seed,
+  originalMarkdown,
   compilePreview,
   getCurrentMarkdownRef,
   wysiwygBlockIndexRef,
@@ -931,6 +950,7 @@ const WysiwygShell: FC<WysiwygShellProps> = ({
     <WysiwygFormattingTooltrays />
     <WysiwygBridgeInstaller
       seed={seed}
+      originalMarkdown={originalMarkdown}
       getCurrentMarkdownRef={getCurrentMarkdownRef}
       wysiwygBlockIndexRef={wysiwygBlockIndexRef}
       bridgeRef={bridgeRef}
@@ -975,6 +995,7 @@ const CommandHandlerRegistrations: FC = () => {
 
 interface WysiwygBridgeInstallerProps {
   seed: ModeBridgeSnapshot;
+  originalMarkdown: string;
   getCurrentMarkdownRef: React.RefObject<() => string>;
   wysiwygBlockIndexRef: React.RefObject<number>;
   bridgeRef: React.RefObject<ModeBridgeSnapshot | null>;
@@ -1002,12 +1023,16 @@ interface WysiwygBridgeInstallerProps {
  */
 const WysiwygBridgeInstaller: FC<WysiwygBridgeInstallerProps> = ({
   seed,
+  originalMarkdown,
   getCurrentMarkdownRef,
   wysiwygBlockIndexRef,
   bridgeRef,
   roundTrippedBaselineRef
 }) => {
   const [editor] = useLexicalComposerContext();
+  // The parent consumes the mode bridge and later rerenders with a fallback
+  // seed; that must not change whether this mounted editor began pristine.
+  const isPristineMount = useRef(seed.markdown === originalMarkdown).current;
 
   useEffect(() => {
     getCurrentMarkdownRef.current = () => {
@@ -1023,16 +1048,17 @@ const WysiwygBridgeInstaller: FC<WysiwygBridgeInstallerProps> = ({
     // installer mounts) means the seeded state is fully
     // applied. The `null` guard makes subsequent re-mounts
     // (from mode flips, where the user has potentially edited
-    // since first mount) no-ops — first WYSIWYG mount wins
-    // for the lifetime of the editor session.
-    if (roundTrippedBaselineRef.current === null) {
+    // since first mount) no-ops. The first visual mount can follow
+    // source edits: that draft must never become the pristine baseline.
+    // Retain the raw authored baseline until a pristine seed is mounted.
+    if (roundTrippedBaselineRef.current === null && isPristineMount) {
       let baseline = '';
       editor.getEditorState().read(() => {
         baseline = $convertToMarkdownString(transformers);
       });
       roundTrippedBaselineRef.current = baseline;
     }
-  }, [editor, getCurrentMarkdownRef, roundTrippedBaselineRef]);
+  }, [editor, getCurrentMarkdownRef, roundTrippedBaselineRef, isPristineMount]);
 
   useEffect(() => {
     if (seed.blockIndex > 0) {

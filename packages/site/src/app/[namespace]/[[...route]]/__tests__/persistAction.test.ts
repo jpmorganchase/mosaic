@@ -53,6 +53,26 @@ afterEach(() => {
 });
 
 describe('startSave', () => {
+  it('forwards the author message with normalized newlines', async () => {
+    const { startSave } = await loadAction();
+    await startSave({
+      route: '/mosaic/index',
+      markdown: '# Changed',
+      commitMessage: 'Summary\r\n\r\nBody'
+    });
+    expect(sentRequest().body.commitMessage).toBe('Summary\n\nBody');
+  });
+
+  it.each(['', ' \n ', 'NUL\0', 'é'.repeat(4097), 42])(
+    'rejects an invalid author message before contacting CLI',
+    async commitMessage => {
+      const { startSave } = await loadAction();
+      expect(
+        await startSave({ route: '/mosaic/index', markdown: '# Changed', commitMessage } as never)
+      ).toHaveProperty('error');
+      expect(fetchMock).not.toHaveBeenCalled();
+    }
+  );
   it('starts the save workflow on the CLI and returns the job id', async () => {
     const { startSave } = await loadAction();
     const result = await startSave({
@@ -201,5 +221,60 @@ describe('startSave', () => {
       error: 'MOSAIC_WORKFLOWS_URL and MOSAIC_WORKFLOWS_SECRET must both be configured.'
     });
     expect(authMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('getSaveDefaults', () => {
+  it('authenticates, forwards only selection fields and returns only public defaults', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, {
+        supportsCommitMessage: true,
+        commitMessage: 'Default\r\nBody',
+        credentials: 'private'
+      })
+    );
+    const { getSaveDefaults } = await loadAction();
+    expect(
+      await getSaveDefaults({
+        route: '/mosaic/new',
+        isNewPage: true,
+        targetRoute: '/mosaic/newer',
+        source: 'other',
+        markdown: 'ignored'
+      } as never)
+    ).toEqual({ supportsCommitMessage: true, commitMessage: 'Default\nBody' });
+    expect(sentRequest()).toMatchObject({
+      url: 'http://cli.test:8080/workflows/defaults',
+      headers: { Authorization: 'Bearer workflows-secret' },
+      body: { name: 'save', route: '/mosaic/new', isNewPage: true, targetRoute: '/mosaic/newer' }
+    });
+    expect(sentRequest().body).not.toHaveProperty('source');
+    expect(sentRequest().body).not.toHaveProperty('markdown');
+  });
+  it('keeps unsupported workflows explicit', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(200, { supportsCommitMessage: false, options: 'private' })
+    );
+    const { getSaveDefaults } = await loadAction();
+    expect(await getSaveDefaults({ route: '/mosaic/index' })).toEqual({
+      supportsCommitMessage: false
+    });
+  });
+  it('rejects non-editors and unsafe inputs without a backend request', async () => {
+    const { getSaveDefaults } = await loadAction();
+    isAuthorizedEditorMock.mockReturnValue(false);
+    expect(await getSaveDefaults({ route: '/mosaic/index' })).toEqual({
+      error: 'You are not allowed to edit this site.'
+    });
+    isAuthorizedEditorMock.mockReturnValue(true);
+    expect(await getSaveDefaults({ route: '/../index' })).toEqual({ error: 'Invalid page route.' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('does not return backend configuration on malformed responses or errors', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(400, { error: 'private configuration' }));
+    const { getSaveDefaults } = await loadAction();
+    expect(await getSaveDefaults({ route: '/mosaic/index' })).toEqual({
+      error: 'Could not load the commit message. Try again.'
+    });
   });
 });

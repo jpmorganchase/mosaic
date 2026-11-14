@@ -3,6 +3,7 @@ import BitbucketPullRequestWorkflow from './BitbucketPullRequestWorkflow.js';
 import GitHubPullRequestWorkflow from './GitHubPullRequestWorkflow.js';
 
 export { BitbucketPullRequestWorkflow, GitHubPullRequestWorkflow };
+export type { CommitMessageOption, CommitMessageContext } from './commitMessage.js';
 
 /**
  * Helper function to apply additional or overwrite existing workflow options
