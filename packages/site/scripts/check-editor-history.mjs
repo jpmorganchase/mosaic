@@ -263,7 +263,8 @@ try {
   throw error;
 } finally {
   await browser?.close();
-  if (child.exitCode === null) {
+  // A signal-killed server has a null exitCode and has already emitted 'exit'.
+  if (child.exitCode === null && child.signalCode === null) {
     child.kill();
     await new Promise(resolve => child.once('exit', resolve));
   }
