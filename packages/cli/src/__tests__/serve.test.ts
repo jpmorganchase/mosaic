@@ -110,11 +110,15 @@ function restoreEnv(name: keyof typeof ORIGINAL_ENV) {
 }
 
 describe('GIVEN the serve command', () => {
+  test('THEN the requested bind host reaches the HTTP listener', () => {
+    expect((server.server.address() as AddressInfo).address).toBe('127.0.0.1');
+  });
+
   beforeAll(async () => {
     process.env.MOSAIC_ADMIN_SECRET = ADMIN_SECRET;
     process.env.MOSAIC_WORKFLOWS_SECRET = WORKFLOWS_SECRET;
     process.env.MOSAIC_WORKFLOWS_TIMEOUT_MS = '300000';
-    await serve(mosaicConfig, 0, undefined /** scope */);
+    await serve(mosaicConfig, 0, undefined /** scope */, '127.0.0.1');
   });
 
   afterAll(async () => {

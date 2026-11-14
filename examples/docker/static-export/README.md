@@ -5,7 +5,8 @@ from nginx — **no Node.js runtime in the production image**.
 
 ## Prerequisites
 
-- A snapshot to build against. Generate one with
+- The checked-in snapshot, or a refreshed snapshot. After `yarn install --immutable`
+  and `yarn build`, generate one with
   `yarn workspace @jpmorganchase/mosaic-site gen:snapshot` (lands in
   `packages/site/snapshots/latest/`).
 - Docker 20.10+ (uses BuildKit syntax for the inline nginx config).
@@ -18,7 +19,9 @@ From the repo root:
 docker build -f examples/docker/static-export/Dockerfile -t mosaic-static .
 ```
 
-The build runs `yarn build:static:file` inside `packages/site`, which:
+The root-context build installs all workspace manifests with the pinned Yarn
+release and builds the internal packages. It then runs `yarn build:static:file`
+inside `packages/site`, which:
 
 1. Applies the API-route stubs (`scripts/static-export-route-stubs.mjs`).
 2. Runs `next build` with `MOSAIC_OUTPUT=export`.

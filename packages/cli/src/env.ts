@@ -9,6 +9,7 @@
  * secrets on each request.
  */
 import { z } from 'zod';
+import { isIP } from 'node:net';
 
 export type CliEnv = Record<string, string | undefined>;
 
@@ -152,4 +153,14 @@ export function validateServeEnv(env: CliEnv = process.env): ServeEnv {
       : Number(workflowsTimeout),
     revalidate: url && revalidateSecret ? { url, secret: revalidateSecret } : undefined
   };
+}
+
+/** Validate the CLI bind address before booting sources. */
+export function validateHost(host: string): string {
+  const hostname =
+    /^(?=.{1,253}$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.?$/i;
+  if (!isIP(host) && !hostname.test(host)) {
+    throw new Error('Invalid --host: expected a hostname or IP address without a scheme or port.');
+  }
+  return host;
 }

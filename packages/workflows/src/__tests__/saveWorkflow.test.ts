@@ -166,3 +166,23 @@ test('cleans up the GitHub worktree when reading an existing page fails', async 
   expect(mocks.removeWorktree).toHaveBeenCalledWith(worktreeId);
   expect(mocks.githubRequest).not.toHaveBeenCalled();
 });
+
+test('forwards a curated Bitbucket command failure as ERROR without exposing source credentials', async () => {
+  const error =
+    "Error creating Pull Request: Credentialed 'curl' request failed. Check connectivity and provider credentials.";
+  mocks.createPullRequest.mockResolvedValue({
+    error,
+    source: 'https://[redacted]@git.example.test/docs/site.git#main'
+  });
+  const send = vi.fn();
+  const result = await BitbucketPullRequestWorkflow.action(
+    send,
+    sourceOptions,
+    { ...BitbucketPullRequestWorkflow.options, apiEndpoint: 'https://api.git.example.test' },
+    route,
+    { user, markdown: 'New page', frontmatter: 'title: New section', isNewPage: true }
+  );
+  expect(send).toHaveBeenLastCalledWith(error, 'ERROR');
+  expect(send.mock.calls.some(([, status]) => status === 'COMPLETE')).toBe(false);
+  expect(JSON.stringify([result, send.mock.calls])).not.toContain(sourceOptions.credentials);
+});

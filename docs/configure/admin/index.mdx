@@ -127,3 +127,22 @@ with code 1 and lists every problem as `NAME: reason`. Empty values count as uns
 The placeholder `MOSAIC_WORKFLOWS_SECRET` committed in the site's `.env.development` is not an error;
 outside development it simply counts as unset. For the site's variables, see the
 [site README](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/README.md#environment-variables).
+
+### Binding the content server
+
+`mosaic serve` binds to `localhost` by default. Use `--host 0.0.0.0` when the
+content server must accept connections from another container, for example:
+
+```sh
+mosaic serve --config mosaic.config.mjs --host 0.0.0.0 --port 8080
+```
+
+The host accepts a hostname or IP address, without a scheme or port. Keep the
+existing workflow/admin secrets and network access controls when exposing the
+listener beyond the local machine.
+
+Revalidation delivery keeps the latest pending source update until the site
+acknowledges it. Failed requests retry after one second, doubling up to thirty
+seconds, and each request has a ten-second deadline. Updates during an in-flight
+request cause a subsequent notification; closing the CLI server cancels pending
+requests and retries.

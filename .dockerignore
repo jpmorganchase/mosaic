@@ -1,0 +1,18 @@
+.git
+plans
+**/node_modules
+**/.tmp
+**/.turbo
+**/dist
+**/.next
+**/out
+**/coverage
+**/test-results
+**/.env
+**/.env.*
+# Committed production defaults that a normal site build reads.
+!packages/site/.env
+!packages/site/.env.production
+.yarn/cache
+.yarn/install-state.gz
+.yarn/unplugged

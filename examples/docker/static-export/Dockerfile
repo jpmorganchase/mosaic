@@ -1,36 +1,15 @@
 # syntax=docker/dockerfile:1.7
-#
-# examples/docker/static-export/Dockerfile
-#
-# Two-stage build that produces a static-only Mosaic site served by nginx.
-# Builds in `MOSAIC_MODE=snapshot-file` (active mode cannot be statically
-# exported).
-#
-# The resulting image has NO Node.js runtime — only nginx serving the
-# pre-rendered HTML/JS/CSS from `out/`.
-
-# ---- builder ----------------------------------------------------------------
-FROM node:24-alpine AS builder
-RUN apk add --no-cache libc6-compat
+FROM node:24-bookworm-slim AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ git ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-
-# Dependencies (cached layer)
-COPY package.json yarn.lock* ./
-RUN yarn --frozen-lockfile && yarn cache clean --all;
-
-# Source
+# The root context includes every workspace manifest and the pinned Yarn release.
 COPY . .
-
-# The snapshot is read from packages/site/snapshots/latest, copied above.
-ENV MOSAIC_MODE=snapshot-file
+RUN corepack enable && yarn install --immutable
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# build:static:file applies the API-route stubs, runs `next build` with
-# MOSAIC_OUTPUT=export, and reverts the stubs whether the build succeeds
-# or fails. The result lands in packages/site/out/.
+RUN yarn build
+ENV MOSAIC_MODE=snapshot-file MOSAIC_SNAPSHOT_DIR=snapshots/latest
 RUN yarn workspace @jpmorganchase/mosaic-site build:static:file
 
-# ---- runtime ----------------------------------------------------------------
 FROM nginx:1.27-alpine AS runner
 
 # Drop the default site config and ship our own. `try_files $uri $uri.html`

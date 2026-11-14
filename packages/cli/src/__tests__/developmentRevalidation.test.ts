@@ -30,6 +30,7 @@ test('the committed development configuration notifies the site after a source u
     sourceUpdated();
     await Promise.resolve();
     expect(fetchMock).toHaveBeenCalledWith('http://localhost:3000/api/revalidate', {
+      signal: expect.any(AbortSignal),
       method: 'POST',
       headers: {
         'content-type': 'application/json',

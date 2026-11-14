@@ -62,6 +62,9 @@ const MAX_SPAWN_BUFFER_BYTES = 8 * 1024 * 1024;
  */
 interface SpawnOptions {
   discardStdout?: boolean;
+  /** Never retain command arguments or provider output in errors for credentialed requests. */
+  sensitive?: boolean;
+  credential?: string | null;
 }
 
 function spawn(
@@ -70,7 +73,7 @@ function spawn(
   cwd: string,
   options: SpawnOptions = {}
 ): Promise<string> {
-  const { discardStdout = false } = options;
+  const { discardStdout = false, sensitive = false, credential = null } = options;
   return new Promise<string>((resolve, reject) => {
     const child = cp.spawn(exe, args, {
       cwd,
@@ -118,15 +121,25 @@ function spawn(
       detach();
       if (code) {
         reject(
-          new Error(`Command '${exe} ${args.join(' ')}' failed (${code}): ${(err || out).trim()}`)
+          new Error(
+            sensitive
+              ? `Command '${exe}' failed (${code}).`
+              : `Command '${exe} ${args.join(' ')}' failed (${code}): ${(err || out).trim()}`
+          )
         );
       } else {
         resolve(out);
       }
     });
   }).catch(e => {
-    e.message = stripCredentials(e.message);
-    throw e;
+    if (sensitive) {
+      throw new Error(
+        `Credentialed '${exe}' request failed. Check connectivity and provider credentials.`
+      );
+    }
+    // Child-process errors can carry raw spawnargs in enumerable properties.
+    // Rebuild the error rather than forwarding those properties or its stack.
+    throw new Error(redactCredential(getErrorMessage(e), credential));
   });
 }
 
@@ -187,7 +200,23 @@ async function doesPreviousCloneExist(repo: string, dir: string) {
 }
 
 function stripCredentials(url: string) {
-  return url.replace(/(\b(ssh|https?):\/\/[^:]+?:)([^@]+)@/i, (_, $1) => `${$1}*@`);
+  return url.replace(/(\b(?:ssh|https?):\/\/)[^\s/@]+@/gi, '$1[redacted]@');
+}
+
+function redactCredential(message: string, credential: string | null) {
+  let redacted = message;
+  if (!credential) return stripCredentials(redacted);
+  const password = credential.includes(':')
+    ? credential.slice(credential.indexOf(':') + 1)
+    : credential;
+  const values = new Set(
+    [credential, password].filter(Boolean).flatMap(value => [value, encodeURIComponent(value)])
+  );
+  values.add(credential.split(':').map(encodeURIComponent).join(':'));
+  for (const value of [...values].sort((a, b) => b.length - a.length)) {
+    redacted = redacted.split(value).join('[redacted]');
+  }
+  return stripCredentials(redacted);
 }
 
 function createRepoURL(repo: string, credentials: string) {
@@ -260,6 +289,10 @@ export default class Repo {
 
     // Hide credentials when displaying repository name
     this.#name = `${stripCredentials(this.#repo)}#${branch}`;
+  }
+
+  #spawn(exe: string, args: string[], cwd: string, options: SpawnOptions = {}) {
+    return spawn(exe, args, cwd, { ...options, credential: this.#credentials });
   }
 
   get name() {
@@ -379,7 +412,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    return await spawn('git', ['pull', this.#remote, this.#branch], this.#dir, {
+    return await this.#spawn('git', ['pull', this.#remote, this.#branch], this.#dir, {
       discardStdout: true
     });
   }
@@ -388,7 +421,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    const diff = await spawn(
+    const diff = await this.#spawn(
       'git',
       ['diff', `${latestRevision}..${this.#branch}`, '--name-status', '--no-renames'],
       this.#dir
@@ -418,7 +451,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    return spawn('git', ['reset', `${this.#remote}/${this.#branch}`, '--hard'], this.#dir, {
+    return this.#spawn('git', ['reset', `${this.#remote}/${this.#branch}`, '--hard'], this.#dir, {
       discardStdout: true
     });
   }
@@ -435,7 +468,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    const result = await spawn('git', ['rev-parse', 'HEAD'], this.#dir);
+    const result = await this.#spawn('git', ['rev-parse', 'HEAD'], this.#dir);
     if (!result) {
       console.warn('[Mosaic][Source-Git] No revision found for HEAD');
       return null;
@@ -447,7 +480,11 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    const result = await spawn('git', ['rev-parse', `${this.#remote}/${this.#branch}`], this.#dir);
+    const result = await this.#spawn(
+      'git',
+      ['rev-parse', `${this.#remote}/${this.#branch}`],
+      this.#dir
+    );
 
     if (!result) {
       console.warn(`[Mosaic][Source-Git] No revision found for tag ${this.#branch}`);
@@ -456,7 +493,7 @@ export default class Repo {
     return result.trim();
   }
 
-  getLatestCommitDate = async (page: string): Promise<number> => {
+  getLatestCommitDate = async (page: string, revision?: string | null): Promise<number> => {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
@@ -468,7 +505,8 @@ export default class Repo {
     // `invalidateCommitDateCache()` when `updatedFilesGenerator`
     // observes a new commit, so staleness is bounded by the poll
     // interval rather than the process lifetime.
-    const headRevision = await this.currentLocalRevision();
+    const headRevision = revision === undefined ? await this.currentLocalRevision() : revision;
+    if (!headRevision) return Date.now();
     if (headRevision) {
       const cached = this.#commitDateCache.get(page);
       if (cached && cached.revision === headRevision) {
@@ -476,7 +514,11 @@ export default class Repo {
       }
     }
 
-    const result = await spawn('git', ['log', '-1', '--format=%ct', '--', `${page}`], this.#dir);
+    const result = await this.#spawn(
+      'git',
+      ['log', '-1', '--format=%ct', headRevision, '--', page],
+      this.#dir
+    );
 
     let date: number;
     if (!result.trim()) {
@@ -510,12 +552,16 @@ export default class Repo {
    * Returns paths relative to `this.dir`, matching the keys the
    * per-page `getLatestCommitDate(page)` lookup will use.
    */
-  async getLatestCommitDateMap(scope?: string): Promise<Map<string, number>> {
+  async getLatestCommitDateMap(
+    scope?: string,
+    revision?: string | null
+  ): Promise<Map<string, number>> {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
     const map = new Map<string, number>();
-    const headRevision = await this.currentLocalRevision();
+    const headRevision = revision === undefined ? await this.currentLocalRevision() : revision;
+    if (!headRevision) return map;
 
     // `--name-only` + a sentinel-prefixed format lets us walk commits in
     // history order without parsing diff stats. For each commit we emit
@@ -523,14 +569,20 @@ export default class Repo {
     // because we iterate newest-first, the *first* time we see a path is
     // the most recent commit that touched it.
     const sentinel = 'T';
-    const args = ['log', `--pretty=format:${sentinel}%ct`, '--name-only', '--no-renames'];
+    const args = [
+      'log',
+      `--pretty=format:${sentinel}%ct`,
+      '--name-only',
+      '--no-renames',
+      headRevision
+    ];
     if (scope) {
       args.push('--', scope);
     }
 
     let result: string;
     try {
-      result = await spawn('git', args, this.#dir);
+      result = await this.#spawn('git', args, this.#dir);
     } catch (e) {
       // Bulk log is a perf optimisation; if it blows up (e.g. invalid
       // scope, transient I/O) we fall back to per-page lookups rather
@@ -580,7 +632,7 @@ export default class Repo {
     // that's MB of "Receiving objects: …" noise) to stderr, but a few
     // git transports still emit verbose stdout — none of it is something
     // we read.
-    return spawn('git', ['fetch', this.#remote, '--quiet'], this.#dir, {
+    return this.#spawn('git', ['fetch', this.#remote, '--quiet'], this.#dir, {
       discardStdout: true
     });
   }
@@ -623,7 +675,7 @@ export default class Repo {
           await fs.mkdir(this.#cloneRootDir, { recursive: true });
         }
 
-        await spawn(
+        await this.#spawn(
           'git',
           [
             'clone',
@@ -676,9 +728,14 @@ export default class Repo {
             this.#branch
           }'`
         );
-        await spawn('git', ['worktree', 'add', '-f', this.#dir, this.#branch], this.#cloneRootDir, {
-          discardStdout: true
-        });
+        await this.#spawn(
+          'git',
+          ['worktree', 'add', '-f', this.#dir, this.#branch],
+          this.#cloneRootDir,
+          {
+            discardStdout: true
+          }
+        );
       } else {
         console.debug(
           `[Mosaic][Source-Git] Re-using linked worktree repo '${this.#name} branch '${
@@ -746,7 +803,7 @@ export default class Repo {
     // slate without affecting any healthy in-use worktree for a
     // different `sid`.
     try {
-      await spawn('git', ['worktree', 'prune'], this.#cloneRootDir, { discardStdout: true });
+      await this.#spawn('git', ['worktree', 'prune'], this.#cloneRootDir, { discardStdout: true });
     } catch (e) {
       console.warn(
         `[Mosaic][Source-Git] worktree prune failed for '${this.#name}'; ` +
@@ -754,7 +811,7 @@ export default class Repo {
       );
     }
     try {
-      await spawn('git', ['worktree', 'remove', '--force', this.#dir], this.#cloneRootDir, {
+      await this.#spawn('git', ['worktree', 'remove', '--force', this.#dir], this.#cloneRootDir, {
         discardStdout: true
       });
     } catch {
@@ -775,7 +832,7 @@ export default class Repo {
 
     // A failed checkout or post-checkout hook can leave a worktree behind.
     this.#saveWorktreeDir = this.#dir;
-    await spawn(
+    await this.#spawn(
       'git',
       ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
       this.#worktreeRootDir,
@@ -800,7 +857,7 @@ export default class Repo {
     // misread. The clone-root-relative absolute path is
     // unambiguous and works whether or not the dir still exists.
     try {
-      await spawn('git', ['worktree', 'remove', '--force', worktreeDir], this.#cloneRootDir, {
+      await this.#spawn('git', ['worktree', 'remove', '--force', worktreeDir], this.#cloneRootDir, {
         discardStdout: true
       });
     } catch (e) {
@@ -809,7 +866,7 @@ export default class Repo {
           `checking whether it is still registered. (${getErrorMessage(e)})`
       );
       try {
-        const worktrees = await spawn(
+        const worktrees = await this.#spawn(
           'git',
           ['worktree', 'list', '--porcelain', '-z'],
           this.#cloneRootDir
@@ -850,7 +907,7 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    const result = await spawn('git', ['show', '-s', '--format="%ci|%B"', tag], this.#dir);
+    const result = await this.#spawn('git', ['show', '-s', '--format="%ci|%B"', tag], this.#dir);
     const [, date, description] = result.match(/^([^|]+)\|(.*$)/) as RegExpMatchArray;
     return {
       date,
@@ -859,10 +916,10 @@ export default class Repo {
   };
 
   async configureGitUser(name: string, email: string) {
-    await spawn('git', ['config', 'user.name', `${name}`], this.#dir, {
+    await this.#spawn('git', ['config', 'user.name', `${name}`], this.#dir, {
       discardStdout: true
     });
-    await spawn('git', ['config', 'user.email', `${email}`], this.#dir, {
+    await this.#spawn('git', ['config', 'user.email', `${email}`], this.#dir, {
       discardStdout: true
     });
   }
@@ -884,7 +941,7 @@ export default class Repo {
     }
     const refspec = `+refs/heads/${this.#branch}:refs/remotes/${this.#remote}/${this.#branch}`;
     try {
-      await spawn(
+      await this.#spawn(
         'git',
         ['config', '--replace-all', `remote.${this.#remote}.fetch`, refspec],
         this.#cloneRootDir,
@@ -902,11 +959,11 @@ export default class Repo {
   }
 
   async addChanges() {
-    await spawn('git', ['add', '-A'], this.#dir, { discardStdout: true });
+    await this.#spawn('git', ['add', '-A'], this.#dir, { discardStdout: true });
   }
 
   async commitChanges(name: string, email: string, commitMessage: string) {
-    await spawn(
+    await this.#spawn(
       'git',
       [
         '-c',
@@ -925,13 +982,13 @@ export default class Repo {
   }
 
   async pushBranch(branchName: string) {
-    await spawn('git', ['push', 'origin', `${branchName}`], this.#dir, {
+    await this.#spawn('git', ['push', 'origin', `${branchName}`], this.#dir, {
       discardStdout: true
     });
   }
 
   async curlPullRequest(endpoint: string, data: string) {
-    const curlResponse = await spawn(
+    const curlResponse = await this.#spawn(
       'curl',
       [
         '--silent',
@@ -945,7 +1002,8 @@ export default class Repo {
         '-d',
         `${data}`
       ],
-      this.#dir
+      this.#dir,
+      { sensitive: true }
     );
 
     return curlResponse;
@@ -994,12 +1052,8 @@ export default class Repo {
       let jsonResult: { errors?: Array<{ message?: string }> } & Record<string, unknown>;
       try {
         jsonResult = JSON.parse(curlResult);
-      } catch (e) {
-        throw new Error(
-          `Bitbucket API returned a malformed response (not JSON): ` +
-            `${(e as Error).message}. First 200 chars of body: ` +
-            `${curlResult.slice(0, 200)}`
-        );
+      } catch {
+        throw new Error('Bitbucket API returned a malformed response (not JSON).');
       }
 
       if (jsonResult.errors) {
@@ -1020,7 +1074,8 @@ export default class Repo {
       console.log('Branch Name', branchName);
       console.log('Name', this.#name);
       console.log('Remote', this.#remote);
-      console.error(e);
+      const message = redactCredential(getErrorMessage(e), this.#credentials);
+      console.error(message);
       console.groupEnd();
       if (branchPushed) {
         // See the matching warning in
@@ -1034,7 +1089,7 @@ export default class Repo {
         );
       }
       return {
-        error: `Error creating Pull Request: ${getErrorMessage(e)} `,
+        error: `Error creating Pull Request: ${message} `,
         source: `${this.#name}`
       };
     } finally {
