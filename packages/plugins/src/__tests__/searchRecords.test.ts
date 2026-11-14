@@ -128,6 +128,21 @@ describe('GIVEN buildSearchRecords', () => {
     expect(intro.fields).toEqual({ summary: 'An interactive component.', tags: ['action', '3'] });
   });
 
+  test('THEN it keeps fields as plain text, without markdown', () => {
+    const [intro] = buildSearchRecords(
+      {
+        ...page,
+        description: '`Dropdown` lets you **pick** [one option](./options) {or} more.',
+        keywords: ['_Select_', 'Picklist']
+      },
+      {}
+    )!;
+    expect(intro.fields).toEqual({
+      description: 'Dropdown lets you pick one option {or} more.',
+      keywords: ['Select', 'Picklist']
+    });
+  });
+
   test('THEN it can keep deeper headings as sections and cut long text', () => {
     const records = buildSearchRecords(page, { sectionDepth: 4, maxTextLength: 10 })!;
     expect(records.map(record => record.anchor)).toContain('notes');

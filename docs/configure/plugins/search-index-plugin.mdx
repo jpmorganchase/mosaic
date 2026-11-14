@@ -62,7 +62,7 @@ Any [options](https://www.fusejs.io/api/options.html) that need to be passed to 
 
 - `headings` lists the section's headings from the outermost in. The introduction record has none.
 - `text` is the section's prose. Code blocks, JSX attributes and MDX expressions are left out, except `{meta.*}` expressions, which are replaced with their values.
-- `fields` holds the frontmatter set with the `records.fields` option. Only the introduction record has it, because it describes the whole page.
+- `fields` holds the frontmatter set with the `records.fields` option, as plain text without markdown. Only the introduction record has it, because it describes the whole page.
 
 To leave a page out of the records, set `search: { exclude: true }` in its frontmatter.
 

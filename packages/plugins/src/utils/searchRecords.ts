@@ -1,6 +1,7 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
+import { toString } from 'mdast-util-to-string';
 import { SKIP, visit } from 'unist-util-visit';
 import type { Node, Parent } from 'unist';
 import type { SearchRecord } from '@jpmorganchase/mosaic-types';
@@ -40,14 +41,22 @@ type Literal = Node & { value: string };
 type Heading = Parent & { depth: number };
 
 const processor = unified().use(remarkParse).use(remarkMdx);
+// Frontmatter text is markdown, not MDX: `{` is just a character.
+const markdownProcessor = unified().use(remarkParse);
 
 const collapse = (text: string) => text.replace(/\s+/g, ' ').trim();
 
-const fieldValue = (value: unknown): string | string[] | undefined => {
+/** Frontmatter text without its markdown, e.g. "`Dropdown` lets" becomes "Dropdown lets". */
+const plainText = (value: unknown) => {
   const text = asText(value);
+  return text === undefined ? undefined : collapse(toString(markdownProcessor.parse(text)));
+};
+
+const fieldValue = (value: unknown): string | string[] | undefined => {
+  const text = plainText(value);
   if (text !== undefined) return text;
   if (Array.isArray(value)) {
-    const list = value.map(asText).filter((item): item is string => item !== undefined);
+    const list = value.map(plainText).filter((item): item is string => item !== undefined);
     return list.length > 0 ? list : undefined;
   }
   return undefined;
