@@ -1,5 +1,172 @@
 # @jpmorganchase/mosaic-schemas
 
+## 1.0.0-beta.99
+
+### Major Changes
+
+- 5476067: Remove the `snapshot-s3` mode and the `mosaic upload` command
+  
+  S3 snapshot support was unused, so Mosaic now has two content modes,
+  `active` and `snapshot-file`, and no longer depends on the AWS SDK.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `mosaic upload` and its `-S` / `--snapshot` option are removed. The CLI
+    no longer depends on `@aws-sdk/client-s3` or `globby`.
+  
+  **`@jpmorganchase/mosaic-site-middleware`**
+  
+  - The loaders (`getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `loadSitemap`, …) no longer read snapshots from S3. The package no
+    longer depends on `@aws-sdk/client-s3`, `@aws-sdk/types` or `md5`.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `MosaicMode` is now `'active' | 'snapshot-file'`.
+  
+  **`@jpmorganchase/mosaic-schemas`**
+  
+  - `snapshotS3EnvSchema` and the `S3LoaderProcessEnv` type are removed. The
+    `MOSAIC_S3_BUCKET`, `MOSAIC_S3_REGION`, `MOSAIC_S3_ACCESS_KEY_ID` and
+    `MOSAIC_S3_SECRET_ACCESS_KEY` variables are no longer read.
+  
+  **Reference site (`packages/site`)**
+  
+  - The `build:static:s3` and `serve:snapshot:s3` scripts are removed (and
+    the root `serve:snapshot:s3` script). `next.config.js` refuses any
+    `MOSAIC_MODE` other than `active` or `snapshot-file`, so a leftover
+    `snapshot-s3` fails at start-up instead of falling back to active-mode
+    fetches with no content URL.
+  
+  ### Migration
+  
+  Use `snapshot-file` (or `active`) instead of `snapshot-s3`. To keep your
+  snapshots in S3, sync the folder yourself:
+  
+  - Upload after `mosaic build`, for example
+    `aws s3 sync snapshots/latest s3://your-bucket`.
+  - Download before building the site, for example
+    `aws s3 sync s3://your-bucket snapshots/latest`, then set
+    `MOSAIC_MODE=snapshot-file` and `MOSAIC_SNAPSHOT_DIR` to that folder,
+    relative to the site's folder.
+- 41e8af3: Upgrade Mosaic's configuration and source schemas to Zod 4 while preserving schedule defaults, unlimited retries, and infinite plugin priorities. Custom code that composes Mosaic's exported schemas or passes a schema to `validateMosaicSchema` should use Zod 4.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+
 ## 0.1.0-beta.98
 
 ## 0.1.0-beta.97

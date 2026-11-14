@@ -1,5 +1,523 @@
 # @jpmorganchase/mosaic-content-editor-plugin
 
+## 1.0.0-beta.99
+
+### Minor Changes
+
+- 915b9ae: Secure the content server and editor, fix the save flow, and slim the App Router site
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - The `/workflows` WebSocket only runs workflows for messages carrying
+    `token` = `MOSAIC_WORKFLOWS_SECRET`; without that env var no workflow
+    runs, and the placeholder from `.env.development` only counts when
+    `NODE_ENV=development`. Messages are validated (workflow name, user,
+    route) and capped at 5 MB.
+  - Admin endpoints other than `/_mosaic_/tags/list` require
+    `MOSAIC_ADMIN_SECRET`: sent as `x-mosaic-admin-secret`, a bearer token,
+    or the password of the browser login prompt (HTTP Basic). Without the
+    env var they are open when `NODE_ENV=development` and disabled
+    otherwise.
+  - CORS headers are no longer sent to every origin. Allow specific
+    origins with `MOSAIC_CORS_ORIGINS` (comma-separated).
+  
+  **Reference site (`packages/site`)**
+  
+  - Editing requires `MOSAIC_EDITORS` (emails, `@domains` or `*`); when it
+    is unset nobody can sign in or edit in production. Set
+    `MOSAIC_EDITORS=*` to keep the previous "anyone who can sign in"
+    behaviour. Emails and `@domains` only match GitHub emails that
+    GitHub has verified.
+  - Saves need `MOSAIC_WORKFLOWS_URL` and `MOSAIC_WORKFLOWS_SECRET`
+    (renamed from `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`).
+  - The committed `.env.local` is now `.env.development`, which Next.js
+    only loads for `next dev`. Production builds no longer pick up its
+    placeholder `AUTH_SECRET` or dev-only flags, and the site refuses the
+    placeholder secrets when `NODE_ENV=production`.
+  - `.env.prod` is renamed to `.env.production`, the name Next.js actually
+    loads for `next build` / `next start`. Production builds therefore now
+    default to `MOSAIC_MODE=snapshot-file`; set `MOSAIC_MODE=active` for
+    deployments that read from a running Mosaic CLI.
+  
+  ### Fixes
+  
+  - **Saving works again.** The CLI echoes the caller's channel (the site
+    had switched to a different channel hash, so every progress message
+    was dropped and saves never finished), new pages can be created in the
+    source whose `prefixDir` contains them (the CLI required the route to
+    exist already, and the editor had no route for a new page), and saves
+    time out (`MOSAIC_WORKFLOWS_TIMEOUT_MS`, default 5 minutes) and always
+    close their socket.
+  - Workflow failures are reported to the editor instead of crashing the
+    CLI with an unhandled rejection. The GitHub workflow accepts the
+    site's `sid` when no `id` is sent.
+  - Routes are validated before they are forwarded, and workflows refuse
+    to write or rename files outside the source's content folder.
+  - Symlinks inside a content folder can no longer publish files from
+    outside it (local-folder and git-repo sources, and the CLI's
+    `/_mosaic-raw/*` route).
+  - Admin responses no longer overwrite git credentials in the live
+    config with the redacted value.
+  - Search results escape the indexed text before highlighting (it was
+    rendered as HTML), escape the query before building a regex, and
+    search the current input rather than the previous keystroke.
+  - Frontmatter edits are kept when the author leaves the Frontmatter tab
+    before saving, and frontmatter-only or first source-mode edits now
+    count as unsaved changes.
+  - `LayoutProvider` accepts the server's `isEditing` state, so
+    prerendered pages render their real layout (sidebar, breadcrumbs,
+    header controls) in the HTML instead of falling back to client
+    rendering.
+  - The Lexical editor is no longer part of every page's JavaScript:
+    `@jpmorganchase/mosaic-content-editor-plugin` exposes subpath exports
+    (`/useEditMode`, `/LayoutNamesContext`, `/components/EditorControls`,
+    …) and the site lazy-loads the editor from a Client Component.
+  - Loader caches never store not-found results. Active mode can opt in to
+    cross-request caching with `MOSAIC_ACTIVE_MODE_CACHE=true`. Compiled
+    MDX is cached by content hash.
+  - `/api/revalidate` expires the content cache immediately
+    (`{ expire: 0 }`) rather than serving stale content once more.
+  - Per-page stores are released when the page unmounts (`disposeStore`)
+    instead of leaking a store and a `storage` listener per navigation.
+  
+  ### Additions
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin`: `EditModeProvider`,
+    `useIsEditing` and `useEditModeActions`; `<Editor route>` prop.
+  - `@jpmorganchase/mosaic-store`: `registerStore` and `disposeStore`.
+  - `@jpmorganchase/mosaic-site-middleware`, `-layouts` and
+    `-site-components` now declare `next` as a peer dependency.
+- 5d69155: Run editor saves over HTTP and Server-Sent Events instead of a WebSocket
+  
+  Some infrastructure doesn't allow WebSockets but does allow Server-Sent
+  Events (SSE). Saves now start with a plain HTTP request and stream their
+  progress over SSE, which also reconnects by itself and resumes where it
+  left off.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - The `/workflows` WebSocket endpoint is removed, along with the
+    `@fastify/websocket` and `md5` dependencies. Start a workflow with
+    `POST /workflows/jobs` (JSON body: `name`, `user`, `route`, `markdown`,
+    and optionally `frontmatter`, `targetRoute` and `isNewPage`), which
+    responds `202 { jobId }`. Follow it with
+    `GET /workflows/jobs/:jobId/events?user=<user id>`, a `text/event-stream`
+    of `progress` events and a final `done` event with
+    `{ status: 'SUCCESS' | 'ERROR', message }`. Reconnecting with
+    `Last-Event-ID` replays only the missed events.
+  - Both endpoints need `MOSAIC_WORKFLOWS_SECRET` as a bearer token
+    (`Authorization: Bearer <secret>`) instead of a `token` in each message.
+    They respond `503` when the secret isn't configured and `401` when it is
+    wrong. Invalid requests get `400 { error }`, a missing page `404` and an
+    existing new page `409`; the `channel` field is gone.
+  - `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is now read by the
+    CLI, which fails jobs that run longer. Values must be integers from
+    1 to 2147483647. The site no longer reads it.
+  - Jobs are kept in memory (finished jobs for 10 minutes, at most 100 jobs
+    and 500 events per job), so they are lost when the CLI restarts. With
+    several CLI instances, a job's events must be read from the instance
+    that started it.
+  
+  **Reference site (`packages/site`)**
+  
+  - `MOSAIC_WORKFLOWS_URL` is the CLI's base HTTP URL, e.g.
+    `http://localhost:8080`. A trailing `/workflows` is dropped. A `ws://` /
+    `wss://` URL still works: it is converted to `http://` / `https://` and
+    a deprecation warning is logged once.
+  - The `persistContent` Server Action is replaced by `startSave`, which
+    returns `{ jobId }` or `{ error }`. The new
+    `/api/workflows/[jobId]/events` route streams the save's progress to the
+    signed-in editor who started it. Proxies must not buffer
+    `text/event-stream` responses.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `SourceWorkflowMessageEvent` no longer has a `channel` field.
+  
+  **`@jpmorganchase/mosaic-workflows`**
+  
+  - GitHub and Bitbucket workflows send `COMPLETE` with
+    `{ pullRequestUrl }` instead of provider-specific response data. Custom
+    event consumers should read this browser-facing URL. The action return
+    values are unchanged, and `subscribeToSave` still accepts older GitHub
+    URL strings and Bitbucket `links.self` messages.
+  
+  ### Fixes
+  
+  - Saving an existing page no longer reports "Workflow save has started"
+    when no source owns the page: the CLI now waits for the workflow and
+    reports its real outcome. `triggerWorkflow` in
+    `@jpmorganchase/mosaic-core` resolves when the workflow finishes rather
+    than when it starts.
+  - Actions returning `false` or reporting `ERROR` remain failed through
+    the source and job layers instead of being reported as successful.
+  - GitHub and Bitbucket saves accept a new page with frontmatter and an
+    empty body, as the editor does. Empty edits are still rejected.
+  - The editor shows a successful result and disables repeat submission
+    even when the successful workflow returns no pull request URL.
+  
+  ### Additions
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin`: `subscribeToSave(jobId)`
+    follows a save over SSE as the `PersistEvent`s that `<Editor persist>`
+    returns, letting `EventSource` reconnect a few times before reporting an
+    error. The `PersistEvent` type is exported too. The `persist` prop is
+    unchanged.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- 2ecdf25: Export `resolveContent` and `canonicalRoute` for App Router documentation hosts. Resolve an alias's shared configuration from its backing document, even when generated MDX has no embedded `sharedConfig`. Keep the public canonical URL separate from `sourcePathname`, so aliases and authored permalinks retain the correct source capabilities, raw-source reads and save target.
+  
+  The editor now uses an explicit host `route` for save and rename operations while retaining authored public route metadata for preview rendering.
+- 0c4d822: Editor: Lexical 0.45 + extension API + new-page flow + UX polish
+  
+  ## What changed
+  
+  The in-browser content editor has been substantially reworked. Three
+  themes:
+  
+  1. **Lexical 0.17 → 0.45** — every `@jpmorganchase/mosaic-content-editor-plugin`
+     peer dep on `@lexical/*` is bumped to 0.45. Adds `@lexical/extension` as
+     the new composition primitive (plugins are still supported; the
+     extension API is additive).
+  2. **Editor UX polish** — structured MDX error banners with line/column
+     hints, save-state pill (`clean` / `dirty` / `saving` / `saved`),
+     compile indicator, in-editor error highlighting, source-code editor
+     toggle, keyboard shortcuts (+ help dialog), unsaved-changes leave-guard.
+  3. **New-page flow** — `?new=1&title=...` query-string contract creates a
+     synthesised page anywhere in the route tree without touching the
+     filesystem; the New-Page dialog suggests folders/routes from the live
+     sitemap and prevents collisions. Cancel navigates back to the parent
+     folder (the route doesn't exist on disk) and strips the create flags.
+  
+  ### Breaking changes (content-editor-plugin)
+  
+  The plugin's public API has been pruned and rebuilt around per-slice
+  context hooks:
+  
+  - **Removed**: `useContentEditor`, `usePageState`. The module-level
+    zustand store backing these is gone. Consumers reading editor state
+    must migrate to the new `EditorContext` hooks.
+  - **Added**: `EditorProvider`, plus per-slice hooks
+    `useEditorUser`, `useErrorMessage`, `useIsCompiling`, `useSetIsCompiling`,
+    `useIsInsertingLink`, `useLineMap`, `usePreviewContent`,
+    `useSetPreviewContent`, `useSaveState`. Plus `useEditMode` for entering
+    /exiting edit mode by URL flag, `NewPageDialog` for the
+    create-page launcher (the in-toolbar New Page button mounts this
+    internally; exported so integrators can mount their own launcher),
+    and `LayoutNamesProvider` + `useLayoutNames` for opting the layout
+    picker into the FrontmatterEditor.
+  - **Added types**: `EditorUser`, `EditorContextValue`, `LineMapEntry`,
+    `SaveState`, `EditMode`, `NewPageDialogProps`, `LayoutNamesProviderProps`.
+  
+  Migration:
+  
+  ```diff
+  - import { useContentEditor, usePageState } from '@jpmorganchase/mosaic-content-editor-plugin';
+  + import {
+  +   EditorProvider,
+  +   usePreviewContent,
+  +   useSaveState,
+  + } from '@jpmorganchase/mosaic-content-editor-plugin';
+  ```
+  
+  The new context split means high-frequency preview updates no longer
+  re-render the toolbar — consumers that previously called
+  `useContentEditor()` and read multiple fields off the result will see
+  one render per slice they subscribe to instead of one render per state
+  change.
+  
+  ### Site-middleware additions (non-breaking)
+  
+  - `loadSitemap()` now supports active mode by fetching `sitemap.xml` from
+    the configured `MOSAIC_ACTIVE_MODE_URL`. Returns `[]` (no throw) on
+    missing env var, non-OK status, or fetch failure so the New-Page
+    dialog degrades to free-text input rather than crashing.
+  
+  ### Layouts additions (non-breaking)
+  
+  - `LayoutNamesContext` — provider + hooks (`useLayoutNames`,
+    `useLayoutsAreStrict`) used by `FrontmatterEditor` to validate the
+    `layout` frontmatter key against the host's registered layouts.
+    `useLayoutNames()` returns `null` outside a provider (treated as
+    "host did not opt in", plain-text fallback applies).
+  - `LayoutProvider` now filters `EditLayout` and undefined slots out of
+    the names it publishes; the remaining names are sorted alphabetical so
+    the New-Page dialog's layout dropdown is stable.
+  
+  ### New-page flow (site-side, non-API)
+  
+  Implementation details live in the reference site:
+  `packages/site/src/app/[...route]/newPageTemplate.ts` exports
+  `buildNewPageTemplate` (returns frontmatter + body) and `composeTemplate`
+  (gray-matter stringify) so integrators can override the seeded template
+  per-folder without forking the dialog.
+  
+  ## Verification
+  
+  - **30 new unit tests** across the new surfaces: `loadSitemap` active
+    branch (4), `deriveFromSitemap` (8), `buildNewPageTemplate` +
+    `composeTemplate` (6), `useEditMode.stopEditing` (5),
+    `LayoutNamesContext` provider + hooks (7). All passing.
+  - **Vitest config extended** to discover `*.test.[jt]s?(x)` under
+    `__tests__` in `content-editor-plugin`, `layouts`, and
+    `packages/site/src` so future tests in those packages don't need
+    another config change.
+  - **Bug caught + fixed during test-writing**: the default new-page
+    template seeded `layout: 'DetailedTechnical'` (typo); real export is
+    `DetailTechnical`. The wrong name silently fell back to the host's
+    default layout and tripped the FrontmatterEditor's unknown-layout
+    warning. Now correct.
+- f47df89: Protect unsaved editor drafts during cancelable same-document Back/Forward navigation using the native Navigation API. Keep editing retains the draft; Discard resumes the original history entry. Browsers without this API and non-cancelable traversals remain outside this protection.
+- 5510744: Upgrade Next.js to 16.4.2
+  
+  Next.js 16.3.8 and earlier are affected by
+  [GHSA-p3m5-59mp-jv5r](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r)
+  (denial of service through Server Actions) and
+  [GHSA-2464-fhr4-w9xw](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw)
+  (remote code execution in Image Optimization with SVG files). Both are fixed
+  in 16.4.1 and 15.5.28.
+  
+  `@jpmorganchase/mosaic-layouts`, `@jpmorganchase/mosaic-site-components` and
+  `@jpmorganchase/mosaic-site-middleware` now require `next@^16.4.2`, and the
+  `next` peer range of `@jpmorganchase/mosaic-content-editor-plugin` is now
+  `^15.5.28 || ^16.4.1`.
+- d1c795e: Let a persistent App Router layout render the app header
+  
+  - Add `FrameProvider`, `useFrame` and `LayoutHeader`. A host that renders
+    the header once in a layout (so it stays mounted while readers navigate)
+    renders it inside `<LayoutHeader>` and wraps the page in
+    `<FrameProvider value={{ header: true }}>`; `LayoutBase` then leaves its
+    own header out. Without a provider, layouts render the header as before.
+  - `@jpmorganchase/mosaic-site-components`: `Drawer` (the header's mobile
+    menu) closes when the pathname changes, so it also closes when the
+    header stays mounted across navigations.
+  - `@jpmorganchase/mosaic-content-editor-plugin`: the New Page dialog
+    starts a new draft on each page, so it pre-selects the current folder
+    instead of keeping the previous page's values when it stays mounted.
+  
+  **Reference site (`packages/site`)**
+  
+  - The optional catch-all route moves under `app/[namespace]/[[...route]]/`. The new
+    `[namespace]/layout.tsx` loads the namespace's shared config and search
+    index once and keeps the header mounted across navigations, so the
+    header (logo, menus, search, session controls) is no longer rebuilt on
+    every page change. Pages pass their canonical content route, per-folder
+    header overrides and edit state to it with `<FrameSync>`, keeping
+    relative links and images correct for index URLs and aliases.
+    Initial server HTML uses the layout's fallback config and its matching
+    index route; the page's canonical route and config take over before
+    the first client paint.
+  - Single-segment documents and aliases still resolve through the content
+    loaders. The first URL segment is a frame boundary, not a requirement
+    that sources have a URL prefix. Known top-level index shorthand URLs
+    are included in static exports too.
+  - Client-side navigation within a namespace no longer re-sends the search
+    index with every page (Next.js may still inline it into prefetches when
+    it is small).
+  - 404s inside a namespace render within the namespace layout, header
+    included, without loading any data; `notFoundChromeAction` is removed.
+  - Sidebars continue to be loaded per page; this change only persists the
+    header and its search data.
+- 02784b5: Seed editable bodies from authored source so saves preserve fragment directives and other source content. Require raw source for saving existing pages, retain complete frontmatter drafts across editor modes, and prevent saving invalid metadata edits. Clear leave warnings after successful saves while retaining protection for edits made during a save, and allow create-page mode switches without prompting.
+- 2ecdf25: Use the React 19 line of next-mdx-remote-client in the App Router host and published MDX renderer/compiler. Align their React and React DOM minimum with its React 19.1 requirement, including the workspace test renderer. The editor's serialization type contract accepts both MDX runtime majors. Update SWR and Zustand minimums so existing consumers replace older React 18-only dependency selections when installing the snapshot.
+- 915b9ae: Fix issues found in a review of the App Router site
+  
+  **`@jpmorganchase/mosaic-store`**
+  
+  - Add `reseedStore(store, state)`. It replaces a store's page state with
+    a new seed while keeping the colour mode and actions; keys missing
+    from the new seed return to their defaults. The reference site's
+    `StoreShell` uses it so the sidebar, table of contents and breadcrumbs
+    follow `router.refresh()`, which previously only updated the page
+    body.
+  
+  **`@jpmorganchase/mosaic-site-middleware`**
+  
+  - In `snapshot-file` mode, `getMdxRaw` and `getSharedConfig` decode
+    percent-encoded routes before reading files, so pages whose names
+    contain spaces or non-ASCII characters are found. Decoded paths that
+    would leave the snapshot (`..` or `.` segments, backslashes, NUL bytes)
+    are treated as not found.
+  
+  **`@jpmorganchase/mosaic-site-components`**
+  
+  - The header's Login link no longer causes a hydration mismatch. Its
+    fallback `href` is built from the router pathname (which the server
+    and the browser agree on) instead of `window.location`; the click
+    handler still sends the full path, query and hash as the callback.
+  
+  **`@jpmorganchase/mosaic-content-editor-plugin`**
+  
+  - The `next` peer dependency is now `^15.5.28 || ^16.4.1`. Earlier
+    releases are affected by critical remote code execution advisories
+    (GHSA-2xp9-vwfh-vxw4, GHSA-p293-qw3h-jr36).
+  
+  **Reference site (`packages/site`)**
+  
+  - Creating a page (`?new=1`) no longer returns 404 unless the dev
+    capability bypass is on: the check now uses the shared config of the
+    folder the new page goes into.
+  - `not-found.tsx` no longer loads data on the server, because Next.js
+    renders it as part of every page response. The 404 page loads the
+    header for the section the reader was in from the browser. In
+    `next dev` it now really recovers from 404s served while the CLI is
+    still loading: it reloads the page once the URL resolves
+    (`router.refresh()` can't clear a 404), and shows nothing extra on
+    genuine 404s.
+  - Every page now gets `<link rel="canonical">` from its `route`
+    frontmatter, so folder URLs and aliases point at the page in every
+    content mode, and folder URLs are rewritten to the canonical route in
+    snapshot modes too.
+  - `error.tsx` retries with Next.js 16.3's `retry()`, which re-renders
+    Server Components; a new `global-error.tsx` handles root-layout
+    failures.
+  - `MOSAIC_OUTPUT=standalone` emits the `.next/standalone` server that
+    the Dockerfiles copy into their runtime images; `next.config.js` had
+    stopped emitting it in 2024. The Dockerfiles now set it.
+  - `yarn build:static:*` works again. The generated API route and Server
+    Action stubs accept any arguments, so the tests type-checked during
+    the build compile, and `sitemap.ts` no longer sets `revalidate = 0`,
+    which `output: 'export'` rejects. The sitemap is now regenerated every
+    five minutes in snapshot builds and stays per-request in active mode.
+  - Sites without auth no longer request `/api/auth/session` on every page
+    load.
+  - The site's ESLint config loads again and `yarn lint` now covers the
+    site. It failed with "Cannot redefine plugin react-hooks" because the
+    root used `eslint-plugin-react-hooks@5` while `eslint-config-next`
+    ships `@7`; the root now uses `^7.0.0`.
+- 168391e: Replace `gray-matter` with YAML-only front matter parsing, exported as `parseFrontmatter` and `stringifyFrontmatter` from `@jpmorganchase/mosaic-serialisers/frontmatter`. `gray-matter` evaluates `---js` front matter, so anyone who could author content could run code wherever it was parsed. Front matter that declares any language other than YAML is now rejected. YAML front matter parses and saves exactly as before.
+- Updated dependencies [b581d8b]
+- Updated dependencies [2ecdf25]
+- Updated dependencies [0c4d822]
+- Updated dependencies [a1df13e]
+- Updated dependencies [d1c795e]
+- Updated dependencies [915b9ae]
+- Updated dependencies [5476067]
+- Updated dependencies [168391e]
+- Updated dependencies [5d69155]
+- Updated dependencies [168391e]
+  - @jpmorganchase/mosaic-types@1.0.0-beta.99
+  - @jpmorganchase/mosaic-components@1.0.0-beta.99
+  - @jpmorganchase/mosaic-serialisers@1.0.0-beta.99
+  - @jpmorganchase/mosaic-icons@1.0.0-beta.99
+  - @jpmorganchase/mosaic-theme@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes

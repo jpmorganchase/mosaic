@@ -1,5 +1,500 @@
 # @jpmorganchase/mosaic-cli
 
+## 1.0.0-beta.99
+
+### Major Changes
+
+- 5476067: Remove the `snapshot-s3` mode and the `mosaic upload` command
+  
+  S3 snapshot support was unused, so Mosaic now has two content modes,
+  `active` and `snapshot-file`, and no longer depends on the AWS SDK.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `mosaic upload` and its `-S` / `--snapshot` option are removed. The CLI
+    no longer depends on `@aws-sdk/client-s3` or `globby`.
+  
+  **`@jpmorganchase/mosaic-site-middleware`**
+  
+  - The loaders (`getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `loadSitemap`, …) no longer read snapshots from S3. The package no
+    longer depends on `@aws-sdk/client-s3`, `@aws-sdk/types` or `md5`.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `MosaicMode` is now `'active' | 'snapshot-file'`.
+  
+  **`@jpmorganchase/mosaic-schemas`**
+  
+  - `snapshotS3EnvSchema` and the `S3LoaderProcessEnv` type are removed. The
+    `MOSAIC_S3_BUCKET`, `MOSAIC_S3_REGION`, `MOSAIC_S3_ACCESS_KEY_ID` and
+    `MOSAIC_S3_SECRET_ACCESS_KEY` variables are no longer read.
+  
+  **Reference site (`packages/site`)**
+  
+  - The `build:static:s3` and `serve:snapshot:s3` scripts are removed (and
+    the root `serve:snapshot:s3` script). `next.config.js` refuses any
+    `MOSAIC_MODE` other than `active` or `snapshot-file`, so a leftover
+    `snapshot-s3` fails at start-up instead of falling back to active-mode
+    fetches with no content URL.
+  
+  ### Migration
+  
+  Use `snapshot-file` (or `active`) instead of `snapshot-s3`. To keep your
+  snapshots in S3, sync the folder yourself:
+  
+  - Upload after `mosaic build`, for example
+    `aws s3 sync snapshots/latest s3://your-bucket`.
+  - Download before building the site, for example
+    `aws s3 sync s3://your-bucket snapshots/latest`, then set
+    `MOSAIC_MODE=snapshot-file` and `MOSAIC_SNAPSHOT_DIR` to that folder,
+    relative to the site's folder.
+- 915b9ae: Secure the content server and editor, fix the save flow, and slim the App Router site
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - The `/workflows` WebSocket only runs workflows for messages carrying
+    `token` = `MOSAIC_WORKFLOWS_SECRET`; without that env var no workflow
+    runs, and the placeholder from `.env.development` only counts when
+    `NODE_ENV=development`. Messages are validated (workflow name, user,
+    route) and capped at 5 MB.
+  - Admin endpoints other than `/_mosaic_/tags/list` require
+    `MOSAIC_ADMIN_SECRET`: sent as `x-mosaic-admin-secret`, a bearer token,
+    or the password of the browser login prompt (HTTP Basic). Without the
+    env var they are open when `NODE_ENV=development` and disabled
+    otherwise.
+  - CORS headers are no longer sent to every origin. Allow specific
+    origins with `MOSAIC_CORS_ORIGINS` (comma-separated).
+  
+  **Reference site (`packages/site`)**
+  
+  - Editing requires `MOSAIC_EDITORS` (emails, `@domains` or `*`); when it
+    is unset nobody can sign in or edit in production. Set
+    `MOSAIC_EDITORS=*` to keep the previous "anyone who can sign in"
+    behaviour. Emails and `@domains` only match GitHub emails that
+    GitHub has verified.
+  - Saves need `MOSAIC_WORKFLOWS_URL` and `MOSAIC_WORKFLOWS_SECRET`
+    (renamed from `NEXT_PUBLIC_MOSAIC_WORKFLOWS_URL`).
+  - The committed `.env.local` is now `.env.development`, which Next.js
+    only loads for `next dev`. Production builds no longer pick up its
+    placeholder `AUTH_SECRET` or dev-only flags, and the site refuses the
+    placeholder secrets when `NODE_ENV=production`.
+  - `.env.prod` is renamed to `.env.production`, the name Next.js actually
+    loads for `next build` / `next start`. Production builds therefore now
+    default to `MOSAIC_MODE=snapshot-file`; set `MOSAIC_MODE=active` for
+    deployments that read from a running Mosaic CLI.
+  
+  ### Fixes
+  
+  - **Saving works again.** The CLI echoes the caller's channel (the site
+    had switched to a different channel hash, so every progress message
+    was dropped and saves never finished), new pages can be created in the
+    source whose `prefixDir` contains them (the CLI required the route to
+    exist already, and the editor had no route for a new page), and saves
+    time out (`MOSAIC_WORKFLOWS_TIMEOUT_MS`, default 5 minutes) and always
+    close their socket.
+  - Workflow failures are reported to the editor instead of crashing the
+    CLI with an unhandled rejection. The GitHub workflow accepts the
+    site's `sid` when no `id` is sent.
+  - Routes are validated before they are forwarded, and workflows refuse
+    to write or rename files outside the source's content folder.
+  - Symlinks inside a content folder can no longer publish files from
+    outside it (local-folder and git-repo sources, and the CLI's
+    `/_mosaic-raw/*` route).
+  - Admin responses no longer overwrite git credentials in the live
+    config with the redacted value.
+  - Search results escape the indexed text before highlighting (it was
+    rendered as HTML), escape the query before building a regex, and
+    search the current input rather than the previous keystroke.
+  - Frontmatter edits are kept when the author leaves the Frontmatter tab
+    before saving, and frontmatter-only or first source-mode edits now
+    count as unsaved changes.
+  - `LayoutProvider` accepts the server's `isEditing` state, so
+    prerendered pages render their real layout (sidebar, breadcrumbs,
+    header controls) in the HTML instead of falling back to client
+    rendering.
+  - The Lexical editor is no longer part of every page's JavaScript:
+    `@jpmorganchase/mosaic-content-editor-plugin` exposes subpath exports
+    (`/useEditMode`, `/LayoutNamesContext`, `/components/EditorControls`,
+    …) and the site lazy-loads the editor from a Client Component.
+  - Loader caches never store not-found results. Active mode can opt in to
+    cross-request caching with `MOSAIC_ACTIVE_MODE_CACHE=true`. Compiled
+    MDX is cached by content hash.
+  - `/api/revalidate` expires the content cache immediately
+    (`{ expire: 0 }`) rather than serving stale content once more.
+  - Per-page stores are released when the page unmounts (`disposeStore`)
+    instead of leaking a store and a `storage` listener per navigation.
+  
+  ### Additions
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin`: `EditModeProvider`,
+    `useIsEditing` and `useEditModeActions`; `<Editor route>` prop.
+  - `@jpmorganchase/mosaic-store`: `registerStore` and `disposeStore`.
+  - `@jpmorganchase/mosaic-site-middleware`, `-layouts` and
+    `-site-components` now declare `next` as a peer dependency.
+- 79a39db: Validate the environment when the site and the CLI start
+  
+  Environment variables are still the only configuration, but each process
+  now checks them in one place when it starts and lists every problem as
+  `NAME: reason`, instead of failing later with a feature that silently
+  does nothing.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  `mosaic serve` now exits with code 1, before any source loads, when its
+  environment is invalid. Configurations it used to accept that now stop
+  it:
+  
+  - `MOSAIC_REVALIDATE_URL` without `MOSAIC_REVALIDATE_SECRET`. Before,
+    the revalidate notifier was quietly disabled. The secret on its own is
+    still fine, since the site and the CLI can share an env file.
+  - `MOSAIC_REVALIDATE_URL` or `BITBUCKET_API_URL` that isn't an absolute
+    http(s) URL.
+  - A `MOSAIC_CORS_ORIGINS` entry that isn't an origin
+    (`scheme://host[:port]`), such as `example.com`, `*` or
+    `https://example.com/`. Browsers never send those, so they never
+    matched; the error suggests the origin to use.
+  - A blank (whitespace-only) `MOSAIC_ADMIN_SECRET`,
+    `MOSAIC_WORKFLOWS_SECRET`, `MOSAIC_BITBUCKET_WEBHOOK_SECRET` or
+    `MOSAIC_REVALIDATE_SECRET`.
+  - A `MOSAIC_SOURCE_BOOT_TIMEOUT_MS` that isn't a whole number of
+    milliseconds (`0` still waits forever).
+  - A `MOSAIC_WORKFLOWS_TIMEOUT_MS` that isn't a whole number of
+    milliseconds between 1 and 2147483647. Larger values made every save
+    time out at once.
+  
+  The placeholder `MOSAIC_WORKFLOWS_SECRET` from `.env.development` is not
+  an error: outside `NODE_ENV=development` it still counts as unset.
+  
+  **Reference site (`packages/site`)**
+  
+  `src/instrumentation.ts` validates the env (through `src/lib/config.ts`)
+  when a server starts: `next start`, the standalone `server.js` and
+  `next dev`. With `NODE_ENV=production` an invalid configuration prints
+  one error and exits with code 1 (left alone, Next.js would log the error
+  and answer every request with a 500); `next dev` logs the same list and
+  keeps running.
+  `next build` and the static export don't check runtime variables, so
+  images can still be built without them. Configurations that now stop a
+  production server:
+  
+  - `MOSAIC_MODE` other than `active` or `snapshot-file`,
+    and `MOSAIC_OUTPUT` other than `export` or `standalone`.
+  - A missing `MOSAIC_ACTIVE_MODE_URL` in active mode (the default when
+    `MOSAIC_MODE` is unset), or `MOSAIC_SNAPSHOT_DIR` in `snapshot-file`
+    mode. Every page failed to load without them.
+  - `MOSAIC_ACTIVE_MODE_URL` or `NEXT_PUBLIC_SITE_URL` that isn't an
+    absolute http(s) URL (an invalid `NEXT_PUBLIC_SITE_URL` used to fall
+    back to `http://localhost:3000` with a warning), and
+    `MOSAIC_WORKFLOWS_URL` that isn't a ws(s) or http(s) URL.
+  - `MOSAIC_WORKFLOWS_URL` without `MOSAIC_WORKFLOWS_SECRET`.
+  - A flag other than `true` or `false` (`MOSAIC_AUTH_ENABLED`,
+    `MOSAIC_ACTIVE_MODE_CACHE`, `MOSAIC_DISABLE_LOADER_CACHE`,
+    `NEXT_PUBLIC_ENABLE_LOGIN`, `NEXT_PUBLIC_OPTIMIZE_IMAGES`,
+    `MOSAIC_DEV_FAKE_AUTH`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE`). Only
+    `true` ever turned one on, so `TRUE` or `1` silently meant off.
+  - A `MOSAIC_EDITORS` entry that isn't an email address, an `@domain` or
+    `*`, such as `*@corp.com`, which never matched anyone.
+  
+  Valid configurations behave as before. The placeholder `AUTH_SECRET` and
+  `MOSAIC_REVALIDATE_SECRET` from `.env.development` are still ignored in
+  production rather than rejected; that logic now lives in
+  `lib/config.ts`. The site's `serve` script no longer sets the revalidate
+  variables itself: `.env.development` now holds both. The full variable
+  reference, with types and defaults, is in `packages/site/README.md` and
+  `docs/configure/admin`.
+- 5d69155: Run editor saves over HTTP and Server-Sent Events instead of a WebSocket
+  
+  Some infrastructure doesn't allow WebSockets but does allow Server-Sent
+  Events (SSE). Saves now start with a plain HTTP request and stream their
+  progress over SSE, which also reconnects by itself and resumes where it
+  left off.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - The `/workflows` WebSocket endpoint is removed, along with the
+    `@fastify/websocket` and `md5` dependencies. Start a workflow with
+    `POST /workflows/jobs` (JSON body: `name`, `user`, `route`, `markdown`,
+    and optionally `frontmatter`, `targetRoute` and `isNewPage`), which
+    responds `202 { jobId }`. Follow it with
+    `GET /workflows/jobs/:jobId/events?user=<user id>`, a `text/event-stream`
+    of `progress` events and a final `done` event with
+    `{ status: 'SUCCESS' | 'ERROR', message }`. Reconnecting with
+    `Last-Event-ID` replays only the missed events.
+  - Both endpoints need `MOSAIC_WORKFLOWS_SECRET` as a bearer token
+    (`Authorization: Bearer <secret>`) instead of a `token` in each message.
+    They respond `503` when the secret isn't configured and `401` when it is
+    wrong. Invalid requests get `400 { error }`, a missing page `404` and an
+    existing new page `409`; the `channel` field is gone.
+  - `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is now read by the
+    CLI, which fails jobs that run longer. Values must be integers from
+    1 to 2147483647. The site no longer reads it.
+  - Jobs are kept in memory (finished jobs for 10 minutes, at most 100 jobs
+    and 500 events per job), so they are lost when the CLI restarts. With
+    several CLI instances, a job's events must be read from the instance
+    that started it.
+  
+  **Reference site (`packages/site`)**
+  
+  - `MOSAIC_WORKFLOWS_URL` is the CLI's base HTTP URL, e.g.
+    `http://localhost:8080`. A trailing `/workflows` is dropped. A `ws://` /
+    `wss://` URL still works: it is converted to `http://` / `https://` and
+    a deprecation warning is logged once.
+  - The `persistContent` Server Action is replaced by `startSave`, which
+    returns `{ jobId }` or `{ error }`. The new
+    `/api/workflows/[jobId]/events` route streams the save's progress to the
+    signed-in editor who started it. Proxies must not buffer
+    `text/event-stream` responses.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `SourceWorkflowMessageEvent` no longer has a `channel` field.
+  
+  **`@jpmorganchase/mosaic-workflows`**
+  
+  - GitHub and Bitbucket workflows send `COMPLETE` with
+    `{ pullRequestUrl }` instead of provider-specific response data. Custom
+    event consumers should read this browser-facing URL. The action return
+    values are unchanged, and `subscribeToSave` still accepts older GitHub
+    URL strings and Bitbucket `links.self` messages.
+  
+  ### Fixes
+  
+  - Saving an existing page no longer reports "Workflow save has started"
+    when no source owns the page: the CLI now waits for the workflow and
+    reports its real outcome. `triggerWorkflow` in
+    `@jpmorganchase/mosaic-core` resolves when the workflow finishes rather
+    than when it starts.
+  - Actions returning `false` or reporting `ERROR` remain failed through
+    the source and job layers instead of being reported as successful.
+  - GitHub and Bitbucket saves accept a new page with frontmatter and an
+    empty body, as the editor does. Empty edits are still rejected.
+  - The editor shows a successful result and disables repeat submission
+    even when the successful workflow returns no pull request URL.
+  
+  ### Additions
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin`: `subscribeToSave(jobId)`
+    follows a save over SSE as the `PersistEvent`s that `<Editor persist>`
+    returns, letting `EventSource` reconnect a few times before reporting an
+    error. The `PersistEvent` type is exported too. The `persist` prop is
+    unchanged.
+
+### Minor Changes
+
+- b581d8b: Refresh git repo sources as soon as Bitbucket reports a push
+  
+  ### Additions
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `POST /_mosaic_/webhooks/bitbucket` receives Bitbucket Data Center
+    "Repository → Push" webhooks. It refreshes the running git repo sources
+    whose `repo` (project key and slug, in any of the `/scm/`, SSH or
+    `/projects/…/repos/…` URL forms) and `branch` match the push, so merged
+    changes appear within seconds instead of at the next scheduled check
+    (30 minutes by default). Pushes within 5 seconds of each other refresh a
+    source once. The CLI replies `202` straight away and refreshes in the
+    background; the site is then revalidated as for any other update.
+  - The endpoint only exists when `MOSAIC_BITBUCKET_WEBHOOK_SECRET` is set. It
+    doesn't use `MOSAIC_ADMIN_SECRET`: requests must carry a valid
+    `X-Hub-Signature` (HMAC-SHA256 of the body with the secret) or get `401`.
+    Bodies are capped at 1 MB.
+  
+  **`@jpmorganchase/mosaic-core`**
+  
+  - `refreshSource(name)` asks a running source to check for changes now.
+    Unlike `restartSource`, the source keeps serving its pages and its caches.
+    It resolves to `false` for sources that can't refresh on demand.
+  - `getSourceDefinition(name)` returns the definition a running source was
+    started with.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - Sources can implement an optional `refresh(options)` hook, which
+    `refreshSource` calls in the source's worker.
+  
+  **`@jpmorganchase/mosaic-source-git-repo`**
+  
+  - Implements `refresh`: it fetches and pulls new commits the same way a
+    scheduled check does.
+  - `Repo.checkForChanges()` runs that check on demand. Checks no longer
+    overlap: one requested while another runs (a webhook during a scheduled
+    fetch) runs once more afterwards.
+  
+  Scheduled checks are unchanged and remain the fallback for missed
+  deliveries. See "Refresh on push" in the git repo source docs.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- 2ecdf25: Subscribe to source updates before starting snapshot builds so a fast source cannot publish its first update before the CLI listens. Wait for every enabled source's first update and completed startup before writing or scoping the snapshot, then stop the sources. Repeated updates from one source cannot stand in for another source.
+- 3b956ae: Keep repository credentials out of command failures and Bitbucket save errors. Capture one Git revision per timestamp batch and consume the bulk map directly, avoiding a subprocess for every cached page.
+  
+  Retry failed site invalidations with a request deadline and bounded backoff, preserve updates arriving during delivery, and cancel notification work when the server closes. Add `mosaic serve --host` with the existing loopback default so container deployments can explicitly bind to `0.0.0.0`.
+- 915b9ae: Fix request timeouts, background work that failed silently, snapshot cleanup, and editor capability spoofing
+  
+  - **`requestTimeout` now works** for the HTTP, Readme, Storybook and Figma
+    sources. rxjs `fromFetch` replaced the Request's own abort signal, so the
+    timeout was ignored and a hung endpoint stalled the source. `fromHttpRequest`
+    takes a new `{ timeout }` option. It starts a fresh timer for every request,
+    including each scheduled poll, and covers reading the response body.
+  - **Symlinks are applied before the source update continues.** Core no longer
+    starts symlink creation without awaiting it, so `afterUpdate` plugins see
+    every alias, and a failure is reported for that source instead of crashing
+    the process with an unhandled rejection.
+  - **`BrokenLinksPlugin`** still checks links in the background, but checks at
+    most four pages at a time. A page that fails to parse or check is logged
+    instead of causing an unhandled rejection.
+  - **`mosaic build`** now empties the snapshot folder completely. Previously
+    sub-folders were never removed, so deleted or renamed pages lingered. A
+    `--name` that resolves to the output directory itself or outside it (for
+    example `.` or `../x`) is rejected, because that folder is emptied.
+  - **`StickyHeader`** removes its scroll listener on unmount.
+  - **Editor capabilities come only from the source.** Content could turn on the
+    editor for a source that doesn't declare `writable`, either by setting
+    `sourceCapabilities` or `sharedConfig.sourceCapabilities` in frontmatter,
+    by pulling one in with a `$ref`, or by receiving another source's namespace
+    shared config. Core and the site ignore capabilities in page frontmatter.
+    The `SharedConfigPlugin` now sets `sourceCapabilities` in every
+    `shared-config.json` from the source's declared capabilities after refs are
+    resolved, and no longer copies them into another source.
+- 79a39db: Keep the reference site's development revalidation URL alongside its shared secret, so source updates still invalidate the site cache after moving settings into environment files. Validate the committed defaults in regression tests and align site validation with the supported active and snapshot-file modes.
+- 2a2f07e: Update dependencies with security fixes: `fastify` 5.12.8, `@fastify/middie` 9.3.6, `undici` 8.12.4, `swagger-ui-react` 5.34.1 and `@apidevtools/json-schema-ref-parser` 16.
+- Updated dependencies [b581d8b]
+- Updated dependencies [0c4d822]
+- Updated dependencies [2ecdf25]
+- Updated dependencies [3b956ae]
+- Updated dependencies [915b9ae]
+- Updated dependencies [168391e]
+- Updated dependencies [915b9ae]
+- Updated dependencies [2a2f07e]
+- Updated dependencies [0c4d822]
+- Updated dependencies [168391e]
+- Updated dependencies [5d69155]
+  - @jpmorganchase/mosaic-core@1.0.0-beta.99
+  - @jpmorganchase/mosaic-source-git-repo@1.0.0-beta.99
+  - @jpmorganchase/mosaic-source-local-folder@1.0.0-beta.99
+  - @jpmorganchase/mosaic-plugins@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes
