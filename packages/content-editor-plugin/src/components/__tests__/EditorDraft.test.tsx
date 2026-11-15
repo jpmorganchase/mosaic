@@ -75,6 +75,38 @@ function mountEditor(overrides: Partial<EditorProps> = {}) {
   return { ...view, props, changeMode };
 }
 
+test.each(['source', 'frontmatter'] as const)(
+  'does not expose a transient %s editor during the splitter upgrade',
+  async mode => {
+    let frame: FrameRequestCallback | undefined;
+    const requestFrame = vi
+      .spyOn(globalThis, 'requestAnimationFrame')
+      .mockImplementation(callback => {
+        frame = callback;
+        return 1;
+      });
+    const cancelFrame = vi.spyOn(globalThis, 'cancelAnimationFrame').mockImplementation(() => {});
+    try {
+      modeState.mode = mode;
+      const view = mountEditor();
+      expect(screen.queryByRole('textbox', { name: 'Markdown source editor' })).toBeNull();
+      expect(screen.queryByDisplayValue('Authored title')).toBeNull();
+      await act(async () => frame?.(0));
+      const input =
+        mode === 'source'
+          ? screen.getByRole('textbox', { name: 'Markdown source editor' })
+          : screen.getByDisplayValue('Authored title');
+      fireEvent.change(input, { target: { value: 'Early draft' } });
+      view.rerender(<Editor {...view.props} />);
+      expect(screen.getByDisplayValue('Early draft')).toBeVisible();
+      expect(modeState.saveState).toBe('dirty');
+    } finally {
+      requestFrame.mockRestore();
+      cancelFrame.mockRestore();
+    }
+  }
+);
+
 test.each(['body', 'body across modes', 'metadata', 'visual metadata', 'rename'])(
   'preserves fragment directives in a %s save',
   async change => {
@@ -211,7 +243,7 @@ test('resets the whole draft when the host changes the backing document', async 
       }}
     />
   );
-  expect(screen.getByDisplayValue('Other title')).toBeVisible();
+  expect(await screen.findByDisplayValue('Other title')).toBeVisible();
   expect(screen.queryByDisplayValue('Draft title')).not.toBeInTheDocument();
 });
 

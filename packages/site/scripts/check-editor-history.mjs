@@ -252,10 +252,6 @@ try {
   // Create mode has the same guard, while its mode switches stay in place.
   await page.getByRole('link', { name: 'Create page', exact: true }).click();
   await expect(body).toBeVisible();
-  // The editor upgrades its splitter after the first paint, remounting inputs.
-  await page.evaluate(
-    () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-  );
   await body.fill('New draft');
   await page.getByLabel('Visual editor (WYSIWYG)', { exact: true }).click();
   await expect(page.locator('[contenteditable="true"]')).toBeVisible();

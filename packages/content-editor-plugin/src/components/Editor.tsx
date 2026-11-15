@@ -715,10 +715,10 @@ const EditorInner: FC<EditorProps> = ({
               Defer `<Split>` mount by one paint via `splitReady`
               so react-split measures against a fully laid-out
               parent. Until then we render a CSS-only 50/50
-              fallback (`flex: 1` on each pane via
-              `styles.splitterFallback`), which is what the user
-              sees during that first frame anyway — same visual
-              result, no measurement race.
+              placeholder (`flex: 1` on each pane via
+              `styles.splitterFallback`). Mount editable children only
+              inside the final splitter: replacing an interactive fallback
+              would remount them and erase input typed during that frame.
             */}
             <SplitContainer isNewPage={isNewPage}>
               <ScrollableSection className={styles.focused} ref={containerRef}>
@@ -772,11 +772,9 @@ const EditorInner: FC<EditorProps> = ({
 };
 
 /**
- * Two-phase splitter mount. Phase 1: a CSS-only 50/50 layout
- * renders immediately (no JS measurement, no risk of
- * mis-sized panes). Phase 2: after one paint we swap in
- * `<Split>`, which by then measures against a fully laid-out
- * container.
+ * Reserve a CSS-only 50/50 layout until the next animation frame,
+ * then mount the splitter and its editable children once. An interactive
+ * fallback would lose drafts when replaced by the final React tree.
  *
  * Why two phases instead of just `<Split sizes={[50, 50]}>`?
  * react-split sets pane widths imperatively via
@@ -823,24 +821,11 @@ const SplitContainer: FC<SplitContainerProps> = ({ isNewPage, children }) => {
     };
   }, []);
 
-  // Coerce children into the two-element tuple Split expects.
-  // The caller always passes exactly two `<ScrollableSection>`
-  // children, but TypeScript can't see that through `ReactNode`,
-  // and react-split's runtime would mis-render anything else.
-  const childArray = Array.isArray(children) ? children : [children];
-
   if (!splitReady) {
     return (
-      <div className={styles.splitterFallback}>
-        {childArray.map((child, i) => (
-          // Stable index keys are fine — the order never changes
-          // and the fallback only renders for a single frame
-          // before being swapped out.
-
-          <div key={i} className={styles.splitterFallbackPane}>
-            {child}
-          </div>
-        ))}
+      <div className={styles.splitterFallback} aria-hidden="true">
+        <div className={styles.splitterFallbackPane} />
+        <div className={styles.splitterFallbackPane} />
       </div>
     );
   }
