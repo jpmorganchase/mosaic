@@ -94,6 +94,30 @@ which the `serve`, `debug` and `gen:snapshot` scripts set. The site also
 refuses its placeholder secrets when `NODE_ENV=production`. Put personal
 overrides in `.env.local` (gitignored).
 
+### Refresh the committed snapshot
+
+The production reference site builds from `snapshots/latest`. After changing
+documentation or content plugins, run these commands from the repository root
+and commit the regenerated snapshot with the change:
+
+```bash
+yarn build
+yarn workspace @jpmorganchase/mosaic-site gen:snapshot
+yarn build:site
+```
+
+The snapshot includes `search-records.json`, `llms.txt`, `llms-full.txt` and
+`markdown-pages.json`. The content-file e2e tests check that the built site
+actually serves the search records and Markdown.
+
+Snapshot builds copy generated assets into `public/` and keep an inventory in
+`.mosaic-public-assets.json` outside that directory. Later builds remove obsolete
+generated copies while preserving other public files. Active-mode builds clear
+the snapshot copies so requests reach the live content handlers. The reference
+site's build runs without Turbo caching so this cleanup always executes; restoring
+cached output can otherwise leave files from a different snapshot behind. Package
+builds still use the cache.
+
 ## Environment variables
 
 Set these per deployment (for example in your hosting provider's

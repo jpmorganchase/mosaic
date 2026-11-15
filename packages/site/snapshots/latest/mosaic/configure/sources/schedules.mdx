@@ -5,7 +5,7 @@ sidebar:
   label: Schedules
   groupLabel: Schedules
   priority: 4
-lastModified: 1780396138590.0405
+lastModified: 1794741014734.671
 fullPath: /mosaic/configure/sources/schedules.mdx
 route: /mosaic/configure/sources/schedules
 breadcrumbs:
@@ -17,9 +17,9 @@ breadcrumbs:
     id: /mosaic/configure/sources/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.27
-  time: 136200
-  words: 454
+  minutes: 2.385
+  time: 143100
+  words: 477
 tableOfContents:
   - depth: 2
     level: 0
@@ -88,13 +88,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -372,6 +365,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -450,6 +450,8 @@ sidebarData:
 A source schedule defines how often a source initiates a content pull and what to do when there is a failure.
 
 A schedule can be specified for each source in the source definition, but should a source not provide a schedule it will inherit the "global" schedule.
+
+Git repo sources can also be refreshed as soon as Bitbucket reports a push, with the schedule as a fallback. See [Refresh on push](./git-repo-source#refresh-on-push-bitbucket-webhooks).
 
 ## Configuration
 

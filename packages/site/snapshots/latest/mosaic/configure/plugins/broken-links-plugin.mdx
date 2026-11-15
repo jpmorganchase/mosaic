@@ -1,7 +1,7 @@
 ---
 title: BrokenLinksPlugin
 layout: DetailOverview
-lastModified: 1780396148466.4077
+lastModified: 1794741014732.3525
 fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
 route: /mosaic/configure/plugins/broken-links-plugin
 breadcrumbs:
@@ -16,9 +16,9 @@ sidebar:
   groupLabel: BrokenLinksPlugin
 readingTime:
   text: 2 min read
-  minutes: 1.305
-  time: 78300
-  words: 261
+  minutes: 1.48
+  time: 88800
+  words: 296
 tableOfContents:
   - depth: 2
     level: 0
@@ -87,13 +87,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -371,6 +364,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -460,6 +460,8 @@ What this plugin is really checking is "liveness" of a link.
   Links may be "alive", but the **content** of the linked page may not be what you want so continue
   to check links show what you expect.
 </Callout>
+
+Links are checked in the background after a source loads, at most four pages at a time, so checking doesn't delay content updates. Broken links, and pages that couldn't be checked, are logged to the console.
 
 ## Priority
 

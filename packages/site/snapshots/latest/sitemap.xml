@@ -90,6 +90,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/migrate-to-app-router</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/publish-site-to-aws</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -170,11 +175,6 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/snapshot-s3</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/static-export</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -211,6 +211,11 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lazy-page-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/llms-txt-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -418,7 +423,8 @@
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-update-namespace-sources</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
-	</url>,	<url>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/producta</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>

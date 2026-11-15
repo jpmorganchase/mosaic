@@ -1,7 +1,7 @@
 ---
 title: Publish a site to Vercel
 layout: DetailTechnical
-lastModified: 1781012102901.211
+lastModified: 1794741014736.5107
 fullPath: /mosaic/publish/publish-site-to-vercel.mdx
 route: /mosaic/publish/publish-site-to-vercel
 breadcrumbs:
@@ -12,10 +12,10 @@ sidebar:
   label: Publish a site to Vercel
   groupLabel: Publish a site to Vercel
 readingTime:
-  text: 2 min read
-  minutes: 1.965
-  time: 117900
-  words: 393
+  text: 3 min read
+  minutes: 2.02
+  time: 121200
+  words: 404
 tableOfContents:
   - depth: 2
     level: 0
@@ -77,19 +77,19 @@ As the [vercel platform](https://vercel.com/) hosts static content you will need
 
 ## Two deployment shapes
 
-Mosaic supports two production builds against the snapshot modes:
+Mosaic supports two production builds in `snapshot-file` mode:
 
 1. **Default SSR build** — `yarn build` + `yarn start` (or Vercel's
    default Next.js runtime). Pages are pre-rendered at build time via
    `generateStaticParams` but the Node runtime stays in the deployment
    so the `/api/*` route handlers (auth, content-editor preview, cache
    revalidation webhook) keep working.
-2. **Fully static export** — `yarn build:static:file` (or
-   `build:static:s3`). Emits a CDN-shippable `out/` directory with no
-   Node runtime needed. The `/api/*` route handlers are replaced with
-   501 stubs at build time (see `scripts/static-export-route-stubs.mjs`
-   for the why), so this target is for read-only sites with no auth
-   and no in-browser content editor.
+2. **Fully static export** — `yarn build:static:file`. Emits a
+   CDN-shippable `out/` directory with no Node runtime needed. The
+   `/api/*` route handlers are replaced with 501 stubs at build time
+   (see `scripts/static-export-route-stubs.mjs` for the why), so this
+   target is for read-only sites with no auth and no in-browser content
+   editor.
 
 The instructions below assume the default SSR build. For the static
 target, point your hosting at `out/` instead of letting Vercel build
@@ -145,4 +145,5 @@ Set this **per environment**:
 If the variable is missing in a production build the site still works, but
 absolute URLs in metadata/sitemap/robots will fall back to localhost and
 social cards / SEO will be broken. The site logs a warning at boot in that
-case.
+case. If it is set but isn't an absolute `http(s)` URL, the site refuses to
+start.

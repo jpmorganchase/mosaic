@@ -5,7 +5,7 @@ sidebar:
   label: HTTP Source
   groupLabel: HTTP Source
   priority: 1
-lastModified: 1780396133803.5427
+lastModified: 1794741014734.671
 fullPath: /mosaic/configure/sources/http-source.mdx
 route: /mosaic/configure/sources/http-source
 breadcrumbs:
@@ -16,10 +16,10 @@ breadcrumbs:
     path: /mosaic/configure/sources/index
     id: /mosaic/configure/sources/index.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.92
-  time: 55200
-  words: 184
+  text: 2 min read
+  minutes: 1.03
+  time: 61800
+  words: 206
 tableOfContents:
   - depth: 2
     level: 0
@@ -84,13 +84,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -368,6 +361,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -453,16 +453,17 @@ Multiple endpoints can be specified and the source will combine and transform th
 
 ## Configuration
 
-| Property                                   | Description                                                                   | Required |
-| ------------------------------------------ | ----------------------------------------------------------------------------- | -------- |
-| modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)          | Yes      |
-| namespace                                  | The scope for this source                                                     | Yes      |
-| disabled                                   | When true, content from this source is not used                               | No       |
-| options.endpoints                          | Collection of URLS to make requests                                           | Yes      |
-| options.prefixDir                          | The root path used in the content URL                                         | Yes      |
-| options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages | Yes      |
-| options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes             | No       |
-| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000   | No       |
+| Property                                   | Description                                                                                             | Required |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- | -------- |
+| modulePath                                 | The path to the installed module (@jpmorganchase/mosaic-source-http)                                    | Yes      |
+| namespace                                  | The scope for this source                                                                               | Yes      |
+| disabled                                   | When true, content from this source is not used                                                         | No       |
+| options.endpoints                          | Collection of URLS to make requests                                                                     | Yes      |
+| options.prefixDir                          | The root path used in the content URL                                                                   | Yes      |
+| options.transformResponseToPagesModulePath | The path of the module used to transform endpoint responses into Mosaic pages                           | Yes      |
+| options.checkIntervalMins                  | Number of minutes to wait between requests. Defaults to 5 minutes                                       | No       |
+| options.initialDelayMs                     | Number of milliseconds to wait for making initial request. Defaults to 1000                             | No       |
+| options.requestTimeout                     | Milliseconds to wait for each response, including its body, before reporting an error. Defaults to 5000 | No       |
 
 ### Example HTTP Source Definition
 
