@@ -3772,18 +3772,30 @@ In this guide you will learn how to generate and serve a Mosaic site.
 
 To begin setting up a Mosaic site, you need to have the following software installed:
 
-1. Yarn v1
+1. Yarn v4.10.3 or higher
 2. Node.js v24 or higher
 
 ## Step 1: Set Up a Mosaic Site
 
-You can copy the `site` directory from this repository into your project. The site directory is a standard Next.js App Router app that loads the packages created by this repo, with an additional `mosaic-config.mjs` file to configure sources and other settings.
+Export the `site` package from this repository into your project. It is a standard Next.js App Router app that loads the packages created by this repo, with an additional `mosaic.config.mjs` file to configure sources and other settings. Yarn's pack command converts the template's `workspace:` dependencies to published version ranges, so the exported site can install outside the monorepo.
 
 **Steps:**
 
-1. Copy the `site` directory from this repository to your desired location (outside of this repo, such as your own project root).
-2. Configure the contents of the `site` directory as needed.
-   - Update `mosaic-config.mjs` to specify your content sources and other options.
+1. Export and install the template:
+
+   ```bash
+   git clone https://github.com/jpmorganchase/mosaic.git
+   cd mosaic
+   yarn install --immutable
+   yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
+   mkdir ../mosaic-sample-site
+   tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
+   cd ../mosaic-sample-site
+   yarn install
+   ```
+
+2. Configure the contents of the exported site as needed.
+   - Update `mosaic.config.mjs` to specify your content sources and other options. Replace the reference paths to this monorepo's documentation folders with paths to your own content.
    - A local source is used to serve pages from the local file-system, which can be a clone of a remote repo.
    - A remote source is used to pull content from a remote Git repository.
 
@@ -3919,7 +3931,7 @@ Your site uses the old layout if it has `src/pages/_app.tsx` and `src/pages/[...
 
 ## Recommended approach
 
-Start from a fresh copy of the current `packages/site` and move your customisations into it, rather than converting your old files in place. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
+Start from a fresh export of the current `packages/site`, following [Create a Site](/mosaic/getting-started/create-a-site), and move your customisations into it, rather than converting your old files in place. The export converts workspace dependencies to published version ranges. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
 
 Keep your `mosaic.config.mjs`, your content, your CSS and your own components. Then work through the sections below.
 
@@ -4170,7 +4182,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 
 1. Use Node.js 24 or later.
 2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version, and `next-auth` to v5.
-3. Copy the current `packages/site` and move your components, layouts, CSS and config into it.
+3. Export the current `packages/site` using [Create a Site](/mosaic/getting-started/create-a-site) and move your components, layouts, CSS and config into it.
 4. Replace `next/router` imports and move `pages/api` handlers to `app/api` route handlers.
 5. Rename `.env.local` to `.env.development` and `.env.prod` to `.env.production`, and rename the env vars listed above.
 6. Set `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED` and `MOSAIC_EDITORS` on the site.
@@ -4298,13 +4310,24 @@ A *standard* site offers
 
 ## Create your first site
 
-Duplicate the `site` package from the Mosaic monorepo to create your own site.
+Export the `site` package from the Mosaic monorepo to create your own site. Use
+Yarn 4.10.3 or later: packing converts the template's `workspace:` dependencies to
+published version ranges that can install in a standalone project.
 
 ```
 > git clone https://github.com/jpmorganchase/mosaic.git
-> cp -r mosaic/packages/site mosaic-sample-site
-> cd mosaic-sample-site
+> cd mosaic
+> yarn install --immutable
+> yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
+> mkdir ../mosaic-sample-site
+> tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
+> cd ../mosaic-sample-site
+> yarn install
 ```
+
+Configure `mosaic.config.mjs` with your content sources. The reference local
+sources point to documentation folders in the Mosaic monorepo; replace those
+paths before serving your own site.
 
 Define the environment variable, which enables us to access your remote repo.
 

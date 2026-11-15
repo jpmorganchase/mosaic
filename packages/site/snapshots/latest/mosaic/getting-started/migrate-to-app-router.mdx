@@ -5,7 +5,7 @@ sidebar:
   label: Migrate to the App Router
   groupLabel: Migrate to the App Router
   priority: 7
-lastModified: 1794741014736.1907
+lastModified: 1794747853335.1018
 fullPath: /mosaic/getting-started/migrate-to-app-router.mdx
 route: /mosaic/getting-started/migrate-to-app-router
 breadcrumbs:
@@ -14,9 +14,9 @@ breadcrumbs:
     id: /mosaic/getting-started/index.mdx
 readingTime:
   text: 15 min read
-  minutes: 14.41
-  time: 864600
-  words: 2882
+  minutes: 14.5
+  time: 870000
+  words: 2900
 tableOfContents:
   - depth: 2
     level: 0
@@ -156,7 +156,7 @@ Your site uses the old layout if it has `src/pages/_app.tsx` and `src/pages/[...
 
 ## Recommended approach
 
-Start from a fresh copy of the current `packages/site` and move your customisations into it, rather than converting your old files in place. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
+Start from a fresh export of the current `packages/site`, following [Create a Site](create-a-site), and move your customisations into it, rather than converting your old files in place. The export converts workspace dependencies to published version ranges. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
 
 Keep your `mosaic.config.mjs`, your content, your CSS and your own components. Then work through the sections below.
 
@@ -407,7 +407,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 
 1. Use Node.js 24 or later.
 2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version, and `next-auth` to v5.
-3. Copy the current `packages/site` and move your components, layouts, CSS and config into it.
+3. Export the current `packages/site` using [Create a Site](create-a-site) and move your components, layouts, CSS and config into it.
 4. Replace `next/router` imports and move `pages/api` handlers to `app/api` route handlers.
 5. Rename `.env.local` to `.env.development` and `.env.prod` to `.env.production`, and rename the env vars listed above.
 6. Set `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED` and `MOSAIC_EDITORS` on the site.

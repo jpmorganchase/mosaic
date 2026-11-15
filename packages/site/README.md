@@ -7,6 +7,26 @@ site — there is no scaffolding CLI.
 
 The site runs on the **Next.js App Router** (`src/app/`).
 
+## Create a standalone site
+
+Export the template from a Mosaic checkout with Yarn 4.10.3 or later. Packing
+converts its `workspace:` dependencies to published version ranges; copying the
+directory directly leaves dependencies that cannot resolve outside the monorepo.
+From the repository root:
+
+```bash
+yarn install --immutable
+yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
+mkdir ../mosaic-sample-site
+tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
+cd ../mosaic-sample-site
+yarn install
+```
+
+The archive excludes build caches and local environment overrides. Configure
+`mosaic.config.mjs` with your own content sources before running `yarn serve`;
+the reference configuration points to documentation folders in this monorepo.
+
 ## File tree
 
 ```

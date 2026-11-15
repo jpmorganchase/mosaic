@@ -15,7 +15,7 @@ Your site uses the old layout if it has `src/pages/_app.tsx` and `src/pages/[...
 
 ## Recommended approach
 
-Start from a fresh copy of the current `packages/site` and move your customisations into it, rather than converting your old files in place. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
+Start from a fresh export of the current `packages/site`, following [Create a Site](create-a-site), and move your customisations into it, rather than converting your old files in place. The export converts workspace dependencies to published version ranges. Almost every file in the site has changed, and the new files contain fixes you'd otherwise have to rediscover. The site's `README.md` lists the patterns you must keep under "Critical patterns to preserve when copying".
 
 Keep your `mosaic.config.mjs`, your content, your CSS and your own components. Then work through the sections below.
 
@@ -266,7 +266,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 
 1. Use Node.js 24 or later.
 2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version, and `next-auth` to v5.
-3. Copy the current `packages/site` and move your components, layouts, CSS and config into it.
+3. Export the current `packages/site` using [Create a Site](create-a-site) and move your components, layouts, CSS and config into it.
 4. Replace `next/router` imports and move `pages/api` handlers to `app/api` route handlers.
 5. Rename `.env.local` to `.env.development` and `.env.prod` to `.env.production`, and rename the env vars listed above.
 6. Set `AUTH_SECRET`, `MOSAIC_AUTH_ENABLED` and `MOSAIC_EDITORS` on the site.

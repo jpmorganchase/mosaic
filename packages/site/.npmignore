@@ -1,0 +1,16 @@
+.next/
+.turbo/
+.tmp/
+dist/
+out/
+node_modules/
+coverage/
+test-results/
+playwright-report/
+playwright/.auth/
+*.tsbuildinfo
+.env.local
+.env.*.local
+.mosaic-public-assets.json
+public/.tmp/
+public/images/
