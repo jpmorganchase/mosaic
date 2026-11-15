@@ -17,6 +17,7 @@ export interface FastifyMosaic {
   config: MosaicConfig;
   core: MosaicCore;
   fs: IUnionVolume;
+  scope?: string[];
 }
 
 /**
@@ -31,7 +32,7 @@ const RAW_ROUTE_PREFIX = '/_mosaic-raw';
 async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPluginOptions) {
   const { config, scope, mosaic } = options;
   const fs$ = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
-  fastify.decorate('mosaic', { config, core: mosaic, fs: fs$ });
+  fastify.decorate('mosaic', { config, core: mosaic, fs: fs$, scope });
 
   /**
    * Raw on-disk source fetch.

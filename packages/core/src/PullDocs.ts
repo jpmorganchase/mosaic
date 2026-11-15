@@ -18,7 +18,7 @@ import FileAccess from './filesystems/FileAccess.js';
 import MutableVolume from './filesystems/MutableVolume.js';
 import UnionFileAccess from './filesystems/UnionFileAccess.js';
 import UnionVolume from './filesystems/UnionVolume.js';
-import SourceManager, { type TriggerWorkflowOptions } from './SourceManager.js';
+import SourceManager, { type TriggerWorkflowOptions, type WorkflowScope } from './SourceManager.js';
 import parsePluginModuleDefinitions from './helpers/parsePluginModuleDefinitions.js';
 
 const require = createRequire(import.meta.url);
@@ -28,7 +28,6 @@ export default class PullDocs {
   #sourceManager: SourceManager;
   #ufs = new Union() as IUnionFs & { fss: MutableVolume[] };
   #vfs: IUnionVolume;
-  #sourceDefinitionsByVolume = new WeakMap<MutableVolume, SourceModuleDefinition>();
 
   /**
    *
@@ -90,7 +89,8 @@ export default class PullDocs {
       }),
       pageExtensions,
       ignorePages,
-      schedule
+      schedule,
+      () => this.#ufs.fss
     );
   }
 
@@ -133,12 +133,18 @@ export default class PullDocs {
   }
 
   /** Resolve public defaults using the same source selection as workflow execution. */
-  prepareWorkflow(name: string, filePath: string, input: Omit<WorkflowDefaultsInput, 'route'>) {
-    return this.#sourceManager.prepareWorkflow(name, filePath, input);
+  prepareWorkflow(
+    name: string,
+    filePath: string,
+    input: Omit<WorkflowDefaultsInput, 'route'>,
+    scope?: WorkflowScope
+  ) {
+    return this.#sourceManager.prepareWorkflow(name, filePath, input, scope);
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {
     const source = await this.#sourceManager.addSource(sourceDefinition, {});
+    const filesystem = source.filesystem;
     source.onError(error => {
       console.error(
         new Error(`[Mosaic][Core] Source '${source.id.description}' threw an exception. See below:`)
@@ -146,15 +152,15 @@ export default class PullDocs {
       console.error('[Mosaic][Core]', error);
     });
     source.onExit(() => {
-      this.#ufs.fss.splice(this.#ufs.fss.indexOf(source.filesystem), 1);
+      const index = this.#ufs.fss.indexOf(filesystem);
+      if (index !== -1) this.#ufs.fss.splice(index, 1);
 
       if (this.#ufs.fss.length < 1) {
         console.debug("[Mosaic][Core] All of my source have been terminated. That's sad :-(");
       }
     });
 
-    this.#sourceDefinitionsByVolume.set(source.filesystem, sourceDefinition);
-    this.#ufs.use(source.filesystem as unknown as IUnionFs);
+    this.#ufs.use(filesystem as unknown as IUnionFs);
 
     return source;
   }
@@ -189,15 +195,7 @@ export default class PullDocs {
     filePath: string,
     namespaces?: string[]
   ): Promise<SourceModuleDefinition | undefined> {
-    // unionfs tries the most recently registered volume first, which can differ
-    // from config declaration order when sources start asynchronously.
-    for (const volume of [...this.#ufs.fss].reverse()) {
-      if (namespaces && !namespaces.includes(volume.namespace)) continue;
-      if (await volume.promises.exists(filePath)) {
-        return this.#sourceDefinitionsByVolume.get(volume);
-      }
-    }
-    return undefined;
+    return this.#sourceManager.getSourceDefinitionForPath(filePath, namespaces);
   }
 
   /** The definition a running source was started with. */

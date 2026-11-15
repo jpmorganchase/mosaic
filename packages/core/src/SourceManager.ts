@@ -27,7 +27,12 @@ function logUpdateStatus(sourceId, initOrStartTime) {
   }
 }
 
-export interface TriggerWorkflowOptions {
+export interface WorkflowScope {
+  /** Restrict ownership to the same namespaces as the caller's content filesystem. */
+  namespaces?: string[];
+}
+
+export interface TriggerWorkflowOptions extends WorkflowScope {
   /** `filePath` doesn't exist yet: the workflow will create it. */
   newPage?: boolean;
 }
@@ -44,6 +49,7 @@ export default class SourceManager {
   #ignorePages: string[];
   #globalConfig = createConfig();
   #schedule: SourceSchedule;
+  #mountedVolumes?: () => readonly IVolumeImmutable[];
 
   constructor(
     globalFilesystem,
@@ -52,7 +58,8 @@ export default class SourceManager {
     serialisers = [],
     pageExtensions = [],
     ignorePages = [],
-    schedule
+    schedule,
+    mountedVolumes?: () => readonly IVolumeImmutable[]
   ) {
     this.#plugins = plugins;
     this.#pageExtensions = pageExtensions;
@@ -61,6 +68,7 @@ export default class SourceManager {
     this.#globalFilesystem = globalFilesystem;
     this.#sharedFilesystem = sharedFilesystem;
     this.#schedule = schedule;
+    this.#mountedVolumes = mountedVolumes;
   }
 
   onSourceUpdate(callback) {
@@ -83,9 +91,9 @@ export default class SourceManager {
     name: string,
     filePath: string,
     data: unknown,
-    { newPage = false }: TriggerWorkflowOptions = {}
+    { newPage = false, namespaces }: TriggerWorkflowOptions = {}
   ): Promise<boolean> {
-    const owner = await this.#findWorkflowOwner(name, filePath, newPage);
+    const owner = await this.#findWorkflowOwner(name, filePath, newPage, namespaces);
     if (owner) return owner.triggerWorkflow(sendWorkflowProgressMessage, name, filePath, data);
     sendWorkflowProgressMessage(
       newPage ? `No source can create ${filePath}` : `Workflow ${name} not found`,
@@ -94,20 +102,61 @@ export default class SourceManager {
     return false;
   }
 
-  async #findWorkflowOwner(name: string, filePath: string, newPage: boolean) {
-    if (newPage) return findNewPageOwner(this.#sources.values(), filePath, name);
+  async #findSourceOwner(filePath: string, namespaces?: string[]) {
+    if (this.#mountedVolumes) {
+      const sourcesByVolume = new Map<IVolumeImmutable, Source>(
+        Array.from(this.#sources.values(), source => [source.filesystem, source])
+      );
+      // unionfs reads the last mounted volume first. Startup completion can
+      // differ from source declaration order, so use the live mounted order.
+      for (const volume of [...this.#mountedVolumes()].reverse()) {
+        if (namespaces && !namespaces.includes(volume.namespace)) continue;
+        if (await volume.promises.exists(filePath)) {
+          // A source can stop while an asynchronous filesystem check settles.
+          if (!this.#mountedVolumes().includes(volume)) continue;
+          const owner = sourcesByVolume.get(volume);
+          return owner && this.#sources.get(owner.id) === owner ? owner : undefined;
+        }
+      }
+      return undefined;
+    }
+
     for (const source of this.#sources.values()) {
+      if (namespaces && !namespaces.includes(source.namespace)) continue;
       if (await source.isOwner(filePath)) return source;
     }
     return undefined;
   }
 
+  async #findWorkflowOwner(
+    name: string,
+    filePath: string,
+    newPage: boolean,
+    namespaces?: string[]
+  ) {
+    if (!newPage) return this.#findSourceOwner(filePath, namespaces);
+    const sources = Array.from(this.#sources.values()).filter(
+      source => !namespaces || namespaces.includes(source.namespace)
+    );
+    return findNewPageOwner(sources, filePath, name);
+  }
+
+  async getSourceDefinitionForPath(filePath: string, namespaces?: string[]) {
+    return (await this.#findSourceOwner(filePath, namespaces))?.moduleDefinition;
+  }
+
   async prepareWorkflow(
     name: string,
     filePath: string,
-    input: Omit<WorkflowDefaultsInput, 'route'>
+    input: Omit<WorkflowDefaultsInput, 'route'>,
+    { namespaces }: WorkflowScope = {}
   ) {
-    const owner = await this.#findWorkflowOwner(name, filePath, input.isNewPage === true);
+    const owner = await this.#findWorkflowOwner(
+      name,
+      filePath,
+      input.isNewPage === true,
+      namespaces
+    );
     if (!owner)
       throw new Error(
         input.isNewPage ? `No source can create ${filePath}` : `Workflow ${name} not found`

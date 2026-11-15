@@ -125,7 +125,8 @@ async function mosaicWorkflows(
   fastify: FastifyInstance,
   { timeoutMs, jobs: jobOptions, pingIntervalMs }: FastifyMosaicWorkflowsPluginOptions
 ) {
-  const { fs, core } = fastify.mosaic;
+  const { fs, core, scope } = fastify.mosaic;
+  const workflowScope = scope ? { namespaces: scope } : undefined;
   const jobs = new WorkflowJobStore(jobOptions);
   const runningExecutions = new Set<string>();
   const openStreams = new Set<() => void>();
@@ -165,10 +166,15 @@ async function mosaicWorkflows(
       const resolved = await resolveWorkflowPath(parsed.route, parsed.isNewPage === true);
       if ('error' in resolved) return reply.code(resolved.status).send({ error: resolved.error });
       try {
-        const defaults = await core.prepareWorkflow(parsed.name, resolved.pagePath, {
-          ...(parsed.isNewPage === true ? { isNewPage: true } : {}),
-          ...(typeof parsed.targetRoute === 'string' ? { targetRoute: parsed.targetRoute } : {})
-        });
+        const defaults = await core.prepareWorkflow(
+          parsed.name,
+          resolved.pagePath,
+          {
+            ...(parsed.isNewPage === true ? { isNewPage: true } : {}),
+            ...(typeof parsed.targetRoute === 'string' ? { targetRoute: parsed.targetRoute } : {})
+          },
+          workflowScope
+        );
         // A custom workflow's return value is untrusted, too. Strip all extra fields.
         return reply
           .header('Cache-Control', 'no-store')
@@ -236,9 +242,13 @@ async function mosaicWorkflows(
       void runWorkflow(
         job,
         send =>
-          newPage
-            ? core.triggerWorkflow(send, name, pagePath, data, { newPage: true })
-            : core.triggerWorkflow(send, name, pagePath, data),
+          core.triggerWorkflow(
+            send,
+            name,
+            pagePath,
+            data,
+            newPage ? { ...workflowScope, newPage: true } : workflowScope
+          ),
         name
       ).finally(() => runningExecutions.delete(executionKey));
       return reply.code(202).send({ jobId: job.id });

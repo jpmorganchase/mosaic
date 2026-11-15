@@ -54,7 +54,7 @@ test('defaults and saves resolve aliases/directories to the same backing path; m
   expect(response.statusCode).toBe(200);
   expect(response.json()).toEqual({ supportsCommitMessage: true, commitMessage: 'Source default' });
   expect(realpath).toHaveBeenCalledWith('/public/alias/index');
-  expect(prepare).toHaveBeenCalledExactlyOnceWith('save', '/docs/page.mdx', {});
+  expect(prepare).toHaveBeenCalledExactlyOnceWith('save', '/docs/page.mdx', {}, undefined);
   expect(run).not.toHaveBeenCalled();
   expect(response.json()).not.toHaveProperty('jobId');
   await app.inject({
@@ -63,17 +63,19 @@ test('defaults and saves resolve aliases/directories to the same backing path; m
     headers,
     payload: { ...input, markdown: '# Changed', commitMessage: 'Author text' }
   });
-  expect(run).toHaveBeenCalledWith(expect.any(Function), 'save', '/docs/page.mdx', {
-    user: input.user,
-    markdown: '# Changed',
-    commitMessage: 'Author text'
-  });
+  expect(run).toHaveBeenCalledWith(
+    expect.any(Function),
+    'save',
+    '/docs/page.mdx',
+    { user: input.user, markdown: '# Changed', commitMessage: 'Author text' },
+    undefined
+  );
 });
 test('new page metadata and saves use the same extension and do not accept browser source selection', async () => {
   exists.mockResolvedValue(false);
   const payload = { ...input, route: '/docs/new', isNewPage: true, source: 'other-source' };
   await app.inject({ method: 'POST', url: '/workflows/defaults', headers, payload });
-  expect(prepare).toHaveBeenCalledWith('save', '/docs/new.mdx', { isNewPage: true });
+  expect(prepare).toHaveBeenCalledWith('save', '/docs/new.mdx', { isNewPage: true }, undefined);
   await app.inject({ method: 'POST', url: '/workflows/jobs', headers, payload });
   expect(run.mock.calls[0][2]).toBe('/docs/new.mdx');
   expect(run.mock.calls[0][4]).toEqual({ newPage: true });
