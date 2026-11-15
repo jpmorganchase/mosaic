@@ -33,21 +33,15 @@ function DensitySetter({ setDensity }: { setDensity: Dispatch<SetStateAction<Den
   return null;
 }
 
-/**
- * Starts from the density for the viewport, as the site's inline theme script
- * does, so Salt doesn't swap the density class straight after hydration. The
- * server renders no density class, so this doesn't affect hydration.
- */
-const initialDensity = (): Density =>
-  typeof window === 'undefined' || window.matchMedia?.('(min-width: 960px)').matches
-    ? 'low'
-    : 'touch';
-
 export function ThemeProvider({ themeClassName, children }: ThemeProviderProps) {
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
-  const [density, setDensity] = useState<Density>(initialDensity);
+  // Density also changes descendants' markup, including nested providers and
+  // Spinner SVGs. Match the server on the first hydration render, then let
+  // DensitySetter apply the viewport's density and track breakpoint changes.
+  // The site's inline script can still set the root class before first paint.
+  const [density, setDensity] = useState<Density>('low');
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 
   return (

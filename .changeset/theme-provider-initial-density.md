@@ -2,9 +2,10 @@
 '@jpmorganchase/mosaic-components': patch
 ---
 
-Start `ThemeProvider` at the density for the viewport
+Hydrate density-dependent components consistently
 
-`ThemeProvider` started at Salt's `low` density and switched to `touch` on
-narrow viewports after hydration. It now starts at the viewport's density, as
-the reference site's inline theme script sets it before the first paint, so
-Salt doesn't swap density classes straight after hydration.
+`ThemeProvider` uses the same initial density on the server and during
+hydration, then applies the viewport's density and follows breakpoint changes.
+This keeps nested Salt providers and density-dependent SVGs consistent with
+their server-rendered markup, including on narrow screens. The reference
+site's inline theme script still sets the root density class before first paint.
