@@ -36,9 +36,13 @@ tsconfig.tsbuildinfo
 packages/site/public/images
 # PublicAssetsPlugin output (regenerated on every Mosaic build, never edit
 # by hand). sitemap.xml is handled by Next.js's App Router app/sitemap.ts
-# now, so it's never written to public/ — only the search files land here.
+# now, so it's never written to public/. Snapshot builds also copy the
+# search and llms.txt files, and each page's Markdown, from the snapshot.
 packages/site/public/search-data.json
 packages/site/public/search-records.json
+packages/site/public/llms.txt
+packages/site/public/llms-full.txt
+packages/site/public/**/*.md
 
 # Test Results
 coverage

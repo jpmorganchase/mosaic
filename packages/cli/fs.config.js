@@ -36,6 +36,14 @@ export default {
       options: { maxLineLength: 240, maxLineCount: 240 }
     },
     {
+      modulePath: '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin',
+      previewDisabled: true,
+      // After `$RefPlugin` (-1), so `$ref`s are resolved, and before
+      // `LazyPagePlugin` (-2) moves page content out.
+      priority: -1.5,
+      options: {}
+    },
+    {
       modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
       options: {
         indexPageName: 'index.mdx'

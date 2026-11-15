@@ -12,11 +12,9 @@
  * Server-only. Browsers can search the records directly with
  * `@jpmorganchase/mosaic-site-middleware/search`.
  */
-import fs from 'fs';
-import path from 'path';
 import type { MosaicMode, SearchRecordsFile } from '@jpmorganchase/mosaic-types';
 
-import { getSnapshotFileConfig } from './loaders/index.js';
+import { createContentFileCache, readContentFile } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
 import {
   createSearchIndex,
@@ -45,61 +43,6 @@ export interface SearchHandlerOptions extends SearchIndexOptions {
   maxLimit?: number;
 }
 
-interface RecordsSource {
-  /** Changes when the records do. */
-  version: string;
-  /** Absent when the records haven't changed since `knownVersion`. */
-  text?: string;
-}
-
-// FNV-1a: tells whether the active-mode records changed, without keeping a copy.
-function hash(text: string) {
-  let value = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    value ^= text.charCodeAt(i);
-    value = Math.imul(value, 0x01000193);
-  }
-  return `${text.length}-${(value >>> 0).toString(36)}`;
-}
-
-async function readRecordsSource(
-  mode: MosaicMode,
-  contentUrl: string,
-  knownVersion?: string
-): Promise<RecordsSource | undefined> {
-  if (mode === 'snapshot-file') {
-    const { snapshotDir } = getSnapshotFileConfig(SEARCH_RECORDS_FILE);
-    // Sites include their snapshots with `outputFileTracingIncludes`.
-    const filePath = path.join(
-      /*turbopackIgnore: true*/ process.cwd(),
-      snapshotDir,
-      SEARCH_RECORDS_FILE
-    );
-    let stat: fs.Stats;
-    try {
-      stat = await fs.promises.stat(filePath);
-    } catch {
-      return undefined;
-    }
-    const version = `${filePath}:${stat.mtimeMs}:${stat.size}`;
-    if (version === knownVersion) {
-      return { version };
-    }
-    return { version, text: await fs.promises.readFile(filePath, 'utf8') };
-  }
-  const response = await fetch(`${contentUrl}/${SEARCH_RECORDS_FILE}`, { cache: 'no-store' });
-  if (response.status === 404) {
-    return undefined;
-  }
-  if (!response.ok) {
-    throw new Error(
-      `Failed to load ${SEARCH_RECORDS_FILE} from ${contentUrl}: ${response.status} ${response.statusText}`
-    );
-  }
-  const text = await response.text();
-  return { version: hash(text), text };
-}
-
 function parseRecords(text: string): SearchRecordsFile {
   const file = JSON.parse(text) as SearchRecordsFile;
   if (file?.version !== 1 || !Array.isArray(file.records)) {
@@ -117,7 +60,7 @@ export async function loadSearchRecords(
   mode: MosaicMode = resolveMosaicMode().mode,
   contentUrl: string = resolveMosaicMode().contentUrl
 ): Promise<SearchRecordsFile | undefined> {
-  const source = await readRecordsSource(mode, contentUrl);
+  const source = await readContentFile(SEARCH_RECORDS_FILE, mode, contentUrl);
   return source?.text === undefined ? undefined : parseRecords(source.text);
 }
 
@@ -154,42 +97,11 @@ export function createSearchHandler(options: SearchHandlerOptions = {}) {
     pageRank: options.pageRank
   };
 
-  let loaded: { version: string; index: MosaicSearchIndex; checkedAt: number } | undefined;
-  let pending: Promise<typeof loaded> | undefined;
-
-  const refresh = (mode: MosaicMode, contentUrl: string) => {
-    pending ??= (async () => {
-      const source = await readRecordsSource(mode, contentUrl, loaded?.version);
-      if (!source) {
-        loaded = undefined;
-      } else if (source.version === loaded?.version || source.text === undefined) {
-        loaded = loaded && { ...loaded, checkedAt: Date.now() };
-      } else {
-        const { records } = parseRecords(source.text);
-        loaded = {
-          version: source.version,
-          index: createSearchIndex(records, indexOptions),
-          checkedAt: Date.now()
-        };
-      }
-      return loaded;
-    })().finally(() => {
-      pending = undefined;
-    });
-    return pending;
-  };
-
-  const getIndex = async (mode: MosaicMode, contentUrl: string) => {
-    if (mode === 'snapshot-file' || !loaded) {
-      return (await refresh(mode, contentUrl))?.index;
-    }
-    if (Date.now() - loaded.checkedAt >= maxAge) {
-      refresh(mode, contentUrl).catch(error => {
-        console.warn(`[Mosaic] Couldn't refresh the search records: ${error}`);
-      });
-    }
-    return loaded.index;
-  };
+  const getIndex = createContentFileCache(
+    SEARCH_RECORDS_FILE,
+    text => createSearchIndex(parseRecords(text).records, indexOptions),
+    { maxAge }
+  );
 
   return async function GET(request: Request): Promise<Response> {
     const params = new URL(request.url).searchParams;
