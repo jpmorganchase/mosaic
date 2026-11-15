@@ -48,7 +48,6 @@
   "dependencies": {
     "@jpmorganchase/mosaic-components": "workspace:^",
     "@jpmorganchase/mosaic-content-editor-plugin": "workspace:^",
-    "@jpmorganchase/mosaic-open-api-component": "workspace:^",
     "@jpmorganchase/mosaic-store": "workspace:^",
     "@jpmorganchase/mosaic-theme": "workspace:^",
     "@salt-ds/core": "^1.63.0",

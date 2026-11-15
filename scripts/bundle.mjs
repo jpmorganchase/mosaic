@@ -17,7 +17,7 @@ const packageName = process.env.npm_package_name;
 // top-level string directives during minification, so the directives we
 // write in the source files don't survive into `dist/`. For Mosaic's UI
 // packages (`components`, `site-components`, `content-editor-plugin`,
-// `open-api-component`, `sitemap-component`, `layouts`) every export is
+// `sitemap-component`, `layouts`) every export is
 // effectively client-side — they wrap Salt DS, register React hooks, or
 // read browser globals. Stamping the directive at bundle time is the
 // canonical workaround (same pattern Material UI v6, Salt DS, and others
@@ -94,7 +94,6 @@ try {
       'next/*',
       '@jpmorganchase/mosaic-components',
       '@jpmorganchase/mosaic-components-lab',
-      '@jpmorganchase/mosaic-open-api-component',
       '@jpmorganchase/mosaic-content-editor-plugin',
       '@jpmorganchase/mosaic-site-components',
       '@jpmorganchase/mosaic-layouts',

@@ -89,7 +89,6 @@ const baseConfig = {
     '@jpmorganchase/mosaic-components',
     '@jpmorganchase/mosaic-content-editor-plugin',
     '@jpmorganchase/mosaic-layouts',
-    '@jpmorganchase/mosaic-open-api-component',
     '@jpmorganchase/mosaic-site-components',
     '@jpmorganchase/mosaic-site-middleware',
     '@jpmorganchase/mosaic-theme',

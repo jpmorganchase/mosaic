@@ -38,8 +38,7 @@
  *
  * Merge precedence (lowest → highest, so later wins):
  *   1. Mosaic default components from `mdxComponents` (i.e. the export
- *      from `./mdx.tsx` — `getMarkdownComponents()` + `Home` +
- *      `OpenAPI`).
+ *      from `./mdx.tsx` — `getMarkdownComponents()` + `Home` + `img`).
  *   2. `host.components` — host-supplied overrides / extensions.
  *   3. Per-page server scope from `serializeMdxForClient`
  *      (notably `meta`, plus anything the caller passed in
