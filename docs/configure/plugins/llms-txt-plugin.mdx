@@ -1,0 +1,120 @@
+---
+title: LlmsTxtPlugin
+layout: DetailOverview
+---
+
+# {meta.title}
+
+The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and other tools that read docs as text. It follows the [llms.txt](https://llmstxt.org) convention, and outputs 3 files:
+
+- `llms.txt`: an index of the pages, with a section for each folder and each page's description
+- `llms-full.txt`: every page in one file
+- `markdown-pages.json`: every page's Markdown, keyed by route
+
+Each page's Markdown starts with frontmatter (its title, description and URL) and a link to `llms.txt`. In the page body:
+
+- `{meta.*}` expressions are replaced with their values, and other expressions and `import`/`export` statements are left out.
+- `Callout` becomes a quote, such as `> **Warning:** …`.
+- Other components are replaced with their children. A component with no children, such as an example preview, is left out. To convert your own components, see [Convert your components](#convert-your-components).
+- Relative links are made absolute, so they still work in `llms-full.txt`.
+
+To leave a page out, set `llms: { exclude: true }` in its frontmatter, or match it with the `exclude` option.
+
+## Serving the files
+
+The reference site serves the files with `createLlmsHandler`, from `@jpmorganchase/mosaic-site-middleware`, at `/api/llms/[...path]`, and rewrites these URLs to it:
+
+| URL                                               | Responds with                                       |
+| ------------------------------------------------- | --------------------------------------------------- |
+| `/llms.txt`, `/llms-full.txt`                     | The file                                            |
+| `/<page>.md`                                      | The page's Markdown. A folder serves its index page |
+| `/<page>`, with an `Accept: text/markdown` header | The page's Markdown                                 |
+
+```js
+// next.config.js
+rewrites() {
+  return {
+    beforeFiles: [
+      {
+        source: '/:path((?!api/|_next/).+)',
+        has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+        destination: '/api/llms/:path'
+      }
+    ],
+    afterFiles: [
+      { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+      { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+      { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
+    ]
+  };
+}
+```
+
+The `afterFiles` rewrites go after `public/` and before the site's catch-all page. In snapshot builds, `next.config.js` copies the files to `public/`, so they're served as static files without running a function. Static exports serve only those copies.
+
+In active mode, the handler reads the files from the CLI, and checks for new ones every 30 seconds while serving the ones it has. Set `maxAge` to change that.
+
+## Convert your components
+
+Set `componentsModulePath` to a module whose default export converts your components, by name. Each converter gets the element's name, attributes, children (already converted to Markdown) and whether it's inline, and the page's frontmatter. It returns Markdown, `null` to leave the element out, or `undefined` to keep its children.
+
+```js
+// mosaic/markdownComponents.mjs
+export default {
+  // <PropsTable componentName="button" /> becomes a props table.
+  async PropsTable({ attributes }) {
+    const props = await loadProps(attributes.componentName);
+    return [
+      '| Prop | Type | Description |',
+      '| ---- | ---- | ----------- |',
+      ...props.map(prop => `| ${prop.name} | \`${prop.type}\` | ${prop.description} |`)
+    ].join('\n');
+  },
+  // Examples can't run outside the browser.
+  LivePreview: () => null
+};
+```
+
+Attributes are text, `true` for an attribute without a value, or `{ expression }` with the source of an expression such as `size={2}`. A converter that throws leaves its page out, and the plugin reports the error.
+
+## Priority
+
+The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`), so `$ref`s are resolved, and before `LazyPagePlugin` (`-2`) moves page content out.
+
+## Options
+
+| Property             | Description                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| title                | The heading of `llms.txt`. Defaults to `Documentation`.                                                                       |
+| description          | A summary of the site, shown under the heading of `llms.txt`.                                                                 |
+| siteUrl              | The site's origin, such as `https://example.com`, to make links absolute. Links are root-relative without it.                 |
+| componentsModulePath | An absolute path, file URL or package that converts your components. See [Convert your components](#convert-your-components). |
+| exclude              | Glob patterns of page files to leave out, such as `my-namespace/test/**`.                                                     |
+
+## Adding to Mosaic
+
+The plugin is in the default config. To set its options, replace its entry:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  plugins: fsConfig.plugins.map(plugin =>
+    plugin.modulePath === '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin'
+      ? {
+          ...plugin,
+          options: {
+            title: 'My product',
+            siteUrl: process.env.SITE_URL,
+            componentsModulePath: require.resolve('./mosaic/markdownComponents.mjs')
+          }
+        }
+      : plugin
+  )
+};
+```

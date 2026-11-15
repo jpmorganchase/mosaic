@@ -37,6 +37,11 @@ const ROUTES = [
     why: 'Search needs a server runtime. A static export includes search-records.json to search in the browser.'
   },
   {
+    path: 'src/app/api/llms/[...path]/route.ts',
+    why: 'Serving Markdown needs a server runtime. A static export includes llms.txt, llms-full.txt and each page as <page>.md instead.',
+    staticParams: { path: ['stub'] }
+  },
+  {
     path: 'src/app/api/revalidate/route.ts',
     why: 'There is no server cache to revalidate in a static export. Rebuild the site to refresh content.'
   },

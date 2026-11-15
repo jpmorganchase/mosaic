@@ -20,3 +20,6 @@ export * from './cacheTags.js';
 // `GET` route handler for site search, over `search-records.json`. The
 // search engine itself is the isomorphic `/search` subpath.
 export * from './searchHandler.js';
+// `GET` route handler serving the docs as Markdown for agents: each page,
+// `llms.txt` and `llms-full.txt`, written by `LlmsTxtPlugin`.
+export * from './llmsHandler.js';

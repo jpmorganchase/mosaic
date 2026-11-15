@@ -47,7 +47,7 @@ const markdownProcessor = unified().use(remarkParse);
 const collapse = (text: string) => text.replace(/\s+/g, ' ').trim();
 
 /** Frontmatter text without its markdown, e.g. "`Dropdown` lets" becomes "Dropdown lets". */
-const plainText = (value: unknown) => {
+export const plainText = (value: unknown) => {
   const text = asText(value);
   return text === undefined ? undefined : collapse(toString(markdownProcessor.parse(text)));
 };

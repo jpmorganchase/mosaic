@@ -25,8 +25,8 @@
  *         sign-in, the content editor and cache revalidation need one of
  *         the server targets above.
  */
-const { copyFileSync, existsSync } = require('node:fs');
-const { resolve } = require('node:path');
+const { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } = require('node:fs');
+const { dirname, resolve, sep } = require('node:path');
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
@@ -129,8 +129,22 @@ const dynamicOnlyConfig = {
   },
   rewrites() {
     return {
-      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
-      afterFiles: []
+      beforeFiles: [
+        { source: '/favicon.ico', destination: '/img/favicon.png' },
+        // Agents that ask for Markdown get it at the page's own URL.
+        {
+          source: '/:path((?!api/|_next/).+)',
+          has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+          destination: '/api/llms/:path'
+        }
+      ],
+      // After public/, where snapshot builds copy these files, and before the
+      // `[namespace]/[...route]` page, which would otherwise match them.
+      afterFiles: [
+        { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+        { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+        { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
+      ]
     };
   },
   async redirects() {
@@ -166,13 +180,30 @@ const standaloneConfig = {
 module.exports = phase => {
   const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
   if (phase === PHASE_PRODUCTION_BUILD && mosaicMode === 'snapshot-file' && snapshotDir) {
-    // A clean checkout has the search files in the snapshot. Expose them at the
-    // URLs used by search in the browser, which static exports rely on.
-    for (const file of ['search-data.json', 'search-records.json']) {
+    // A clean checkout has the search and llms.txt files in the snapshot.
+    // Expose them as static files: search in the browser and static exports
+    // rely on them, and agents' requests then don't need a function.
+    const publicDir = resolve(__dirname, 'public');
+    for (const file of ['search-data.json', 'search-records.json', 'llms.txt', 'llms-full.txt']) {
       const snapshotFile = resolve(__dirname, snapshotDir, file);
-      const publicFile = resolve(__dirname, 'public', file);
+      const publicFile = resolve(publicDir, file);
       if (snapshotFile !== publicFile && existsSync(snapshotFile)) {
         copyFileSync(snapshotFile, publicFile);
+      }
+    }
+    // Each page's Markdown, at the page's URL plus `.md`. An index page is
+    // also at its folder's URL plus `.md`, as the route handler serves it.
+    const markdownPages = resolve(__dirname, snapshotDir, 'markdown-pages.json');
+    if (existsSync(markdownPages)) {
+      const { pages } = JSON.parse(readFileSync(markdownPages, 'utf8'));
+      for (const [route, markdown] of Object.entries(pages)) {
+        const folder = route.endsWith('/index') ? route.slice(0, -'/index'.length) : undefined;
+        for (const url of folder ? [route, folder] : [route]) {
+          const publicFile = resolve(publicDir, `.${url}.md`);
+          if (!publicFile.startsWith(publicDir + sep) || (url === folder && pages[url])) continue;
+          mkdirSync(dirname(publicFile), { recursive: true });
+          writeFileSync(publicFile, markdown);
+        }
       }
     }
   }

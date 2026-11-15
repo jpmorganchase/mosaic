@@ -11,10 +11,24 @@ const projectDir = process.cwd();
 // apply by default.
 nextEnv.loadEnvConfig(projectDir, process.env.NODE_ENV === 'development');
 
+const llmsTxtOptions = {
+  title: 'Mosaic',
+  description:
+    'Mosaic is a content-driven framework for documentation sites: it pulls docs from many sources and renders them with Next.js.',
+  // Links are relative unless the site's URL is known.
+  siteUrl: process.env.SITE_URL,
+  // Fixtures for the e2e tests.
+  exclude: ['mosaic/test/**']
+};
+
 const siteConfig = {
   ...fsConfig,
   plugins: [
-    ...fsConfig.plugins,
+    ...fsConfig.plugins.map(plugin =>
+      plugin.modulePath === '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin'
+        ? { ...plugin, options: llmsTxtOptions }
+        : plugin
+    ),
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
       previewDisabled: true,

@@ -131,6 +131,8 @@ Move each `src/pages/api/<name>.ts` handler to `src/app/api/<name>/route.ts`, ex
 
 If you use static export, add your route to `ROUTES` in `scripts/static-export-route-stubs.mjs`. Next.js won't export a route handler unless it is marked as static, and that script does this for you during `build:static:*`.
 
+To serve your docs as Markdown for agents (`/llms.txt` and `/<page>.md`), copy `src/app/api/llms/[...path]/route.ts`, its rewrites in `next.config.js` and its entry in `scripts/static-export-route-stubs.mjs` from the reference site. See [LlmsTxtPlugin](../configure/plugins/llms-txt-plugin).
+
 ### Home page redirect
 
 `src/app/page.tsx` redirects `/` to `/mosaic/index`. Change the target to your own namespace.
