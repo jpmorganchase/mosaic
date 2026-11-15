@@ -1,5 +1,12 @@
 export * from './AppHeader';
-export { SearchProvider, type SearchProviderProps } from './SearchProvider';
+export {
+  SearchProvider,
+  useSearchContext,
+  type SearchProviderProps,
+  type SearchContextValue,
+  type SearchClientOptions,
+  type SearchQueryOptions
+} from './SearchProvider';
 export * from './AppHeaderControls';
 export * from './AppHeaderDrawer';
 export * from './AppHeaderTabs';

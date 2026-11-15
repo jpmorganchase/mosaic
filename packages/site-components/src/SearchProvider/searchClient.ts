@@ -1,4 +1,9 @@
-import type { MosaicSearchIndex, SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
+import type {
+  MosaicSearchIndex,
+  SearchIndexOptions,
+  SearchOptions,
+  SearchResult
+} from '@jpmorganchase/mosaic-site-middleware/search';
 
 // Results navigate within the documentation site. Never pass a protocol URL
 // supplied by content or a custom search endpoint to router.push().
@@ -18,18 +23,32 @@ function internalResults(results: SearchResult[]): SearchResult[] {
     }));
 }
 
+export type SearchQueryOptions = Pick<SearchOptions, 'limit' | 'sectionsPerResult'>;
+
+export type SearchClient = (
+  query: string,
+  namespace?: string,
+  signal?: AbortSignal
+) => Promise<SearchResult[]>;
+
 export interface SearchClientOptions {
   /** Server search by default; static exports search downloaded records in the browser. */
   mode?: 'server' | 'browser';
   endpoint?: string;
   recordsUrl?: string;
+  /** Browser index policies. In server mode, configure these on createSearchHandler. */
+  indexOptions?: SearchIndexOptions;
+  /** Applied in both modes. Defaults to six results and three additional sections. */
+  queryOptions?: SearchQueryOptions;
 }
 
 export function createSearchClient({
   mode = 'server',
   endpoint = '/api/search',
-  recordsUrl = '/search-records.json'
-}: SearchClientOptions = {}) {
+  recordsUrl = '/search-records.json',
+  indexOptions,
+  queryOptions: { limit = 6, sectionsPerResult = 3 } = {}
+}: SearchClientOptions = {}): SearchClient {
   let index: Promise<MosaicSearchIndex> | undefined;
 
   const loadIndex = () => {
@@ -44,7 +63,7 @@ export function createSearchClient({
         return file.records;
       })
     ])
-      .then(([{ createSearchIndex }, records]) => createSearchIndex(records))
+      .then(([{ createSearchIndex }, records]) => createSearchIndex(records, indexOptions))
       .catch(error => {
         index = undefined;
         throw error;
@@ -64,13 +83,13 @@ export function createSearchClient({
       const loaded = await loadIndex();
       signal?.throwIfAborted();
       return internalResults(
-        loaded.search(normalizedQuery, { namespace, limit: 6, sectionsPerResult: 3 })
+        loaded.search(normalizedQuery, { namespace, limit, sectionsPerResult })
       );
     }
     const url = new URL(endpoint, window.location.href);
     url.searchParams.set('q', normalizedQuery);
-    url.searchParams.set('limit', '6');
-    url.searchParams.set('sections', '3');
+    url.searchParams.set('limit', String(limit));
+    url.searchParams.set('sections', String(sectionsPerResult));
     if (namespace) url.searchParams.set('namespace', namespace);
     const response = await fetch(url, { signal });
     if (!response.ok) throw new Error('Search is unavailable');

@@ -1,6 +1,5 @@
 import path from 'node:path';
 import type { LoadedPlugin, PluginErrors } from '@jpmorganchase/mosaic-types';
-import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
 
 export default async function pluginRunner(
   { loadedPlugins, lifecycleName }: { loadedPlugins: LoadedPlugin[]; lifecycleName: string },
@@ -56,21 +55,20 @@ export default async function pluginRunner(
           exception?.fullPath ? ` for '${exception.fullPath}'` : ''
         }`
       );
-      console.error(`[Mosaic][Core] ${exception.stack}`);
+      const message = exception?.message ?? String(exception);
+      console.error(`[Mosaic][Core] ${exception?.stack ?? message}`);
 
-      if (exception instanceof PluginError) {
-        exception.lifecycleMethod = lifecycleName;
-        exception.pluginModulePath = plugin.modulePath;
-        exception.pluginName = pluginName;
-        pluginErrors.push(exception);
-      } else {
-        // create a new plugin error
-        const pluginError = new PluginError(exception.message);
-        pluginError.pluginModulePath = plugin.modulePath;
-        pluginError.lifecycleMethod = lifecycleName;
-        pluginError.pluginName = pluginName;
-        pluginErrors.push(pluginError);
-      }
+      // Error.message and Error.stack are not enumerable. Record plain
+      // descriptors so worker JSON transport retains the original diagnostic.
+      pluginErrors.push({
+        name: exception?.name ?? 'PluginError',
+        message,
+        stack: exception?.stack,
+        fullPath: exception?.fullPath,
+        lifecycleMethod: lifecycleName,
+        pluginModulePath: plugin.modulePath,
+        pluginName
+      });
 
       // process this lifecycle for the rest of the loaded plugins
       continue;

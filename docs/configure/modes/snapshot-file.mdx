@@ -28,6 +28,11 @@ yarn gen:snapshot
 
 Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
 
+The CLI fails with a nonzero exit code when any source records a plugin exception,
+including failures caught by the pipeline. Diagnostics identify the source, plugin,
+lifecycle, and original error. A failed pipeline does not write a completed snapshot
+or generation identity; fix the reported error and regenerate before deploying.
+
 ## Snapshot identity and caching
 
 The CLI writes `mosaic-snapshot.json` at the snapshot root after all content and aliases have been written successfully. This reserved file contains a versioned generation ID:

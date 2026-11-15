@@ -45,6 +45,23 @@ export default async function build(config, targetDir, options) {
     try {
       if (startupComplete && !writingSnapshot && updatedSources.size === sourceCount) {
         writingSnapshot = true;
+        const failures = (await mosaic.listSources()).flatMap(source =>
+          Object.entries(source.pluginErrors).flatMap(([lifecycle, errors]) =>
+            (errors as import('@jpmorganchase/mosaic-types').PluginErrors).map(
+              error =>
+                `Source '${source.name}', plugin '${
+                  error.pluginName || error.pluginModulePath
+                }' (${lifecycle})${error.fullPath ? ` at '${error.fullPath}'` : ''}: ${
+                  error.message ?? error.name
+                }`
+            )
+          )
+        );
+        if (failures.length > 0) {
+          throw new Error(
+            `[Mosaic] Snapshot failed because plugins recorded errors:\n${failures.join('\n')}`
+          );
+        }
         // Scoping copies the mounted source filesystems, so wait until startup
         // has mounted every source before constructing the scoped view.
         const filesystem = Array.isArray(scope)

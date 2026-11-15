@@ -79,6 +79,27 @@ describe('snapshot-file mode', () => {
     expect(hrefs((await search(handler, 'q=tabs')).body)).toEqual(['/salt/components/tabs-next']);
   });
 
+  test('applies server index policies and the provider scalar query options', async () => {
+    const records = Array.from({ length: 24 }, (_, i) =>
+      ['examples', 'usage'].map(tab =>
+        record(`/salt/component-${i}/${tab}`, `Component ${i}`, 'Choose a color')
+      )
+    ).flat();
+    write(file(...records), new Date(2_500_000));
+    const handler = createSearchHandler({
+      mode: 'snapshot-file',
+      synonyms: [['color', 'colour']],
+      groupBy: item => item.route.replace(/\/(examples|usage)$/, ''),
+      pageRank: item => (item.route.endsWith('/usage') ? 0 : 1)
+    });
+    const { status, body } = await search(handler, 'q=colour&namespace=salt&limit=20&sections=0');
+    expect(status).toBe(200);
+    expect(body.results).toHaveLength(20);
+    expect(
+      body.results.every(hit => hit.href.endsWith('/usage') && hit.sections.length === 0)
+    ).toBe(true);
+  });
+
   test('answers an empty query without loading the records', async () => {
     fs.rmSync(recordsFile, { force: true });
     const handler = createSearchHandler({ mode: 'snapshot-file' });

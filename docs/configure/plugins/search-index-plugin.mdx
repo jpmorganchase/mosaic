@@ -140,6 +140,48 @@ The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.
 
 Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
 
+### Search policies and result limits
+
+The provider accepts `queryOptions` in both modes. For example,
+`queryOptions={{ limit: 20, sectionsPerResult: 0 }}` requests up to 20 results
+without additional section lists. Defaults remain six results and three sections.
+The server handler's `maxLimit` and section cap still apply.
+
+In browser mode, `indexOptions` configures the same engine as `createSearchIndex`:
+
+```tsx
+'use client';
+
+import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
+
+const indexOptions = {
+  synonyms: [['colour', 'color']],
+  groupBy: record => record.route.replace(/\/(examples|usage|accessibility)$/, ''),
+  pageRank: record => (record.route.endsWith('/examples') ? 0 : 1)
+};
+
+export function Search({ children }) {
+  return (
+    <SearchProvider
+      mode="browser"
+      indexOptions={indexOptions}
+      queryOptions={{ limit: 20, sectionsPerResult: 0 }}
+    >
+      {children}
+    </SearchProvider>
+  );
+}
+```
+
+For server mode, configure `groupBy`, `pageRank`, and `synonyms` on
+`createSearchHandler({ ...indexOptions })` in the API route. Provider `indexOptions`
+only configure the browser index; callbacks are not sent over HTTP. Define browser
+callbacks in a client module rather than passing functions across a Server Component
+boundary. Keep policy functions and synonym arrays stable to reuse the lazy index.
+
+Custom search controls can call `useSearchContext()` from the same public provider
+entry. Its `search(query, namespace?, signal?)` method returns `Promise<SearchResult[]>`.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.

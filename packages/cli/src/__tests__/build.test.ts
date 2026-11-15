@@ -20,6 +20,7 @@ const core = {
   start: vi.fn(),
   stop: vi.fn(),
   onSourceUpdate: vi.fn(),
+  listSources: vi.fn(),
   filesystem
 };
 
@@ -41,6 +42,7 @@ function config() {
 beforeEach(async () => {
   core.start.mockResolvedValue(undefined);
   core.stop.mockResolvedValue(undefined);
+  core.listSources.mockResolvedValue([]);
   core.onSourceUpdate.mockImplementation(callback => {
     sourceUpdated = callback;
     return unsubscribe;
@@ -68,6 +70,46 @@ async function identity(name = 'latest') {
 }
 
 describe('GIVEN the build command', () => {
+  test.each(['$afterSource', '$beforeSend', 'afterUpdate', 'afterNamespaceSourceUpdate'])(
+    'THEN recorded %s plugin failures abort before writing a completed snapshot',
+    async lifecycle => {
+      core.listSources.mockResolvedValue([
+        {
+          name: 'Salt docs',
+          pluginErrors: {
+            [lifecycle]: [
+              {
+                pluginName: 'MarkdownConverter',
+                name: 'Error',
+                message: 'Cannot convert custom MDX',
+                fullPath: '/salt/button.mdx'
+              }
+            ]
+          }
+        }
+      ]);
+      const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('exit');
+      });
+      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
+      expect(log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining(
+            `Source 'Salt docs', plugin 'MarkdownConverter' (${lifecycle}) at '/salt/button.mdx': Cannot convert custom MDX`
+          )
+        })
+      );
+      expect(filesystem.promises.glob).not.toHaveBeenCalled();
+      expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+    }
+  );
+
+  test('THEN empty recorded error lists allow the snapshot to complete', async () => {
+    core.listSources.mockResolvedValue([{ name: 'Salt docs', pluginErrors: { $beforeSend: [] } }]);
+    await build(config(), outDir, { name: 'latest' });
+    await identity();
+  });
   test('THEN it empties an existing snapshot folder, including nested folders and symlinks', async () => {
     const snapshotDir = path.join(outDir, 'latest');
     await fs.promises.mkdir(path.join(snapshotDir, 'mosaic', 'removed-page'), { recursive: true });

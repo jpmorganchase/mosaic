@@ -1795,6 +1795,7 @@ __metadata:
   resolution: "@jpmorganchase/mosaic-types@workspace:packages/types"
   dependencies:
     "@jpmorganchase/mosaic-schemas": "workspace:^"
+    "@types/picomatch": "npm:^4.0.0"
     memfs: "npm:^4.0.0"
     rxjs: "npm:^7.5.5"
     tinyglobby: "npm:^0.2.17"

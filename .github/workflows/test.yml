@@ -32,6 +32,8 @@ jobs:
         run: yarn
       - name: 'Build internal prerequisites'
         run: yarn build
+      - name: Check packed-package consumers
+        run: yarn test:consumer
       - name: Run Tests
         run: yarn test
 
