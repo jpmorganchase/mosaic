@@ -61,6 +61,53 @@ describe('GIVEN the TableOfContentsPlugin', () => {
     expect(setData).toHaveBeenCalledWith({ tableOfContentsUnresolved: {} });
   });
 
+  test('THEN unresolved headings outside the TOC range still trigger rebuilding duplicate ids', async () => {
+    const fullPath = '/docs/card.mdx';
+    const { pages, setData } = await afterSource([
+      {
+        fullPath,
+        title: { $ref: '/docs/titles.json#/card' },
+        content: '# {meta.title}\n\n## Card\n'
+      }
+    ]);
+    expect(pages[0].tableOfContents[0].id).toBe('card');
+    expect(setData).toHaveBeenCalledWith({
+      tableOfContentsUnresolved: { [fullPath]: true }
+    });
+
+    const filesystem = new MutableVolume(
+      new FileAccess(
+        Volume.fromJSON({
+          [fullPath]: String(
+            await mdxSerialiser.serialise(fullPath, { ...pages[0], title: 'Card' })
+          )
+        })
+      ),
+      'docs'
+    );
+    const run = TableOfContentsPlugin.$beforeSend!;
+    await run(
+      filesystem,
+      {
+        config: { data: setData.mock.calls[0][0] },
+        serialiser: mdxSerialiser
+      } as unknown as Parameters<typeof run>[1],
+      options
+    );
+    const page = await mdxSerialiser.deserialise(
+      fullPath,
+      await filesystem.promises.readFile(fullPath)
+    );
+    expect(page.tableOfContents[0].id).toBe('card-1');
+  });
+
+  test('THEN invalid MDX elsewhere in a page does not prevent collecting its headings', async () => {
+    const { pages } = await afterSource([
+      { fullPath: '/docs/card.mdx', content: '## Usage\n\n<Unclosed>' }
+    ]);
+    expect(pages[0].tableOfContents).toEqual([{ depth: 2, level: 0, id: 'usage', text: 'Usage' }]);
+  });
+
   test('WHEN references are resolved THEN $beforeSend rebuilds tables of contents that had unresolved tokens', async () => {
     const filesystem = new MutableVolume(
       new FileAccess(
@@ -110,6 +157,22 @@ describe('GIVEN the TableOfContentsPlugin', () => {
       text: 'A {meta.flag}{meta.nothing}',
       slugText: 'A ',
       resolved: false
+    });
+  });
+
+  test('THEN literal meta syntax and non-meta expressions keep the rendered heading ids', () => {
+    const page = { title: 'Card' };
+    for (const heading of ['Using `{meta.title}`', String.raw`Using \{meta.title\}`]) {
+      expect(resolveHeading(page, heading)).toEqual({
+        text: 'Using {meta.title}',
+        slugText: 'Using {meta.title}',
+        resolved: true
+      });
+    }
+    expect(resolveHeading(page, 'API {1 + 1}')).toEqual({
+      text: 'API {1 + 1}',
+      slugText: 'API ',
+      resolved: true
     });
   });
 });

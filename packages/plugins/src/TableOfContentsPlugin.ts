@@ -1,7 +1,7 @@
 import type { Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import remarkParse from 'remark-parse';
-import { unified, Plugin } from 'unified';
-import remarkStringify from 'remark-stringify';
+import remarkMdx from 'remark-mdx';
+import { unified } from 'unified';
 import { visit } from 'unist-util-visit';
 import { toString } from 'mdast-util-to-string';
 import type { Heading as MarkdownHeading, Root } from 'mdast';
@@ -53,18 +53,25 @@ export const getHeadings = (root: Root) => {
   return headingList;
 };
 
-const remarkHeadings: Plugin<[], Root> = () => (tree, vfile) => {
-  vfile.data.headings = getHeadings(tree);
-};
-
-const processor = unified().use(remarkParse).use(remarkStringify).use(remarkHeadings);
+const processor = unified().use(remarkParse).use(remarkMdx);
+const markdownProcessor = unified().use(remarkParse);
 
 async function buildTableOfContents(
   page: TableOfContentsPluginPage,
   { minRank, maxRank }: TableOfContentsPluginOptions
 ) {
-  const vfile = await processor.process(page.content);
-  const headings = vfile.data.headings as Heading[];
+  let root: Root;
+  try {
+    root = processor.parse(page.content);
+  } catch {
+    // Invalid MDX is reported by the renderer. Keep collecting headings
+    // rather than making one invalid page stop the source's TOC plugin.
+    root = markdownProcessor.parse(page.content);
+  }
+  const headings: MarkdownHeading[] = [];
+  visit(root, 'heading', heading => {
+    headings.push(heading);
+  });
   // Slug every heading, not only the ones listed, as `rehype-slug` does
   // when it gives the rendered headings their ids. Repeated headings are
   // then numbered the same way in both.
@@ -72,10 +79,12 @@ async function buildTableOfContents(
   const items: TOCItem[] = [];
   let resolved = true;
   for (const heading of headings) {
-    const parsed = resolveHeading(page as unknown as PageValues, heading.value);
+    const parsed = resolveHeading(page as unknown as PageValues, heading);
     const id = slug(parsed.slugText);
-    if (heading.depth < minRank || heading.depth > maxRank) continue;
+    // Even an omitted heading can change the duplicate suffixes of later
+    // listed headings once a reference resolves.
     resolved &&= parsed.resolved;
+    if (heading.depth < minRank || heading.depth > maxRank) continue;
     items.push({
       depth: heading.depth,
       level: heading.depth - minRank,

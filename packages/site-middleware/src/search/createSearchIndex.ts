@@ -10,7 +10,15 @@ import type {
   SearchResult
 } from './types.js';
 
-const FIELDS = ['title', 'compactTitle', 'keywords', 'headings', 'description', 'text'] as const;
+const FIELDS = [
+  'title',
+  'compactTitle',
+  'keywords',
+  'headings',
+  'description',
+  'text',
+  'otherFields'
+] as const;
 type Field = typeof FIELDS[number];
 
 // Lower is better: where in a record a query word matched.
@@ -20,7 +28,8 @@ const FIELD_RANK: Record<Field, number> = {
   keywords: 1,
   headings: 2,
   description: 3,
-  text: 4
+  text: 4,
+  otherFields: 4
 };
 // A word matched only as the start of a longer word counts one level lower, so
 // "select" ties the Selectable title with the keyword Select.
@@ -34,7 +43,8 @@ const BOOST: Record<Field, number> = {
   keywords: 4,
   headings: 3,
   description: 1.5,
-  text: 1
+  text: 1,
+  otherFields: 1
 };
 const MAX_CANDIDATES = 2000;
 
@@ -56,6 +66,13 @@ const comparable = (terms: string[]) => {
 };
 const joinField = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value.join(' ') : value ?? '';
+// Description and keywords retain their dedicated ranking. Every other
+// configured frontmatter field is searchable with the same weight as prose.
+const joinOtherFields = (record: SearchRecord) =>
+  Object.entries(record.fields ?? {})
+    .filter(([name]) => name !== 'description' && name !== 'keywords')
+    .map(([, value]) => joinField(value))
+    .join(' ');
 
 // Like Algolia: no typos in short words, one from 4 letters, two from 8.
 const allowedEdits = (word: string) => (word.length >= 8 ? 2 : word.length >= 4 ? 1 : 0);
@@ -238,7 +255,8 @@ const defaultPageRank = (record: SearchRecord) => (/\/index$/.test(record.route)
  * 3. the current namespace (see `SearchOptions.namespace`);
  * 4. the number of typos;
  * 5. the number of words matched by a synonym;
- * 6. where the words matched: title, then keywords, headings, description and text,
+ * 6. where the words matched: title, then keywords, headings, description, then
+ *    text and any other configured frontmatter fields,
  *    with a match on only the start of a word counting one place lower;
  * 7. the section heading matching the whole query;
  * 8. `pageRank`;
@@ -276,7 +294,8 @@ export function createSearchIndex(
       keywords: joinField(record.fields?.keywords),
       headings: record.headings.join(' '),
       description: joinField(record.fields?.description),
-      text: record.text
+      text: record.text,
+      otherFields: joinOtherFields(record)
     }))
   );
 
@@ -288,7 +307,10 @@ export function createSearchIndex(
     title: record.title,
     headings: record.headings,
     namespace: record.namespace,
-    snippet: snippet(record.text || joinField(record.fields?.description), terms),
+    snippet: snippet(
+      record.text || joinField(record.fields?.description) || joinOtherFields(record),
+      terms
+    ),
     terms
   });
 

@@ -198,6 +198,23 @@ describe('createSearchIndex', () => {
     expect(hrefs('picklist')).toEqual(['/salt/components/dropdown/index']);
   });
 
+  test('searches custom frontmatter fields after keywords and descriptions', () => {
+    const customRecords = [
+      { ...page('/docs/custom', 'Custom')[0], fields: { summary: 'Needle', tags: ['A11y'] } },
+      { ...page('/docs/description', 'Description')[0], fields: { description: 'Needle' } },
+      { ...page('/docs/keywords', 'Keywords')[0], fields: { keywords: ['Needle'] } }
+    ];
+    const customIndex = createSearchIndex(customRecords);
+    expect(customIndex.search('needle').map(result => result.href)).toEqual([
+      '/docs/keywords',
+      '/docs/description',
+      '/docs/custom'
+    ]);
+    expect(customIndex.search('a11y')).toEqual([
+      expect.objectContaining({ href: '/docs/custom', snippet: 'Needle A11y' })
+    ]);
+  });
+
   test('ranks a whole word in keywords with the start of a word in a title', () => {
     expect(hrefs('select')).toEqual([
       '/salt/components/dropdown/index',

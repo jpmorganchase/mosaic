@@ -4,6 +4,7 @@ import FileAccess from '../../../core/src/filesystems/FileAccess';
 import MutableVolume from '../../../core/src/filesystems/MutableVolume';
 import mdxSerialiser from '../../../serialisers/src/mdx';
 import { serializeMdxForClient } from '../../../site-middleware/src/serializeMdxForClient';
+import { createSearchIndex } from '../../../site-middleware/src/search/index';
 import SearchIndexPlugin, { SEARCH_RECORDS_FILE } from '../SearchIndexPlugin';
 import TableOfContentsPlugin from '../TableOfContentsPlugin';
 import { buildSearchRecords } from '../utils/searchRecords';
@@ -121,6 +122,60 @@ describe('GIVEN buildSearchRecords', () => {
     ).toEqual(anchors);
   });
 
+  test('THEN literal syntax, expressions and duplicate headings agree with the rendered ids', async () => {
+    const mixedPage = {
+      ...page,
+      fullPath: '/docs/button/index.mdx',
+      content: [
+        '# Using `{meta.title}`',
+        '## Using `{meta.title}`',
+        String.raw`## Using \{meta.title\}`,
+        '## Using <span>{meta.title}</span>',
+        '## API {1 + 1}',
+        '## API {2 + 2}',
+        '#### API {3 + 3}',
+        '## API {4 + 4}'
+      ].join('\n\n')
+    };
+    const anchors = buildSearchRecords(mixedPage)!.flatMap(record => record.anchor ?? []);
+    expect(anchors).toEqual([
+      'using-metatitle-1',
+      'using-metatitle-2',
+      'using-button',
+      'api-',
+      'api--1',
+      'api--3'
+    ]);
+
+    const compiled = await serializeMdxForClient(mixedPage.content, {
+      scope: { meta: mixedPage },
+      highlight: false
+    });
+    if (!('compiledSource' in compiled)) throw new Error('compile failed');
+    const renderedIds = [...compiled.compiledSource.matchAll(/id: "([^"]*)"/g)].map(([, id]) => id);
+    expect(renderedIds).toEqual([
+      'using-metatitle',
+      ...anchors.slice(0, -1),
+      'api--2',
+      anchors.at(-1)
+    ]);
+
+    const run = TableOfContentsPlugin.$afterSource!;
+    await run(
+      [mixedPage],
+      { config: { setData: vi.fn() } } as unknown as Parameters<typeof run>[1],
+      { minRank: 2, maxRank: 3 }
+    );
+    const toc = (mixedPage as { tableOfContents?: { id: string; text: string }[] })
+      .tableOfContents!;
+    expect(toc.map(item => item.id)).toEqual(anchors);
+    expect(toc.slice(0, 3).map(item => item.text)).toEqual([
+      'Using {meta.title}',
+      'Using {meta.title}',
+      'Using Button'
+    ]);
+  });
+
   test('THEN it reads configured fields, uses the first path that is set and keeps only text', () => {
     const [intro] = buildSearchRecords(page, {
       fields: { summary: ['missing', 'data.description'], tags: 'data.tags', nothing: 'data.none' }
@@ -158,7 +213,8 @@ describe('GIVEN the SearchIndexPlugin', () => {
   const files = {
     '/docs/button/index.mdx': `---\n${JSON.stringify({
       route: '/docs/button/index',
-      title: 'Button'
+      title: 'Button',
+      data: { summary: 'Accessible interactions', tags: ['a11y'] }
     })}\n---\n## Usage\n\nUse it.\n`,
     '/docs/hidden.mdx': `---\n${JSON.stringify({
       route: '/docs/hidden',
@@ -216,5 +272,22 @@ describe('GIVEN the SearchIndexPlugin', () => {
   test('WHEN records are turned off THEN it does not write search-records.json', async () => {
     const writeFile = await run({ records: false });
     expect(writeFile.mock.calls.map(([name]) => name)).not.toContain(SEARCH_RECORDS_FILE);
+  });
+
+  test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {
+    const writeFile = await run({
+      records: { fields: { summary: 'data.summary', tags: 'data.tags' } }
+    });
+    const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
+    const file = JSON.parse(json);
+    const index = createSearchIndex(file.records);
+    for (const query of ['interactions', 'a11y']) {
+      expect(index.search(query)).toEqual([
+        expect.objectContaining({
+          href: '/docs/button/index',
+          snippet: 'Accessible interactions a11y'
+        })
+      ]);
+    }
   });
 });

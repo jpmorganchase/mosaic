@@ -47,7 +47,7 @@ export interface SearchHit {
   /** Section headings from the outermost in. Empty for a page's introduction. */
   headings: string[];
   namespace: string;
-  /** A short part of the text around the first match, or the page description. */
+  /** A short part of the text, or the description or other configured frontmatter fields. */
   snippet: string;
   /** The words in the record that matched, for `highlight`. */
   terms: string[];

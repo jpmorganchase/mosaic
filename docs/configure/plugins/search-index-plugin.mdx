@@ -62,7 +62,7 @@ Any [options](https://www.fusejs.io/api/options.html) that need to be passed to 
 
 - `headings` lists the section's headings from the outermost in. The introduction record has none.
 - `text` is the section's prose. Code blocks, JSX attributes and MDX expressions are left out, except `{meta.*}` expressions, which are replaced with their values.
-- `fields` holds the frontmatter set with the `records.fields` option, as plain text without markdown. Only the introduction record has it, because it describes the whole page.
+- `fields` holds the frontmatter set with the `records.fields` option, as plain text without markdown. Only the introduction record has it, because it describes the whole page. All configured fields are searchable: `description` and `keywords` have their dedicated ranking, and other field names rank alongside body text.
 
 To leave a page out of the records, set `search: { exclude: true }` in its frontmatter.
 
@@ -89,7 +89,7 @@ Results are ranked like Algolia's tie-breaking criteria. Each one only decides b
 3. The current namespace, set with the `namespace` search option.
 4. The number of typos. Words of 4 letters or more can have one typo, and words of 8 or more two.
 5. The number of words matched by a synonym.
-6. Where the words matched: the title, then keywords, headings, description and text. A match on only the start of a word counts one place lower, so for `select` a title starting "Selectable" ties with the keyword "Select".
+6. Where the words matched: the title, then keywords, headings, description, then text and any other configured frontmatter fields. A match on only the start of a word counts one place lower, so for `select` a title starting "Selectable" ties with the keyword "Select".
 7. The section heading matching the whole query.
 8. The `pageRank` option.
 9. The page introduction before its sections, and outer sections before inner ones.

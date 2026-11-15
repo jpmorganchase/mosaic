@@ -77,22 +77,6 @@ function readFields(page: PageValues, fields: Record<string, string | string[]>)
 }
 
 /**
- * The heading as written in the source, with `{meta.*}` expressions put
- * back as tokens so `resolveHeading` resolves them exactly as the table of
- * contents does.
- */
-function headingSource(heading: Heading) {
-  let source = '';
-  visit(heading, (node: Node) => {
-    if (node.type === 'text' || node.type === 'inlineCode') source += (node as Literal).value;
-    else if (node.type === 'mdxTextExpression') source += `{${(node as Literal).value}}`;
-    else if (node.type === 'image') return SKIP;
-    return undefined;
-  });
-  return source;
-}
-
-/**
  * Splits a page into search records. Returns `undefined` when the page
  * isn't valid MDX; the caller decides whether to log it.
  */
@@ -129,7 +113,7 @@ export function buildSearchRecords(
     switch (node.type) {
       case 'heading': {
         const heading = node as Heading;
-        const { text, slugText } = resolveHeading(page, headingSource(heading));
+        const { text, slugText } = resolveHeading(page, heading);
         // Every heading takes a slug, in order, so ids match `rehype-slug`.
         const anchor = slug(slugText);
         if (heading.depth === 1) return SKIP;
