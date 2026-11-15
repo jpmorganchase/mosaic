@@ -1299,7 +1299,7 @@ other static host.
 - Every page enumerated by the snapshot's `sitemap.xml` (typically every
   doc in your sources).
 - `robots.txt` and `sitemap.xml`.
-- All static assets from `public/`, including the snapshot's `search-data.json` and `search-records.json`.
+- All static assets from `public/`, including the snapshot's `search-records.json`.
 - Stubbed `app/api/*` route handlers that return HTTP 501. These exist
   only because Next.js refuses to emit a static export when the route
   files are present but cannot be statically pre-rendered; the stubs are
@@ -1380,6 +1380,8 @@ url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/index"
 Mosaic Plugins are [lifecycle-based](/mosaic/configure/plugins/lifecycle/index) hooks that are called on *every* source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
 
 Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features and functionality as plugins.
+
+Sites can add their own plugins too. See [Write a plugin](/mosaic/configure/plugins/write-a-plugin).
 
 ## Installation
 
@@ -2105,7 +2107,7 @@ url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/public-
 
 The `PublicAssetsPlugin` is responsible for finding "assets" in the Mosaic filesystem and copying them to another directory.
 
-Typical use-case is for copying `sitemap.xml` and `search-data.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
+Typical use-case is for copying `sitemap.xml` and `search-records.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
 
 ## Priority
 
@@ -2129,7 +2131,7 @@ plugins: [
     priority: -1,
     options: {
       outputDir: './public',
-      assets: ['sitemap.xml', 'search-data.json']
+      assets: ['sitemap.xml', 'search-records.json']
     }
   }
   // other plugins
@@ -2193,39 +2195,7 @@ url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/search-
 
 # SearchIndexPlugin
 
-The `SearchIndexPlugin` is responsible for generating the search index and configuration information for [Fuse.js](https://www.fusejs.io/) which is the matching engine powering the client-side search functionality of Mosaic sites.
-
-It outputs 4 files:
-
-- Full Search Index - `search-data.json`
-- Condensed Search Index - `search-data-condensed.json`
-- Search Configuration - `search-config.json`
-- Search Records - `search-records.json`, for section-level search (see [Search records](#search-records))
-
-### Full Search Index
-
-On a Mosaic site, the full index is fetched after a page has loaded, thus removing the chance of a huge index slowing down first-load.
-
-Practically, the full index should load in the background before a user searches for something, but should a search be initiated before that (e.g., slow-internet) then the condensed version of the search index is available.
-
-### Condensed Search Data
-
-Search Index plugin creates a "condensed" version of the search index that only includes the `title` and `route` for each page. This is the "Minimum Viable Index" to provide somewhat useable search results client-side while the main search index is loaded in the background.
-
-### Search Configuration
-
-Any [options](https://www.fusejs.io/api/options.html) that need to be passed to Fuse.js.
-
-### Search relevancy configuration
-
-| Property         | Description                                             |
-| ---------------- | ------------------------------------------------------- |
-| includeScore     | <https://www.fusejs.io/api/options.html#includescore>   |
-| includeMatches   | <https://www.fusejs.io/api/options.html#includematches> |
-| maxPatternLength | TODO                                                    |
-| ignoreLocation   | <https://www.fusejs.io/api/options.html#ignorelocation> |
-| threshold        | <https://www.fusejs.io/api/options.html#threshold>      |
-| keys             | <https://www.fusejs.io/api/options.html#keys>           |
+The `SearchIndexPlugin` generates `search-records.json` for section-level search. The same records and ranking engine power the server API and browser search on static sites.
 
 ### Search records
 
@@ -2332,19 +2302,43 @@ The handler keeps the index in memory rather than in Next's data cache, which do
 
 Static exports have no server, so they search in the browser instead: the reference site copies `search-records.json` to `public/` when it builds from a snapshot.
 
+## Built-in search UI
+
+The default header uses the search API. It fetches results after the reader types, displays matching sections, and links directly to their headings. It does not load a search index into the page store.
+
+Wrap a custom site's client provider tree with `SearchProvider` from `@jpmorganchase/mosaic-site-components/SearchProvider`:
+
+```tsx
+<SearchProvider mode="server" endpoint="/api/search">
+  {children}
+</SearchProvider>
+```
+
+For static exports, use `mode="browser"` and copy `search-records.json` into `public/`. The browser downloads the records and search engine on the first nonempty query and reuses the index across queries and navigation:
+
+```tsx
+<SearchProvider mode="browser" recordsUrl="/search-records.json">
+  {children}
+</SearchProvider>
+```
+
+The reference site selects the mode automatically from `MOSAIC_OUTPUT`. Custom sites can set `namespace` to prefer a namespace, or `enabled={false}` to hide search when records are disabled. Server mode is the default without a provider. Endpoint and records URLs can be configured for a site's base path.
+
+### Migrating the previous search
+
+The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.json` outputs and Fuse-based UI are removed. Regenerate existing snapshots with the updated CLI. Remove legacy public-asset copies and `maxLineLength`, `maxLineCount`, `keys`, and `relevancy` from plugin options; use `records.fields`, `records.maxTextLength`, and the search engine options documented above instead. Ranking uses the new engine's defined order rather than Fuse weights.
+
+Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
 
 ## Options
 
-| Property      | Description                                                                     |
-| ------------- | ------------------------------------------------------------------------------- |
-| maxLineLength | TODO                                                                            |
-| maxLineCount  | TODO                                                                            |
-| keys          | <https://www.fusejs.io/api/options.html#keys>                                   |
-| relevancy     | [search relevancy](#search-relevancy-configuration)                             |
-| records       | [Record options](#record-options), or `false` to turn `search-records.json` off |
+| Property | Description                                                                       |
+| -------- | --------------------------------------------------------------------------------- |
+| records  | [Record options](#record-options), or `false` to disable search-record generation |
 
 ### Record options
 
@@ -2364,7 +2358,7 @@ plugins: [
     modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
     previewDisabled: true,
     priority: -1.5,
-    options: { maxLineLength: 240, maxLineCount: 240 }
+    options: {}
   }
   // other plugins
 ];
@@ -2676,6 +2670,119 @@ plugins: [
 ```
 
 ---
+title: "Write a plugin"
+url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/write-a-plugin"
+---
+
+> For an index of all documentation, see [https://mosaic-mosaic-dev-team.vercel.app/llms.txt](https://mosaic-mosaic-dev-team.vercel.app/llms.txt).
+
+# Write a plugin
+
+A plugin changes pages as Mosaic loads them, from any source. Use one to add data to pages, fill in frontmatter, or write files for the whole site, such as an index. Mosaic's own [default plugins](/mosaic/configure/plugins/index#default-plugins) are written the same way.
+
+A plugin can't change how pages look. Layouts and components belong to your site's code, and each page picks its layout with `layout` in its frontmatter.
+
+## Create the plugin
+
+A plugin is a module whose default export holds one or more [lifecycle methods](/mosaic/configure/plugins/lifecycle/index). This one gives every page under a route the same layout, unless the page sets its own:
+
+```js
+// mosaic/DefaultLayoutPlugin.mjs
+
+/**
+ * Gives every page under `options.routePrefix` the layout `options.layout`,
+ * unless the page sets its own.
+ */
+const DefaultLayoutPlugin = {
+  async $afterSource(pages, _helpers, options) {
+    const { routePrefix, layout } = options;
+    for (const page of pages) {
+      if (!page.layout && page.route.startsWith(routePrefix)) {
+        page.layout = layout;
+      }
+    }
+    return pages;
+  }
+};
+
+export default DefaultLayoutPlugin;
+```
+
+Each lifecycle method gets its input (here, the source's pages), helpers such as the `serialiser` and `namespace`, and the `options` from the plugin's config. A page's frontmatter fields are properties of the page, and anything the plugin sets on a page is written to its frontmatter.
+
+## Add it to your config
+
+Plugins are loaded with `require.resolve`, from inside Mosaic. Give the plugin's absolute path, or the name of an installed package:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  plugins: [
+    ...fsConfig.plugins,
+    {
+      modulePath: require.resolve('./mosaic/DefaultLayoutPlugin.mjs'),
+      options: { routePrefix: '/my-product/api-reference/', layout: 'DetailTechnical' }
+    }
+  ]
+};
+```
+
+A plugin definition takes the same properties as a built-in plugin, such as `priority` and `previewDisabled`. See [Configuration](/mosaic/configure/plugins/index#configuration).
+
+## Choose a lifecycle method
+
+Choose the earliest method that has what your plugin needs:
+
+| Method                                                                                                | Runs                                                     | Use it to                                                                                                                         |
+| ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [`$afterSource`](/mosaic/configure/plugins/lifecycle/after-source)                                    | In the source's worker, each time the source emits pages | Read or change pages one at a time.                                                                                               |
+| [`$beforeSend`](/mosaic/configure/plugins/lifecycle/before-send)                                      | In the source's worker                                   | Read or write files across one source, and pass data to later methods with `config.setData()`.                                    |
+| [`afterUpdate`](/mosaic/configure/plugins/lifecycle/after-update)                                     | In the main process                                      | Read pages from every source with `globalFilesystem`, or write files for the whole site to `sharedFilesystem`, such as a sitemap. |
+| [`shouldClearCache`](/mosaic/configure/plugins/lifecycle/should-clear-cache)                          | In the main process                                      | Say whether another source's change affects this source's pages.                                                                  |
+| [`shouldUpdateNamespaceSources`](/mosaic/configure/plugins/lifecycle/should-update-namespace-sources) | In the main process                                      | Ask the other sources in a namespace to run `afterNamespaceSourceUpdate`.                                                         |
+
+Methods starting with `$` run in each source's worker thread, so they can take time without holding up the server. The others run in the main process, so keep them fast.
+
+Plugins run each lifecycle method in order of `priority`, highest first. `$ref`s are not resolved yet in `$afterSource`. The [$RefPlugin](/mosaic/configure/plugins/ref-plugin) resolves them in `$beforeSend`, at priority `-1`, so a plugin that reads values from `$ref`s should use `$beforeSend` with a lower priority, such as `-1.5`.
+
+## Report errors
+
+A failing plugin doesn't stop Mosaic: the error is recorded and the other plugins run. See [Plugin errors](/mosaic/configure/plugins/index#plugin-errors). To name the page that caused an error, throw a `PluginError` with its path:
+
+```js
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
+
+throw new PluginError(`Unknown layout "${layout}"`, page.fullPath);
+```
+
+In `$afterSource`, catch errors for each page and throw once after the loop, so one bad page doesn't stop the plugin for the pages after it.
+
+## Test it
+
+Lifecycle methods are plain functions, so test them by calling them:
+
+```js
+import DefaultLayoutPlugin from '../mosaic/DefaultLayoutPlugin.mjs';
+
+test('gives pages under the route the layout', async () => {
+  const pages = await DefaultLayoutPlugin.$afterSource(
+    [{ fullPath: '/docs/a.mdx', route: '/docs/a' }],
+    {},
+    { routePrefix: '/docs/', layout: 'DetailTechnical' }
+  );
+  expect(pages[0].layout).toBe('DetailTechnical');
+});
+```
+
+Then run `mosaic build` with your config and check the pages it writes.
+
+---
 title: "Sources"
 url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/index"
 ---
@@ -2752,6 +2859,8 @@ Out of the box, Mosaic provides 3 source "types":
 - [HTTP Source](/mosaic/configure/sources/http-source)
 
 Sources must expose an observable interface so it is possible to compose sources together e.g. the Git Repo source uses the Local Folder source internally to watch the cloned folder for changes.
+
+To bring in content from somewhere else, [write a source](/mosaic/configure/sources/write-a-source).
 
 ## Watching for Updates
 
@@ -3415,6 +3524,119 @@ sources: [
 ```
 
 ---
+title: "Write a source"
+url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/write-a-source"
+---
+
+> For an index of all documentation, see [https://mosaic-mosaic-dev-team.vercel.app/llms.txt](https://mosaic-mosaic-dev-team.vercel.app/llms.txt).
+
+# Write a source
+
+A source brings pages into Mosaic. Before writing one, check whether a built-in source covers it:
+
+- Files in a folder or a Git repository: use the [Local Folder](/mosaic/configure/sources/local-folder-source) or [Git Repo](/mosaic/configure/sources/git-repo-source) source.
+- JSON from HTTP endpoints: use the [HTTP Source](/mosaic/configure/sources/http-source) with a transformer module, `transformResponseToPagesModulePath`. The transformer is a function that receives each response and returns pages, so you don't need a source of your own.
+
+Write a source when the content needs code to fetch, such as a system with its own client or authentication.
+
+## Create the source
+
+A source is a module whose default export has a `create` function. `create` receives the source's `options` from your config and returns an [RxJS](https://rxjs.dev/) observable of pages. This one emits a glossary page for each term from another system, then checks for changes on the source's [schedule](/mosaic/configure/sources/schedules):
+
+```js
+// mosaic/GlossarySource.mjs
+import { from, switchMap, timer } from 'rxjs';
+
+// Replace with a call to your own system.
+async function fetchTerms() {
+  return [
+    { name: 'Namespace', definition: 'The first segment of a page URL.' },
+    { name: 'Snapshot', definition: 'Content written to disk by `mosaic build`.' }
+  ];
+}
+
+async function loadPages({ prefixDir }) {
+  const terms = await fetchTerms();
+  return terms.map(term => {
+    const route = `/${prefixDir}/${term.name.toLowerCase().replace(/\s+/g, '-')}`;
+    return {
+      fullPath: `${route}.mdx`,
+      route,
+      title: term.name,
+      description: term.definition,
+      content: `# ${term.name}\n\n${term.definition}\n`
+    };
+  });
+}
+
+/** Emits every glossary page now, then again every `checkIntervalMins`. */
+const GlossarySource = {
+  create(options, { schedule }) {
+    return timer(schedule.initialDelayMs, schedule.checkIntervalMins * 60_000).pipe(
+      switchMap(() => from(loadPages(options)))
+    );
+  }
+};
+
+export default GlossarySource;
+```
+
+Each page needs:
+
+- `fullPath`: the page's file path, ending in one of the config's `pageExtensions`, such as `.mdx`. Mosaic leaves out pages without one, with a warning.
+- `route`: the page's URL. Defaults to `fullPath`. Mosaic lowercases both.
+- `content`: the page body, without frontmatter.
+
+Any other property, such as `title`, `description` or `layout`, becomes the page's frontmatter.
+
+**Emit every page each time.** Each emission replaces all of the source's pages, so a page that's left out of an emission is removed.
+
+`create`'s second argument also has the config's `pageExtensions` and a `serialiser` for those extensions, for sources that read files with frontmatter.
+
+## Add it to your config
+
+Sources are loaded with `import()`, from inside Mosaic. Give the source's file URL, or the name of an installed package:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  sources: [
+    {
+      modulePath: pathToFileURL(require.resolve('./mosaic/GlossarySource.mjs')).href,
+      namespace: 'my-product',
+      options: { prefixDir: 'my-product/glossary' }
+    }
+  ]
+};
+```
+
+Each source runs in its own worker thread, so its `options` must be values that can be [copied between threads](/mosaic/configure/sources/index#gotchas): no functions or class instances. See [Source Definitions](/mosaic/configure/sources/index#source-definitions) for the other properties, such as `schedule`.
+
+## Optional exports
+
+Alongside `create`, a source can export:
+
+- `refresh(options)`: check for changes now rather than at the next scheduled check, for example when a webhook arrives. Emit any changed pages on the observable `create` returned.
+- `capabilities`: what the source supports. `{ writable: true }` lets editors change its pages in the content editor. Only set it when the source has a workflow that saves the changes, as the Git Repo source does with pull requests.
+
+## Test it
+
+Run `mosaic build` with your config, and check the pages it writes:
+
+```bash
+mosaic build --config mosaic.config.mjs --out snapshots --name test
+```
+
+To change pages from every source, rather than to add pages, [write a plugin](/mosaic/configure/plugins/write-a-plugin) instead.
+
+---
 title: "Theming Your Site"
 url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/index"
 ---
@@ -4017,13 +4239,12 @@ Mount `<SessionProvider>` without a server-resolved session. When auth is enable
 `getServerSideProps` and the middleware chain (`createMiddlewareRunner`, `middlewarePresets`) are gone. Fetch your data in `src/app/[namespace]/[...route]/page.tsx` instead:
 
 1. Write an async function that loads the data. Wrap it in React's `cache()` if `generateMetadata` also needs it, so it runs once per request.
-2. Call it inside the existing `Promise.all` next to `resolveContent`. Shared search data is loaded by the namespace layout.
+2. Call it inside the existing `Promise.all` next to `resolveContent`. Search is loaded independently by the header through the records API or browser index.
 3. Pass the result to your component as a prop, or add it to `storeProps` and read it with `useStore` from `@jpmorganchase/mosaic-store`.
 
 ```tsx
-const [resolved, search, sp, releaseNotes] = await Promise.all([
+const [resolved, sp, releaseNotes] = await Promise.all([
   resolveContent(pathname, mode, contentUrl),
-  getSearchData(mode, contentUrl),
   shouldPrerenderSnapshot ? Promise.resolve({}) : searchParams,
   getReleaseNotes(pathname)
 ]);
@@ -4056,15 +4277,17 @@ To serve your docs as Markdown for agents (`/llms.txt` and `/<page>.md`), copy `
 
 ## 3. Update the package APIs you call
 
-| Package                        | Removed                                                                                                                                                                  | Use instead                                                                                                                                                                                                                                   |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mosaic-site-middleware`       | `withMosaicMode`, `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`, `middlewarePresets`, `createMiddlewareRunner`, `fromGetServerSidePropsContext` | `resolveMosaicMode`, `resolveContent`, `canonicalRoute`, `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getSearchData`, `getTagSuggestions`, `loadSitemap` and `serializeMdxForClient`. Use `auth()` from `src/auth.ts` for the session. |
-| `mosaic-site-components`       | `Body`, `Document`                                                                                                                                                       | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`                                                                                                                                             |
-| `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                                                                |
-| `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                                                           |
-| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                                                           |
+| Package                        | Removed                                                                                                                                                                  | Use instead                                                                                                                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mosaic-site-middleware`       | `withMosaicMode`, `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`, `middlewarePresets`, `createMiddlewareRunner`, `fromGetServerSidePropsContext` | `resolveMosaicMode`, `resolveContent`, `canonicalRoute`, `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getTagSuggestions`, `loadSitemap` and `serializeMdxForClient`. Use `auth()` from `src/auth.ts` for the session. |
+| `mosaic-site-components`       | `Body`, `Document`, the `OpenAPI` MDX component                                                                                                                          | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`. For `OpenAPI`, see below.                                                                                                 |
+| `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                                               |
+| `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                                          |
+| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                                          |
 
 `mosaic-schemas` no longer exports `snapshotS3EnvSchema` or `S3LoaderProcessEnv`, and `MosaicMode` in `mosaic-types` is now `'active' | 'snapshot-file'`.
+
+`@jpmorganchase/mosaic-open-api-component` is no longer published, and `<OpenAPI>` is no longer a default MDX component. Pages that use it fail to render, so link to your API's hosted Swagger UI instead, or add your own component to `hostComponents`. Remove the package from your dependencies and from `transpilePackages` in `next.config.js`.
 
 The loaders are cached and tagged with `MOSAIC_CONTENT_CACHE_TAG`. Import the tag from `@jpmorganchase/mosaic-site-middleware/cache-tags` if you revalidate it yourself.
 
@@ -4192,6 +4415,10 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 9. Set `MOSAIC_MODE=active` if your site reads from a running CLI, or `MOSAIC_MODE=snapshot-file` if it used `snapshot-s3`.
 10. Set `NEXT_PUBLIC_SITE_URL` when you build the site.
 11. Run `yarn build && yarn start`, open a few pages, sign in, then edit and save a page from a Git source.
+
+## Search records migration
+
+The default header now uses section-level search. Remove `getSearchData`, `useSearchIndex`, and the `searchIndex`/`searchConfig` store props from custom integrations. Regenerate snapshots: the three legacy search files are no longer emitted. Server sites use `/api/search`; static exports use a lazy browser index from `search-records.json`. See [search configuration](/mosaic/configure/plugins/search-index-plugin#built-in-search-ui) for provider and plugin migration details.
 
 ---
 title: "Publish a site to AWS"

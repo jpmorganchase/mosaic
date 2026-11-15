@@ -8,7 +8,7 @@ sidebar:
 data:
   mode: static-export
   link: /mosaic/configure/modes/static-export
-lastModified: 1794741014732.181
+lastModified: 1794773046198.68
 fullPath: /mosaic/configure/modes/static-export.mdx
 route: /mosaic/configure/modes/static-export
 breadcrumbs:
@@ -20,9 +20,9 @@ breadcrumbs:
     id: /mosaic/configure/modes/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.705
-  time: 162300
-  words: 541
+  minutes: 2.7
+  time: 162000
+  words: 540
 tableOfContents:
   - depth: 2
     level: 0
@@ -201,6 +201,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -444,6 +451,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -470,7 +484,7 @@ other static host.
 * Every page enumerated by the snapshot's `sitemap.xml` (typically every
   doc in your sources).
 * `robots.txt` and `sitemap.xml`.
-* All static assets from `public/`, including the snapshot's `search-data.json` and `search-records.json`.
+* All static assets from `public/`, including the snapshot's `search-records.json`.
 * Stubbed `app/api/*` route handlers that return HTTP 501. These exist
   only because Next.js refuses to emit a static export when the route
   files are present but cannot be statically pre-rendered; the stubs are
