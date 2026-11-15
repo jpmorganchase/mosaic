@@ -25,9 +25,9 @@
  *         sign-in, the content editor and cache revalidation need one of
  *         the server targets above.
  */
-const { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } = require('node:fs');
-const { dirname, resolve, sep } = require('node:path');
+const { resolve } = require('node:path');
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');
+const { syncSnapshotAssets } = require('./scripts/sync-snapshot-assets.cjs');
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
@@ -179,33 +179,16 @@ const standaloneConfig = {
 
 module.exports = phase => {
   const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
-  if (phase === PHASE_PRODUCTION_BUILD && mosaicMode === 'snapshot-file' && snapshotDir) {
-    // A clean checkout has the search and llms.txt files in the snapshot.
-    // Expose them as static files: search in the browser and static exports
-    // rely on them, and agents' requests then don't need a function.
-    const publicDir = resolve(__dirname, 'public');
-    for (const file of ['search-data.json', 'search-records.json', 'llms.txt', 'llms-full.txt']) {
-      const snapshotFile = resolve(__dirname, snapshotDir, file);
-      const publicFile = resolve(publicDir, file);
-      if (snapshotFile !== publicFile && existsSync(snapshotFile)) {
-        copyFileSync(snapshotFile, publicFile);
-      }
-    }
-    // Each page's Markdown, at the page's URL plus `.md`. An index page is
-    // also at its folder's URL plus `.md`, as the route handler serves it.
-    const markdownPages = resolve(__dirname, snapshotDir, 'markdown-pages.json');
-    if (existsSync(markdownPages)) {
-      const { pages } = JSON.parse(readFileSync(markdownPages, 'utf8'));
-      for (const [route, markdown] of Object.entries(pages)) {
-        const folder = route.endsWith('/index') ? route.slice(0, -'/index'.length) : undefined;
-        for (const url of folder ? [route, folder] : [route]) {
-          const publicFile = resolve(publicDir, `.${url}.md`);
-          if (!publicFile.startsWith(publicDir + sep) || (url === folder && pages[url])) continue;
-          mkdirSync(dirname(publicFile), { recursive: true });
-          writeFileSync(publicFile, markdown);
-        }
-      }
-    }
+  if (phase === PHASE_PRODUCTION_BUILD) {
+    // Expose snapshot search and Markdown as static files. Reconcile the last
+    // build's output so removed/excluded pages and disabled plugins don't leave
+    // old public copies that bypass the route handlers.
+    syncSnapshotAssets({
+      snapshotDir:
+        mosaicMode === 'snapshot-file' && snapshotDir ? resolve(__dirname, snapshotDir) : undefined,
+      publicDir: resolve(__dirname, 'public'),
+      manifestFile: resolve(__dirname, '.mosaic-public-assets.json')
+    });
   }
   return isExport
     ? { ...baseConfig, ...exportConfig }
