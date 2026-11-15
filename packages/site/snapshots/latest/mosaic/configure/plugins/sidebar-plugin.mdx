@@ -1,7 +1,7 @@
 ---
 title: SidebarPlugin
 layout: DetailOverview
-lastModified: 1762156634261.1228
+lastModified: 1794775165406.5923
 fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
 route: /mosaic/configure/plugins/sidebar-plugin
 breadcrumbs:
@@ -15,10 +15,10 @@ sidebar:
   label: SidebarPlugin
   groupLabel: SidebarPlugin
 readingTime:
-  text: 1 min read
-  minutes: 0.85
-  time: 51000
-  words: 170
+  text: 2 min read
+  minutes: 1.265
+  time: 75900
+  words: 253
 tableOfContents:
   - depth: 3
     level: 1
@@ -473,6 +473,10 @@ The `rootDirGlob` is used to determine the "root" directories of the sidebar. So
 * `products/product-b` - generate a sidebar just for product-b in the products directory
 
 To rearrange pages in the sidebar or to apply a different label to a page you can [configure the sidebar](../../author/sidebars) using page frontmatter.
+
+Set `sidebar.exclude: true` to hide a page's link without hiding its descendants. An excluded root or intermediate `index.mdx` still supplies the group's label, priority, and sort configuration. Empty groups are omitted, and a root whose pages are all excluded produces an empty sidebar. Previous/next navigation visits only included pages.
+
+For a namespace-wide tree, set `rootDirGlob` to that namespace's directory. Components can consume the generated tree through `useSidebar().menu`; it does not need to be copied into `sharedConfig.sidebar`. Each root still needs a page directly within it to establish its structure.
 
 ## Priority
 

@@ -4,7 +4,7 @@ layout: DetailTechnical
 data:
   mode: snapshot-file
   link: /mosaic/configure/modes/snapshot-file
-lastModified: 1754291462165.9458
+lastModified: 1794775130289.7722
 fullPath: /mosaic/configure/modes/snapshot-file.mdx
 route: /mosaic/configure/modes/snapshot-file
 breadcrumbs:
@@ -18,15 +18,19 @@ sidebar:
   label: Snapshot file mode
   groupLabel: Snapshot file mode
 readingTime:
-  text: 1 min read
-  minutes: 0.32
-  time: 19200
-  words: 64
+  text: 2 min read
+  minutes: 1.195
+  time: 71700
+  words: 239
 tableOfContents:
   - depth: 2
     level: 0
     id: generating-a-snapshot
     text: Generating a snapshot
+  - depth: 2
+    level: 0
+    id: snapshot-identity-and-caching
+    text: Snapshot identity and caching
 navigation:
   prev:
     title: Active mode
@@ -470,3 +474,17 @@ yarn gen:snapshot
 ```
 
 Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
+
+## Snapshot identity and caching
+
+The CLI writes `mosaic-snapshot.json` at the snapshot root after all content and aliases have been written successfully. This reserved file contains a versioned generation ID:
+
+```json
+{ "version": 1, "id": "a35baf6f-9246-4f91-88ce-182385759ca2" }
+```
+
+Every completed build gets a new ID, including builds that reuse the same output directory. Deploy this file with the complete snapshot. Mosaic includes the resolved snapshot directory and generation ID in persistent MDX and shared-configuration cache keys, so a new generation does not reuse content cached for an older snapshot.
+
+Older snapshots remain readable. If the identity file is missing or invalid, Mosaic skips persistent loader caching while retaining per-request memoization. Regenerate the snapshot with the updated CLI to enable caching; do not reuse an ID for changed content.
+
+Snapshots remain immutable deployment artifacts. Publish the complete snapshot with the site rather than overwriting files while requests are reading them. The generation ID affects loader data caching; changing it alone does not invalidate already-rendered Next.js routes. Deploy a new site build or use the appropriate Next.js route revalidation when replacing a snapshot in a running deployment.
