@@ -1278,6 +1278,11 @@ yarn gen:snapshot
 
 Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
 
+The CLI fails with a nonzero exit code when any source records a plugin exception,
+including failures caught by the pipeline. Diagnostics identify the source, plugin,
+lifecycle, and original error. A failed pipeline does not write a completed snapshot
+or generation identity; fix the reported error and regenerate before deploying.
+
 ## Snapshot identity and caching
 
 The CLI writes `mosaic-snapshot.json` at the snapshot root after all content and aliases have been written successfully. This reserved file contains a versioned generation ID:
@@ -2353,6 +2358,48 @@ The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.
 
 Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
 
+### Search policies and result limits
+
+The provider accepts `queryOptions` in both modes. For example,
+`queryOptions={{ limit: 20, sectionsPerResult: 0 }}` requests up to 20 results
+without additional section lists. Defaults remain six results and three sections.
+The server handler's `maxLimit` and section cap still apply.
+
+In browser mode, `indexOptions` configures the same engine as `createSearchIndex`:
+
+```tsx
+'use client';
+
+import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
+
+const indexOptions = {
+  synonyms: [['colour', 'color']],
+  groupBy: record => record.route.replace(/\/(examples|usage|accessibility)$/, ''),
+  pageRank: record => (record.route.endsWith('/examples') ? 0 : 1)
+};
+
+export function Search({ children }) {
+  return (
+    <SearchProvider
+      mode="browser"
+      indexOptions={indexOptions}
+      queryOptions={{ limit: 20, sectionsPerResult: 0 }}
+    >
+      {children}
+    </SearchProvider>
+  );
+}
+```
+
+For server mode, configure `groupBy`, `pageRank`, and `synonyms` on
+`createSearchHandler({ ...indexOptions })` in the API route. Provider `indexOptions`
+only configure the browser index; callbacks are not sent over HTTP. Define browser
+callbacks in a client module rather than passing functions across a Server Component
+boundary. Keep policy functions and synonym arrays stable to reuse the lazy index.
+
+Custom search controls can call `useSearchContext()` from the same public provider
+entry. Its `search(query, namespace?, signal?)` method returns `Promise<SearchResult[]>`.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
@@ -2471,6 +2518,50 @@ To rearrange pages in the sidebar or to apply a different label to a page you ca
 Set `sidebar.exclude: true` to hide a page's link without hiding its descendants. An excluded root or intermediate `index.mdx` still supplies the group's label, priority, and sort configuration. Empty groups are omitted, and a root whose pages are all excluded produces an empty sidebar. Previous/next navigation visits only included pages.
 
 For a namespace-wide tree, set `rootDirGlob` to that namespace's directory. Components can consume the generated tree through `useSidebar().menu`; it does not need to be copied into `sharedConfig.sidebar`. Each root still needs a page directly within it to establish its structure.
+
+## Reusing the tree builder
+
+Import `buildSidebarTree` from `@jpmorganchase/mosaic-plugins/sidebar` to reuse
+Mosaic's traversal with your own storage and rendering. It accepts deserialized
+pages and returns the root group, without writing files or adding any sidebar or
+previous/next references. `SidebarPlugin` uses this same builder.
+
+```ts
+import { buildSidebarTree, compareSidebarNodes } from '@jpmorganchase/mosaic-plugins/sidebar';
+
+const root = buildSidebarTree(pages, {
+  rootDir: '/salt',
+  transformPage: (node, page) => ({
+    ...node,
+    metadata: { status: page.status }
+  }),
+  transformGroup: (node, { indexPage }) => ({
+    ...node,
+    priority: indexPage?.groupPriority ?? node.priority,
+    metadata: { status: indexPage?.status }
+  }),
+  compareNodes: (a, b) => compareSidebarNodes(a, b) || a.name.localeCompare(b.name)
+});
+
+const menu = root?.childNodes ?? [];
+// Persist or adapt `menu` to your site's own navigation format.
+```
+
+The hooks receive newly created nodes. `transformPage` runs for visible pages;
+`transformGroup` runs bottom-up and receives the group's original index page,
+including an excluded index, or `undefined` when there is no index. Group priorities
+can therefore differ from Overview-page priorities. Add badges or other data in
+`metadata`. Input pages are not changed by the builder.
+
+`compareNodes` replaces sorting at every level and receives the parent group as a
+third argument. Use `compareSidebarNodes` first to preserve priority and configured
+field ordering, then add an alphabetical tie-break. Groups with no index retain
+their nested descendants. An empty non-root group is omitted. If no page sits
+directly within `rootDir`, the builder returns `undefined`.
+
+Call the builder from your own plugin module if you need these callbacks during
+content generation. Plugin configuration is sent to worker threads, so callbacks
+must live in the module rather than in serialized plugin options.
 
 ## Priority
 

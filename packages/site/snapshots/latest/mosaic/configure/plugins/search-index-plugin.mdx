@@ -1,7 +1,7 @@
 ---
 title: SearchIndexPlugin
 layout: DetailOverview
-lastModified: 1794773139619.4026
+lastModified: 1794783895701.5486
 fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
 route: /mosaic/configure/plugins/search-index-plugin
 breadcrumbs:
@@ -15,10 +15,10 @@ sidebar:
   label: SearchIndexPlugin
   groupLabel: SearchIndexPlugin
 readingTime:
-  text: 6 min read
-  minutes: 5.86
-  time: 351600
-  words: 1172
+  text: 7 min read
+  minutes: 6.65
+  time: 399000
+  words: 1330
 tableOfContents:
   - depth: 3
     level: 1
@@ -40,6 +40,10 @@ tableOfContents:
     level: 1
     id: migrating-the-previous-search
     text: Migrating the previous search
+  - depth: 3
+    level: 1
+    id: search-policies-and-result-limits
+    text: Search policies and result limits
   - depth: 2
     level: 0
     id: priority
@@ -614,6 +618,48 @@ The reference site selects the mode automatically from `MOSAIC_OUTPUT`. Custom s
 The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.json` outputs and Fuse-based UI are removed. Regenerate existing snapshots with the updated CLI. Remove legacy public-asset copies and `maxLineLength`, `maxLineCount`, `keys`, and `relevancy` from plugin options; use `records.fields`, `records.maxTextLength`, and the search engine options documented above instead. Ranking uses the new engine's defined order rather than Fuse weights.
 
 Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
+
+### Search policies and result limits
+
+The provider accepts `queryOptions` in both modes. For example,
+`queryOptions={{ limit: 20, sectionsPerResult: 0 }}` requests up to 20 results
+without additional section lists. Defaults remain six results and three sections.
+The server handler's `maxLimit` and section cap still apply.
+
+In browser mode, `indexOptions` configures the same engine as `createSearchIndex`:
+
+```tsx
+'use client';
+
+import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
+
+const indexOptions = {
+  synonyms: [['colour', 'color']],
+  groupBy: record => record.route.replace(/\/(examples|usage|accessibility)$/, ''),
+  pageRank: record => (record.route.endsWith('/examples') ? 0 : 1)
+};
+
+export function Search({ children }) {
+  return (
+    <SearchProvider
+      mode="browser"
+      indexOptions={indexOptions}
+      queryOptions={{ limit: 20, sectionsPerResult: 0 }}
+    >
+      {children}
+    </SearchProvider>
+  );
+}
+```
+
+For server mode, configure `groupBy`, `pageRank`, and `synonyms` on
+`createSearchHandler({ ...indexOptions })` in the API route. Provider `indexOptions`
+only configure the browser index; callbacks are not sent over HTTP. Define browser
+callbacks in a client module rather than passing functions across a Server Component
+boundary. Keep policy functions and synonym arrays stable to reuse the lazy index.
+
+Custom search controls can call `useSearchContext()` from the same public provider
+entry. Its `search(query, namespace?, signal?)` method returns `Promise<SearchResult[]>`.
 
 ## Priority
 

@@ -4,7 +4,7 @@ layout: DetailTechnical
 data:
   mode: snapshot-file
   link: /mosaic/configure/modes/snapshot-file
-lastModified: 1794775130289.7722
+lastModified: 1794784177714.7466
 fullPath: /mosaic/configure/modes/snapshot-file.mdx
 route: /mosaic/configure/modes/snapshot-file
 breadcrumbs:
@@ -19,9 +19,9 @@ sidebar:
   groupLabel: Snapshot file mode
 readingTime:
   text: 2 min read
-  minutes: 1.195
-  time: 71700
-  words: 239
+  minutes: 1.44
+  time: 86400
+  words: 288
 tableOfContents:
   - depth: 2
     level: 0
@@ -474,6 +474,11 @@ yarn gen:snapshot
 ```
 
 Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
+
+The CLI fails with a nonzero exit code when any source records a plugin exception,
+including failures caught by the pipeline. Diagnostics identify the source, plugin,
+lifecycle, and original error. A failed pipeline does not write a completed snapshot
+or generation identity; fix the reported error and regenerate before deploying.
 
 ## Snapshot identity and caching
 

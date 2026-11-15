@@ -1,7 +1,7 @@
 ---
 title: SidebarPlugin
 layout: DetailOverview
-lastModified: 1794775165406.5923
+lastModified: 1794783895743.548
 fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
 route: /mosaic/configure/plugins/sidebar-plugin
 breadcrumbs:
@@ -15,15 +15,19 @@ sidebar:
   label: SidebarPlugin
   groupLabel: SidebarPlugin
 readingTime:
-  text: 2 min read
-  minutes: 1.265
-  time: 75900
-  words: 253
+  text: 3 min read
+  minutes: 2.49
+  time: 149400
+  words: 498
 tableOfContents:
   - depth: 3
     level: 1
     id: configuration
     text: Configuration
+  - depth: 2
+    level: 0
+    id: reusing-the-tree-builder
+    text: Reusing the tree builder
   - depth: 2
     level: 0
     id: priority
@@ -477,6 +481,50 @@ To rearrange pages in the sidebar or to apply a different label to a page you ca
 Set `sidebar.exclude: true` to hide a page's link without hiding its descendants. An excluded root or intermediate `index.mdx` still supplies the group's label, priority, and sort configuration. Empty groups are omitted, and a root whose pages are all excluded produces an empty sidebar. Previous/next navigation visits only included pages.
 
 For a namespace-wide tree, set `rootDirGlob` to that namespace's directory. Components can consume the generated tree through `useSidebar().menu`; it does not need to be copied into `sharedConfig.sidebar`. Each root still needs a page directly within it to establish its structure.
+
+## Reusing the tree builder
+
+Import `buildSidebarTree` from `@jpmorganchase/mosaic-plugins/sidebar` to reuse
+Mosaic's traversal with your own storage and rendering. It accepts deserialized
+pages and returns the root group, without writing files or adding any sidebar or
+previous/next references. `SidebarPlugin` uses this same builder.
+
+```ts
+import { buildSidebarTree, compareSidebarNodes } from '@jpmorganchase/mosaic-plugins/sidebar';
+
+const root = buildSidebarTree(pages, {
+  rootDir: '/salt',
+  transformPage: (node, page) => ({
+    ...node,
+    metadata: { status: page.status }
+  }),
+  transformGroup: (node, { indexPage }) => ({
+    ...node,
+    priority: indexPage?.groupPriority ?? node.priority,
+    metadata: { status: indexPage?.status }
+  }),
+  compareNodes: (a, b) => compareSidebarNodes(a, b) || a.name.localeCompare(b.name)
+});
+
+const menu = root?.childNodes ?? [];
+// Persist or adapt `menu` to your site's own navigation format.
+```
+
+The hooks receive newly created nodes. `transformPage` runs for visible pages;
+`transformGroup` runs bottom-up and receives the group's original index page,
+including an excluded index, or `undefined` when there is no index. Group priorities
+can therefore differ from Overview-page priorities. Add badges or other data in
+`metadata`. Input pages are not changed by the builder.
+
+`compareNodes` replaces sorting at every level and receives the parent group as a
+third argument. Use `compareSidebarNodes` first to preserve priority and configured
+field ordering, then add an alphabetical tie-break. Groups with no index retain
+their nested descendants. An empty non-root group is omitted. If no page sits
+directly within `rootDir`, the builder returns `undefined`.
+
+Call the builder from your own plugin module if you need these callbacks during
+content generation. Plugin configuration is sent to worker threads, so callbacks
+must live in the module rather than in serialized plugin options.
 
 ## Priority
 
