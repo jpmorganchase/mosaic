@@ -13,8 +13,9 @@ import { parseFrontmatter as parseFrontmatterBlock } from '@jpmorganchase/mosaic
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import type { SharedConfig } from '@jpmorganchase/mosaic-store';
 
-import { getSnapshotFileConfig, loadLocalFile } from './loaders/index.js';
+import { loadLocalFile } from './loaders/index.js';
 import { MOSAIC_CONTENT_CACHE_TAG } from './cacheTags.js';
+import { getSnapshotIdentity, getSnapshotRoot, type SnapshotIdentity } from './snapshotIdentity.js';
 
 if (typeof window !== 'undefined') {
   throw new Error('cachedLoaders.ts must not be imported on the client.');
@@ -49,8 +50,8 @@ const cacheDisabled = process.env.MOSAIC_DISABLE_LOADER_CACHE === 'true';
  * when that notification reaches every site instance (a single instance,
  * or a shared cache handler) — otherwise instances serve stale content.
  *
- * `snapshot-file` mode always caches: its bytes are stable until the
- * next snapshot is published.
+ * Identified snapshots cache by root and generation. Older snapshots without
+ * valid identity metadata retain request memoization but bypass this layer.
  */
 const activeModeCacheEnabled = process.env.MOSAIC_ACTIVE_MODE_CACHE === 'true';
 
@@ -87,11 +88,12 @@ function withCrossRequestCache<TArgs extends unknown[], TResult>(
   impl: (...args: TArgs) => Promise<TResult>,
   keyParts: string[],
   getMode: (args: TArgs) => MosaicMode,
-  isCacheable: (result: TResult) => boolean
+  isCacheable: (result: TResult) => boolean,
+  { readsSnapshot = false }: { readsSnapshot?: boolean } = {}
 ): (...args: TArgs) => Promise<TResult> {
   if (cacheDisabled) return impl;
   const cached = unstable_cache(
-    async (...args: TArgs) => {
+    async (_snapshotIdentity: SnapshotIdentity | null, ...args: TArgs) => {
       const result = await impl(...args);
       if (!isCacheable(result)) throw new UncachedResult(result);
       return result;
@@ -100,9 +102,15 @@ function withCrossRequestCache<TArgs extends unknown[], TResult>(
     { tags: [MOSAIC_CONTENT_CACHE_TAG] }
   );
   return async (...args: TArgs) => {
-    if (bypassesCrossRequestCache(getMode(args))) return impl(...args);
+    const mode = getMode(args);
+    if (bypassesCrossRequestCache(mode)) return impl(...args);
+    // Editor-only loaders return fixed unavailable/empty results in snapshot
+    // mode. They need neither a snapshot directory nor its identity metadata.
+    if (mode === 'snapshot-file' && !readsSnapshot) return impl(...args);
+    const identity = mode === 'snapshot-file' ? await getSnapshotIdentity() : null;
+    if (identity === undefined) return impl(...args);
     try {
-      return await cached(...args);
+      return await cached(identity, ...args);
     } catch (error) {
       if (error instanceof UncachedResult) return error.value as TResult;
       throw error;
@@ -166,8 +174,7 @@ const loadSharedConfigImpl = async (
   if (mode === 'snapshot-file') {
     const snapshotPath = decodeSnapshotPath(urlPath);
     if (snapshotPath === undefined) return undefined;
-    const { snapshotDir } = getSnapshotFileConfig(snapshotPath);
-    const filePath = path.join(process.cwd(), snapshotDir, snapshotPath, 'shared-config.json');
+    const filePath = path.join(getSnapshotRoot(), snapshotPath, 'shared-config.json');
     try {
       await fs.promises.stat(filePath);
     } catch {
@@ -204,11 +211,12 @@ const loadSharedConfigCached = withCrossRequestCache(
   // Loader signature: `(urlPath, mode, contentUrl)`. The mode is
   // the second arg; extract for the cross-request cache gate.
   ([, mode]) => mode,
-  config => config !== undefined
+  config => config !== undefined,
+  { readsSnapshot: true }
 );
 
 /**
- * Resolve the per-route shared config (header, footer, search namespace,
+ * Resolve the per-route shared config (header, footer,
  * etc.). Cached at the subtree level (e.g. `/mosaic/getting-started`)
  * so neighbour pages share the lookup, and requests for made-up pages
  * don't each add a cache entry.
@@ -273,8 +281,7 @@ const loadMdxRawImpl = async (
   if (mode === 'snapshot-file') {
     const snapshotPath = decodeSnapshotPath(normalized);
     if (snapshotPath === undefined) return { kind: 'not-found' };
-    const { snapshotDir } = getSnapshotFileConfig(snapshotPath);
-    const filePath = path.posix.join(process.cwd(), snapshotDir, snapshotPath);
+    const filePath = path.join(getSnapshotRoot(), snapshotPath);
     try {
       const raw = await loadLocalFile(filePath);
       return { kind: 'mdx', raw, frontmatter: parseFrontmatter(raw) };
@@ -309,7 +316,8 @@ const loadMdxRawCached = withCrossRequestCache(
   // second arg.
   ([, mode]) => mode,
   // Never store a 404: it may be a cold start, or a probe for a random URL.
-  result => result.kind !== 'not-found'
+  result => result.kind !== 'not-found',
+  { readsSnapshot: true }
 );
 
 /**
@@ -317,9 +325,8 @@ const loadMdxRawCached = withCrossRequestCache(
  * discriminated outcomes so the caller can dispatch to `redirect()` /
  * `notFound()` / render without needing to inspect HTTP status codes.
  *
- * Caching note: snapshot mode caches the raw text cross-request
- * (the bytes are immutable until the next snapshot rebuild, which
- * expires them via `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)`). Active
+ * Caching note: identified snapshots cache raw text by root and generation;
+ * rebuilding the snapshot creates a new identity and fresh entries. Active
  * mode only does so with `MOSAIC_ACTIVE_MODE_CACHE=true`, and 404s are
  * never stored — see `withCrossRequestCache`. The per-request
  * `cache()` wrapper below still dedupes a `generateMetadata` +

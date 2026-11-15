@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import deepmerge from 'deepmerge';
 import MosaicCore from '@jpmorganchase/mosaic-core';
+
+const SNAPSHOT_IDENTITY_FILE = 'mosaic-snapshot.json';
 
 export default async function build(config, targetDir, options) {
   // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
@@ -52,6 +55,17 @@ export default async function build(config, targetDir, options) {
           cwd: '/',
           onlyFiles: true
         });
+        for (const entry of [...allFiles, ...Object.keys(symlinks)]) {
+          const normalized = path.posix.normalize(`/${String(entry)}`).toLowerCase();
+          if (
+            normalized === `/${SNAPSHOT_IDENTITY_FILE}` ||
+            normalized.startsWith(`/${SNAPSHOT_IDENTITY_FILE}/`)
+          ) {
+            throw new Error(
+              `Snapshot output '${entry}' conflicts with reserved ${SNAPSHOT_IDENTITY_FILE}`
+            );
+          }
+        }
         for (const filePath of allFiles) {
           // if (dotDirRegExp.test(filePath)) {
           //   continue;
@@ -114,6 +128,13 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
           }
         }
         process.chdir(pwd);
+        // Publish identity only after all content and aliases were written.
+        // A new generation also invalidates persistent caches at a reused path.
+        await fs.promises.writeFile(
+          path.join(pathDir, SNAPSHOT_IDENTITY_FILE),
+          JSON.stringify({ version: 1, id: randomUUID() }),
+          { encoding: 'utf8', flag: 'wx' }
+        );
         console.log(
           `[Mosaic] filesystem for ${
             Array.isArray(scope) ? scope.length : sourceCount
