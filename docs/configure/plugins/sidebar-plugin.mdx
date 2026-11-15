@@ -19,6 +19,10 @@ The `rootDirGlob` is used to determine the "root" directories of the sidebar. So
 
 To rearrange pages in the sidebar or to apply a different label to a page you can [configure the sidebar](../../author/sidebars) using page frontmatter.
 
+Set `sidebar.exclude: true` to hide a page's link without hiding its descendants. An excluded root or intermediate `index.mdx` still supplies the group's label, priority, and sort configuration. Empty groups are omitted, and a root whose pages are all excluded produces an empty sidebar. Previous/next navigation visits only included pages.
+
+For a namespace-wide tree, set `rootDirGlob` to that namespace's directory. Components can consume the generated tree through `useSidebar().menu`; it does not need to be copied into `sharedConfig.sidebar`. Each root still needs a page directly within it to establish its structure.
+
 ## Priority
 
 This plugin runs with a priority of 3.

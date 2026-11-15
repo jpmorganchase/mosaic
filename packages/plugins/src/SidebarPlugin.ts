@@ -86,6 +86,8 @@ export interface SidebarPluginPage extends Page {
   sidebar?: {
     label?: string;
     groupLabel?: string;
+    exclude?: boolean;
+    priority?: number;
   };
   sharedConfig: {
     sidebar: {
@@ -217,7 +219,11 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             ...result[groupPath],
             id: path.posix.dirname(page.route),
             kind: 'group',
-            childNodes: [...currentChildNodes, newChildNode]
+            // Excluded pages still establish groups and index metadata, but
+            // their own links never participate in the visible tree.
+            childNodes: page.sidebar?.exclude
+              ? currentChildNodes
+              : [...currentChildNodes, newChildNode]
           };
 
           if (isGroupDefaultPage) {
@@ -251,6 +257,11 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         const linkedGroupMap = cloneDeep(groupMap);
         const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathLevel);
         sortedGroupMapKeys.forEach(groupPath => {
+          // Descendants have already been linked. An empty non-root group
+          // cannot lead anywhere and must not enter previous/next traversal.
+          if (groupPath !== dirName && linkedGroupMap[groupPath].childNodes.length === 0) {
+            return;
+          }
           const parentGroupPath = path.posix.dirname(groupPath);
           if (linkedGroupMap[parentGroupPath] === undefined) {
             return;
@@ -359,17 +370,14 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         cwd: '/'
       });
 
-      const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
-
       await Promise.all(
         rootUserJourneys.map(async rootDir => {
           const sidebarFilePath = path.posix.join(String(rootDir), filename);
           const pages = await createPageList(rootDir);
-          const includedPages = pages.filter(page => removeExcludedPages(page));
-          const groupMap = createGroupMap(includedPages);
+          const groupMap = createGroupMap(pages);
           const sidebarData = linkGroupMap(groupMap, rootDir);
           if (sidebarData[0] === undefined) {
-            // The root group only exists when an included page sits directly
+            // The root group only exists when a page sits directly
             // in `rootDir`, so say which of the possible causes applies.
             const pagesInRootDir = pages.filter(
               page => path.posix.dirname(String(page.fullPath)) === String(rootDir)
@@ -377,8 +385,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             let reason = 'it contains no pages';
             if (pages.length > 0 && pagesInRootDir.length === 0) {
               reason = 'no page sits directly in it; add an index page';
-            } else if (pagesInRootDir.length > 0) {
-              reason = 'every page directly in it sets `sidebar.exclude: true`';
             }
             console.warn(
               `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}: ${reason}`
@@ -386,8 +392,10 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
             return;
           }
           const sortedRootSidebar = sortSidebarData(sidebarData);
-          addNavigationToFrontmatter(sortedRootSidebar, rootDir);
           if (isGroupNode(sortedRootSidebar[0])) {
+            if (sortedRootSidebar[0].childNodes.length > 0) {
+              addNavigationToFrontmatter(sortedRootSidebar, rootDir);
+            }
             await mutableFilesystem.promises.writeFile(
               sidebarFilePath,
               JSON.stringify({ pages: sortedRootSidebar[0].childNodes })

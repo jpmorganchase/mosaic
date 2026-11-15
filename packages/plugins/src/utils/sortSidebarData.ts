@@ -65,7 +65,8 @@ export function sortSidebarData(sidebarData: SidebarData[]) {
     if (!isGroupNode(group)) {
       return group;
     }
-    if (group?.childNodes?.length > 1) {
+    // Even a single child can be a group whose descendants need sorting.
+    if (group?.childNodes?.length > 0) {
       const sortedChildNodes = group.childNodes.sort(
         (pageA, pageB) =>
           (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1) ||
