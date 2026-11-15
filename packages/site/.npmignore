@@ -8,9 +8,15 @@ coverage/
 test-results/
 playwright-report/
 playwright/.auth/
+src/**/__tests__/
 *.tsbuildinfo
 .env.local
 .env.*.local
 .mosaic-public-assets.json
 public/.tmp/
 public/images/
+public/search-data.json
+public/search-records.json
+public/llms.txt
+public/llms-full.txt
+public/**/*.md

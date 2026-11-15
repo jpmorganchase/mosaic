@@ -20,11 +20,15 @@ yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
 mkdir ../mosaic-sample-site
 tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
 cd ../mosaic-sample-site
+yarn config set nodeLinker node-modules
 yarn install
 ```
 
-The archive excludes build caches and local environment overrides. Configure
-`mosaic.config.mjs` with your own content sources before running `yarn serve`;
+Turbopack requires the `node-modules` linker; Yarn's default Plug'n'Play mode is
+not supported. The archive excludes build caches, generated public assets,
+monorepo unit tests and local environment overrides. Snapshot builds recreate
+their public assets.
+Configure `mosaic.config.mjs` with your own content sources before running `yarn serve`;
 the reference configuration points to documentation folders in this monorepo.
 
 ## File tree
