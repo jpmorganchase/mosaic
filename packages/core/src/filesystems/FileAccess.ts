@@ -29,8 +29,18 @@ export default class FileAccess implements IFileAccess {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.#rawReadonlyFs = this.#rawReadonlyFs || createFsFromVolume(this.#adapter as any);
     const cwd = path.resolve(typeof options?.cwd === 'string' ? options.cwd : process.cwd());
-    const matches = await glob(pattern, {
+    // tinyglobby resolves cwd with the host path API, then compares patterns
+    // using POSIX paths. On Windows, /... patterns need cwd's drive/root too;
+    // otherwise an absolute tag glob is incorrectly treated as a relative path.
+    const nativeRoot = path.parse(cwd).root.replace(/\\/g, '/').replace(/\/$/, '');
+    const normalizePatterns = (patterns: string | string[]) => {
+      const normalize = (value: string) =>
+        value.replace(/^(!?)\//, (_match, negation) => `${negation}${nativeRoot}/`);
+      return Array.isArray(patterns) ? patterns.map(normalize) : normalize(patterns);
+    };
+    const matches = await glob(normalizePatterns(pattern), {
       ...options,
+      ...(options?.ignore ? { ignore: normalizePatterns(options.ignore) } : {}),
       absolute: true,
       // Match fast-glob, which Mosaic used before: a directory pattern
       // matches the directory itself, not everything inside it.

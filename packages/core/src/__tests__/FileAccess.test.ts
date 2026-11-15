@@ -90,6 +90,48 @@ describe('FileAccess cached reads', () => {
 });
 
 describe('GIVEN FileAccess.$$symlinksFromJSON', () => {
+  test('THEN tag aliases can be globbed from a nested documentation directory', async () => {
+    const volume = Volume.fromJSON({
+      '/docs/test/index.mdx': 'subscriber',
+      '/products/item.mdx': 'product'
+    });
+    const files = new FileAccess(volume);
+    await files.$$symlinksFromJSON({
+      '/.tags/in-stock/products/item.mdx': [{ target: '/products/item.mdx', type: 'file' }]
+    });
+    expect(
+      await files.glob('/.tags/in-stock/**/*.mdx', { cwd: '/docs/test', absolute: true })
+    ).toEqual(['/products/item.mdx']);
+  });
+
+  test('THEN absolute exclusions and relative patterns use the same virtual root', async () => {
+    const volume = Volume.fromJSON({
+      '/docs/test/index.mdx': 'subscriber',
+      '/products/keep.mdx': 'keep',
+      '/products/skip.mdx': 'skip'
+    });
+    const files = new FileAccess(volume);
+    await files.$$symlinksFromJSON({
+      '/.tags/stock/products/keep.mdx': [{ target: '/products/keep.mdx', type: 'file' }],
+      '/.tags/stock/products/skip.mdx': [{ target: '/products/skip.mdx', type: 'file' }]
+    });
+    expect(
+      await files.glob(['/.tags/stock/**/*.mdx', '!/.tags/stock/**/skip.mdx'], {
+        cwd: '/docs/test'
+      })
+    ).toEqual(['/products/keep.mdx']);
+    expect(
+      await files.glob('/.tags/stock/**/*.mdx', {
+        cwd: '/docs/test',
+        ignore: ['/.tags/stock/**/skip.mdx']
+      })
+    ).toEqual(['/products/keep.mdx']);
+    expect(await files.glob('../../.tags/stock/**/*.mdx', { cwd: '/docs/test' })).toEqual([
+      '/products/keep.mdx',
+      '/products/skip.mdx'
+    ]);
+  });
+
   test('THEN every symlink exists by the time the returned promise resolves', async () => {
     const volume = new Volume();
     volume.fromJSON({ '/docs/page.mdx': 'content', '/docs/other.mdx': 'other' });
