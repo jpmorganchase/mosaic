@@ -5,7 +5,6 @@
 '@jpmorganchase/mosaic-content-editor-plugin': patch
 '@jpmorganchase/mosaic-sitemap-component': patch
 '@jpmorganchase/mosaic-site-preset-styles': patch
-'@jpmorganchase/mosaic-open-api-component': patch
 '@jpmorganchase/mosaic-source-storybook': patch
 '@jpmorganchase/mosaic-source-local-folder': patch
 '@jpmorganchase/mosaic-from-http-request': patch
