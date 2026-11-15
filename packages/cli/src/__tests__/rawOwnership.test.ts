@@ -193,15 +193,50 @@ describe('raw reads and workflow ownership', () => {
     expect(workflows.a.action).not.toHaveBeenCalled();
   });
 
-  test('selects the remaining mounted owner after a source stops', async () => {
-    const fixture = await createServer(['a', 'b']);
-    const { mosaic, server, sources, workflows } = fixture;
+  test.each([undefined, ['a', 'b']])(
+    'selects the remaining mounted owner after a source stops with scope %j',
+    async scope => {
+      const fixture = await createServer(['a', 'b'], scope);
+      const { mosaic, server, sources, workflows } = fixture;
+      await mosaic.stopSource(sources.find(source => source.namespace === 'b')!.id.description!);
+      expect((await server.inject('/shared/page.mdx')).body).toBe('processed a');
+      expect((await server.inject('/_mosaic-raw/shared/page.mdx')).body).toBe('authored a');
+      await expectWorkflowOwner(fixture, 'a');
+      expect(workflows.b.prepare).not.toHaveBeenCalled();
+      expect(workflows.b.action).not.toHaveBeenCalled();
+    }
+  );
+
+  test('a scope stops serving content when its last matching source stops', async () => {
+    const { mosaic, server, sources, workflows } = await createServer(['a', 'b'], ['b']);
     await mosaic.stopSource(sources.find(source => source.namespace === 'b')!.id.description!);
-    expect((await server.inject('/shared/page.mdx')).body).toBe('processed a');
-    expect((await server.inject('/_mosaic-raw/shared/page.mdx')).body).toBe('authored a');
-    await expectWorkflowOwner(fixture, 'a');
-    expect(workflows.b.prepare).not.toHaveBeenCalled();
-    expect(workflows.b.action).not.toHaveBeenCalled();
+    expect((await server.inject('/shared/page.mdx')).statusCode).toBe(404);
+    expect((await server.inject('/_mosaic-raw/shared/page.mdx')).statusCode).toBe(404);
+    const defaults = await server.inject({
+      method: 'POST',
+      url: '/workflows/defaults',
+      headers,
+      payload: { name: 'save', user, route: '/shared/page.mdx' }
+    });
+    expect(defaults.statusCode).toBe(404);
+    expect(workflows.a.prepare).not.toHaveBeenCalled();
+    expect(workflows.a.action).not.toHaveBeenCalled();
+  });
+
+  test('a scope follows a replacement source mounted after server startup', async () => {
+    const fixture = await createServer(['a', 'b'], ['a', 'b']);
+    const { mosaic, server, sources } = fixture;
+    const stopped = sources.find(source => source.namespace === 'b')!;
+    await mosaic.stopSource(stopped.id.description!);
+    const previousWorker = workers.get(path.join(root, 'b'));
+    const adding = mosaic.addSource(stopped.moduleDefinition);
+    await vi.waitFor(() => expect(workers.get(path.join(root, 'b'))).not.toBe(previousWorker));
+    workers.get(path.join(root, 'b'))!.emit('START');
+    const replacement = await adding;
+    replacement.filesystem.fromJSON({ '/shared/page.mdx': 'replacement b' });
+    expect((await server.inject('/shared/page.mdx')).body).toBe('replacement b');
+    expect((await server.inject('/_mosaic-raw/shared/page.mdx')).body).toBe('authored b');
+    await expectWorkflowOwner(fixture, 'b');
   });
 
   test('does not save into an underlying source when the published owner has no workflow', async () => {

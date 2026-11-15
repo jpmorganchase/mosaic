@@ -77,16 +77,19 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
       return;
     }
 
-    const scopedSources = Array.isArray(scope)
-      ? config.sources.filter(source => scope.includes(source.namespace))
-      : config.sources;
     const owner = await mosaic.getSourceDefinitionForPath(pageUrl, scope);
     // Published content uses its actual owner. Unpublished authored files (e.g.
-    // JSON under an MDX source) retain the raw route's existing fallback contract.
-    const resolution = resolveRawSourcePath(
-      req.url.slice(RAW_ROUTE_PREFIX.length),
-      owner ? [owner] : scopedSources
-    );
+    // JSON under an MDX source) fall back to registered sources, so stopped or
+    // replaced sources cannot keep serving stale authored files from config.
+    const scopedSources = owner
+      ? [owner]
+      : (await mosaic.listSources()).flatMap(({ name }) => {
+          const source = mosaic.getSourceDefinition(name);
+          return source && (!Array.isArray(scope) || scope.includes(source.namespace))
+            ? [source]
+            : [];
+        });
+    const resolution = resolveRawSourcePath(req.url.slice(RAW_ROUTE_PREFIX.length), scopedSources);
 
     if (resolution.kind === 'no-matching-source') {
       reply.header('X-Mosaic-Raw-Status', 'no-matching-source');
