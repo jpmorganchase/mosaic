@@ -6,7 +6,6 @@ import {
   shadow,
   foregroundColor,
   responsiveSprinkles,
-  selectableBorder,
   vars
 } from '@jpmorganchase/mosaic-theme';
 
@@ -38,29 +37,29 @@ export default {
     backgroundColor({ variant: 'regular' }),
     shadow({ variant: 'elevation4' })
   ]),
-  resultsList: style([style({ width: '500px' })]),
+  resultsList: style([style({ width: '500px', maxHeight: '70vh', overflowY: 'auto' })]),
+  resultLink: style({
+    display: 'block',
+    color: 'inherit',
+    textDecoration: 'none',
+    ':hover': { textDecoration: 'underline' },
+    ':focus-visible': { outline: '2px solid currentColor' }
+  }),
+  sectionLink: style({
+    display: 'block',
+    color: 'inherit',
+    paddingTop: vars.space.vertical.x1,
+    ':focus-visible': { outline: '2px solid currentColor' }
+  }),
   item: style([
-    foregroundColor({ variant: 'mid' }),
+    foregroundColor({ variant: 'high' }),
+    neutralBorder({ variant: 'low', borderBottomWidth: 'thin' }),
     responsiveSprinkles({
       padding: ['x2', 'x2', 'x2', 'x2']
     }),
     style({
       height: '100%',
-      cursor: 'pointer',
-      boxSizing: 'border-box',
-      borderColor: 'transparent'
-    })
-  ]),
-  itemInactive: style([neutralBorder({ variant: 'low', borderBottomWidth: 'thin' })]),
-  itemActive: style([
-    backgroundColor({ variant: 'emphasis' }),
-    selectableBorder({
-      variant: 'focusRing',
-      borderWidth: 'thin'
-    }),
-    style({
-      boxSizing: 'border-box',
-      outline: 'none'
+      boxSizing: 'border-box'
     })
   ]),
   itemContent: style({
@@ -69,18 +68,6 @@ export default {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   }),
-  itemOverflow: style([
-    responsiveSprinkles({
-      padding: ['x2', 'x2', 'x2', 'x2']
-    }),
-    style({
-      textAlign: 'center',
-      display: 'block',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap'
-    })
-  ]),
   highlight: style({
     fontWeight: vars.fontWeight.bold
   })

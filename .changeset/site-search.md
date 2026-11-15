@@ -7,15 +7,14 @@
 
 Add section-level site search
 
-`SearchIndexPlugin` also writes `search-records.json`: one record for each
+`SearchIndexPlugin` writes `search-records.json`: one record for each
 page's introduction and one for each section, with the section's heading path,
 prose (without code), and the frontmatter fields set with the new
 `records.fields` option, as plain text. By default these are `description` (falling back to
 `data.description`) and `keywords`. Section anchors use the same ids as the
 rendered headings and the table of contents, so results link to
 `route#anchor`. To leave a page out, set `search: { exclude: true }` in its
-frontmatter; to turn the file off, set `records: false`. The existing search
-files are unchanged. The record format, `SearchRecord` and
+frontmatter; to turn the file off, set `records: false`. The built-in UI migration retires the legacy search files. The record format, `SearchRecord` and
 `SearchRecordsFile`, is exported from `@jpmorganchase/mosaic-types`. The
 default config now runs the plugin at priority `-1.5`, after `$RefPlugin`, so
 titles and fields that come from `$ref`s are resolved.

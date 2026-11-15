@@ -19,10 +19,11 @@ vi.mock('@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls',
 }));
 vi.mock('@jpmorganchase/mosaic-store', () => ({
   useColorMode: () => 'light',
-  useSearchIndex: () => ({ searchEnabled: false }),
   useSourceCapabilities: () => ({}),
   useStoreActions: () => ({ setColorMode: vi.fn() })
 }));
+
+vi.mock('../../SearchInput', () => ({ SearchInput: () => null }));
 
 const { AppHeaderControls } = await import('../index');
 

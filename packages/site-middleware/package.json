@@ -30,6 +30,12 @@
       "import": "./dist/index.js",
       "node": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./search/highlight": {
+      "types": "./dist/search/highlight.d.ts",
+      "import": "./dist/search/highlight.js",
+      "node": "./dist/search/highlight.js",
+      "default": "./dist/search/highlight.js"
     }
   },
   "files": [

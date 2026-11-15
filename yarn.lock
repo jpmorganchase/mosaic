@@ -1533,6 +1533,7 @@ __metadata:
   dependencies:
     "@jpmorganchase/mosaic-components": "workspace:^"
     "@jpmorganchase/mosaic-content-editor-plugin": "workspace:^"
+    "@jpmorganchase/mosaic-site-middleware": "workspace:^"
     "@jpmorganchase/mosaic-store": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
     "@salt-ds/core": "npm:^1.63.0"
@@ -1540,13 +1541,11 @@ __metadata:
     clsx: "npm:^2.0.0"
     concurrently: "npm:^7.1.0"
     del-cli: "npm:^6.0.0"
-    fuse.js: "npm:^6.6.2"
     lodash-es: "npm:^4.17.23"
     next: "npm:^16.4.6"
     next-auth: "npm:^5.0.0-beta.32"
     next-mdx-remote-client: "npm:^2.1.12"
     next-router-mock: "npm:^0.9.13"
-    swr: "npm:^2.5.1"
     typescript: "npm:^5.0.0"
   peerDependencies:
     "@types/react": ^19.0.0
@@ -6734,13 +6733,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fuse.js@npm:^6.6.2":
-  version: 6.6.2
-  resolution: "fuse.js@npm:6.6.2"
-  checksum: 10/4768725963ee07dacfcb4abb001a12ea5e6e44c95d4e0918fcbfe0469107c5ad3ece2f1930396eb6c210383edf4c14ca083b91a2fc54950c5d021935a63d89de
-  languageName: node
-  linkType: hard
-
 "generator-function@npm:^2.0.0":
   version: 2.0.1
   resolution: "generator-function@npm:2.0.1"
@@ -11378,18 +11370,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swr@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "swr@npm:2.5.1"
-  dependencies:
-    dequal: "npm:^2.0.3"
-    use-sync-external-store: "npm:^1.6.0"
-  peerDependencies:
-    react: ^16.11.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/7ba8d069bfb2a24a76c4c572c7c517b6365182c35ba10f7ed72f16dc2c038e40cf398b6fa889112c421709df38ae26944f027b529aec133dd43ddf3f1dff19e1
-  languageName: node
-  linkType: hard
-
 "symbol-tree@npm:^3.2.4":
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
@@ -12083,7 +12063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.2.2, use-sync-external-store@npm:^1.5.0, use-sync-external-store@npm:^1.6.0":
+"use-sync-external-store@npm:^1.2.2, use-sync-external-store@npm:^1.5.0":
   version: 1.7.0
   resolution: "use-sync-external-store@npm:1.7.0"
   peerDependencies:

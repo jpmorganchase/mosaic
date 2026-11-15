@@ -6,8 +6,8 @@
  * Rendered by `app/[namespace]/layout.tsx`, which Next.js keeps mounted
  * while the reader navigates within the namespace. Only the page below
  * it re-renders, so the header (and its search box, menus and session
- * controls) is no longer rebuilt on every navigation, and the search
- * index is sent once per namespace instead of with every page.
+ * controls) is no longer rebuilt on every navigation. Search fetches its
+ * own results and does not store its index in this frame.
  *
  * Layouts from `@jpmorganchase/mosaic-layouts` still render the rest of
  * the chrome; `<FrameProvider value={{ header: true }}>` tells their
@@ -27,7 +27,6 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode
 } from 'react';
@@ -52,8 +51,6 @@ export interface NamespaceFrameData {
   /** Base route for the frame's fallback config, including the index page. */
   route: string;
   sharedConfig?: SharedConfig;
-  searchIndex?: unknown;
-  searchConfig?: unknown;
 }
 
 const FRAME_RENDERS_HEADER = { header: true };
@@ -77,19 +74,6 @@ export function NamespaceFrame({
 }) {
   const [store] = useState(() => initializeStore(data as Partial<SiteState>));
   const [isEditing, setIsEditing] = useState(false);
-  const seededWith = useRef(data);
-
-  // `router.refresh()` re-renders this layout with fresh data. Refresh
-  // the search data here; the shared config is re-sent by the page's
-  // `<FrameSync>`, which runs before this effect and must not be undone.
-  useLayoutEffect(() => {
-    if (seededWith.current === data) return;
-    seededWith.current = data;
-    store.setState({
-      searchIndex: data.searchIndex,
-      searchConfig: data.searchConfig
-    } as Partial<SiteState>);
-  }, [store, data]);
 
   // Colour-mode sync with the other stores while mounted.
   useEffect(() => {

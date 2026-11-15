@@ -1,7 +1,9 @@
 const { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } = require('node:fs');
 const { dirname, isAbsolute, relative, resolve, sep } = require('node:path');
 
-const ASSETS = ['search-data.json', 'search-records.json', 'llms.txt', 'llms-full.txt'];
+const ASSETS = ['search-records.json', 'llms.txt', 'llms-full.txt'];
+// Recognize prior generated output so upgrading a build removes it safely.
+const RETIRED_ASSETS = ['search-data.json', 'search-data-condensed.json', 'search-config.json'];
 
 function publicPath(publicDir, file) {
   const target = resolve(publicDir, file);
@@ -60,7 +62,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
           typeof file !== 'string' ||
           isAbsolute(file) ||
           !publicPath(publicDir, file) ||
-          (!ASSETS.includes(file) && !file.endsWith('.md'))
+          (!ASSETS.includes(file) && !RETIRED_ASSETS.includes(file) && !file.endsWith('.md'))
       )
     ) {
       throw new Error(`[mosaic-site] Invalid public asset manifest ${manifestFile}`);

@@ -30,6 +30,19 @@ const sync = () => syncSnapshotAssets({ snapshotDir, publicDir, manifestFile });
 const read = (file: string) => readFileSync(join(publicDir, file), 'utf8');
 
 describe('snapshot public assets', () => {
+  test('removes retired search outputs recorded by a previous build', () => {
+    const legacy = ['search-data.json', 'search-data-condensed.json', 'search-config.json'];
+    for (const file of legacy) {
+      writeFileSync(join(publicDir, file), 'Old generated search');
+      writeFileSync(join(snapshotDir, file), 'Old snapshot search');
+    }
+    writeFileSync(manifestFile, JSON.stringify({ version: 1, files: legacy }));
+    writeFileSync(join(snapshotDir, 'search-records.json'), '{"version":1,"records":[]}');
+    sync();
+    for (const file of legacy) expect(existsSync(join(publicDir, file))).toBe(false);
+    expect(read('search-records.json')).toBe('{"version":1,"records":[]}');
+  });
+
   test('removes deleted or excluded pages and folder aliases on the next build', () => {
     writeFileSync(join(publicDir, 'authored.md'), 'A manually maintained public file');
     pages({ '/docs/removed/index': '# Old content', '/docs/kept': '# Kept' });

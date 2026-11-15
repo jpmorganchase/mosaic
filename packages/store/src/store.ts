@@ -3,7 +3,6 @@ import { createStore, StoreApi, useStore as useZustandStore } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 import type { BreadcrumbsSlice } from './types/breadcrumbs';
-import type { SearchIndexSlice } from './types/searchIndex';
 import type { SharedConfigSlice } from './types/sharedConfig';
 import type { LayoutSlice } from './types/layout';
 import type { NavigationSlice } from './types/navigation';
@@ -18,7 +17,6 @@ export type SiteState = BreadcrumbsSlice &
   SidebarSlice &
   TableOfContentsSlice &
   NavigationSlice &
-  SearchIndexSlice &
   SharedConfigSlice & {
     /** Commit timestamp */
     lastModified?: string;
@@ -43,8 +41,6 @@ function getDefaultInitialState(): DefaultSiteState {
     sidebarData: [],
     tableOfContents: [],
     navigation: {},
-    searchIndex: [],
-    searchConfig: {},
     sharedConfig: {},
     description: undefined,
     layout: undefined,

@@ -1,143 +1,101 @@
 'use client';
 
-import { startTransition, useState, KeyboardEvent } from 'react';
+import { startTransition, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import classnames from 'clsx';
 import { Caption6, P4, P6 } from '@jpmorganchase/mosaic-components';
-import { Highlighter } from './Highlighter';
+import { highlight } from '@jpmorganchase/mosaic-site-middleware/search/highlight';
+import type { SearchHit, SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
 
 import styles from './styles.css';
-import type { SearchResult } from './searchUtils';
 
-export type SearchResults = SearchResult[];
-type SearchResultsListProps = {
-  searchResults: SearchResults;
-  query: string;
+function Highlighted({ text, terms }: { text: string; terms: string[] }) {
+  return (
+    <>
+      {highlight(text, terms).map((segment, index) =>
+        segment.match ? (
+          <strong className={styles.highlight} key={index}>
+            {segment.text}
+          </strong>
+        ) : (
+          segment.text
+        )
+      )}
+    </>
+  );
+}
+
+export function ResultsList({
+  searchResults,
+  loading,
+  error,
+  handleClear
+}: {
+  searchResults: SearchResult[];
+  loading: boolean;
+  error: boolean;
   handleClear: () => void;
-};
-
-interface ResultListItemProps {
-  result: SearchResult;
-  query: string;
-  onSelect: (result) => void;
-}
-
-const MAX_RESULTS = 6;
-
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-/** Highlights every whitespace-separated query term (regex characters are literal). */
-function toMatchPattern(query: string): RegExp | undefined {
-  const terms = query.trim().split(/\s+/).filter(Boolean).map(escapeRegExp);
-  return terms.length > 0 ? new RegExp(`(${terms.join('|')})`, 'gi') : undefined;
-}
-
-function ResultListItem({ result, query, onSelect }: ResultListItemProps) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
-
-  const handleMouseEnter = () => {
-    setHovered(true);
-  };
-  const handleMouseLeave = () => {
-    setHovered(false);
-  };
-  const handleFocus = () => {
-    setFocused(true);
-  };
-  const handleBlur = () => {
-    setFocused(false);
-  };
-
-  const handleSelect = () => {
-    onSelect(result);
-  };
-
-  const handleKeySelection = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      onSelect(result);
-    }
-  };
-
-  const itemActive = hovered || focused;
-  const matchPattern = toMatchPattern(query);
-
-  return (
-    <article
-      role="link"
-      tabIndex={0}
-      className={classnames(styles.item, {
-        [styles.itemActive]: itemActive,
-        [styles.itemInactive]: !itemActive
-      })}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onClick={handleSelect}
-      onKeyDown={handleKeySelection}
-    >
-      <Caption6>
-        <Highlighter matchPattern={matchPattern} text={result.route.replace(/(<([^>]+)>)/gi, '')} />
-      </Caption6>
-      <P4>
-        <Highlighter matchPattern={matchPattern} text={result.title.replace(/(<([^>]+)>)/gi, '')} />
-      </P4>
-      <P6 className={styles.itemContent}>
-        {/* `content` is escaped by `highlightMatch`/`getBestMatch`; only the `<strong>` is markup. */}
-        <span dangerouslySetInnerHTML={{ __html: result.content }} />
-      </P6>
-    </article>
-  );
-}
-
-function ResultListItemEmpty() {
-  return (
-    <article className={styles.item}>
-      <P4 className={styles.itemContent}>Nothing found</P4>
-      <P6 className={styles.itemContent}>Try searching for something else</P6>
-    </article>
-  );
-}
-function ResultListItemOverflow({ overflow }: { overflow: number }) {
-  return <P6 className={styles.itemOverflow}>Plus {overflow} more...</P6>;
-}
-
-export function ResultsList({ searchResults, query, handleClear }: SearchResultsListProps) {
+}) {
   const router = useRouter();
-
-  const handleSelect = (result: SearchResult) => {
-    // Wrap in a React transition so the App Router keeps the
-    // current page committed until the destination's RSC payload is
-    // ready. Without this, `router.push` commits synchronously and
-    // the search-results pop dismisses with a one-frame flash of
-    // unstyled chrome before the new route paints. See
-    // AppHeaderTabs for the same fix on the top-nav click.
-    startTransition(() => {
-      router.push(result.route);
-    });
+  const handleSelect = (event: MouseEvent<HTMLAnchorElement>, hit: SearchHit) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    startTransition(() => router.push(hit.href));
     handleClear();
   };
 
   return (
-    <div className={styles.popper} role="tooltip">
+    <div className={styles.popper} role="region" aria-label="Search results" aria-busy={loading}>
       <div className={styles.resultsList}>
-        {searchResults.length > 0 ? (
-          <>
-            {searchResults.slice(0, MAX_RESULTS).map(result => (
-              <ResultListItem
-                key={`result-item-${result.route}`}
-                result={result}
-                query={query}
-                onSelect={handleSelect}
-              />
-            ))}
-            {searchResults.length > MAX_RESULTS && (
-              <ResultListItemOverflow overflow={searchResults.length - MAX_RESULTS} />
-            )}
-          </>
+        {loading || error || searchResults.length === 0 ? (
+          <div className={styles.item} role="status">
+            <P4>
+              {loading
+                ? 'Searching…'
+                : error
+                ? 'Search is temporarily unavailable'
+                : 'Nothing found'}
+            </P4>
+            {!loading && !error && <P6>Try searching for something else</P6>}
+          </div>
         ) : (
-          <ResultListItemEmpty />
+          searchResults.map(result => (
+            <article key={result.group} className={styles.item}>
+              <a
+                className={styles.resultLink}
+                href={result.href}
+                onClick={event => handleSelect(event, result)}
+              >
+                <Caption6>{result.headings.join(' › ') || result.route}</Caption6>
+                <P4>
+                  <Highlighted text={result.title} terms={result.terms} />
+                </P4>
+                <P6 className={styles.itemContent}>
+                  <Highlighted text={result.snippet} terms={result.terms} />
+                </P6>
+              </a>
+              {result.sections.map(section => (
+                <a
+                  key={section.id}
+                  className={styles.sectionLink}
+                  href={section.href}
+                  onClick={event => handleSelect(event, section)}
+                >
+                  <Highlighted
+                    text={section.headings.join(' › ') || section.title}
+                    terms={section.terms}
+                  />
+                </a>
+              ))}
+            </article>
+          ))
         )}
       </div>
     </div>

@@ -21,8 +21,8 @@
  * frontmatter, add it to `generateMetadata`, not here. In
  * particular: do NOT re-introduce the legacy `<Metadata>` component
  * (`@jpmorganchase/mosaic-site-components/Metadata`). It reads from
- * `useMeta()` which prefixes the title with the
- * `header.searchNamespace` (e.g. "mosaic | Getting Started") and
+ * `useMeta()` which prefixes the title with the route's namespace
+ * (e.g. "mosaic | Getting Started") and
  * would duplicate every tag that `generateMetadata` already
  * server-renders.
  */

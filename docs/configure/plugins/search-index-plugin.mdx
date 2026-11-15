@@ -5,39 +5,7 @@ layout: DetailOverview
 
 # {meta.title}
 
-The `SearchIndexPlugin` is responsible for generating the search index and configuration information for [Fuse.js](https://www.fusejs.io/) which is the matching engine powering the client-side search functionality of Mosaic sites.
-
-It outputs 4 files:
-
-- Full Search Index - `search-data.json`
-- Condensed Search Index - `search-data-condensed.json`
-- Search Configuration - `search-config.json`
-- Search Records - `search-records.json`, for section-level search (see [Search records](#search-records))
-
-### Full Search Index
-
-On a Mosaic site, the full index is fetched after a page has loaded, thus removing the chance of a huge index slowing down first-load.
-
-Practically, the full index should load in the background before a user searches for something, but should a search be initiated before that (e.g., slow-internet) then the condensed version of the search index is available.
-
-### Condensed Search Data
-
-Search Index plugin creates a "condensed" version of the search index that only includes the `title` and `route` for each page. This is the "Minimum Viable Index" to provide somewhat useable search results client-side while the main search index is loaded in the background.
-
-### Search Configuration
-
-Any [options](https://www.fusejs.io/api/options.html) that need to be passed to Fuse.js.
-
-### Search relevancy configuration
-
-| Property         | Description                                           |
-| ---------------- | ----------------------------------------------------- |
-| includeScore     | https://www.fusejs.io/api/options.html#includescore   |
-| includeMatches   | https://www.fusejs.io/api/options.html#includematches |
-| maxPatternLength | TODO                                                  |
-| ignoreLocation   | https://www.fusejs.io/api/options.html#ignorelocation |
-| threshold        | https://www.fusejs.io/api/options.html#threshold      |
-| keys             | https://www.fusejs.io/api/options.html#keys           |
+The `SearchIndexPlugin` generates `search-records.json` for section-level search. The same records and ranking engine power the server API and browser search on static sites.
 
 ### Search records
 
@@ -144,19 +112,43 @@ The handler keeps the index in memory rather than in Next's data cache, which do
 
 Static exports have no server, so they search in the browser instead: the reference site copies `search-records.json` to `public/` when it builds from a snapshot.
 
+## Built-in search UI
+
+The default header uses the search API. It fetches results after the reader types, displays matching sections, and links directly to their headings. It does not load a search index into the page store.
+
+Wrap a custom site's client provider tree with `SearchProvider` from `@jpmorganchase/mosaic-site-components/SearchProvider`:
+
+```tsx
+<SearchProvider mode="server" endpoint="/api/search">
+  {children}
+</SearchProvider>
+```
+
+For static exports, use `mode="browser"` and copy `search-records.json` into `public/`. The browser downloads the records and search engine on the first nonempty query and reuses the index across queries and navigation:
+
+```tsx
+<SearchProvider mode="browser" recordsUrl="/search-records.json">
+  {children}
+</SearchProvider>
+```
+
+The reference site selects the mode automatically from `MOSAIC_OUTPUT`. Custom sites can set `namespace` to prefer a namespace, or `enabled={false}` to hide search when records are disabled. Server mode is the default without a provider. Endpoint and records URLs can be configured for a site's base path.
+
+### Migrating the previous search
+
+The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.json` outputs and Fuse-based UI are removed. Regenerate existing snapshots with the updated CLI. Remove legacy public-asset copies and `maxLineLength`, `maxLineCount`, `keys`, and `relevancy` from plugin options; use `records.fields`, `records.maxTextLength`, and the search engine options documented above instead. Ranking uses the new engine's defined order rather than Fuse weights.
+
+Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
+
 ## Priority
 
 The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
 
 ## Options
 
-| Property      | Description                                                                     |
-| ------------- | ------------------------------------------------------------------------------- |
-| maxLineLength | TODO                                                                            |
-| maxLineCount  | TODO                                                                            |
-| keys          | https://www.fusejs.io/api/options.html#keys                                     |
-| relevancy     | [search relevancy](#search-relevancy-configuration)                             |
-| records       | [Record options](#record-options), or `false` to turn `search-records.json` off |
+| Property | Description                                                                       |
+| -------- | --------------------------------------------------------------------------------- |
+| records  | [Record options](#record-options), or `false` to disable search-record generation |
 
 ### Record options
 
@@ -176,7 +168,7 @@ plugins: [
     modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
     previewDisabled: true,
     priority: -1.5,
-    options: { maxLineLength: 240, maxLineCount: 240 }
+    options: {}
   }
   // other plugins
 ];

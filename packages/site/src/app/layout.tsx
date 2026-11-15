@@ -107,7 +107,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themePrefScript }} />
       </head>
       <body>
-        <Providers authEnabled={AUTH_ENABLED}>{children}</Providers>
+        <Providers authEnabled={AUTH_ENABLED} searchMode={isStaticExport ? 'browser' : 'server'}>
+          {children}
+        </Providers>
         {isDevelopment && <LiveReload />}
       </body>
     </html>

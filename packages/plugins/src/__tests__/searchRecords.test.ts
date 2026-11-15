@@ -265,13 +265,12 @@ describe('GIVEN the SearchIndexPlugin', () => {
       '/docs/button/index',
       '/docs/button/index#usage'
     ]);
-    // The existing files are still written.
-    expect(writeFile).toHaveBeenCalledWith('/search-data.json', expect.any(String));
+    expect(writeFile.mock.calls.map(([name]) => name)).toEqual([SEARCH_RECORDS_FILE]);
   });
 
   test('WHEN records are turned off THEN it does not write search-records.json', async () => {
     const writeFile = await run({ records: false });
-    expect(writeFile.mock.calls.map(([name]) => name)).not.toContain(SEARCH_RECORDS_FILE);
+    expect(writeFile).not.toHaveBeenCalled();
   });
 
   test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {

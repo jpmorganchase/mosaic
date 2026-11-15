@@ -8,7 +8,7 @@ export type { HighlightCodeBlocksOptions } from './plugins/highlightCodeBlocks.j
 // Sitemap loader for static-export builds.
 export * from './loadSitemap.js';
 // Cached, parallelisable per-request loaders consumed by App Router
-// route segments (`getMdxRaw`, `getSharedConfig`, `getSearchData`).
+// route segments (`getMdxRaw`, `getSharedConfig`).
 export * from './cachedLoaders.js';
 // Canonical document/config context, including aliases and folder indexes.
 export * from './resolveContent.js';

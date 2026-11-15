@@ -1,38 +1,9 @@
 /**
- * App-Router-native cached loaders for Mosaic content.
- *
- * Three pure, independently cacheable primitives that the page calls in
- * parallel via `Promise.all`, which:
- *
- *   - eliminates redundant work (e.g. the search-data files are
- *     identical for every page in the site but were previously re-read
- *     on every request),
- *   - turns the request shape from `sum(stepLatencies)` into
- *     `max(stepLatencies)` because the three loaders have no real
- *     dependency on each other,
- *   - exposes a tag-based revalidation hook (`revalidateTag('mosaic-content')`)
- *     so an external trigger (typically the Mosaic CLI hitting
- *     `POST /api/revalidate` after rebuilding a snapshot) can mark
- *     every cache entry stale without restarting the server.
- *
- * Each loader is wrapped in two cache layers:
- *
- *   1. {@link cache} from `react` — *request-scoped* memoisation. If
- *      `generateMetadata` and the page render both call the same loader
- *      with the same args, the underlying work runs once per request.
- *
- *   2. {@link unstable_cache} from `next/cache` — *cross-request*
- *      memoisation with revalidation. Backed by Next's data cache; in
- *      dev it lives in-memory, in prod it's the deployment's data
- *      cache layer (filesystem in self-hosted, edge KV on Vercel,
- *      etc.).
- *
- * Both layers are required: `unstable_cache` is global but its key is
- * a string — feeding it large argument structures defeats the win;
- * `cache()` is identity-keyed and per-request, so it deduplicates
- * within a render even before we hit `unstable_cache`.
- *
- * Server-only. Importing this from a client component throws.
+ * Request-memoized content loaders with optional persistent Next data caching.
+ * Independent MDX and shared-config reads can run in parallel. Cache entries
+ * share the Mosaic content tag for webhook-driven invalidation. Search records
+ * are loaded independently by the search handler or the browser search client.
+ * Server-only.
  */
 import fs from 'fs';
 import path from 'path';
@@ -245,89 +216,6 @@ const loadSharedConfigCached = withCrossRequestCache(
 export const getSharedConfig = cache(
   async (pathname: string, mode: MosaicMode, contentUrl: string) =>
     loadSharedConfigCached(deriveSharedConfigUrlPath(pathname), mode, contentUrl)
-);
-
-// ---------------------------------------------------------------------------
-// Search index loader
-// ---------------------------------------------------------------------------
-
-const SEARCH_DATA_FILE = 'search-data-condensed.json';
-const SEARCH_CONFIG_FILE = 'search-config.json';
-
-async function readSnapshotJsonFile(targetFile: string): Promise<unknown | undefined> {
-  // Search files live at the snapshot root, not per-route, so the
-  // `urlPath` arg to `getSnapshotFileConfig` is only used to pick the
-  // active snapshot dir. Pass empty.
-  const { snapshotDir } = getSnapshotFileConfig('');
-  // The snapshot dir comes from the environment, so Turbopack would trace the
-  // whole project for this path. Sites include their snapshots explicitly with
-  // `outputFileTracingIncludes`, so skip tracing it.
-  const filePath = path.join(/*turbopackIgnore: true*/ process.cwd(), snapshotDir, targetFile);
-  try {
-    await fs.promises.stat(filePath);
-  } catch {
-    return undefined;
-  }
-  const raw = await loadLocalFile(filePath);
-  return safeJsonParse(raw, filePath);
-}
-
-async function fetchUpstreamJson(
-  contentUrl: string,
-  targetPath: string
-): Promise<unknown | undefined> {
-  // `cache: 'no-store'` — see the equivalent comment in
-  // `loadSharedConfigImpl`'s active-mode branch. Without
-  // `MOSAIC_ACTIVE_MODE_CACHE` this runs on every request (the
-  // per-request `cache()` only shares it within one render).
-  const response = await fetch(`${contentUrl}/${targetPath}`, {
-    cache: 'no-store',
-    headers: { 'Content-Type': 'application/json' }
-  });
-  if (response.ok) return response.json();
-  if (response.status === 404) return undefined;
-  throw new Error(
-    `Failed to load ${targetPath} from ${contentUrl}: ${response.status} ${response.statusText}`
-  );
-}
-
-const loadSearchDataImpl = async (
-  mode: MosaicMode,
-  contentUrl: string
-): Promise<{ searchIndex?: unknown; searchConfig?: unknown }> => {
-  if (mode === 'snapshot-file') {
-    const [searchIndex, searchConfig] = await Promise.all([
-      readSnapshotJsonFile(SEARCH_DATA_FILE),
-      readSnapshotJsonFile(SEARCH_CONFIG_FILE)
-    ]);
-    return { searchIndex, searchConfig };
-  }
-  const [searchIndex, searchConfig] = await Promise.all([
-    fetchUpstreamJson(contentUrl, SEARCH_DATA_FILE),
-    fetchUpstreamJson(contentUrl, SEARCH_CONFIG_FILE)
-  ]);
-  return { searchIndex, searchConfig };
-};
-
-// Key includes only `mode` — the search files are the same for every
-// route in a given mode + contentUrl combination.
-const loadSearchDataCached = withCrossRequestCache(
-  loadSearchDataImpl,
-  ['mosaic', 'searchData'],
-  // Loader signature: `(mode, contentUrl)`. Mode is the first arg.
-  ([mode]) => mode,
-  data => data.searchIndex !== undefined
-);
-
-/**
- * Resolve the (site-wide) search index + config. Identical for every
- * page in a deployment, so this cache key is keyed on the mode
- * (snapshot-file / active) rather than per-route; once
- * loaded it's reused across all subsequent page renders until
- * `revalidateTag(MOSAIC_CONTENT_CACHE_TAG)` invalidates.
- */
-export const getSearchData = cache(async (mode: MosaicMode, contentUrl: string) =>
-  loadSearchDataCached(mode, contentUrl)
 );
 
 // ---------------------------------------------------------------------------

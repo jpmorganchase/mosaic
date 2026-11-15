@@ -43,7 +43,7 @@ removed, and a new static-export build target has been added.
   `middlewarePresets`, `createMiddlewareRunner` and the
   `fromGetServerSidePropsContext` adapter are gone.
 - **Replaced by cached loaders** that App Router routes call directly
-  (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+  (in parallel): `getMdxRaw`, `getSharedConfig`,
   `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
   `resolveMosaicMode`. Each is deduplicated per request with
   `React.cache` and cached across requests with `unstable_cache`, tagged

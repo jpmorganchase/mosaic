@@ -1,4 +1,5 @@
 export * from './AppHeader';
+export { SearchProvider, type SearchProviderProps } from './SearchProvider';
 export * from './AppHeaderControls';
 export * from './AppHeaderDrawer';
 export * from './AppHeaderTabs';

@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Input, Button } from '@salt-ds/core';
 import { Icon } from '@jpmorganchase/mosaic-components';
-import { useSearchData } from './useSearchData';
-import { performSearch } from './searchUtils';
+import { useSearch } from './useSearch';
 import { ResultsList } from './Results';
-import type { SearchResults } from './Results';
 import styles from './styles.css';
 
 export function SearchInput() {
-  const { searchIndex, searchConfig } = useSearchData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResults>([]);
+  const { enabled, results: searchResults, loading, error } = useSearch(searchTerm);
   const [listVisibility, setListVisibility] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -19,16 +16,13 @@ export function SearchInput() {
   const handleSearch = e => {
     const nextTerm = e.target.value;
     setSearchTerm(nextTerm);
-    const results = performSearch(searchIndex, nextTerm, searchConfig);
-    setSearchResults(results);
     setListVisibility(true);
   };
 
   const handleClear = useCallback(() => {
     setSearchTerm('');
-    setSearchResults([]);
     inputRef.current?.focus();
-  }, [searchTerm, searchResults]);
+  }, []);
 
   const handleInputFocus = () => {
     setListVisibility(true);
@@ -56,6 +50,8 @@ export function SearchInput() {
     };
   }, []);
 
+  if (!enabled) return null;
+
   return (
     <div className={styles.root} ref={wrapperRef}>
       <Input
@@ -76,8 +72,13 @@ export function SearchInput() {
         onFocus={handleInputFocus}
         ref={inputRef}
       />
-      {searchTerm.length > 0 && listVisibility && (
-        <ResultsList searchResults={searchResults} handleClear={handleClear} query={searchTerm} />
+      {searchTerm.trim().length > 0 && listVisibility && (
+        <ResultsList
+          searchResults={searchResults}
+          handleClear={handleClear}
+          loading={loading}
+          error={error}
+        />
       )}
     </div>
   );

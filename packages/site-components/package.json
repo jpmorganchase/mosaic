@@ -13,6 +13,12 @@
   "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
+    "./SearchProvider": {
+      "types": "./dist/SearchProvider/index.d.ts",
+      "import": "./dist/SearchProvider/index.js",
+      "node": "./dist/SearchProvider/index.js",
+      "default": "./dist/SearchProvider/index.js"
+    },
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
@@ -48,15 +54,14 @@
   "dependencies": {
     "@jpmorganchase/mosaic-components": "workspace:^",
     "@jpmorganchase/mosaic-content-editor-plugin": "workspace:^",
+    "@jpmorganchase/mosaic-site-middleware": "workspace:^",
     "@jpmorganchase/mosaic-store": "workspace:^",
     "@jpmorganchase/mosaic-theme": "workspace:^",
     "@salt-ds/core": "^1.63.0",
     "@vanilla-extract/css": "^1.6.0",
     "clsx": "^2.0.0",
-    "fuse.js": "^6.6.2",
     "lodash-es": "^4.17.23",
-    "next-mdx-remote-client": "^2.1.12",
-    "swr": "^2.5.1"
+    "next-mdx-remote-client": "^2.1.12"
   },
   "peerDependencies": {
     "@types/react": "^19.0.0",

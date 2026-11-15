@@ -100,13 +100,12 @@ Mount `<SessionProvider>` without a server-resolved session. When auth is enable
 `getServerSideProps` and the middleware chain (`createMiddlewareRunner`, `middlewarePresets`) are gone. Fetch your data in `src/app/[namespace]/[...route]/page.tsx` instead:
 
 1. Write an async function that loads the data. Wrap it in React's `cache()` if `generateMetadata` also needs it, so it runs once per request.
-2. Call it inside the existing `Promise.all` next to `resolveContent`. Shared search data is loaded by the namespace layout.
+2. Call it inside the existing `Promise.all` next to `resolveContent`. Search is loaded independently by the header through the records API or browser index.
 3. Pass the result to your component as a prop, or add it to `storeProps` and read it with `useStore` from `@jpmorganchase/mosaic-store`.
 
 ```tsx
-const [resolved, search, sp, releaseNotes] = await Promise.all([
+const [resolved, sp, releaseNotes] = await Promise.all([
   resolveContent(pathname, mode, contentUrl),
-  getSearchData(mode, contentUrl),
   shouldPrerenderSnapshot ? Promise.resolve({}) : searchParams,
   getReleaseNotes(pathname)
 ]);
@@ -139,13 +138,13 @@ To serve your docs as Markdown for agents (`/llms.txt` and `/<page>.md`), copy `
 
 ## 3. Update the package APIs you call
 
-| Package                        | Removed                                                                                                                                                                  | Use instead                                                                                                                                                                                                                                   |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mosaic-site-middleware`       | `withMosaicMode`, `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`, `middlewarePresets`, `createMiddlewareRunner`, `fromGetServerSidePropsContext` | `resolveMosaicMode`, `resolveContent`, `canonicalRoute`, `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getSearchData`, `getTagSuggestions`, `loadSitemap` and `serializeMdxForClient`. Use `auth()` from `src/auth.ts` for the session. |
-| `mosaic-site-components`       | `Body`, `Document`, the `OpenAPI` MDX component                                                                                                                          | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`. For `OpenAPI`, see below.                                                                                                                  |
-| `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                                                                |
-| `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                                                           |
-| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                                                           |
+| Package                        | Removed                                                                                                                                                                  | Use instead                                                                                                                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mosaic-site-middleware`       | `withMosaicMode`, `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`, `middlewarePresets`, `createMiddlewareRunner`, `fromGetServerSidePropsContext` | `resolveMosaicMode`, `resolveContent`, `canonicalRoute`, `getMdxRaw`, `getMdxRawSource`, `getSharedConfig`, `getTagSuggestions`, `loadSitemap` and `serializeMdxForClient`. Use `auth()` from `src/auth.ts` for the session. |
+| `mosaic-site-components`       | `Body`, `Document`, the `OpenAPI` MDX component                                                                                                                          | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`. For `OpenAPI`, see below.                                                                                                 |
+| `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                                               |
+| `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                                          |
+| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                                          |
 
 `mosaic-schemas` no longer exports `snapshotS3EnvSchema` or `S3LoaderProcessEnv`, and `MosaicMode` in `mosaic-types` is now `'active' | 'snapshot-file'`.
 
@@ -277,3 +276,7 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 9. Set `MOSAIC_MODE=active` if your site reads from a running CLI, or `MOSAIC_MODE=snapshot-file` if it used `snapshot-s3`.
 10. Set `NEXT_PUBLIC_SITE_URL` when you build the site.
 11. Run `yarn build && yarn start`, open a few pages, sign in, then edit and save a page from a Git source.
+
+## Search records migration
+
+The default header now uses section-level search. Remove `getSearchData`, `useSearchIndex`, and the `searchIndex`/`searchConfig` store props from custom integrations. Regenerate snapshots: the three legacy search files are no longer emitted. Server sites use `/api/search`; static exports use a lazy browser index from `search-records.json`. See [search configuration](../configure/plugins/search-index-plugin#built-in-search-ui) for provider and plugin migration details.

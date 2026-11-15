@@ -6,7 +6,6 @@ export * from './layout';
 export * from './meta';
 export * from './navigation';
 export * from './route';
-export * from './searchIndex';
 export * from './sharedConfig';
 export * from './sidebar';
 export * from './tableOfContents';

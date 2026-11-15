@@ -45,13 +45,16 @@ import {
 } from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
+import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
 
 export function Providers({
   authEnabled,
+  searchMode = 'server',
   children
 }: {
   /** Server-side `AUTH_ENABLED` from `src/auth.ts`, passed down by the root layout. */
   authEnabled: boolean;
+  searchMode?: 'server' | 'browser';
   children: React.ReactNode;
 }) {
   // `<SessionProvider>` is mounted **unconditionally**, because
@@ -79,7 +82,9 @@ export function Providers({
   return (
     <SessionProvider session={authEnabled ? undefined : null}>
       <StoreProvider value={createStore()}>
-        <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
+        <ThemeProvider themeClassName={themeClassName}>
+          <SearchProvider mode={searchMode}>{children}</SearchProvider>
+        </ThemeProvider>
       </StoreProvider>
     </SessionProvider>
   );

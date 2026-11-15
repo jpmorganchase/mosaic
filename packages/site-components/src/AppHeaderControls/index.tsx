@@ -8,12 +8,7 @@ import {
   useIsEditing
 } from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
 import { EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls';
-import {
-  useColorMode,
-  useSearchIndex,
-  useSourceCapabilities,
-  useStoreActions
-} from '@jpmorganchase/mosaic-store';
+import { useColorMode, useSourceCapabilities, useStoreActions } from '@jpmorganchase/mosaic-store';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
 import { UserProfile } from '../UserProfile';
@@ -98,7 +93,6 @@ export const AppHeaderControls: React.FC = () => {
   const isLoggedIn = session != null;
   const isEditing = useIsEditing();
   const { startEditing, stopEditing } = useEditModeActions();
-  const { searchEnabled } = useSearchIndex();
   // Editor surfaces (toolbar + menu item) only render when the page's
   // owning source has opted in via its `capabilities.writable` flag.
   // Sources without a backing persistence workflow (e.g. local
@@ -143,7 +137,7 @@ export const AppHeaderControls: React.FC = () => {
   return (
     <div className={styles.root}>
       {isLoginEnabled && isWritableSource && <EditorControls enabled={isLoggedIn} />}
-      {searchEnabled && <SearchInput />}
+      <SearchInput />
       {isLoginEnabled && (
         <div className={styles.userInfo}>
           {isLoggedIn ? (

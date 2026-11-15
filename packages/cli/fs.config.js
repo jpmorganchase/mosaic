@@ -33,7 +33,7 @@ export default {
       // After `$RefPlugin` (-1), so titles and fields that come from `$ref`s
       // are resolved, and before `LazyPagePlugin` (-2) moves page content out.
       priority: -1.5,
-      options: { maxLineLength: 240, maxLineCount: 240 }
+      options: {}
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin',
