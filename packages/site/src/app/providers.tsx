@@ -1,47 +1,17 @@
 'use client';
 
-/**
- * Client-side providers for the App Router build.
- *
- * Split into two layers:
- *
- *   1. `<Providers>` — mounted by the root layout, persists across
- *      navigations. Carries the *global* state: NextAuth session, the
- *      colour-mode-bearing store (default-seeded; `persist` middleware
- *      hydrates `colorMode` from `localStorage`), and Salt's
- *      `ThemeProvider`.
- *
- *   2. `<StoreShell>` — mounted by each page, re-creates a *fresh*
- *      Zustand store seeded with the per-route loader output
- *      (`sharedConfig`, frontmatter, ...). React context resolves to
- *      the nearest provider, so nested consumers see the route-specific
- *      store while everything above (e.g. the layout's
- *      `ThemeProvider`) keeps reading from the global one.
- *
- * Why a fresh per-route store instead of `useCreateStore`?
- *   `useCreateStore` from `mosaic-store` keeps a module-level singleton
- *   on the client and patches its state from a `useLayoutEffect`. That
- *   pattern produces a hydration mismatch under the App Router: SSR
- *   renders the page-level store with the route seed, but the initial
- *   client render reads from the layout's default-seeded singleton —
- *   so `useAppHeader()` (and anything else driven by `sharedConfig`)
- *   returns `undefined` until the layout effect runs, which is too
- *   late for hydration. `initializeStore(seed)` returns a fully-
- *   populated store synchronously, matching SSR exactly.
- */
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+/** Global session/theme providers and the separately seeded page content store. */
+import { useLayoutEffect, useRef, useState } from 'react';
 import { ImageProvider, LinkProvider, ThemeProvider } from '@jpmorganchase/mosaic-components';
 import { LayoutProvider, layouts as mosaicLayouts } from '@jpmorganchase/mosaic-layouts';
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
 import { Image } from '@jpmorganchase/mosaic-site-components/Image/index';
 import { Link } from '@jpmorganchase/mosaic-site-components/Link';
 import {
-  disposeStore,
+  ColorModeProvider,
   initializeStore,
-  registerStore,
   reseedStore,
-  StoreProvider,
-  useCreateStore
+  StoreProvider
 } from '@jpmorganchase/mosaic-store';
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
@@ -73,19 +43,13 @@ export function Providers({
   // comes from the server because `AUTH_ENABLED` reads non-public env
   // vars that are `undefined` in the browser.
   //
-  // Default-seeded store so the layout's `ThemeProvider`
-  // (`useColorMode()`) always has a store in context — required even
-  // for not-found and error renders. `useCreateStore({})` is fine
-  // here because the layout-level store doesn't carry per-route data
-  // that would cause a hydration mismatch.
-  const createStore = useCreateStore({});
   return (
     <SessionProvider session={authEnabled ? undefined : null}>
-      <StoreProvider value={createStore()}>
+      <ColorModeProvider>
         <ThemeProvider themeClassName={themeClassName}>
           <SearchProvider mode={searchMode}>{children}</SearchProvider>
         </ThemeProvider>
-      </StoreProvider>
+      </ColorModeProvider>
     </SessionProvider>
   );
 }
@@ -93,8 +57,8 @@ export function Providers({
 /**
  * Per-route shell. Creates a *new* Zustand store seeded with the
  * middleware-derived `storeProps` on first mount and keeps a stable
- * reference across re-renders. The nested `<StoreProvider>` overrides
- * the layout's default store for everything inside this subtree.
+ * reference across re-renders. Theme preferences live in the root
+ * ColorModeProvider and are unaffected by page data changes.
  *
  * Navigating to another route remounts the page subtree, so the
  * `useState` initializer runs fresh per navigation. `router.refresh()`
@@ -124,13 +88,6 @@ export function StoreShell({
     seededWith.current = storeProps;
     reseedStore(store, storeProps);
   }, [store, storeProps]);
-  // Registers the store for colour-mode sync while mounted and releases
-  // it (listeners, sibling-store set) when the page unmounts. Re-registers
-  // after React StrictMode's simulated unmount in development.
-  useEffect(() => {
-    registerStore(store);
-    return () => disposeStore(store);
-  }, [store]);
   return (
     <StoreProvider value={store}>
       <BaseUrlProvider>

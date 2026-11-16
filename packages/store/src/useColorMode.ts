@@ -1,8 +1,7 @@
-import { useStore } from './store';
+import { useColorModeContext } from './ColorModeProvider';
 
 import { ColorMode } from './types/colorMode';
 
 export function useColorMode(): ColorMode {
-  const colorMode = useStore(state => state.colorMode);
-  return colorMode;
+  return useColorModeContext().colorMode;
 }

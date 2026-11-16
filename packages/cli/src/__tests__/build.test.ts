@@ -4,7 +4,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const coreConstructed = vi.fn();
-let sourceUpdated: ((filesystem: unknown, source: { id: symbol }) => Promise<void>) | undefined;
+let sourceUpdated: ((filesystem: unknown, source: { id: symbol }) => void) | undefined;
 const unsubscribe = vi.fn(() => {
   sourceUpdated = undefined;
 });
@@ -88,18 +88,11 @@ describe('GIVEN the build command', () => {
           }
         }
       ]);
-      const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('exit');
-      });
-      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
-      expect(log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: expect.stringContaining(
-            `Source 'Salt docs', plugin 'MarkdownConverter' (${lifecycle}) at '/salt/button.mdx': Cannot convert custom MDX`
-          )
-        })
+      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow(
+        `Source 'Salt docs', plugin 'MarkdownConverter' (${lifecycle}) at '/salt/button.mdx': Cannot convert custom MDX`
       );
+      expect(unsubscribe).toHaveBeenCalledOnce();
+      expect(core.stop).toHaveBeenCalledOnce();
       expect(filesystem.promises.glob).not.toHaveBeenCalled();
       expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
     }
@@ -138,12 +131,18 @@ describe('GIVEN the build command', () => {
     filesystem.promises.glob.mockResolvedValue(['/fast.mdx', '/slow.mdx']);
     filesystem.promises.readFile.mockImplementation(async file => [Buffer.from(file)]);
 
-    await build({ plugins: [], sources: [{}, {}] }, outDir, { name: 'latest' });
+    const building = build({ plugins: [], sources: [{}, {}] }, outDir, { name: 'latest' });
+    const completed = vi.fn();
+    void building.then(completed);
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
 
     expect(filesystem.promises.glob).not.toHaveBeenCalled();
     expect(core.stop).not.toHaveBeenCalled();
     expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
-    await sourceUpdated?.(filesystem, slow);
+    expect(completed).not.toHaveBeenCalled();
+    sourceUpdated?.(filesystem, slow);
+    await building;
+    expect(completed).toHaveBeenCalledOnce();
 
     await expect(
       fs.promises.readFile(path.join(outDir, 'latest', 'fast.mdx'), 'utf8')
@@ -247,14 +246,7 @@ describe('GIVEN the build command', () => {
   test('THEN colliding non-JSON files still fail without a completed identity', async () => {
     filesystem.promises.glob.mockResolvedValue(['/shared.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('first'), Buffer.from('second')]);
-    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('exit');
-    });
-    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
-    expect(log).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining('overwritten data') })
-    );
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('overwritten data');
     expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
   });
 
@@ -268,12 +260,17 @@ describe('GIVEN the build command', () => {
     filesystem.promises.glob.mockResolvedValue(['/complete.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('both sources ready')]);
 
-    await build({ plugins: [], sources: [{}, {}, { disabled: true }] }, outDir, { name: 'latest' });
+    const building = build({ plugins: [], sources: [{}, {}, { disabled: true }] }, outDir, {
+      name: 'latest'
+    });
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
 
     expect(filesystem.promises.glob).not.toHaveBeenCalled();
     expect(core.stop).not.toHaveBeenCalled();
     const notify = sourceUpdated;
-    await Promise.all([notify?.(filesystem, slow), notify?.(filesystem, slow)]);
+    notify?.(filesystem, slow);
+    notify?.(filesystem, slow);
+    await building;
 
     await expect(
       fs.promises.readFile(path.join(outDir, 'latest', 'complete.mdx'), 'utf8')
@@ -305,6 +302,7 @@ describe('GIVEN the build command', () => {
   });
 
   test('THEN identity is published after aliases resolve', async () => {
+    const chdir = vi.spyOn(process, 'chdir');
     filesystem.promises.glob.mockResolvedValue(['/page.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('complete')]);
     filesystem.symlinksToJSON.mockReturnValue({ '/page': [{ target: '/page.mdx' }] });
@@ -318,7 +316,32 @@ describe('GIVEN the build command', () => {
       return writeFile(...args);
     });
     await build(config(), outDir, { name: 'latest' });
+    expect(chdir).not.toHaveBeenCalled();
     await identity();
+  });
+
+  test('THEN an alias collision rejects without changing cwd or publishing identity', async () => {
+    const cwd = process.cwd();
+    filesystem.promises.glob.mockResolvedValue(['/page.mdx']);
+    filesystem.promises.readFile.mockResolvedValue([Buffer.from('content')]);
+    filesystem.symlinksToJSON.mockReturnValue({ '/page.mdx': [{ target: '/other.mdx' }] });
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toMatchObject({
+      code: 'EEXIST'
+    });
+    expect(process.cwd()).toBe(cwd);
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+  });
+
+  test('THEN startup failure rejects and releases the subscription and sources', async () => {
+    core.start.mockRejectedValue(new Error('source failed to start'));
+    await expect(build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' })).rejects.toThrow(
+      'source failed to start'
+    );
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
   });
 
   test.each(['file', 'alias', 'directory'])(
@@ -329,15 +352,8 @@ describe('GIVEN the build command', () => {
       if (kind === 'alias')
         filesystem.symlinksToJSON.mockReturnValue({ [file]: [{ target: '/page.mdx' }] });
       else filesystem.promises.glob.mockResolvedValue([file]);
-      const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-      vi.spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('exit');
-      });
-      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
-      expect(log.mock.calls[0][0]).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining('reserved mosaic-snapshot.json')
-        })
+      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow(
+        'reserved mosaic-snapshot.json'
       );
       expect(filesystem.promises.readFile).not.toHaveBeenCalled();
       expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
@@ -348,11 +364,9 @@ describe('GIVEN the build command', () => {
     filesystem.promises.glob.mockResolvedValue(['/page.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('content')]);
     vi.spyOn(fs.promises, 'writeFile').mockRejectedValue(new Error('disk full'));
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('exit');
-    });
-    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('disk full');
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
     expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
   });
 });

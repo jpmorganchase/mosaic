@@ -16,9 +16,8 @@ import { defineConfig } from 'vitest/config';
  *    `packages/site/src`.
  *
  *  - `client` — jsdom environment, runs React-component suites in the
- *    legacy packages (`ReactLive.test.tsx` only) and the broader
- *    `*.test.[jt]s?(x)` pattern in `content-editor-plugin` and
- *    `layouts`. CSS imports are stubbed to `identity-obj-proxy`.
+ *    components, editor, layouts, site-components, sitemap and store
+ *    packages. CSS imports are stubbed to `identity-obj-proxy`.
  *
  * Common excludes (`e2e/`, `node_modules/`, `dist/`, `.next/`) prevent
  * Vitest 4's broader default discovery from picking up Playwright e2e
@@ -38,7 +37,7 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'lcov'],
-      include: ['**/packages/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
+      include: ['packages/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
       exclude: [
         '**/node_modules/**',
         '**/dist/**',
@@ -67,14 +66,9 @@ export default defineConfig({
         test: {
           name: 'server',
           include: [
-            '**/{cli,core,fromHttpRequest,plugins,schemas,serialisers,site-middleware,source-figma,source-git-repo,source-http,source-local-folder,source-readme,source-storybook,workflows}/**/__tests__/*.test.[jt]s?(x)',
-            // Catch-all site helpers (e.g. `newPageTemplate.ts`)
-            // that are pure server-side TS without React. Site is
-            // excluded from coverage by intent (it's the example
-            // host app, not a published package), but small
-            // unit-test surface still belongs in the same vitest
-            // run so PRs can't silently regress them.
-            '**/packages/site/src/**/__tests__/*.test.[jt]s?(x)',
+            'packages/{cli,core,fromHttpRequest,plugins,schemas,serialisers,site-middleware,source-figma,source-git-repo,source-http,source-local-folder,source-readme,source-storybook,workflows}/**/__tests__/*.test.[jt]s?(x)',
+            // Site suites default to Node; React suites opt into jsdom.
+            'packages/site/src/**/__tests__/*.test.[jt]s?(x)',
             // Release tooling: snapshot-release request, tarball checks
             // and publishing (scripts/snapshot).
             'scripts/snapshot/__tests__/*.test.mjs'
@@ -90,7 +84,7 @@ export default defineConfig({
             // Every React package's `__tests__` suites. Keep this in
             // sync with the package list: a package missing here has
             // its tests silently skipped by CI.
-            '**/{components,content-editor-plugin,layouts,site-components,sitemap-component,store}/**/__tests__/*.test.[jt]s?(x)'
+            'packages/{components,content-editor-plugin,layouts,site-components,sitemap-component,store}/**/__tests__/*.test.[jt]s?(x)'
           ],
           setupFiles: ['./scripts/vitest/vitest.client.setup.mts'],
           exclude: COMMON_EXCLUDES,

@@ -1,6 +1,6 @@
 import { useLayoutEffect, createContext, useContext } from 'react';
 import { createStore, StoreApi, useStore as useZustandStore } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 
 import type { BreadcrumbsSlice } from './types/breadcrumbs';
 import type { SharedConfigSlice } from './types/sharedConfig';
@@ -8,7 +8,6 @@ import type { LayoutSlice } from './types/layout';
 import type { NavigationSlice } from './types/navigation';
 import type { SidebarSlice } from './types/sidebar';
 import type { TableOfContentsSlice } from './types/tableOfContents';
-import type { ColorMode } from './types/colorMode';
 
 let store: StoreApi<SiteState>;
 
@@ -26,16 +25,9 @@ export type SiteState = BreadcrumbsSlice &
     route?: string;
     /** Page title */
     title?: string;
-    colorMode: ColorMode;
-    actions: {
-      setColorMode: (colorMode: ColorMode) => void;
-    };
   };
 
-type PeristedStoreState = Pick<SiteState, 'colorMode'>;
-type DefaultSiteState = Omit<SiteState, 'actions'>;
-
-function getDefaultInitialState(): DefaultSiteState {
+function getDefaultInitialState(): SiteState {
   return {
     breadcrumbs: [],
     sidebarData: [],
@@ -45,8 +37,7 @@ function getDefaultInitialState(): DefaultSiteState {
     description: undefined,
     layout: undefined,
     route: undefined,
-    title: undefined,
-    colorMode: 'light'
+    title: undefined
   };
 }
 
@@ -54,148 +45,13 @@ const StoreContext = createContext<typeof store | undefined>(undefined);
 StoreContext.displayName = 'StoreContext';
 const StoreProvider = StoreContext.Provider;
 
-const storeMiddlewares = stateCreatorFn =>
-  devtools(
-    persist<SiteState, [], [], PeristedStoreState>(stateCreatorFn, {
-      name: 'mosaic-theme-pref',
-      partialize: (state: SiteState) => ({
-        colorMode: state.colorMode
-      })
-    })
-  );
+/** Content stores have no persistence or global subscriptions. */
+const initializeStore = (preloadedState: Partial<SiteState> = {}) =>
+  createStore<SiteState>()(devtools(() => ({ ...getDefaultInitialState(), ...preloadedState })));
 
-/**
- * Mirror the active `colorMode` onto `document.documentElement` as a
- * `data-mode` attribute, so any CSS keyed off `[data-mode=dark]`
- * (notably global theme styles and the FOUC-prevention script in the
- * site's root layout) follows the user's preference immediately —
- * without a full page refresh.
- *
- * Lives at the module level so every store instance (layout-level and
- * per-route) drives the same attribute. The inline `<script>` in the
- * site's `<head>` sets the initial value from `localStorage` before
- * React hydrates; this function keeps it in sync from that point on.
- */
-function syncColorModeToDom(colorMode: ColorMode) {
-  if (typeof document === 'undefined') return;
-  document.documentElement.setAttribute('data-mode', colorMode);
-}
-
-/**
- * Cross-store same-tab sync for `colorMode`.
- *
- * The App Router site mounts two store instances (one at the layout
- * level for `<ThemeProvider>` / global state, one per route for
- * page-scoped seeds). They share persisted storage
- * (`localStorage.mosaic-theme-pref`) but not in-memory state, and the
- * browser does not fire `storage` events for same-tab writes — so a
- * `setColorMode` call on one store would not propagate to the other,
- * leaving Salt's `SaltProviderNext` and `<html data-mode>` out of sync
- * until a full page reload.
- *
- * Maintain a module-level set of every live store and broadcast every
- * `colorMode` change to all of them. `disposeStore` removes a store
- * again; `StoreShell` in the site calls it when a page unmounts.
- */
-const liveStores = new Set<StoreApi<SiteState>>();
-function broadcastColorMode(colorMode: ColorMode, origin: StoreApi<SiteState>) {
-  for (const store of liveStores) {
-    if (store === origin) continue;
-    if (store.getState().colorMode !== colorMode) {
-      store.setState({ colorMode });
-    }
-  }
-}
-
-const storeCleanups = new WeakMap<StoreApi<SiteState>, () => void>();
-
-/**
- * Subscribes `store` to same-tab colour-mode sync (sibling stores and
- * `<html data-mode>`) and cross-tab sync (`storage` events). Idempotent;
- * `initializeStore` calls it on the client. Components that create a
- * store per mount should call `disposeStore` on unmount (and call this
- * again on re-mount), otherwise every navigation leaks a store.
- */
-function registerStore(mosaicStore: StoreApi<SiteState>) {
-  if (typeof window === 'undefined' || storeCleanups.has(mosaicStore)) return;
-  liveStores.add(mosaicStore);
-
-  // Same-tab: when any store changes `colorMode`, broadcast to every
-  // sibling store and mirror to `<html data-mode>`.
-  const unsubscribe = mosaicStore.subscribe((state, prev) => {
-    if (state.colorMode !== prev.colorMode) {
-      syncColorModeToDom(state.colorMode);
-      broadcastColorMode(state.colorMode, mosaicStore);
-    }
-  });
-
-  // Cross-tab: the persist middleware writes `localStorage` on every
-  // change; the matching read side is a `storage` event listener,
-  // which fires only on *other* same-origin tabs/windows. Pick the
-  // updated value back up and reflect it locally.
-  const onStorage = (event: StorageEvent) => {
-    if (event.key !== 'mosaic-theme-pref' || !event.newValue) return;
-    try {
-      const next = JSON.parse(event.newValue)?.state?.colorMode as ColorMode | undefined;
-      if (!next || next === mosaicStore.getState().colorMode) return;
-      mosaicStore.setState({ colorMode: next });
-      // `setState` here will trip the subscriber above, which handles
-      // the DOM mirror + same-tab broadcast.
-    } catch {
-      // ignore malformed payloads
-    }
-  };
-  window.addEventListener('storage', onStorage);
-
-  storeCleanups.set(mosaicStore, () => {
-    liveStores.delete(mosaicStore);
-    unsubscribe();
-    window.removeEventListener('storage', onStorage);
-  });
-}
-
-/** Stops syncing `store` and drops the module's reference to it. */
-function disposeStore(mosaicStore: StoreApi<SiteState>) {
-  storeCleanups.get(mosaicStore)?.();
-  storeCleanups.delete(mosaicStore);
-}
-
-const initializeStore = (preloadedState: Partial<SiteState> = {}) => {
-  const mosaicStore = createStore(
-    storeMiddlewares(set => ({
-      ...getDefaultInitialState(),
-      ...preloadedState,
-      actions: {
-        setColorMode: (colorMode: ColorMode) => {
-          set({ colorMode });
-          syncColorModeToDom(colorMode);
-        }
-      }
-    }))
-  );
-
-  registerStore(mosaicStore);
-
-  return mosaicStore;
-};
-
-/**
- * Replaces the page state of an existing store with a new seed, keeping
- * the reader's colour mode and the store's actions.
- *
- * A store created with `initializeStore` keeps its first seed. When a
- * mounted page receives new server data without remounting (for example
- * after `router.refresh()`), call this so store-driven UI (sidebar, table
- * of contents, breadcrumbs, …) follows the new data. Keys missing from
- * `preloadedState` go back to their defaults instead of keeping stale
- * values.
- */
+/** Replace page data after a refresh, resetting missing fields to their defaults. */
 function reseedStore(mosaicStore: StoreApi<SiteState>, preloadedState: Partial<SiteState> = {}) {
-  const { colorMode, actions } = mosaicStore.getState();
-  mosaicStore.setState(
-    { ...getDefaultInitialState(), ...preloadedState, colorMode, actions },
-    true
-  );
+  mosaicStore.setState({ ...getDefaultInitialState(), ...preloadedState }, true);
 }
 
 function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
@@ -226,16 +82,11 @@ function useCreateStore(serverInitialState: Partial<SiteState>, isSSR = false) {
     if (serverInitialState && isReusingStore) {
       // recombine the page props with the initial state so that if page props are missing something then the default gets applied
       const pageState = { ...getDefaultInitialState(), ...serverInitialState };
-      const { colorMode, actions, ...restStoreState } = store.getState();
 
       store.setState(
         {
-          // re-use functions from existing store
-          ...restStoreState,
-          // but reset all other properties.
-          ...pageState,
-          colorMode,
-          actions
+          ...store.getState(),
+          ...pageState
         },
         true // replace states, rather than shallow merging
       );
@@ -259,12 +110,4 @@ function useStore<T>(
   return useZustandStore(storeFromContext, selector, equalityFn);
 }
 
-export {
-  useCreateStore,
-  StoreProvider,
-  useStore,
-  initializeStore,
-  registerStore,
-  disposeStore,
-  reseedStore
-};
+export { useCreateStore, StoreProvider, useStore, initializeStore, reseedStore };

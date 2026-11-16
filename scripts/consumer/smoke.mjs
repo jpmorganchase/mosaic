@@ -10,6 +10,30 @@ import {
 } from '@jpmorganchase/mosaic-site-components/SearchProvider';
 import { createSearchIndex } from '@jpmorganchase/mosaic-site-middleware/search';
 import { buildSidebarTree, compareSidebarNodes } from '@jpmorganchase/mosaic-plugins/sidebar';
+import {
+  ColorModeProvider,
+  initializeStore,
+  StoreProvider,
+  useColorMode,
+  useStoreActions
+} from '@jpmorganchase/mosaic-store';
+
+function ThemeConsumer() {
+  assert.equal(useColorMode(), 'light');
+  assert.equal(typeof useStoreActions().setColorMode, 'function');
+  return null;
+}
+renderToString(
+  React.createElement(
+    ColorModeProvider,
+    null,
+    React.createElement(
+      StoreProvider,
+      { value: initializeStore() },
+      React.createElement(ThemeConsumer)
+    )
+  )
+);
 
 const records = Array.from({ length: 24 }, (_, i) =>
   ['examples', 'usage'].map(tab => ({

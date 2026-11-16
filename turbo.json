@@ -21,36 +21,6 @@
         "NEXTAUTH_SECRET"
       ]
     },
-    "build:snapshot": {
-      "cache": false,
-      "passThroughEnv": [
-        "MOSAIC_*",
-        "AUTH_*",
-        "NEXTAUTH_*",
-        "NEXT_PUBLIC_*",
-        "SITE_URL",
-        "PORT",
-        "HOSTNAME",
-        "GITHUB_ID",
-        "GITHUB_SECRET",
-        "BITBUCKET_API_URL"
-      ]
-    },
-    "build:snapshot:latest": {
-      "cache": false,
-      "passThroughEnv": [
-        "MOSAIC_*",
-        "AUTH_*",
-        "NEXTAUTH_*",
-        "NEXT_PUBLIC_*",
-        "SITE_URL",
-        "PORT",
-        "HOSTNAME",
-        "GITHUB_ID",
-        "GITHUB_SECRET",
-        "BITBUCKET_API_URL"
-      ]
-    },
     "clean": {},
     "dev": {
       "cache": false,

@@ -1,4 +1,4 @@
-import { disposeStore, initializeStore, StoreProvider } from '@jpmorganchase/mosaic-store';
+import { ColorModeProvider } from '@jpmorganchase/mosaic-store';
 import { SaltProvider, Spinner } from '@salt-ds/core';
 import { act } from '@testing-library/react';
 import { hydrateRoot, type Root } from 'react-dom/client';
@@ -38,7 +38,6 @@ function mockViewport(initialWidth: number) {
 
 let root: Root | undefined;
 let container: HTMLDivElement | undefined;
-let store: ReturnType<typeof initializeStore> | undefined;
 const initialMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
 const initialHtmlAttributes = [...document.documentElement.attributes].map(({ name, value }) => [
   name,
@@ -50,8 +49,7 @@ afterEach(async () => {
   root = undefined;
   container?.remove();
   container = undefined;
-  if (store) disposeStore(store);
-  store = undefined;
+  localStorage.clear();
   if (initialMatchMedia) Object.defineProperty(window, 'matchMedia', initialMatchMedia);
   else Reflect.deleteProperty(window, 'matchMedia');
   for (const attribute of [...document.documentElement.attributes]) {
@@ -72,15 +70,18 @@ test.each([
   'hydrates nested providers and Spinner at a %ipx viewport, then follows viewport changes',
   async (width, density, viewBox) => {
     const resize = mockViewport(width);
-    store = initializeStore();
+    localStorage.setItem(
+      'mosaic-theme-pref',
+      JSON.stringify({ state: { colorMode: 'dark' }, version: 0 })
+    );
     const app = (
-      <StoreProvider value={store}>
+      <ColorModeProvider>
         <ThemeProvider>
           <SaltProvider>
             <Spinner id="hydrated-spinner" disableAnnouncer />
           </SaltProvider>
         </ThemeProvider>
-      </StoreProvider>
+      </ColorModeProvider>
     );
     const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window')!;
     let serverHtml: string;
@@ -107,6 +108,7 @@ test.each([
     await act(async () => {
       root = hydrateRoot(container!, app, { onRecoverableError });
     });
+    expect(document.documentElement).toHaveAttribute('data-mode', 'dark');
     expect(onRecoverableError).not.toHaveBeenCalled();
     expect(consoleError).not.toHaveBeenCalled();
     expect(container.querySelector('#hydrated-spinner')).toBe(spinner);

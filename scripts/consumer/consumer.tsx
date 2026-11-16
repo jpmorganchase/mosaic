@@ -13,6 +13,27 @@ import {
   compareSidebarNodes,
   type SidebarPage
 } from '@jpmorganchase/mosaic-plugins/sidebar';
+import {
+  ColorModeProvider,
+  initializeStore,
+  StoreProvider,
+  useColorMode,
+  useStoreActions
+} from '@jpmorganchase/mosaic-store';
+
+function ThemeConsumer() {
+  const mode = useColorMode();
+  const { setColorMode } = useStoreActions();
+  return <button onClick={() => setColorMode(mode === 'dark' ? 'light' : 'dark')}>{mode}</button>;
+}
+
+export const theme = (
+  <ColorModeProvider>
+    <StoreProvider value={initializeStore({ title: 'Page' })}>
+      <ThemeConsumer />
+    </StoreProvider>
+  </ColorModeProvider>
+);
 
 const policies: SearchIndexOptions = {
   synonyms: [['colour', 'color']],

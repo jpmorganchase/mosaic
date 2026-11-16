@@ -24,7 +24,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -37,13 +36,7 @@ import { AppHeader } from '@jpmorganchase/mosaic-site-components/AppHeader/index
 import { BaseUrlProvider } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
 import { Image } from '@jpmorganchase/mosaic-site-components/Image/index';
 import { Link } from '@jpmorganchase/mosaic-site-components/Link';
-import {
-  disposeStore,
-  initializeStore,
-  registerStore,
-  StoreProvider,
-  type SiteState
-} from '@jpmorganchase/mosaic-store';
+import { initializeStore, StoreProvider, type SiteState } from '@jpmorganchase/mosaic-store';
 
 type SharedConfig = SiteState['sharedConfig'] | undefined;
 
@@ -74,12 +67,6 @@ export function NamespaceFrame({
 }) {
   const [store] = useState(() => initializeStore(data as Partial<SiteState>));
   const [isEditing, setIsEditing] = useState(false);
-
-  // Colour-mode sync with the other stores while mounted.
-  useEffect(() => {
-    registerStore(store);
-    return () => disposeStore(store);
-  }, [store]);
 
   const handle = useMemo(
     () => ({

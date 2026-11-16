@@ -1,4 +1,5 @@
 export * from './store';
+export { ColorModeProvider } from './ColorModeProvider';
 export * from './useAppHeader';
 export * from './useBreadcrumbs';
 export * from './useColorMode';
