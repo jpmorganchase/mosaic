@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 import type { SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
 import { createSearchClient, type SearchClientOptions } from './searchClient';
 
@@ -41,33 +41,24 @@ export function SearchProvider({
   namespace
 }: SearchProviderProps) {
   const { limit = 6, sectionsPerResult = 3 } = queryOptions ?? {};
-  // Hosts often write index options inline. Changing them mustn't download
-  // the records and rebuild the browser index again, so the client reads
-  // `groupBy` and `pageRank` from a ref when it ranks results, and is only
-  // recreated when the synonyms, which the index is built with, change.
-  const latestIndexOptions = useRef(indexOptions);
-  useEffect(() => {
-    latestIndexOptions.current = indexOptions;
-  });
-  const synonymsKey = JSON.stringify(indexOptions?.synonyms ?? null);
-  const hasGroupBy = typeof indexOptions?.groupBy === 'function';
-  const hasPageRank = typeof indexOptions?.pageRank === 'function';
-  const search = useMemo(
+  const { groupBy, pageRank, synonyms } = mode === 'browser' ? indexOptions ?? {} : {};
+  // Cache the data/index independently of the policies used by each query.
+  const synonymsKey = JSON.stringify(synonyms ?? null);
+  const client = useMemo(
     () =>
       createSearchClient({
         mode,
         endpoint,
         recordsUrl,
-        indexOptions: {
-          synonyms: JSON.parse(synonymsKey) ?? undefined,
-          groupBy: hasGroupBy ? record => latestIndexOptions.current!.groupBy!(record) : undefined,
-          pageRank: hasPageRank
-            ? record => latestIndexOptions.current!.pageRank!(record)
-            : undefined
-        },
-        queryOptions: { limit, sectionsPerResult }
+        indexOptions: { synonyms: JSON.parse(synonymsKey) ?? undefined }
       }),
-    [mode, endpoint, recordsUrl, synonymsKey, hasGroupBy, hasPageRank, limit, sectionsPerResult]
+    [mode, endpoint, recordsUrl, synonymsKey]
+  );
+  // Changed policies rerun an active query without discarding the cached index.
+  const search = useCallback(
+    (query: string, namespace?: string, signal?: AbortSignal) =>
+      client(query, namespace, signal, { groupBy, pageRank, limit, sectionsPerResult }),
+    [client, groupBy, pageRank, limit, sectionsPerResult]
   );
   const value = useMemo(() => ({ search, enabled, namespace }), [search, enabled, namespace]);
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;

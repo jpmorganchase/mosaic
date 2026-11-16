@@ -5,6 +5,7 @@ import {
 } from '@jpmorganchase/mosaic-site-components/SearchProvider';
 import type {
   SearchIndexOptions,
+  SearchOptions,
   SearchResult
 } from '@jpmorganchase/mosaic-site-middleware/search';
 import {
@@ -17,6 +18,11 @@ const policies: SearchIndexOptions = {
   synonyms: [['colour', 'color']],
   groupBy: record => record.route.replace(/\/(usage|examples)$/, ''),
   pageRank: record => (record.route.endsWith('/usage') ? 0 : 1)
+};
+
+export const queryPolicies: SearchOptions = {
+  groupBy: policies.groupBy,
+  pageRank: policies.pageRank
 };
 
 function Consumer() {

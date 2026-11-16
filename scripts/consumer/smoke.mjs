@@ -33,6 +33,17 @@ const expected = createSearchIndex(records, indexOptions).search('colour', {
 });
 assert.equal(expected.length, 20);
 assert.ok(expected.every(hit => hit.href.endsWith('/usage') && hit.sections.length === 0));
+const sharedIndex = createSearchIndex(records, { synonyms: indexOptions.synonyms });
+assert.deepEqual(
+  sharedIndex.search('colour', {
+    ...queryOptions,
+    groupBy: indexOptions.groupBy,
+    pageRank: indexOptions.pageRank,
+    namespace: 'salt'
+  }),
+  expected
+);
+assert.equal(sharedIndex.search('colour', { limit: 50 }).length, 48);
 function searchContext(props) {
   let context;
   function Capture() {

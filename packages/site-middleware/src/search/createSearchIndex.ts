@@ -316,6 +316,8 @@ export function createSearchIndex(
 
   function search(query: string, searchOptions: SearchOptions = {}): SearchResult[] {
     const { namespace, namespaces, filter, limit = 10, sectionsPerResult = 3 } = searchOptions;
+    const queryGroupBy = searchOptions.groupBy ?? groupBy;
+    const queryPageRank = searchOptions.pageRank ?? pageRank;
     const queryTerms = [...new Set(words(query))];
     if (queryTerms.length === 0) {
       return [];
@@ -414,7 +416,7 @@ export function createSearchIndex(
           count('synonym'),
           attribute,
           headingExact ? 0 : 1,
-          pageRank(record),
+          queryPageRank(record),
           record.headings.length,
           -hit.score
         ]
@@ -429,7 +431,7 @@ export function createSearchIndex(
     const results: SearchResult[] = [];
     const byGroup = new Map<string, SearchResult>();
     for (const { record, terms } of best) {
-      const group = groupBy(record);
+      const group = queryGroupBy(record);
       const result = byGroup.get(group);
       if (result) {
         if (result.sections.length < sectionsPerResult) {

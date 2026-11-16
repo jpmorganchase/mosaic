@@ -24,6 +24,10 @@ export interface SearchIndexOptions {
 }
 
 export interface SearchOptions {
+  /** Overrides the index's grouping policy for this query without rebuilding it. */
+  groupBy?: SearchIndexOptions['groupBy'];
+  /** Overrides the index's page ranking policy for this query without rebuilding it. */
+  pageRank?: SearchIndexOptions['pageRank'];
   /** Results in this namespace rank above equally good results in others. */
   namespace?: string;
   /** Only return results in these namespaces. */

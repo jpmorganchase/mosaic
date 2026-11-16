@@ -25,10 +25,13 @@ function internalResults(results: SearchResult[]): SearchResult[] {
 
 export type SearchQueryOptions = Pick<SearchOptions, 'limit' | 'sectionsPerResult'>;
 
+type SearchRequestOptions = SearchQueryOptions & Pick<SearchOptions, 'groupBy' | 'pageRank'>;
+
 export type SearchClient = (
   query: string,
   namespace?: string,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  options?: SearchRequestOptions
 ) => Promise<SearchResult[]>;
 
 export interface SearchClientOptions {
@@ -74,22 +77,28 @@ export function createSearchClient({
   return async (
     query: string,
     namespace?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    options: SearchRequestOptions = {}
   ): Promise<SearchResult[]> => {
     const normalizedQuery = query.trim().slice(0, 200);
     if (!normalizedQuery) return [];
+    // Each request owns its policies, even if another starts during the shared index load.
+    const requestOptions = {
+      ...options,
+      namespace,
+      limit: options.limit ?? limit,
+      sectionsPerResult: options.sectionsPerResult ?? sectionsPerResult
+    };
     if (mode === 'browser') {
       // A shared index load must survive one query being cancelled by the next.
       const loaded = await loadIndex();
       signal?.throwIfAborted();
-      return internalResults(
-        loaded.search(normalizedQuery, { namespace, limit, sectionsPerResult })
-      );
+      return internalResults(loaded.search(normalizedQuery, requestOptions));
     }
     const url = new URL(endpoint, window.location.href);
     url.searchParams.set('q', normalizedQuery);
-    url.searchParams.set('limit', String(limit));
-    url.searchParams.set('sections', String(sectionsPerResult));
+    url.searchParams.set('limit', String(requestOptions.limit));
+    url.searchParams.set('sections', String(requestOptions.sectionsPerResult));
     if (namespace) url.searchParams.set('namespace', namespace);
     const response = await fetch(url, { signal });
     if (!response.ok) throw new Error('Search is unavailable');

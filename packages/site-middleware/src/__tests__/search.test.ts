@@ -132,6 +132,26 @@ const hrefs = (query: string, searchOptions = {}) =>
   index.search(query, { namespace: 'salt', ...searchOptions }).map(result => result.href);
 
 describe('createSearchIndex', () => {
+  test('allows independent query policies without changing the index defaults', () => {
+    const pages = [
+      ...page('/salt/button/usage', 'Button'),
+      ...page('/salt/button/examples', 'Button')
+    ];
+    const search = createSearchIndex(pages, {
+      groupBy: () => 'button',
+      pageRank: record => (record.route.endsWith('/usage') ? 0 : 1)
+    });
+    const original = search.search('button');
+    expect(original).toHaveLength(1);
+    expect(original[0].href).toBe('/salt/button/usage');
+    const changed = search.search('button', {
+      groupBy: record => record.route,
+      pageRank: record => (record.route.endsWith('/examples') ? 0 : 1)
+    });
+    expect(changed.map(hit => hit.href)).toEqual(['/salt/button/examples', '/salt/button/usage']);
+    expect(search.search('button')).toEqual(original);
+  });
+
   test('counts the records', () => {
     expect(index.size).toBe(records.length);
   });
