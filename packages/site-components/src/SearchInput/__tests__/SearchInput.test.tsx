@@ -46,6 +46,7 @@ describe('GIVEN a SearchInput', () => {
     render(<SearchInput />);
     const input = screen.getByRole('textbox', { name: 'Search' });
     expect(input.tagName).toBe('INPUT');
+    expect(input).toBeEnabled();
     expect(fetcher).not.toHaveBeenCalled();
   });
 

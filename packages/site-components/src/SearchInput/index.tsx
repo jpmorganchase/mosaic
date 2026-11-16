@@ -6,6 +6,7 @@ import { ResultsList } from './Results';
 import styles from './styles.css';
 
 export function SearchInput() {
+  const [hydrated, setHydrated] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { enabled, results: searchResults, loading, error } = useSearch(searchTerm);
   const [listVisibility, setListVisibility] = useState(false);
@@ -42,6 +43,7 @@ export function SearchInput() {
   };
 
   useEffect(() => {
+    setHydrated(true);
     document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleEsc);
     return () => {
@@ -56,6 +58,8 @@ export function SearchInput() {
     <div className={styles.root} ref={wrapperRef}>
       <Input
         bordered
+        // An uncontrolled edit before hydration would be lost when React attaches.
+        disabled={!hydrated}
         // Salt's `Input` puts its own props on the wrapper; the label must be
         // on the `<input>` for it to have an accessible name.
         inputProps={{ 'aria-label': 'Search' }}
