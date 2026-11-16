@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
 import { useSearchContext } from '../SearchProvider';
 
 export function useSearch(query: string) {
-  const { search, enabled, namespace } = useSearchContext();
+  const context = useSearchContext();
+  const { search, enabled } = context;
+  // Search records name their namespace after the first URL segment.
+  const pathname = usePathname();
+  const namespace = context.namespace ?? pathname?.split('/').find(Boolean);
   const normalizedQuery = query.trim().slice(0, 200);
   const [response, setResponse] = useState<{
     query: string;

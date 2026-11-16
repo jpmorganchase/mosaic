@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { usePathname } from 'next/navigation';
 import type { SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
 import { createSearchClient, type SearchClientOptions } from './searchClient';
 
@@ -13,8 +12,8 @@ export interface SearchProviderProps extends SearchClientOptions {
   enabled?: boolean;
   /**
    * Prefer results from this namespace without excluding other namespaces.
-   * Defaults to the first segment of the current URL, which is how search
-   * records name their namespace.
+   * When unset, `SearchInput` uses the first segment of the current URL,
+   * which is how search records name their namespace.
    */
   namespace?: string;
 }
@@ -70,12 +69,7 @@ export function SearchProvider({
       }),
     [mode, endpoint, recordsUrl, synonymsKey, hasGroupBy, hasPageRank, limit, sectionsPerResult]
   );
-  const pathname = usePathname();
-  const currentNamespace = namespace ?? pathname?.split('/').find(Boolean);
-  const value = useMemo(
-    () => ({ search, enabled, namespace: currentNamespace }),
-    [search, enabled, currentNamespace]
-  );
+  const value = useMemo(() => ({ search, enabled, namespace }), [search, enabled, namespace]);
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }
 

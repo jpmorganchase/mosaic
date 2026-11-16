@@ -7,12 +7,8 @@ import {
 } from '@jpmorganchase/mosaic-site-middleware/search';
 import { SearchProvider, useSearchContext, type SearchProviderProps } from '../index';
 
-const pathname = { current: '/salt/components/button' as string | null };
-vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }));
-
 afterEach(() => {
   vi.unstubAllGlobals();
-  pathname.current = '/salt/components/button';
 });
 
 const records = Array.from({ length: 24 }, (_, i) =>
@@ -133,14 +129,6 @@ describe('SearchProvider configuration', () => {
     rerender();
     expect(result.current.search).not.toBe(search);
     expect(await result.current.search('hue')).not.toEqual([]);
-  });
-
-  test('prefers the namespace in the URL unless one is configured', () => {
-    expect(context({}).result.current.namespace).toBe('salt');
-    pathname.current = null;
-    expect(context({}).result.current.namespace).toBeUndefined();
-    pathname.current = '/salt/components/button';
-    expect(context({ namespace: 'mosaic' }).result.current.namespace).toBe('mosaic');
   });
 
   test('retains the existing defaults', async () => {
