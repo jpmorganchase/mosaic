@@ -1,12 +1,12 @@
 import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metadata';
 /**
- * Top-level App Router catch-all (WS-3 / WS-9).
+ * App Router document route.
  *
  * Data loading: `resolveContent` loads the shared config
  * (header/footer/nav) and raw MDX text in parallel using the cached
- * primitives exported by `mosaic-site-middleware`. The persistent
- * layout loads the site-wide search index once per frame. Identical
- * reads collapse to a single backing fetch.
+ * primitives exported by `mosaic-site-middleware`. Identical reads
+ * collapse to a single backing fetch. The root SearchProvider loads
+ * search data separately, when needed.
  * Invalidation is by `revalidateTag('mosaic-content')` from
  * `app/api/revalidate/route.ts`.
  *
@@ -70,7 +70,7 @@ interface PageProps {
 // the App Router infers the right mode from `generateStaticParams`.
 //
 //   - Snapshot **production** build → `generateStaticParams` returns
-//     every URL from `sitemap.xml`; Next pre-renders them all at build
+//     selected URLs from `mosaic-routes.json`; Next pre-renders them at build
 //     time. With `dynamicParams = true` (the default) requests for any
 //     unknown path fall through to on-demand SSR (which fails with 404
 //     via `notFound()` from the page below — same behaviour as a
@@ -178,8 +178,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // transparently follows any folder→index redirect the upstream
   // returns for `pathname`. The same call ran from
   // `generateMetadata` is request-cached so we pay nothing extra
-  // here. The search index belongs to the namespace layout, which
-  // loads it once per section rather than with every page.
+  // here.
   //
   // `searchParams` is awaited alongside them so the `?edit=1`
   // check costs no extra latency — but only when we're *not*

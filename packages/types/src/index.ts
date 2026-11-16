@@ -33,4 +33,3 @@ export {
   SourceWorkflow,
   SourceSchedule
 };
-export * from './SerializedMdxResult.js';

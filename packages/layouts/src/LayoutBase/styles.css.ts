@@ -1,4 +1,4 @@
-import { style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 import {
   backgroundColor,
@@ -21,6 +21,19 @@ const headerGridProperties = defineProperties({
 
 const headerGridSprinkles = createSprinkles(headerGridProperties);
 
+const main = style({
+  gridArea: 'base-layout-main',
+  display: 'flex',
+  justifyContent: 'center',
+  zIndex: 1,
+  minHeight: `calc(100vh - ${config.appHeader.height}px)`
+});
+
+// Native fragment navigation (including search results) must clear our sticky header.
+globalStyle(`${main} :is(h1, h2, h3, h4, h5, h6)[id]`, {
+  scrollMarginTop: `${config.appHeader.height}px`
+});
+
 // Loading UI lives in route-segment `loading.tsx` files in App Router
 // consumers; no overlay primitives are emitted here.
 export default {
@@ -37,13 +50,7 @@ export default {
     foregroundColor({ variant: 'high' })
   ]),
 
-  main: style({
-    gridArea: 'base-layout-main',
-    display: 'flex',
-    justifyContent: 'center',
-    zIndex: 1,
-    minHeight: `calc(100vh - ${config.appHeader.height}px)`
-  }),
+  main,
 
   header: style([
     {

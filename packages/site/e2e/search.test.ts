@@ -45,6 +45,17 @@ test('Header searches records and follows section links without legacy requests'
   const href = await section.getAttribute('href');
   await section.click();
   await expect(page).toHaveURL(new URL(href!, page.url()).toString());
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        if (!target) return false;
+        const bounds = target.getBoundingClientRect();
+        const headerBottom = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0;
+        return bounds.top >= headerBottom - 2 && bounds.top < window.innerHeight;
+      })
+    )
+    .toBe(true);
   await expect(search).toHaveValue('');
   const usedServer = requested.includes('/api/search');
   const usedBrowser = requested.includes('/search-records.json');

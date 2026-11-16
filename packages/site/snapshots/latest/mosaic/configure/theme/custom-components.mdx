@@ -5,7 +5,7 @@ sidebar:
   label: Custom Components
   groupLabel: Custom Components
   priority: 2
-lastModified: 1794801246192.591
+lastModified: 1794852608331.2864
 fullPath: /mosaic/configure/theme/custom-components.mdx
 route: /mosaic/configure/theme/custom-components
 breadcrumbs:
@@ -17,9 +17,9 @@ breadcrumbs:
     id: /mosaic/configure/theme/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.925
-  time: 175500
-  words: 585
+  minutes: 2.85
+  time: 171000
+  words: 570
 tableOfContents:
   - depth: 2
     level: 0
@@ -600,42 +600,40 @@ Your final folder structure should look like this:
 
 Open your site's MDX component registry at
 `src/app/[namespace]/[...route]/MdxComponents.ts`. This file is the App Router
-equivalent of the old `pages/_app.tsx` component-merge step — the catch-all
-route imports the exported `mdxComponents` map and forwards it to `<Body components={...} />`.
+equivalent of the old `pages/_app.tsx` component-merge step. Its `hostComponents`
+registry is shared by the reader's `MdxRenderer` and the editor's `mdxComponents` map.
 
 Add the following line to your imports:
 
 ```tsx
-import * as myComponents from '../../components';
+import * as myComponents from '../../../components';
 ```
 
 Replace this block:
 
 ```tsx
-export const mdxComponents = {
-  ...mosaicComponents,
-  Salt: saltComponents,
-  Sitemap
-};
+const hostComponents = { Salt, Sitemap };
 ```
 
 with:
 
 ```tsx
-export const mdxComponents = {
-  ...mosaicComponents,
-  ...myComponents,
-  Salt: saltComponents,
-  Sitemap
-};
+const hostComponents = { Salt, Sitemap, ...myComponents };
 ```
 
-This will add your custom components to the site, and any custom components in `myComponents` will override the corresponding ones in `mosaicComponents`. The spread operator (`...`) merges both `mosaicComponents` and `myComponents` objects, giving priority to `myComponents` when there is a naming conflict.
+Keep both exports wired to this registry so custom components work in reader pages and editor previews:
+
+```tsx
+export const mdxComponents = { ...mosaicDefaultComponents, ...hostComponents };
+export const MdxRenderer = createMdxRenderer({ components: hostComponents });
+```
+
+Host components override Mosaic's defaults when names match.
 
 > **Note:** `MdxComponents.ts` is marked `'use client'`. Salt DS and any
 > other component that uses hooks must be reachable from a client
-> boundary. The catch-all page is a Server Component that imports only the
-> `mdxComponents` value, which keeps the bundle correctly split.
+> boundary. The server's `BodyServer` renders the client `MdxRenderer`;
+> the editor consumes `mdxComponents` separately.
 
 ## Use Your Custom Card Component
 

@@ -3,13 +3,14 @@
  *
  * The segment is a rendering boundary, not a source namespace: sources
  * may omit their URL prefix, and aliases may live at the site root.
- * The optional catch-all resolves all of those through the same loaders.
+ * The segment page and required catch-all use the same content loaders.
  *
  * Next.js keeps this layout mounted while the reader navigates within
  * the namespace, so it loads the data shared by every page of the
  * namespace once — its shared config (header, footer, menus,
  * writability) — and renders the persistent
- * header through `<NamespaceFrame>`. Pages load only their own content.
+ * header through `<NamespaceFrame>`. Pages also load their resolved config
+ * so folder and page overrides can replace this fallback.
  *
  * In active mode these reads hit the content server on full page loads
  * and refreshes only; client-side navigation within the namespace
