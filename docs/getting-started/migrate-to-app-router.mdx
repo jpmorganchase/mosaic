@@ -154,7 +154,7 @@ The loaders are cached and tagged with `MOSAIC_CONTENT_CACHE_TAG`. Import the ta
 
 For a page and its configuration, use `resolveContent(pathname, mode, contentUrl)` from `@jpmorganchase/mosaic-site-middleware`. It follows folder-to-index redirects and reads an alias's configuration from the backing document's folder. On success, `mdx` contains the raw document and parsed frontmatter, `pathname` is its public canonical URL, and `sourcePathname` is its backing path (including `.md` or `.mdx` when supplied by the source). Use `pathname` for metadata and relative navigation, and `sourcePathname` for raw-source reads and the editor’s `route` prop used for saves. The requested alias remains in `originalPathname`.
 
-The returned `sharedConfig` comes from the source's configuration file. Hosts can overlay per-page `mdx.frontmatter.sharedConfig` for authored header or footer customizations, while keeping `sourceCapabilities` from the loader. A missing page retains the requested folder's configuration for the create-page flow; an authored public permalink does not change its backing source or capabilities.
+The returned `sharedConfig` is the folder's configuration with the page's authored `sharedConfig` (for example a per-page header or footer) on top, and `mdx.frontmatter.sharedConfig` holds the same value. `sourceCapabilities` always comes from the folder's configuration, so content can't grant itself capabilities such as editing. You don't need to merge them yourself. A missing page retains the requested folder's configuration for the create-page flow; an authored public permalink does not change its backing source or capabilities.
 
 The editor plugin now uses Lexical 0.45 instead of 0.17:
 

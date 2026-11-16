@@ -263,49 +263,14 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   const onDiskFrontmatter =
     resolved.kind === 'mdx' ? resolved.mdx.frontmatter : ({} as Record<string, unknown>);
   const onDiskRaw = resolved.kind === 'mdx' ? resolved.mdx.raw : '';
-  // Separate `sharedConfig` from the rest of the frontmatter so we
-  // can merge it carefully with the loader-derived copy below.
-  //
-  // Background: index pages may author a `sharedConfig` in their
-  // own frontmatter (header / footer / menu for the subtree). The
-  // `SharedConfigPlugin` lifts that authored value into the
-  // namespace's `shared-config.json`, which is what `getSharedConfig`
-  // returns above. Non-index pages can also author a per-page footer /
-  // header via `frameOverrides` — the `$CodeModPlugin` mirrors that
-  // into `frontmatter.sharedConfig` so per-page overrides travel with
-  // the parsed frontmatter.
-  //
-  // A naive spread of `onDiskFrontmatter.sharedConfig` on top of the
-  // loader-derived copy could replace or remove the loader copy's
-  // `sourceCapabilities` field, which carries the writability flag
-  // from the SharedConfigPlugin (or the `CAPABILITY_GATE_BYPASSED`
-  // block). Dropping the frontmatter copy entirely would lose the
-  // per-page footer / header overrides, leaving every page rendering
-  // the namespace-wide fallback.
-  //
-  // Shallow merge: per-page authored top-level keys (`header`,
-  // `footer`, `menu`, …) override the namespace fallback, while
-  // `sourceCapabilities` always comes from the loader copy (or is
-  // absent) so content can't turn on the editor controls.
-  const { sharedConfig: frontmatterSharedConfig, ...frontmatterRest } = onDiskFrontmatter as {
-    sharedConfig?: Record<string, unknown>;
-  } & Record<string, unknown>;
-  let mergedSharedConfig = sharedConfig;
-  if (frontmatterSharedConfig && typeof frontmatterSharedConfig === 'object') {
-    const { sourceCapabilities: _authoredCapabilities, ...authoredOverrides } =
-      frontmatterSharedConfig;
-    mergedSharedConfig = {
-      ...(sharedConfig ?? {}),
-      ...authoredOverrides,
-      ...(sharedConfig?.sourceCapabilities
-        ? { sourceCapabilities: sharedConfig.sourceCapabilities }
-        : {})
-    };
-  }
+  // `resolveContent` has already put the page's authored `sharedConfig`
+  // (a per-page header or footer) over its folder's, keeping
+  // `sourceCapabilities` from the folder so content can't turn on the
+  // editor. Set it last so the frontmatter's copy can't override it.
   const storeProps = {
-    ...frontmatterRest,
+    ...onDiskFrontmatter,
     route: canonicalPathname ?? resolvedPathname,
-    sharedConfig: mergedSharedConfig
+    sharedConfig
   };
 
   // If `?new=1` was requested AND the route already exists on
@@ -513,7 +478,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
           content route, even when this request uses a short URL or alias. */}
       <FrameSync
         route={storeProps.route}
-        sharedConfig={mergedSharedConfig}
+        sharedConfig={sharedConfig}
         isEditing={editing || creating}
       />
       <RouteMetadata />

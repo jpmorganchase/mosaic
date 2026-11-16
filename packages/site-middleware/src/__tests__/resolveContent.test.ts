@@ -10,8 +10,13 @@ vi.mock('react', async () => ({
   cache: <T>(fn: T) => fn
 }));
 
-const { MAX_INTERNAL_REDIRECT_HOPS, canonicalRoute, isFolderIndexRedirect, resolveContent } =
-  await import('../resolveContent.js');
+const {
+  MAX_INTERNAL_REDIRECT_HOPS,
+  canonicalRoute,
+  isFolderIndexRedirect,
+  mergePageSharedConfig,
+  resolveContent
+} = await import('../resolveContent.js');
 
 const mdx = (title: string) => ({ kind: 'mdx', raw: `# ${title}`, frontmatter: { title } });
 const sharedConfigFor = (pathname: string) => ({ header: { title: `header for ${pathname}` } });
@@ -103,6 +108,54 @@ describe('resolveContent', () => {
     expect(getSharedConfig).toHaveBeenCalledTimes(1);
   });
 
+  test("puts the page's authored shared config over its folder's", async () => {
+    const page = {
+      kind: 'mdx',
+      raw: '# Page',
+      frontmatter: { title: 'Page', sharedConfig: { footer: { title: 'Page footer' } } }
+    };
+    getMdxRaw.mockResolvedValue(page);
+    getSharedConfig.mockResolvedValue({
+      header: { title: 'Folder header' },
+      footer: { title: 'Folder footer' }
+    });
+
+    const resolved = await resolveContent('/docs/page', 'active', 'http://content');
+
+    const merged = { header: { title: 'Folder header' }, footer: { title: 'Page footer' } };
+    expect(resolved).toMatchObject({
+      sharedConfig: merged,
+      mdx: { frontmatter: { sharedConfig: merged } }
+    });
+    // The loaders' results are cached, so they must not be changed.
+    expect(page.frontmatter.sharedConfig).toEqual({ footer: { title: 'Page footer' } });
+  });
+
+  test("never takes source capabilities from the page's frontmatter", async () => {
+    getMdxRaw.mockResolvedValue({
+      ...mdx('Page'),
+      frontmatter: {
+        title: 'Page',
+        sharedConfig: { sourceCapabilities: { writable: true }, footer: { title: 'Page footer' } }
+      }
+    });
+    getSharedConfig.mockResolvedValue({ header: { title: 'Folder header' } });
+
+    const resolved = await resolveContent('/docs/page', 'active', 'http://content');
+
+    const merged = { header: { title: 'Folder header' }, footer: { title: 'Page footer' } };
+    expect(resolved).toMatchObject({
+      sharedConfig: merged,
+      mdx: { frontmatter: { sharedConfig: merged } }
+    });
+    expect(resolved.kind === 'mdx' && resolved.sharedConfig).not.toHaveProperty(
+      'sourceCapabilities'
+    );
+    expect(resolved.kind === 'mdx' && resolved.mdx.frontmatter.sharedConfig).not.toHaveProperty(
+      'sourceCapabilities'
+    );
+  });
+
   test('surfaces any other redirect to the caller', async () => {
     getMdxRaw.mockResolvedValue({ kind: 'redirect', destination: '/docs/moved' });
 
@@ -167,4 +220,28 @@ describe('canonicalRoute', () => {
       expect(canonicalRoute({ route }, '/docs/page')).toBe('/docs/page');
     }
   );
+});
+
+describe('mergePageSharedConfig', () => {
+  test("keeps the folder's source capabilities", () => {
+    expect(
+      mergePageSharedConfig(
+        { sourceCapabilities: { writable: false }, header: { title: 'Folder' } },
+        { sourceCapabilities: { writable: true }, header: { title: 'Page' } }
+      )
+    ).toEqual({ sourceCapabilities: { writable: false }, header: { title: 'Page' } });
+  });
+
+  test('returns the folder config when the page authors nothing usable', () => {
+    const folder = { header: { title: 'Folder' } };
+    expect(mergePageSharedConfig(folder, undefined)).toBe(folder);
+    expect(mergePageSharedConfig(folder, 'header')).toBe(folder);
+    expect(mergePageSharedConfig(folder, ['header'])).toBe(folder);
+  });
+
+  test('uses the page config when the folder has none', () => {
+    expect(mergePageSharedConfig(undefined, { footer: { title: 'Page' } })).toEqual({
+      footer: { title: 'Page' }
+    });
+  });
 });
