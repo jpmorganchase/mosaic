@@ -53,6 +53,23 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
   let authorDir: string;
   let repo: Repo;
   let unsubscribe: (() => void) | undefined;
+  const fixtureTasks = new Set<Promise<void>>();
+
+  // A timed-out test can still be awaiting Git. Keep its entire task, including
+  // its finally block, alive until teardown can safely remove the fixture.
+  const runFixtureTask = (task: () => Promise<void>) => {
+    const running = task();
+    fixtureTasks.add(running);
+    return running.finally(() => fixtureTasks.delete(running));
+  };
+
+  const finishFixtureOperations = async (operations: Promise<unknown>[]) => {
+    // Promise.all rejects before its other Git processes finish.
+    const results = await Promise.allSettled(operations);
+    for (const result of results) {
+      if (result.status === 'rejected') throw result.reason;
+    }
+  };
 
   const push = (file: string, content: string) => {
     fs.writeFileSync(path.join(authorDir, file), content);
@@ -76,17 +93,39 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     repo = new Repo('', 'origin', 'main', pathToFileURL(originDir).href);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    const fixtureDir = projectDir;
+    const cloneDir = path.resolve('.tmp/.cloned_docs', path.basename(fixtureDir));
+    const pendingTasks = [...fixtureTasks];
     unsubscribe?.();
     unsubscribe = undefined;
-    vi.restoreAllMocks();
-    vi.mocked(lockfile.lock).mockReset();
-    fs.rmSync(projectDir, { recursive: true, force: true });
-    fs.rmSync(path.join(process.cwd(), '.tmp/.cloned_docs', path.basename(projectDir)), {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        Promise.allSettled(pendingTasks),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`Git task did not settle; retaining fixture ${fixtureDir}`)),
+            20_000
+          );
+        })
+      ]);
+    } finally {
+      clearTimeout(timer);
+      vi.restoreAllMocks();
+      vi.mocked(lockfile.lock).mockReset();
+    }
+    expect(path.dirname(fixtureDir)).toBe(path.resolve('.tmp'));
+    expect(path.dirname(cloneDir)).toBe(path.resolve('.tmp/.cloned_docs'));
+    const removeOptions = {
       recursive: true,
-      force: true
-    });
-  });
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100
+    };
+    await fs.promises.rm(fixtureDir, removeOptions);
+    await fs.promises.rm(cloneDir, removeOptions);
+  }, 30_000);
 
   test('THEN a fixture directory without Git metadata cannot reach the enclosing checkout', async () => {
     await repo.init();
@@ -285,67 +324,74 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     }
   }, 15_000);
 
-  test('THEN separate save worktrees retain their edits and cleanup preserves the source', async () => {
-    const secondRepo = new Repo(
-      '',
-      'origin',
-      'main',
-      pathToFileURL(path.join(projectDir, 'docs.git')).href
-    );
-    await Promise.all([repo.init(), secondRepo.init()]);
-    const sourceDir = repo.dir;
+  test(
+    'THEN separate save worktrees retain their edits and cleanup preserves the source',
+    () =>
+      runFixtureTask(async () => {
+        const firstRepo = repo;
+        const fixtureDir = projectDir;
+        const secondRepo = new Repo(
+          '',
+          'origin',
+          'main',
+          pathToFileURL(path.join(fixtureDir, 'docs.git')).href
+        );
+        await finishFixtureOperations([firstRepo.init(), secondRepo.init()]);
+        const sourceDir = firstRepo.dir;
 
-    await Promise.all([
-      repo.createWorktree('save-first', 'editor-first'),
-      secondRepo.createWorktree('save-second', 'editor-second')
-    ]);
-    const firstDir = repo.dir;
-    const secondDir = secondRepo.dir;
-    try {
-      fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
-      fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
-      await Promise.all([repo.addChanges(), secondRepo.addChanges()]);
-      const firstMessage = '\n  First save  \n\nBody with trailing spaces.  \n\n';
-      await Promise.all([
-        repo.commitChanges('First Editor', 'first@example.test', firstMessage),
-        secondRepo.commitChanges('Second Editor', 'second@example.test', 'Second save')
-      ]);
-      // Inspect the stored commit object, avoiding git log's formatting cleanup.
-      expect(git(firstDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')).toBe(
-        firstMessage
-      );
-      // Git adds its structural terminal newline when the input has none.
-      expect(git(secondDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')).toBe(
-        'Second save\n'
-      );
-      expect(git(firstDir, 'show', 'HEAD:index.mdx').trim()).toBe('# First edit');
-      expect(git(secondDir, 'show', 'HEAD:index.mdx').trim()).toBe('# Second edit');
-      expect(git(firstDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
-        'first@example.test/first@example.test'
-      );
-      expect(git(secondDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
-        'second@example.test/second@example.test'
-      );
+        await finishFixtureOperations([
+          firstRepo.createWorktree('save-first', 'editor-first'),
+          secondRepo.createWorktree('save-second', 'editor-second')
+        ]);
+        const firstDir = firstRepo.dir;
+        const secondDir = secondRepo.dir;
+        try {
+          fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
+          fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
+          await finishFixtureOperations([firstRepo.addChanges(), secondRepo.addChanges()]);
+          const firstMessage = '\n  First save  \n\nBody with trailing spaces.  \n\n';
+          await finishFixtureOperations([
+            firstRepo.commitChanges('First Editor', 'first@example.test', firstMessage),
+            secondRepo.commitChanges('Second Editor', 'second@example.test', 'Second save')
+          ]);
+          // Inspect the stored commit object, avoiding git log's formatting cleanup.
+          expect(
+            git(firstDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')
+          ).toBe(firstMessage);
+          // Git adds its structural terminal newline when the input has none.
+          expect(
+            git(secondDir, 'cat-file', 'commit', 'HEAD').split('\n\n').slice(1).join('\n\n')
+          ).toBe('Second save\n');
+          expect(git(firstDir, 'show', 'HEAD:index.mdx').trim()).toBe('# First edit');
+          expect(git(secondDir, 'show', 'HEAD:index.mdx').trim()).toBe('# Second edit');
+          expect(git(firstDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+            'first@example.test/first@example.test'
+          );
+          expect(git(secondDir, 'log', '-1', '--format=%ae/%ce').trim()).toBe(
+            'second@example.test/second@example.test'
+          );
 
-      git(sourceDir, 'worktree', 'lock', firstDir);
-      await repo.removeWorktree('save-first');
-      expect(fs.readFileSync(path.join(firstDir, 'index.mdx'), 'utf8')).toBe('# First edit');
-      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).toContain('locked');
-      git(sourceDir, 'worktree', 'unlock', firstDir);
+          git(sourceDir, 'worktree', 'lock', firstDir);
+          await firstRepo.removeWorktree('save-first');
+          expect(fs.readFileSync(path.join(firstDir, 'index.mdx'), 'utf8')).toBe('# First edit');
+          expect(git(sourceDir, 'worktree', 'list', '--porcelain')).toContain('locked');
+          git(sourceDir, 'worktree', 'unlock', firstDir);
 
-      await repo.removeWorktree('save-first');
-      await repo.removeWorktree('save-first');
-      expect(fs.existsSync(firstDir)).toBe(false);
-      expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('save-first');
-      expect(fs.readFileSync(path.join(sourceDir, 'index.mdx'), 'utf8')).toBe('# Index');
-      expect(fs.readFileSync(path.join(secondDir, 'index.mdx'), 'utf8')).toBe('# Second edit');
-    } finally {
-      await Promise.all([
-        repo.removeWorktree('save-first'),
-        secondRepo.removeWorktree('save-second')
-      ]);
-    }
-  });
+          await firstRepo.removeWorktree('save-first');
+          await firstRepo.removeWorktree('save-first');
+          expect(fs.existsSync(firstDir)).toBe(false);
+          expect(git(sourceDir, 'worktree', 'list', '--porcelain')).not.toContain('save-first');
+          expect(fs.readFileSync(path.join(sourceDir, 'index.mdx'), 'utf8')).toBe('# Index');
+          expect(fs.readFileSync(path.join(secondDir, 'index.mdx'), 'utf8')).toBe('# Second edit');
+        } finally {
+          await finishFixtureOperations([
+            firstRepo.removeWorktree('save-first'),
+            secondRepo.removeWorktree('save-second')
+          ]);
+        }
+      }),
+    15_000
+  );
 
   test('THEN cleanup removes a worktree left behind by a failed checkout hook', async () => {
     await repo.init();

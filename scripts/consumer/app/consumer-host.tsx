@@ -10,6 +10,7 @@ import { NamespaceFrame, StoreShell } from '@jpmorganchase/mosaic-layouts/host';
 import { FrameSync } from '@jpmorganchase/mosaic-store/frame';
 import { ColorModeProvider, useColorMode } from '@jpmorganchase/mosaic-store';
 import { ExtensionProbe } from '@mosaic-test/extension';
+import { Sitemap } from '@jpmorganchase/mosaic-sitemap-component';
 
 const seed = { route: '/consumer/index', title: 'Packed consumer' };
 const frame = { route: '/consumer/index' };
@@ -33,6 +34,9 @@ function Content() {
       </output>
       <output data-testid="host-mode">{mode}</output>
       <ExtensionProbe />
+      <div data-testid="sitemap">
+        <Sitemap href="/sitemap.xml" />
+      </div>
     </StoreShell>
   );
 }

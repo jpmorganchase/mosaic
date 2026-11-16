@@ -13,6 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import StatusBanner from '../StatusBanner';
 
 type ErrorShape = {
   message: string;
@@ -36,9 +37,6 @@ vi.mock('../../utils/focusErrorRegistry', () => ({
   invokeFocusErrorHandle: () => invokeFocusErrorHandle()
 }));
 
-// Dynamic import so the mocks above land before the module is read.
-const importStatusBanner = async () => (await import('../StatusBanner')).default;
-
 beforeEach(() => {
   mockError = null;
   invokeFocusErrorHandle.mockReset();
@@ -49,40 +47,35 @@ afterEach(() => {
 });
 
 describe('StatusBanner', () => {
-  it('renders nothing when there is no error', async () => {
-    const StatusBanner = await importStatusBanner();
+  it('renders nothing when there is no error', () => {
     const { container } = render(<StatusBanner />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders the headline with Ln/Col when error has a line+column', async () => {
+  it('renders the headline with Ln/Col when error has a line+column', () => {
     mockError = { message: 'Unexpected token', line: 12, column: 4 };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     expect(
       screen.getByText(/MDX compile error \(Ln 12, Col 4\): Unexpected token/)
     ).toBeInTheDocument();
   });
 
-  it('omits the Ln/Col suffix when no line is available', async () => {
+  it('omits the Ln/Col suffix when no line is available', () => {
     mockError = { message: 'Parse failure' };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     expect(screen.getByText(/MDX compile error: Parse failure/)).toBeInTheDocument();
     // No `(Ln ...)` substring — bracket character is the cheapest probe.
     expect(screen.queryByText(/\(Ln /)).not.toBeInTheDocument();
   });
 
-  it('shows the plain-English hint when present', async () => {
+  it('shows the plain-English hint when present', () => {
     mockError = { message: 'x', hint: 'Did you forget a closing brace?' };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     expect(screen.getByText('Did you forget a closing brace?')).toBeInTheDocument();
   });
 
-  it('only shows "Jump to error" when the error has a line number', async () => {
+  it('only shows "Jump to error" when the error has a line number', () => {
     mockError = { message: 'x' };
-    const StatusBanner = await importStatusBanner();
     const { rerender } = render(<StatusBanner />);
     expect(screen.queryByRole('button', { name: 'Jump to error' })).not.toBeInTheDocument();
 
@@ -93,7 +86,6 @@ describe('StatusBanner', () => {
 
   it('toggles raw-error details via "Show details" disclosure', async () => {
     mockError = { message: 'short', raw: 'verbose stack with internals' };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     const toggle = screen.getByRole('button', { name: 'Show details' });
     expect(screen.queryByText(/verbose stack/)).not.toBeInTheDocument();
@@ -105,7 +97,6 @@ describe('StatusBanner', () => {
 
   it('hides the banner when Dismiss is clicked', async () => {
     mockError = { message: 'oops', line: 3, column: 1 };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     expect(screen.getByText(/MDX compile error/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Dismiss error banner' }));
@@ -118,7 +109,6 @@ describe('StatusBanner', () => {
     // recompiling should NOT bring it back. A different error
     // (different message OR line OR column) SHOULD.
     mockError = { message: 'oops', line: 3, column: 1 };
-    const StatusBanner = await importStatusBanner();
     const { rerender } = render(<StatusBanner />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Dismiss error banner' }));
@@ -141,7 +131,6 @@ describe('StatusBanner', () => {
     // surface again. We never want to silently swallow errors
     // across a compile-clean-compile-error cycle.
     mockError = { message: 'oops', line: 3, column: 1 };
-    const StatusBanner = await importStatusBanner();
     const { rerender } = render(<StatusBanner />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Dismiss error banner' }));
@@ -158,7 +147,6 @@ describe('StatusBanner', () => {
 
   it('routes "Jump to error" through the focus registry', async () => {
     mockError = { message: 'x', line: 1, column: 1 };
-    const StatusBanner = await importStatusBanner();
     render(<StatusBanner />);
     await userEvent.click(screen.getByRole('button', { name: 'Jump to error' }));
     expect(invokeFocusErrorHandle).toHaveBeenCalledOnce();

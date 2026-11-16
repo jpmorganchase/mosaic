@@ -9,6 +9,14 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from '@playwright/test';
 
 async function assertNoAuth(cwd) {
+  // Yarn does not auto-install missing peers, so also check the packed manifest.
+  const sitemap = JSON.parse(
+    await fs.readFile(
+      path.join(cwd, 'node_modules/@jpmorganchase/mosaic-sitemap-component/package.json'),
+      'utf8'
+    )
+  );
+  assert.equal(sitemap.peerDependencies?.['next-auth'], undefined);
   const require = createRequire(path.join(cwd, 'package.json'));
   assert.throws(() => require.resolve('next-auth'), { code: 'MODULE_NOT_FOUND' });
   const fromComponents = createRequire(require.resolve('@jpmorganchase/mosaic-site-components'));
@@ -93,6 +101,12 @@ async function checkBrowser(cwd, { development = false, authenticated = false } 
     assert.match(html, /Select an action/);
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
+    await page.route('**/sitemap.xml', route =>
+      route.fulfill({
+        contentType: 'application/xml',
+        body: `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin}/consumer/index</loc></url></urlset>`
+      })
+    );
     const errors = [];
     const authRequests = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -109,6 +123,7 @@ async function checkBrowser(cwd, { development = false, authenticated = false } 
     });
     await page.goto(origin);
     await page.waitForFunction(() => document.documentElement.dataset.consumerHydrated === 'true');
+    await page.getByTestId('sitemap').getByText('consumer', { exact: true }).waitFor();
     assert.equal(
       await page.getByTestId('auth').textContent(),
       authenticated ? 'authenticated:true' : 'unauthenticated:false'

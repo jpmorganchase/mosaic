@@ -46,6 +46,7 @@ try {
     '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-plugins',
     '@jpmorganchase/mosaic-site-components',
+    '@jpmorganchase/mosaic-sitemap-component',
     '@jpmorganchase/mosaic-store',
     '@jpmorganchase/mosaic-theme'
   ]);
