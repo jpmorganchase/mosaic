@@ -3,8 +3,10 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import deepmerge from 'deepmerge';
 import MosaicCore from '@jpmorganchase/mosaic-core';
+import { buildRouteInventory } from './routeInventory.js';
 
 const SNAPSHOT_IDENTITY_FILE = 'mosaic-snapshot.json';
+const SNAPSHOT_ROUTES_FILE = 'mosaic-routes.json';
 
 export default async function build(config, targetDir, options) {
   const scope = options.scope
@@ -97,13 +99,11 @@ export default async function build(config, targetDir, options) {
     });
     for (const entry of [...allFiles, ...Object.keys(symlinks)]) {
       const normalized = path.posix.normalize(`/${String(entry)}`).toLowerCase();
-      if (
-        normalized === `/${SNAPSHOT_IDENTITY_FILE}` ||
-        normalized.startsWith(`/${SNAPSHOT_IDENTITY_FILE}/`)
-      ) {
-        throw new Error(
-          `Snapshot output '${entry}' conflicts with reserved ${SNAPSHOT_IDENTITY_FILE}`
-        );
+      const reserved = [SNAPSHOT_IDENTITY_FILE, SNAPSHOT_ROUTES_FILE].find(
+        file => normalized === `/${file}` || normalized.startsWith(`/${file}/`)
+      );
+      if (reserved) {
+        throw new Error(`Snapshot output '${entry}' conflicts with reserved ${reserved}`);
       }
     }
     for (const filePath of allFiles) {
@@ -130,6 +130,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
       });
       await fs.promises.writeFile(path.join(pathDir, String(filePath)), rawFile);
     }
+    const exportedAliases: string[] = [];
     for (const alias in symlinks) {
       if (alias.startsWith('/.tags')) continue;
       for (const { target } of symlinks[alias]) {
@@ -138,13 +139,27 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
         const targetPath = path.join(pathDir, target);
         await fs.promises.mkdir(path.dirname(aliasPath), { recursive: true });
         await fs.promises.symlink(path.relative(path.dirname(aliasPath), targetPath), aliasPath);
+        exportedAliases.push(alias);
       }
     }
-    // Publish identity only after all content and aliases were written.
+    const snapshotId = randomUUID();
+    const routes = await buildRouteInventory({
+      root: pathDir,
+      files: allFiles.map(String),
+      aliases: exportedAliases,
+      pageExtensions: config.pageExtensions ?? ['.mdx'],
+      ignorePages: config.ignorePages
+    });
+    await fs.promises.writeFile(
+      path.join(pathDir, SNAPSHOT_ROUTES_FILE),
+      JSON.stringify({ version: 1, snapshotId, routes }),
+      { encoding: 'utf8', flag: 'wx' }
+    );
+    // Publish identity only after all content, aliases and route inventory were written.
     // A new generation also invalidates persistent caches at a reused path.
     await fs.promises.writeFile(
       path.join(pathDir, SNAPSHOT_IDENTITY_FILE),
-      JSON.stringify({ version: 1, id: randomUUID() }),
+      JSON.stringify({ version: 1, id: snapshotId }),
       { encoding: 'utf8', flag: 'wx' }
     );
     console.log(`[Mosaic] filesystem for ${sourceCount} source(s) written to disk at '${pathDir}'`);

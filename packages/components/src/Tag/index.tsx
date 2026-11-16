@@ -12,8 +12,9 @@ export interface TagProps {
   category?: string;
   /** Icon name */
   icon?: string;
-  /** Tag label */
-  label: string;
+  /** Tag label. When omitted, children provide the label. */
+  label?: string;
+  children?: React.ReactNode;
   /** Tag size */
   size?: Size;
 }
@@ -35,10 +36,11 @@ export const Tag: React.FC<React.PropsWithChildren<TagProps>> = ({
   category = '0',
   icon: iconName = 'none',
   label,
+  children,
   size = 'small',
   ...rest
 }: TagProps) => (
-  <div
+  <span
     className={classnames(
       styles.root,
       styles[`category${category}`],
@@ -56,7 +58,7 @@ export const Tag: React.FC<React.PropsWithChildren<TagProps>> = ({
           <Icon name={iconName} size={size} />
         </span>
       )}
-      {label}
+      {label ?? children}
     </span>
-  </div>
+  </span>
 );

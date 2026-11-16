@@ -7,6 +7,7 @@ const loaders = vi.hoisted(() => ({
   getSharedConfig: vi.fn(),
   getMdxRawSource: vi.fn(),
   loadSitemap: vi.fn(),
+  generateMosaicStaticParams: vi.fn(),
   resolveMosaicMode: vi.fn()
 }));
 const editor = vi.hoisted(() => ({ enabled: false }));
@@ -76,6 +77,12 @@ beforeEach(() => {
     header: { homeLink: './index', logo: './logo.svg' }
   });
   loaders.loadSitemap.mockResolvedValue(['/docs/index', '/about', '/quickstart']);
+  loaders.generateMosaicStaticParams.mockResolvedValue([
+    { namespace: 'docs', route: [] },
+    { namespace: 'docs', route: ['index'] },
+    { namespace: 'about', route: [] },
+    { namespace: 'quickstart', route: [] }
+  ]);
 });
 
 afterEach(() => {
@@ -120,6 +127,40 @@ describe.each(['active', 'snapshot-file'] as const)('document routing in %s mode
     expect(metadata.alternates?.canonical).toBe('/docs/start/index');
   });
 
+  test('composes reusable metadata with the existing host social branding unchanged', async () => {
+    loaders.getMdxRaw.mockResolvedValue({
+      kind: 'mdx',
+      raw: 'Content',
+      frontmatter: {
+        title: 'Title',
+        description: 'Description',
+        route: '/docs/page',
+        image: '/brand.png',
+        lastModified: 42,
+        breadcrumbs: [{ label: 'Docs' }]
+      }
+    });
+    const { generateMetadata } = await import('../page');
+    expect(await generateMetadata(request('alias'))).toEqual({
+      title: 'Title',
+      description: 'Description',
+      alternates: { canonical: '/docs/page' },
+      other: { lastModified: '42', breadcrumbs: '[{"label":"Docs"}]' },
+      openGraph: {
+        type: 'article',
+        title: 'Title',
+        description: 'Description',
+        images: [{ url: '/brand.png' }]
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Title',
+        description: 'Description',
+        images: ['/brand.png']
+      }
+    });
+  });
+
   test('continues to resolve a real top-level folder index', async () => {
     const { default: Page } = await import('../page');
     const html = renderToStaticMarkup(await Page(request('docs')));
@@ -134,17 +175,28 @@ describe.each(['active', 'snapshot-file'] as const)('document routing in %s mode
 
     await expect(Page(request('missing'))).rejects.toThrow('not-found');
   });
+
+  test('encodes decoded Next params exactly once for the content loader', async () => {
+    loaders.getMdxRaw.mockResolvedValue(document('Encoded page', '/docs space/café%20'));
+    const { default: Page } = await import('../page');
+    renderToStaticMarkup(await Page(request('docs space', ['café%20'])));
+    expect(loaders.getMdxRaw).toHaveBeenCalledWith(
+      '/docs%20space/caf%C3%A9%2520',
+      mode,
+      'http://content'
+    );
+  });
 });
 
 describe('static document paths', () => {
   test('splits root documents, aliases and index shorthand paths from deeper pages', async () => {
     vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
-    loaders.loadSitemap.mockResolvedValue([
-      '/docs/index',
-      '/about',
-      '/quickstart',
-      '/docs/index',
-      '/other/page'
+    loaders.generateMosaicStaticParams.mockResolvedValue([
+      { namespace: 'docs', route: [] },
+      { namespace: 'docs', route: ['index'] },
+      { namespace: 'about', route: [] },
+      { namespace: 'quickstart', route: [] },
+      { namespace: 'other', route: ['page'] }
     ]);
     const { generateStaticParams } = await import('../page');
     const { generateStaticParams: generateNamespaceParams } = await import('../../page');
@@ -161,14 +213,16 @@ describe('static document paths', () => {
       { namespace: 'about' },
       { namespace: 'quickstart' }
     ]);
+    expect(loaders.generateMosaicStaticParams).toHaveBeenCalledWith({ pageExtensions: ['.mdx'] });
+    expect(loaders.loadSitemap).not.toHaveBeenCalled();
   });
 
-  test('fails a production snapshot build when the sitemap is missing or empty', async () => {
+  test('propagates invalid inventory failures from the shared production helper', async () => {
     vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
-    loaders.loadSitemap.mockResolvedValue([]);
+    loaders.generateMosaicStaticParams.mockRejectedValue(new Error('Invalid mosaic-routes.json'));
     const { generateStaticParams } = await import('../page');
 
-    await expect(generateStaticParams()).rejects.toThrow('sitemap.xml is missing or empty');
+    await expect(generateStaticParams()).rejects.toThrow('Invalid mosaic-routes.json');
   });
 
   test('probes active-mode rendering without reading content or the sitemap', async () => {
@@ -183,6 +237,7 @@ describe('static document paths', () => {
     expect(probe).toEqual({ namespace: '__mosaic_dynamic_probe__', route: ['index'] });
     expect(namespaceProbe).toEqual({ namespace: '__mosaic_dynamic_probe__' });
     expect(loaders.loadSitemap).not.toHaveBeenCalled();
+    expect(loaders.generateMosaicStaticParams).not.toHaveBeenCalled();
     connection.mockRejectedValue(new Error('prerender stops at connection'));
     await expect(Page(request(probe.namespace, probe.route))).rejects.toThrow(
       'prerender stops at connection'

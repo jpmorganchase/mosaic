@@ -11,12 +11,8 @@
 import classnames from 'clsx';
 import type { Metadata } from 'next';
 
-// Salt injects its component styles from the browser only, so the server
-// HTML had none and every page changed size when it hydrated. Its prebuilt
-// styles put them in the server HTML. They come first so Mosaic's overrides
-// still win, as they do over the styles Salt injects at the top of <head>.
-import '@salt-ds/core/css/salt-core.css';
-import '@salt-ds/icons/css/salt-icon.css';
+// The preset includes Salt's static component styles before Mosaic overrides,
+// so both the header and content are styled before hydration.
 import '@jpmorganchase/mosaic-site-preset-styles/index.css';
 import '@jpmorganchase/mosaic-sitemap-component/index.css';
 import '../css/index.css';
@@ -30,15 +26,15 @@ import { themePrefScript } from '../lib/themePrefScript';
 import { LiveReload } from './LiveReload';
 import { Providers } from './providers';
 
-// `<SessionProvider>` (in `./providers`) is rendered without a
-// server-resolved `session` prop; when auth is enabled the client
+// When auth is enabled, `./providers` mounts SessionProvider and the
+// Mosaic auth adapter without a server-resolved session. The client
 // fetches it lazily via `/api/auth/session` after mount. This keeps the
 // root layout independent of Auth.js configuration. A missing
 // `AUTH_SECRET` or OAuth env var degrades to `session: null` on the
 // client instead of throwing in the layout (which would bypass
 // `error.tsx` and surface as Next's generic "A server error occurred"
 // fallback page). Only the build-time `AUTH_ENABLED` flag is passed
-// down, so no-auth deployments skip the session request entirely.
+// down. No-auth deployments mount neither auth provider.
 
 // Static-export builds (`MOSAIC_OUTPUT=export`) skip the
 // "missing NEXT_PUBLIC_SITE_URL" warning below because absolute URLs
@@ -79,15 +75,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       // The inline `themePrefScript` below runs before React hydrates and
-      // sets `data-mode` on `<html>` from `localStorage`. That is a
-      // deliberate divergence between the SSR output (no attribute) and
-      // the live DOM (attribute set), so we ask React to skip the
-      // hydration warning for *this* element only. Children are still
-      // diffed normally.
+      // replaces these default mode/density values with the stored preference
+      // and viewport density. That intentional difference is limited to this
+      // element; children still use their deterministic first-render state.
       suppressHydrationWarning
       // `ThemeProvider` sets these through Salt after hydration. Rendering
       // them here styles the server HTML as it will look once hydrated, so
       // pages don't change size. Keep them in step with its props.
+      data-mode="light"
       data-accent="teal"
       data-corner="rounded"
       data-heading-font="Amplitude"
@@ -96,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         'salt-theme',
         'salt-theme-next',
         'salt-editorial',
+        'salt-density-low',
         themeClassName,
         ptMono.variable,
         openSans.variable,

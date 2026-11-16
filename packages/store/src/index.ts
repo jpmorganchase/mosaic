@@ -1,4 +1,6 @@
 export * from './store';
+export * from './useMosaicStore';
+export * from './frame';
 export { ColorModeProvider } from './ColorModeProvider';
 export * from './useAppHeader';
 export * from './useBreadcrumbs';

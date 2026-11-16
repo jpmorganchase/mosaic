@@ -8,6 +8,8 @@ import { cache } from 'react';
 import path from 'node:path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { getMdxRaw, getSharedConfig } from './cachedLoaders.js';
+import { canonicalRoute, isSafeContentPath } from './canonicalRoute.js';
+export { canonicalRoute } from './canonicalRoute.js';
 
 type MdxContent = Extract<Awaited<ReturnType<typeof getMdxRaw>>, { kind: 'mdx' }>;
 type SharedConfig = Awaited<ReturnType<typeof getSharedConfig>>;
@@ -173,28 +175,3 @@ export const resolveContent = cache(
     return { kind: 'not-found', originalPathname, pathname, sharedConfig: undefined };
   }
 );
-
-/**
- * The route search engines should index for a page.
- *
- * Mosaic stamps every page's frontmatter with its canonical `route`
- * (for example `/mosaic/getting-started/index`), which already accounts
- * for folder URLs and aliases in every content mode. Falls back to
- * `fallback` when the frontmatter has no usable route.
- */
-export function canonicalRoute(frontmatter: Record<string, unknown>, fallback: string): string {
-  const { route } = frontmatter;
-  return isSafeContentPath(route) ? route : fallback;
-}
-
-/** Reject paths that could escape a document's configuration or save scope. */
-function isSafeContentPath(value: unknown): value is string {
-  if (typeof value !== 'string' || value.length < 2 || value.length > 1024) return false;
-  if (!value.startsWith('/') || value.includes('\\')) return false;
-  // eslint-disable-next-line no-control-regex
-  if (/[\x00-\x1f\x7f]/.test(value)) return false;
-  return value
-    .slice(1)
-    .split('/')
-    .every(segment => segment !== '' && segment !== '.' && segment !== '..');
-}

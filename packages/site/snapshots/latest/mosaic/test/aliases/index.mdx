@@ -26,9 +26,9 @@ navigation:
     route: /mosaic/test/refs/data
     group: Refs Test
   next:
-    title: Tags Test
-    route: /mosaic/test/tags/index
-    group: Tags Test
+    title: Content hydration test
+    route: /mosaic/test/hydration/index
+    group: Content hydration test
 sidebarData:
   - id: /mosaic/test/index
     kind: data
@@ -146,6 +146,18 @@ sidebarData:
           level: 3
           link: /mosaic/test/aliases/index
     name: Aliases Test
+  - id: /mosaic/test/hydration
+    kind: group
+    childNodes:
+      - id: /mosaic/test/hydration/index
+        kind: data
+        fullPath: /mosaic/test/hydration/index.mdx
+        name: Content hydration test
+        priority: 999
+        data:
+          level: 3
+          link: /mosaic/test/hydration/index
+    name: Content hydration test
   - id: /mosaic/test/tags
     kind: group
     childNodes:

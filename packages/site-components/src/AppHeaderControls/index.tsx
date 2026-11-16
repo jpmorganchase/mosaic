@@ -1,5 +1,4 @@
 import React from 'react';
-import { usePathname } from 'next/navigation';
 import { Icon, Link, Button } from '@jpmorganchase/mosaic-components';
 import { Menu, MenuTrigger, MenuPanel, MenuItem } from '@salt-ds/core';
 // Deep imports: the package root re-exports the whole Lexical editor.
@@ -9,8 +8,8 @@ import {
 } from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
 import { EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls';
 import { useColorMode, useSourceCapabilities, useStoreActions } from '@jpmorganchase/mosaic-store';
-import { signIn, signOut, useSession } from 'next-auth/react';
 
+import { useMosaicAuth } from '../auth';
 import { UserProfile } from '../UserProfile';
 import { SearchInput } from '../SearchInput';
 import styles from './styles.css';
@@ -25,72 +24,19 @@ function toUpperFirst(str) {
   return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 }
 
-/**
- * Collapses `callbackPath` to `/` when the originating page is itself
- * under `/api/auth/*`. Otherwise a Login click from the sign-in page
- * (or a Logout from the sign-out confirmation screen) would round-trip
- * back to `/api/auth/signin?...`, which looks like a redirect loop in
- * the network panel and is never what the user wanted.
- */
-function toCallbackPath(callbackPath: string): string {
-  return callbackPath.startsWith('/api/auth/') ? '/' : callbackPath;
-}
-
-/**
- * Same-origin path the user should land on after auth (sign-in or
- * sign-out), read when the user clicks. Composed from
- * `pathname + search + hash` rather than `window.location.href` so it
- * stays a relative URL — NextAuth's default `redirect` callback already
- * filters cross-origin targets, but never handing it an absolute URL in
- * the first place keeps the link unambiguously local and avoids
- * encoding a redundant `https://host/` prefix into every Login/Logout
- * request.
- *
- * Event handlers only: it reads `window.location`, so calling it while
- * rendering would give the server and the browser different values.
- */
-function getCallbackPath(): string {
-  return toCallbackPath(
-    `${window.location.pathname}${window.location.search}${window.location.hash}`
-  );
-}
-
-/**
- * Fallback `href` for the Login link.
- *
- * The Login control is upgraded with an `onClick` that calls
- * `signIn()` from `next-auth/react` for the actual flow (which
- * handles CSRF, `basePath`, and provider-direct shortcuts) — but
- * we keep a real `href` on the `<Link>` so:
- *
- *   - Middle-click / cmd-click "open in new tab" works (an `onClick`
- *     that calls `preventDefault()` is bypassed entirely by the
- *     browser for modifier-key clicks, so the href is what the new
- *     tab follows).
- *   - The component degrades to a working hyperlink in the unlikely
- *     event JS fails to hydrate.
- *   - SSR / view-source shows a meaningful target.
- *
- * Built from the router's pathname, which the server and the browser
- * agree on, so hydration matches. (Search and hash are only known in
- * the browser; the click handler includes them.)
- *
- * Returns the path-shaped Auth.js sign-in URL with the callback
- * encoded, mirroring exactly what `signIn(undefined, { callbackUrl })`
- * resolves to internally for the default-provider-list flow.
- */
-function buildSignInFallbackHref(pathname: string | null): string {
-  return `/api/auth/signin?callbackUrl=${encodeURIComponent(toCallbackPath(pathname ?? '/'))}`;
-}
-
 export const AppHeaderControls: React.FC = () => {
-  const pathname = usePathname();
   const colorMode = useColorMode();
   const { setColorMode } = useStoreActions();
 
-  const { data: session } = useSession();
-  const isLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_LOGIN === 'true' || false;
-  const isLoggedIn = session != null;
+  const {
+    user,
+    status,
+    loginEnabled: isLoginEnabled,
+    signInHref,
+    signIn,
+    signOut
+  } = useMosaicAuth();
+  const isLoggedIn = status === 'authenticated';
   const isEditing = useIsEditing();
   const { startEditing, stopEditing } = useEditModeActions();
   // Editor surfaces (toolbar + menu item) only render when the page's
@@ -113,23 +59,13 @@ export const AppHeaderControls: React.FC = () => {
       onSelect: () => (isEditing ? stopEditing() : startEditing())
     });
   }
-  if (isLoginEnabled && isLoggedIn) {
+  if (isLoginEnabled && isLoggedIn && signOut) {
     actionMenuOptions = [
       ...actionMenuOptions,
       {
         title: 'Logout',
         onSelect: () => {
-          // `signOut()` from `next-auth/react` handles the CSRF
-          // round-trip + redirect; we just declare *where* to land.
-          // `getCallbackPath()` resolves to the current page (or `/`
-          // if the click came from `/api/auth/*`), so the user
-          // returns to the page they signed out from instead of the
-          // default-namespace homepage.
-          //
-          // `void` because the returned promise resolves *after* the
-          // browser is already navigating away — awaiting it would
-          // be a no-op that lint flags as floating.
-          void signOut({ callbackUrl: getCallbackPath() });
+          void signOut();
         }
       }
     ];
@@ -142,49 +78,34 @@ export const AppHeaderControls: React.FC = () => {
         <div className={styles.userInfo}>
           {isLoggedIn ? (
             <UserProfile
-              avatarUrl={session?.user?.image || ''}
-              firstName={toUpperFirst(session?.user?.name || '')}
+              avatarUrl={user?.image || ''}
+              firstName={toUpperFirst(user?.name || '')}
               prefixText="Welcome, "
             />
           ) : (
-            // Hybrid Login control: the `href` is the SSR-rendered
-            // fallback (and the target browsers use for middle-click
-            // / cmd-click "open in new tab" — those bypass `onClick`
-            // entirely, so a static href is the only way to make
-            // them route correctly). The `onClick` upgrades the
-            // primary-click path to `signIn()` from `next-auth/react`,
-            // which handles CSRF + `basePath` resolution and could
-            // be extended to skip the provider-list page in
-            // single-provider deployments (e.g.
-            // `signIn('github', { callbackUrl })`).
-            //
-            // `preventDefault()` is gated on the click not being a
-            // modifier-key click — `<Link>` already handles this for
-            // plain hrefs, but we're attaching custom JS, so we
-            // reproduce the convention explicitly: any modifier
-            // (cmd, ctrl, shift, alt, middle-button) falls through
-            // to the native href behaviour, primary clicks go via
-            // `signIn`.
-            <Link
-              href={buildSignInFallbackHref(pathname)}
-              onClick={event => {
-                if (
-                  event.defaultPrevented ||
-                  event.metaKey ||
-                  event.ctrlKey ||
-                  event.shiftKey ||
-                  event.altKey ||
-                  event.button !== 0
-                ) {
-                  return;
-                }
-                event.preventDefault();
-                void signIn(undefined, { callbackUrl: getCallbackPath() });
-              }}
-              variant="component"
-            >
-              Login
-            </Link>
+            signInHref && (
+              <Link
+                href={signInHref}
+                onClick={event => {
+                  if (
+                    !signIn ||
+                    event.defaultPrevented ||
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    event.button !== 0
+                  ) {
+                    return;
+                  }
+                  event.preventDefault();
+                  void signIn();
+                }}
+                variant="component"
+              >
+                Login
+              </Link>
+            )
           )}
         </div>
       )}

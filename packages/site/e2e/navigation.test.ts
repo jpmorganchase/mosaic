@@ -121,5 +121,17 @@ test.describe('Client-side navigation', () => {
       await expect(drawer).toHaveCount(0);
       await expectHeaderKept(page);
     });
+
+    test('closes the portaled drawer when resizing to desktop', async ({ page }) => {
+      await gotoHydrated(page, '/mosaic/author/index');
+      await page.getByRole('button', { name: 'show the tab navigation' }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.setViewportSize({ width: 1200, height: 900 });
+      await expect(page.getByRole('dialog')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'show the tab navigation' })).toBeHidden();
+      await expect(
+        page.locator('header').getByRole('link', { name: 'Configure', exact: true })
+      ).toBeVisible();
+    });
   });
 });

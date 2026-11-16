@@ -14,6 +14,8 @@ export * from './MutableData.js';
 export * from './MarkdownPages.js';
 export * from './Page.js';
 export * from './SearchRecord.js';
+export * from './SnapshotRoutes.js';
+export * from './SerializedMdxResult.js';
 export * from './Plugin.js';
 export * from './Serialiser.js';
 export * from './Source.js';
@@ -31,3 +33,4 @@ export {
   SourceWorkflow,
   SourceSchedule
 };
+export * from './SerializedMdxResult.js';

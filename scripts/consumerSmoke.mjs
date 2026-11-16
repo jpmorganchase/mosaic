@@ -7,7 +7,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
+import { verifyAuthConsumers } from './consumerAuth.mjs';
+
 const root = fileURLToPath(new URL('../', import.meta.url));
+// Next 16.3+ currently publishes DOM types only available in TypeScript 6.
+// The repository builds libraries on TypeScript 5.9; this complete strict
+// external Next consumer uses the compiler required by Next's declarations.
+// https://github.com/vercel/next.js/issues/99631
+const nextTypeScriptVersion = '6.0.3';
 const yarn = path.join(root, '.yarn/releases/yarn-4.10.3.cjs');
 const consumer = await fs.mkdtemp(path.join(os.tmpdir(), 'mosaic-consumer-'));
 const siteConsumer = await fs.mkdtemp(path.join(os.tmpdir(), 'mosaic-site-consumer-'));
@@ -34,8 +41,13 @@ try {
   const resolutions = {};
   const entryPackages = new Set([
     '@jpmorganchase/mosaic-cli',
+    '@jpmorganchase/mosaic-components',
+    '@jpmorganchase/mosaic-content-editor-plugin',
+    '@jpmorganchase/mosaic-layouts',
     '@jpmorganchase/mosaic-plugins',
-    '@jpmorganchase/mosaic-site-components'
+    '@jpmorganchase/mosaic-site-components',
+    '@jpmorganchase/mosaic-store',
+    '@jpmorganchase/mosaic-theme'
   ]);
   await fs.mkdir(path.join(consumer, 'tarballs'));
   for (const entry of await fs.readdir(path.join(root, 'packages'), { withFileTypes: true })) {
@@ -60,13 +72,14 @@ try {
     '@types/react-dom',
     'react',
     'react-dom',
-    'next',
-    'next-auth'
+    'next'
   ]) {
     dependencies[name] = (
       await readJson(path.join(root, 'node_modules', name, 'package.json'))
     ).version;
   }
+  dependencies['@mosaic-test/extension'] = 'file:./extension.tgz';
+  dependencies.typescript = nextTypeScriptVersion;
   await fs.writeFile(
     path.join(consumer, 'package.json'),
     JSON.stringify(
@@ -101,6 +114,17 @@ try {
   // above replace every internal workspace dependency with an actual tarball.
   await fs.copyFile(path.join(root, 'yarn.lock'), path.join(consumer, 'yarn.lock'));
   await fs.cp(path.join(root, 'scripts/consumer'), consumer, { recursive: true });
+  execFileSync(
+    'tar',
+    [
+      '-czf',
+      path.join(consumer, 'extension.tgz'),
+      '-C',
+      path.join(consumer, 'extension'),
+      'package'
+    ],
+    { windowsHide: true, timeout: 30_000 }
+  );
   console.log(
     `Packed ${
       Object.keys(resolutions).length
@@ -116,7 +140,9 @@ try {
     assert.ok(installed.startsWith(`${consumer}${path.sep}`), `${name} links outside the consumer`);
   }
   run(['node_modules/typescript/bin/tsc', '--project', 'tsconfig.json']);
-  console.log('External declarations passed with skipLibCheck: false');
+  console.log(
+    `External declarations passed on TypeScript ${nextTypeScriptVersion} with skipLibCheck: false`
+  );
   console.log(run(['smoke.mjs']).trim());
 
   // Unpack the advertised site template outside both the checkout and the
@@ -128,6 +154,10 @@ try {
     timeout: 30_000
   });
   const siteManifest = await readJson(path.join(siteConsumer, 'package.json'));
+  siteManifest.devDependencies.typescript = nextTypeScriptVersion;
+  siteManifest.dependencies['@mosaic-test/extension'] = `file:${path
+    .join(consumer, 'extension.tgz')
+    .replaceAll('\\', '/')}`;
   siteManifest.resolutions = Object.fromEntries(
     Object.entries(resolutions).map(([name, archive]) => [
       name,
@@ -154,6 +184,7 @@ try {
   );
   assert.throws(() => run([yarn, 'lint'], siteConsumer), /@typescript-eslint\/no-unused-vars/);
   console.log('Standalone packed site lint passed and detected a deliberate TypeScript error');
+  await verifyAuthConsumers({ consumer, siteConsumer, root, run });
   // Only remove the isolated directory created by this invocation.
   assert.equal(path.dirname(consumer), path.resolve(os.tmpdir()));
   assert.ok(path.basename(consumer).startsWith('mosaic-consumer-'));

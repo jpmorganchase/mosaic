@@ -1,3 +1,5 @@
+'use client';
+
 import {
   createContext,
   useCallback,
@@ -9,8 +11,11 @@ import {
 } from 'react';
 
 import type { ColorMode } from './types/colorMode';
-
-const STORAGE_KEY = 'mosaic-theme-pref';
+import {
+  STORAGE_KEY,
+  parseColorModePreference,
+  serializeColorModePreference
+} from './theme-preference';
 
 interface ColorModeContextValue {
   colorMode: ColorMode;
@@ -18,15 +23,6 @@ interface ColorModeContextValue {
 }
 
 const ColorModeContext = createContext<ColorModeContextValue | undefined>(undefined);
-
-function readColorMode(value: string | null): ColorMode | undefined {
-  try {
-    const mode = value && JSON.parse(value)?.state?.colorMode;
-    return mode === 'light' || mode === 'dark' ? mode : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 /** Mount once above the site's theme and content providers. */
 export function ColorModeProvider({ children }: { children?: ReactNode }) {
@@ -42,10 +38,7 @@ export function ColorModeProvider({ children }: { children?: ReactNode }) {
         applyMode(mode);
         try {
           // Preserve the existing persisted format and pre-hydration script contract.
-          localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({ state: { colorMode: mode }, version: 0 })
-          );
+          localStorage.setItem(STORAGE_KEY, serializeColorModePreference(mode));
         } catch {
           // The preference still works for this session when storage is unavailable.
         }
@@ -57,7 +50,7 @@ export function ColorModeProvider({ children }: { children?: ReactNode }) {
   useEffect(() => {
     let savedMode: ColorMode | undefined;
     try {
-      savedMode = readColorMode(localStorage.getItem(STORAGE_KEY));
+      savedMode = parseColorModePreference(localStorage.getItem(STORAGE_KEY));
     } catch {
       // Storage can be blocked by the browser.
     }
@@ -65,7 +58,7 @@ export function ColorModeProvider({ children }: { children?: ReactNode }) {
 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return;
-      const nextMode = readColorMode(event.newValue);
+      const nextMode = parseColorModePreference(event.newValue);
       if (nextMode) applyMode(nextMode);
     };
     window.addEventListener('storage', onStorage);

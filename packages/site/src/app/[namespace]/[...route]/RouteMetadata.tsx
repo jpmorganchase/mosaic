@@ -26,11 +26,11 @@
  * would duplicate every tag that `generateMetadata` already
  * server-renders.
  */
-import { useSession } from 'next-auth/react';
+import { useMosaicAuth } from '@jpmorganchase/mosaic-site-components/auth';
 
 export function RouteMetadata() {
-  const { data: session } = useSession();
-  const avatar = session?.user?.image;
+  const { user } = useMosaicAuth();
+  const avatar = user?.image;
   if (!avatar) return null;
   return <link as="image" href={avatar} rel="preload" />;
 }

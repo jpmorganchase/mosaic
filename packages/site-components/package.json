@@ -13,6 +13,18 @@
   "style": "./dist/index.css",
   "exports": {
     "./index.css": "./dist/index.css",
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "import": "./dist/auth/index.js",
+      "node": "./dist/auth/index.js",
+      "default": "./dist/auth/index.js"
+    },
+    "./auth/next-auth": {
+      "types": "./dist/auth/next-auth.d.ts",
+      "import": "./dist/auth/next-auth.js",
+      "node": "./dist/auth/next-auth.js",
+      "default": "./dist/auth/next-auth.js"
+    },
     "./SearchProvider": {
       "types": "./dist/SearchProvider/index.d.ts",
       "import": "./dist/SearchProvider/index.js",
@@ -57,7 +69,8 @@
     "@jpmorganchase/mosaic-site-middleware": "workspace:^",
     "@jpmorganchase/mosaic-store": "workspace:^",
     "@jpmorganchase/mosaic-theme": "workspace:^",
-    "@salt-ds/core": "^1.63.0",
+    "@jpmorganchase/mosaic-types": "workspace:^",
+    "@salt-ds/core": "^1.73.0",
     "@vanilla-extract/css": "^1.6.0",
     "clsx": "^2.0.0",
     "lodash-es": "^4.17.23",
@@ -69,5 +82,10 @@
     "next-auth": "^5.0.0-beta.30",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
+  },
+  "peerDependenciesMeta": {
+    "next-auth": {
+      "optional": true
+    }
   }
 }

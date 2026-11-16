@@ -62,13 +62,13 @@ afterEach(async () => {
 });
 
 test.each([
-  [390, 'touch', '0 0 44 44'],
-  [959, 'touch', '0 0 44 44'],
-  [960, 'low', '0 0 36 36'],
-  [1200, 'low', '0 0 36 36']
+  [390, 'touch'],
+  [959, 'touch'],
+  [960, 'low'],
+  [1200, 'low']
 ] as const)(
   'hydrates nested providers and Spinner at a %ipx viewport, then follows viewport changes',
-  async (width, density, viewBox) => {
+  async (width, density) => {
     const resize = mockViewport(width);
     localStorage.setItem(
       'mosaic-theme-pref',
@@ -87,7 +87,7 @@ test.each([
     let serverHtml: string;
     try {
       // Server rendering must not see jsdom's viewport. Keep Salt's real
-      // components so both its nested class and SVG geometry are exercised.
+      // components so its nested density class and SVG markup are exercised.
       Object.defineProperty(globalThis, 'window', { configurable: true, value: undefined });
       serverHtml = renderToString(app);
     } finally {
@@ -98,7 +98,10 @@ test.each([
     document.body.appendChild(container);
     const spinner = container.querySelector('#hydrated-spinner');
     const nestedProvider = container.querySelector('.salt-provider');
-    expect(spinner).toHaveAttribute('viewBox', '0 0 36 36');
+    // Salt now sizes Spinner with CSS density tokens. Its SVG stays stable
+    // while the inherited density classes select the correct physical size.
+    expect(spinner).toHaveAttribute('preserveAspectRatio', 'xMidYMid meet');
+    const serverSpinner = spinner?.outerHTML;
     expect(nestedProvider).toHaveClass('salt-density-low');
 
     // The reference site's inline script has already selected the root class.
@@ -113,7 +116,7 @@ test.each([
     expect(consoleError).not.toHaveBeenCalled();
     expect(container.querySelector('#hydrated-spinner')).toBe(spinner);
     expect(container.querySelector('.salt-provider')).toBe(nestedProvider);
-    expect(spinner).toHaveAttribute('viewBox', viewBox);
+    expect(spinner?.outerHTML).toBe(serverSpinner);
     expect(nestedProvider).toHaveClass(`salt-density-${density}`);
     expect(document.documentElement).toHaveClass(`salt-density-${density}`);
     expect(document.documentElement).not.toHaveClass(
@@ -121,12 +124,12 @@ test.each([
     );
 
     await act(async () => resize(390));
-    expect(spinner).toHaveAttribute('viewBox', '0 0 44 44');
+    expect(spinner?.outerHTML).toBe(serverSpinner);
     expect(nestedProvider).toHaveClass('salt-density-touch');
     expect(document.documentElement).toHaveClass('salt-density-touch');
     expect(document.documentElement).not.toHaveClass('salt-density-low');
     await act(async () => resize(1200));
-    expect(spinner).toHaveAttribute('viewBox', '0 0 36 36');
+    expect(spinner?.outerHTML).toBe(serverSpinner);
     expect(nestedProvider).toHaveClass('salt-density-low');
     expect(document.documentElement).toHaveClass('salt-density-low');
     expect(document.documentElement).not.toHaveClass('salt-density-touch');

@@ -31,9 +31,11 @@ export default async function NamespaceLayout({
   const { mode, contentUrl } = resolveMosaicMode();
   // `getSharedConfig` reads the config of a page's folder, so ask for a
   // page directly in the namespace folder.
-  const sharedConfig = await getSharedConfig(`/${namespace}/index`, mode, contentUrl).catch(
-    () => undefined
-  );
+  const sharedConfig = await getSharedConfig(
+    `/${encodeURIComponent(namespace)}/index`,
+    mode,
+    contentUrl
+  ).catch(() => undefined);
 
   return (
     <NamespaceFrame

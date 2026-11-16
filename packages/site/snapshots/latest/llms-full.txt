@@ -716,6 +716,66 @@ url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/ui-components"
 <button>Hello, world!</button>
 ```
 
+## Inline components
+
+Use components that render inline HTML inside a paragraph. For example, `Tag`
+accepts either a `label` or children:
+
+```mdx
+This feature is <Tag>RC</Tag>.
+```
+
+An explicit `label` takes precedence over children, including `label=""`.
+
+Typography components such as `Subtitle5` render a paragraph by default. Use
+`component="span"` when placing one inside a sentence:
+
+```mdx
+Read the <Subtitle5 component="span">release notes</Subtitle5> before upgrading.
+```
+
+## Links
+
+`Link` in the default MDX registry is Mosaic's `Link`, whose props differ from
+Salt's `Link`. Use `endIcon="none"` to hide its trailing icon; Salt's
+`IconComponent` prop is not supported. Standard `aria-*` and `data-*` attributes
+can still be passed through.
+
+```mdx
+<Link href="./release-notes" endIcon="none">
+  Release notes
+</Link>
+```
+
+Headings can contain normal Markdown links. The separate copy control beside a
+heading copies its permalink without intercepting links in the heading text.
+
+## Values that differ between server and browser
+
+The initial browser render must match the HTML rendered by the server. Format
+dates with an explicit locale and time zone when displaying them in MDX, rather
+than relying on each machine's defaults:
+
+```jsx
+new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'medium',
+  timeZone: 'UTC'
+}).format(new Date('2026-11-16T00:00:00Z'));
+```
+
+Keep browser-dependent values inside components that apply them after hydration.
+A host can opt into an MDX Suspense boundary for recovery and suspending content,
+but this does not make invalid HTML or inconsistent initial values correct.
+
+## Responsive cards
+
+`Cards` and its `Tiles` alias accept Salt `GridLayout` props. For example,
+`columns={{ xs: 1, sm: 2, lg: 3 }}` selects one, two, or three columns using CSS
+before hydration. The breakpoint sizes come from the surrounding Salt provider,
+including custom `breakpoints`. Numeric columns and the existing grid spacing
+props continue to work. This behavior applies to Mosaic's wrappers; a host's
+direct use of Salt `GridLayout` keeps Salt's own responsive behavior.
+
 ---
 title: "Configure"
 url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/index"
@@ -1296,6 +1356,26 @@ Every completed build gets a new ID, including builds that reuse the same output
 Older snapshots remain readable. If the identity file is missing or invalid, Mosaic skips persistent loader caching while retaining per-request memoization. Regenerate the snapshot with the updated CLI to enable caching; do not reuse an ID for changed content.
 
 Snapshots remain immutable deployment artifacts. Publish the complete snapshot with the site rather than overwriting files while requests are reading them. The generation ID affects loader data caching; changing it alone does not invalidate already-rendered Next.js routes. Deploy a new site build or use the appropriate Next.js route revalidation when replacing a snapshot in a running deployment.
+
+## Route inventory and prerendering
+
+Every successful `mosaic build` also writes `mosaic-routes.json`, independently of `SiteMapPlugin` and its SEO exclusions. The version 1 envelope contains `snapshotId` (matching the completion identity) and `routes`, an array of `{ pathname, sourcePathname }` records. `pathname` is a percent-encoded URL; `sourcePathname` is its decoded backing file path, including the extension. Actual files, aliases and supported folder/index shortcuts determine this inventory. A frontmatter `route` alone does not create a URL.
+
+App Router hosts can use the public helper:
+
+```ts
+import { generateMosaicStaticParams } from '@jpmorganchase/mosaic-site-middleware/routes';
+
+export async function generateStaticParams() {
+  return generateMosaicStaticParams({ pageExtensions: ['.mdx'] });
+}
+```
+
+The helper defaults to `MOSAIC_SNAPSHOT_DIR`; pass `snapshotDir` to choose another directory. It returns decoded `{ namespace, route }` params, where `namespace` means the first URL segment, not the source's configured namespace. A required `[...route]` page selects entries with a nonempty `route`; a separate `[namespace]/page.tsx` selects empty routes and returns `{ namespace }`. The host handles `/` itself. When constructing loader URLs from Next's decoded params, encode each segment with `encodeURIComponent`.
+
+`pageExtensions` explicitly selects backing documents the host can render. Core may also admit JSON or custom data files, which should not automatically become MDX pages. `include(record)` can further restrict prerendering without changing SEO output. The reference site selects `.mdx` files. Custom extension inventory does not add new loader behavior: explicit `/index` still resolves to `.mdx`, and folder shortcuts need an existing extensionless `index` alias.
+
+An empty CLI inventory is valid, including builds with zero enabled sources. The host helper rejects an empty selection by default; set `allowEmpty: true` for an intentionally empty host. Missing, malformed, unsupported or mismatched inventory/identity files fail with a regeneration message. Existing content loaders can still read older snapshots, but adopting this helper requires regenerating them. It never falls back to the SEO sitemap.
 
 ---
 title: "Static export"
@@ -3788,6 +3868,31 @@ url: "https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/custom-co
 
 Learn how to add your own custom components to your Mosaic site.
 
+## Publishing an extension package
+
+An extension that renders Mosaic components or calls its hooks must use the host's React and Mosaic contexts. Declare the Mosaic packages it imports as `peerDependencies`, and add the same versions to `devDependencies` for local development. For example, an extension tested with the beta.98 release can declare:
+
+```json
+{
+  "peerDependencies": {
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
+```
+
+Externalize those peers when bundling the extension, including their subpath imports. Listing peers does not stop a bundler from embedding a second copy. A bundled or separately installed `mosaic-store`, for example, creates a different context: its hooks cannot see the host's `StoreProvider` or `ColorModeProvider`.
+
+The host installs the packages and chooses one Mosaic release cohort. Test the packed extension against the host's providers, including an interaction that updates shared state. See [Trying a snapshot](/mosaic/getting-started/migrate-to-app-router#trying-a-snapshot) for preview versions.
+
 ## Create Components Folder
 
 To start, create a `components` folder under `src` where you'll store your custom components.
@@ -4146,7 +4251,7 @@ Export the `site` package from this repository into your project. It is a standa
 >
 > - `src/app/layout.tsx` — root layout, global CSS and fonts.
 > - `src/app/providers.tsx` — client-side provider stack
->   (`SessionProvider`, theme, store, layout).
+>   (optional authentication, theme, store, layout).
 > - `src/app/[namespace]/[...route]/page.tsx` — the catch-all RSC route that loads
 >   content with the `@jpmorganchase/mosaic-site-middleware` loaders and
 >   renders MDX.
@@ -4155,10 +4260,10 @@ Export the `site` package from this repository into your project. It is a standa
 > - `src/auth.ts` — Auth.js v5 wiring (`handlers`, `auth`, `signIn`,
 >   `signOut`).
 >
-> `providers.tsx` mounts `<SessionProvider>` without a server-resolved
-> session: with auth enabled the browser fetches the session after the
-> page loads, and with auth disabled the layout passes `session={null}`
-> so no session request is made. Keep that pattern when you copy the
+> With auth enabled, `providers.tsx` mounts `<SessionProvider>` and
+> `<NextAuthAdapter>` without a server-resolved session. The browser
+> fetches the session after the page loads. With auth disabled, neither
+> auth provider is mounted and no session request is made. Keep that pattern when you copy the
 > directory; the site's `README.md` lists the other patterns to
 > preserve.
 >
@@ -4281,7 +4386,7 @@ Keep your `mosaic.config.mjs`, your content, your CSS and your own components. T
 - **Node.js 24 or later.** The reference Docker images use Node.js 24.
 - **Next.js 16.4.2 or later, and React 19.** Earlier Next.js 16 releases (and 15.x before 15.5.28) are affected by remote code execution and denial of service advisories ([GHSA-2xp9-vwfh-vxw4](https://github.com/vercel/next.js/security/advisories/GHSA-2xp9-vwfh-vxw4), [GHSA-p293-qw3h-jr36](https://github.com/vercel/next.js/security/advisories/GHSA-p293-qw3h-jr36), [GHSA-2464-fhr4-w9xw](https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw), [GHSA-p3m5-59mp-jv5r](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r)).
 - **Upgrade every `@jpmorganchase/mosaic-*` package to the same version.** `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` have breaking changes, so don't mix old and new versions.
-- **Install `next-auth` v5** (`next-auth@^5.0.0-beta`) in place of v4.
+- **For hosts using Auth.js, install `next-auth` v5** (`next-auth@^5.0.0-beta`) in place of v4 and add the Mosaic adapter described below. Hosts without authentication do not need this package.
 - `mosaic-site-middleware`, `mosaic-site-components` and `mosaic-layouts` now list `next` as a peer dependency. Your site must depend on `next` directly, which it normally does already.
 
 ## 1. Find where each file has moved
@@ -4334,7 +4439,7 @@ The file is marked `'use client'`, so the components it registers must work in t
 
 `_app.tsx` wrapped every page in a single provider stack, so the header and the rest of the frame stayed mounted between pages. The App Router site splits that into three parts:
 
-- **`Providers`** (`src/app/providers.tsx`) wraps the whole site and is mounted once by `layout.tsx`. It holds `SessionProvider`, the root `StoreProvider` and `ThemeProvider`.
+- **`Providers`** (`src/app/providers.tsx`) wraps the whole site and is mounted once by `layout.tsx`. It holds `ColorModeProvider` and `ThemeProvider`, plus the session provider and Mosaic auth adapter when authentication is enabled.
 - **`NamespaceFrame`** (`src/app/[namespace]/NamespaceFrame.tsx`) is mounted by `[namespace]/layout.tsx` and stays mounted while readers navigate under the same leading URL segment. It loads the frame's shared config and search index once and renders the header. A page passes its canonical content route, shared config (per-folder header overrides) and edit state to the header with `<FrameSync>`. Relative links and images use the canonical route even when the browser is visiting an alias.
 - **`StoreShell`** (`src/app/providers.tsx`) wraps each page and is mounted by `page.tsx`. It holds the page's store, `BaseUrlProvider`, `ImageProvider`, `LinkProvider` and `LayoutProvider`. Layouts leave the header out because `NamespaceFrame` renders it.
 
@@ -4350,7 +4455,52 @@ The optional catch-all also renders single-segment documents and aliases, such a
 
 Initial server HTML uses the layout's fallback config and the index route associated with that config. `<FrameSync>` applies the page's canonical route and config before the first client paint; layouts do not receive their child page's route data.
 
-Mount `<SessionProvider>` without a server-resolved session. When auth is enabled the browser fetches the session after the page loads, so a misconfigured auth setup can't break rendering. When auth is disabled, `layout.tsx` passes `AUTH_ENABLED` to `Providers`, which sets `session={null}` so no session request is made.
+Without authentication, omit both auth providers. Mosaic's auth hook defaults to signed out with login disabled; it makes no session requests:
+
+```tsx
+<ColorModeProvider>
+  <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
+</ColorModeProvider>
+```
+
+For Auth.js, mount `NextAuthAdapter` inside `SessionProvider`. This is a required migration: an existing `SessionProvider` alone no longer connects Mosaic's UI to the session. The reference host mounts this pair only when `AUTH_ENABLED` is true. It leaves the session unresolved on the server and fetches it after mount:
+
+```tsx
+'use client';
+import { SessionProvider } from 'next-auth/react';
+import { NextAuthAdapter } from '@jpmorganchase/mosaic-site-components/auth/next-auth';
+
+<SessionProvider>
+  <NextAuthAdapter loginEnabled>
+    <ColorModeProvider>
+      <ThemeProvider themeClassName={themeClassName}>{children}</ThemeProvider>
+    </ColorModeProvider>
+  </NextAuthAdapter>
+</SessionProvider>;
+```
+
+If omitted, the adapter's `loginEnabled` prop follows `NEXT_PUBLIC_ENABLE_LOGIN`. It supplies the session user, loading status, sign-in/sign-out actions and a stable sign-in link. Other authentication systems can provide the structural `MosaicAuthValue` through `MosaicAuthProvider` from `@jpmorganchase/mosaic-site-components/auth`. This context controls UI only: keep write authorization on the server.
+
+### Trying a snapshot
+
+Snapshots use `0.0.0-snapshot-<timestamp>` intentionally, so they do not satisfy ordinary `^0.1.0-beta.x` ranges. Install one exact snapshot version for all of the host's Mosaic packages. Extensions should use [peer dependencies](/mosaic/configure/theme/custom-components#publishing-an-extension-package) and externalize them, rather than installing their own Mosaic runtime.
+
+At the host's package root, pin each Mosaic package in its dependency graph to the same snapshot using Yarn `resolutions`. For example, this excerpt uses the published `0.0.0-snapshot-20261115213905` cohort:
+
+```json
+{
+  "dependencies": {
+    "@jpmorganchase/mosaic-components": "0.0.0-snapshot-20261115213905",
+    "@jpmorganchase/mosaic-store": "0.0.0-snapshot-20261115213905"
+  },
+  "resolutions": {
+    "@jpmorganchase/mosaic-components": "0.0.0-snapshot-20261115213905",
+    "@jpmorganchase/mosaic-store": "0.0.0-snapshot-20261115213905"
+  }
+}
+```
+
+Repeat the resolution for every Mosaic package used directly or transitively; the two entries above illustrate the syntax. That older snapshot does not contain all changes in this guide: choose a cohort containing the fixes you need. Yarn can still warn that an extension's normal-release peer range excludes the snapshot. Test that extension against the preview and explicitly support the tested version when needed; do not permanently widen published peer ranges to every snapshot merely to silence warnings.
 
 ### Data from your own middleware
 
@@ -4401,7 +4551,9 @@ To serve your docs as Markdown for agents (`/llms.txt` and `/<page>.md`), copy `
 | `mosaic-site-components`       | `Body`, `Document`, the `OpenAPI` MDX component                                                                                                                          | `createMdxRenderer` with `serializeMdxForClient` (see `BodyServer.tsx`), and `src/app/layout.tsx`. For `OpenAPI`, see below.                                                                                                 |
 | `mosaic-layouts`               | `useIsLoading`, `Fade`                                                                                                                                                   | Nothing. Pass `isEditing` to `LayoutProvider`.                                                                                                                                                                               |
 | `mosaic-content-editor-plugin` | `useContentEditor`, `usePageState`                                                                                                                                       | `EditorProvider` and its hooks (`usePreviewContent`, `useSaveState`, `useErrorMessage`, …), and `useEditMode`, `useIsEditing`, `useEditModeActions`                                                                          |
-| `mosaic-store`                 | None                                                                                                                                                                     | `initializeStore`, `registerStore` and `disposeStore` are new. `StoreShell` uses them to create one store per page.                                                                                                          |
+| `mosaic-store`                 | `SiteState.colorMode`, `SiteState.actions`, `registerStore`, `disposeStore`                                                                                              | Mount one `ColorModeProvider` above `ThemeProvider` and the content stores. Use `useColorMode()` and `useStoreActions().setColorMode()`. `initializeStore` and `reseedStore` manage page data without theme synchronization. |
+
+The root theme provider keeps the existing `mosaic-theme-pref` saved preference format. Remove any root content store used only for colour mode; keep the page and persistent-header content stores. Replace direct `useStore(state => state.colorMode)` and `useStore(state => state.actions)` selectors with the theme hooks above. Content stores no longer need registration or disposal effects.
 
 `mosaic-schemas` no longer exports `snapshotS3EnvSchema` or `S3LoaderProcessEnv`, and `MosaicMode` in `mosaic-types` is now `'active' | 'snapshot-file'`.
 
@@ -4411,7 +4563,7 @@ The loaders are cached and tagged with `MOSAIC_CONTENT_CACHE_TAG`. Import the ta
 
 For a page and its configuration, use `resolveContent(pathname, mode, contentUrl)` from `@jpmorganchase/mosaic-site-middleware`. It follows folder-to-index redirects and reads an alias's configuration from the backing document's folder. On success, `mdx` contains the raw document and parsed frontmatter, `pathname` is its public canonical URL, and `sourcePathname` is its backing path (including `.md` or `.mdx` when supplied by the source). Use `pathname` for metadata and relative navigation, and `sourcePathname` for raw-source reads and the editor’s `route` prop used for saves. The requested alias remains in `originalPathname`.
 
-The returned `sharedConfig` comes from the source's configuration file. Hosts can overlay per-page `mdx.frontmatter.sharedConfig` for authored header or footer customizations, while keeping `sourceCapabilities` from the loader. A missing page retains the requested folder's configuration for the create-page flow; an authored public permalink does not change its backing source or capabilities.
+The returned `sharedConfig` is the folder's configuration with the page's authored `sharedConfig` (for example a per-page header or footer) on top, and `mdx.frontmatter.sharedConfig` holds the same value. `sourceCapabilities` always comes from the folder's configuration, so content can't grant itself capabilities such as editing. You don't need to merge them yourself. A missing page retains the requested folder's configuration for the create-page flow; an authored public permalink does not change its backing source or capabilities.
 
 The editor plugin now uses Lexical 0.45 instead of 0.17:
 
@@ -4519,11 +4671,12 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 - **Static export (optional):** `yarn build:static:file` builds a fully static `out/` folder that any CDN can serve. See [Static export](/mosaic/configure/modes/static-export).
 - **Security headers:** the reference `next.config.js` sends `Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'`, `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`, and turns off `X-Powered-By`. Copy them into your config. A static export ignores `next.config.js` headers, so set them in your hosting layer instead. If other sites embed your pages, add their origins to `frame-ancestors`.
 - **Snapshots:** rebuild your snapshots with the new `mosaic build`.
+- **Prerender routes:** regenerate snapshots to include `mosaic-routes.json`. Use `generateMosaicStaticParams({ pageExtensions: ['.mdx'] })` from `@jpmorganchase/mosaic-site-middleware/routes` instead of deriving static params from `loadSitemap()`. Keep the required catch-all/root-page split; the helper returns both forms. Sitemap exclusions now affect SEO only. See [snapshot route inventory](/mosaic/configure/modes/snapshot-file#route-inventory-and-prerendering) for selection, empty-host and legacy-snapshot behavior.
 
 ## Checklist
 
 1. Use Node.js 24 or later.
-2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version, and `next-auth` to v5.
+2. Upgrade all `@jpmorganchase/mosaic-*` packages to the same version. Auth.js hosts also upgrade `next-auth` to v5 and mount `NextAuthAdapter` inside `SessionProvider`.
 3. Export the current `packages/site` using [Create a Site](/mosaic/getting-started/create-a-site) and move your components, layouts, CSS and config into it.
 4. Replace `next/router` imports and move `pages/api` handlers to `app/api` route handlers.
 5. Rename `.env.local` to `.env.development` and `.env.prod` to `.env.production`, and rename the env vars listed above.
@@ -4537,6 +4690,123 @@ These haven't changed: `MOSAIC_MODE` (apart from the removed `snapshot-s3` value
 ## Search records migration
 
 The default header now uses section-level search. Remove `getSearchData`, `useSearchIndex`, and the `searchIndex`/`searchConfig` store props from custom integrations. Regenerate snapshots: the three legacy search files are no longer emitted. Server sites use `/api/search`; static exports use a lazy browser index from `search-records.json`. See [search configuration](/mosaic/configure/plugins/search-index-plugin#built-in-search-ui) for provider and plugin migration details.
+
+## Reusing metadata and live authoring
+
+App Router hosts can import `buildMosaicMetadata` from
+`@jpmorganchase/mosaic-site-middleware/metadata` and pass the result of
+`resolveContent`. It returns document title, description, canonical URL and the
+historic lastModified/breadcrumb meta tags; missing documents and redirects
+return an empty object. This module is pure and does not load content. Keep
+`metadataBase`, Open Graph/Twitter branding and image policy in your host.
+
+The `/client` entrypoint exports `CanonicalizeUrl` and `LiveReload`.
+Mount `CanonicalizeUrl` only after the host's folder/index check; arbitrary
+aliases should keep their URL. It preserves the router's history state, query
+and hash. `LiveReload` refreshes the Next router on each content change and
+accepts an `endpoint` (default `/api/content/live`) and optional
+`onContentChanged` callback for host-owned caches. Render it only in development.
+
+Node route adapters can use these narrow server imports:
+
+```ts
+import { createLiveReloadHandler } from '@jpmorganchase/mosaic-site-middleware/live-reload';
+import { createRevalidateHandler } from '@jpmorganchase/mosaic-site-middleware/revalidate';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// In separate route.ts files:
+export const GET = createLiveReloadHandler({
+  isDevelopment: () => process.env.NODE_ENV === 'development'
+});
+export const POST = createRevalidateHandler({
+  getSecret: () => ({ secret: process.env.MOSAIC_REVALIDATE_SECRET })
+});
+```
+
+The host must apply its own placeholder/production secret policy in `getSecret`;
+an absent secret fails closed with 503, and invalid credentials return 401.
+The webhook accepts `x-mosaic-revalidate-secret` or a Bearer token, immediately
+expires the content cache tag, then notifies connected development clients only
+after invalidation succeeds. The `/live-reload/bus` entrypoint exports
+`notifyContentChanged` and `subscribeContentChanged` for custom Node adapters.
+This bus is local to one process and survives development HMR; it is not a
+cross-process or distributed messaging service. Streams clean up on request
+abort, cancellation and failed writes. Static-export hosts must omit/stub these
+runtime routes, as the reference host already does.
+
+## Reusable host composition
+
+A custom App Router host can import `NamespaceFrame` and `StoreShell` from
+`@jpmorganchase/mosaic-layouts/host`, with `FrameSync` from
+`@jpmorganchase/mosaic-store/frame`. Mount the namespace frame in the persistent
+layout, then put a shell and sync component in each page:
+
+```tsx
+<NamespaceFrame data={namespaceFallback} header={<CustomHeader />}>
+  <StoreShell
+    storeProps={pageData}
+    isEditing={isEditing}
+    layoutComponents={customLayouts}
+    imageComponent={CustomImage}
+    linkComponent={CustomLink}
+  >
+    <FrameSync
+      route={canonicalDocumentRoute}
+      sharedConfig={pageData.sharedConfig}
+      isEditing={isEditing}
+    />
+    {children}
+  </StoreShell>
+</NamespaceFrame>
+```
+
+In a real App Router tree the frame and page shell belong to different route
+files. Keep one root `ColorModeProvider` above them. `NamespaceFrame` accepts the
+same image/link renderer slots as `StoreShell`; its optional `header` defaults to
+Mosaic's app header. `StoreShell` also forwards `defaultLayout` and `LayoutProps`.
+These slots are client-side composition: import custom components in a client
+wrapper rather than passing component functions across the server boundary.
+
+The fallback configuration must be paired with its canonical document route,
+including `/index`. `FrameSync` applies page route/config/edit overrides before
+paint without replacing the header. Render `<FrameSync />` on a missing page to
+restore the latest namespace fallback. It is harmless outside a frame. Frame
+fallbacks and page seeds have different lifetimes; do not reseed the persistent
+frame with fallback data on each render.
+
+Hosts supplying their own composition can use `useMosaicStore(seed)` and
+`StoreProvider` directly. The hook creates one store per instance, keeps its
+identity across renders, and replaces page data before paint when the seed object
+identity changes. Omitted fields reset to their defaults; provide a new seed
+object when refreshing data. The legacy `useCreateStore` API is unchanged.
+
+Server layouts may import `colorModeScript` from the pure
+`@jpmorganchase/mosaic-store/theme-preference` subpath and render it in an inline
+head script before hydration. This subpath also exports `STORAGE_KEY`,
+`parseColorModePreference` and `serializeColorModePreference`. The stored format
+remains `{ state: { colorMode: 'light' | 'dark' }, version: 0 }`; missing, malformed
+or blocked storage boots in light mode. The script sets only `data-mode`; density
+and other host preferences remain in the host. Continue following your host's
+script nonce/CSP policy.
+
+### Auth.js declaration boundary
+
+The packed consumer checks Mosaic's public declarations with `skipLibCheck: false`.
+Its Next hosts use TypeScript 6.0.3 because Next 16.4 currently emits DOM types
+missing from TypeScript 5.x ([upstream issue](https://github.com/vercel/next.js/issues/99631));
+Mosaic's library build remains on TypeScript 5.9.
+
+Auth.js 5.0.0-beta.32 currently ships separate declaration defects, including
+React's removed global `JSX` namespace and missing internal type exports. The
+installed-auth runtime fixture therefore mounts the real `SessionProvider` in a
+small JavaScript bootstrap, with a separate strict TypeScript contract for
+Mosaic's public `NextAuthAdapter`. The browser still verifies authenticated
+rendering and hydration. This validates Mosaic's declarations and Auth.js runtime
+integration; it does not certify Auth.js's own declarations or replace them with
+shims. TypeScript hosts importing `SessionProvider` directly may encounter those
+upstream diagnostics until Auth.js fixes them.
 
 ---
 title: "Publish a site to AWS"

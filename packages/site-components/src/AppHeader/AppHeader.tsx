@@ -2,9 +2,10 @@
 
 import { FC, useEffect, useState } from 'react';
 import { Divider, Text } from '@salt-ds/core';
-import { useBreakpoint, Link, useImageComponent } from '@jpmorganchase/mosaic-components';
+import { Link, useImageComponent } from '@jpmorganchase/mosaic-components';
 import type { TabsMenu } from '@jpmorganchase/mosaic-components';
 import { useRoute } from '@jpmorganchase/mosaic-store';
+import { breakpoint } from '@jpmorganchase/mosaic-theme';
 
 import { AppHeaderControls } from '../AppHeaderControls';
 import { AppHeaderDrawer } from '../AppHeaderDrawer';
@@ -33,24 +34,29 @@ const createDrawerMenu = menu =>
   }, []);
 
 export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title }) => {
-  const breakpoint = useBreakpoint();
   const { route } = useRoute();
   const ImageComponent = useImageComponent();
-  const showDrawer = breakpoint === 'mobile' || breakpoint === 'tablet';
+  const [tabsVersion, setTabsVersion] = useState(0);
 
-  // Defer rendering theme-dependent UI (e.g. logo) until after hydration to
-  // avoid a flash caused by dark-mode styles relying on theme attributes that
-  // aren't available during SSR.
-  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setMounted(true);
+    if (!window.matchMedia) return;
+    const query = window.matchMedia(`(min-width: ${breakpoint.web}px)`);
+    const closeDesktopMenus = () => {
+      // Menus render in portals outside the CSS-hidden tabs wrapper. Reset
+      // their local state when the desktop trigger disappears.
+      if (!query.matches) setTabsVersion(version => version + 1);
+    };
+    query.addEventListener('change', closeDesktopMenus);
+    return () => query.removeEventListener('change', closeDesktopMenus);
   }, []);
 
   return (
     <>
-      {mounted && showDrawer && <AppHeaderDrawer menu={createDrawerMenu(menu)} />}
+      <div className={styles.drawer}>
+        <AppHeaderDrawer menu={createDrawerMenu(menu)} />
+      </div>
       <div className={styles.root}>
-        {mounted && homeLink && (
+        {homeLink && (
           <Link className={styles.logoContainer} href={homeLink} variant="component">
             {logo && (
               <div className={styles.logo}>
@@ -69,7 +75,9 @@ export const AppHeader: FC<AppHeaderProps> = ({ homeLink, logo, menu = [], title
             )}
           </Link>
         )}
-        {mounted && !showDrawer && <AppHeaderTabs key={route} menu={menu} />}
+        <div className={styles.tabs}>
+          <AppHeaderTabs key={`${route}:${tabsVersion}`} menu={menu} />
+        </div>
         <AppHeaderControls />
       </div>
     </>

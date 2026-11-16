@@ -1,3 +1,4 @@
+import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metadata';
 /**
  * Top-level App Router catch-all (WS-3 / WS-9).
  *
@@ -21,7 +22,7 @@
  *
  * Static-export path: when `MOSAIC_MODE` starts with `snapshot`,
  * this route is `force-static` and `generateStaticParams` enumerates
- * every URL from the snapshot's `sitemap.xml`. The edit branch is
+ * every selected document URL from `mosaic-routes.json`. The edit branch is
  * unreachable in a static export (no `auth()` available, no Server
  * Actions) so we ignore `?edit=1` and always render the body.
  *
@@ -120,7 +121,7 @@ const resolveRouteInputs = cache(
       // mandatory regardless.
       shouldPrerenderSnapshot ? Promise.resolve() : connection()
     ]);
-    const pathname = '/' + [namespace, ...route].join('/');
+    const pathname = '/' + [namespace, ...route].map(encodeURIComponent).join('/');
     const { mode, contentUrl } = resolveMosaicMode();
     return { pathname, mode, contentUrl };
   }
@@ -151,28 +152,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description =
     typeof frontmatter.description === 'string' ? frontmatter.description : undefined;
   const ogImage = typeof frontmatter.image === 'string' ? frontmatter.image : undefined;
-  const lastModified =
-    typeof frontmatter.lastModified === 'string' || typeof frontmatter.lastModified === 'number'
-      ? String(frontmatter.lastModified)
-      : undefined;
-  const breadcrumbs = Array.isArray(frontmatter.breadcrumbs)
-    ? (frontmatter.breadcrumbs as unknown[])
-    : undefined;
-
-  // `other` carries non-standard <meta name="..."> tags. We preserve
-  // the historic `lastModified` and `breadcrumbs` (JSON-encoded) names
-  // that downstream consumers (analytics scrapers, etc.) may depend
-  // on.
-  const other: Record<string, string> = {};
-  if (lastModified) other.lastModified = lastModified;
-  if (breadcrumbs && breadcrumbs.length > 0) other.breadcrumbs = JSON.stringify(breadcrumbs);
+  const metadata = buildMosaicMetadata(resolved);
 
   return {
-    ...(title && { title }),
-    ...(description && { description }),
-    // Relative paths resolve against `metadataBase` (set in
-    // `app/layout.tsx`).
-    alternates: { canonical: canonicalRoute(frontmatter, resolved.pathname) },
+    ...metadata,
     openGraph: {
       type: 'article',
       ...(title && { title }),
@@ -184,8 +167,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ...(title && { title }),
       ...(description && { description }),
       ...(ogImage && { images: [ogImage] })
-    },
-    ...(Object.keys(other).length > 0 && { other })
+    }
   };
 }
 

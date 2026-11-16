@@ -5,8 +5,9 @@ export * from './serializeMdxForClient.js';
 // Type re-export so hosts can pass `highlight: { langs: [...] }` with
 // full type-checking without reaching into the `plugins/` subpath.
 export type { HighlightCodeBlocksOptions } from './plugins/highlightCodeBlocks.js';
-// Sitemap loader for static-export builds.
+// SEO sitemap loader. Prerendering uses the independent route inventory.
 export * from './loadSitemap.js';
+export * from './routes.js';
 // Cached, parallelisable per-request loaders consumed by App Router
 // route segments (`getMdxRaw`, `getSharedConfig`).
 export * from './cachedLoaders.js';

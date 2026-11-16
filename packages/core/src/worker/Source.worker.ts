@@ -91,7 +91,7 @@ if (isMainThread) {
       })
     )
     .subscribe({
-      next: async (pagesAndSymlinks: Buffer) => {
+      next: async pagesAndSymlinks => {
         if (workerData.options.cache !== false) {
           console.info(`[Mosaic][Core] Saving cached filesystem of ${workerData.name}`);
           await fs.promises.writeFile(cachePath, pagesAndSymlinks);

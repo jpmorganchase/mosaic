@@ -1,3 +1,5 @@
+import '@salt-ds/core/css/salt-core.css';
+import '@salt-ds/icons/css/salt-icon.css';
 import '@salt-ds/theme/css/global.css';
 import '@salt-ds/theme/css/theme.css';
 import '@salt-ds/theme/css/theme-next.css';

@@ -39,3 +39,6 @@ export {
   type CreateMdxRendererOptions,
   type MdxRendererProps
 } from './MdxHost/createMdxRenderer';
+
+export { MosaicAuthProvider, useMosaicAuth } from './auth';
+export type { MosaicAuthUser, MosaicAuthValue } from './auth';

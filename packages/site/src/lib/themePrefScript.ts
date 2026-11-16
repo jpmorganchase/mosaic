@@ -1,3 +1,5 @@
+import { colorModeScript } from '@jpmorganchase/mosaic-store/theme-preference';
+
 /**
  * Theme-mode script that sets `data-mode` on `<html>` from
  * `localStorage` before first paint, preventing a dark-mode FOUC. The
@@ -12,19 +14,15 @@
  * mode, `light`, rather than leaving `data-mode` unset until hydration.
  *
  * It also sets Salt's density class, which `ThemeProvider` would otherwise
- * add after hydration: Salt's sizes depend on it, so every page grew when it
- * hydrated. Density is `touch` below Salt's `md` breakpoint (960px) and `low`
- * from it, as in `ThemeProvider`.
+ * add after hydration. The server supplies a low-density light theme for
+ * browsers where JavaScript is disabled; replace that density before paint.
+ * Density is `touch` below Salt's `md` breakpoint (960px) and `low` from it,
+ * as in `ThemeProvider`.
  */
-export const themePrefScript = `
+export const themePrefScript = `${colorModeScript}
   (function () {
-    var theme = "light";
-    try {
-      var stored = JSON.parse(localStorage.getItem("mosaic-theme-pref"));
-      theme = (stored && stored.state && stored.state.colorMode) || theme;
-    } catch (e) { /* storage unavailable or malformed */ }
-    document.documentElement.setAttribute("data-mode", theme);
     var wide = window.matchMedia && window.matchMedia("(min-width: 960px)").matches;
+    document.documentElement.classList.remove("salt-density-low", "salt-density-touch");
     document.documentElement.classList.add(wide ? "salt-density-low" : "salt-density-touch");
   })();
 `;

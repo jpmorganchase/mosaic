@@ -48,8 +48,9 @@
  * surface before host and server scope override.
  */
 import { MDXClient } from 'next-mdx-remote-client';
+import { Suspense, type ReactNode } from 'react';
 import type { MDXComponents } from 'next-mdx-remote-client';
-import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import mosaicDefaultComponents from '../mdx';
 import { createMDXScope } from '../utils/createMDXScope';
@@ -73,16 +74,22 @@ export interface CreateMdxRendererOptions {
    * *server* side (i.e. in `serializeMdxForClient`'s `options.scope`).
    */
   scope?: Record<string, unknown>;
+  /**
+   * Opt into an inner MDX Suspense boundary for hydration recovery and authored
+   * components that suspend. Omitted or false preserves existing navigation
+   * behavior. An omitted fallback renders nothing while content suspends.
+   */
+  suspense?: false | { fallback?: ReactNode };
 }
 
 export interface MdxRendererProps {
-  source: SerializeResult;
+  source: SerializedMdxResult;
 }
 
 export function createMdxRenderer(
   options: CreateMdxRendererOptions = {}
 ): React.FC<MdxRendererProps> {
-  const { components: hostComponents = {}, scope: hostScope = {} } = options;
+  const { components: hostComponents = {}, scope: hostScope = {}, suspense = false } = options;
 
   // Pre-compute the merged components object — it never changes across
   // renders. The per-page scope still has to be computed on each
@@ -114,7 +121,7 @@ export function createMdxRenderer(
       ...serverScope
     };
 
-    return (
+    const content = (
       <MDXClient
         compiledSource={compiledSource}
         frontmatter={source.frontmatter}
@@ -122,6 +129,7 @@ export function createMdxRenderer(
         components={mergedComponents}
       />
     );
+    return suspense ? <Suspense fallback={suspense.fallback ?? null}>{content}</Suspense> : content;
   }
   MdxRenderer.displayName = 'MdxRenderer';
   return MdxRenderer;

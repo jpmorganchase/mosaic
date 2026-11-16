@@ -16,9 +16,11 @@ export interface DrawerProps {
   children: React.ReactElement;
   side: 'left' | 'right';
   TriggerElement: React.FC<TriggerElementProps>;
+  /** Close the portaled drawer when this media query matches. */
+  closeOnMediaQuery?: string;
 }
 
-export function Drawer({ children, TriggerElement, side }: DrawerProps) {
+export function Drawer({ children, TriggerElement, side, closeOnMediaQuery }: DrawerProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useOutsideClick(triggerRef, () => setOpen(false));
@@ -35,6 +37,17 @@ export function Drawer({ children, TriggerElement, side }: DrawerProps) {
     // Close drawer whenever a page loads
     setOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!closeOnMediaQuery || !window.matchMedia) return;
+    const query = window.matchMedia(closeOnMediaQuery);
+    const closeWhenMatched = () => {
+      if (query.matches) setOpen(false);
+    };
+    closeWhenMatched();
+    query.addEventListener('change', closeWhenMatched);
+    return () => query.removeEventListener('change', closeWhenMatched);
+  }, [closeOnMediaQuery]);
 
   return (
     <>

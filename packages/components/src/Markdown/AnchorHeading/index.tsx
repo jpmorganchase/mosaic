@@ -7,7 +7,7 @@ import { Caption6, TypographyProps } from '../../Typography';
 import styles from './index.css';
 
 export interface AnchorHeadingProps extends React.HTMLProps<HTMLHeadingElement> {
-  children: React.ReactNode[];
+  children: React.ReactNode;
   Component: React.FC<React.PropsWithChildren<TypographyProps>>;
   LinkProps?: LinkProps;
 }
@@ -21,73 +21,72 @@ export const AnchorHeading: React.FC<React.PropsWithChildren<AnchorHeadingProps>
   ...rest
 }) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  useEffect(
-    () => () => {
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
-    },
-    []
-  );
+    };
+  }, []);
 
-  const [hovered, setHovered] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleMouseEnter = () => {
-    setHovered(true);
-  };
-  const handleMouseLeave = () => {
-    setHovered(false);
-  };
-  const handleMouseClick = event => {
-    const anchor = event.currentTarget.getAttribute('href');
-    navigator.clipboard.writeText(`${window.location.origin}${anchor}`);
-    setCopied(true);
-    timerRef.current = setTimeout(() => setCopied(false), 1000);
+  const handleMouseClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const onClick = LinkPropsProp.LinkBaseProps?.onClick ?? LinkPropsProp.onClick;
+    onClick?.(event);
+    if (event.defaultPrevented || !navigator.clipboard?.writeText) return;
+    const anchor = event.currentTarget.href;
     event.preventDefault();
+    try {
+      await navigator.clipboard.writeText(anchor);
+      if (!mountedRef.current) return;
+      setCopied(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setCopied(false), 1000);
+    } catch {
+      if (mountedRef.current) setCopied(false);
+    }
   };
 
-  const { link } = LinkPropsProp;
-  const anchorLink = link || `#${id}`;
+  const anchorLink = LinkPropsProp.href ?? LinkPropsProp.link ?? `#${id}`;
   return (
     <div className={classnames(className, styles.root)}>
+      <Component id={id} className={styles.heading} {...rest}>
+        {children}
+      </Component>
       <Link
-        className={classnames(className, styles.link)}
+        aria-label="Copy link to heading"
         {...LinkPropsProp}
+        className={classnames(LinkPropsProp.className, styles.link, copied && styles.copied)}
         endIcon="none"
-        link={anchorLink}
-        hovered={hovered}
+        href={anchorLink}
         variant="heading"
         LinkBaseProps={{
-          onMouseEnter: handleMouseEnter,
-          onMouseLeave: handleMouseLeave,
+          ...LinkPropsProp.LinkBaseProps,
           onClick: handleMouseClick
         }}
       >
-        <Component id={id} className={styles.root} {...rest}>
-          {children}
-          <span className={styles.badgeContainer}>
-            {!copied && hovered ? (
-              <span
-                aria-label="click to copy anchor link to clipboard"
-                className={classnames(styles.badge, styles.badgeLink)}
-              >
-                <Icon className={styles.badgeIcon} name="linked" />
-              </span>
-            ) : null}
-            {copied ? (
-              <span
-                aria-label="copied anchor link to clipboard"
-                className={classnames(styles.badge, styles.badgeCopied)}
-              >
-                <Icon className={styles.badgeIcon} name="successTick" />
-                <Caption6 className={styles.badgeLabel} component="span">
-                  Copied
-                </Caption6>
-              </span>
-            ) : null}
-          </span>
-        </Component>
+        <span className={styles.badgeContainer}>
+          {copied ? (
+            <span
+              aria-label="copied anchor link to clipboard"
+              role="status"
+              className={classnames(styles.badge, styles.badgeCopied)}
+            >
+              <Icon className={styles.badgeIcon} name="successTick" />
+              <Caption6 className={styles.badgeLabel} component="span">
+                Copied
+              </Caption6>
+            </span>
+          ) : (
+            <span className={classnames(styles.badge, styles.badgeLink)} aria-hidden="true">
+              <Icon className={styles.badgeIcon} name="linked" />
+            </span>
+          )}
+        </span>
       </Link>
     </div>
   );

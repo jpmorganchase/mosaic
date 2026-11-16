@@ -47,7 +47,7 @@ Export the `site` package from this repository into your project. It is a standa
 >
 > - `src/app/layout.tsx` — root layout, global CSS and fonts.
 > - `src/app/providers.tsx` — client-side provider stack
->   (`SessionProvider`, theme, store, layout).
+>   (optional authentication, theme, store, layout).
 > - `src/app/[namespace]/[...route]/page.tsx` — the catch-all RSC route that loads
 >   content with the `@jpmorganchase/mosaic-site-middleware` loaders and
 >   renders MDX.
@@ -56,10 +56,10 @@ Export the `site` package from this repository into your project. It is a standa
 > - `src/auth.ts` — Auth.js v5 wiring (`handlers`, `auth`, `signIn`,
 >   `signOut`).
 >
-> `providers.tsx` mounts `<SessionProvider>` without a server-resolved
-> session: with auth enabled the browser fetches the session after the
-> page loads, and with auth disabled the layout passes `session={null}`
-> so no session request is made. Keep that pattern when you copy the
+> With auth enabled, `providers.tsx` mounts `<SessionProvider>` and
+> `<NextAuthAdapter>` without a server-resolved session. The browser
+> fetches the session after the page loads. With auth disabled, neither
+> auth provider is mounted and no session request is made. Keep that pattern when you copy the
 > directory; the site's `README.md` lists the other patterns to
 > preserve.
 >

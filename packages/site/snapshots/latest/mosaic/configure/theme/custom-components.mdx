@@ -5,7 +5,7 @@ sidebar:
   label: Custom Components
   groupLabel: Custom Components
   priority: 2
-lastModified: 1794743989985.1726
+lastModified: 1794798271218.4592
 fullPath: /mosaic/configure/theme/custom-components.mdx
 route: /mosaic/configure/theme/custom-components
 breadcrumbs:
@@ -17,10 +17,14 @@ breadcrumbs:
     id: /mosaic/configure/theme/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.2
-  time: 132000
-  words: 440
+  minutes: 2.925
+  time: 175500
+  words: 585
 tableOfContents:
+  - depth: 2
+    level: 0
+    id: publishing-an-extension-package
+    text: Publishing an extension package
   - depth: 2
     level: 0
     id: create-components-folder
@@ -470,6 +474,31 @@ sidebarData:
 # {meta.title}
 
 Learn how to add your own custom components to your Mosaic site.
+
+## Publishing an extension package
+
+An extension that renders Mosaic components or calls its hooks must use the host's React and Mosaic contexts. Declare the Mosaic packages it imports as `peerDependencies`, and add the same versions to `devDependencies` for local development. For example, an extension tested with the beta.98 release can declare:
+
+```json
+{
+  "peerDependencies": {
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
+```
+
+Externalize those peers when bundling the extension, including their subpath imports. Listing peers does not stop a bundler from embedding a second copy. A bundled or separately installed `mosaic-store`, for example, creates a different context: its hooks cannot see the host's `StoreProvider` or `ColorModeProvider`.
+
+The host installs the packages and chooses one Mosaic release cohort. Test the packed extension against the host's providers, including an interaction that updates shared state. See [Trying a snapshot](../../getting-started/migrate-to-app-router#trying-a-snapshot) for preview versions.
 
 ## Create Components Folder
 

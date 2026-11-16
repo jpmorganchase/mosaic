@@ -1,6 +1,40 @@
 import { describe, expect, test } from 'vitest';
+import { serialize, type SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import { serializeMdxForClient } from '../serializeMdxForClient.js';
+
+describe('serialized MDX result compatibility', () => {
+  test('accepts upstream payloads in both directions without transforming them', async () => {
+    const upstream: SerializeResult<{ title: string }, { count: number }> = await serialize({
+      source: '---\ntitle: Portable\n---\n# {count}',
+      options: { parseFrontmatter: true, scope: { count: 2 } }
+    });
+    const mosaic: SerializedMdxResult<{ title: string }, { count: number }> = upstream;
+    const roundTrip: SerializeResult<{ title: string }, { count: number }> = mosaic;
+    expect(roundTrip).toBe(upstream);
+    expect(mosaic.frontmatter.title).toBe('Portable');
+    expect(mosaic.scope.count).toBe(2);
+    expect('compiledSource' in mosaic && mosaic.compiledSource).toBeTruthy();
+  });
+
+  test('preserves the failure payload and its metadata', () => {
+    const error = new Error('Invalid MDX');
+    const mosaic: SerializedMdxResult = { error, frontmatter: {}, scope: {} };
+    const upstream: SerializeResult = mosaic;
+    const roundTrip: SerializedMdxResult = upstream;
+    expect(roundTrip).toBe(mosaic);
+    expect(roundTrip.error).toBe(error);
+  });
+
+  test('exposes typed frontmatter from the public serializer', async () => {
+    const result: SerializedMdxResult<{ title: string }> = await serializeMdxForClient<{
+      title: string;
+    }>('---\ntitle: Mosaic\n---\n# {meta.title}', { highlight: false });
+    expect(result.frontmatter.title).toBe('Mosaic');
+    expect(result.scope.meta).toEqual({ title: 'Mosaic' });
+  });
+});
 
 describe('serializeMdxForClient compile cache', () => {
   test('reuses the compiled result for identical source', async () => {

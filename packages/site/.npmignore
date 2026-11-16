@@ -6,6 +6,7 @@ out/
 node_modules/
 coverage/
 test-results/
+e2e/test-results/
 playwright-report/
 playwright/.auth/
 src/**/__tests__/

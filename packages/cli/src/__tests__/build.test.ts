@@ -66,6 +66,10 @@ async function identity(name = 'latest') {
     await fs.promises.readFile(path.join(outDir, name, 'mosaic-snapshot.json'), 'utf8')
   );
   expect(value).toEqual({ version: 1, id: expect.stringMatching(/^[0-9a-f-]{36}$/) });
+  const routes = JSON.parse(
+    await fs.promises.readFile(path.join(outDir, name, 'mosaic-routes.json'), 'utf8')
+  );
+  expect(routes).toMatchObject({ version: 1, snapshotId: value.id, routes: expect.any(Array) });
   return value;
 }
 
@@ -112,7 +116,10 @@ describe('GIVEN the build command', () => {
 
     await build(config(), outDir, { name: 'latest' });
 
-    await expect(fs.promises.readdir(snapshotDir)).resolves.toEqual(['mosaic-snapshot.json']);
+    await expect(fs.promises.readdir(snapshotDir)).resolves.toEqual([
+      'mosaic-routes.json',
+      'mosaic-snapshot.json'
+    ]);
     await identity();
   });
 
@@ -189,6 +196,14 @@ describe('GIVEN the build command', () => {
       });
       expect(filesystem.scope).not.toHaveBeenCalled();
       await identity();
+      expect(
+        JSON.parse(
+          await fs.promises.readFile(path.join(outDir, 'latest', 'mosaic-routes.json'), 'utf8')
+        ).routes
+      ).toEqual([
+        { pathname: '/salt/index', sourcePathname: '/salt/index.mdx' },
+        { pathname: '/salt/index.mdx', sourcePathname: '/salt/index.mdx' }
+      ]);
       await expect(
         fs.promises.readFile(path.join(outDir, 'latest', 'salt', 'index.mdx'), 'utf8')
       ).resolves.toBe('complete snapshot');
@@ -309,6 +324,11 @@ describe('GIVEN the build command', () => {
     const writeFile = fs.promises.writeFile.bind(fs.promises);
     vi.spyOn(fs.promises, 'writeFile').mockImplementation(async (...args) => {
       if (String(args[0]).endsWith('mosaic-snapshot.json')) {
+        const routes = JSON.parse(
+          await fs.promises.readFile(path.join(outDir, 'latest', 'mosaic-routes.json'), 'utf8')
+        );
+        expect(routes.snapshotId).toBe(JSON.parse(String(args[1])).id);
+        expect(routes.routes).toContainEqual({ pathname: '/page', sourcePathname: '/page.mdx' });
         expect(await fs.promises.readFile(path.join(outDir, 'latest', 'page'), 'utf8')).toBe(
           'complete'
         );
@@ -334,6 +354,13 @@ describe('GIVEN the build command', () => {
     expect(core.stop).toHaveBeenCalledOnce();
   });
 
+  test('THEN aliases to internal tag targets are not exported or treated as dangling routes', async () => {
+    filesystem.symlinksToJSON.mockReturnValue({ '/internal-tag': [{ target: '/.tags/topic' }] });
+    await build(config(), outDir, { name: 'latest' });
+    expect(fs.existsSync(path.join(outDir, 'latest', 'internal-tag'))).toBe(false);
+    await identity();
+  });
+
   test('THEN startup failure rejects and releases the subscription and sources', async () => {
     core.start.mockRejectedValue(new Error('source failed to start'));
     await expect(build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' })).rejects.toThrow(
@@ -344,19 +371,45 @@ describe('GIVEN the build command', () => {
     expect(core.stop).toHaveBeenCalledOnce();
   });
 
-  test.each(['file', 'alias', 'directory'])(
-    'THEN a reserved identity %s collision fails before writing content',
-    async kind => {
-      const file =
-        kind === 'directory' ? '/mosaic-snapshot.json/page.mdx' : '/mosaic-snapshot.json';
-      if (kind === 'alias')
-        filesystem.symlinksToJSON.mockReturnValue({ [file]: [{ target: '/page.mdx' }] });
-      else filesystem.promises.glob.mockResolvedValue([file]);
-      await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow(
-        'reserved mosaic-snapshot.json'
-      );
-      expect(filesystem.promises.readFile).not.toHaveBeenCalled();
-      expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  test.each(
+    ['mosaic-snapshot.json', 'mosaic-routes.json'].flatMap(reserved =>
+      ['file', 'alias', 'directory'].map(kind => [reserved, kind])
+    )
+  )('THEN a reserved %s %s collision fails before writing content', async (reserved, kind) => {
+    const file = kind === 'directory' ? `/${reserved}/page.mdx` : `/${reserved}`;
+    if (kind === 'alias')
+      filesystem.symlinksToJSON.mockReturnValue({ [file]: [{ target: '/page.mdx' }] });
+    else filesystem.promises.glob.mockResolvedValue([file]);
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow(
+      `reserved ${reserved}`
+    );
+    expect(filesystem.promises.readFile).not.toHaveBeenCalled();
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  });
+
+  test('THEN a failed inventory write leaves no completed identity', async () => {
+    const writeFile = fs.promises.writeFile.bind(fs.promises);
+    vi.spyOn(fs.promises, 'writeFile').mockImplementation(async (...args) => {
+      if (String(args[0]).endsWith('mosaic-routes.json')) throw new Error('inventory write failed');
+      return writeFile(...args);
+    });
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow(
+      'inventory write failed'
+    );
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+    expect(core.stop).toHaveBeenCalledOnce();
+  });
+
+  test.each([{ sources: [] }, { sources: [{ disabled: true }] }])(
+    'THEN zero enabled sources produce a valid empty inventory',
+    async ({ sources }) => {
+      await build({ plugins: [], sources }, outDir, { name: 'latest' });
+      await identity();
+      expect(
+        JSON.parse(
+          await fs.promises.readFile(path.join(outDir, 'latest', 'mosaic-routes.json'), 'utf8')
+        ).routes
+      ).toEqual([]);
     }
   );
 

@@ -6,7 +6,11 @@ export default {
   plugins: [
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SiteMapPlugin',
-      options: { siteUrl: 'https://docs.example.test/' }
+      disabled: process.env.MOSAIC_CONSUMER_SITEMAP === 'disabled',
+      options: {
+        siteUrl: 'https://docs.example.test/',
+        exclude: process.env.MOSAIC_CONSUMER_SITEMAP === 'excluded' ? ['**/index.mdx'] : []
+      }
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',

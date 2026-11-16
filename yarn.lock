@@ -971,7 +971,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom@npm:^2.1.2, @floating-ui/react-dom@npm:^2.1.8":
+"@floating-ui/react-dom@npm:^2.1.8":
   version: 2.1.8
   resolution: "@floating-ui/react-dom@npm:2.1.8"
   dependencies:
@@ -980,20 +980,6 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
   checksum: 10/39c3e3e5538a111a3eadf1b9ca486d7dc17c7eb24b83a0ea9b4c189fa7dbe5abe01357388d8cf6a4badb2d3fec2b1090e10529537bde91acbcfe19b0a8d10f90
-  languageName: node
-  linkType: hard
-
-"@floating-ui/react@npm:^0.26.28, @floating-ui/react@npm:^0.26.6":
-  version: 0.26.28
-  resolution: "@floating-ui/react@npm:0.26.28"
-  dependencies:
-    "@floating-ui/react-dom": "npm:^2.1.2"
-    "@floating-ui/utils": "npm:^0.2.8"
-    tabbable: "npm:^6.0.0"
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 10/7f8e6b27db48b68ca94756687af21857be04e7360ac922d7c8e22411f2895df6384af7bd40f4b48663d3cc5809bb5c6574cd9c9ea15543ec747b9a8e1c8c3008
   languageName: node
   linkType: hard
 
@@ -1011,7 +997,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/utils@npm:^0.2.11, @floating-ui/utils@npm:^0.2.8":
+"@floating-ui/utils@npm:^0.2.11":
   version: 0.2.11
   resolution: "@floating-ui/utils@npm:0.2.11"
   checksum: 10/72150138ba1c274d757a1da85233202fa9fdfd2272ec1fb0883eb0ffdf138863af81573049ed2c20b98adb4b7ae2236065541ce14037fe328955089831a678d5
@@ -1414,7 +1400,8 @@ __metadata:
     "@jpmorganchase/mosaic-icons": "workspace:^"
     "@jpmorganchase/mosaic-store": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/core": "npm:^1.73.0"
+    "@types/react-table": "npm:^7.7.20"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/recipes": "npm:^0.2.1"
     clsx: "npm:^2.0.0"
@@ -1424,7 +1411,7 @@ __metadata:
     lodash-es: "npm:^4.17.23"
     react: "npm:^19.1.0"
     react-live: "npm:^4.0.0"
-    react-markdown: "npm:^9.0.0"
+    react-markdown: "npm:^9.0.3"
     react-table: "npm:^7.8.0"
     shiki: "npm:^4.0.0"
     typescript: "npm:^5.0.0"
@@ -1440,7 +1427,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-content-editor-plugin@workspace:packages/content-editor-plugin"
   dependencies:
-    "@floating-ui/react": "npm:^0.26.6"
+    "@floating-ui/react": "npm:^0.27.19"
     "@jpmorganchase/mosaic-components": "workspace:^"
     "@jpmorganchase/mosaic-icons": "workspace:^"
     "@jpmorganchase/mosaic-schemas": "workspace:^"
@@ -1457,7 +1444,7 @@ __metadata:
     "@lexical/selection": "npm:^0.45.0"
     "@lexical/table": "npm:^0.45.0"
     "@lexical/utils": "npm:^0.45.0"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/core": "npm:^1.73.0"
     "@salt-ds/theme": "npm:^1.43.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/sprinkles": "npm:^1.5.1"
@@ -1534,7 +1521,7 @@ __metadata:
     "@jpmorganchase/mosaic-site-components": "workspace:^"
     "@jpmorganchase/mosaic-store": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/core": "npm:^1.73.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/sprinkles": "npm:^1.3.0"
     clsx: "npm:^2.0.0"
@@ -1613,7 +1600,8 @@ __metadata:
     "@jpmorganchase/mosaic-site-middleware": "workspace:^"
     "@jpmorganchase/mosaic-store": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@jpmorganchase/mosaic-types": "workspace:^"
+    "@salt-ds/core": "npm:^1.73.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     clsx: "npm:^2.0.0"
     concurrently: "npm:^7.1.0"
@@ -1630,6 +1618,9 @@ __metadata:
     next-auth: ^5.0.0-beta.30
     react: ^19.1.0
     react-dom: ^19.1.0
+  peerDependenciesMeta:
+    next-auth:
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -1675,6 +1666,8 @@ __metadata:
     "@jpmorganchase/mosaic-layouts": "workspace:*"
     "@jpmorganchase/mosaic-site-components": "workspace:*"
     "@jpmorganchase/mosaic-theme": "workspace:*"
+    "@salt-ds/core": "npm:^1.73.0"
+    "@salt-ds/icons": "npm:^1.18.0"
     "@salt-ds/theme": "npm:^1.43.0"
     concurrently: "npm:^7.1.0"
     del-cli: "npm:^6.0.0"
@@ -1703,7 +1696,7 @@ __metadata:
     "@jpmorganchase/mosaic-types": "workspace:^"
     "@next/env": "npm:^16.4.6"
     "@playwright/test": "npm:^1.65.0"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/core": "npm:^1.73.0"
     "@salt-ds/icons": "npm:^1.18.0"
     "@types/node": "npm:^24.0.0"
     "@types/react": "npm:^19.0.0"
@@ -1730,7 +1723,7 @@ __metadata:
   dependencies:
     "@jpmorganchase/mosaic-components": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
-    "@salt-ds/core": "npm:^1.63.0"
+    "@salt-ds/core": "npm:^1.73.0"
     "@vanilla-extract/css": "npm:^1.17.1"
     concurrently: "npm:^7.1.0"
     d3: "npm:^7.7.0"
@@ -2991,15 +2984,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@salt-ds/core@npm:^1.63.0":
-  version: 1.63.0
-  resolution: "@salt-ds/core@npm:1.63.0"
+"@salt-ds/core@npm:^1.73.0":
+  version: 1.75.0
+  resolution: "@salt-ds/core@npm:1.75.0"
   dependencies:
-    "@floating-ui/react": "npm:^0.26.28"
-    "@salt-ds/icons": "npm:^1.18.0"
-    "@salt-ds/styles": "npm:0.3.0"
-    "@salt-ds/window": "npm:0.1.1"
+    "@floating-ui/react": "npm:^0.27.19"
+    "@salt-ds/icons": "npm:^1.19.0"
+    "@salt-ds/styles": "npm:0.4.2"
+    "@salt-ds/window": "npm:0.1.2"
     clsx: "npm:^2.0.0"
+    compute-scroll-into-view: "npm:^3.0.0"
     dom-accessibility-api: "npm:^0.7.1"
     tabbable: "npm:^6.0.0"
     use-sync-external-store: "npm:^1.5.0"
@@ -3010,7 +3004,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/113da447e81cf0d69e44c175bca61fbe2bfd7e43065fb28c3b1c5d9937a09a498099696044def073e1865a101f5e6db9ebbd2b922dbbe39c41b04851bb50d2c4
+  checksum: 10/9d6f4bb66fb417a29ac64ec44410baadb9adf7c7151a457374436349ecaf5f6a3dd923f804fa6a7eba19bf7843f4105bde8ebcf550b89a350efeb3c6038157d3
   languageName: node
   linkType: hard
 
@@ -3032,6 +3026,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@salt-ds/icons@npm:^1.19.0":
+  version: 1.19.0
+  resolution: "@salt-ds/icons@npm:1.19.0"
+  dependencies:
+    "@salt-ds/styles": "npm:0.4.2"
+    "@salt-ds/window": "npm:0.1.2"
+    clsx: "npm:^2.0.0"
+  peerDependencies:
+    "@types/react": ">=16.14.0"
+    react: ">=16.14.0"
+    react-dom: ">=16.14.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/844c796d4078b881701793edbd2be314f2c1ab716e0362980f470811bae8bc7e92f3c5fa9ba65cdd28fa3be0bd1361197a72af3645cca0e95087b085a066939a
+  languageName: node
+  linkType: hard
+
 "@salt-ds/styles@npm:0.3.0":
   version: 0.3.0
   resolution: "@salt-ds/styles@npm:0.3.0"
@@ -3043,6 +3055,22 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/bba2a96b5ad11a3347dc62d7cb73a375638aea48c08ac2c91c45f950173e57ae11998a70d0af704ead5e68cdde13f8ebd471a52ce5a4d1c301abc29aaeb410be
+  languageName: node
+  linkType: hard
+
+"@salt-ds/styles@npm:0.4.2":
+  version: 0.4.2
+  resolution: "@salt-ds/styles@npm:0.4.2"
+  dependencies:
+    clsx: "npm:^2.0.0"
+  peerDependencies:
+    "@types/react": ">=16.14.0"
+    react: ">=16.14.0"
+    react-dom: ">=16.14.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/b1727ac7a7c1564fc29de72410a87c931b26f8d5ff45da117e3a189477bc890b8f525346f8beae84d3b9db27dd1b3fd5350a460683730fba5a742fc31888a3db
   languageName: node
   linkType: hard
 
@@ -3064,6 +3092,20 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/66408cc1c982b2a5299e4defcfb55cc085e7cd070886693cdfc6683fd868d0c39354b419add3db52f693630a0e5b20e62dc92671ae32e863d94db9109fb10aae
+  languageName: node
+  linkType: hard
+
+"@salt-ds/window@npm:0.1.2":
+  version: 0.1.2
+  resolution: "@salt-ds/window@npm:0.1.2"
+  peerDependencies:
+    "@types/react": ">=16.14.0"
+    react: ">=16.14.0"
+    react-dom: ">=16.14.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/f7c221806ffbfa84538b460ea527ad52da76b5739f85e66a4724196b82c8e8563174c0b43890dcb60de913b8cde48415b9ddbf7903450e3cbead6134b1ca301d
   languageName: node
   linkType: hard
 
@@ -3468,6 +3510,15 @@ __metadata:
   peerDependencies:
     "@types/react": ^19.2.0
   checksum: 10/616c4a8aee250ea05fb1e7b98e7e00475dd3a6c1c30d7be18b4b93caba832f4203106b3a496a6b147e5acc2da14575eca47bce234c633bca1f8430ef8ffb234a
+  languageName: node
+  linkType: hard
+
+"@types/react-table@npm:^7.7.20":
+  version: 7.7.20
+  resolution: "@types/react-table@npm:7.7.20"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10/adf86958dd5b2e044d23fc7896f758b5ec59987891b41e9b02d935d666e999a518b0bdd8ba5bd60d644f20147de0ec3cf5f6a12b75516f1fad43fb3b4fd8361f
   languageName: node
   linkType: hard
 
@@ -4856,6 +4907,13 @@ __metadata:
   version: 1.4.6
   resolution: "comment-parser@npm:1.4.6"
   checksum: 10/67218f2c5fe5807140e590e7dad4b644c21d4d050d5b84aa43002c18114daf2988678f6b3064f53c32c421576aff18843ff56fd2cddd33d6e0917f355ffd9cc4
+  languageName: node
+  linkType: hard
+
+"compute-scroll-into-view@npm:^3.0.0":
+  version: 3.2.2
+  resolution: "compute-scroll-into-view@npm:3.2.2"
+  checksum: 10/5c6d6d8babe7f03b5f27592d7496a6e16a144a2b1276d91c1de923d0a8f81b944c42cffbf822533211abd96cebde4b1b845d413e0fb89a607611b02c549c2c35
   languageName: node
   linkType: hard
 
@@ -7296,8 +7354,8 @@ __metadata:
   linkType: hard
 
 "hast-util-to-jsx-runtime@npm:^2.0.0":
-  version: 2.3.0
-  resolution: "hast-util-to-jsx-runtime@npm:2.3.0"
+  version: 2.3.7
+  resolution: "hast-util-to-jsx-runtime@npm:2.3.7"
   dependencies:
     "@types/estree": "npm:^1.0.0"
     "@types/hast": "npm:^3.0.0"
@@ -7309,12 +7367,12 @@ __metadata:
     mdast-util-mdx-expression: "npm:^2.0.0"
     mdast-util-mdx-jsx: "npm:^3.0.0"
     mdast-util-mdxjs-esm: "npm:^2.0.0"
-    property-information: "npm:^6.0.0"
+    property-information: "npm:^7.0.0"
     space-separated-tokens: "npm:^2.0.0"
-    style-to-object: "npm:^1.0.0"
+    style-to-object: "npm:^2.0.0"
     unist-util-position: "npm:^5.0.0"
     vfile-message: "npm:^4.0.0"
-  checksum: 10/880c9b5a7ed1de0702af677a7ba67ce5236f4823727f79917de62652d014c06e51419db9a82c01494b86e1926b49347e766b5601351445657c6f9b091f7eac1a
+  checksum: 10/ac45c1c61d5c885c4d533c6fce6972760e7e5d33707ef18ec8ad7312305fe98aaed208df142e66159165b955b7df10fe52e2931fceb48235abc91846303b8d89
   languageName: node
   linkType: hard
 
@@ -7520,6 +7578,13 @@ __metadata:
   version: 0.2.3
   resolution: "inline-style-parser@npm:0.2.3"
   checksum: 10/10b1808e9c8430db22a7b3cdb301f07fe55d539a5f700bc1d06d02a9e8ed8260900831eb4f9a5ee8ae57cfbd133713a3387eae6b3ba3c6f8d0305ec208da4889
+  languageName: node
+  linkType: hard
+
+"inline-style-parser@npm:0.2.9":
+  version: 0.2.9
+  resolution: "inline-style-parser@npm:0.2.9"
+  checksum: 10/5d95efcf9839597cdf19ef926e684be0dffb615786723da8d125dbf8eba295b56467e625b31c11006bfb6a02ea862efe6d164608dc906baf8a547e4a785f0bf8
   languageName: node
   linkType: hard
 
@@ -10237,11 +10302,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-markdown@npm:^9.0.0":
-  version: 9.0.1
-  resolution: "react-markdown@npm:9.0.1"
+"react-markdown@npm:^9.0.3":
+  version: 9.1.0
+  resolution: "react-markdown@npm:9.1.0"
   dependencies:
     "@types/hast": "npm:^3.0.0"
+    "@types/mdast": "npm:^4.0.0"
     devlop: "npm:^1.0.0"
     hast-util-to-jsx-runtime: "npm:^2.0.0"
     html-url-attributes: "npm:^3.0.0"
@@ -10254,7 +10320,7 @@ __metadata:
   peerDependencies:
     "@types/react": ">=18"
     react: ">=18"
-  checksum: 10/71ce31f200982f641d363888a26e8fb52a199a589124f20295e9be870fa3aed26fcfa14d1dc766d83df666a15cb82359291bfda207bd55d5728ff376d217e079
+  checksum: 10/07045797b926afafc6aff692c9ee7d1cb9b12bc0e2d2b9f22ab17f2d1036dd807034a58565d67cfcfe94fe43961452a977496a175cbc9028ed51f2eec823c2f4
   languageName: node
   linkType: hard
 
@@ -11539,12 +11605,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-to-object@npm:^1.0.0":
-  version: 1.0.7
-  resolution: "style-to-object@npm:1.0.7"
+"style-to-object@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "style-to-object@npm:2.0.2"
   dependencies:
-    inline-style-parser: "npm:0.2.3"
-  checksum: 10/133e461e06dacb3ab99817ac06845fba7bba8591b6fa0c7d0a5425457bfbf46d0be69c8c27aadd6c1c296d90b22b98af32b0eb7288b0c5e39e336264ab9da6dc
+    inline-style-parser: "npm:0.2.9"
+  checksum: 10/8b9a124c939097ca7f605442a3f70f3a565912a7d97b85c061917572d1d6ea052b45e9a9ffe41c662039fe1927fb2c9394ffa8ab53f4db0a385558f484084e2f
   languageName: node
   linkType: hard
 
@@ -12025,22 +12091,22 @@ __metadata:
   linkType: hard
 
 "typescript@npm:^5.0.0, typescript@npm:^5.2.2":
-  version: 5.6.3
-  resolution: "typescript@npm:5.6.3"
+  version: 5.9.3
+  resolution: "typescript@npm:5.9.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/c328e418e124b500908781d9f7b9b93cf08b66bf5936d94332b463822eea2f4e62973bfb3b8a745fdc038785cb66cf59d1092bac3ec2ac6a3e5854687f7833f1
+  checksum: 10/c089d9d3da2729fd4ac517f9b0e0485914c4b3c26f80dc0cffcb5de1719a17951e92425d55db59515c1a7ddab65808466debb864d0d56dcf43f27007d0709594
   languageName: node
   linkType: hard
 
 "typescript@patch:typescript@npm%3A^5.0.0#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.2.2#optional!builtin<compat/typescript>":
-  version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
+  version: 5.9.3
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10/00504c01ee42d470c23495426af07512e25e6546bce7e24572e72a9ca2e6b2e9bea63de4286c3cfea644874da1467dcfca23f4f98f7caf20f8b03c0213bb6837
+  checksum: 10/696e1b017bc2635f4e0c94eb4435357701008e2f272f553d06e35b494b8ddc60aa221145e286c28ace0c89ee32827a28c2040e3a69bdc108b1a5dc8fb40b72e3
   languageName: node
   linkType: hard
 

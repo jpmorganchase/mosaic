@@ -18,8 +18,57 @@ import {
   initializeStore,
   StoreProvider,
   useColorMode,
+  useMosaicStore,
   useStoreActions
 } from '@jpmorganchase/mosaic-store';
+import {
+  generateMosaicStaticParams,
+  mapMosaicStaticParams,
+  type SnapshotRoute
+} from '@jpmorganchase/mosaic-site-middleware/routes';
+import { CanonicalizeUrl, LiveReload } from '@jpmorganchase/mosaic-site-middleware/client';
+import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metadata';
+import { createLiveReloadHandler } from '@jpmorganchase/mosaic-site-middleware/live-reload';
+import { createRevalidateHandler } from '@jpmorganchase/mosaic-site-middleware/revalidate';
+import type { MosaicAuthValue } from '@jpmorganchase/mosaic-site-components';
+import { animation, type AnimationVariants } from '@jpmorganchase/mosaic-theme';
+
+export const liveClient = (
+  <>
+    <CanonicalizeUrl canonical="/docs/index" />
+    <LiveReload endpoint="/custom/live" onContentChanged={() => {}} />
+  </>
+);
+export const liveHandler = createLiveReloadHandler({ isDevelopment: () => false });
+export const revalidateHandler = createRevalidateHandler({ getSecret: () => ({}) });
+export const missingMetadata = buildMosaicMetadata({
+  kind: 'redirect',
+  destination: '/docs/index'
+});
+
+const routes: SnapshotRoute[] = [{ pathname: '/salt', sourcePathname: '/salt/index.mdx' }];
+export const staticParams = mapMosaicStaticParams(routes, { pageExtensions: ['.mdx'] });
+export const generateParams = () => generateMosaicStaticParams({ pageExtensions: ['.mdx'] });
+
+const animationOptions: AnimationVariants = { variant: 'leftSlideIn' };
+export const animationClass = animation(animationOptions);
+// @ts-expect-error Published recipe variants must still reject unknown values.
+animation({ variant: 'unknown' });
+
+export function SeededConsumer() {
+  const store = useMosaicStore({ title: 'Synchronous seed' });
+  return (
+    <StoreProvider value={store}>
+      <ThemeConsumer />
+    </StoreProvider>
+  );
+}
+
+export const noAuth: MosaicAuthValue = {
+  status: 'unauthenticated',
+  user: null,
+  loginEnabled: false
+};
 
 function ThemeConsumer() {
   const mode = useColorMode();

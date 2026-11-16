@@ -1,4 +1,5 @@
-import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
+import { RecipeVariants } from '@vanilla-extract/recipes';
+import { recipe } from '../recipe';
 
 import { vars } from '../vars.css';
 import { borderSprinkles } from './border.css';

@@ -1,5 +1,6 @@
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
-import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
+import { RecipeVariants } from '@vanilla-extract/recipes';
+import { recipe } from '../recipe';
 
 import { vars } from '../vars.css';
 import { darkMode, lightMode, bothModeConditions } from './modes';

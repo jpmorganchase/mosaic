@@ -9,6 +9,17 @@ import {
   useSearchContext
 } from '@jpmorganchase/mosaic-site-components/SearchProvider';
 import { createSearchIndex } from '@jpmorganchase/mosaic-site-middleware/search';
+import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metadata';
+import { createLiveReloadHandler } from '@jpmorganchase/mosaic-site-middleware/live-reload';
+import {
+  notifyContentChanged,
+  subscribeContentChanged
+} from '@jpmorganchase/mosaic-site-middleware/live-reload/bus';
+import {
+  generateMosaicStaticParams,
+  loadSnapshotRoutes,
+  parseSnapshotRoutes
+} from '@jpmorganchase/mosaic-site-middleware/routes';
 import { buildSidebarTree, compareSidebarNodes } from '@jpmorganchase/mosaic-plugins/sidebar';
 import {
   ColorModeProvider,
@@ -17,6 +28,30 @@ import {
   useColorMode,
   useStoreActions
 } from '@jpmorganchase/mosaic-store';
+
+assert.deepEqual(buildMosaicMetadata({ kind: 'redirect', destination: '/docs' }), {});
+assert.equal(
+  (
+    await createLiveReloadHandler({ isDevelopment: () => false })(
+      new Request('http://localhost/live')
+    )
+  ).status,
+  404
+);
+let notifications = 0;
+const stopLive = subscribeContentChanged(() => {
+  notifications++;
+});
+notifyContentChanged();
+stopLive();
+notifyContentChanged();
+assert.equal(notifications, 1);
+const clientEntry = await fs.readFile(
+  new URL(import.meta.resolve('@jpmorganchase/mosaic-site-middleware/client')),
+  'utf8'
+);
+assert.match(clientEntry, /^['"]use client['"]/);
+assert.doesNotMatch(clientEntry, /node:|next\/cache|snapshotIdentity|cachedLoaders/);
 
 function ThemeConsumer() {
   assert.equal(useColorMode(), 'light');
@@ -219,6 +254,11 @@ for (const [scope, expectedRoutes, search] of [
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   const snapshot = 'output/scoped';
   await fs.access(`${snapshot}/mosaic-snapshot.json`);
+  const inventory = await loadSnapshotRoutes(snapshot);
+  assert.deepEqual(
+    [...new Set(inventory.routes.map(route => route.sourcePathname))].sort(),
+    expectedRoutes.map(route => `${route}.mdx`)
+  );
   const markdown = JSON.parse(await fs.readFile(`${snapshot}/markdown-pages.json`, 'utf8'));
   assert.deepEqual(Object.keys(markdown.pages).sort(), expectedRoutes);
   const sitemap = await fs.readFile(`${snapshot}/sitemap.xml`, 'utf8');
@@ -247,6 +287,33 @@ for (const [scope, expectedRoutes, search] of [
   for (const route of expectedRoutes) await fs.access(`${snapshot}${route}.mdx`);
   if (scope === 'salt') await assert.rejects(fs.access(`${snapshot}/other`), { code: 'ENOENT' });
 }
+for (const sitemap of ['excluded', 'disabled']) {
+  const result = spawnSync(
+    process.execPath,
+    [cli, 'build', '-c', 'mosaic.config.mjs', '-o', 'output', '-n', sitemap, '--scope', 'salt'],
+    {
+      encoding: 'utf8',
+      timeout: 30_000,
+      windowsHide: true,
+      env: { ...process.env, MOSAIC_CONSUMER_FAIL: 'none', MOSAIC_CONSUMER_SITEMAP: sitemap }
+    }
+  );
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const snapshotDir = `output/${sitemap}`;
+  const params = await generateMosaicStaticParams({ snapshotDir, pageExtensions: ['.mdx'] });
+  assert.ok(params.some(route => route.namespace === 'salt' && route.route.join('/') === 'index'));
+  assert.ok(params.every(route => route.namespace === 'salt'));
+  if (sitemap === 'disabled') await assert.rejects(fs.access(`${snapshotDir}/sitemap.xml`));
+  else assert.ok(!(await fs.readFile(`${snapshotDir}/sitemap.xml`, 'utf8')).includes('<loc>'));
+  const manifest = await loadSnapshotRoutes(snapshotDir);
+  assert.throws(() => parseSnapshotRoutes({ ...manifest, version: 2 }), /Regenerate the snapshot/);
+  await fs.writeFile(
+    `${snapshotDir}/mosaic-snapshot.json`,
+    JSON.stringify({ version: 1, id: '00000000-0000-0000-0000-000000000000' })
+  );
+  await assert.rejects(loadSnapshotRoutes(snapshotDir), /Regenerate the snapshot/);
+}
 console.log(
-  'Packed provider policies, sidebar extensions, CLI plugin failures and scoped snapshot artifacts passed'
+  'Packed provider policies, sidebar extensions, CLI plugin failures, scoped snapshots and independent route selection passed'
 );

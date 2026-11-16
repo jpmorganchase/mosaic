@@ -2,6 +2,7 @@
 
 import type {
   EditorSaveInput,
+  SerializedMdxResult,
   WorkflowDefaults,
   WorkflowDefaultsInput
 } from '@jpmorganchase/mosaic-types';
@@ -63,7 +64,6 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import Split from 'react-split';
 import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
 import { $getRoot, $getSelection, $isRangeSelection, mergeRegister } from 'lexical';
-import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import transformers from '../transformers';
 import ContentEditor from './ContentEditor';
@@ -121,7 +121,7 @@ const initialConfig = {
 };
 
 export interface PreviewComponentProps {
-  source: SerializeResult | undefined;
+  source: SerializedMdxResult | undefined;
   meta?: Record<string, unknown>;
   components: Record<string, unknown>;
 }
@@ -169,7 +169,7 @@ export interface EditorProps {
   rawSource?: RawSourceInput;
   components: Record<string, unknown>;
   PreviewComponent: ComponentType<PreviewComponentProps>;
-  compilePreview: (markdown: string) => Promise<SerializeResult>;
+  compilePreview: (markdown: string) => Promise<SerializedMdxResult>;
   /**
    * Opts into editable commit messages. The host must resolve defaults on the
    * server and forward the optional commitMessage from its persist handler.

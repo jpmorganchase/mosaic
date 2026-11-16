@@ -46,7 +46,7 @@ import {
   type ChangeEvent
 } from 'react';
 import { debounce } from 'lodash-es';
-import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import {
   useSaveState,
@@ -73,7 +73,7 @@ export interface SourceEditorProps {
   /** Initial caret offset; clamped into the value's range. */
   initialCaret?: number;
   /** Server Action that compiles MDX → renderer payload. */
-  compilePreview: (markdown: string) => Promise<SerializeResult>;
+  compilePreview: (markdown: string) => Promise<SerializedMdxResult>;
 }
 
 /**

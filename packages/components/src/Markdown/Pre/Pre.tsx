@@ -21,8 +21,8 @@ export interface PreProps extends ComponentPropsWithoutRef<'div'> {
    * plugin in `@jpmorganchase/mosaic-site-middleware`. When present
    * (either via this prop or via `data-mosaic-html` on the `<code>`
    * child), the client-side `import('shiki')` path is skipped and
-   * first paint is already highlighted. Absent: legacy client-side
-   * highlight runs.
+   * first paint is already highlighted. Otherwise escaped code is rendered
+   * immediately; named languages are highlighted in the browser afterwards.
    */
   html?: string;
 }
@@ -33,6 +33,8 @@ interface HighlightedCodeProps {
   'data-mosaic-html'?: string;
   'data-mosaic-source'?: string;
 }
+
+const plainLanguages = new Set(['', 'text', 'plain', 'plaintext', 'txt']);
 
 export const Pre = forwardRef<HTMLDivElement, PreProps>(function Pre(
   { language: languageProp, code: codeProp = '', children, className, html: htmlProp },
@@ -64,13 +66,21 @@ export const Pre = forwardRef<HTMLDivElement, PreProps>(function Pre(
 
   const trimmedCode = code?.replace(/\n+$/, '') ?? '';
 
-  const [html, setHtml] = useState<string>(prerenderedHtml ?? '');
+  const [highlighted, setHighlighted] = useState<{
+    code: string;
+    language: string | undefined;
+    html: string;
+  }>();
+  // A newly rendered snippet must never show the previous snippet's HTML
+  // while its asynchronous highlight is pending.
+  const html =
+    prerenderedHtml ??
+    (highlighted?.code === trimmedCode && highlighted.language === language
+      ? highlighted.html
+      : undefined);
 
   useIsomorphicLayoutEffect(() => {
-    if (prerenderedHtml) {
-      // Adopt re-rendered pre-rendered HTML synchronously (e.g. live-
-      // reload picking up an edited snippet).
-      if (prerenderedHtml !== html) setHtml(prerenderedHtml);
+    if (prerenderedHtml !== undefined || plainLanguages.has(language?.toLowerCase() ?? '')) {
       return;
     }
 
@@ -87,10 +97,12 @@ export const Pre = forwardRef<HTMLDivElement, PreProps>(function Pre(
         defaultColor: false
       });
 
-      if (!cancelled) setHtml(next);
+      if (!cancelled) setHighlighted({ code: trimmedCode, language, html: next });
     }
 
-    format();
+    // Unknown grammars or a failed chunk request leave the readable plain code
+    // in place instead of producing an unhandled asynchronous rejection.
+    void format().catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -107,12 +119,20 @@ export const Pre = forwardRef<HTMLDivElement, PreProps>(function Pre(
       >
         <Icon name="copy" aria-hidden />
       </Button>
-      <div
-        className={styles.preCode}
-        ref={divRef}
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: Needed for Shiki.
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {html !== undefined ? (
+        <div
+          className={styles.preCode}
+          ref={divRef}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Needed for Shiki.
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <div className={styles.preCode} ref={divRef}>
+          <pre>
+            <code>{trimmedCode}</code>
+          </pre>
+        </div>
+      )}
     </div>
   );
 });

@@ -14,7 +14,8 @@
  * Server-only — importing this from a client component throws.
  */
 import { createHash } from 'node:crypto';
-import { serialize, type SerializeResult } from 'next-mdx-remote-client/serialize';
+import { serialize } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 import { compile } from '@mdx-js/mdx';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
@@ -38,9 +39,9 @@ if (typeof window !== 'undefined') {
  * text — reuse the result. Bounded LRU: `Map` keeps insertion order.
  */
 const COMPILE_CACHE_MAX_ENTRIES = 200;
-const compileCache = new Map<string, SerializeResult>();
+const compileCache = new Map<string, SerializedMdxResult>();
 
-function readCompileCache(key: string): SerializeResult | undefined {
+function readCompileCache(key: string): SerializedMdxResult | undefined {
   const hit = compileCache.get(key);
   if (hit) {
     compileCache.delete(key);
@@ -49,7 +50,7 @@ function readCompileCache(key: string): SerializeResult | undefined {
   return hit;
 }
 
-function writeCompileCache(key: string, result: SerializeResult) {
+function writeCompileCache(key: string, result: SerializedMdxResult) {
   compileCache.set(key, result);
   if (compileCache.size > COMPILE_CACHE_MAX_ENTRIES) {
     compileCache.delete(compileCache.keys().next().value as string);
@@ -98,7 +99,7 @@ export async function serializeMdxForClient<
 >(
   source: string,
   options: SerializeMdxForClientOptions = {}
-): Promise<SerializeResult<TFrontmatter>> {
+): Promise<SerializedMdxResult<TFrontmatter>> {
   const {
     rehypePlugins = [],
     remarkPlugins = [],
@@ -120,7 +121,7 @@ export async function serializeMdxForClient<
       : undefined;
   if (cacheKey) {
     const cached = readCompileCache(cacheKey);
-    if (cached) return cached as SerializeResult<TFrontmatter>;
+    if (cached) return cached as SerializedMdxResult<TFrontmatter>;
   }
 
   // Built once and reused by both the primary `serialize` and the
@@ -211,7 +212,7 @@ export async function serializeMdxForClient<
   }
 
   if (cacheKey && !('error' in result && result.error)) {
-    writeCompileCache(cacheKey, result as SerializeResult);
+    writeCompileCache(cacheKey, result as SerializedMdxResult);
   }
 
   return result;

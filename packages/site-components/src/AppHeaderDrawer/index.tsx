@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Icon } from '@jpmorganchase/mosaic-components';
+import { breakpoint } from '@jpmorganchase/mosaic-theme';
 
 import { Drawer, TriggerElementProps } from '../Drawer';
 import { Sidebar } from '../Sidebar';
@@ -21,7 +22,11 @@ const TriggerElement: React.FC<TriggerElementProps> = ({ open, onClick: handleCl
 export interface AppHeaderDrawerProps extends VerticalNavigationProps {}
 export function AppHeaderDrawer(props: AppHeaderDrawerProps) {
   return (
-    <Drawer side="left" TriggerElement={TriggerElement}>
+    <Drawer
+      side="left"
+      TriggerElement={TriggerElement}
+      closeOnMediaQuery={`(min-width: ${breakpoint.web}px)`}
+    >
       <Sidebar>
         <VerticalNavigation {...props} />
       </Sidebar>

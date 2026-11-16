@@ -206,11 +206,12 @@ If you copy this directory into your own repo, **do not change these
 patterns** without understanding why they exist — every one of them is
 the resolution of a real bug.
 
-1. **Mount `<SessionProvider>` without a server-resolved session.** The
+1. **Mount `<SessionProvider>` and `<NextAuthAdapter>` only when auth is enabled.**
+   Leave the session unresolved on the server; omit both providers for no-auth hosts. The
    client fetches it lazily, so the root layout doesn't depend on
    Auth.js configuration and no-auth deployments still render. The
    layout passes only the build-time `AUTH_ENABLED` flag, so no-auth
-   deployments use `session={null}` and skip the session request.
+   deployments omit both auth providers and make no session requests.
 2. **Pass the server's edit state to `<StoreShell isEditing>`.** It
    reaches `LayoutProvider`, so view-mode pages never call
    `useSearchParams()` — which would make statically prerendered pages

@@ -5,46 +5,42 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { useAppHeader } from '@jpmorganchase/mosaic-store';
+import { useIsEditing } from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
+import { useFrame as useLegacyFrame } from '../Frame';
 import { useResolveRelativeUrl } from '@jpmorganchase/mosaic-site-components/BaseUrlProvider';
 
 // Keep the real frame store and URL context; the header probe exposes
 // the links a host header resolves without loading its menus/editor.
 vi.mock('@jpmorganchase/mosaic-site-components/AppHeader/index', () => ({
   AppHeader: () => {
+    const isEditing = useIsEditing();
     const { homeLink = '', logo = '' } = useAppHeader() ?? {};
     const href = useResolveRelativeUrl(homeLink);
     const src = useResolveRelativeUrl(logo);
     return (
-      <a href={href}>
+      <a href={href} data-editing={String(isEditing)}>
         <img src={src} alt="Homepage" />
       </a>
     );
   }
-}));
-vi.mock('@jpmorganchase/mosaic-components', () => ({
-  ImageProvider: ({ children }: { children: ReactNode }) => children,
-  LinkProvider: ({ children }: { children: ReactNode }) => children,
-  hasProtocol: (url: string) => /^[a-z][a-z\d+.-]*:/i.test(url)
-}));
-vi.mock('@jpmorganchase/mosaic-layouts', () => ({
-  FrameProvider: ({ children }: { children: ReactNode }) => children,
-  LayoutHeader: ({ children }: { children: ReactNode }) => <header>{children}</header>
-}));
-vi.mock('@jpmorganchase/mosaic-content-editor-plugin/useEditMode', () => ({
-  EditModeProvider: ({ children }: { children: ReactNode }) => children
 }));
 vi.mock('@jpmorganchase/mosaic-site-components/Image/index', () => ({ Image: () => null }));
 vi.mock('@jpmorganchase/mosaic-site-components/Link', () => ({ Link: () => null }));
 vi.mock('@jpmorganchase/mosaic-site-components/404', () => ({
   Page404: () => <h1>Page Not Found</h1>
 }));
-vi.mock('next/navigation', () => ({ usePathname: () => window.location.pathname }));
-vi.mock('../../providers', () => ({
+vi.mock('next/navigation', () => ({
+  usePathname: () => window.location.pathname,
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams()
+}));
+vi.mock('../../../site/src/app/providers', () => ({
   StoreShell: ({ children }: { children: ReactNode }) => children
 }));
 
-import { NotFoundBody } from '../../NotFoundBody';
-import { FrameSync, NamespaceFrame } from '../NamespaceFrame';
+import { NotFoundBody } from '../../../site/src/app/NotFoundBody';
+import { FrameSync, FrameProvider, useFrame } from '@jpmorganchase/mosaic-store/frame';
+import { NamespaceFrame } from '../host';
 
 const sharedConfig = {
   header: { title: 'Docs', menu: [], homeLink: './index', logo: './logo.svg' }
@@ -58,6 +54,39 @@ afterEach(() => {
 });
 
 describe('NamespaceFrame relative URLs', () => {
+  test('legacy layouts and neutral store paths share the same visibility context', () => {
+    function Probe() {
+      return <output>{String(useLegacyFrame().header)}</output>;
+    }
+    expect(useLegacyFrame).toBe(useFrame);
+    render(
+      <FrameProvider value={{ header: true }}>
+        <Probe />
+      </FrameProvider>
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('true');
+  });
+
+  test('sync is harmless outside a frame', () => {
+    expect(() => render(<FrameSync route="/docs/index" isEditing />)).not.toThrow();
+  });
+
+  test('keeps page overrides when fallback data changes and synchronizes edit mode', () => {
+    const pageConfig = { header: { ...sharedConfig.header, homeLink: './page-home' } };
+    const view = (fallback: typeof data, isEditing: boolean) => (
+      <NamespaceFrame data={fallback}>
+        <FrameSync route="/docs/page/index" sharedConfig={pageConfig} isEditing={isEditing} />
+      </NamespaceFrame>
+    );
+    const { rerender } = render(view(data, true));
+    const header = screen.getByRole('banner');
+    expect(screen.getByRole('link')).toHaveAttribute('data-editing', 'true');
+    rerender(view({ route: '/other/index', sharedConfig }, false));
+    expect(screen.getByRole('banner')).toBe(header);
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/docs/page/page-home');
+    expect(screen.getByRole('link')).toHaveAttribute('data-editing', 'false');
+  });
+
   test('uses the frame fallback route during the server render', () => {
     vi.stubGlobal('window', undefined);
     try {

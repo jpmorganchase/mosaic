@@ -1,10 +1,22 @@
 import { describe, expect, test } from 'vitest';
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 
 import { Pre } from '../Pre';
 
 describe('GIVEN a Pre without server-rendered HTML', () => {
+  test.each([undefined, 'text', 'plain', 'plaintext', 'txt', 'ts'])(
+    'THEN the initial HTML includes escaped code for language %s',
+    language => {
+      const code = '<script>alert("example")</script> & text';
+      const container = document.createElement('div');
+      container.innerHTML = renderToString(<Pre code={code} language={language} />);
+      expect(container.querySelector('pre code')?.textContent).toBe(code);
+      expect(container.querySelector('script')).toBeNull();
+    }
+  );
+
   test('THEN it highlights the code in the browser with light and dark themes', async () => {
     const { container } = render(
       <Pre>

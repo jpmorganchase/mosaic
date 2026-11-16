@@ -10,7 +10,7 @@
  * the namespace 404 page requested `/mosaic/index` hundreds of times a
  * second.
  */
-import { loadSitemap } from '@jpmorganchase/mosaic-site-middleware';
+import { generateMosaicStaticParams } from '@jpmorganchase/mosaic-site-middleware';
 
 import { getSiteConfig } from '../../lib/config';
 
@@ -34,29 +34,7 @@ export const shouldPrerenderSnapshot = isSnapshotMode && process.env.NODE_ENV ==
  */
 export const DYNAMIC_PROBE_NAMESPACE = '__mosaic_dynamic_probe__';
 
-/** Every URL in `sitemap.xml`, as namespace and route segments. */
+/** Actual snapshot document routes, independent of the SEO sitemap. */
 export async function loadStaticRouteParams(): Promise<StaticRouteParams[]> {
-  const urls = await loadSitemap();
-  // `loadSitemap` returns [] when `sitemap.xml` is missing or unreadable.
-  // Prerendering nothing would still produce a "successful" build that
-  // renders every page on its first request, so fail the build instead.
-  if (urls.length === 0) {
-    throw new Error(
-      '[mosaic-site] sitemap.xml is missing or empty, so no pages would be prerendered. ' +
-        'Check that the snapshot was generated with SiteMapPlugin and that MOSAIC_SNAPSHOT_DIR points at it.'
-    );
-  }
-  const routes = new Map<string, StaticRouteParams>();
-  for (const url of urls) {
-    const [namespace, ...route] = url.split('/').filter(Boolean);
-    if (!namespace) continue;
-    routes.set([namespace, ...route].join('/'), { namespace, route });
-    // Export the short URL of a known top-level index too. The page
-    // resolver decides whether it is a document, alias or folder; the
-    // first URL segment alone does not identify a source namespace.
-    if (route.length === 1 && route[0] === 'index') {
-      routes.set(namespace, { namespace, route: [] });
-    }
-  }
-  return [...routes.values()];
+  return generateMosaicStaticParams({ pageExtensions: ['.mdx'] });
 }
