@@ -16,14 +16,20 @@ export function serializeColorModePreference(colorMode: ColorMode): string {
   return JSON.stringify({ state: { colorMode }, version: 0 });
 }
 
-/** Server-safe inline script. Density and other host preferences remain host-owned. */
+/**
+ * Server-safe inline script. Keep its validation aligned with the parser above.
+ * Do not stringify the function: transforms can insert references to their own
+ * runtime helpers, which are unavailable in this isolated script.
+ * Density and other host preferences remain host-owned.
+ */
 export const colorModeScript = `
   (function () {
     var mode = "light";
     try {
-      mode = (${parseColorModePreference.toString()})(localStorage.getItem(${JSON.stringify(
-  STORAGE_KEY
-)})) || mode;
+      var stored = JSON.parse(localStorage.getItem(${JSON.stringify(
+        STORAGE_KEY
+      )}))?.state?.colorMode;
+      if (stored === "light" || stored === "dark") mode = stored;
     } catch (e) { /* storage unavailable */ }
     document.documentElement.setAttribute("data-mode", mode);
   })();
