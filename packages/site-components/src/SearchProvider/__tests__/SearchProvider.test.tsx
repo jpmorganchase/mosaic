@@ -7,7 +7,13 @@ import {
 } from '@jpmorganchase/mosaic-site-middleware/search';
 import { SearchProvider, useSearchContext, type SearchProviderProps } from '../index';
 
-afterEach(() => vi.unstubAllGlobals());
+const pathname = { current: '/salt/components/button' as string | null };
+vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }));
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  pathname.current = '/salt/components/button';
+});
 
 const records = Array.from({ length: 24 }, (_, i) =>
   ['examples', 'usage'].map(tab => ({
@@ -28,6 +34,13 @@ const indexOptions: SearchIndexOptions = {
 function context(options: Omit<SearchProviderProps, 'children'>) {
   return renderHook(() => useSearchContext(), {
     wrapper: ({ children }) => <SearchProvider {...options}>{children}</SearchProvider>
+  });
+}
+
+/** Renders the provider with options computed on every render, as inline JSX props are. */
+function inlineContext(options: () => Omit<SearchProviderProps, 'children'>) {
+  return renderHook(() => useSearchContext(), {
+    wrapper: ({ children }) => <SearchProvider {...options()}>{children}</SearchProvider>
   });
 }
 
@@ -73,6 +86,61 @@ describe('SearchProvider configuration', () => {
       sections: '0',
       namespace: 'salt'
     });
+  });
+
+  test('keeps one browser index when index options are written inline', async () => {
+    const fetcher = vi.fn(async () => Response.json({ version: 1, records }));
+    vi.stubGlobal('fetch', fetcher);
+    let preferred = '/usage';
+    const { result, rerender } = inlineContext(() => {
+      // Each render makes new functions, each with the suffix of its own render.
+      const suffix = preferred;
+      return {
+        mode: 'browser',
+        indexOptions: {
+          synonyms: [['color', 'colour']],
+          groupBy: record => record.route.slice(0, record.route.lastIndexOf('/')),
+          pageRank: record => (record.route.endsWith(suffix) ? 0 : 1)
+        },
+        queryOptions: { limit: 1, sectionsPerResult: 0 }
+      };
+    });
+    const search = result.current.search;
+    expect((await search('colour', 'salt'))[0].href).toMatch(/\/usage$/);
+
+    preferred = '/examples';
+    rerender();
+    expect(result.current.search).toBe(search);
+    // The latest ranking applies without downloading the records again.
+    expect((await result.current.search('colour', 'salt'))[0].href).toMatch(/\/examples$/);
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
+
+  test('builds a new browser index when the synonyms change', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ version: 1, records }))
+    );
+    let synonyms = [['color', 'colour']];
+    const { result, rerender } = inlineContext(() => ({
+      mode: 'browser',
+      indexOptions: { synonyms: synonyms.map(group => [...group]) }
+    }));
+    const search = result.current.search;
+    rerender();
+    expect(result.current.search).toBe(search);
+    synonyms = [['color', 'hue']];
+    rerender();
+    expect(result.current.search).not.toBe(search);
+    expect(await result.current.search('hue')).not.toEqual([]);
+  });
+
+  test('prefers the namespace in the URL unless one is configured', () => {
+    expect(context({}).result.current.namespace).toBe('salt');
+    pathname.current = null;
+    expect(context({}).result.current.namespace).toBeUndefined();
+    pathname.current = '/salt/components/button';
+    expect(context({ namespace: 'mosaic' }).result.current.namespace).toBe('mosaic');
   });
 
   test('retains the existing defaults', async () => {

@@ -4,7 +4,10 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { SearchResult } from '@jpmorganchase/mosaic-site-middleware/search';
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
+  usePathname: () => '/docs/button'
+}));
 
 import { SearchInput } from '../index';
 import { SearchProvider } from '../../SearchProvider';
