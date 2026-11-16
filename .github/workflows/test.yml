@@ -33,7 +33,7 @@ jobs:
       - name: 'Build internal prerequisites'
         run: yarn build
       - name: Install packed-consumer browser
-        run: yarn exec playwright install --with-deps chromium
+        run: yarn workspace @jpmorganchase/mosaic-site exec playwright install --with-deps chromium
       - name: Check packed-package consumers
         run: yarn test:consumer
       - name: Run Tests
