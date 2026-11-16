@@ -1,7 +1,6 @@
 ---
 '@jpmorganchase/mosaic-site-components': patch
 '@jpmorganchase/mosaic-site-preset-styles': patch
-'@jpmorganchase/mosaic-site': patch
 ---
 
 Render header links and the logo before hydration, select desktop navigation and
