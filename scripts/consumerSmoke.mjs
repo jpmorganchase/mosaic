@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const yarn = path.join(root, '.yarn/releases/yarn-4.10.3.cjs');
 const consumer = await fs.mkdtemp(path.join(os.tmpdir(), 'mosaic-consumer-'));
+const siteConsumer = await fs.mkdtemp(path.join(os.tmpdir(), 'mosaic-site-consumer-'));
 const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'));
 const run = (args, cwd = consumer) => {
   try {
@@ -117,11 +118,50 @@ try {
   run(['node_modules/typescript/bin/tsc', '--project', 'tsconfig.json']);
   console.log('External declarations passed with skipLibCheck: false');
   console.log(run(['smoke.mjs']).trim());
+
+  // Unpack the advertised site template outside both the checkout and the
+  // package consumer, so neither can supply undeclared lint dependencies.
+  const siteArchive = path.join(consumer, 'tarballs', 'site.tgz');
+  run([yarn, 'workspace', '@jpmorganchase/mosaic-site', 'pack', '--out', siteArchive], root);
+  execFileSync('tar', ['-xf', siteArchive, '--strip-components=1', '-C', siteConsumer], {
+    windowsHide: true,
+    timeout: 30_000
+  });
+  const siteManifest = await readJson(path.join(siteConsumer, 'package.json'));
+  siteManifest.resolutions = Object.fromEntries(
+    Object.entries(resolutions).map(([name, archive]) => [
+      name,
+      `file:${path.resolve(consumer, archive.slice('file:'.length)).replaceAll('\\', '/')}`
+    ])
+  );
+  siteManifest.packageManager = 'yarn@4.10.3';
+  await fs.writeFile(
+    path.join(siteConsumer, 'package.json'),
+    JSON.stringify(siteManifest, null, 2)
+  );
+  await fs.copyFile(path.join(consumer, '.yarnrc.yml'), path.join(siteConsumer, '.yarnrc.yml'));
+  await fs.cp(path.join(root, '.yarn/cache'), path.join(siteConsumer, '.yarn/cache'), {
+    recursive: true
+  });
+  await fs.copyFile(path.join(root, 'yarn.lock'), path.join(siteConsumer, 'yarn.lock'));
+  run([yarn, 'install'], siteConsumer);
+  run([yarn, 'lint'], siteConsumer);
+  // Prove the standalone configuration actually checks TypeScript, rather
+  // than succeeding because the source files were ignored.
+  await fs.writeFile(
+    path.join(siteConsumer, 'src', 'lint-regression.ts'),
+    'export const value = 1;\nconst unusedValue = 2;\n'
+  );
+  assert.throws(() => run([yarn, 'lint'], siteConsumer), /@typescript-eslint\/no-unused-vars/);
+  console.log('Standalone packed site lint passed and detected a deliberate TypeScript error');
   // Only remove the isolated directory created by this invocation.
   assert.equal(path.dirname(consumer), path.resolve(os.tmpdir()));
   assert.ok(path.basename(consumer).startsWith('mosaic-consumer-'));
   await fs.rm(consumer, { recursive: true, force: true });
+  assert.equal(path.dirname(siteConsumer), path.resolve(os.tmpdir()));
+  assert.ok(path.basename(siteConsumer).startsWith('mosaic-site-consumer-'));
+  await fs.rm(siteConsumer, { recursive: true, force: true });
 } catch (error) {
-  console.error(`Consumer retained for diagnosis: ${consumer}`);
+  console.error(`Consumers retained for diagnosis: ${consumer}, ${siteConsumer}`);
   throw error;
 }

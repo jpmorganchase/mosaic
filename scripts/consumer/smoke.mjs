@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import path from 'node:path';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 import React from 'react';
@@ -114,6 +113,11 @@ await fs.writeFile(
   'content/index.mdx',
   '---\ntitle: Button\nroute: /salt/index\n---\n\n<Custom />\n'
 );
+await fs.mkdir('other-content', { recursive: true });
+await fs.writeFile(
+  'other-content/index.mdx',
+  '---\ntitle: Other docs\nroute: /other/index\n---\n\nOther namespace content\n'
+);
 const cli = createRequire(import.meta.url).resolve('@jpmorganchase/mosaic-cli');
 for (const failure of ['none', 'markdown', 'main']) {
   const result = spawnSync(
@@ -156,6 +160,58 @@ for (const failure of ['none', 'markdown', 'main']) {
     }
   }
 }
+
+for (const [scope, expectedRoutes, search] of [
+  ['salt', ['/salt/index'], true],
+  ['salt,other', ['/other/index', '/salt/index'], true],
+  ['salt', ['/salt/index'], false]
+]) {
+  const result = spawnSync(
+    process.execPath,
+    [cli, 'build', '-c', 'mosaic.config.mjs', '-o', 'output', '-n', 'scoped', '--scope', scope],
+    {
+      encoding: 'utf8',
+      timeout: 30_000,
+      windowsHide: true,
+      env: {
+        ...process.env,
+        MOSAIC_CONSUMER_FAIL: 'none',
+        MOSAIC_CONSUMER_SEARCH: search ? 'enabled' : 'disabled'
+      }
+    }
+  );
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  const snapshot = 'output/scoped';
+  await fs.access(`${snapshot}/mosaic-snapshot.json`);
+  const markdown = JSON.parse(await fs.readFile(`${snapshot}/markdown-pages.json`, 'utf8'));
+  assert.deepEqual(Object.keys(markdown.pages).sort(), expectedRoutes);
+  const sitemap = await fs.readFile(`${snapshot}/sitemap.xml`, 'utf8');
+  assert.deepEqual(
+    [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(([, url]) => new URL(url).pathname).sort(),
+    expectedRoutes
+  );
+  const llmsIndex = await fs.readFile(`${snapshot}/llms.txt`, 'utf8');
+  for (const route of expectedRoutes)
+    assert.ok(llmsIndex.includes(`${route}.md`), `llms.txt lacks ${route}`);
+  if (scope === 'salt') assert.ok(!llmsIndex.includes('/other/'));
+  assert.equal(
+    await fs.readFile(`${snapshot}/llms-full.txt`, 'utf8'),
+    expectedRoutes.map(route => markdown.pages[route]).join('\n')
+  );
+  const searchFile = `${snapshot}/search-records.json`;
+  if (search) {
+    const searchRecords = JSON.parse(await fs.readFile(searchFile, 'utf8'));
+    assert.deepEqual(
+      [...new Set(searchRecords.records.map(record => record.route))].sort(),
+      expectedRoutes
+    );
+  } else {
+    await assert.rejects(fs.access(searchFile), { code: 'ENOENT' });
+  }
+  for (const route of expectedRoutes) await fs.access(`${snapshot}${route}.mdx`);
+  if (scope === 'salt') await assert.rejects(fs.access(`${snapshot}/other`), { code: 'ENOENT' });
+}
 console.log(
-  'Packed provider browser policies and server parameters, sidebar extensions, and CLI plugin-failure checks passed'
+  'Packed provider policies, sidebar extensions, CLI plugin failures and scoped snapshot artifacts passed'
 );

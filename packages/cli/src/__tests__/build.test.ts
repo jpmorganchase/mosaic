@@ -156,29 +156,106 @@ describe('GIVEN the build command', () => {
     await identity();
   });
 
-  test('THEN it waits for startup to mount all filesystems before scoping updates received during startup', async () => {
-    let mounted = false;
-    core.start.mockImplementation(async () => {
-      await sourceUpdated?.(filesystem, { id: Symbol('first') });
-      await sourceUpdated?.(filesystem, { id: Symbol('second') });
+  test.each(['salt', ' salt , salt '])(
+    'THEN scope %s selects sources before generation and retains shared artifacts after startup',
+    async scope => {
+      let mounted = false;
+      core.start.mockImplementation(async () => {
+        await sourceUpdated?.(filesystem, { id: Symbol('first') });
+        await sourceUpdated?.(filesystem, { id: Symbol('second') });
+        expect(filesystem.promises.glob).not.toHaveBeenCalled();
+        mounted = true;
+      });
+      filesystem.promises.glob.mockImplementation(async () => {
+        expect(mounted).toBe(true);
+        return ['/salt/index.mdx', '/sitemap.xml'];
+      });
+      filesystem.promises.readFile.mockResolvedValue([Buffer.from('complete snapshot')]);
+
+      await build(
+        {
+          plugins: [],
+          sources: [{ namespace: 'salt' }, { namespace: 'salt' }, { namespace: 'other' }]
+        },
+        outDir,
+        { name: 'latest', scope }
+      );
+
+      expect(coreConstructed).toHaveBeenCalledWith({
+        plugins: [],
+        sources: [
+          { namespace: 'salt', options: { cache: false } },
+          { namespace: 'salt', options: { cache: false } }
+        ]
+      });
       expect(filesystem.scope).not.toHaveBeenCalled();
-      mounted = true;
-    });
-    filesystem.scope.mockImplementation(() => {
-      expect(mounted).toBe(true);
-      return filesystem;
-    });
-    filesystem.promises.glob.mockResolvedValue(['/salt/index.mdx']);
-    filesystem.promises.readFile.mockResolvedValue([Buffer.from('complete snapshot')]);
+      await identity();
+      await expect(
+        fs.promises.readFile(path.join(outDir, 'latest', 'salt', 'index.mdx'), 'utf8')
+      ).resolves.toBe('complete snapshot');
+      expect(core.stop).toHaveBeenCalledOnce();
+      await expect(
+        fs.promises.readFile(path.join(outDir, 'latest', 'sitemap.xml'), 'utf8')
+      ).resolves.toBe('complete snapshot');
+    }
+  );
 
-    await build({ plugins: [], sources: [{}, {}] }, outDir, { name: 'latest', scope: 'salt' });
+  test.each(['', ',', 'unknown', 'salt,unknown', 'disabled'])(
+    'THEN invalid scope %s fails without clearing the existing snapshot',
+    async scope => {
+      await fs.promises.mkdir(path.join(outDir, 'latest'));
+      const existing = path.join(outDir, 'latest', 'keep.txt');
+      await fs.promises.writeFile(existing, 'keep');
+      await expect(
+        build(
+          {
+            plugins: [],
+            sources: [{ namespace: 'salt' }, { namespace: 'disabled', disabled: true }]
+          },
+          outDir,
+          { name: 'latest', scope }
+        )
+      ).rejects.toThrow('Snapshot scope must name enabled source namespaces');
+      expect(coreConstructed).not.toHaveBeenCalled();
+      await expect(fs.promises.readFile(existing, 'utf8')).resolves.toBe('keep');
+    }
+  );
 
-    expect(filesystem.scope).toHaveBeenCalledExactlyOnceWith(['salt']);
+  test('THEN every colliding JSON contributor is merged in filesystem order', async () => {
+    filesystem.promises.glob.mockResolvedValue(['/shared.json']);
+    filesystem.promises.readFile.mockResolvedValue(
+      [
+        { first: true, nested: { first: 1, winner: 'first' }, items: ['first'] },
+        { second: true, nested: { second: 2, winner: 'second' }, items: ['second'] },
+        { third: true, nested: { third: 3, winner: 'third' }, items: ['third'] }
+      ].map(value => Buffer.from(JSON.stringify(value)))
+    );
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await build(config(), outDir, { name: 'latest' });
+    expect(
+      JSON.parse(await fs.promises.readFile(path.join(outDir, 'latest', 'shared.json'), 'utf8'))
+    ).toEqual({
+      first: true,
+      second: true,
+      third: true,
+      nested: { first: 1, second: 2, third: 3, winner: 'third' },
+      items: ['first', 'second', 'third']
+    });
     await identity();
-    await expect(
-      fs.promises.readFile(path.join(outDir, 'latest', 'salt', 'index.mdx'), 'utf8')
-    ).resolves.toBe('complete snapshot');
-    expect(core.stop).toHaveBeenCalledOnce();
+  });
+
+  test('THEN colliding non-JSON files still fail without a completed identity', async () => {
+    filesystem.promises.glob.mockResolvedValue(['/shared.mdx']);
+    filesystem.promises.readFile.mockResolvedValue([Buffer.from('first'), Buffer.from('second')]);
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit');
+    });
+    await expect(build(config(), outDir, { name: 'latest' })).rejects.toThrow('exit');
+    expect(log).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.stringContaining('overwritten data') })
+    );
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
   });
 
   test('THEN repeated early updates cannot replace a slower enabled source or wait for a disabled source', async () => {

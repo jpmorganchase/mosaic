@@ -7,14 +7,32 @@ import MosaicCore from '@jpmorganchase/mosaic-core';
 const SNAPSHOT_IDENTITY_FILE = 'mosaic-snapshot.json';
 
 export default async function build(config, targetDir, options) {
-  // Strip out any plugins that are meant for runtime use only (i.e. `LazyPagePlugin`)
-  config.plugins = config.plugins.filter(({ runTimeOnly }) => !runTimeOnly);
-  // Turn off `cache` for each source
-  config.sources = config.sources.map(source => ({
-    ...source,
-    options: { ...source.options, cache: false }
-  }));
-  const scope = options.scope && options.scope.split(',');
+  const scope = options.scope
+    ?.split(',')
+    .map(namespace => namespace.trim())
+    .filter(Boolean);
+  if (scope) {
+    const missing = scope.filter(
+      namespace =>
+        !config.sources.some(source => source.namespace === namespace && !source.disabled)
+    );
+    if (scope.length === 0 || missing.length > 0) {
+      throw new Error(
+        `Snapshot scope must name enabled source namespaces. No enabled sources for: ${
+          missing.join(', ') || '(empty scope)'
+        }`
+      );
+    }
+  }
+  config = {
+    ...config,
+    // Strip plugins meant for runtime use only (i.e. `LazyPagePlugin`).
+    plugins: config.plugins.filter(({ runTimeOnly }) => !runTimeOnly),
+    // Scope before generation so shared artifacts contain only the selected sources.
+    sources: config.sources
+      .filter(source => !scope || scope.includes(source.namespace))
+      .map(source => ({ ...source, options: { ...source.options, cache: false } }))
+  };
   const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
   const pathDirFromTarget = path.relative(path.resolve(targetDir), path.resolve(pathDir));
   if (
@@ -62,11 +80,8 @@ export default async function build(config, targetDir, options) {
             `[Mosaic] Snapshot failed because plugins recorded errors:\n${failures.join('\n')}`
           );
         }
-        // Scoping copies the mounted source filesystems, so wait until startup
-        // has mounted every source before constructing the scoped view.
-        const filesystem = Array.isArray(scope)
-          ? mosaic.filesystem.scope(scope)
-          : mosaic.filesystem;
+        // Include the shared filesystem containing sitemap/search/Markdown output.
+        const filesystem = mosaic.filesystem;
         const symlinks = filesystem.symlinksToJSON();
         const allFiles = await filesystem.promises.glob('**', {
           cwd: '/',
@@ -97,8 +112,8 @@ export default async function build(config, targetDir, options) {
               console.warn(
                 `'${filePath}' returned multiple files at the same location. Since the files were JSON dot files, they were merged using \`deepmerge\`.`
               );
-              const allRawFiles: string[] = rawFiles.map(fileData => JSON.parse(String(fileData)));
-              rawFile = Buffer.from(JSON.stringify(deepmerge(allRawFiles[0], allRawFiles[1])));
+              const allRawFiles = rawFiles.map(fileData => JSON.parse(String(fileData)));
+              rawFile = Buffer.from(JSON.stringify(deepmerge.all(allRawFiles)));
             } else {
               throw new Error(`'${filePath}' returned multiple files at the same location, this will result in overwritten data in the output. Aborting build.
 
@@ -153,9 +168,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
           { encoding: 'utf8', flag: 'wx' }
         );
         console.log(
-          `[Mosaic] filesystem for ${
-            Array.isArray(scope) ? scope.length : sourceCount
-          } source(s) written to disk at '${pathDir}'`
+          `[Mosaic] filesystem for ${sourceCount} source(s) written to disk at '${pathDir}'`
         );
         unsubscribe();
         await mosaic.stop();
