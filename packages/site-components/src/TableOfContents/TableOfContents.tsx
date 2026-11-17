@@ -1,16 +1,16 @@
-import React, { useEffect, useLayoutEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useState, useId } from 'react';
 import { throttle } from 'lodash-es';
-import { Caption1, useSize } from '@jpmorganchase/mosaic-components';
+import { Caption1 } from '@jpmorganchase/mosaic-components';
 
 import { TableOfContentsItem } from './TableOfContentsItem';
-import { mostRecentScrollPoint, setupHeadingState, setupSelectedHeadingState } from './utils';
+import { getHeadingPosition, getHeaderHeight, mostRecentScrollPoint } from './utils';
 import styles from './styles.css';
 
 export type Item = { level: number; id: string; text: string };
+/** @deprecated Use Item; selection is tracked separately from heading metadata. */
 export interface CurrentItem extends Item {
   current: boolean;
 }
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export type TableOfContentsProps = {
   items?: Item[];
@@ -21,73 +21,37 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items }) => {
     throw new Error('No `items` specified for Table of Contents.');
   }
 
-  const headingsRef = useRef<CurrentItem[]>(setupHeadingState());
-  const [selectedHeading, setSelectedHeading] = useState(() =>
-    setupSelectedHeadingState(headingsRef.current)
-  );
-
-  const headingPositions = useRef<(number | null)[]>([]);
-
-  const size = useSize();
-
-  const matchHeadingsToDOM = () => {
-    const { offsetHeight: headerHeight = 0 } = document.querySelector('header') || {};
-    const updatedHeadingPositions = headingsRef.current
-      .map(heading => {
-        const headingNode = document.getElementById(heading.id);
-        return headingNode ? headingNode.offsetTop - headerHeight : null;
-      })
-      .filter(heading => heading);
-    if (updatedHeadingPositions.length > 0) {
-      headingPositions.current = updatedHeadingPositions;
-      handleScroll(true);
-    }
-  };
-
-  const handleScroll = (skipCheck = false) => {
-    if (
-      !skipCheck &&
-      (headingPositions.current.length < 1 ||
-        headingPositions.current.length !== headingsRef.current.length)
-    ) {
-      matchHeadingsToDOM();
-    } else {
-      const headerElement = document.querySelector('header');
-      const headerHeight = headerElement ? headerElement.getBoundingClientRect().height : 0;
-      const scrollPosition = window.scrollY + headerHeight;
-      const newCurrent = mostRecentScrollPoint(scrollPosition, headingPositions.current);
-
-      // Only update the current item if we have a valid item (the
-      // falsy `0` is a valid option here, hence checking type)
-      if (typeof newCurrent === 'number') {
-        const currentHeading = headingsRef.current[newCurrent];
-        if (currentHeading) {
-          setSelectedHeading(currentHeading.id);
-        }
-      }
-    }
-  };
+  const [selectedHeading, setSelectedHeading] = useState<string | undefined>(items[0]?.id);
 
   useEffect(() => {
-    const throttledHandleScroll = throttle(() => handleScroll(false), 60);
-
-    document.addEventListener('scroll', throttledHandleScroll);
-    return () => {
-      document.removeEventListener('scroll', throttledHandleScroll);
+    const updateSelection = () => {
+      // Keep measurements paired with the supplied IDs. Cached positions become
+      // stale after navigation or late content changes.
+      const positions = items.map(item => getHeadingPosition(item.id));
+      // A short final section may never reach the header because scrolling clamps.
+      const atBottom =
+        window.scrollY > 0 &&
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1;
+      const current = mostRecentScrollPoint(
+        atBottom ? Infinity : window.scrollY + getHeaderHeight() + 1,
+        positions
+      );
+      setSelectedHeading(current === null ? undefined : items[current].id);
     };
-  }, []);
-
-  useIsomorphicLayoutEffect(() => {
-    if (typeof window === 'undefined') return;
-    matchHeadingsToDOM();
-  }, [size.width, size.height]);
-
-  useEffect(() => {
-    const newHeadings = setupHeadingState();
-    headingsRef.current = newHeadings;
-    if (headingPositions.current.length !== items.length) {
-      matchHeadingsToDOM();
-    }
+    const handleScroll = throttle(updateSelection, 60);
+    const observer = new ResizeObserver(handleScroll);
+    observer.observe(document.body);
+    document.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    window.addEventListener('hashchange', handleScroll);
+    updateSelection();
+    return () => {
+      document.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('hashchange', handleScroll);
+      observer.disconnect();
+      handleScroll.cancel();
+    };
   }, [items]);
 
   const captionId = useId();

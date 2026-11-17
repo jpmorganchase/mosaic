@@ -2,38 +2,22 @@ import { describe, test, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 
 import { createWrapper } from './test-utils/utils';
-import {
-  disposeStore,
-  initializeStore,
-  registerStore,
-  reseedStore,
-  SiteState,
-  useCreateStore,
-  useStore
-} from '../store';
-
-function getStateToVerify(currentState: SiteState) {
-  let { actions, ...stateToVerify } = currentState;
-  return stateToVerify;
-}
+import { initializeStore, reseedStore, useCreateStore, useStore } from '../store';
 
 describe('GIVEN the store initializer', () => {
   describe('WHEN no other state is provided', () => {
     test('THEN the store api provides the initial default state', () => {
       const storeApi = initializeStore();
-      expect(getStateToVerify(storeApi.getState())).toEqual({
+      expect(storeApi.getState()).toEqual({
         breadcrumbs: [],
         navigation: {},
         sidebarData: [],
         tableOfContents: [],
-        searchIndex: [],
-        searchConfig: {},
         sharedConfig: {},
         description: undefined,
         layout: undefined,
         route: undefined,
-        title: undefined,
-        colorMode: 'light'
+        title: undefined
       });
     });
   });
@@ -48,15 +32,12 @@ describe('GIVEN the store initializer', () => {
       };
 
       const storeApi = initializeStore(state);
-      expect(getStateToVerify(storeApi.getState())).toEqual({
+      expect(storeApi.getState()).toEqual({
         breadcrumbs: [],
         navigation: {},
-        searchIndex: [],
-        searchConfig: {},
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
 
         ...state
       });
@@ -71,15 +52,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
       const { result, rerender } = renderHook(() => useCreateStore(state));
       let currentState = result.current().getState();
 
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
-        searchIndex: [],
-        searchConfig: {},
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         ...state,
         route: undefined,
         title: undefined
@@ -91,15 +69,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
       rerender();
 
       currentState = result.current().getState();
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
         sidebarData: [],
-        searchIndex: [],
-        searchConfig: {},
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         description: 'description',
         layout: 'new',
         route: undefined,
@@ -114,15 +89,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
       const { result, rerender } = renderHook(() => useCreateStore(state));
       let currentState = result.current().getState();
 
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
-        searchIndex: [],
-        searchConfig: {},
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         ...state,
         route: undefined,
         title: undefined
@@ -137,15 +109,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
       rerender();
 
       currentState = result.current().getState();
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
         sidebarData: [],
-        searchIndex: [],
-        searchConfig: {},
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         description: 'description',
         layout: undefined,
         route: undefined,
@@ -160,15 +129,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
       const { result, rerender } = renderHook(() => useCreateStore(state, true));
       let currentState = result.current().getState();
 
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
-        searchIndex: [],
-        searchConfig: {},
         sidebarData: [],
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         ...state,
         route: undefined,
         title: undefined
@@ -181,15 +147,12 @@ describe('GIVEN the `useCreateStore` hook', () => {
 
       currentState = result.current().getState();
 
-      expect(getStateToVerify(currentState)).toEqual({
+      expect(currentState).toEqual({
         breadcrumbs: [],
         navigation: {},
         sidebarData: [],
-        searchIndex: [],
-        searchConfig: {},
         tableOfContents: [],
         sharedConfig: {},
-        colorMode: 'light',
         description: 'description',
         layout: 'new',
         route: undefined,
@@ -219,85 +182,41 @@ describe('GIVEN the `useStore` hook', () => {
 });
 
 describe('GIVEN per-page stores', () => {
-  test('THEN colour mode syncs between live stores and stops once a store is disposed', () => {
-    const layoutStore = initializeStore();
-    const pageStore = initializeStore();
-
-    layoutStore.getState().actions.setColorMode('dark');
-    expect(pageStore.getState().colorMode).toEqual('dark');
-
-    disposeStore(pageStore);
-    layoutStore.getState().actions.setColorMode('light');
-    expect(pageStore.getState().colorMode).toEqual('dark');
-
-    // Re-registering (e.g. after a StrictMode re-mount) resumes syncing.
-    registerStore(pageStore);
-    layoutStore.getState().actions.setColorMode('dark');
-    expect(pageStore.getState().colorMode).toEqual('dark');
-    layoutStore.getState().actions.setColorMode('light');
-    expect(pageStore.getState().colorMode).toEqual('light');
-
-    disposeStore(layoutStore);
-    disposeStore(pageStore);
-  });
-
-  test('THEN disposing a store removes its storage listener', () => {
-    const addSpy = vi.spyOn(window, 'addEventListener');
-    const removeSpy = vi.spyOn(window, 'removeEventListener');
-    const store = initializeStore();
-    const listener = addSpy.mock.calls.find(([type]) => type === 'storage')?.[1];
-    expect(listener).toBeDefined();
-
-    disposeStore(store);
-    expect(removeSpy).toHaveBeenCalledWith('storage', listener);
-    addSpy.mockRestore();
-    removeSpy.mockRestore();
+  test('THEN creating and updating content stores has no storage or global listener side effects', () => {
+    const addListener = vi.spyOn(window, 'addEventListener');
+    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    try {
+      const first = initializeStore({ title: 'First' });
+      const second = initializeStore({ title: 'Second' });
+      reseedStore(first, { title: 'Refreshed' });
+      expect(second.getState().title).toBe('Second');
+      expect(addListener).not.toHaveBeenCalled();
+      expect(setItem).not.toHaveBeenCalled();
+    } finally {
+      addListener.mockRestore();
+      setItem.mockRestore();
+    }
   });
 });
 
 describe('GIVEN `reseedStore`', () => {
-  test('THEN the page state is replaced while colour mode and actions are kept', () => {
+  test('THEN page data is replaced and omitted fields return to their defaults', () => {
     const store = initializeStore({
       title: 'Old title',
       layout: 'DetailTechnical',
       tableOfContents: [{ level: 0, id: 'old', text: 'Old' }]
     });
-    store.getState().actions.setColorMode('dark');
-    const { actions } = store.getState();
-
     reseedStore(store, { title: 'New title', layout: 'FullWidth' });
-
-    const state = store.getState();
-    expect(getStateToVerify(state)).toEqual({
+    expect(store.getState()).toEqual({
       breadcrumbs: [],
       navigation: {},
-      searchIndex: [],
-      searchConfig: {},
       sidebarData: [],
-      // Missing from the new seed, so back to the default rather than stale.
       tableOfContents: [],
       sharedConfig: {},
       description: undefined,
       route: undefined,
       title: 'New title',
-      layout: 'FullWidth',
-      colorMode: 'dark'
+      layout: 'FullWidth'
     });
-    expect(state.actions).toBe(actions);
-
-    disposeStore(store);
-  });
-
-  test('THEN a seed cannot override colour mode or actions', () => {
-    const store = initializeStore();
-    const { actions, colorMode } = store.getState();
-    const otherColorMode = colorMode === 'dark' ? 'light' : 'dark';
-
-    reseedStore(store, { colorMode: otherColorMode, actions: undefined } as never);
-
-    expect(store.getState().colorMode).toEqual(colorMode);
-    expect(store.getState().actions).toBe(actions);
-
-    disposeStore(store);
   });
 });

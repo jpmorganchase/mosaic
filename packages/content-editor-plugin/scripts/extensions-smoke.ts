@@ -34,7 +34,7 @@ import { buildEditorFromExtensions } from '@lexical/extension';
 import { defineExtension } from 'lexical';
 
 // NOTE: imports go directly to each extension file with the explicit
-// `.ts` extension. Node's `--experimental-strip-types` resolver does
+// `.ts` extension. Node's type-stripping resolver does
 // not synthesize the `.ts` extension the way `tsc` / our bundler do,
 // so importing through `src/extensions/index.ts` (which uses
 // extensionless re-exports for TypeScript / esbuild compatibility)
@@ -47,7 +47,7 @@ import { MarkdownLinkExtension } from '../src/extensions/MarkdownLinkExtension.t
 // are deliberately NOT smoke-tested here. Both transitively import
 // from `../src/EditorContext` and `../src/utils/focusErrorRegistry`,
 // which use extensionless intra-source imports (correct for tsc +
-// esbuild). Node's `--experimental-strip-types` resolver doesn't
+// esbuild). Node's type-stripping resolver doesn't
 // synthesize the `.ts` extension on transitive imports, so loading
 // either extension here fails with `ERR_MODULE_NOT_FOUND` on the
 // first hop into shared utilities. Switching to a TS loader (tsx,

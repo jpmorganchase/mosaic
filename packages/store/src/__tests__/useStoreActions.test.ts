@@ -1,8 +1,13 @@
-import { describe, test, expect } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { afterEach, describe, test, expect } from 'vitest';
+import { renderHook, act, cleanup } from '@testing-library/react';
 import { createWrapper } from './test-utils/utils';
 import { useStoreActions } from '../useStoreActions';
 import { useColorMode } from '../useColorMode';
+
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+});
 
 describe('GIVEN the `useStoreActions` hook', () => {
   test('THEN there is a setColorMode action', () => {
@@ -14,23 +19,12 @@ describe('GIVEN the `useStoreActions` hook', () => {
 
   describe('AND WHEN the setColorMode action is used', () => {
     test('THEN colorMode is updated', () => {
-      const { result: useStoreActionsResult } = renderHook(() => useStoreActions(), {
+      const { result } = renderHook(() => ({ mode: useColorMode(), actions: useStoreActions() }), {
         wrapper: createWrapper()
       });
-
-      const { result: useColorModeResult, rerender } = renderHook(() => useColorMode(), {
-        wrapper: createWrapper()
-      });
-
-      expect(useColorModeResult.current).toEqual('light');
-
-      const { setColorMode } = useStoreActionsResult.current;
-
-      act(() => {
-        setColorMode('dark');
-        rerender();
-      });
-      expect(useColorModeResult.current).toEqual('dark');
+      expect(result.current.mode).toEqual('light');
+      act(() => result.current.actions.setColorMode('dark'));
+      expect(result.current.mode).toEqual('dark');
     });
   });
 });

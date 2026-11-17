@@ -57,8 +57,9 @@
  * resolves ambiguity when a config has multiple sources: an
  * explicit `prefixDir` is a stronger claim on a URL space than
  * an unprefixed source, so we prefer it. Within the same
- * prefixedness class we honour declaration order — same rule the
- * union filesystem already uses.
+ * prefixedness class we honour declaration order. This fallback is used
+ * only when no published owner is available. Published paths are resolved
+ * by the caller against the mounted volumes.
  */
 
 import path from 'node:path';
@@ -120,8 +121,14 @@ export type RawSourceResolution =
  * `prefixDir` match: leading slash, no trailing slash, no double
  * slashes. Empty / root requests collapse to `/`.
  */
-function normaliseUrl(url: string): string {
-  const cleaned = `/${url}`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
+export function normaliseRawSourceUrl(url: string): string | undefined {
+  let pathname: string;
+  try {
+    pathname = decodeURIComponent(url.split(/[?#]/, 1)[0]);
+  } catch {
+    return undefined;
+  }
+  const cleaned = `/${pathname}`.replace(/\/{2,}/g, '/').replace(/\/$/, '');
   return cleaned === '' ? '/' : cleaned;
 }
 
@@ -141,11 +148,11 @@ export function resolveRawSourcePath(
   url: string,
   sources: SourceModuleDefinition[]
 ): RawSourceResolution {
-  const normalised = normaliseUrl(url);
+  const normalised = normaliseRawSourceUrl(url);
+  if (normalised === undefined) return { kind: 'no-matching-source', url };
 
   // Order sources so prefixed ones are tried first. Within each
-  // class, preserve declaration order so the result matches the
-  // union filesystem's "first registered, first served" semantics.
+  // class, preserve declaration order for unpublished authored files.
   const prefixed: SourceModuleDefinition[] = [];
   const unprefixed: SourceModuleDefinition[] = [];
   for (const source of sources) {

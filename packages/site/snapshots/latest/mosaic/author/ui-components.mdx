@@ -5,7 +5,7 @@ sidebar:
   label: UI Components
   groupLabel: UI Components
   priority: 2
-lastModified: 1780396145451.6182
+lastModified: 1794801246191.5874
 fullPath: /mosaic/author/ui-components.mdx
 route: /mosaic/author/ui-components
 breadcrumbs:
@@ -13,11 +13,27 @@ breadcrumbs:
     path: /mosaic/author/index
     id: /mosaic/author/index.mdx
 readingTime:
-  text: 1 min read
-  minutes: 0.01
-  time: 600
-  words: 2
-tableOfContents: []
+  text: 2 min read
+  minutes: 1.245
+  time: 74700
+  words: 249
+tableOfContents:
+  - depth: 2
+    level: 0
+    id: inline-components
+    text: Inline components
+  - depth: 2
+    level: 0
+    id: links
+    text: Links
+  - depth: 2
+    level: 0
+    id: values-that-differ-between-server-and-browser
+    text: Values that differ between server and browser
+  - depth: 2
+    level: 0
+    id: responsive-cards
+    text: Responsive cards
 navigation:
   prev:
     title: Fragments
@@ -103,3 +119,63 @@ sidebarData:
 ```jsx live
 <button>Hello, world!</button>
 ```
+
+## Inline components
+
+Use components that render inline HTML inside a paragraph. For example, `Tag`
+accepts either a `label` or children:
+
+```mdx
+This feature is <Tag>RC</Tag>.
+```
+
+An explicit `label` takes precedence over children, including `label=""`.
+
+Typography components such as `Subtitle5` render a paragraph by default. Use
+`component="span"` when placing one inside a sentence:
+
+```mdx
+Read the <Subtitle5 component="span">release notes</Subtitle5> before upgrading.
+```
+
+## Links
+
+`Link` in the default MDX registry is Mosaic's `Link`, whose props differ from
+Salt's `Link`. Use `endIcon="none"` to hide its trailing icon; Salt's
+`IconComponent` prop is not supported. Standard `aria-*` and `data-*` attributes
+can still be passed through.
+
+```mdx
+<Link href="./release-notes" endIcon="none">
+  Release notes
+</Link>
+```
+
+Headings can contain normal Markdown links. The separate copy control beside a
+heading copies its permalink without intercepting links in the heading text.
+
+## Values that differ between server and browser
+
+The initial browser render must match the HTML rendered by the server. Format
+dates with an explicit locale and time zone when displaying them in MDX, rather
+than relying on each machine's defaults:
+
+```jsx
+new Intl.DateTimeFormat('en-GB', {
+  dateStyle: 'medium',
+  timeZone: 'UTC'
+}).format(new Date('2026-11-16T00:00:00Z'));
+```
+
+Keep browser-dependent values inside components that apply them after hydration.
+A host can opt into an MDX Suspense boundary for recovery and suspending content,
+but this does not make invalid HTML or inconsistent initial values correct.
+
+## Responsive cards
+
+`Cards` and its `Tiles` alias accept Salt `GridLayout` props. For example,
+`columns={{ xs: 1, sm: 2, lg: 3 }}` selects one, two, or three columns using CSS
+before hydration. The breakpoint sizes come from the surrounding Salt provider,
+including custom `breakpoints`. Numeric columns and the existing grid spacing
+props continue to work. This behavior applies to Mosaic's wrappers; a host's
+direct use of Salt `GridLayout` keeps Salt's own responsive behavior.

@@ -30,7 +30,18 @@ export default {
     {
       modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
       previewDisabled: true,
-      options: { maxLineLength: 240, maxLineCount: 240 }
+      // After `$RefPlugin` (-1), so titles and fields that come from `$ref`s
+      // are resolved, and before `LazyPagePlugin` (-2) moves page content out.
+      priority: -1.5,
+      options: {}
+    },
+    {
+      modulePath: '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin',
+      previewDisabled: true,
+      // After `$RefPlugin` (-1), so `$ref`s are resolved, and before
+      // `LazyPagePlugin` (-2) moves page content out.
+      priority: -1.5,
+      options: {}
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/BreadcrumbsPlugin',
@@ -72,6 +83,10 @@ export default {
     },
     {
       modulePath: '@jpmorganchase/mosaic-plugins/TableOfContentsPlugin',
+      // Between `$RefPlugin` (-1) and `LazyPagePlugin` (-2): headings that
+      // read `$ref` values can only be resolved after `$RefPlugin`, and page
+      // content must still be in the filesystem.
+      priority: -1.5,
       options: {
         minRank: 2,
         maxRank: 3

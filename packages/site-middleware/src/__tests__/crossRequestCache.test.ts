@@ -1,7 +1,7 @@
 /**
  * Cross-request caching rules in `cachedLoaders.ts`:
  *
- *   - snapshot modes cache successful reads,
+ *   - identified snapshots cache successful reads by root and generation,
  *   - negative results (404s, missing files) are never stored,
  *   - active mode bypasses the cache unless `MOSAIC_ACTIVE_MODE_CACHE`
  *     is set.
@@ -13,7 +13,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const store = new Map<string, unknown>();
 vi.mock('next/cache', () => ({
@@ -30,13 +30,27 @@ vi.mock('next/cache', () => ({
 
 let snapshotRoot: string;
 
-beforeAll(() => {
+beforeEach(() => {
   snapshotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'mosaic-cache-test-'));
+  writeIdentity('11111111-1111-4111-8111-111111111111');
 });
 
-afterAll(() => {
+afterEach(() => {
   fs.rmSync(snapshotRoot, { recursive: true, force: true });
 });
+
+function writeIdentity(id: string, root = snapshotRoot) {
+  fs.writeFileSync(path.join(root, 'mosaic-snapshot.json'), JSON.stringify({ version: 1, id }));
+}
+
+function writeContent(title: string, root = snapshotRoot) {
+  fs.mkdirSync(path.join(root, 'docs'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'docs', 'index.mdx'), `---\ntitle: ${title}\n---\n# ${title}`);
+  fs.writeFileSync(
+    path.join(root, 'docs', 'shared-config.json'),
+    JSON.stringify({ config: { header: { title } } })
+  );
+}
 
 beforeEach(() => {
   store.clear();
@@ -60,6 +74,101 @@ async function loadLoaders() {
 }
 
 describe('snapshot-file mode', () => {
+  test('reuses a generation, then refreshes MDX and shared config when its identity changes', async () => {
+    vi.stubEnv('MOSAIC_SNAPSHOT_DIR', path.relative(process.cwd(), snapshotRoot));
+    writeContent('First');
+    const { getMdxRaw, getSharedConfig } = await loadLoaders();
+    const read = async (title: string) => {
+      expect(await getMdxRaw('/docs/index', 'snapshot-file', '')).toMatchObject({
+        kind: 'mdx',
+        frontmatter: { title }
+      });
+      expect(await getSharedConfig('/docs/index', 'snapshot-file', '')).toEqual({
+        header: { title }
+      });
+    };
+    await read('First');
+    writeContent('Second');
+    // Published generations are immutable: unchanged identity reuses cached values.
+    await read('First');
+    expect(store.size).toBe(2);
+    writeIdentity('22222222-2222-4222-8222-222222222222');
+    await read('Second');
+    expect(store.size).toBe(4);
+  });
+
+  test.each(['relative', 'absolute'])(
+    'includes the resolved %s root even when two snapshots share an identity',
+    async style => {
+      const otherRoot = path.join(snapshotRoot, 'other');
+      fs.mkdirSync(otherRoot);
+      writeIdentity('11111111-1111-4111-8111-111111111111', otherRoot);
+      writeContent('First');
+      writeContent('Other', otherRoot);
+      const { getMdxRaw, getSharedConfig } = await loadLoaders();
+      for (const [root, title] of [
+        [snapshotRoot, 'First'],
+        [otherRoot, 'Other']
+      ]) {
+        vi.stubEnv(
+          'MOSAIC_SNAPSHOT_DIR',
+          style === 'absolute' ? root : path.relative(process.cwd(), root)
+        );
+        expect(await getMdxRaw('/docs/index', 'snapshot-file', '')).toMatchObject({
+          kind: 'mdx',
+          frontmatter: { title }
+        });
+        expect(await getSharedConfig('/docs/index', 'snapshot-file', '')).toEqual({
+          header: { title }
+        });
+      }
+      expect(store.size).toBe(4);
+    }
+  );
+
+  test.each([
+    undefined,
+    'not json',
+    JSON.stringify({ version: 2, id: '11111111-1111-4111-8111-111111111111' }),
+    JSON.stringify({ version: 1, id: '' }),
+    JSON.stringify({ version: 1, id: 'latest' })
+  ])('bypasses persistent caching for a missing or invalid identity: %s', async envelope => {
+    vi.stubEnv('MOSAIC_SNAPSHOT_DIR', path.relative(process.cwd(), snapshotRoot));
+    writeContent('First');
+    const { getMdxRaw, getSharedConfig } = await loadLoaders();
+    await getMdxRaw('/docs/index', 'snapshot-file', '');
+    await getSharedConfig('/docs/index', 'snapshot-file', '');
+    expect(store.size).toBe(2);
+    const file = path.join(snapshotRoot, 'mosaic-snapshot.json');
+    if (envelope === undefined) fs.unlinkSync(file);
+    else fs.writeFileSync(file, envelope);
+    for (const title of ['Second', 'Third']) {
+      writeContent(title);
+      expect(await getMdxRaw('/docs/index', 'snapshot-file', '')).toMatchObject({
+        kind: 'mdx',
+        frontmatter: { title }
+      });
+      expect(await getSharedConfig('/docs/index', 'snapshot-file', '')).toEqual({
+        header: { title }
+      });
+    }
+    expect(store.size).toBe(2);
+  });
+
+  test('honors the cache-disable flag even for an identified snapshot', async () => {
+    vi.stubEnv('MOSAIC_DISABLE_LOADER_CACHE', 'true');
+    vi.stubEnv('MOSAIC_SNAPSHOT_DIR', path.relative(process.cwd(), snapshotRoot));
+    const { getMdxRaw } = await loadLoaders();
+    for (const title of ['First', 'Second']) {
+      writeContent(title);
+      expect(await getMdxRaw('/docs/index', 'snapshot-file', '')).toMatchObject({
+        kind: 'mdx',
+        frontmatter: { title }
+      });
+    }
+    expect(store.size).toBe(0);
+  });
+
   test('a 404 is not stored, so the page is found once it exists', async () => {
     const snapshotDir = path.relative(process.cwd(), snapshotRoot);
     vi.stubEnv('MOSAIC_SNAPSHOT_DIR', snapshotDir);

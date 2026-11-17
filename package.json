@@ -9,11 +9,11 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^22.13.0 || >=24"
+    "node": ">=24"
   },
   "scripts": {
     "build:site": "turbo run build --filter=@jpmorganchase/mosaic-site",
-    "build": "turbo run build --filter=!@jpmorganchase/mosaic-site",
+    "build": "node scripts/snapshot/pinDependencies.mjs && turbo run build --filter=!@jpmorganchase/mosaic-site",
     "clean": "turbo run clean",
     "deploy:site": "turbo run deploy --filter=@jpmorganchase/mosaic-site",
     "deploy": "yarn build:site",
@@ -22,9 +22,8 @@
     "e2e:setup": "npx playwright install",
     "e2e": "turbo run e2e --filter=@jpmorganchase/mosaic-site",
     "gen:snapshot": "turbo run gen:snapshot --filter=@jpmorganchase/mosaic-site",
-    "gen": "turbo run gen:site gen:snapshot --filter=//",
     "lint": "turbo run lint",
-    "mosaic": "node ./packages/cli/dist/index.js",
+    "mosaic": "node ./packages/cli/dist/index.mjs",
     "prepare": "husky install",
     "prettier:ci": "prettier --check .",
     "prettier": "prettier --write .",
@@ -33,6 +32,7 @@
     "start": "turbo run start --filter=@jpmorganchase/mosaic-site",
     "test:client": "vitest --project=client",
     "test:server": "vitest --project=server",
+    "test:consumer": "node scripts/consumerSmoke.mjs",
     "test": "vitest --coverage",
     "docker:volume": "docker container create --name docs-copy -v docs:/docs mosaic-fs && docker cp ./docs docs-copy:/ && docker rm docs-copy",
     "docker:network": "docker network create mosaic-net"

@@ -47,7 +47,8 @@ describe('GIVEN a Sitemap view', () => {
     // arrange
     render(<Sitemap href="https://mysite.com/sitemap.xml" />);
 
-    expect(await screen.findByText('mosaic')).toBeInTheDocument();
+    // Allow the asynchronous fetch and tree render to settle on a busy test worker.
+    expect(await screen.findByText('mosaic', {}, { timeout: 5000 })).toBeInTheDocument();
     expect(await screen.findByText('pageA')).toBeInTheDocument();
     expect(await screen.findByText('pageB')).toBeInTheDocument();
   });

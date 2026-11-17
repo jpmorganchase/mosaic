@@ -5,51 +5,200 @@ layout: DetailOverview
 
 # {meta.title}
 
-The `SearchIndexPlugin` is responsible for generating the search index and configuration information for [Fuse.js](https://www.fusejs.io/) which is the matching engine powering the client-side search functionality of Mosaic sites.
+The `SearchIndexPlugin` generates `search-records.json` for section-level search. The same records and ranking engine power the server API and browser search on static sites.
 
-It outputs 3 files:
+### Search records
 
-- Full Search Index - `search-data.json`
-- Condensed Search Index - `search-data-condensed.json`
-- Search Configuration - `search-config.json`
+`search-records.json` splits every page into records: one for the text before the first section heading, and one for each section. Results can then link to the section that matched, at `route#anchor`. The anchors are the ids of the rendered headings, and match the [TableOfContentsPlugin](./toc-plugin).
 
-### Full Search Index
+```json
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "/mosaic/configure/index#plugins",
+      "route": "/mosaic/configure/index",
+      "anchor": "plugins",
+      "title": "Configure",
+      "headings": ["Plugins"],
+      "text": "Plugins change pages as they are loaded…",
+      "namespace": "mosaic"
+    }
+  ]
+}
+```
 
-On a Mosaic site, the full index is fetched after a page has loaded, thus removing the chance of a huge index slowing down first-load.
+- `headings` lists the section's headings from the outermost in. The introduction record has none.
+- `text` is the section's prose. Code blocks, JSX attributes and MDX expressions are left out, except `{meta.*}` expressions, which are replaced with their values.
+- `fields` holds the frontmatter set with the `records.fields` option, as plain text without markdown. Only the introduction record has it, because it describes the whole page. All configured fields are searchable: `description` and `keywords` have their dedicated ranking, and other field names rank alongside body text.
 
-Practically, the full index should load in the background before a user searches for something, but should a search be initiated before that (e.g., slow-internet) then the condensed version of the search index is available.
+To leave a page out of the records, set `search: { exclude: true }` in its frontmatter.
 
-### Condensed Search Data
+### Searching the records
 
-Search Index plugin creates a "condensed" version of the search index that only includes the `title` and `route` for each page. This is the "Minimum Viable Index" to provide somewhat useable search results client-side while the main search index is loaded in the background.
+`@jpmorganchase/mosaic-site-middleware/search` searches the records. It runs on the server and in the browser.
 
-### Search Configuration
+```ts
+import { createSearchIndex, highlight } from '@jpmorganchase/mosaic-site-middleware/search';
 
-Any [options](https://www.fusejs.io/api/options.html) that need to be passed to Fuse.js.
+// `records` from search-records.json
+const index = createSearchIndex(records, {
+  synonyms: [['dropdown', 'combobox']]
+});
 
-### Search relevancy configuration
+const results = index.search('date picker', { namespace: 'salt' });
+// [{ href: '/salt/components/date-picker/index', title: 'Date picker', snippet, terms, sections: [...] }]
+```
 
-| Property         | Description                                           |
-| ---------------- | ----------------------------------------------------- |
-| includeScore     | https://www.fusejs.io/api/options.html#includescore   |
-| includeMatches   | https://www.fusejs.io/api/options.html#includematches |
-| maxPatternLength | TODO                                                  |
-| ignoreLocation   | https://www.fusejs.io/api/options.html#ignorelocation |
-| threshold        | https://www.fusejs.io/api/options.html#threshold      |
-| keys             | https://www.fusejs.io/api/options.html#keys           |
+Results are ranked like Algolia's tie-breaking criteria. Each one only decides between results that tie on the ones before it:
+
+1. The number of query words matched. Only results that match the most words are returned, so adding a word narrows the results.
+2. The page title matching the whole query. Plurals, stop words and spaces are ignored, so `datepicker` matches "Date picker".
+3. The current namespace, set with the `namespace` search option.
+4. The number of typos. Words of 4 letters or more can have one typo, and words of 8 or more two.
+5. The number of words matched by a synonym.
+6. Where the words matched: the title, then keywords, headings, description, then text and any other configured frontmatter fields. A match on only the start of a word counts one place lower, so for `select` a title starting "Selectable" ties with the keyword "Select".
+7. The section heading matching the whole query.
+8. The `pageRank` option.
+9. The page introduction before its sections, and outer sections before inner ones.
+10. The relevance score (BM25).
+
+| Index option | Description                                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| synonyms     | Groups of single words that mean the same thing. Matches of a synonym rank just below matches of the word itself.                                            |
+| groupBy      | Records with the same group are one result: the best match, with the other matches in `sections`. Defaults to the route. Group tabs of a page together here. |
+| pageRank     | Ranks pages when everything else ties: lower comes first. Defaults to `0` for index pages and `1` for others.                                                |
+
+| Search option     | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| namespace         | Results in this namespace rank above equally good results.    |
+| namespaces        | Only return results in these namespaces.                      |
+| filter            | Only return records this function returns `true` for.         |
+| limit             | The most results to return. Defaults to `10`.                 |
+| sectionsPerResult | The most other matching sections per result. Defaults to `3`. |
+
+`highlight(text, result.terms)` splits a title or snippet into matching and other parts, to render the matches without using HTML from the index.
+
+### Search API
+
+`createSearchHandler` from `@jpmorganchase/mosaic-site-middleware` is a `GET` route handler that searches the site's records on the server:
+
+```ts
+// app/api/search/route.ts
+import { createSearchHandler } from '@jpmorganchase/mosaic-site-middleware';
+
+export const dynamic = 'force-dynamic';
+
+export const GET = createSearchHandler({ synonyms: [['dropdown', 'combobox']] });
+```
+
+`GET /api/search?q=date+picker&namespace=salt` responds with `{ query, results }`.
+
+| Parameter  | Description                                                                           |
+| ---------- | ------------------------------------------------------------------------------------- |
+| q          | The query. Longer than 200 characters is cut.                                         |
+| namespace  | Rank results in this namespace first.                                                 |
+| namespaces | Only return results in these namespaces, comma-separated.                             |
+| limit      | The most results, from 1 to the handler's `maxLimit` (50 by default). Defaults to 10. |
+| sections   | The most other matching sections per result, from 0 to 10. Defaults to 3.             |
+
+The handler takes the index options above, and:
+
+- `mode` and `contentUrl`, which default to `MOSAIC_MODE` and its content URL.
+- `maxAge`: in active mode, how long in milliseconds to use the loaded records before checking the content server for new ones. Searches use the loaded records until the check finishes. Defaults to 30 seconds. In snapshot mode, the handler checks the file's modification time on every search.
+- `maxLimit`: the most results a request can ask for. Defaults to 50.
+
+The handler keeps the index in memory rather than in Next's data cache, which doesn't store entries over 2 MB. It responds with 404 when the site has no `search-records.json`, and 503 when the records can't be loaded.
+
+Static exports have no server, so they search in the browser instead: the reference site copies `search-records.json` to `public/` when it builds from a snapshot.
+
+## Built-in search UI
+
+The default header uses the search API. It fetches results after the reader types, displays matching sections, and links directly to their headings. It does not load a search index into the page store.
+
+Wrap a custom site's client provider tree with `SearchProvider` from `@jpmorganchase/mosaic-site-components/SearchProvider`:
+
+```tsx
+<SearchProvider mode="server" endpoint="/api/search">
+  {children}
+</SearchProvider>
+```
+
+For static exports, use `mode="browser"` and copy `search-records.json` into `public/`. The browser downloads the records and search engine on the first nonempty query and reuses the index across queries and navigation:
+
+```tsx
+<SearchProvider mode="browser" recordsUrl="/search-records.json">
+  {children}
+</SearchProvider>
+```
+
+The reference site selects the mode automatically from `MOSAIC_OUTPUT`. Custom sites can set `namespace` to prefer a namespace, or `enabled={false}` to hide search when records are disabled. Server mode is the default without a provider. Endpoint and records URLs can be configured for a site's base path.
+
+### Migrating the previous search
+
+The legacy `search-data.json`, `search-data-condensed.json`, and `search-config.json` outputs and Fuse-based UI are removed. Regenerate existing snapshots with the updated CLI. Remove legacy public-asset copies and `maxLineLength`, `maxLineCount`, `keys`, and `relevancy` from plugin options; use `records.fields`, `records.maxTextLength`, and the search engine options documented above instead. Ranking uses the new engine's defined order rather than Fuse weights.
+
+Remove `getSearchData` calls, `useSearchIndex`, and `searchIndex`/`searchConfig` store props. Custom UIs can use `createSearchHandler` or `createSearchIndex` directly; the built-in header needs only the provider configuration above. `SearchIndex`, `SearchConfig`, and `SearchIndexSlice` are no longer exported by the store. Move any old header `searchNamespace` setting to `SearchProvider`'s `namespace` prop.
+
+### Search policies and result limits
+
+The provider accepts `queryOptions` in both modes. For example,
+`queryOptions={{ limit: 20, sectionsPerResult: 0 }}` requests up to 20 results
+without additional section lists. Defaults remain six results and three sections.
+The server handler's `maxLimit` and section cap still apply.
+
+In browser mode, `indexOptions` configures the same engine as `createSearchIndex`:
+
+```tsx
+'use client';
+
+import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
+
+const indexOptions = {
+  synonyms: [['colour', 'color']],
+  groupBy: record => record.route.replace(/\/(examples|usage|accessibility)$/, ''),
+  pageRank: record => (record.route.endsWith('/examples') ? 0 : 1)
+};
+
+export function Search({ children }) {
+  return (
+    <SearchProvider
+      mode="browser"
+      indexOptions={indexOptions}
+      queryOptions={{ limit: 20, sectionsPerResult: 0 }}
+    >
+      {children}
+    </SearchProvider>
+  );
+}
+```
+
+For server mode, configure `groupBy`, `pageRank`, and `synonyms` on
+`createSearchHandler({ ...indexOptions })` in the API route. Provider `indexOptions`
+only configure the browser index; callbacks are not sent over HTTP. Define browser
+callbacks in a client module rather than passing functions across a Server Component
+boundary. Keep policy functions and synonym arrays stable to reuse the lazy index.
+
+Custom search controls can call `useSearchContext()` from the same public provider
+entry. Its `search(query, namespace?, signal?)` method returns `Promise<SearchResult[]>`.
 
 ## Priority
 
-This plugin runs with no special priority.
+The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`) and before `LazyPagePlugin` (`-2`), so titles and fields that come from `$ref`s are resolved.
 
 ## Options
 
-| Property      | Description                                         |
-| ------------- | --------------------------------------------------- |
-| maxLineLength | TODO                                                |
-| maxLineCount  | TODO                                                |
-| keys          | https://www.fusejs.io/api/options.html#keys         |
-| relevancy     | [search relevancy](#search-relevancy-configuration) |
+| Property | Description                                                                       |
+| -------- | --------------------------------------------------------------------------------- |
+| records  | [Record options](#record-options), or `false` to disable search-record generation |
+
+### Record options
+
+| Property      | Description                                                                                                                                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| fields        | Frontmatter to index, as `{ field: path }`. A path is dotted, such as `data.description`. List several paths to use the first one that's set. Defaults to `{ description: ['description', 'data.description'], keywords: ['keywords'] }`. |
+| sectionDepth  | The deepest heading level that starts a new record. Defaults to `3`. Deeper headings stay in their section.                                                                                                                               |
+| maxTextLength | The most characters of text kept per record. Defaults to `4000`.                                                                                                                                                                          |
 
 ## Adding to Mosaic
 
@@ -60,7 +209,8 @@ plugins: [
   {
     modulePath: '@jpmorganchase/mosaic-plugins/SearchIndexPlugin',
     previewDisabled: true,
-    options: { maxLineLength: 240, maxLineCount: 240 }
+    priority: -1.5,
+    options: {}
   }
   // other plugins
 ];

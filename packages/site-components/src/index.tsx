@@ -1,4 +1,12 @@
 export * from './AppHeader';
+export {
+  SearchProvider,
+  useSearchContext,
+  type SearchProviderProps,
+  type SearchContextValue,
+  type SearchClientOptions,
+  type SearchQueryOptions
+} from './SearchProvider';
 export * from './AppHeaderControls';
 export * from './AppHeaderDrawer';
 export * from './AppHeaderTabs';
@@ -31,3 +39,6 @@ export {
   type CreateMdxRendererOptions,
   type MdxRendererProps
 } from './MdxHost/createMdxRenderer';
+
+export { MosaicAuthProvider, useMosaicAuth } from './auth';
+export type { MosaicAuthUser, MosaicAuthValue } from './auth';

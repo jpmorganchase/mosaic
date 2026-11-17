@@ -11,6 +11,12 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./routes": {
+      "types": "./dist/routes.d.ts",
+      "import": "./dist/routes.js",
+      "node": "./dist/routes.js",
+      "default": "./dist/routes.js"
+    },
     "./index.css": "./dist/index.css",
     "./cache-tags": {
       "types": "./dist/cacheTags.d.ts",
@@ -18,12 +24,54 @@
       "node": "./dist/cacheTags.js",
       "default": "./dist/cacheTags.js"
     },
+    "./search": {
+      "types": "./dist/search/index.d.ts",
+      "import": "./dist/search/index.js",
+      "node": "./dist/search/index.js",
+      "default": "./dist/search/index.js"
+    },
     ".": {
       "style": "./dist/index.css",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "node": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./search/highlight": {
+      "types": "./dist/search/highlight.d.ts",
+      "import": "./dist/search/highlight.js",
+      "node": "./dist/search/highlight.js",
+      "default": "./dist/search/highlight.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "node": "./dist/client.js",
+      "default": "./dist/client.js"
+    },
+    "./metadata": {
+      "types": "./dist/metadata.d.ts",
+      "import": "./dist/metadata.js",
+      "node": "./dist/metadata.js",
+      "default": "./dist/metadata.js"
+    },
+    "./live-reload": {
+      "types": "./dist/liveReloadHandler.d.ts",
+      "import": "./dist/liveReloadHandler.js",
+      "node": "./dist/liveReloadHandler.js",
+      "default": "./dist/liveReloadHandler.js"
+    },
+    "./live-reload/bus": {
+      "types": "./dist/liveReloadBus.d.ts",
+      "import": "./dist/liveReloadBus.js",
+      "node": "./dist/liveReloadBus.js",
+      "default": "./dist/liveReloadBus.js"
+    },
+    "./revalidate": {
+      "types": "./dist/revalidateHandler.d.ts",
+      "import": "./dist/revalidateHandler.js",
+      "node": "./dist/revalidateHandler.js",
+      "default": "./dist/revalidateHandler.js"
     }
   },
   "files": [
@@ -36,14 +84,14 @@
   },
   "devDependencies": {
     "@types/hast": "^3.0.4",
-    "next": "^16.4.5",
+    "next": "^16.4.6",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-serialisers": "workspace:^",
+    "@jpmorganchase/mosaic-store": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "@mdx-js/mdx": "^3.0.1",
     "deepmerge": "^4.2.2",
     "hast-util-properties-to-mdx-jsx-attributes": "^1.0.0",
@@ -51,6 +99,7 @@
     "mdast-util-mdx": "^3.0.0",
     "mdast-util-mdx-jsx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
+    "minisearch": "^7.2.0",
     "next-mdx-remote-client": "^2.1.12",
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.0",

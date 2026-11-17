@@ -5,7 +5,7 @@ sidebar:
   label: Sources
   groupLabel: Sources
   priority: 3
-lastModified: 1780396140203.086
+lastModified: 1794772512097.7883
 fullPath: /mosaic/configure/sources/index.mdx
 route: /mosaic/configure/sources/index
 breadcrumbs:
@@ -17,9 +17,9 @@ breadcrumbs:
     id: /mosaic/configure/sources/index.mdx
 readingTime:
   text: 3 min read
-  minutes: 2.395
-  time: 143700
-  words: 479
+  minutes: 2.44
+  time: 146400
+  words: 488
 tableOfContents:
   - depth: 2
     level: 0
@@ -104,13 +104,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -222,6 +215,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -388,6 +388,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -458,6 +465,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -533,6 +547,8 @@ Out of the box, Mosaic provides 3 source "types":
 * [HTTP Source](./http-source)
 
 Sources must expose an observable interface so it is possible to compose sources together e.g. the Git Repo source uses the Local Folder source internally to watch the cloned folder for changes.
+
+To bring in content from somewhere else, [write a source](./write-a-source).
 
 ## Watching for Updates
 

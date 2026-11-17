@@ -5,7 +5,7 @@ sidebar:
   label: Figma
   groupLabel: Figma
   priority: 5
-lastModified: 1780396142534.1792
+lastModified: 1794743989983.6682
 fullPath: /mosaic/configure/sources/source-figma.mdx
 route: /mosaic/configure/sources/source-figma
 breadcrumbs:
@@ -84,13 +84,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -202,6 +195,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -368,6 +368,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -438,6 +445,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -459,7 +473,7 @@ group patterns based on owner.
 
 ## Configuration
 
-The Figma source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The Figma source is an [`HttpSource`](./http-source) and shares the same base configuration.
 The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
 | Property   | Description                       | Required |

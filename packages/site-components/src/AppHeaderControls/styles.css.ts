@@ -1,4 +1,4 @@
-import { globalStyle, style } from '@vanilla-extract/css';
+import { style } from '@vanilla-extract/css';
 import { button, caption, responsiveSprinkles } from '@jpmorganchase/mosaic-theme';
 
 const root = style([
@@ -12,14 +12,6 @@ const root = style([
     marginLeft: ['x2', 'x2', 'x2', 'x2']
   })
 ]);
-
-// Hide controls while the SSR wrapper class is present (set by `ThemeProvider`
-// until hydration). Salt UI injects its component CSS at runtime, so without
-// this the controls would briefly paint with native browser defaults.
-// `visibility: hidden` preserves layout to prevent header reflow.
-globalStyle(`.mosaic-ssr ${root}`, {
-  visibility: 'hidden'
-});
 
 export default {
   root,

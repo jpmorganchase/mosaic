@@ -6,7 +6,7 @@
  *  1. Unset — full Next.js App Router build for `next start`. Supports
  *     active mode (SSR per request) and snapshot mode (pre-rendered at
  *     build time via `generateStaticParams` in
- *     `src/app/[namespace]/[[...route]]/page.tsx`).
+ *     `src/app/[namespace]/[...route]/page.tsx`).
  *
  *  2. `standalone` — the same build plus `output: 'standalone'`, which
  *     the Dockerfiles copy from `.next/standalone` and run with
@@ -25,9 +25,9 @@
  *         sign-in, the content editor and cache revalidation need one of
  *         the server targets above.
  */
-const { copyFileSync, existsSync } = require('node:fs');
 const { resolve } = require('node:path');
 const { PHASE_PRODUCTION_BUILD } = require('next/constants');
+const { syncSnapshotAssets } = require('./scripts/sync-snapshot-assets.cjs');
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
@@ -50,8 +50,29 @@ if (isExport && mosaicMode !== 'snapshot-file') {
   );
 }
 
+/**
+ * Security headers for every response from a server build. They hold for
+ * prerendered pages too. A policy for scripts is left out: Next.js's inline
+ * scripts would need a per-request nonce, which makes every page render
+ * dynamically (see "Content Security Policy" in the Next.js docs).
+ * `next.config.js` headers don't apply to static exports, so set the same
+ * headers in the hosting layer when deploying one.
+ */
+const securityHeaders = [
+  // Only this site may frame its pages, which protects the editor's
+  // actions from clickjacking.
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'self'; object-src 'none'; base-uri 'self'"
+  },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }
+];
+
 /** @type {import('next').NextConfig} */
 const baseConfig = {
+  poweredByHeader: false,
   // TEMPORARY: Vercel's deploy step fails with "Cannot patch preview comments
   // when immutable static file upload is enabled" even on Next 16.4. Opt out of
   // immutable asset upload on Vercel until Vercel fixes its version check.
@@ -68,7 +89,6 @@ const baseConfig = {
     '@jpmorganchase/mosaic-components',
     '@jpmorganchase/mosaic-content-editor-plugin',
     '@jpmorganchase/mosaic-layouts',
-    '@jpmorganchase/mosaic-open-api-component',
     '@jpmorganchase/mosaic-site-components',
     '@jpmorganchase/mosaic-site-middleware',
     '@jpmorganchase/mosaic-theme',
@@ -83,7 +103,14 @@ const baseConfig = {
   // `lodash-es` is already on Next's default-optimized list (Next 14+)
   // so it doesn't need to be repeated here.
   experimental: {
-    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons']
+    optimizePackageImports: ['@salt-ds/core', '@salt-ds/icons'],
+    // Next.js rejects Server Action bodies over 1 MB by default, but a save
+    // can carry 2 MiB of markdown and 256 KiB of frontmatter
+    // (`src/lib/editorLimits.ts`), and JSON escaping can double that. 5 MB
+    // matches the CLI's limit for `POST /workflows/jobs`.
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
   },
   images: {
     remotePatterns: [
@@ -96,10 +123,27 @@ const baseConfig = {
 
 /** @type {import('next').NextConfig} */
 const dynamicOnlyConfig = {
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   rewrites() {
     return {
-      beforeFiles: [{ source: '/favicon.ico', destination: '/img/favicon.png' }],
-      afterFiles: []
+      beforeFiles: [
+        { source: '/favicon.ico', destination: '/img/favicon.png' },
+        // Agents that ask for Markdown get it at the page's own URL.
+        {
+          source: '/:path((?!api/|_next/).+)',
+          has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+          destination: '/api/llms/:path'
+        }
+      ],
+      // After public/, where snapshot builds copy these files, and before the
+      // `[namespace]/[...route]` page, which would otherwise match them.
+      afterFiles: [
+        { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+        { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+        { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
+      ]
     };
   },
   async redirects() {
@@ -134,13 +178,16 @@ const standaloneConfig = {
 
 module.exports = phase => {
   const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
-  if (phase === PHASE_PRODUCTION_BUILD && mosaicMode === 'snapshot-file' && snapshotDir) {
-    // A clean checkout has the index in the snapshot. Expose it at the URL used by search.
-    const snapshotIndex = resolve(__dirname, snapshotDir, 'search-data.json');
-    const publicIndex = resolve(__dirname, 'public', 'search-data.json');
-    if (snapshotIndex !== publicIndex && existsSync(snapshotIndex)) {
-      copyFileSync(snapshotIndex, publicIndex);
-    }
+  if (phase === PHASE_PRODUCTION_BUILD) {
+    // Expose snapshot search and Markdown as static files. Reconcile the last
+    // build's output so removed/excluded pages and disabled plugins don't leave
+    // old public copies that bypass the route handlers.
+    syncSnapshotAssets({
+      snapshotDir:
+        mosaicMode === 'snapshot-file' && snapshotDir ? resolve(__dirname, snapshotDir) : undefined,
+      publicDir: resolve(__dirname, 'public'),
+      manifestFile: resolve(__dirname, '.mosaic-public-assets.json')
+    });
   }
   return isExport
     ? { ...baseConfig, ...exportConfig }

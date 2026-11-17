@@ -1,0 +1,110 @@
+---
+title: Write a plugin
+layout: DetailTechnical
+---
+
+# {meta.title}
+
+A plugin changes pages as Mosaic loads them, from any source. Use one to add data to pages, fill in frontmatter, or write files for the whole site, such as an index. Mosaic's own [default plugins](./index#default-plugins) are written the same way.
+
+A plugin can't change how pages look. Layouts and components belong to your site's code, and each page picks its layout with `layout` in its frontmatter.
+
+## Create the plugin
+
+A plugin is a module whose default export holds one or more [lifecycle methods](./lifecycle/index). This one gives every page under a route the same layout, unless the page sets its own:
+
+```js
+// mosaic/DefaultLayoutPlugin.mjs
+
+/**
+ * Gives every page under `options.routePrefix` the layout `options.layout`,
+ * unless the page sets its own.
+ */
+const DefaultLayoutPlugin = {
+  async $afterSource(pages, _helpers, options) {
+    const { routePrefix, layout } = options;
+    for (const page of pages) {
+      if (!page.layout && page.route.startsWith(routePrefix)) {
+        page.layout = layout;
+      }
+    }
+    return pages;
+  }
+};
+
+export default DefaultLayoutPlugin;
+```
+
+Each lifecycle method gets its input (here, the source's pages), helpers such as the `serialiser` and `namespace`, and the `options` from the plugin's config. A page's frontmatter fields are properties of the page, and anything the plugin sets on a page is written to its frontmatter.
+
+## Add it to your config
+
+Plugins are loaded with `require.resolve`, from inside Mosaic. Give the plugin's absolute path, or the name of an installed package:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  plugins: [
+    ...fsConfig.plugins,
+    {
+      modulePath: require.resolve('./mosaic/DefaultLayoutPlugin.mjs'),
+      options: { routePrefix: '/my-product/api-reference/', layout: 'DetailTechnical' }
+    }
+  ]
+};
+```
+
+A plugin definition takes the same properties as a built-in plugin, such as `priority` and `previewDisabled`. See [Configuration](./index#configuration).
+
+## Choose a lifecycle method
+
+Choose the earliest method that has what your plugin needs:
+
+| Method                                                                        | Runs                                                     | Use it to                                                                                                                         |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [`$afterSource`](./lifecycle/after-source)                                    | In the source's worker, each time the source emits pages | Read or change pages one at a time.                                                                                               |
+| [`$beforeSend`](./lifecycle/before-send)                                      | In the source's worker                                   | Read or write files across one source, and pass data to later methods with `config.setData()`.                                    |
+| [`afterUpdate`](./lifecycle/after-update)                                     | In the main process                                      | Read pages from every source with `globalFilesystem`, or write files for the whole site to `sharedFilesystem`, such as a sitemap. |
+| [`shouldClearCache`](./lifecycle/should-clear-cache)                          | In the main process                                      | Say whether another source's change affects this source's pages.                                                                  |
+| [`shouldUpdateNamespaceSources`](./lifecycle/should-update-namespace-sources) | In the main process                                      | Ask the other sources in a namespace to run `afterNamespaceSourceUpdate`.                                                         |
+
+Methods starting with `$` run in each source's worker thread, so they can take time without holding up the server. The others run in the main process, so keep them fast.
+
+Plugins run each lifecycle method in order of `priority`, highest first. `$ref`s are not resolved yet in `$afterSource`. The [$RefPlugin](./ref-plugin) resolves them in `$beforeSend`, at priority `-1`, so a plugin that reads values from `$ref`s should use `$beforeSend` with a lower priority, such as `-1.5`.
+
+## Report errors
+
+A failing plugin doesn't stop Mosaic: the error is recorded and the other plugins run. See [Plugin errors](./index#plugin-errors). To name the page that caused an error, throw a `PluginError` with its path:
+
+```js
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
+
+throw new PluginError(`Unknown layout "${layout}"`, page.fullPath);
+```
+
+In `$afterSource`, catch errors for each page and throw once after the loop, so one bad page doesn't stop the plugin for the pages after it.
+
+## Test it
+
+Lifecycle methods are plain functions, so test them by calling them:
+
+```js
+import DefaultLayoutPlugin from '../mosaic/DefaultLayoutPlugin.mjs';
+
+test('gives pages under the route the layout', async () => {
+  const pages = await DefaultLayoutPlugin.$afterSource(
+    [{ fullPath: '/docs/a.mdx', route: '/docs/a' }],
+    {},
+    { routePrefix: '/docs/', layout: 'DetailTechnical' }
+  );
+  expect(pages[0].layout).toBe('DetailTechnical');
+});
+```
+
+Then run `mosaic build` with your config and check the pages it writes.

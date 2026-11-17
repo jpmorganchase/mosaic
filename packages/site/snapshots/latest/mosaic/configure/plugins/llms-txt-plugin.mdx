@@ -1,0 +1,579 @@
+---
+title: LlmsTxtPlugin
+layout: DetailOverview
+lastModified: 1794743989977.6777
+fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+route: /mosaic/configure/plugins/llms-txt-plugin
+breadcrumbs:
+  - label: Configure
+    path: /mosaic/configure/index
+    id: /mosaic/configure/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+sidebar:
+  label: LlmsTxtPlugin
+  groupLabel: LlmsTxtPlugin
+readingTime:
+  text: 4 min read
+  minutes: 3.075
+  time: 184500
+  words: 615
+tableOfContents:
+  - depth: 2
+    level: 0
+    id: serving-the-files
+    text: Serving the files
+  - depth: 2
+    level: 0
+    id: convert-your-components
+    text: Convert your components
+  - depth: 2
+    level: 0
+    id: priority
+    text: Priority
+  - depth: 2
+    level: 0
+    id: options
+    text: Options
+  - depth: 2
+    level: 0
+    id: adding-to-mosaic
+    text: Adding to Mosaic
+navigation:
+  prev:
+    title: LazyPagePlugin
+    route: /mosaic/configure/plugins/lazy-page-plugin
+    group: Plugins
+  next:
+    title: PagesWithoutFileExtPlugin
+    route: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+    group: Plugins
+sidebarData:
+  - id: /mosaic/configure/index
+    kind: data
+    fullPath: /mosaic/configure/index.mdx
+    name: Configure
+    priority: 4
+    data:
+      level: 2
+      link: /mosaic/configure/index
+  - id: /mosaic/configure/modes
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/modes/static-export
+        kind: data
+        fullPath: /mosaic/configure/modes/static-export.mdx
+        name: Static export
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/modes/static-export
+      - id: /mosaic/configure/modes/index
+        kind: data
+        fullPath: /mosaic/configure/modes/index.mdx
+        name: Modes of operation
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/modes/index
+      - id: /mosaic/configure/modes/active
+        kind: data
+        fullPath: /mosaic/configure/modes/active.mdx
+        name: Active mode
+        data:
+          level: 3
+          link: /mosaic/configure/modes/active
+      - id: /mosaic/configure/modes/snapshot-file
+        kind: data
+        fullPath: /mosaic/configure/modes/snapshot-file.mdx
+        name: Snapshot file mode
+        data:
+          level: 3
+          link: /mosaic/configure/modes/snapshot-file
+    name: Modes of operation
+    priority: 4
+  - id: /mosaic/configure/theme
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/theme/index
+        kind: data
+        fullPath: /mosaic/configure/theme/index.mdx
+        name: Theming Your Site
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/theme/index
+      - id: /mosaic/configure/theme/custom-css
+        kind: data
+        fullPath: /mosaic/configure/theme/custom-css.mdx
+        name: Custom CSS
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/theme/custom-css
+      - id: /mosaic/configure/theme/custom-components
+        kind: data
+        fullPath: /mosaic/configure/theme/custom-components.mdx
+        name: Custom Components
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/theme/custom-components
+    name: Theming Your Site
+    priority: 4
+  - id: /mosaic/configure/admin
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/admin/index
+        kind: data
+        fullPath: /mosaic/configure/admin/index.mdx
+        name: Admin
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/admin/index
+    name: Admin
+    priority: 3
+  - id: /mosaic/configure/sources
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/sources/source-figma
+        kind: data
+        fullPath: /mosaic/configure/sources/source-figma.mdx
+        name: Figma
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-figma
+      - id: /mosaic/configure/sources/source-readme
+        kind: data
+        fullPath: /mosaic/configure/sources/source-readme.mdx
+        name: Readme Files
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-readme
+      - id: /mosaic/configure/sources/source-storybook
+        kind: data
+        fullPath: /mosaic/configure/sources/source-storybook.mdx
+        name: Storybook
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-storybook
+      - id: /mosaic/configure/sources/schedules
+        kind: data
+        fullPath: /mosaic/configure/sources/schedules.mdx
+        name: Schedules
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/sources/schedules
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
+      - id: /mosaic/configure/sources/local-folder-source
+        kind: data
+        fullPath: /mosaic/configure/sources/local-folder-source.mdx
+        name: Local Folder Source
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/local-folder-source
+      - id: /mosaic/configure/sources/git-repo-source
+        kind: data
+        fullPath: /mosaic/configure/sources/git-repo-source.mdx
+        name: Git Repo Source
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/sources/git-repo-source
+      - id: /mosaic/configure/sources/http-source
+        kind: data
+        fullPath: /mosaic/configure/sources/http-source.mdx
+        name: HTTP Source
+        priority: 1
+        data:
+          level: 3
+          link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
+    name: Sources
+    priority: 3
+  - id: /mosaic/configure/layouts
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/layouts/index
+        kind: data
+        fullPath: /mosaic/configure/layouts/index.mdx
+        name: Layouts
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/index
+      - id: /mosaic/configure/layouts/detail-highlight
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-highlight.mdx
+        name: Detail Highlight
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-highlight
+      - id: /mosaic/configure/layouts/detail-overview
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-overview.mdx
+        name: Detail Overview
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-overview
+      - id: /mosaic/configure/layouts/detail-technical
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-technical.mdx
+        name: Detail Technical
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-technical
+      - id: /mosaic/configure/layouts/landing
+        kind: data
+        fullPath: /mosaic/configure/layouts/landing.mdx
+        name: Landing Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/landing
+      - id: /mosaic/configure/layouts/product-discover
+        kind: data
+        fullPath: /mosaic/configure/layouts/product-discover.mdx
+        name: Product Discover Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/product-discover
+      - id: /mosaic/configure/layouts/product-preview
+        kind: data
+        fullPath: /mosaic/configure/layouts/product-preview.mdx
+        name: Product Preview Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/product-preview
+    name: Layouts
+    priority: 2
+  - id: /mosaic/configure/plugins
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/plugins/index
+        kind: data
+        fullPath: /mosaic/configure/plugins/index.mdx
+        name: Plugins
+        priority: 1
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/index
+      - id: /mosaic/configure/plugins/lifecycle
+        kind: group
+        childNodes:
+          - id: /mosaic/configure/plugins/lifecycle/after-source
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
+            name: $afterSource
+            priority: 5
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-source
+          - id: /mosaic/configure/plugins/lifecycle/before-send
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
+            name: $beforeSend
+            priority: 4
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/before-send
+          - id: /mosaic/configure/plugins/lifecycle/after-update
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
+            name: afterUpdate
+            priority: 3
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-update
+          - id: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/should-clear-cache.mdx
+            name: shouldClearCache
+            priority: 2
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 1
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
+          - id: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            kind: data
+            fullPath: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
+            name: shouldUpdateNamespaceSources
+            priority: 1
+            data:
+              level: 4
+              link: >-
+                /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+        name: Lifecycle Events
+        priority: 1
+      - id: /mosaic/configure/plugins/alias-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/alias-plugin.mdx
+        name: $AliasPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/alias-plugin
+      - id: /mosaic/configure/plugins/breadcrumbs-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
+        name: BreadcrumbsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/breadcrumbs-plugin
+      - id: /mosaic/configure/plugins/broken-links-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
+        name: BrokenLinksPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/broken-links-plugin
+      - id: /mosaic/configure/plugins/codemod-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/codemod-plugin.mdx
+        name: $CodeModPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/codemod-plugin
+      - id: /mosaic/configure/plugins/document-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+        name: DocumentAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/document-assets-plugin
+      - id: /mosaic/configure/plugins/lazy-page-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
+        name: LazyPagePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
+      - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
+        name: PagesWithoutFileExtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+      - id: /mosaic/configure/plugins/public-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
+        name: PublicAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/public-assets-plugin
+      - id: /mosaic/configure/plugins/reading-time-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/reading-time-plugin.mdx
+        name: ReadingTimePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/reading-time-plugin
+      - id: /mosaic/configure/plugins/ref-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/ref-plugin.mdx
+        name: $RefPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/ref-plugin
+      - id: /mosaic/configure/plugins/search-index-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
+        name: SearchIndexPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/search-index-plugin
+      - id: /mosaic/configure/plugins/shared-config-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/shared-config-plugin.mdx
+        name: SharedConfigPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/shared-config-plugin
+      - id: /mosaic/configure/plugins/sidebar-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
+        name: SidebarPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/sidebar-plugin
+      - id: /mosaic/configure/plugins/site-map-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
+        name: SiteMapPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/site-map-plugin
+      - id: /mosaic/configure/plugins/tag-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/tag-plugin.mdx
+        name: $TagPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/tag-plugin
+      - id: /mosaic/configure/plugins/toc-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/toc-plugin.mdx
+        name: TableOfContentsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
+    name: Plugins
+    priority: 1
+---
+# {meta.title}
+
+The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and other tools that read docs as text. It follows the [llms.txt](https://llmstxt.org) convention, and outputs 3 files:
+
+* `llms.txt`: an index of the pages, with a section for each folder and each page's description
+* `llms-full.txt`: every page in one file
+* `markdown-pages.json`: every page's Markdown, keyed by route
+
+Each page's Markdown starts with frontmatter (its title, description and URL) and a link to `llms.txt`. In the page body:
+
+* `{meta.*}` expressions are replaced with their values, and other expressions and `import`/`export` statements are left out.
+* `Callout` becomes a quote, such as `> **Warning:** …`.
+* Other components are replaced with their children. A component with no children, such as an example preview, is left out. To convert your own components, see [Convert your components](#convert-your-components).
+* Relative links are made absolute, so they still work in `llms-full.txt`.
+
+To leave a page out, set `llms: { exclude: true }` in its frontmatter, or match it with the `exclude` option.
+
+## Serving the files
+
+The reference site serves the files with `createLlmsHandler`, from `@jpmorganchase/mosaic-site-middleware`, at `/api/llms/[...path]`, and rewrites these URLs to it:
+
+| URL                                               | Responds with                                       |
+| ------------------------------------------------- | --------------------------------------------------- |
+| `/llms.txt`, `/llms-full.txt`                     | The file                                            |
+| `/<page>.md`                                      | The page's Markdown. A folder serves its index page |
+| `/<page>`, with an `Accept: text/markdown` header | The page's Markdown                                 |
+
+```js
+// next.config.js
+rewrites() {
+  return {
+    beforeFiles: [
+      {
+        source: '/:path((?!api/|_next/).+)',
+        has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+        destination: '/api/llms/:path'
+      }
+    ],
+    afterFiles: [
+      { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+      { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+      { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
+    ]
+  };
+}
+```
+
+The `afterFiles` rewrites go after `public/` and before the site's catch-all page. In snapshot builds, `next.config.js` copies the files to `public/`, so they're served as static files without running a function. Static exports serve only those copies.
+
+In active mode, the handler reads the files from the CLI, and checks for new ones every 30 seconds while serving the ones it has. Set `maxAge` to change that.
+
+## Convert your components
+
+Set `componentsModulePath` to a module whose default export converts your components, by name. Each converter gets the element's name, attributes, children (already converted to Markdown) and whether it's inline, and the page's frontmatter. It returns Markdown, `null` to leave the element out, or `undefined` to keep its children.
+
+```js
+// mosaic/markdownComponents.mjs
+export default {
+  // <PropsTable componentName="button" /> becomes a props table.
+  async PropsTable({ attributes }) {
+    const props = await loadProps(attributes.componentName);
+    return [
+      '| Prop | Type | Description |',
+      '| ---- | ---- | ----------- |',
+      ...props.map(prop => `| ${prop.name} | \`${prop.type}\` | ${prop.description} |`)
+    ].join('\n');
+  },
+  // Examples can't run outside the browser.
+  LivePreview: () => null
+};
+```
+
+Attributes are text, `true` for an attribute without a value, or `{ expression }` with the source of an expression such as `size={2}`. A converter that throws leaves its page out, and the plugin reports the error.
+
+## Priority
+
+The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`), so `$ref`s are resolved, and before `LazyPagePlugin` (`-2`) moves page content out.
+
+## Options
+
+| Property             | Description                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| title                | The heading of `llms.txt`. Defaults to `Documentation`.                                                                       |
+| description          | A summary of the site, shown under the heading of `llms.txt`.                                                                 |
+| siteUrl              | The site's origin, such as `https://example.com`, to make links absolute. Links are root-relative without it.                 |
+| componentsModulePath | An absolute path, file URL or package that converts your components. See [Convert your components](#convert-your-components). |
+| exclude              | Glob patterns of page files to leave out, such as `my-namespace/test/**`.                                                     |
+
+## Adding to Mosaic
+
+The plugin is in the default config. To set its options, replace its entry:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  plugins: fsConfig.plugins.map(plugin =>
+    plugin.modulePath === '@jpmorganchase/mosaic-plugins/LlmsTxtPlugin'
+      ? {
+          ...plugin,
+          options: {
+            title: 'My product',
+            siteUrl: process.env.SITE_URL,
+            componentsModulePath: require.resolve('./mosaic/markdownComponents.mjs')
+          }
+        }
+      : plugin
+  )
+};
+```

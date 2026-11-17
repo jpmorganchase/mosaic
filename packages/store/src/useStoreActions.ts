@@ -1,2 +1,3 @@
-import { useStore } from './store';
-export const useStoreActions = () => useStore(state => state.actions);
+import { useColorModeContext } from './ColorModeProvider';
+
+export const useStoreActions = () => useColorModeContext().actions;

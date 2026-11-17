@@ -7,14 +7,10 @@
  * the root not-found boundary's fallback), so it does no data loading on
  * the server. The exception is a static export: there this runs once at
  * build time to bake the site-root shared config (`getSharedConfig('/')`)
- * and the search data into `404.html`. If they are missing the page
+ * into `404.html`. If the config is missing the page
  * still renders, just without a header.
  */
-import {
-  getSearchData,
-  getSharedConfig,
-  resolveMosaicMode
-} from '@jpmorganchase/mosaic-site-middleware';
+import { getSharedConfig, resolveMosaicMode } from '@jpmorganchase/mosaic-site-middleware';
 
 import { getSiteConfig } from '../lib/config';
 import { NotFoundBody } from './NotFoundBody';
@@ -25,20 +21,12 @@ export default async function NotFound() {
   if (!isStaticExport) return <NotFoundBody />;
 
   const { mode, contentUrl } = resolveMosaicMode();
-  const [sharedConfig, search] = await Promise.all([
-    getSharedConfig('/', mode, contentUrl).catch(() => undefined),
-    getSearchData(mode, contentUrl).catch(() => ({
-      searchIndex: undefined,
-      searchConfig: undefined
-    }))
-  ]);
+  const sharedConfig = await getSharedConfig('/', mode, contentUrl).catch(() => undefined);
 
   return (
     <NotFoundBody
       initialChrome={{
-        sharedConfig,
-        searchIndex: search.searchIndex,
-        searchConfig: search.searchConfig
+        sharedConfig
       }}
     />
   );

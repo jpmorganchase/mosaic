@@ -1,7 +1,7 @@
 ---
 title: SiteMapPlugin
 layout: DetailOverview
-lastModified: 1780396148468.3281
+lastModified: 1794743989979.6804
 fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
 route: /mosaic/configure/plugins/site-map-plugin
 breadcrumbs:
@@ -16,9 +16,9 @@ sidebar:
   groupLabel: SiteMapPlugin
 readingTime:
   text: 1 min read
-  minutes: 0.62
-  time: 37200
-  words: 124
+  minutes: 0.945
+  time: 56700
+  words: 189
 tableOfContents:
   - depth: 2
     level: 0
@@ -87,13 +87,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -205,6 +198,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -371,6 +371,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -441,6 +448,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -456,9 +470,10 @@ This plugin runs with no special priority.
 
 ## Options
 
-| Property | Description                                                                                         |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| siteUrl  | The site URL. Used as the prefix for loc entries in the sitemap as these must start with a protocol |
+| Property | Description                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| siteUrl  | The site URL. Used as the prefix for loc entries in the sitemap as these must start with a protocol                             |
+| exclude  | Optional array of glob patterns to omit from the sitemap. Matching records remain available to other plugins. Defaults to `[]`. |
 
 ## Adding to Mosaic
 
@@ -474,6 +489,19 @@ plugins: [
   // other plugins
 ];
 ```
+
+For a site that combines documentation with internal release data, exclude the
+data source's prefix without removing it from the Mosaic filesystem:
+
+```js
+options: {
+  siteUrl: 'https://www.saltdesignsystem.com',
+  exclude: ['**/salt-github/**']
+}
+```
+
+These patterns apply to source filesystem paths. The plugin also respects the
+site's existing `ignorePages` rules.
 
 ## Visualiser
 

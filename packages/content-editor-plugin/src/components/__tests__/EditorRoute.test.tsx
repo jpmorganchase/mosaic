@@ -45,7 +45,7 @@ test('saves and renames the host backing file while preserving the public previe
     />
   );
 
-  expect(screen.getByText('Preview route: /public/published')).toBeInTheDocument();
+  expect(await screen.findByText('Preview route: /public/published')).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
   const target = screen.getByLabelText('File path');
   expect(target).toHaveValue('/docs/start/page.mdx');

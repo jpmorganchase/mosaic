@@ -5,10 +5,11 @@ export * from './serializeMdxForClient.js';
 // Type re-export so hosts can pass `highlight: { langs: [...] }` with
 // full type-checking without reaching into the `plugins/` subpath.
 export type { HighlightCodeBlocksOptions } from './plugins/highlightCodeBlocks.js';
-// Sitemap loader for static-export builds.
+// SEO sitemap loader. Prerendering uses the independent route inventory.
 export * from './loadSitemap.js';
+export * from './routes.js';
 // Cached, parallelisable per-request loaders consumed by App Router
-// route segments (`getMdxRaw`, `getSharedConfig`, `getSearchData`).
+// route segments (`getMdxRaw`, `getSharedConfig`).
 export * from './cachedLoaders.js';
 // Canonical document/config context, including aliases and folder indexes.
 export * from './resolveContent.js';
@@ -17,3 +18,9 @@ export * from './resolveContent.js';
 // `/api/revalidate` route imports from here directly so Next.js' NFT
 // trace stays small.
 export * from './cacheTags.js';
+// `GET` route handler for site search, over `search-records.json`. The
+// search engine itself is the isomorphic `/search` subpath.
+export * from './searchHandler.js';
+// `GET` route handler serving the docs as Markdown for agents: each page,
+// `llms.txt` and `llms-full.txt`, written by `LlmsTxtPlugin`.
+export * from './llmsHandler.js';

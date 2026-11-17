@@ -1,15 +1,13 @@
+import { createPageTest } from './utils/createPageTest.js';
 import path from 'path';
-import type { Plugin as PluginType, Page } from '@jpmorganchase/mosaic-types';
-import { sidebarSortConfigSchema, type SortConfig } from '@jpmorganchase/mosaic-schemas';
-import { cloneDeep, escapeRegExp } from 'lodash-es';
+import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import { buildSidebarTree, type SidebarPage } from './sidebar.js';
 
 import {
   isDataNode,
   isGroupNode,
   type SidebarData,
-  type SidebarDataNode,
-  type SidebarGroupNode,
-  sortSidebarData
+  type SidebarDataNode
 } from './utils/sortSidebarData.js';
 
 function createFileGlob(patterns, pageExtensions) {
@@ -24,76 +22,14 @@ function createFileGlob(patterns, pageExtensions) {
   return `${base}{${pageExtensions.join(',')}}`;
 }
 
-function getPageLevel(page) {
-  return page.route.split('/').length - 2;
-}
-
-function sortByPathLevel(pathA, pathB) {
-  const pathALevel = pathA.split('/').length;
-  const pathBLevel = pathB.split('/').length;
-  return pathBLevel - pathALevel;
-}
-
-/**
- * Given the sharedSortConfig
- * 1. find the field specified by 'field' in the sort config
- * 2. transform the field value into the type specified by 'dataType'
- * @param page
- * @param sharedSortConfig
- * @returns transformed field value
- */
-function getSortFieldData(page: SidebarPluginPage, sharedSortConfig?: SortConfig) {
-  let fieldData: string | number | undefined;
-
-  if (sharedSortConfig !== undefined) {
-    const { field, dataType = 'string' } = sharedSortConfig;
-    field
-      .replace(/^(?:\.\.\/|\.\/)+/, '')
-      .split('/')
-      .forEach(part => {
-        const source = fieldData === undefined ? page : fieldData;
-
-        if (Object.prototype.hasOwnProperty.call(source, part)) {
-          fieldData = source[part];
-        }
-      });
-
-    switch (dataType) {
-      case 'date':
-        fieldData = new Date(fieldData).getTime(); // call getTime to convert to a number
-        break;
-      case 'string':
-        fieldData = String(fieldData);
-        break;
-      case 'number':
-        fieldData = Number(fieldData);
-        break;
-      default:
-        fieldData = String(fieldData);
-    }
-  }
-
-  return fieldData;
-}
-
 interface SidebarPluginConfigData {
   dirs: string[];
   refs: { [key: string]: { $$path: (number | string)[]; $$value: string }[] };
 }
 
-export interface SidebarPluginPage extends Page {
-  sidebar?: {
-    label?: string;
-    groupLabel?: string;
-  };
-  sharedConfig: {
-    sidebar: {
-      sort: SortConfig;
-    };
-  };
-}
+export type SidebarPluginPage = SidebarPage;
 
-interface SidebarPluginOptions {
+export interface SidebarPluginOptions {
   /**
    * filename of the sidebar json, linked to each related page via ref
    */
@@ -106,18 +42,6 @@ interface SidebarPluginOptions {
   rootDirGlob: string;
 }
 
-const createPageTest = (ignorePages, pageExtensions) => {
-  const extTest = new RegExp(`${pageExtensions.map(ext => escapeRegExp(ext)).join('|')}$`);
-  const ignoreTest = new RegExp(`${ignorePages.map(ignore => escapeRegExp(ignore)).join('|')}$`);
-  return file =>
-    !ignoreTest.test(file) && extTest.test(file) && !path.basename(file).startsWith('.');
-};
-
-/**
- * Directories create groups of pages, the index file within that group is assigned GROUP_DEFAULT_PRIORITY
- * to ensure it comes first. This can be overriden by the metadata to move the position of the default page.
- */
-const GROUP_DEFAULT_PRIORITY = 999;
 /**
  * Sorts the pages in a folder by priority and then exports a JSON file with the
  * sidebar tree from that directory downwards and adds sidebar data into frontmatter for each page.
@@ -157,7 +81,10 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
       async function createPageList(rootDir) {
         const isChildOfRootDir = pagePath => {
           const pageDir = path.dirname(pagePath);
-          return pageDir.indexOf(rootDir) === 0;
+          return (
+            pageDir === String(rootDir) ||
+            pageDir.startsWith(`${String(rootDir).replace(/\/$/, '')}/`)
+          );
         };
         const pagePaths = (await mutableFilesystem.promises.glob(
           createFileGlob(['**'], pageExtensions),
@@ -175,98 +102,6 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
           })
         );
         return pageList;
-      }
-
-      /**
-       * Group the pages into parent/child hierarchy
-       * @param pages - sidebar pages
-       */
-      function createGroupMap(pages) {
-        const sortConfigPages = {};
-        return pages.reduce((result, page) => {
-          const name = page.sidebar?.label || page.title;
-          const sharedSortConfig = page?.sharedConfig?.sidebar?.sort;
-
-          if (sharedSortConfig) {
-            try {
-              sidebarSortConfigSchema.parse(sharedSortConfig);
-              sortConfigPages[`${path.posix.dirname(page.fullPath)}`] = sharedSortConfig;
-            } catch {
-              /**
-               * Don't throw a PluginError here as this will stop the sidebar being generated.
-               * Plugins need a way to log errors/warnings without exceptions
-               */
-              console.error(
-                `[Mosaic][Plugin-Sidebar] - Invalid sidebar sort config found in ${page.fullPath}`
-              );
-            }
-          }
-
-          const priority = page.sidebar?.priority;
-          const isGroupDefaultPage = /\/index$/.test(page.route);
-          const groupPath = path.posix.dirname(page.fullPath);
-
-          const newChildNode: SidebarDataNode = {
-            id: page.route,
-            kind: 'data',
-            fullPath: page.fullPath,
-            name,
-            priority: isGroupDefaultPage ? priority || GROUP_DEFAULT_PRIORITY : priority,
-            data: { level: getPageLevel(page), link: page.route }
-          };
-
-          const currentChildNodes = Object.prototype.hasOwnProperty.call(result, groupPath)
-            ? result[groupPath].childNodes
-            : [];
-
-          let newGroupNode: Partial<SidebarGroupNode> = {
-            ...result[groupPath],
-            id: path.posix.dirname(page.route),
-            kind: 'group',
-            childNodes: [...currentChildNodes, newChildNode]
-          };
-
-          if (isGroupDefaultPage) {
-            newGroupNode = {
-              ...newGroupNode,
-              name: page.sidebar?.groupLabel || name,
-              priority
-            };
-          }
-
-          if (!isGroupDefaultPage && sortConfigPages[groupPath] !== undefined) {
-            const fieldData = getSortFieldData(page, sortConfigPages[groupPath]);
-
-            newChildNode.sharedSortConfig = {
-              ...sortConfigPages[groupPath],
-              fieldData
-            };
-          }
-
-          result[groupPath] = newGroupNode;
-          return result;
-        }, {});
-      }
-
-      /**
-       * Link the group map to their parents
-       * @param groupMap - unlinked groups of pages
-       * @param dirName - root path of sidebar
-       */
-      function linkGroupMap(groupMap, dirName) {
-        const linkedGroupMap = cloneDeep(groupMap);
-        const sortedGroupMapKeys = Object.keys(linkedGroupMap).sort(sortByPathLevel);
-        sortedGroupMapKeys.forEach(groupPath => {
-          const parentGroupPath = path.posix.dirname(groupPath);
-          if (linkedGroupMap[parentGroupPath] === undefined) {
-            return;
-          }
-          linkedGroupMap[parentGroupPath].childNodes = [
-            ...linkedGroupMap[parentGroupPath].childNodes,
-            linkedGroupMap[groupPath]
-          ];
-        });
-        return [linkedGroupMap[dirName]];
       }
 
       /**
@@ -365,27 +200,31 @@ const SidebarPlugin: PluginType<SidebarPluginPage, SidebarPluginOptions, Sidebar
         cwd: '/'
       });
 
-      const removeExcludedPages = page => !(page.sidebar && page.sidebar.exclude);
-
       await Promise.all(
         rootUserJourneys.map(async rootDir => {
           const sidebarFilePath = path.posix.join(String(rootDir), filename);
           const pages = await createPageList(rootDir);
-          const includedPages = pages.filter(page => removeExcludedPages(page));
-          const groupMap = createGroupMap(includedPages);
-          const sidebarData = linkGroupMap(groupMap, rootDir);
-          if (sidebarData[0] === undefined) {
-            console.warn(
-              `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}`
+          const sidebar = buildSidebarTree(pages, { rootDir: String(rootDir) });
+          if (sidebar === undefined) {
+            // The root group only exists when a page sits directly
+            // in `rootDir`, so say which of the possible causes applies.
+            const pagesInRootDir = pages.filter(
+              page => path.posix.dirname(String(page.fullPath)) === String(rootDir)
             );
-            console.log(
-              '[Mosaic][Plugin-Sidebar] - likely you have a directory without an index file'
+            let reason = 'it contains no pages';
+            if (pages.length > 0 && pagesInRootDir.length === 0) {
+              reason = 'no page sits directly in it; add an index page';
+            }
+            console.warn(
+              `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for ${rootDir}: ${reason}`
             );
             return;
           }
-          const sortedRootSidebar = sortSidebarData(sidebarData);
-          addNavigationToFrontmatter(sortedRootSidebar, rootDir);
+          const sortedRootSidebar = [sidebar];
           if (isGroupNode(sortedRootSidebar[0])) {
+            if (sortedRootSidebar[0].childNodes.length > 0) {
+              addNavigationToFrontmatter(sortedRootSidebar, rootDir);
+            }
             await mutableFilesystem.promises.writeFile(
               sidebarFilePath,
               JSON.stringify({ pages: sortedRootSidebar[0].childNodes })

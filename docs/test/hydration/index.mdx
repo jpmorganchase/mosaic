@@ -1,0 +1,33 @@
+---
+title: Content hydration test
+layout: DetailTechnical
+sidebar:
+  exclude: true
+sharedConfig:
+  header:
+    homeLink: /mosaic/index
+    logo: /img/favicon.png
+    title: Hydration test
+    menu:
+      - title: Resources
+        links:
+          - title: Author guide
+            link: /mosaic/author/index
+---
+
+## Read [the guide](/mosaic/author/index)
+
+Available as <Tag>RC</Tag> today.
+
+Explicit label: <Tag label="Stable">Ignored</Tag>.
+
+## Nested responsive cards
+
+<Cards columns={{ xs: 3 }} data-testid="parent-cards">
+  <Cards columns={{ lg: 2 }} data-testid="nested-cards">
+    <div>First nested card</div>
+    <div>Second nested card</div>
+  </Cards>
+  <div>Second parent card</div>
+  <div>Third parent card</div>
+</Cards>

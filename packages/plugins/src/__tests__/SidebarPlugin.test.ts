@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import path from 'path';
 import SidebarPlugin from '../SidebarPlugin';
+import type { SidebarData } from '../utils/sortSidebarData';
 
 const folderAPages: string[] = [
   '/folderA/index.mdx',
@@ -285,5 +286,208 @@ describe('GIVEN the SidebarPlugin', () => {
       ['sidebarData', '$ref'],
       '/folderB/test-sidebar.json/#/pages'
     );
+  });
+});
+
+describe('GIVEN a root folder the SidebarPlugin cannot group', () => {
+  const warningsFor = async (pagePaths: string[], excluded: string[] = []) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const volume = {
+      promises: {
+        glob: vi.fn().mockResolvedValueOnce(['/docs']).mockResolvedValueOnce(pagePaths),
+        readFile: vi.fn((value: string) =>
+          Promise.resolve({
+            fullPath: value,
+            route: `route${value.replace(/\..*$/, '')}`,
+            title: value,
+            ...(excluded.includes(value) ? { sidebar: { exclude: true } } : {})
+          })
+        ),
+        writeFile: vi.fn()
+      }
+    };
+    const run = SidebarPlugin.$beforeSend!;
+    await run(
+      volume as unknown as Parameters<typeof run>[0],
+      {
+        config: { setRef: vi.fn() },
+        serialiser: { deserialise: (_path: string, value: unknown) => Promise.resolve(value) },
+        ignorePages: [],
+        pageExtensions: []
+      } as unknown as Parameters<typeof run>[1],
+      {}
+    );
+    const messages = warn.mock.calls.map(([message]) => message);
+    warn.mockRestore();
+    return messages;
+  };
+
+  test.each([
+    ['it has no pages', [], [], 'it contains no pages'],
+    ['its pages are all in subfolders', ['/docs/sub/index.mdx'], [], 'no page sits directly in it']
+  ])('WHEN %s THEN the warning says so', async (_case, pagePaths, excluded, reason) => {
+    expect(await warningsFor(pagePaths, excluded)).toEqual([
+      `[Mosaic][Plugin-Sidebar] - Unable to create a Sidebar grouping for /docs: ${reason}${
+        reason.startsWith('no page') ? '; add an index page' : ''
+      }`
+    ]);
+  });
+});
+
+describe('GIVEN excluded sidebar pages', () => {
+  const page = (file: string, sidebar: Record<string, unknown> = {}) => ({
+    fullPath: file,
+    route: file.replace(/\.mdx$/, ''),
+    title: path.posix.basename(file, '.mdx'),
+    sidebar
+  });
+
+  async function generate(
+    pages: ReturnType<typeof page>[],
+    roots = ['/docs'],
+    filename = 'sidebar.json'
+  ) {
+    const setRef = vi.fn();
+    const output = new Map<string, { pages: SidebarData[] }>();
+    const run = SidebarPlugin.$beforeSend!;
+    await run(
+      {
+        promises: {
+          glob: vi.fn(async (_pattern, options) =>
+            options.onlyDirectories
+              ? roots
+              : pages.filter(p => p.fullPath.startsWith(`${options.cwd}/`)).map(p => p.fullPath)
+          ),
+          readFile: vi.fn(async file => pages.find(p => p.fullPath === file)),
+          writeFile: vi.fn(async (file, content) => {
+            output.set(file, JSON.parse(content));
+          })
+        }
+      } as unknown as Parameters<typeof run>[0],
+      {
+        config: { setRef },
+        serialiser: { deserialise: (_path, value) => value },
+        ignorePages: [],
+        pageExtensions: ['.mdx']
+      } as unknown as Parameters<typeof run>[1],
+      { filename, rootDirGlob: '*' }
+    );
+    return { output, setRef };
+  }
+
+  const links = (nodes: SidebarData[]): string[] =>
+    nodes.flatMap(node => (node.kind === 'group' ? links(node.childNodes) : [node.id]));
+
+  test('THEN excluded root and intermediate indexes retain group labels and priority', async () => {
+    const pages = [
+      page('/docs/index.mdx', { exclude: true }),
+      page('/docs/guides/index.mdx', { priority: 10 }),
+      page('/docs/components/index.mdx', { exclude: true, groupLabel: 'Components', priority: 50 }),
+      page('/docs/components/button.mdx')
+    ];
+    const { output, setRef } = await generate(pages);
+    const tree = output.get('/docs/sidebar.json')!.pages;
+    expect(tree.map(node => node.id)).toEqual(['/docs/components', '/docs/guides']);
+    expect(tree[0]).toMatchObject({ name: 'Components', priority: 50 });
+    expect(links(tree)).toEqual(['/docs/components/button', '/docs/guides/index']);
+    expect(setRef).toHaveBeenCalledWith(
+      '/docs/components/button.mdx',
+      ['navigation', 'next', 'route', '$ref'],
+      '/docs/guides/index.mdx#/route'
+    );
+    expect(setRef).toHaveBeenCalledWith(
+      '/docs/guides/index.mdx',
+      ['navigation', 'prev', 'route', '$ref'],
+      '/docs/components/button.mdx#/route'
+    );
+    for (const entry of pages) {
+      expect(setRef).toHaveBeenCalledWith(
+        entry.fullPath,
+        ['sidebarData', '$ref'],
+        '/docs/sidebar.json/#/pages'
+      );
+    }
+  });
+
+  test('THEN empty excluded groups are pruned and nested visible pages remain navigable', async () => {
+    const { output, setRef } = await generate([
+      page('/docs/index.mdx', { exclude: true }),
+      page('/docs/start.mdx'),
+      page('/docs/empty/index.mdx', { exclude: true, priority: 100 }),
+      page('/docs/empty/nested/index.mdx', { exclude: true }),
+      page('/docs/section/index.mdx', { exclude: true, groupLabel: 'Section' }),
+      page('/docs/section/sub/index.mdx', { exclude: true, groupLabel: 'Subsection' }),
+      page('/docs/section/sub/hidden.mdx', { exclude: true }),
+      page('/docs/section/sub/visible.mdx')
+    ]);
+    const tree = output.get('/docs/sidebar.json')!.pages;
+    expect(links(tree)).toEqual(['/docs/start', '/docs/section/sub/visible']);
+    expect(tree.map(node => node.id)).toEqual(['/docs/start', '/docs/section']);
+    expect(tree[1]).toMatchObject({ childNodes: [{ name: 'Subsection' }] });
+    expect(setRef).toHaveBeenCalledWith(
+      '/docs/start.mdx',
+      ['navigation', 'next', 'route', '$ref'],
+      '/docs/section/sub/visible.mdx#/route'
+    );
+    expect(setRef).toHaveBeenCalledWith(
+      '/docs/section/sub/visible.mdx',
+      ['navigation', 'prev', 'route', '$ref'],
+      '/docs/start.mdx#/route'
+    );
+    const navigation = setRef.mock.calls.filter(([, ref]) => ref[0] === 'navigation');
+    expect(
+      navigation.every(([file, , target]) => !/index\.mdx|hidden\.mdx/.test(`${file} ${target}`))
+    ).toBe(true);
+  });
+
+  test('THEN an all-excluded root produces an empty tree and refs without navigation', async () => {
+    const pages = [
+      page('/docs/index.mdx', { exclude: true }),
+      page('/docs/sub/index.mdx', { exclude: true })
+    ];
+    const { output, setRef } = await generate(pages);
+    expect(output.get('/docs/sidebar.json')).toEqual({ pages: [] });
+    expect(setRef.mock.calls).toEqual(
+      pages.map(p => [p.fullPath, ['sidebarData', '$ref'], '/docs/sidebar.json/#/pages'])
+    );
+  });
+
+  test('THEN namespace roots and a custom output filename remain independent', async () => {
+    const { output, setRef } = await generate(
+      [
+        page('/docs/index.mdx', { exclude: true }),
+        page('/docs/page.mdx'),
+        page('/other/index.mdx', { exclude: true }),
+        page('/other/page.mdx')
+      ],
+      ['/docs', '/other'],
+      'menu.json'
+    );
+    expect(links(output.get('/docs/menu.json')!.pages)).toEqual(['/docs/page']);
+    expect(links(output.get('/other/menu.json')!.pages)).toEqual(['/other/page']);
+    expect(setRef.mock.calls.every(([, ref]) => ref[0] === 'sidebarData')).toBe(true);
+  });
+
+  test('THEN priority sorting still reaches descendants through single-child groups', async () => {
+    const { output } = await generate([
+      page('/docs/index.mdx', { exclude: true }),
+      page('/docs/section/index.mdx', { exclude: true }),
+      page('/docs/section/sub/index.mdx', { exclude: true }),
+      page('/docs/section/sub/last.mdx', { priority: 1 }),
+      page('/docs/section/sub/first.mdx', { priority: 10 })
+    ]);
+    expect(links(output.get('/docs/sidebar.json')!.pages)).toEqual([
+      '/docs/section/sub/first',
+      '/docs/section/sub/last'
+    ]);
+  });
+
+  test('THEN an excluded index still supplies configured ordering', async () => {
+    const root = {
+      ...page('/docs/index.mdx', { exclude: true }),
+      sharedConfig: { sidebar: { sort: { field: 'title', dataType: 'string', arrange: 'asc' } } }
+    };
+    const { output } = await generate([root, page('/docs/zebra.mdx'), page('/docs/alpha.mdx')]);
+    expect(links(output.get('/docs/sidebar.json')!.pages)).toEqual(['/docs/alpha', '/docs/zebra']);
   });
 });

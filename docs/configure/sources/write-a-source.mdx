@@ -1,0 +1,110 @@
+---
+title: Write a source
+layout: DetailTechnical
+---
+
+# {meta.title}
+
+A source brings pages into Mosaic. Before writing one, check whether a built-in source covers it:
+
+- Files in a folder or a Git repository: use the [Local Folder](./local-folder-source) or [Git Repo](./git-repo-source) source.
+- JSON from HTTP endpoints: use the [HTTP Source](./http-source) with a transformer module, `transformResponseToPagesModulePath`. The transformer is a function that receives each response and returns pages, so you don't need a source of your own.
+
+Write a source when the content needs code to fetch, such as a system with its own client or authentication.
+
+## Create the source
+
+A source is a module whose default export has a `create` function. `create` receives the source's `options` from your config and returns an [RxJS](https://rxjs.dev/) observable of pages. This one emits a glossary page for each term from another system, then checks for changes on the source's [schedule](./schedules):
+
+```js
+// mosaic/GlossarySource.mjs
+import { from, switchMap, timer } from 'rxjs';
+
+// Replace with a call to your own system.
+async function fetchTerms() {
+  return [
+    { name: 'Namespace', definition: 'The first segment of a page URL.' },
+    { name: 'Snapshot', definition: 'Content written to disk by `mosaic build`.' }
+  ];
+}
+
+async function loadPages({ prefixDir }) {
+  const terms = await fetchTerms();
+  return terms.map(term => {
+    const route = `/${prefixDir}/${term.name.toLowerCase().replace(/\s+/g, '-')}`;
+    return {
+      fullPath: `${route}.mdx`,
+      route,
+      title: term.name,
+      description: term.definition,
+      content: `# ${term.name}\n\n${term.definition}\n`
+    };
+  });
+}
+
+/** Emits every glossary page now, then again every `checkIntervalMins`. */
+const GlossarySource = {
+  create(options, { schedule }) {
+    return timer(schedule.initialDelayMs, schedule.checkIntervalMins * 60_000).pipe(
+      switchMap(() => from(loadPages(options)))
+    );
+  }
+};
+
+export default GlossarySource;
+```
+
+Each page needs:
+
+- `fullPath`: the page's file path, ending in one of the config's `pageExtensions`, such as `.mdx`. Mosaic leaves out pages without one, with a warning.
+- `route`: the page's URL. Defaults to `fullPath`. Mosaic lowercases both.
+- `content`: the page body, without frontmatter.
+
+Any other property, such as `title`, `description` or `layout`, becomes the page's frontmatter.
+
+**Emit every page each time.** Each emission replaces all of the source's pages, so a page that's left out of an emission is removed.
+
+`create`'s second argument also has the config's `pageExtensions` and a `serialiser` for those extensions, for sources that read files with frontmatter.
+
+## Add it to your config
+
+Sources are loaded with `import()`, from inside Mosaic. Give the source's file URL, or the name of an installed package:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  sources: [
+    {
+      modulePath: pathToFileURL(require.resolve('./mosaic/GlossarySource.mjs')).href,
+      namespace: 'my-product',
+      options: { prefixDir: 'my-product/glossary' }
+    }
+  ]
+};
+```
+
+Each source runs in its own worker thread, so its `options` must be values that can be [copied between threads](./index#gotchas): no functions or class instances. See [Source Definitions](./index#source-definitions) for the other properties, such as `schedule`.
+
+## Optional exports
+
+Alongside `create`, a source can export:
+
+- `refresh(options)`: check for changes now rather than at the next scheduled check, for example when a webhook arrives. Emit any changed pages on the observable `create` returned.
+- `capabilities`: what the source supports. `{ writable: true }` lets editors change its pages in the content editor. Only set it when the source has a workflow that saves the changes, as the Git Repo source does with pull requests.
+
+## Test it
+
+Run `mosaic build` with your config, and check the pages it writes:
+
+```bash
+mosaic build --config mosaic.config.mjs --out snapshots --name test
+```
+
+To change pages from every source, rather than to add pages, [write a plugin](../plugins/write-a-plugin) instead.

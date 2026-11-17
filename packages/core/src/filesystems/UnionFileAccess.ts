@@ -30,16 +30,21 @@ export default class UnionFileAccess extends FileAccess {
     const scopedUnion: IUnionFs & { fss: IVolumeMutable[] } = new Union() as IUnionFs & {
       fss: IVolumeMutable[];
     };
-    const matchingNamespaceFSs = this.#ufs.fss.filter(fss => namespaces.includes(fss.namespace));
+    const allowedNamespaces = new Set(namespaces);
+    const matchingNamespaceFSs = () =>
+      this.#ufs.fss.filter(fss => allowedNamespaces.has(fss.namespace));
 
-    if (!matchingNamespaceFSs.length) {
+    if (!matchingNamespaceFSs().length) {
       throw new Error(
         `Scoping failed. No matching filesystems for ${namespaces
           .map(namespace => `"${namespace}"`)
           .join(', ')}.`
       );
     }
-    matchingNamespaceFSs.forEach(fss => scopedUnion.use(fss as unknown as IUnionFs));
+    // Keep the scope attached to the live mount list. Copying it here retains
+    // stopped sources and misses replacements, while raw reads and workflows
+    // already resolve ownership against the current mounted sources.
+    Object.defineProperty(scopedUnion, 'fss', { get: matchingNamespaceFSs });
     return new UnionFileAccess(scopedUnion);
   }
   /**

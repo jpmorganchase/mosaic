@@ -13,6 +13,12 @@ import type {
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
+import {
+  resolveCommitMessage,
+  commitMessageTitle,
+  prepareCommitMessage,
+  type CommitMessageOption
+} from './commitMessage.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -22,6 +28,7 @@ function getErrorMessage(error: unknown) {
 interface BitbucketPullRequestWorkflowData {
   user: { sid: string; name: string; email: string };
   markdown: string;
+  commitMessage?: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)
    * from the in-browser editor's Frontmatter tab. See the
@@ -48,7 +55,7 @@ interface BitbucketPullRequestWorkflowData {
 
 interface BitbucketPullRequestWorkflowOptions {
   apiEndpoint: string;
-  commitMessage: (filePath: string) => string;
+  commitMessage?: CommitMessageOption;
   titlePrefix: string;
 }
 
@@ -57,7 +64,14 @@ async function createPullRequest(
   sourceOptions: GitRepoSourceOptions,
   { apiEndpoint, commitMessage, titlePrefix }: BitbucketPullRequestWorkflowOptions,
   filePath: string,
-  { user, markdown, frontmatter, targetRoute, isNewPage }: BitbucketPullRequestWorkflowData
+  {
+    user,
+    markdown,
+    frontmatter,
+    targetRoute,
+    isNewPage,
+    commitMessage: messageOverride
+  }: BitbucketPullRequestWorkflowData
 ) {
   const {
     credentials,
@@ -90,6 +104,18 @@ async function createPullRequest(
         'or use a dotenv loader before starting `mosaic serve`.',
       'ERROR'
     );
+    return false;
+  }
+
+  let commitMsg: string;
+  try {
+    commitMsg = resolveCommitMessage(commitMessage, filePath, {
+      isNewPage,
+      targetRoute,
+      commitMessage: messageOverride
+    });
+  } catch (error) {
+    sendWorkflowProgressMessage(getErrorMessage(error), 'ERROR');
     return false;
   }
 
@@ -253,7 +279,7 @@ async function createPullRequest(
       }
     }
     const bitBucketRequest = JSON.stringify({
-      title: `${titlePrefix} - Content ${isNewPage ? 'created' : 'update'} - ${filePath}`,
+      title: commitMessageTitle(commitMsg, titlePrefix),
       fromRef: {
         id: `refs/heads/${branchName}`,
         repository: {
@@ -278,13 +304,6 @@ async function createPullRequest(
 
     const endpoint = `${apiEndpoint}/projects/${repoInstance.projectName}/repos/${repoInstance.repoName}/pull-requests`;
     sendWorkflowProgressMessage('Creating Pull Request', 'IN_PROGRESS');
-    // Rewrite the configured commit-message template's verb on
-    // the create path so the PR reads naturally ("created
-    // content" vs. "updated content"). Callers' configured
-    // template is preserved verbatim on the edit path.
-    const commitMsg = isNewPage
-      ? commitMessage(filePath).replace('updated content', 'created content')
-      : commitMessage(filePath);
     const result = await repoInstance.createPullRequest(
       user,
       branchName,
@@ -351,8 +370,9 @@ const workflow: SourceWorkflow = {
     get apiEndpoint() {
       return process.env.BITBUCKET_API_URL || '';
     },
-    commitMessage: (filePath: string) => `docs: updated content ${filePath} (UIE-7026)`
+    commitMessage: undefined
   },
+  prepare: prepareCommitMessage,
   action: createPullRequest
 };
 

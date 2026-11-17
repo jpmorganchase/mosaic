@@ -29,12 +29,14 @@ import { getWorktreeDir } from '@jpmorganchase/mosaic-source-git-repo';
 import fastifyMosaic from '../plugins/mosaicFastifyPlugin';
 
 // Mock MosaicCore so we don't actually pull content / start
-// workers — the raw route doesn't use the core at all, but the
-// plugin's `decorate` call needs *something* shaped like a
-// MosaicCore. A minimal stub is enough.
+// workers. The raw route uses the registered source definitions
+// and reads authored files directly from the fixture folders.
 vi.mock('@jpmorganchase/mosaic-core', () => ({
-  default: vi.fn().mockImplementation(function MosaicCoreMock() {
+  default: vi.fn().mockImplementation(function MosaicCoreMock(config: MosaicConfig) {
     return {
+      getSourceDefinitionForPath: vi.fn().mockResolvedValue(undefined),
+      listSources: vi.fn(async () => config.sources.map((_, index) => ({ name: String(index) }))),
+      getSourceDefinition: vi.fn(name => config.sources[Number(name)]),
       filesystem: {
         promises: {
           // The catch-all `/*` route hits these; returning

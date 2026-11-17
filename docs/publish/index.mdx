@@ -15,13 +15,25 @@ A _standard_ site offers
 
 ## Create your first site
 
-Duplicate the `site` package from the Mosaic monorepo to create your own site.
+Export the `site` package from the Mosaic monorepo to create your own site. Use
+Yarn 4.10.3 or later: packing converts the template's `workspace:` dependencies to
+published version ranges that can install in a standalone project.
 
 ```
 > git clone https://github.com/jpmorganchase/mosaic.git
-> cp -r mosaic/packages/site mosaic-sample-site
-> cd mosaic-sample-site
+> cd mosaic
+> yarn install --immutable
+> yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
+> mkdir ../mosaic-sample-site
+> tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
+> cd ../mosaic-sample-site
+> yarn config set nodeLinker node-modules
+> yarn install
 ```
+
+Configure `mosaic.config.mjs` with your content sources. The reference local
+sources point to documentation folders in the Mosaic monorepo; replace those
+paths before serving your own site.
 
 Define the environment variable, which enables us to access your remote repo.
 

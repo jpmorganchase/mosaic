@@ -16,10 +16,8 @@
  *   revert — restore from `<file>.bak` and delete the backup.
  */
 import { writeFileSync, existsSync, renameSync, unlinkSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const siteRoot = resolve(__dirname, '..');
+import { resolve } from 'node:path';
+const siteRoot = resolve(import.meta.dirname, '..');
 const ROUTES = [
   {
     path: 'src/app/api/auth/[...nextauth]/route.ts',
@@ -33,6 +31,15 @@ const ROUTES = [
   {
     path: 'src/app/api/content/ready/route.ts',
     why: 'The cold-start readiness probe is a dev-mode helper for the active-mode Mosaic CLI; static exports have no upstream to probe.'
+  },
+  {
+    path: 'src/app/api/search/route.ts',
+    why: 'Search needs a server runtime. A static export includes search-records.json to search in the browser.'
+  },
+  {
+    path: 'src/app/api/llms/[...path]/route.ts',
+    why: 'Serving Markdown needs a server runtime. A static export includes llms.txt, llms-full.txt and each page as <page>.md instead.',
+    staticParams: { path: ['stub'] }
   },
   {
     path: 'src/app/api/revalidate/route.ts',
@@ -51,13 +58,13 @@ const ACTIONS = [
     why: 'Section config is looked up at runtime; the static export uses the prebuilt 404.'
   },
   {
-    path: 'src/app/[namespace]/[[...route]]/previewAction.ts',
+    path: 'src/app/[namespace]/[...route]/previewAction.ts',
     exports: ['compilePreview'],
     why: 'The MDX preview Server Action requires a server runtime; the content editor is not available in a static export.'
   },
   {
-    path: 'src/app/[namespace]/[[...route]]/persistAction.ts',
-    exports: ['startSave'],
+    path: 'src/app/[namespace]/[...route]/persistAction.ts',
+    exports: ['startSave', 'getSaveDefaults'],
     why: 'The save Server Action requires a server runtime; the content editor is not available in a static export.'
   }
 ];

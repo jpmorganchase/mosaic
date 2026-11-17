@@ -18,3 +18,19 @@ describe('GIVEN a Hero component', () => {
     expect(getByText(testDate)).toBeDefined();
   });
 });
+
+describe('GIVEN a Hero with a title, description and links', () => {
+  test('THEN only the title is exposed as a heading', () => {
+    const { getAllByRole } = render(
+      <Hero
+        title="Welcome"
+        description="Some description"
+        links={[{ label: 'Start', url: '/start' }]}
+      />
+    );
+    const headings = getAllByRole('heading');
+    expect(headings).toHaveLength(1);
+    expect(headings[0].tagName).toBe('H1');
+    expect(headings[0]).toHaveAccessibleName('Welcome');
+  });
+});

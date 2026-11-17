@@ -1,5 +1,3 @@
-import { SearchIndexSlice } from './searchIndex';
-
 /**
  *  [[`MenuItemType`]] defines the type of App header Menu items
  */
@@ -73,8 +71,4 @@ export type AppHeaderSlice = {
   logo?: string;
   /** App Header menu */
   menu: Menu[];
-  /** Search namespace, suffix used on env variable `process.env.SEARCH_ENDPOINT` to filter search results to a specific namespace. */
-  searchNamespace?: string;
-  /** Search index, created by SearchIndexPlugin */
-  searchIndex?: SearchIndexSlice;
 };

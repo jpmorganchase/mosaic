@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css';
-import { recipe, RecipeVariants } from '@vanilla-extract/recipes';
+import { RecipeVariants } from '@vanilla-extract/recipes';
+import { recipe } from '../recipe';
 import { defineProperties, createSprinkles } from '@vanilla-extract/sprinkles';
 
 import { breakpoint, responsiveSprinkles } from '../responsive';

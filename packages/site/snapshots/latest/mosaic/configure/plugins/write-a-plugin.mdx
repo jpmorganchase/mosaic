@@ -1,0 +1,565 @@
+---
+title: Write a plugin
+layout: DetailTechnical
+lastModified: 1794772512095.7898
+fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+route: /mosaic/configure/plugins/write-a-plugin
+breadcrumbs:
+  - label: Configure
+    path: /mosaic/configure/index
+    id: /mosaic/configure/index.mdx
+  - label: Plugins
+    path: /mosaic/configure/plugins/index
+    id: /mosaic/configure/plugins/index.mdx
+sidebar:
+  label: Write a plugin
+  groupLabel: Write a plugin
+readingTime:
+  text: 3 min read
+  minutes: 3
+  time: 180000
+  words: 600
+tableOfContents:
+  - depth: 2
+    level: 0
+    id: create-the-plugin
+    text: Create the plugin
+  - depth: 2
+    level: 0
+    id: add-it-to-your-config
+    text: Add it to your config
+  - depth: 2
+    level: 0
+    id: choose-a-lifecycle-method
+    text: Choose a lifecycle method
+  - depth: 2
+    level: 0
+    id: report-errors
+    text: Report errors
+  - depth: 2
+    level: 0
+    id: test-it
+    text: Test it
+navigation:
+  prev:
+    title: TableOfContentsPlugin
+    route: /mosaic/configure/plugins/toc-plugin
+    group: Plugins
+sidebarData:
+  - id: /mosaic/configure/index
+    kind: data
+    fullPath: /mosaic/configure/index.mdx
+    name: Configure
+    priority: 4
+    data:
+      level: 2
+      link: /mosaic/configure/index
+  - id: /mosaic/configure/modes
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/modes/static-export
+        kind: data
+        fullPath: /mosaic/configure/modes/static-export.mdx
+        name: Static export
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/modes/static-export
+      - id: /mosaic/configure/modes/index
+        kind: data
+        fullPath: /mosaic/configure/modes/index.mdx
+        name: Modes of operation
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/modes/index
+      - id: /mosaic/configure/modes/active
+        kind: data
+        fullPath: /mosaic/configure/modes/active.mdx
+        name: Active mode
+        data:
+          level: 3
+          link: /mosaic/configure/modes/active
+      - id: /mosaic/configure/modes/snapshot-file
+        kind: data
+        fullPath: /mosaic/configure/modes/snapshot-file.mdx
+        name: Snapshot file mode
+        data:
+          level: 3
+          link: /mosaic/configure/modes/snapshot-file
+    name: Modes of operation
+    priority: 4
+  - id: /mosaic/configure/theme
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/theme/index
+        kind: data
+        fullPath: /mosaic/configure/theme/index.mdx
+        name: Theming Your Site
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/theme/index
+      - id: /mosaic/configure/theme/custom-css
+        kind: data
+        fullPath: /mosaic/configure/theme/custom-css.mdx
+        name: Custom CSS
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/theme/custom-css
+      - id: /mosaic/configure/theme/custom-components
+        kind: data
+        fullPath: /mosaic/configure/theme/custom-components.mdx
+        name: Custom Components
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/theme/custom-components
+    name: Theming Your Site
+    priority: 4
+  - id: /mosaic/configure/admin
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/admin/index
+        kind: data
+        fullPath: /mosaic/configure/admin/index.mdx
+        name: Admin
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/admin/index
+    name: Admin
+    priority: 3
+  - id: /mosaic/configure/sources
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/sources/source-figma
+        kind: data
+        fullPath: /mosaic/configure/sources/source-figma.mdx
+        name: Figma
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-figma
+      - id: /mosaic/configure/sources/source-readme
+        kind: data
+        fullPath: /mosaic/configure/sources/source-readme.mdx
+        name: Readme Files
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-readme
+      - id: /mosaic/configure/sources/source-storybook
+        kind: data
+        fullPath: /mosaic/configure/sources/source-storybook.mdx
+        name: Storybook
+        priority: 5
+        data:
+          level: 3
+          link: /mosaic/configure/sources/source-storybook
+      - id: /mosaic/configure/sources/schedules
+        kind: data
+        fullPath: /mosaic/configure/sources/schedules.mdx
+        name: Schedules
+        priority: 4
+        data:
+          level: 3
+          link: /mosaic/configure/sources/schedules
+      - id: /mosaic/configure/sources/index
+        kind: data
+        fullPath: /mosaic/configure/sources/index.mdx
+        name: Sources
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/index
+      - id: /mosaic/configure/sources/local-folder-source
+        kind: data
+        fullPath: /mosaic/configure/sources/local-folder-source.mdx
+        name: Local Folder Source
+        priority: 3
+        data:
+          level: 3
+          link: /mosaic/configure/sources/local-folder-source
+      - id: /mosaic/configure/sources/git-repo-source
+        kind: data
+        fullPath: /mosaic/configure/sources/git-repo-source.mdx
+        name: Git Repo Source
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/sources/git-repo-source
+      - id: /mosaic/configure/sources/http-source
+        kind: data
+        fullPath: /mosaic/configure/sources/http-source.mdx
+        name: HTTP Source
+        priority: 1
+        data:
+          level: 3
+          link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
+    name: Sources
+    priority: 3
+  - id: /mosaic/configure/layouts
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/layouts/index
+        kind: data
+        fullPath: /mosaic/configure/layouts/index.mdx
+        name: Layouts
+        priority: 2
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/index
+      - id: /mosaic/configure/layouts/detail-highlight
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-highlight.mdx
+        name: Detail Highlight
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-highlight
+      - id: /mosaic/configure/layouts/detail-overview
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-overview.mdx
+        name: Detail Overview
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-overview
+      - id: /mosaic/configure/layouts/detail-technical
+        kind: data
+        fullPath: /mosaic/configure/layouts/detail-technical.mdx
+        name: Detail Technical
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/detail-technical
+      - id: /mosaic/configure/layouts/landing
+        kind: data
+        fullPath: /mosaic/configure/layouts/landing.mdx
+        name: Landing Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/landing
+      - id: /mosaic/configure/layouts/product-discover
+        kind: data
+        fullPath: /mosaic/configure/layouts/product-discover.mdx
+        name: Product Discover Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/product-discover
+      - id: /mosaic/configure/layouts/product-preview
+        kind: data
+        fullPath: /mosaic/configure/layouts/product-preview.mdx
+        name: Product Preview Layout
+        data:
+          level: 3
+          link: /mosaic/configure/layouts/product-preview
+    name: Layouts
+    priority: 2
+  - id: /mosaic/configure/plugins
+    kind: group
+    childNodes:
+      - id: /mosaic/configure/plugins/index
+        kind: data
+        fullPath: /mosaic/configure/plugins/index.mdx
+        name: Plugins
+        priority: 1
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/index
+      - id: /mosaic/configure/plugins/lifecycle
+        kind: group
+        childNodes:
+          - id: /mosaic/configure/plugins/lifecycle/after-source
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/after-source.mdx
+            name: $afterSource
+            priority: 5
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-source
+          - id: /mosaic/configure/plugins/lifecycle/before-send
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/before-send.mdx
+            name: $beforeSend
+            priority: 4
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/before-send
+          - id: /mosaic/configure/plugins/lifecycle/after-update
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/after-update.mdx
+            name: afterUpdate
+            priority: 3
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/after-update
+          - id: /mosaic/configure/plugins/lifecycle/should-clear-cache
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/should-clear-cache.mdx
+            name: shouldClearCache
+            priority: 2
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/should-clear-cache
+          - id: /mosaic/configure/plugins/lifecycle/index
+            kind: data
+            fullPath: /mosaic/configure/plugins/lifecycle/index.mdx
+            name: Lifecycle Events
+            priority: 1
+            data:
+              level: 4
+              link: /mosaic/configure/plugins/lifecycle/index
+          - id: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+            kind: data
+            fullPath: >-
+              /mosaic/configure/plugins/lifecycle/should-update-namespace-sources.mdx
+            name: shouldUpdateNamespaceSources
+            priority: 1
+            data:
+              level: 4
+              link: >-
+                /mosaic/configure/plugins/lifecycle/should-update-namespace-sources
+        name: Lifecycle Events
+        priority: 1
+      - id: /mosaic/configure/plugins/alias-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/alias-plugin.mdx
+        name: $AliasPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/alias-plugin
+      - id: /mosaic/configure/plugins/breadcrumbs-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/breadcrumbs-plugin.mdx
+        name: BreadcrumbsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/breadcrumbs-plugin
+      - id: /mosaic/configure/plugins/broken-links-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/broken-links-plugin.mdx
+        name: BrokenLinksPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/broken-links-plugin
+      - id: /mosaic/configure/plugins/codemod-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/codemod-plugin.mdx
+        name: $CodeModPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/codemod-plugin
+      - id: /mosaic/configure/plugins/document-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/document-assets-plugin.mdx
+        name: DocumentAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/document-assets-plugin
+      - id: /mosaic/configure/plugins/lazy-page-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/lazy-page-plugin.mdx
+        name: LazyPagePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
+      - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
+        name: PagesWithoutFileExtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/pages-wthout-extensions-plugin
+      - id: /mosaic/configure/plugins/public-assets-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
+        name: PublicAssetsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/public-assets-plugin
+      - id: /mosaic/configure/plugins/reading-time-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/reading-time-plugin.mdx
+        name: ReadingTimePlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/reading-time-plugin
+      - id: /mosaic/configure/plugins/ref-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/ref-plugin.mdx
+        name: $RefPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/ref-plugin
+      - id: /mosaic/configure/plugins/search-index-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/search-index-plugin.mdx
+        name: SearchIndexPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/search-index-plugin
+      - id: /mosaic/configure/plugins/shared-config-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/shared-config-plugin.mdx
+        name: SharedConfigPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/shared-config-plugin
+      - id: /mosaic/configure/plugins/sidebar-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/sidebar-plugin.mdx
+        name: SidebarPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/sidebar-plugin
+      - id: /mosaic/configure/plugins/site-map-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/site-map-plugin.mdx
+        name: SiteMapPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/site-map-plugin
+      - id: /mosaic/configure/plugins/tag-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/tag-plugin.mdx
+        name: $TagPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/tag-plugin
+      - id: /mosaic/configure/plugins/toc-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/toc-plugin.mdx
+        name: TableOfContentsPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
+    name: Plugins
+    priority: 1
+---
+# {meta.title}
+
+A plugin changes pages as Mosaic loads them, from any source. Use one to add data to pages, fill in frontmatter, or write files for the whole site, such as an index. Mosaic's own [default plugins](./index#default-plugins) are written the same way.
+
+A plugin can't change how pages look. Layouts and components belong to your site's code, and each page picks its layout with `layout` in its frontmatter.
+
+## Create the plugin
+
+A plugin is a module whose default export holds one or more [lifecycle methods](./lifecycle/index). This one gives every page under a route the same layout, unless the page sets its own:
+
+```js
+// mosaic/DefaultLayoutPlugin.mjs
+
+/**
+ * Gives every page under `options.routePrefix` the layout `options.layout`,
+ * unless the page sets its own.
+ */
+const DefaultLayoutPlugin = {
+  async $afterSource(pages, _helpers, options) {
+    const { routePrefix, layout } = options;
+    for (const page of pages) {
+      if (!page.layout && page.route.startsWith(routePrefix)) {
+        page.layout = layout;
+      }
+    }
+    return pages;
+  }
+};
+
+export default DefaultLayoutPlugin;
+```
+
+Each lifecycle method gets its input (here, the source's pages), helpers such as the `serialiser` and `namespace`, and the `options` from the plugin's config. A page's frontmatter fields are properties of the page, and anything the plugin sets on a page is written to its frontmatter.
+
+## Add it to your config
+
+Plugins are loaded with `require.resolve`, from inside Mosaic. Give the plugin's absolute path, or the name of an installed package:
+
+```js
+// mosaic.config.mjs
+import { createRequire } from 'node:module';
+import fsConfig from '@jpmorganchase/mosaic-cli/fs.config.js';
+
+const require = createRequire(import.meta.url);
+
+export default {
+  ...fsConfig,
+  plugins: [
+    ...fsConfig.plugins,
+    {
+      modulePath: require.resolve('./mosaic/DefaultLayoutPlugin.mjs'),
+      options: { routePrefix: '/my-product/api-reference/', layout: 'DetailTechnical' }
+    }
+  ]
+};
+```
+
+A plugin definition takes the same properties as a built-in plugin, such as `priority` and `previewDisabled`. See [Configuration](./index#configuration).
+
+## Choose a lifecycle method
+
+Choose the earliest method that has what your plugin needs:
+
+| Method                                                                        | Runs                                                     | Use it to                                                                                                                         |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [`$afterSource`](./lifecycle/after-source)                                    | In the source's worker, each time the source emits pages | Read or change pages one at a time.                                                                                               |
+| [`$beforeSend`](./lifecycle/before-send)                                      | In the source's worker                                   | Read or write files across one source, and pass data to later methods with `config.setData()`.                                    |
+| [`afterUpdate`](./lifecycle/after-update)                                     | In the main process                                      | Read pages from every source with `globalFilesystem`, or write files for the whole site to `sharedFilesystem`, such as a sitemap. |
+| [`shouldClearCache`](./lifecycle/should-clear-cache)                          | In the main process                                      | Say whether another source's change affects this source's pages.                                                                  |
+| [`shouldUpdateNamespaceSources`](./lifecycle/should-update-namespace-sources) | In the main process                                      | Ask the other sources in a namespace to run `afterNamespaceSourceUpdate`.                                                         |
+
+Methods starting with `$` run in each source's worker thread, so they can take time without holding up the server. The others run in the main process, so keep them fast.
+
+Plugins run each lifecycle method in order of `priority`, highest first. `$ref`s are not resolved yet in `$afterSource`. The [$RefPlugin](./ref-plugin) resolves them in `$beforeSend`, at priority `-1`, so a plugin that reads values from `$ref`s should use `$beforeSend` with a lower priority, such as `-1.5`.
+
+## Report errors
+
+A failing plugin doesn't stop Mosaic: the error is recorded and the other plugins run. See [Plugin errors](./index#plugin-errors). To name the page that caused an error, throw a `PluginError` with its path:
+
+```js
+import PluginError from '@jpmorganchase/mosaic-plugins/PluginError';
+
+throw new PluginError(`Unknown layout "${layout}"`, page.fullPath);
+```
+
+In `$afterSource`, catch errors for each page and throw once after the loop, so one bad page doesn't stop the plugin for the pages after it.
+
+## Test it
+
+Lifecycle methods are plain functions, so test them by calling them:
+
+```js
+import DefaultLayoutPlugin from '../mosaic/DefaultLayoutPlugin.mjs';
+
+test('gives pages under the route the layout', async () => {
+  const pages = await DefaultLayoutPlugin.$afterSource(
+    [{ fullPath: '/docs/a.mdx', route: '/docs/a' }],
+    {},
+    { routePrefix: '/docs/', layout: 'DetailTechnical' }
+  );
+  expect(pages[0].layout).toBe('DetailTechnical');
+});
+```
+
+Then run `mosaic build` with your config and check the pages it writes.

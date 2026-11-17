@@ -29,6 +29,9 @@ export type PluginErrorDescriptor = {
    * The name of the error
    */
   name: string;
+  /** Original diagnostic, also preserved across the worker boundary. */
+  message?: string;
+  stack?: string;
   /**
    * The path of the file that triggered the plugin error
    */

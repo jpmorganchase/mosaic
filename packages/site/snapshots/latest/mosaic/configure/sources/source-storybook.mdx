@@ -5,7 +5,7 @@ sidebar:
   label: Storybook
   groupLabel: Storybook
   priority: 5
-lastModified: 1780396144331.9443
+lastModified: 1794743989985.1726
 fullPath: /mosaic/configure/sources/source-storybook.mdx
 route: /mosaic/configure/sources/source-storybook
 breadcrumbs:
@@ -88,13 +88,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -206,6 +199,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -372,6 +372,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -442,6 +449,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -464,7 +478,7 @@ This information can be used to create a dynamic index of stories from Storybook
 
 ## Configuration
 
-The Storybook source is an [`HttpSource`](./https-source) and shares the same base configuration.
+The Storybook source is an [`HttpSource`](./http-source) and shares the same base configuration.
 The `transformResponseToPagesModulePath` prop has a default transformer which creates a page for each matching Story.
 
 The `stories` option is an array of Storybook urls that are used as Sources.

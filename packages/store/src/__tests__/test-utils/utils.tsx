@@ -2,6 +2,7 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import { useCreateStore, StoreProvider } from '../../store';
+import { ColorModeProvider } from '../../ColorModeProvider';
 import type { SiteState } from '../../store';
 
 export function renderWithStore(ui: React.ReactElement) {
@@ -22,5 +23,9 @@ export function createWrapper(state?: Partial<SiteState>) {
  */
 const Store: React.FC<{ state?: Partial<SiteState> }> = ({ children, state = {} }) => {
   const createStore = useCreateStore(state);
-  return <StoreProvider value={createStore()}>{children}</StoreProvider>;
+  return (
+    <ColorModeProvider>
+      <StoreProvider value={createStore()}>{children}</StoreProvider>
+    </ColorModeProvider>
+  );
 };

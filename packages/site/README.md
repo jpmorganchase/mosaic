@@ -7,6 +7,30 @@ site — there is no scaffolding CLI.
 
 The site runs on the **Next.js App Router** (`src/app/`).
 
+## Create a standalone site
+
+Export the template from a Mosaic checkout with Yarn 4.10.3 or later. Packing
+converts its `workspace:` dependencies to published version ranges; copying the
+directory directly leaves dependencies that cannot resolve outside the monorepo.
+From the repository root:
+
+```bash
+yarn install --immutable
+yarn workspace @jpmorganchase/mosaic-site pack --out ../../mosaic-site.tgz
+mkdir ../mosaic-sample-site
+tar -xzf mosaic-site.tgz -C ../mosaic-sample-site --strip-components=1
+cd ../mosaic-sample-site
+yarn config set nodeLinker node-modules
+yarn install
+```
+
+Turbopack requires the `node-modules` linker; Yarn's default Plug'n'Play mode is
+not supported. The archive excludes build caches, generated public assets,
+monorepo unit tests and local environment overrides. Snapshot builds recreate
+their public assets.
+Configure `mosaic.config.mjs` with your own content sources before running `yarn serve`;
+the reference configuration points to documentation folders in this monorepo.
+
 ## File tree
 
 ```
@@ -39,7 +63,10 @@ packages/site/
         │   ├── layout.tsx      # loads namespace data once; persistent header
         │   ├── NamespaceFrame.tsx # frame store, header, <FrameSync>
         │   ├── not-found.tsx   # 404 inside the namespace (header included)
-        │   └── [[...route]]/   # optional catch-all, including root documents/aliases
+        │   ├── error.tsx       # errors inside the namespace (header included)
+        │   ├── page.tsx        # namespace roots and root documents/aliases, e.g. /mosaic, /about
+        │   ├── staticRouteParams.ts # prerendered paths for both pages
+        │   └── [...route]/     # required catch-all for every other page
         │       ├── page.tsx    # loads content, gates the editor, renders the page
         │       ├── resolveContent.ts  # route → content, folder→index redirects, canonical route
         │       ├── BodyServer.tsx     # renders compiled MDX with <MdxRenderer>
@@ -90,6 +117,30 @@ Next.js never loads that file for `next build` / `next start`, and
 which the `serve`, `debug` and `gen:snapshot` scripts set. The site also
 refuses its placeholder secrets when `NODE_ENV=production`. Put personal
 overrides in `.env.local` (gitignored).
+
+### Refresh the committed snapshot
+
+The production reference site builds from `snapshots/latest`. After changing
+documentation or content plugins, run these commands from the repository root
+and commit the regenerated snapshot with the change:
+
+```bash
+yarn build
+yarn workspace @jpmorganchase/mosaic-site gen:snapshot
+yarn build:site
+```
+
+The snapshot includes `search-records.json`, `llms.txt`, `llms-full.txt` and
+`markdown-pages.json`. The content-file e2e tests check that the built site
+actually serves the search records and Markdown.
+
+Snapshot builds copy generated assets into `public/` and keep an inventory in
+`.mosaic-public-assets.json` outside that directory. Later builds remove obsolete
+generated copies while preserving other public files. Active-mode builds clear
+the snapshot copies so requests reach the live content handlers. The reference
+site's build runs without Turbo caching so this cleanup always executes; restoring
+cached output can otherwise leave files from a different snapshot behind. Package
+builds still use the cache.
 
 ## Environment variables
 
@@ -142,7 +193,7 @@ Three files cover the vast majority of customisations:
 2. **`src/app/providers.tsx`** — the client-side provider stack (Salt
    theme, Mosaic store, Auth.js session) and the per-route
    `<StoreShell>` (layout / image / link providers).
-3. **`src/app/[namespace]/[[...route]]/MdxComponents.ts`** — the registry of components
+3. **`src/app/[namespace]/[...route]/MdxComponents.ts`** — the registry of components
    reachable from MDX. This is where you add your own components (see
    [Custom Components](../../docs/configure/theme/custom-components.mdx)).
 
@@ -155,11 +206,12 @@ If you copy this directory into your own repo, **do not change these
 patterns** without understanding why they exist — every one of them is
 the resolution of a real bug.
 
-1. **Mount `<SessionProvider>` without a server-resolved session.** The
+1. **Mount `<SessionProvider>` and `<NextAuthAdapter>` only when auth is enabled.**
+   Leave the session unresolved on the server; omit both providers for no-auth hosts. The
    client fetches it lazily, so the root layout doesn't depend on
    Auth.js configuration and no-auth deployments still render. The
    layout passes only the build-time `AUTH_ENABLED` flag, so no-auth
-   deployments use `session={null}` and skip the session request.
+   deployments omit both auth providers and make no session requests.
 2. **Pass the server's edit state to `<StoreShell isEditing>`.** It
    reaches `LayoutProvider`, so view-mode pages never call
    `useSearchParams()` — which would make statically prerendered pages
@@ -206,9 +258,13 @@ the resolution of a real bug.
 10. **Resolve single-segment URLs through the content loaders.** The
     `[namespace]` segment groups renders; it does not establish which
     source owns a page. Sources may omit `prefixDir`, and aliases may
-    live at the site root. `[[...route]]` therefore also handles `/about`
-    and `/quickstart`, without appending `/index`. The loaders still
-    resolve real folder index pages such as `/mosaic`.
+    live at the site root. `[namespace]/page.tsx` therefore renders
+    `/about` and `/quickstart` with the catch-all's page, without
+    appending `/index`. The loaders still resolve real folder index pages
+    such as `/mosaic`. The catch-all is required (`[...route]`) rather
+    than optional: Next.js treats an optional catch-all whose only value
+    is `index` as empty, which served `/mosaic/index` from `/mosaic`'s
+    cache entry and left client prefetches of it retrying forever.
 
 Only the header persists. Each page continues to load its own sidebar
 tree, so navigation follows the current content in active mode.

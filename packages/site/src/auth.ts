@@ -11,7 +11,7 @@
  *      (public mirrors, preview environments, etc.).
  *
  *   2. **Per-page capability gate** — `sharedConfig.sourceCapabilities.writable`,
- *      enforced in `app/[namespace]/[[...route]]/page.tsx`. Even with auth on, pages
+ *      enforced in `app/[namespace]/[...route]/page.tsx`. Even with auth on, pages
  *      from non-writable sources stay read-only.
  *
  * The named exports below are the canonical Auth.js v5 surface, served
@@ -65,9 +65,8 @@ if (authEnv.secretIsPlaceholder) {
  * vars and this module is server-only (it reads `lib/config.ts`). Client
  * code must not import this flag; the root layout (a Server Component)
  * passes the server-side value to `<Providers authEnabled>` instead.
- * `<SessionProvider>` is still mounted either way — with `session={null}`
- * when auth is off, so `useSession()` settles to `null` without calling
- * `/api/auth/session`.
+ * When auth is off, Providers omits the auth adapter and SessionProvider.
+ * Mosaic's auth context defaults to signed out without session requests.
  */
 export const AUTH_ENABLED =
   !authEnv.secretIsPlaceholder && (authEnv.explicitlyEnabled || Boolean(authEnv.secret));

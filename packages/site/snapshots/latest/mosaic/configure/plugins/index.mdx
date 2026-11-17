@@ -5,7 +5,7 @@ sidebar:
   label: Plugins
   groupLabel: Plugins
   priority: 1
-lastModified: 1780396138476.0918
+lastModified: 1794772512095.7898
 fullPath: /mosaic/configure/plugins/index.mdx
 route: /mosaic/configure/plugins/index
 breadcrumbs:
@@ -17,9 +17,9 @@ breadcrumbs:
     id: /mosaic/configure/plugins/index.mdx
 readingTime:
   text: 2 min read
-  minutes: 1.92
-  time: 115200
-  words: 384
+  minutes: 1.97
+  time: 118200
+  words: 394
 tableOfContents:
   - depth: 2
     level: 0
@@ -92,13 +92,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -210,6 +203,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -376,6 +376,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -446,6 +453,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -454,6 +468,8 @@ sidebarData:
 Mosaic Plugins are [lifecycle-based](./lifecycle/index) hooks that are called on *every* source at different stages. You will never need to invoke a lifecycle method directly as their execution is managed by a plugin runner.
 
 Plugins enable Mosaic to have a lightweight and flexible, modular architecture by encapsulating features and functionality as plugins.
+
+Sites can add their own plugins too. See [Write a plugin](./write-a-plugin).
 
 ## Installation
 

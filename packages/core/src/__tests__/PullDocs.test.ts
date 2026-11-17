@@ -111,7 +111,8 @@ describe('GIVEN PullDocs', () => {
         ],
         ['.mdx'],
         [],
-        { checkIntervalMins: 1, initialDelayMs: 1000 }
+        { checkIntervalMins: 1, initialDelayMs: 1000 },
+        expect.any(Function)
       );
     });
 

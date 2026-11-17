@@ -1,5 +1,4 @@
 import { globalStyle } from '@vanilla-extract/css';
-import { ssrClassName } from '../ssrClassName';
 
 globalStyle('html, body', {
   fontFamily: 'var(--salt-text-fontFamily, "Open Sans")',
@@ -39,8 +38,4 @@ globalStyle('table', {
 
 globalStyle('li > p', {
   display: 'inline'
-});
-
-globalStyle(`.${ssrClassName} svg, .${ssrClassName} img`, {
-  display: 'none'
 });

@@ -7,7 +7,7 @@ Mosaic is a **content aggregating, headless CMS solution** which can be ran with
 
 ## How To Create Your Own Mosaic Site
 
-You can copy the `site` directory from this repository into your project. The site directory is a standard Next.js app that loads the packages created by this repo, with an additional `mosaic-config.mjs` file to configure sources and other settings.
+Follow the [standalone site instructions](packages/site/README.md#create-a-standalone-site) to pack and extract `packages/site` with published dependency ranges. It is a standard Next.js app with a `mosaic.config.mjs` file to configure content sources and other settings.
 
 ## Serving A Dynamic, Server Side Rendered Site
 
@@ -33,7 +33,7 @@ To serve a snapshot as a SGS, use `snapshot-file` mode, which reads snapshots st
 > yarn gen:snapshot
 ```
 
-This will create a snapshot in `packages/site/public/snapshots/latest`.
+This will create a snapshot in `packages/site/snapshots/latest`.
 
 ### To serve from local snapshot
 

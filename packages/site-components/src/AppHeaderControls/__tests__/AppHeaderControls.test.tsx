@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { signIn } from 'next-auth/react';
+
+import { NextAuthAdapter } from '../../auth/next-auth';
 
 const pathname = vi.hoisted(() => ({ current: '/docs/page' }));
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }));
@@ -19,12 +22,18 @@ vi.mock('@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls',
 }));
 vi.mock('@jpmorganchase/mosaic-store', () => ({
   useColorMode: () => 'light',
-  useSearchIndex: () => ({ searchEnabled: false }),
   useSourceCapabilities: () => ({}),
   useStoreActions: () => ({ setColorMode: vi.fn() })
 }));
 
+vi.mock('../../SearchInput', () => ({ SearchInput: () => null }));
+
 const { AppHeaderControls } = await import('../index');
+const Header = () => (
+  <NextAuthAdapter>
+    <AppHeaderControls />
+  </NextAuthAdapter>
+);
 
 const loginHref = (html: string) => html.match(/href="([^"]*api\/auth\/signin[^"]*)"/)?.[1];
 
@@ -43,7 +52,7 @@ describe('GIVEN the AppHeaderControls Login link', () => {
     // href must come from the pathname both sides agree on.
     expect(window.location.pathname).toBe('/');
 
-    render(<AppHeaderControls />);
+    render(<Header />);
 
     expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute(
       'href',
@@ -52,8 +61,8 @@ describe('GIVEN the AppHeaderControls Login link', () => {
   });
 
   test('THEN the server render matches the browser render', () => {
-    const serverHref = loginHref(renderToString(<AppHeaderControls />))?.replace(/&amp;/g, '&');
-    render(<AppHeaderControls />);
+    const serverHref = loginHref(renderToString(<Header />))?.replace(/&amp;/g, '&');
+    render(<Header />);
 
     expect(serverHref).toBe(screen.getByRole('link', { name: 'Login' }).getAttribute('href'));
   });
@@ -61,11 +70,40 @@ describe('GIVEN the AppHeaderControls Login link', () => {
   test('THEN pages under /api/auth/ call back to the home page', () => {
     pathname.current = '/api/auth/signin';
 
-    render(<AppHeaderControls />);
+    render(<Header />);
 
     expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute(
       'href',
       '/api/auth/signin?callbackUrl=%2F'
     );
+  });
+
+  test('THEN an ordinary click calls the adapter but modified clicks keep the real link', () => {
+    render(<Header />);
+    const link = screen.getByRole('link', { name: 'Login' });
+    fireEvent.click(link);
+    expect(signIn).toHaveBeenCalledTimes(1);
+    const prevented: boolean[] = [];
+    const stopNativeNavigation = (event: MouseEvent) => {
+      prevented.push(event.defaultPrevented);
+      event.preventDefault(); // jsdom cannot follow the fallback link.
+    };
+    document.addEventListener('click', stopNativeNavigation);
+    try {
+      for (const modifier of ['metaKey', 'ctrlKey', 'shiftKey', 'altKey']) {
+        fireEvent.click(link, { [modifier]: true });
+      }
+      fireEvent.click(link, { button: 1 });
+    } finally {
+      document.removeEventListener('click', stopNativeNavigation);
+    }
+    expect(prevented).toEqual([false, false, false, false, false]);
+    expect(signIn).toHaveBeenCalledTimes(1);
+  });
+
+  test('THEN no provider means no Login control, even when the legacy login flag is enabled', () => {
+    render(<AppHeaderControls />);
+    expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Select an action' })).toBeInTheDocument();
   });
 });

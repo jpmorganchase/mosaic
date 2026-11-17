@@ -90,6 +90,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/migrate-to-app-router</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/publish-site-to-aws</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -170,11 +175,6 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/snapshot-s3</loc>
-		<changefreq>weekly</changefreq>
-		<priority>0.5</priority>
-	</url>
-	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/static-export</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -211,6 +211,11 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lazy-page-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/llms-txt-plugin</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -265,6 +270,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/write-a-plugin</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/git-repo-source</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -305,6 +315,11 @@
 		<priority>0.5</priority>
 	</url>
 	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/write-a-source</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/custom-components</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
@@ -321,6 +336,11 @@
 	</url>
 	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/aliases/index</loc>
+		<changefreq>weekly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/test/hydration/index</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
 	</url>
@@ -418,7 +438,8 @@
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-update-namespace-sources</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>
-	</url>,	<url>
+	</url>
+	<url>
 		<loc>https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/producta</loc>
 		<changefreq>weekly</changefreq>
 		<priority>0.5</priority>

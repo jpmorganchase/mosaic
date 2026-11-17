@@ -1,5 +1,5 @@
 import { globalStyle, style } from '@vanilla-extract/css';
-import { caption, responsiveSprinkles, vars } from '@jpmorganchase/mosaic-theme';
+import { breakpoint, caption, responsiveSprinkles, vars } from '@jpmorganchase/mosaic-theme';
 
 const logoImage = style({
   display: 'flex',
@@ -11,6 +11,14 @@ const logoImage = style({
 });
 
 export default {
+  drawer: style({
+    display: 'block',
+    '@media': { [`(min-width: ${breakpoint.web}px)`]: { display: 'none' } }
+  }),
+  tabs: style({
+    display: 'none',
+    '@media': { [`(min-width: ${breakpoint.web}px)`]: { display: 'block' } }
+  }),
   root: style([
     {
       flexGrow: 1,

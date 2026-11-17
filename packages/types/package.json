@@ -12,7 +12,7 @@
     }
   },
   "engines": {
-    "node": ">=18.0.0 || >=20.0.0"
+    "node": ">=24"
   },
   "repository": {
     "type": "git",
@@ -27,8 +27,9 @@
     "clean": "rm -fr dist",
     "lint": "eslint ."
   },
-  "devDependencies": {
-    "@jpmorganchase/mosaic-schemas": "^0.1.0-beta.98",
+  "dependencies": {
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@types/picomatch": "^4.0.0",
     "memfs": "^4.0.0",
     "rxjs": "^7.5.5",
     "tinyglobby": "^0.2.17"

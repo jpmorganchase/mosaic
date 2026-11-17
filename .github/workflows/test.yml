@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node-version: ['22', '24']
+        node-version: ['24', '26']
 
     steps:
       - name: Checkout
@@ -32,6 +32,10 @@ jobs:
         run: yarn
       - name: 'Build internal prerequisites'
         run: yarn build
+      - name: Install packed-consumer browser
+        run: yarn workspace @jpmorganchase/mosaic-site exec playwright install --with-deps chromium
+      - name: Check packed-package consumers
+        run: yarn test:consumer
       - name: Run Tests
         run: yarn test
 
@@ -40,14 +44,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'yarn'
       - name: Install Dependencies
         run: yarn
       - name: Prettier
         run: yarn run prettier:ci
+      - name: Check release metadata
+        run: |
+          git show-ref --verify --quiet refs/heads/main || git branch main origin/main
+          yarn changeset status
       - name: Lint
         run: yarn run lint

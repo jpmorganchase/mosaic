@@ -29,6 +29,8 @@
 import { createContext, createElement, useCallback, useContext, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { confirmLeave } from './leaveGuard';
+
 export interface EditMode {
   /** `true` when `?edit=1` is on the current URL. */
   isEditing: boolean;
@@ -89,7 +91,7 @@ export function useEditModeActions(): Pick<EditMode, 'startEditing' | 'stopEditi
     const params = new URLSearchParams(window.location.search);
     // In CREATE mode the URL carries `?new=1&title=...` rather than
     // `?edit=1` — stripping only `edit` would leave the create
-    // branch in `[namespace]/[[...route]]/page.tsx` active, the editor would
+    // branch in `[namespace]/[...route]/page.tsx` active, the editor would
     // stay mounted, and the click would appear to do nothing.
     // Strip all three flags so a single Cancel handler works for
     // both modes. `title` is meaningless without `new`, so it goes
@@ -118,7 +120,8 @@ export function useEditModeActions(): Pick<EditMode, 'startEditing' | 'stopEditi
       : qs
       ? `${pathname}?${qs}`
       : pathname;
-    router.replace(target, { scroll: false });
+    // The mounted editor asks before unsaved changes are discarded.
+    confirmLeave(() => router.replace(target, { scroll: false }));
   }, [pathname, router]);
 
   return { startEditing, stopEditing };

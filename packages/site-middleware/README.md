@@ -6,8 +6,7 @@ the search index, the sitemap) from whichever source the current
 `MOSAIC_MODE` points at, plus the MDX pipeline that compiles pages for
 the browser.
 
-Everything in this package is **server-only**; importing it from a
-client component throws.
+The root entry is **server-only**. The `./search` and `./search/highlight` entries are also safe to import in the browser.
 
 ## Installation
 
@@ -20,11 +19,10 @@ yarn add @jpmorganchase/mosaic-site-middleware
 ## Usage (App Router)
 
 ```tsx
-// src/app/[namespace]/[[...route]]/page.tsx
+// src/app/[namespace]/[...route]/page.tsx
 import { notFound, redirect } from 'next/navigation';
 import {
   getMdxRaw,
-  getSearchData,
   getSharedConfig,
   resolveMosaicMode,
   serializeMdxForClient
@@ -35,10 +33,9 @@ export default async function Page({ params }: { params: Promise<{ route: string
   const pathname = '/' + route.join('/');
   const { mode, contentUrl } = resolveMosaicMode();
 
-  const [mdx, sharedConfig, search] = await Promise.all([
+  const [mdx, sharedConfig] = await Promise.all([
     getMdxRaw(pathname, mode, contentUrl),
-    getSharedConfig(pathname, mode, contentUrl),
-    getSearchData(mode, contentUrl)
+    getSharedConfig(pathname, mode, contentUrl)
   ]);
   if (mdx.kind === 'redirect') redirect(mdx.destination);
   if (mdx.kind === 'not-found') notFound();
@@ -49,7 +46,7 @@ export default async function Page({ params }: { params: Promise<{ route: string
 }
 ```
 
-See `packages/site/src/app/[namespace]/[[...route]]/page.tsx` for the full reference
+See `packages/site/src/app/[namespace]/[...route]/page.tsx` for the full reference
 implementation (edit gating, folder → index redirects, metadata).
 
 ## Loaders
@@ -59,7 +56,6 @@ implementation (edit gating, folder → index redirects, metadata).
 | `resolveMosaicMode()`                            | `{ mode, contentUrl }` from `MOSAIC_MODE` / `MOSAIC_<MODE>_MODE_URL`.       |
 | `getMdxRaw(pathname, mode, contentUrl)`          | `{ kind: 'mdx', raw, frontmatter }`, `{ kind: 'redirect' }` or `not-found`. |
 | `getSharedConfig(pathname, mode, contentUrl)`    | The subtree's shared config (header, footer, …) or `undefined`.             |
-| `getSearchData(mode, contentUrl)`                | `{ searchIndex, searchConfig }`.                                            |
 | `getMdxRawSource(pathname, mode, contentUrl)`    | The page's on-disk bytes (active mode only), for the editor.                |
 | `getTagSuggestions(mode, contentUrl)`            | Tag names known to the content server, for the editor.                      |
 | `loadSitemap()`                                  | Every page pathname, e.g. for `generateStaticParams`.                       |
@@ -96,3 +92,7 @@ pipeline are cached in-process by content hash; treat them as read-only.
 `withSearchIndex`, `withSharedConfig`, `withSession`, …) was removed
 when the reference site moved to the App Router. Port
 `getServerSideProps` code to the loaders above.
+
+## Search
+
+`createSearchHandler()` serves records through an App Router route. `loadSearchRecords()` reads the generated records directly. The browser-safe `./search` entry exports `createSearchIndex`, and `./search/highlight` exports text highlighting without loading the search engine. The built-in header uses `SearchProvider` from `mosaic-site-components`; search data no longer passes through content stores or page loaders.

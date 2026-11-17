@@ -1,11 +1,45 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
+import { hydrateRoot } from 'react-dom/client';
 
 import { Tag } from '../index';
 import style from '../styles.css';
 
 describe('GIVEN a Tag', () => {
+  test('hydrates children inside a paragraph without repairing the paragraph', async () => {
+    const app = (
+      <p>
+        Available as <Tag>RC</Tag> today.
+      </p>
+    );
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(app);
+    document.body.appendChild(container);
+    const paragraph = container.querySelector('p');
+    const onRecoverableError = vi.fn();
+    let root: ReturnType<typeof hydrateRoot> | undefined;
+    try {
+      expect(container.querySelectorAll('p')).toHaveLength(1);
+      expect(paragraph).toHaveTextContent('Available as RC today.');
+      await act(async () => {
+        root = hydrateRoot(container, app, { onRecoverableError });
+      });
+      expect(onRecoverableError).not.toHaveBeenCalled();
+      expect(container.querySelector('p')).toBe(paragraph);
+      expect(paragraph?.querySelector('div')).toBeNull();
+    } finally {
+      if (root) await act(async () => root?.unmount());
+      container.remove();
+    }
+  });
+
+  test.each(['Label', ''])('prefers the explicit label %j over children', label => {
+    render(<Tag label={label}>Ignored child</Tag>);
+    expect(screen.queryByText('Ignored child')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('tag')).toHaveTextContent(label);
+  });
   describe('WHEN PROP: `label` is used', () => {
     test('THEN the Tag is rendered with the label', () => {
       // arrange

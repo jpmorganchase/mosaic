@@ -18,6 +18,18 @@
       "import": "./dist/index.js",
       "node": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./frame": {
+      "types": "./dist/frame.d.ts",
+      "import": "./dist/frame.js",
+      "node": "./dist/frame.js",
+      "default": "./dist/frame.js"
+    },
+    "./theme-preference": {
+      "types": "./dist/theme-preference.d.ts",
+      "import": "./dist/theme-preference.js",
+      "node": "./dist/theme-preference.js",
+      "default": "./dist/theme-preference.js"
     }
   },
   "files": [
@@ -37,7 +49,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "zustand": "^4.5.7"
   },
   "peerDependencies": {

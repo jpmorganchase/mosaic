@@ -8,6 +8,8 @@ import { cache } from 'react';
 import path from 'node:path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { getMdxRaw, getSharedConfig } from './cachedLoaders.js';
+import { canonicalRoute, isSafeContentPath } from './canonicalRoute.js';
+export { canonicalRoute } from './canonicalRoute.js';
 
 type MdxContent = Extract<Awaited<ReturnType<typeof getMdxRaw>>, { kind: 'mdx' }>;
 type SharedConfig = Awaited<ReturnType<typeof getSharedConfig>>;
@@ -44,6 +46,11 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
  * save operations use that backing path; an authored public permalink
  * must not select another source's capabilities or become a save target.
  *
+ * `sharedConfig` is final: the folder's config with the page's own
+ * authored `sharedConfig` on top (see `mergePageSharedConfig`). The
+ * frontmatter's `sharedConfig` is replaced with the same value, so
+ * spreading the frontmatter can't bring authored capabilities back.
+ *
  * `sharedConfig` is returned for misses too: it belongs to the folder
  * the missing page would live in, which is what the create-page flow
  * (`?new=1`) checks for `sourceCapabilities.writable`.
@@ -59,6 +66,24 @@ export type ResolvedContent =
     }
   | { kind: 'not-found'; originalPathname: string; pathname: string; sharedConfig: SharedConfig }
   | { kind: 'redirect'; destination: string };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * The shared config a page renders with: its folder's config, with the
+ * page's own authored `sharedConfig` (a per-page header or footer, for
+ * example) on top.
+ *
+ * `sourceCapabilities` only ever comes from the folder's config, which
+ * Mosaic derives from the page's source. Content can't grant itself
+ * capabilities, such as turning on the editor, by authoring them.
+ */
+export function mergePageSharedConfig(folderConfig: SharedConfig, authored: unknown): SharedConfig {
+  if (!isRecord(authored)) return folderConfig;
+  const { sourceCapabilities: _authoredCapabilities, ...overrides } = authored;
+  return { ...(folderConfig ?? {}), ...overrides } as SharedConfig;
+}
 
 /**
  * Fetch MDX + shared config for a pathname, transparently following
@@ -114,13 +139,18 @@ export const resolveContent = cache(
           path.posix.dirname(sourcePathname) === path.posix.dirname(pathname)
             ? requestedConfig()
             : await getSharedConfig(sourcePathname, mode, contentUrl);
+        const sharedConfig = mergePageSharedConfig(documentConfig, mdx.frontmatter.sharedConfig);
         return {
           kind: 'mdx',
           originalPathname,
           pathname: canonicalRoute(mdx.frontmatter, pathname),
           sourcePathname,
-          mdx,
-          sharedConfig: documentConfig
+          // The loaders' results are cached, so copy rather than change them.
+          mdx:
+            'sharedConfig' in mdx.frontmatter
+              ? { ...mdx, frontmatter: { ...mdx.frontmatter, sharedConfig } }
+              : mdx,
+          sharedConfig
         };
       }
 
@@ -145,28 +175,3 @@ export const resolveContent = cache(
     return { kind: 'not-found', originalPathname, pathname, sharedConfig: undefined };
   }
 );
-
-/**
- * The route search engines should index for a page.
- *
- * Mosaic stamps every page's frontmatter with its canonical `route`
- * (for example `/mosaic/getting-started/index`), which already accounts
- * for folder URLs and aliases in every content mode. Falls back to
- * `fallback` when the frontmatter has no usable route.
- */
-export function canonicalRoute(frontmatter: Record<string, unknown>, fallback: string): string {
-  const { route } = frontmatter;
-  return isSafeContentPath(route) ? route : fallback;
-}
-
-/** Reject paths that could escape a document's configuration or save scope. */
-function isSafeContentPath(value: unknown): value is string {
-  if (typeof value !== 'string' || value.length < 2 || value.length > 1024) return false;
-  if (!value.startsWith('/') || value.includes('\\')) return false;
-  // eslint-disable-next-line no-control-regex
-  if (/[\x00-\x1f\x7f]/.test(value)) return false;
-  return value
-    .slice(1)
-    .split('/')
-    .every(segment => segment !== '' && segment !== '.' && segment !== '..');
-}

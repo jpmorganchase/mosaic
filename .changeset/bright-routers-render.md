@@ -5,7 +5,6 @@
 '@jpmorganchase/mosaic-content-editor-plugin': patch
 '@jpmorganchase/mosaic-sitemap-component': patch
 '@jpmorganchase/mosaic-site-preset-styles': patch
-'@jpmorganchase/mosaic-open-api-component': patch
 '@jpmorganchase/mosaic-source-storybook': patch
 '@jpmorganchase/mosaic-source-local-folder': patch
 '@jpmorganchase/mosaic-from-http-request': patch
@@ -44,7 +43,7 @@ removed, and a new static-export build target has been added.
   `middlewarePresets`, `createMiddlewareRunner` and the
   `fromGetServerSidePropsContext` adapter are gone.
 - **Replaced by cached loaders** that App Router routes call directly
-  (in parallel): `getMdxRaw`, `getSharedConfig`, `getSearchData`,
+  (in parallel): `getMdxRaw`, `getSharedConfig`,
   `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
   `resolveMosaicMode`. Each is deduplicated per request with
   `React.cache` and cached across requests with `unstable_cache`, tagged

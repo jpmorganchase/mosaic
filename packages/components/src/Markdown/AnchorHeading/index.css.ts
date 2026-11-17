@@ -8,26 +8,36 @@ export const badgeLinkHeight = createVar();
 export const badgeLinkBorderRadius = createVar();
 export const badgeLinkOffset = createVar();
 
+const root = style({
+  vars: {
+    [badgeLinkHeight]: '28px',
+    [badgeLinkBorderRadius]: '14px',
+    [badgeLinkOffset]: '-28',
+    [badgeCopiedHeight]: '28px',
+    [badgeCopiedBorderRadius]: '36px',
+    [badgeCopiedOffset]: '-74'
+  },
+  display: 'flex',
+  alignItems: 'center'
+});
+
 export default {
-  root: style({
-    vars: {
-      [badgeLinkHeight]: '28px',
-      [badgeLinkBorderRadius]: '14px',
-      [badgeLinkOffset]: '-28',
-      [badgeCopiedHeight]: '28px',
-      [badgeCopiedBorderRadius]: '36px',
-      [badgeCopiedOffset]: '-74'
-    },
-    display: 'block'
-  }),
+  root,
+  heading: style({ minWidth: 0 }),
   link: style({
-    display: 'inline',
+    display: 'inline-flex',
+    flexShrink: 0,
     textDecorationLine: 'none',
-    lineHeight: 'inherit'
+    lineHeight: 'inherit',
+    opacity: 0,
+    selectors: {
+      [`${root}:hover &`]: { opacity: 1 },
+      '&:focus-visible': { opacity: 1 }
+    }
   }),
+  copied: style({ opacity: 1 }),
   badgeContainer: style({
-    verticalAlign: 'text-bottom',
-    position: 'absolute'
+    display: 'inline-flex'
   }),
   badge: style([
     backgroundColor({ variant: 'emphasis' }),

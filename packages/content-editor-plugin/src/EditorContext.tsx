@@ -19,7 +19,7 @@ import {
   useState,
   type ReactNode
 } from 'react';
-import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 import type { NodeKey } from 'lexical';
 
 export type EditorUser = { sid: string; displayName: string; email: string };
@@ -27,8 +27,8 @@ export type EditorUser = { sid: string; displayName: string; email: string };
 // --- Preview context (high-frequency: every keystroke) -----------------
 
 interface PreviewContextValue {
-  previewContent: SerializeResult | undefined;
-  setPreviewContent: (content: SerializeResult | undefined) => void;
+  previewContent: SerializedMdxResult | undefined;
+  setPreviewContent: (content: SerializedMdxResult | undefined) => void;
 }
 const PreviewContext = createContext<PreviewContextValue | null>(null);
 
@@ -163,7 +163,7 @@ export interface EditorProviderProps {
 }
 
 export function EditorProvider({ initialUser, children }: EditorProviderProps) {
-  const [previewContent, setPreviewContent] = useState<SerializeResult | undefined>(undefined);
+  const [previewContent, setPreviewContent] = useState<SerializedMdxResult | undefined>(undefined);
   const [error, setError] = useState<EditorError | undefined>(undefined);
   const [user, setUser] = useState<EditorUser | undefined>(initialUser);
   const [isInsertingLink, setIsInsertingLink] = useState(false);

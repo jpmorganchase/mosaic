@@ -1,7 +1,7 @@
 ---
 title: PublicAssetsPlugin
 layout: DetailOverview
-lastModified: 1780396148467.2253
+lastModified: 1794773046197.679
 fullPath: /mosaic/configure/plugins/public-assets-plugin.mdx
 route: /mosaic/configure/plugins/public-assets-plugin
 breadcrumbs:
@@ -83,13 +83,6 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/modes/snapshot-file
-      - id: /mosaic/configure/modes/snapshot-s3
-        kind: data
-        fullPath: /mosaic/configure/modes/snapshot-s3.mdx
-        name: Snapshot AWS/S3 mode
-        data:
-          level: 3
-          link: /mosaic/configure/modes/snapshot-s3
     name: Modes of operation
     priority: 4
   - id: /mosaic/configure/theme
@@ -201,6 +194,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/sources/http-source
+      - id: /mosaic/configure/sources/write-a-source
+        kind: data
+        fullPath: /mosaic/configure/sources/write-a-source.mdx
+        name: Write a source
+        data:
+          level: 3
+          link: /mosaic/configure/sources/write-a-source
     name: Sources
     priority: 3
   - id: /mosaic/configure/layouts
@@ -367,6 +367,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/lazy-page-plugin
+      - id: /mosaic/configure/plugins/llms-txt-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/llms-txt-plugin.mdx
+        name: LlmsTxtPlugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/llms-txt-plugin
       - id: /mosaic/configure/plugins/pages-wthout-extensions-plugin
         kind: data
         fullPath: /mosaic/configure/plugins/pages-wthout-extensions-plugin.mdx
@@ -437,6 +444,13 @@ sidebarData:
         data:
           level: 3
           link: /mosaic/configure/plugins/toc-plugin
+      - id: /mosaic/configure/plugins/write-a-plugin
+        kind: data
+        fullPath: /mosaic/configure/plugins/write-a-plugin.mdx
+        name: Write a plugin
+        data:
+          level: 3
+          link: /mosaic/configure/plugins/write-a-plugin
     name: Plugins
     priority: 1
 ---
@@ -444,7 +458,7 @@ sidebarData:
 
 The `PublicAssetsPlugin` is responsible for finding "assets" in the Mosaic filesystem and copying them to another directory.
 
-Typical use-case is for copying `sitemap.xml` and `search-data.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
+Typical use-case is for copying `sitemap.xml` and `search-records.json` to the public directory of a Next.js site as these are considered [static assets](https://nextjs.org/docs/pages/building-your-application/optimizing/static-assets) for Next.js.
 
 ## Priority
 
@@ -468,7 +482,7 @@ plugins: [
     priority: -1,
     options: {
       outputDir: './public',
-      assets: ['sitemap.xml', 'search-data.json']
+      assets: ['sitemap.xml', 'search-records.json']
     }
   }
   // other plugins

@@ -37,6 +37,10 @@ export function ThemeProvider({ themeClassName, children }: ThemeProviderProps) 
   const hasHydrated = useHasHydrated();
   const colorMode = useColorMode();
 
+  // Density also changes descendants' markup, including nested providers and
+  // Spinner SVGs. Match the server on the first hydration render, then let
+  // DensitySetter apply the viewport's density and track breakpoint changes.
+  // The site's inline script can still set the root class before first paint.
   const [density, setDensity] = useState<Density>('low');
   const ssrClassname = hasHydrated ? undefined : ssrClassName;
 

@@ -8,8 +8,12 @@ import { resolveInside, stripPrefixDir, toSafeIdentifier } from '../safePaths';
 
 describe('GIVEN resolveInside', () => {
   test('THEN paths inside the root resolve', () => {
-    expect(resolveInside('/repo/docs', 'guide/index.mdx')).toBe('/repo/docs/guide/index.mdx');
-    expect(resolveInside('/repo/docs', '/guide/index.mdx')).toBe('/repo/docs/guide/index.mdx');
+    expect(resolveInside('/repo/docs', 'guide/index.mdx', path.posix)).toBe(
+      '/repo/docs/guide/index.mdx'
+    );
+    expect(resolveInside('/repo/docs', '/guide/index.mdx', path.posix)).toBe(
+      '/repo/docs/guide/index.mdx'
+    );
   });
 
   test.each(['../../.github/workflows/x.yml', 'guide/../../escape.mdx', '..', '', '/'])(
@@ -101,7 +105,7 @@ describe('GIVEN renamePageIfRequested', () => {
     expect(result).toEqual({
       ok: true,
       renamed: true,
-      newPathOnDisk: path.join(repoDir, 'docs', 'guide', 'renamed.mdx')
+      newPathOnDisk: path.join(repoDir, 'docs', 'guide', 'renamed.mdx').split(path.sep).join('/')
     });
     expect(fs.existsSync(path.join(repoDir, 'docs', 'guide', 'renamed.mdx'))).toBe(true);
   });

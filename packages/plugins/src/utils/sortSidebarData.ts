@@ -13,6 +13,8 @@ export interface SidebarDataNode {
   priority?: number;
   data: { level: number; link: string };
   sharedSortConfig?: SortConfigWithValue;
+  /** Consumer metadata, for example a component status badge. */
+  metadata?: Record<string, unknown>;
 }
 
 export type SidebarData = SidebarDataNode | SidebarGroupNode;
@@ -23,6 +25,7 @@ export interface SidebarGroupNode {
   childNodes: SidebarData[];
   name: string;
   priority?: number;
+  metadata?: Record<string, unknown>;
 }
 
 export function isGroupNode(node: SidebarDataNode | SidebarGroupNode): node is SidebarGroupNode {
@@ -60,18 +63,30 @@ function sortBySharedSortConfig(nodeA: SidebarData, nodeB: SidebarData) {
   return doSort(nodeB.sharedSortConfig.fieldData, nodeA.sharedSortConfig.fieldData);
 }
 
-export function sortSidebarData(sidebarData: SidebarData[]) {
+/** The default ordering, reusable as the first part of a custom comparator. */
+export function compareSidebarNodes(pageA: SidebarData, pageB: SidebarData): number {
+  return (pageB.priority ?? -1) - (pageA.priority ?? -1) || sortBySharedSortConfig(pageA, pageB);
+}
+
+export type SidebarComparator = (
+  a: SidebarData,
+  b: SidebarData,
+  parent: SidebarGroupNode
+) => number;
+
+export function sortSidebarData(
+  sidebarData: SidebarData[],
+  compare: SidebarComparator = compareSidebarNodes
+) {
   const pagesByPriority = sidebarData.map(group => {
     if (!isGroupNode(group)) {
       return group;
     }
-    if (group?.childNodes?.length > 1) {
-      const sortedChildNodes = group.childNodes.sort(
-        (pageA, pageB) =>
-          (pageB.priority ? pageB.priority : -1) - (pageA.priority ? pageA.priority : -1) ||
-          sortBySharedSortConfig(pageA, pageB)
+    // Even a single child can be a group whose descendants need sorting.
+    if (group?.childNodes?.length > 0) {
+      const sortedChildNodes = sortSidebarData(group.childNodes, compare).sort((pageA, pageB) =>
+        compare(pageA, pageB, group)
       );
-      sortSidebarData(group.childNodes);
       return { ...group, childNodes: sortedChildNodes };
     }
     return group;

@@ -9,6 +9,31 @@ sidebar:
 
 Learn how to add your own custom components to your Mosaic site.
 
+## Publishing an extension package
+
+An extension that renders Mosaic components or calls its hooks must use the host's React and Mosaic contexts. Declare the Mosaic packages it imports as `peerDependencies`, and add the same versions to `devDependencies` for local development. For example, an extension tested with the beta.98 release can declare:
+
+```json
+{
+  "peerDependencies": {
+    "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "^0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@jpmorganchase/mosaic-components": "0.1.0-beta.98",
+    "@jpmorganchase/mosaic-store": "0.1.0-beta.98",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
+```
+
+Externalize those peers when bundling the extension, including their subpath imports. Listing peers does not stop a bundler from embedding a second copy. A bundled or separately installed `mosaic-store`, for example, creates a different context: its hooks cannot see the host's `StoreProvider` or `ColorModeProvider`.
+
+The host installs the packages and chooses one Mosaic release cohort. Test the packed extension against the host's providers, including an interaction that updates shared state. See [Trying a snapshot](../../getting-started/migrate-to-app-router#trying-a-snapshot) for preview versions.
+
 ## Create Components Folder
 
 To start, create a `components` folder under `src` where you'll store your custom components.
@@ -108,43 +133,41 @@ Your final folder structure should look like this:
 ## Import Custom Card Component
 
 Open your site's MDX component registry at
-`src/app/[namespace]/[[...route]]/MdxComponents.ts`. This file is the App Router
-equivalent of the old `pages/_app.tsx` component-merge step — the catch-all
-route imports the exported `mdxComponents` map and forwards it to `<Body components={...} />`.
+`src/app/[namespace]/[...route]/MdxComponents.ts`. This file is the App Router
+equivalent of the old `pages/_app.tsx` component-merge step. Its `hostComponents`
+registry is shared by the reader's `MdxRenderer` and the editor's `mdxComponents` map.
 
 Add the following line to your imports:
 
 ```tsx
-import * as myComponents from '../../components';
+import * as myComponents from '../../../components';
 ```
 
 Replace this block:
 
 ```tsx
-export const mdxComponents = {
-  ...mosaicComponents,
-  Salt: saltComponents,
-  Sitemap
-};
+const hostComponents = { Salt, Sitemap };
 ```
 
 with:
 
 ```tsx
-export const mdxComponents = {
-  ...mosaicComponents,
-  ...myComponents,
-  Salt: saltComponents,
-  Sitemap
-};
+const hostComponents = { Salt, Sitemap, ...myComponents };
 ```
 
-This will add your custom components to the site, and any custom components in `myComponents` will override the corresponding ones in `mosaicComponents`. The spread operator (`...`) merges both `mosaicComponents` and `myComponents` objects, giving priority to `myComponents` when there is a naming conflict.
+Keep both exports wired to this registry so custom components work in reader pages and editor previews:
+
+```tsx
+export const mdxComponents = { ...mosaicDefaultComponents, ...hostComponents };
+export const MdxRenderer = createMdxRenderer({ components: hostComponents });
+```
+
+Host components override Mosaic's defaults when names match.
 
 > **Note:** `MdxComponents.ts` is marked `'use client'`. Salt DS and any
 > other component that uses hooks must be reachable from a client
-> boundary. The catch-all page is a Server Component that imports only the
-> `mdxComponents` value, which keeps the bundle correctly split.
+> boundary. The server's `BodyServer` renders the client `MdxRenderer`;
+> the editor consumes `mdxComponents` separately.
 
 ## Use Your Custom Card Component
 

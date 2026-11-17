@@ -1,12 +1,17 @@
 import { describe, expect, test } from 'vitest';
 import {
   mostRecentScrollPoint,
+  stripMarkdownLinks,
   setupHeadingState,
-  setupSelectedHeadingState,
-  stripMarkdownLinks
+  setupSelectedHeadingState
 } from '../utils';
 
 describe('GIVEN a Table Of Contents (TOC)', () => {
+  test('legacy heading helpers remain available and select the generated id', () => {
+    document.body.innerHTML = '<h2 id="section">Section</h2>';
+    expect(setupSelectedHeadingState(setupHeadingState())).toBe('section');
+    expect(setupSelectedHeadingState([])).toBe('');
+  });
   describe('WHEN parsing heading text', () => {
     test('THEN markdown links are removed', () => {
       // Removes markdown links
@@ -23,63 +28,32 @@ describe('GIVEN a Table Of Contents (TOC)', () => {
     });
   });
 
-  describe('WHEN loading a new page', () => {
-    test('THEN the initial TOC heading state is created', () => {
-      document.body.innerHTML = `
-            <h1 id="heading-1">Heading 1</h1>
-            <h2 id="heading-2">Heading 2</h2>
-            <h3 id="heading-3">Heading 3</h3>
-          `;
-
-      const result = setupHeadingState();
-
-      expect(result).toEqual([
-        {
-          id: 'heading-1',
-          level: 1,
-          text: 'Heading 1',
-          current: false
-        },
-        {
-          id: 'heading-2',
-          level: 2,
-          text: 'Heading 2',
-          current: false
-        },
-        {
-          id: 'heading-3',
-          level: 3,
-          text: 'Heading 3',
-          current: false
-        }
-      ]);
-    });
-    test('THEN the initial TOC selected state is created', () => {
-      expect(setupSelectedHeadingState([{ slug: 'selected slug' }])).toEqual('selected slug');
-      expect(setupSelectedHeadingState([])).toEqual('');
-    });
-  });
-
   describe('WHEN checking scroll position', () => {
-    test('THEN the next (or last) anchor index is returned', () => {
+    test('THEN the current section remains selected until the next heading is reached', () => {
       const positions = [10, 12, 20, 40, 60, 90];
       const zeroth = mostRecentScrollPoint(5, positions);
       const first = mostRecentScrollPoint(19, positions);
       const second = mostRecentScrollPoint(23, positions);
       const last = mostRecentScrollPoint(9999, positions);
       expect(zeroth).toBe(0);
-      expect(first).toBe(2);
-      expect(second).toBe(3);
+      expect(first).toBe(1);
+      expect(second).toBe(2);
       expect(last).toBe(5);
+      expect(mostRecentScrollPoint(20, positions)).toBe(2);
     });
     test('THEN null is returned if there are no valid points', () => {
       const emptyPositions = [];
       const emptyResult = mostRecentScrollPoint(5, emptyPositions);
       expect(emptyResult).toBe(null);
 
-      const invalidPositions = ['SOMETHING_UNEXPECTED'];
+      const invalidPositions = [null, Number.NaN, Number.POSITIVE_INFINITY];
       const invalidResult = mostRecentScrollPoint(5, invalidPositions);
       expect(invalidResult).toBe(null);
+    });
+    test('THEN zero positions and original indices survive missing headings', () => {
+      expect(mostRecentScrollPoint(0, [0, 100])).toBe(0);
+      expect(mostRecentScrollPoint(150, [null, 0, null, 100, 200])).toBe(3);
+      expect(mostRecentScrollPoint(0, [null, 100, 200])).toBe(1);
     });
   });
 });

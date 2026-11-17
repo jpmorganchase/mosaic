@@ -2,10 +2,8 @@
  * App Router native sitemap convention.
  *
  * Next will serve this at `/sitemap.xml`. The data is sourced from
- * `loadSitemap()` (the same function `generateStaticParams` uses for
- * the static-export build), so the sitemap stays in lockstep with
- * whatever the Mosaic snapshot says exists. No second source of truth
- * to drift out of sync.
+ * `loadSitemap()`, preserving the snapshot's SEO exclusions. Prerendering
+ * independently uses `mosaic-routes.json`, so SEO exclusions cannot remove pages.
  *
  * Why not just serve the snapshot's own `sitemap.xml`?
  *

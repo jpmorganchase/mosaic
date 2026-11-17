@@ -5,7 +5,7 @@ import { MosaicConfig, IUnionVolume } from '@jpmorganchase/mosaic-types';
 import path from 'node:path';
 import fs from 'node:fs';
 
-import { resolveRawSourcePath } from './resolveRawSourcePath.js';
+import { normaliseRawSourceUrl, resolveRawSourcePath } from './resolveRawSourcePath.js';
 
 export interface FastifyMosaicPluginOptions {
   config: MosaicConfig;
@@ -17,6 +17,7 @@ export interface FastifyMosaic {
   config: MosaicConfig;
   core: MosaicCore;
   fs: IUnionVolume;
+  scope?: string[];
 }
 
 /**
@@ -31,7 +32,7 @@ const RAW_ROUTE_PREFIX = '/_mosaic-raw';
 async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPluginOptions) {
   const { config, scope, mosaic } = options;
   const fs$ = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
-  fastify.decorate('mosaic', { config, core: mosaic, fs: fs$ });
+  fastify.decorate('mosaic', { config, core: mosaic, fs: fs$, scope });
 
   /**
    * Raw on-disk source fetch.
@@ -67,15 +68,28 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
    * route-matching prefers it for matching URLs.
    */
   fastify.get(`${RAW_ROUTE_PREFIX}/*`, async (req: FastifyRequest, reply: FastifyReply) => {
-    // Strip the route prefix to get the page URL the editor
-    // intended. The wildcard parameter gives us the URL without
-    // the prefix already, but we round-trip through `req.url`
-    // to keep encoded characters (spaces in filenames, etc.)
-    // intact — Fastify's params decoder mangles `%20` to ` `,
-    // which then breaks the disk read.
-    const pageUrl = req.url.slice(RAW_ROUTE_PREFIX.length) || '/';
+    // Use the same decoded document path for ownership and disk resolution;
+    // query parameters are not part of an authored filename.
+    const pageUrl = normaliseRawSourceUrl(req.url.slice(RAW_ROUTE_PREFIX.length) || '/');
+    if (pageUrl === undefined) {
+      reply.header('X-Mosaic-Raw-Status', 'no-matching-source');
+      reply.status(404).send();
+      return;
+    }
 
-    const resolution = resolveRawSourcePath(pageUrl, config.sources);
+    const owner = await mosaic.getSourceDefinitionForPath(pageUrl, scope);
+    // Published content uses its actual owner. Unpublished authored files (e.g.
+    // JSON under an MDX source) fall back to registered sources, so stopped or
+    // replaced sources cannot keep serving stale authored files from config.
+    const scopedSources = owner
+      ? [owner]
+      : (await mosaic.listSources()).flatMap(({ name }) => {
+          const source = mosaic.getSourceDefinition(name);
+          return source && (!Array.isArray(scope) || scope.includes(source.namespace))
+            ? [source]
+            : [];
+        });
+    const resolution = resolveRawSourcePath(req.url.slice(RAW_ROUTE_PREFIX.length), scopedSources);
 
     if (resolution.kind === 'no-matching-source') {
       reply.header('X-Mosaic-Raw-Status', 'no-matching-source');

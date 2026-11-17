@@ -1,4 +1,7 @@
 export * from './store';
+export * from './useMosaicStore';
+export * from './frame';
+export { ColorModeProvider } from './ColorModeProvider';
 export * from './useAppHeader';
 export * from './useBreadcrumbs';
 export * from './useColorMode';
@@ -6,7 +9,6 @@ export * from './useLayout';
 export * from './useMeta';
 export * from './useNavigation';
 export * from './useRoute';
-export * from './useSearchIndex';
 export * from './useSidebar';
 export * from './useSourceCapabilities';
 export * from './useTableOfContents';

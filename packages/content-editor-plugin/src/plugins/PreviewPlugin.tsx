@@ -24,7 +24,7 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';
 import { debounce } from 'lodash-es';
 import { useEffect, useMemo, useRef, useTransition } from 'react';
-import type { SerializeResult } from 'next-mdx-remote-client/serialize';
+import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import transformers from '../transformers';
 import {
@@ -47,11 +47,11 @@ const ERROR_GRACE_MS = 800;
 
 export interface PreviewPluginProps {
   /**
-   * Server Action that compiles MDX source to a `SerializeResult`.
+   * Server Action that compiles MDX source to a `SerializedMdxResult`.
    * Passed in (rather than imported) so the plugin stays decoupled
    * from any specific Next app.
    */
-  compilePreview: (markdown: string) => Promise<SerializeResult>;
+  compilePreview: (markdown: string) => Promise<SerializedMdxResult>;
 }
 
 export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {

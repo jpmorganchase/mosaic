@@ -27,3 +27,42 @@ yarn gen:snapshot
 ```
 
 Commit the snapshot to your Git repo and push the site+snapshot to your Git repo, within the same branch.
+
+The CLI fails with a nonzero exit code when any source records a plugin exception,
+including failures caught by the pipeline. Diagnostics identify the source, plugin,
+lifecycle, and original error. A failed pipeline does not write a completed snapshot
+or generation identity; fix the reported error and regenerate before deploying.
+
+## Snapshot identity and caching
+
+The CLI writes `mosaic-snapshot.json` at the snapshot root after all content and aliases have been written successfully. This reserved file contains a versioned generation ID:
+
+```json
+{ "version": 1, "id": "a35baf6f-9246-4f91-88ce-182385759ca2" }
+```
+
+Every completed build gets a new ID, including builds that reuse the same output directory. Deploy this file with the complete snapshot. Mosaic includes the resolved snapshot directory and generation ID in persistent MDX and shared-configuration cache keys, so a new generation does not reuse content cached for an older snapshot.
+
+Older snapshots remain readable. If the identity file is missing or invalid, Mosaic skips persistent loader caching while retaining per-request memoization. Regenerate the snapshot with the updated CLI to enable caching; do not reuse an ID for changed content.
+
+Snapshots remain immutable deployment artifacts. Publish the complete snapshot with the site rather than overwriting files while requests are reading them. The generation ID affects loader data caching; changing it alone does not invalidate already-rendered Next.js routes. Deploy a new site build or use the appropriate Next.js route revalidation when replacing a snapshot in a running deployment.
+
+## Route inventory and prerendering
+
+Every successful `mosaic build` also writes `mosaic-routes.json`, independently of `SiteMapPlugin` and its SEO exclusions. The version 1 envelope contains `snapshotId` (matching the completion identity) and `routes`, an array of `{ pathname, sourcePathname }` records. `pathname` is a percent-encoded URL; `sourcePathname` is its decoded backing file path, including the extension. Actual files, aliases and supported folder/index shortcuts determine this inventory. A frontmatter `route` alone does not create a URL.
+
+App Router hosts can use the public helper:
+
+```ts
+import { generateMosaicStaticParams } from '@jpmorganchase/mosaic-site-middleware/routes';
+
+export async function generateStaticParams() {
+  return generateMosaicStaticParams({ pageExtensions: ['.mdx'] });
+}
+```
+
+The helper defaults to `MOSAIC_SNAPSHOT_DIR`; pass `snapshotDir` to choose another directory. It returns decoded `{ namespace, route }` params, where `namespace` means the first URL segment, not the source's configured namespace. A required `[...route]` page selects entries with a nonempty `route`; a separate `[namespace]/page.tsx` selects empty routes and returns `{ namespace }`. The host handles `/` itself. When constructing loader URLs from Next's decoded params, encode each segment with `encodeURIComponent`.
+
+`pageExtensions` explicitly selects backing documents the host can render. Core may also admit JSON or custom data files, which should not automatically become MDX pages. `include(record)` can further restrict prerendering without changing SEO output. The reference site selects `.mdx` files. Custom extension inventory does not add new loader behavior: explicit `/index` still resolves to `.mdx`, and folder shortcuts need an existing extensionless `index` alias.
+
+An empty CLI inventory is valid, including builds with zero enabled sources. The host helper rejects an empty selection by default; set `allowEmpty: true` for an intentionally empty host. Missing, malformed, unsupported or mismatched inventory/identity files fail with a regeneration message. Existing content loaders can still read older snapshots, but adopting this helper requires regenerating them. It never falls back to the SEO sitemap.

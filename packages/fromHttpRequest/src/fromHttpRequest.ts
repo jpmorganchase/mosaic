@@ -1,5 +1,3 @@
-import 'event-target-polyfill';
-import 'yet-another-abortcontroller-polyfill';
 import { defer, from, Observable, ObservableInput, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import contentTypeParser from 'fast-content-type-parse';

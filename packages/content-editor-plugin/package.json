@@ -38,19 +38,20 @@
     "clean": "npx del-cli 'dist/**' && find . -type d -empty -delete",
     "lint": "eslint .",
     "dev": "node ../../scripts/bundle.mjs watch",
-    "extensions:smoke": "node --experimental-strip-types --no-warnings scripts/extensions-smoke.ts"
+    "extensions:smoke": "node scripts/extensions-smoke.ts"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@floating-ui/react": "^0.26.6",
-    "@jpmorganchase/mosaic-components": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-icons": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-serialisers": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-theme": "^0.1.0-beta.98",
-    "@jpmorganchase/mosaic-types": "^0.1.0-beta.98",
+    "@floating-ui/react": "^0.27.19",
+    "@jpmorganchase/mosaic-components": "workspace:^",
+    "@jpmorganchase/mosaic-icons": "workspace:^",
+    "@jpmorganchase/mosaic-schemas": "workspace:^",
+    "@jpmorganchase/mosaic-serialisers": "workspace:^",
+    "@jpmorganchase/mosaic-theme": "workspace:^",
+    "@jpmorganchase/mosaic-types": "workspace:^",
     "@lexical/code": "^0.45.0",
     "@lexical/extension": "^0.45.0",
     "@lexical/link": "^0.45.0",
@@ -61,7 +62,7 @@
     "@lexical/selection": "^0.45.0",
     "@lexical/table": "^0.45.0",
     "@lexical/utils": "^0.45.0",
-    "@salt-ds/core": "^1.63.0",
+    "@salt-ds/core": "^1.73.0",
     "@salt-ds/theme": "^1.43.0",
     "@vanilla-extract/css": "^1.6.0",
     "@vanilla-extract/sprinkles": "^1.5.1",
@@ -74,7 +75,7 @@
   },
   "peerDependencies": {
     "@types/react": "^18.3.12 || ^19.0.0",
-    "next": "^15.5.28 || ^16.4.1",
+    "next": "^15.5.29 || ^16.4.5",
     "next-mdx-remote-client": "^1.0.0 || ^2.1.12",
     "react": "^18.2.0 || ^19.0.0",
     "react-dom": "^18.2.0 || ^19.0.0"

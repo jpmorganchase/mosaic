@@ -30,9 +30,15 @@ import {
   DialogHeader,
   DialogContent,
   DialogActions,
-  Input
+  Input,
+  MultilineInput
 } from '@salt-ds/core';
-import { SourceWorkflowMessageEvent } from '@jpmorganchase/mosaic-types';
+import type {
+  EditorSaveInput,
+  WorkflowDefaults,
+  WorkflowDefaultsInput,
+  SourceWorkflowMessageEvent
+} from '@jpmorganchase/mosaic-types';
 
 import { useSaveState } from '../../EditorContext';
 import { PersistStatus } from './PersistStatus';
@@ -40,6 +46,7 @@ import { Dialog } from '../Dialog';
 import { Diff, useDiff } from './Diff';
 import style from './index.css';
 import { hasUnsafeRouteSegments } from '../../utils/routeSegments';
+import { useCommitMessage } from './useCommitMessage';
 
 interface InfoProps {
   isRaising: boolean;
@@ -139,27 +146,11 @@ export interface PersistDialogProps {
    * `subscribeToSave(jobId)`. Passed in so the plugin stays decoupled
    * from any specific Next app.
    */
-  persist?: (input: {
-    route: string;
-    markdown: string;
-    /**
-     * Authored frontmatter as bare YAML. Optional and additive:
-     * older host implementations that destructure only
-     * `{ route, markdown }` continue to work unchanged.
-     */
-    frontmatter?: string;
-    /**
-     * New VFS route for a file rename (Mosaic uses file-based
-     * routing). Same additivity caveat as `frontmatter` — older
-     * hosts ignore it and behaviour is unchanged.
-     */
-    targetRoute?: string;
-    /**
-     * Brand-new-page flag. When `true` the workflow treats
-     * `route` as a create rather than an edit.
-     */
-    isNewPage?: boolean;
-  }) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  persist?: (
+    input: EditorSaveInput
+  ) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  /** Supplying this callback opts the host into forwarding commitMessage on saves. */
+  loadSaveDefaults?: (input: WorkflowDefaultsInput) => Promise<WorkflowDefaults>;
   /**
    * When `true` this dialog is for *creating* a new page
    * rather than editing an existing one:
@@ -185,6 +176,7 @@ export const PersistDialog = ({
   getCurrentAuthoredFrontmatter,
   originalAuthoredFrontmatter,
   persist,
+  loadSaveDefaults,
   isNewPage = false
 }: PersistDialogProps) => {
   const [isRaising, startTransition] = useTransition();
@@ -302,6 +294,14 @@ export const PersistDialog = ({
     return null;
   }, [targetRoute, meta.route]);
 
+  const message = useCommitMessage({
+    open: open && !saved,
+    route: typeof meta.route === 'string' ? meta.route : '',
+    targetRoute: !isNewPage && !renameError && targetRoute !== meta.route ? targetRoute : undefined,
+    isNewPage,
+    loadDefaults: loadSaveDefaults
+  });
+
   /**
    * Gate for the "Raise Pull Request" CTA. The dialog can be
    * opened against a clean document (so authors can reach the
@@ -394,6 +394,7 @@ export const PersistDialog = ({
   };
 
   const handleRaisePr = () => {
+    if (message.blocked || renameError !== null || !hasChangesToSubmit) return;
     if (!persist) {
       setError('Save is not configured for this app.');
       return;
@@ -477,6 +478,7 @@ export const PersistDialog = ({
         const stream = await persist({
           route,
           markdown: payload,
+          ...(message.valueToSubmit !== undefined ? { commitMessage: message.valueToSubmit } : {}),
           ...(frontmatterPayload !== undefined ? { frontmatter: frontmatterPayload } : {}),
           ...(targetRoutePayload !== undefined ? { targetRoute: targetRoutePayload } : {}),
           ...(isNewPage ? { isNewPage: true } : {})
@@ -489,6 +491,7 @@ export const PersistDialog = ({
             setProgress(prev => [...prev, event.message]);
           } else if (event.kind === 'complete') {
             setSaved(true);
+            message.reset();
             setPrHref(event.prHref);
           } else if (event.kind === 'error') {
             sawError = true;
@@ -522,6 +525,43 @@ export const PersistDialog = ({
       <DialogContent>
         {(isRaising || error) && !saved && <PersistStatus error={error} progress={progress} />}
         <Info isRaising={isRaising} saved={saved} error={error} isNewPage={isNewPage} />
+        {loadSaveDefaults && !saved && (
+          <div className={style.renameRow}>
+            {message.supported && (
+              <>
+                <label className={style.renameLabel} htmlFor="mosaic-commit-message">
+                  Commit message
+                </label>
+                <MultilineInput
+                  value={message.value}
+                  disabled={isRaising}
+                  textAreaProps={{
+                    id: 'mosaic-commit-message',
+                    onChange: event => message.edit(event.target.value),
+                    'aria-describedby': 'mosaic-commit-message-hint'
+                  }}
+                />
+                <span id="mosaic-commit-message-hint" className={style.renameHint}>
+                  Describe your changes. The first line is used in the pull request title.
+                </span>
+                <Button disabled={isRaising || message.loading} onClick={message.useDefault}>
+                  Reset to default
+                </Button>
+              </>
+            )}
+            {message.loading && <span role="status">Loading commit message…</span>}
+            {message.error && (
+              <span role="alert" className={style.renameError}>
+                {message.error}
+              </span>
+            )}
+            {message.loadError && (
+              <Button disabled={isRaising} onClick={message.retry}>
+                Retry commit message
+              </Button>
+            )}
+          </div>
+        )}
         {/*
           Rename row (edit mode only): only show in the pre-save /
           no-error state, and only when the host wired a route
@@ -600,6 +640,7 @@ export const PersistDialog = ({
             isRaising ||
             saved ||
             renameError !== null ||
+            message.blocked ||
             !hasChangesToSubmit
           }
           onClick={handleRaisePr}

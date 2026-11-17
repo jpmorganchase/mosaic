@@ -1,0 +1,92 @@
+# Mosaic
+
+> Mosaic is a content-driven framework for documentation sites: it pulls docs from many sources and renders them with Next.js.
+
+## [Mosaic](https://mosaic-mosaic-dev-team.vercel.app/mosaic/index.md)
+
+- [Sitemap](https://mosaic-mosaic-dev-team.vercel.app/mosaic/sitemap.md): Mosaic namespaces sitemap
+
+## [Author](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/index.md)
+
+- [Aliases](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/aliases.md)
+- [Fragments](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/fragments.md)
+- [Frontmatter](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/frontmatter.md)
+- [Markdown Syntax](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/markdown-syntax.md)
+- [Refs](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/refs.md)
+- [Sidebar Configuration](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/sidebars.md)
+- [Tags](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/tags.md)
+- [UI Components](https://mosaic-mosaic-dev-team.vercel.app/mosaic/author/ui-components.md)
+
+## [Configure](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/index.md)
+
+- [Admin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/admin/index.md)
+- [Layouts](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/index.md)
+- [Detail Highlight](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/detail-highlight.md): Detail Highlight layout example
+- [Detail Overview](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/detail-overview.md): Detail Overview layout example
+- [Detail Technical](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/detail-technical.md): Detail Technical layout example
+- [Landing Layout](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/landing.md): Landing layout example
+- [Product Discover Layout](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/product-discover.md): Product Discover layout
+- [Product Preview Layout](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/layouts/product-preview.md): Product Preview layout
+- [Modes of operation](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/index.md)
+- [Active mode](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/active.md)
+- [Snapshot file mode](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/snapshot-file.md)
+- [Static export](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/modes/static-export.md)
+- [Plugins](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/index.md)
+- [$AliasPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/alias-plugin.md)
+- [BreadcrumbsPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/breadcrumbs-plugin.md)
+- [BrokenLinksPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/broken-links-plugin.md)
+- [$CodeModPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/codemod-plugin.md)
+- [DocumentAssetsPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/document-assets-plugin.md)
+- [LazyPagePlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lazy-page-plugin.md)
+- [Lifecycle Events](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/index.md)
+- [$afterSource](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/after-source.md)
+- [afterUpdate](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/after-update.md)
+- [$beforeSend](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/before-send.md)
+- [shouldClearCache](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-clear-cache.md)
+- [shouldUpdateNamespaceSources](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/lifecycle/should-update-namespace-sources.md)
+- [LlmsTxtPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/llms-txt-plugin.md)
+- [PagesWithoutFileExtPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/pages-wthout-extensions-plugin.md)
+- [PublicAssetsPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/public-assets-plugin.md)
+- [ReadingTimePlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/reading-time-plugin.md)
+- [$RefPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/ref-plugin.md)
+- [SearchIndexPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/search-index-plugin.md)
+- [SharedConfigPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/shared-config-plugin.md)
+- [SidebarPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/sidebar-plugin.md)
+- [SiteMapPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/site-map-plugin.md)
+- [$TagPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/tag-plugin.md)
+- [TableOfContentsPlugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/toc-plugin.md)
+- [Write a plugin](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/plugins/write-a-plugin.md)
+- [Sources](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/index.md)
+- [Git Repo Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/git-repo-source.md)
+- [HTTP Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/http-source.md)
+- [Local Folder Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/local-folder-source.md)
+- [Source Schedules](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/schedules.md)
+- [Figma Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-figma.md)
+- [Readme Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-readme.md)
+- [Storybook Source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/source-storybook.md)
+- [Write a source](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/sources/write-a-source.md)
+- [Theming Your Site](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/index.md)
+- [Custom Components](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/custom-components.md)
+- [Custom CSS](https://mosaic-mosaic-dev-team.vercel.app/mosaic/configure/theme/custom-css.md)
+
+## [Fragments](https://mosaic-mosaic-dev-team.vercel.app/mosaic/fragments/index.md)
+
+- [Content Fragment](https://mosaic-mosaic-dev-team.vercel.app/mosaic/fragments/content-fragment.md)
+- [Tile A](https://mosaic-mosaic-dev-team.vercel.app/mosaic/fragments/tile-a.md)
+- [Tile B](https://mosaic-mosaic-dev-team.vercel.app/mosaic/fragments/tile-b.md)
+
+## [Getting Started](https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/index.md)
+
+- [Create a Site](https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/create-a-site.md)
+- [Migrate to the App Router](https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/migrate-to-app-router.md)
+- [Publish a site to AWS](https://mosaic-mosaic-dev-team.vercel.app/mosaic/getting-started/publish-site-to-aws.md)
+
+## Products
+
+- [Product A](https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/producta.md): Mosaic Product A
+- [Product B](https://mosaic-mosaic-dev-team.vercel.app/mosaic/products/productb.md): Mosaic Product B
+
+## [Publish](https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/index.md)
+
+- [Publish a site to AWS](https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/publish-site-to-aws.md)
+- [Publish a site to Vercel](https://mosaic-mosaic-dev-team.vercel.app/mosaic/publish/publish-site-to-vercel.md)
