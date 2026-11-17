@@ -13,6 +13,28 @@ async function headingPosition(page: Page) {
   );
 }
 
+test('keyboard TOC navigation moves focus into the destination section', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(route);
+  await expect(page.locator('.mosaic-ssr')).toHaveCount(0);
+  await page.locator(`#${heading}`).evaluate(element => {
+    const action = document.createElement('button');
+    action.textContent = 'Action in this section';
+    element.after(action);
+  });
+  const link = page
+    .getByRole('navigation', { name: 'On this page' })
+    .getByRole('link', { name: 'Heading 2', exact: true });
+  await link.focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(new RegExp(`#${heading}$`));
+  await expect(page.locator(`#${heading}`)).toBeFocused();
+  await expect(page.locator(`#${heading}`)).toMatchAriaSnapshot('- heading "Heading 2" [level=2]');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Action in this section' })).toBeFocused();
+  await expect(page.locator(`#${heading}`)).not.toHaveAttribute('tabindex');
+});
+
 test('TOC links account for positioned ancestors and track the reached section', async ({
   page
 }) => {

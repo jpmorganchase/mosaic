@@ -136,13 +136,39 @@ test.each([false, true])(
       behavior: reducedMotion ? 'instant' : 'smooth'
     });
     expect(window.location.hash).toBe('#second');
+    expect(document.getElementById('second')).toHaveFocus();
   }
 );
+
+test('focuses the destination without leaving headings in the tab order', () => {
+  render(<TableOfContents items={items} />);
+  const link = screen.getByRole('link', { name: 'Second' });
+  const heading = document.getElementById('second')!;
+  link.focus();
+  fireEvent.click(link, { detail: 0 });
+  expect(heading).toHaveFocus();
+  expect(heading).toHaveAttribute('tabindex', '-1');
+  link.focus();
+  expect(heading).not.toHaveAttribute('tabindex');
+});
+
+test.each(['0', '-1'])('preserves an authored tabindex of %s', tabIndex => {
+  render(<TableOfContents items={items} />);
+  const heading = document.getElementById('second')!;
+  heading.setAttribute('tabindex', tabIndex);
+  const link = screen.getByRole('link', { name: 'Second' });
+  fireEvent.click(link);
+  expect(heading).toHaveFocus();
+  link.focus();
+  expect(heading).toHaveAttribute('tabindex', tabIndex);
+});
 
 test('leaves modified clicks and missing targets to the browser', () => {
   render(<TableOfContents items={items} />);
   const link = screen.getByRole('link', { name: 'Second' });
+  link.focus();
   fireEvent.click(link, { ctrlKey: true });
+  expect(link).toHaveFocus();
   document.getElementById('second')?.remove();
   fireEvent.click(link);
   expect(window.scrollTo).not.toHaveBeenCalled();
