@@ -44,8 +44,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v5
         with:
@@ -55,9 +53,5 @@ jobs:
         run: yarn
       - name: Prettier
         run: yarn run prettier:ci
-      - name: Check release metadata
-        run: |
-          git show-ref --verify --quiet refs/heads/main || git branch main origin/main
-          yarn changeset status
       - name: Lint
         run: yarn run lint

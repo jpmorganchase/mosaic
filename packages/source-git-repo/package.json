@@ -1,6 +1,6 @@
 {
   "name": "@jpmorganchase/mosaic-source-git-repo",
-  "version": "0.1.0-beta.98",
+  "version": "1.0.0-beta.99",
   "author": "",
   "description": "Mosaic git repository source for core file system",
   "license": "Apache-2.0",

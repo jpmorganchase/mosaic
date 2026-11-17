@@ -1,5 +1,369 @@
 # @jpmorganchase/mosaic-types
 
+## 1.0.0-beta.99
+
+### Major Changes
+
+- 97827d1: Require Node.js 24 or later. Node.js 22 is no longer supported. `@jpmorganchase/mosaic-from-http-request` no longer depends on the `AbortController` and `EventTarget` polyfills, because Node.js provides both.
+- 5476067: Remove the `snapshot-s3` mode and the `mosaic upload` command
+  
+  S3 snapshot support was unused, so Mosaic now has two content modes,
+  `active` and `snapshot-file`, and no longer depends on the AWS SDK.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `mosaic upload` and its `-S` / `--snapshot` option are removed. The CLI
+    no longer depends on `@aws-sdk/client-s3` or `globby`.
+  
+  **`@jpmorganchase/mosaic-site-middleware`**
+  
+  - The loaders (`getMdxRaw`, `getSharedConfig`, `getSearchData`,
+    `loadSitemap`, …) no longer read snapshots from S3. The package no
+    longer depends on `@aws-sdk/client-s3`, `@aws-sdk/types` or `md5`.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `MosaicMode` is now `'active' | 'snapshot-file'`.
+  
+  **`@jpmorganchase/mosaic-schemas`**
+  
+  - `snapshotS3EnvSchema` and the `S3LoaderProcessEnv` type are removed. The
+    `MOSAIC_S3_BUCKET`, `MOSAIC_S3_REGION`, `MOSAIC_S3_ACCESS_KEY_ID` and
+    `MOSAIC_S3_SECRET_ACCESS_KEY` variables are no longer read.
+  
+  **Reference site (`packages/site`)**
+  
+  - The `build:static:s3` and `serve:snapshot:s3` scripts are removed (and
+    the root `serve:snapshot:s3` script). `next.config.js` refuses any
+    `MOSAIC_MODE` other than `active` or `snapshot-file`, so a leftover
+    `snapshot-s3` fails at start-up instead of falling back to active-mode
+    fetches with no content URL.
+  
+  ### Migration
+  
+  Use `snapshot-file` (or `active`) instead of `snapshot-s3`. To keep your
+  snapshots in S3, sync the folder yourself:
+  
+  - Upload after `mosaic build`, for example
+    `aws s3 sync snapshots/latest s3://your-bucket`.
+  - Download before building the site, for example
+    `aws s3 sync s3://your-bucket snapshots/latest`, then set
+    `MOSAIC_MODE=snapshot-file` and `MOSAIC_SNAPSHOT_DIR` to that folder,
+    relative to the site's folder.
+- 5d69155: Run editor saves over HTTP and Server-Sent Events instead of a WebSocket
+  
+  Some infrastructure doesn't allow WebSockets but does allow Server-Sent
+  Events (SSE). Saves now start with a plain HTTP request and stream their
+  progress over SSE, which also reconnects by itself and resumes where it
+  left off.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - The `/workflows` WebSocket endpoint is removed, along with the
+    `@fastify/websocket` and `md5` dependencies. Start a workflow with
+    `POST /workflows/jobs` (JSON body: `name`, `user`, `route`, `markdown`,
+    and optionally `frontmatter`, `targetRoute` and `isNewPage`), which
+    responds `202 { jobId }`. Follow it with
+    `GET /workflows/jobs/:jobId/events?user=<user id>`, a `text/event-stream`
+    of `progress` events and a final `done` event with
+    `{ status: 'SUCCESS' | 'ERROR', message }`. Reconnecting with
+    `Last-Event-ID` replays only the missed events.
+  - Both endpoints need `MOSAIC_WORKFLOWS_SECRET` as a bearer token
+    (`Authorization: Bearer <secret>`) instead of a `token` in each message.
+    They respond `503` when the secret isn't configured and `401` when it is
+    wrong. Invalid requests get `400 { error }`, a missing page `404` and an
+    existing new page `409`; the `channel` field is gone.
+  - `MOSAIC_WORKFLOWS_TIMEOUT_MS` (default 5 minutes) is now read by the
+    CLI, which fails jobs that run longer. Values must be integers from
+    1 to 2147483647. The site no longer reads it.
+  - Jobs are kept in memory (finished jobs for 10 minutes, at most 100 jobs
+    and 500 events per job), so they are lost when the CLI restarts. With
+    several CLI instances, a job's events must be read from the instance
+    that started it.
+  
+  **Reference site (`packages/site`)**
+  
+  - `MOSAIC_WORKFLOWS_URL` is the CLI's base HTTP URL, e.g.
+    `http://localhost:8080`. A trailing `/workflows` is dropped. A `ws://` /
+    `wss://` URL still works: it is converted to `http://` / `https://` and
+    a deprecation warning is logged once.
+  - The `persistContent` Server Action is replaced by `startSave`, which
+    returns `{ jobId }` or `{ error }`. The new
+    `/api/workflows/[jobId]/events` route streams the save's progress to the
+    signed-in editor who started it. Proxies must not buffer
+    `text/event-stream` responses.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - `SourceWorkflowMessageEvent` no longer has a `channel` field.
+  
+  **`@jpmorganchase/mosaic-workflows`**
+  
+  - GitHub and Bitbucket workflows send `COMPLETE` with
+    `{ pullRequestUrl }` instead of provider-specific response data. Custom
+    event consumers should read this browser-facing URL. The action return
+    values are unchanged, and `subscribeToSave` still accepts older GitHub
+    URL strings and Bitbucket `links.self` messages.
+  
+  ### Fixes
+  
+  - Saving an existing page no longer reports "Workflow save has started"
+    when no source owns the page: the CLI now waits for the workflow and
+    reports its real outcome. `triggerWorkflow` in
+    `@jpmorganchase/mosaic-core` resolves when the workflow finishes rather
+    than when it starts.
+  - Actions returning `false` or reporting `ERROR` remain failed through
+    the source and job layers instead of being reported as successful.
+  - GitHub and Bitbucket saves accept a new page with frontmatter and an
+    empty body, as the editor does. Empty edits are still rejected.
+  - The editor shows a successful result and disables repeat submission
+    even when the successful workflow returns no pull request URL.
+  
+  ### Additions
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin`: `subscribeToSave(jobId)`
+    follows a save over SSE as the `PersistEvent`s that `<Editor persist>`
+    returns, letting `EventSource` reconnect a few times before reporting an
+    error. The `PersistEvent` type is exported too. The `persist` prop is
+    unchanged.
+
+### Minor Changes
+
+- b581d8b: Refresh git repo sources as soon as Bitbucket reports a push
+  
+  ### Additions
+  
+  **`@jpmorganchase/mosaic-cli`**
+  
+  - `POST /_mosaic_/webhooks/bitbucket` receives Bitbucket Data Center
+    "Repository → Push" webhooks. It refreshes the running git repo sources
+    whose `repo` (project key and slug, in any of the `/scm/`, SSH or
+    `/projects/…/repos/…` URL forms) and `branch` match the push, so merged
+    changes appear within seconds instead of at the next scheduled check
+    (30 minutes by default). Pushes within 5 seconds of each other refresh a
+    source once. The CLI replies `202` straight away and refreshes in the
+    background; the site is then revalidated as for any other update.
+  - The endpoint only exists when `MOSAIC_BITBUCKET_WEBHOOK_SECRET` is set. It
+    doesn't use `MOSAIC_ADMIN_SECRET`: requests must carry a valid
+    `X-Hub-Signature` (HMAC-SHA256 of the body with the secret) or get `401`.
+    Bodies are capped at 1 MB.
+  
+  **`@jpmorganchase/mosaic-core`**
+  
+  - `refreshSource(name)` asks a running source to check for changes now.
+    Unlike `restartSource`, the source keeps serving its pages and its caches.
+    It resolves to `false` for sources that can't refresh on demand.
+  - `getSourceDefinition(name)` returns the definition a running source was
+    started with.
+  
+  **`@jpmorganchase/mosaic-types`**
+  
+  - Sources can implement an optional `refresh(options)` hook, which
+    `refreshSource` calls in the source's worker.
+  
+  **`@jpmorganchase/mosaic-source-git-repo`**
+  
+  - Implements `refresh`: it fetches and pulls new commits the same way a
+    scheduled check does.
+  - `Repo.checkForChanges()` runs that check on demand. Checks no longer
+    overlap: one requested while another runs (a webhook during a scheduled
+    fetch) runs once more afterwards.
+  
+  Scheduled checks are unchanged and remain the fallback for missed
+  deliveries. See "Refresh on push" in the git repo source docs.
+- 97827d1: Add source-specific commit message defaults and editable messages in the save dialog, with an
+  authenticated, side-effect-free workflow defaults endpoint. Existing custom hosts and workflows
+  can continue saving without opting into message editing.
+  
+  Both Git providers now use neutral create/update/rename defaults and preserve configured or
+  submitted text. Pull request titles use the message's first nonempty line with the configured
+  `titlePrefix`; commits retain the full message. Messages are validated before Git writes, with
+  CRLF normalized to LF and an 8 KiB UTF-8 limit.
+  
+  Commit without Git whitespace cleanup so author spacing and blank lines survive in the stored
+  commit message. Git supplies a terminal newline when the message has none.
+  
+  Preserve the pristine save baseline when the first visual-editor visit follows source edits,
+  so changing modes cannot incorrectly disable saving the draft.
+- 168391e: Replace `fast-glob` with `tinyglobby`, which drops `micromatch` and `braces` (SNYK-JS-BRACES-19963945) from Mosaic's runtime dependencies. Globs match the same files as before. The `glob` methods on `IFileAccess` and `IVolume` now take `tinyglobby` options and return `string[]`; fast-glob-only options such as `stats` and `objectMode` are no longer accepted.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- 97827d1: Publish a versioned snapshot route inventory independently of SEO sitemap settings. Add public inventory loading, validation and static-param selection helpers, preserving aliases, backing extensions and completed-generation cache identity. Regenerate snapshots before adopting the new static-param helper.
+- 97827d1: Serve the docs as Markdown for agents
+  
+  The new `LlmsTxtPlugin`, in the default config, writes `llms.txt` (an index
+  of the pages), `llms-full.txt` (every page in one file) and
+  `markdown-pages.json` (each page as Markdown, with frontmatter). MDX is
+  converted to plain Markdown: `{meta.*}` expressions are resolved, `Callout`
+  becomes a quote, other components are replaced with their children, and
+  relative links are made absolute. Sites convert their own components with the
+  `componentsModulePath` option, and leave pages out with `exclude` or
+  `llms: { exclude: true }` frontmatter.
+  
+  `createLlmsHandler()` from `@jpmorganchase/mosaic-site-middleware` is a route
+  handler that serves these files from the snapshot or the active-mode content
+  server. The reference site serves `/llms.txt`, `/llms-full.txt` and
+  `/<page>.md`, and a page's own URL to requests that accept `text/markdown`.
+- 97827d1: Expose a portable serialized MDX result type across the serializer, renderer, and editor APIs so React 19 consumers do not inherit upstream global JSX declarations.
+- 97827d1: Fail snapshot builds before writing content or a generation identity when plugins record errors, preserving source, plugin, lifecycle and original diagnostics across worker boundaries.
+  
+  Fix portable SearchProvider declarations and expose browser index policies and browser/server query limits. Export the typed search context for custom controls.
+  
+  Include the dependencies referenced by public Mosaic types in the published manifest, including the glob declaration types needed by strict external consumers.
+  
+  Export the sidebar tree builder with sorting and page/group metadata hooks, allowing consumers to own persistence without copying traversal. Preserve nested groups, independent group priorities and status badges.
+- 97827d1: Add section-level site search
+  
+  `SearchIndexPlugin` writes `search-records.json`: one record for each
+  page's introduction and one for each section, with the section's heading path,
+  prose (without code), and the frontmatter fields set with the new
+  `records.fields` option, as plain text. By default these are `description` (falling back to
+  `data.description`) and `keywords`. Section anchors use the same ids as the
+  rendered headings and the table of contents, so results link to
+  `route#anchor`. To leave a page out, set `search: { exclude: true }` in its
+  frontmatter; to turn the file off, set `records: false`. The built-in UI migration retires the legacy search files. The record format, `SearchRecord` and
+  `SearchRecordsFile`, is exported from `@jpmorganchase/mosaic-types`. The
+  default config now runs the plugin at priority `-1.5`, after `$RefPlugin`, so
+  titles and fields that come from `$ref`s are resolved.
+  
+  `@jpmorganchase/mosaic-site-middleware/search` exports `createSearchIndex`,
+  which searches the records on the server or in the browser. It is built on
+  MiniSearch and ranks results by Algolia-style tie-breaks: words matched, exact
+  title (ignoring plurals, stop words and spaces), current namespace, typos,
+  synonyms, where the words matched, exact heading, page rank, then relevance.
+  Results are grouped (one per page by default) with their other matching
+  sections, and include a snippet and the matched terms for `highlight`.
+  
+  `createSearchHandler()` is a `GET` route handler over the records, from the
+  snapshot or the active-mode content server. It takes `q`, `namespace`,
+  `namespaces`, `limit` and `sections` query parameters and responds with
+  `{ query, results }`. The index is kept in memory: snapshot mode reloads it
+  when the file changes, and active mode checks the content server every
+  `maxAge` while answering from the loaded index. `loadSearchRecords()` reads the
+  records without searching them.
+- Updated dependencies [0c4d822]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [5476067]
+- Updated dependencies [41e8af3]
+  - @jpmorganchase/mosaic-schemas@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ## 0.1.0-beta.97
