@@ -1,5 +1,270 @@
 # @jpmorganchase/mosaic-plugins
 
+## 1.0.0-beta.99
+
+### Major Changes
+
+- 97827d1: Require Node.js 24 or later. Node.js 22 is no longer supported. `@jpmorganchase/mosaic-from-http-request` no longer depends on the `AbortController` and `EventTarget` polyfills, because Node.js provides both.
+- 97827d1: Migrate the built-in header to section-level search and retire the legacy Fuse search path.
+  
+  Server sites query `/api/search`; static exports lazily load `search-records.json` and the existing browser search engine. Results include section links, loading/error states, safe text highlighting, and protection against stale responses. `SearchProvider` configures server/browser mode, custom endpoints, namespace preference, and disabling search independently of the page store.
+  
+  `SearchIndexPlugin` now emits only records. Remove its legacy `keys`, `relevancy`, `maxLineLength`, and `maxLineCount` options, and regenerate existing snapshots. `getSearchData`, `useSearchIndex`, the store's search types/fields, and the unused header search fields are removed. Replace them with `SearchProvider`, `createSearchHandler`, or `createSearchIndex`. The reference site no longer loads legacy search data into its namespace/404 stores and cleans up previously generated legacy public assets.
+
+### Minor Changes
+
+- 97827d1: Fail snapshot builds before writing content or a generation identity when plugins record errors, preserving source, plugin, lifecycle and original diagnostics across worker boundaries.
+  
+  Fix portable SearchProvider declarations and expose browser index policies and browser/server query limits. Export the typed search context for custom controls.
+  
+  Include the dependencies referenced by public Mosaic types in the published manifest, including the glob declaration types needed by strict external consumers.
+  
+  Export the sidebar tree builder with sorting and page/group metadata hooks, allowing consumers to own persistence without copying traversal. Preserve nested groups, independent group priorities and status badges.
+- 168391e: Replace `fast-glob` with `tinyglobby`, which drops `micromatch` and `braces` (SNYK-JS-BRACES-19963945) from Mosaic's runtime dependencies. Globs match the same files as before. The `glob` methods on `IFileAccess` and `IVolume` now take `tinyglobby` options and return `string[]`; fast-glob-only options such as `stats` and `objectMode` are no longer accepted.
+
+### Patch Changes
+
+- 0c4d822: Migrate the Mosaic site from Next.js Pages Router to App Router (React Server Components, Auth.js v5, server-compiled MDX, optional static export)
+  
+  ## What changed
+  
+  The reference Mosaic site (`@jpmorganchase/mosaic-site`) and the shared
+  packages it depends on have been ported from the Next.js Pages Router to
+  the App Router. Pages-Router-only APIs in the shared packages have been
+  removed, and a new static-export build target has been added.
+  
+  ### Breaking changes
+  
+  **`@jpmorganchase/mosaic-site-middleware` — major**
+  
+  - **The Pages Router middleware chain is removed.** `withMosaicMode`,
+    `withMDXContent`, `withSharedConfig`, `withSearchIndex`, `withSession`,
+    `middlewarePresets`, `createMiddlewareRunner` and the
+    `fromGetServerSidePropsContext` adapter are gone.
+  - **Replaced by cached loaders** that App Router routes call directly
+    (in parallel): `getMdxRaw`, `getSharedConfig`,
+    `getMdxRawSource`, `getTagSuggestions`, `loadSitemap` and
+    `resolveMosaicMode`. Each is deduplicated per request with
+    `React.cache` and cached across requests with `unstable_cache`, tagged
+    `MOSAIC_CONTENT_CACHE_TAG` (also exported from the side-effect-free
+    `@jpmorganchase/mosaic-site-middleware/cache-tags` subpath).
+  - **MDX is compiled with `serializeMdxForClient`** (built on
+    `next-mdx-remote-client/serialize`, with server-side shiki
+    highlighting). It returns a JSON-safe `{ compiledSource, frontmatter, scope }` payload that a client `<MDXClient />` renders.
+  
+  **`@jpmorganchase/mosaic-site-components` — major**
+  
+  - **`Body` removed.** Render MDX with a renderer from
+    `createMdxRenderer({ components })` fed by `serializeMdxForClient`.
+    See `packages/site/src/app/[...route]/BodyServer.tsx` and
+    `MdxComponents.ts` for the reference implementation.
+  - **`Document` removed.** App Router has no `_document.tsx`; the file
+    was transitively pulling `next/document` and breaking App Router
+    builds. Inline what you need into your `app/layout.tsx`.
+  - **Subpath exports widened** (`./*`) so consumers can deep-import
+    individual modules (e.g.
+    `@jpmorganchase/mosaic-site-components/Metadata`) without paying for
+    the full bundle.
+  
+  **`@jpmorganchase/mosaic-layouts` — major**
+  
+  - **`useIsLoading` hook removed.** `router.events` no longer exists in
+    the App Router.
+  - **`Fade` component removed** (was only consumed by `LayoutBase` via
+    `useIsLoading`).
+  - **`Edit` layout** is selected by `LayoutProvider` from the edit mode
+    instead of reacting to `router.events.routeChangeStart`.
+  
+  ### Non-breaking additions
+  
+  **`@jpmorganchase/mosaic-site` (App Router cut-over)**
+  
+  - New file tree under `src/app/` (`layout.tsx`, `providers.tsx`,
+    `[...route]/page.tsx`, `not-found.tsx`, `error.tsx`, `robots.ts`,
+    `sitemap.ts`, `api/auth/[...nextauth]/route.ts`,
+    `api/revalidate/route.ts`).
+  - The editor's preview compile and save are Server Actions
+    (`previewAction.ts`, `persistAction.ts`), replacing the
+    `/api/content/preview` route and the browser-side workflows WebSocket.
+  - **Auth.js v5** wiring in `src/auth.ts` (`handlers`, `auth`, `signIn`,
+    `signOut`), replacing `next-auth` v4. `AUTH_SECRET` is required when
+    auth is enabled; `NEXTAUTH_SECRET` continues to work as a fallback.
+  - **Static-export build target.** `yarn build:static:file` produces a
+    fully-static `out/` directory servable from any CDN with no Node
+    runtime. Gated behind `MOSAIC_OUTPUT=export` and
+    `MOSAIC_MODE=snapshot-file`.
+  - **`next.config.js`** refactored into `baseConfig` / `dynamicOnlyConfig`
+    / `exportConfig`.
+  
+  **`@jpmorganchase/mosaic-cli` — patch**
+  
+  - New `revalidateNotifier`: when `MOSAIC_REVALIDATE_URL` and
+    `MOSAIC_REVALIDATE_SECRET` are set, the CLI's `serve` command POSTs to
+    the site's `/api/revalidate` whenever a source emits an update, so
+    tagged caches are flushed automatically. No-op when the env vars are
+    absent.
+  
+  ## Benefits
+  
+  - **Parallel data loading.** Frontmatter, shared config and the search
+    index are resolved in parallel rather than serially through
+    `getServerSideProps`, and identical reads collapse onto one fetch.
+  - **Server-side MDX work.** Parsing, compiling and syntax highlighting
+    run on the server; the browser only evaluates the compiled page.
+  - **Static export** unlocks CDN-only deployments (S3 + CloudFront,
+    nginx, …). A reference Docker image lives at
+    `examples/docker/static-export/`.
+  - **Revalidate notifier** keeps sites' caches fresh when sources push
+    updates.
+  - **Node 24** across all in-repo Dockerfiles.
+  
+  ## Migration guide
+  
+  1. Replace `pages/_app.tsx` with `app/layout.tsx` + `app/providers.tsx`
+     (`'use client'`). Mount `<SessionProvider>` without a server-resolved
+     session.
+  2. Replace `pages/[...route].tsx` with `app/[...route]/page.tsx`, calling
+     the `@jpmorganchase/mosaic-site-middleware` loaders.
+  3. Replace every `from 'next/router'` import with `next/navigation` and
+     mark the file `'use client'`.
+  4. Convert `pages/api/*.ts` to `app/api/*/route.ts`.
+  5. Add `AUTH_SECRET` to your env if you enable Auth.js.
+  
+  The full guide, including environment variable and CLI changes, is in
+  `docs/getting-started/migrate-to-app-router.mdx`.
+  
+  For static-export deployments, see
+  `docs/configure/modes/static-export.mdx`.
+- 97827d1: Clearer CLI and plugin diagnostics
+  
+  - `mosaic serve` now prints why it couldn't listen, with the host and
+    port, instead of exiting silently through the disabled Fastify logger.
+  - `FragmentPlugin` keeps expanding fragments after a page it can't parse,
+    then reports every failing page in one error. Previously the first bad
+    page stopped fragments expanding in every page after it. Its warnings
+    also name the page that contains the bad directive.
+  - The core plugin runner names the page when a plugin error carries one.
+  - The Sidebar warning says why a folder has no grouping: it has no pages,
+    its pages are all in subfolders, or every page directly in it sets
+    `sidebar.exclude: true`.
+- 97827d1: Keep excluded sidebar index pages as structural metadata so visible descendants still receive navigation. Exclusion hides the page link while preserving group labels, priorities, and sort configuration. Prune empty groups, produce an empty sidebar safely when every page is excluded, and sort descendants through single-child groups. Previous/next navigation includes only visible pages.
+- 97827d1: Preserve legacy YAML numeric scalar values when reading and saving existing front matter, and select the configured HTTPS proxy after each link-check redirect.
+- 97827d1: Keep table-of-contents and search anchors aligned with rendered MDX headings.
+  Resolve actual `meta` expressions while preserving inline code and escaped text,
+  omit other expressions from heading ids, and rebuild duplicate-heading ids when
+  references in headings outside the displayed TOC range resolve.
+  
+  Search every frontmatter field configured with `records.fields`. Custom fields
+  rank alongside body text, while `description` and `keywords` keep their existing
+  ranking. Custom fields also provide a snippet when the page has no body text or
+  description.
+- 97827d1: Serve the docs as Markdown for agents
+  
+  The new `LlmsTxtPlugin`, in the default config, writes `llms.txt` (an index
+  of the pages), `llms-full.txt` (every page in one file) and
+  `markdown-pages.json` (each page as Markdown, with frontmatter). MDX is
+  converted to plain Markdown: `{meta.*}` expressions are resolved, `Callout`
+  becomes a quote, other components are replaced with their children, and
+  relative links are made absolute. Sites convert their own components with the
+  `componentsModulePath` option, and leave pages out with `exclude` or
+  `llms: { exclude: true }` frontmatter.
+  
+  `createLlmsHandler()` from `@jpmorganchase/mosaic-site-middleware` is a route
+  handler that serves these files from the snapshot or the active-mode content
+  server. The reference site serves `/llms.txt`, `/llms-full.txt` and
+  `/<page>.md`, and a page's own URL to requests that accept `text/markdown`.
+- 2ecdf25: Join sitemap entries from multiple sources without inserting commas into the XML urlset. Empty source batches now leave only whitespace between URL elements.
+  
+  Add optional sitemap-only `exclude` glob patterns so internal data records can remain available to other plugins without creating broken public sitemap URLs.
+- 97827d1: Keep each source generation's pages and configuration together during publication, propagate failed file reads and permit retry, and start workers when parent memory settings are configured. Correct default page filtering and shared-config ancestry so sibling or unrelated folders do not inherit settings. Resolve raw editor reads from the scoped content owner and support search configurations with match metadata disabled.
+- 915b9ae: Fix request timeouts, background work that failed silently, snapshot cleanup, and editor capability spoofing
+  
+  - **`requestTimeout` now works** for the HTTP, Readme, Storybook and Figma
+    sources. rxjs `fromFetch` replaced the Request's own abort signal, so the
+    timeout was ignored and a hung endpoint stalled the source. `fromHttpRequest`
+    takes a new `{ timeout }` option. It starts a fresh timer for every request,
+    including each scheduled poll, and covers reading the response body.
+  - **Symlinks are applied before the source update continues.** Core no longer
+    starts symlink creation without awaiting it, so `afterUpdate` plugins see
+    every alias, and a failure is reported for that source instead of crashing
+    the process with an unhandled rejection.
+  - **`BrokenLinksPlugin`** still checks links in the background, but checks at
+    most four pages at a time. A page that fails to parse or check is logged
+    instead of causing an unhandled rejection.
+  - **`mosaic build`** now empties the snapshot folder completely. Previously
+    sub-folders were never removed, so deleted or renamed pages lingered. A
+    `--name` that resolves to the output directory itself or outside it (for
+    example `.` or `../x`) is rejected, because that folder is emptied.
+  - **`StickyHeader`** removes its scroll listener on unmount.
+  - **Editor capabilities come only from the source.** Content could turn on the
+    editor for a source that doesn't declare `writable`, either by setting
+    `sourceCapabilities` or `sharedConfig.sourceCapabilities` in frontmatter,
+    by pulling one in with a `$ref`, or by receiving another source's namespace
+    shared config. Core and the site ignore capabilities in page frontmatter.
+    The `SharedConfigPlugin` now sets `sourceCapabilities` in every
+    `shared-config.json` from the source's declared capabilities after refs are
+    resolved, and no longer copies them into another source.
+- 168391e: Check links in `BrokenLinksPlugin` with `undici` instead of `check-links`, which removes `got`, `cacheable-request` and `http-cache-semantics` (SNYK-JS-HTTPCACHESEMANTICS-19964068) from Mosaic's dependencies. Links are checked the same way: a `HEAD` request that falls back to a retried `GET`, the same timeout and headers, and `proxyEndpoint` still only applies to `https:` links.
+- 2a2f07e: Update dependencies with security fixes: `fastify` 5.12.8, `@fastify/middie` 9.3.6, `undici` 8.12.4 and `@apidevtools/json-schema-ref-parser` 16.
+- 97827d1: Add section-level site search
+  
+  `SearchIndexPlugin` writes `search-records.json`: one record for each
+  page's introduction and one for each section, with the section's heading path,
+  prose (without code), and the frontmatter fields set with the new
+  `records.fields` option, as plain text. By default these are `description` (falling back to
+  `data.description`) and `keywords`. Section anchors use the same ids as the
+  rendered headings and the table of contents, so results link to
+  `route#anchor`. To leave a page out, set `search: { exclude: true }` in its
+  frontmatter; to turn the file off, set `records: false`. The built-in UI migration retires the legacy search files. The record format, `SearchRecord` and
+  `SearchRecordsFile`, is exported from `@jpmorganchase/mosaic-types`. The
+  default config now runs the plugin at priority `-1.5`, after `$RefPlugin`, so
+  titles and fields that come from `$ref`s are resolved.
+  
+  `@jpmorganchase/mosaic-site-middleware/search` exports `createSearchIndex`,
+  which searches the records on the server or in the browser. It is built on
+  MiniSearch and ranks results by Algolia-style tie-breaks: words matched, exact
+  title (ignoring plurals, stop words and spaces), current namespace, typos,
+  synonyms, where the words matched, exact heading, page rank, then relevance.
+  Results are grouped (one per page by default) with their other matching
+  sections, and include a snippet and the matched terms for `highlight`.
+  
+  `createSearchHandler()` is a `GET` route handler over the records, from the
+  snapshot or the active-mode content server. It takes `q`, `namespace`,
+  `namespaces`, `limit` and `sections` query parameters and responds with
+  `{ query, results }`. The index is kept in memory: snapshot mode reloads it
+  when the file changes, and active mode checks the content server every
+  `maxAge` while answering from the loaded index. `loadSearchRecords()` reads the
+  records without searching them.
+- 97827d1: Resolve `{meta.*}` tokens anywhere in table-of-contents headings, and give those headings matching ids
+  
+  `TableOfContentsPlugin` only resolved a heading that was a single
+  `{meta.*}` token, threw when the token didn't resolve, and ran before
+  `$RefPlugin` resolved `$ref`s. It now replaces every token in a heading,
+  keeps tokens that don't resolve as they are, and rebuilds the table of
+  contents in `$beforeSend` for pages whose tokens need `$ref` values. The
+  default config runs it at priority `-1.5`, between `$RefPlugin` and
+  `LazyPagePlugin`.
+  
+  `serializeMdxForClient` resolves the same tokens before `rehype-slug`, so
+  a heading such as `## Examples for {meta.title}` gets the id the table of
+  contents links to instead of `examples-for-`. Repeated headings are now
+  numbered the same way in both.
+- Updated dependencies [b581d8b]
+- Updated dependencies [0c4d822]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [5476067]
+- Updated dependencies [97827d1]
+- Updated dependencies [97827d1]
+- Updated dependencies [168391e]
+- Updated dependencies [41e8af3]
+- Updated dependencies [5d69155]
+  - @jpmorganchase/mosaic-types@1.0.0-beta.99
+  - @jpmorganchase/mosaic-schemas@1.0.0-beta.99
+
 ## 0.1.0-beta.98
 
 ### Patch Changes
