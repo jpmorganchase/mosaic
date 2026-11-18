@@ -44,7 +44,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@salt-ds/icons": "^1.18.0"
+    "@salt-ds/icons": "^1.19.0"
   },
   "peerDependencies": {
     "@types/react": "^18.2.46 || ^19.0.0",
