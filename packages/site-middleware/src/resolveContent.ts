@@ -52,8 +52,9 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
  * spreading the frontmatter can't bring authored capabilities back.
  *
  * `sharedConfig` is returned for misses too: it belongs to the folder
- * the missing page would live in, which is what the create-page flow
- * (`?new=1`) checks for `sourceCapabilities.writable`.
+ * the missing page would live in, or the nearest folder above it when
+ * that folder doesn't exist yet (see `getNewPageSharedConfig`). The
+ * create-page flow (`?new=1`) checks it for `sourceCapabilities.writable`.
  */
 export type ResolvedContent =
   | {
@@ -83,6 +84,38 @@ export function mergePageSharedConfig(folderConfig: SharedConfig, authored: unkn
   if (!isRecord(authored)) return folderConfig;
   const { sourceCapabilities: _authoredCapabilities, ...overrides } = authored;
   return { ...(folderConfig ?? {}), ...overrides } as SharedConfig;
+}
+
+/**
+ * The shared config of a folder itself. `getSharedConfig` takes a page
+ * path and reads the config of the folder that page is in.
+ */
+const getFolderSharedConfig = (folder: string, mode: MosaicMode, contentUrl: string) =>
+  getSharedConfig(path.posix.join(folder, 'index'), mode, contentUrl);
+
+/**
+ * The shared config a new page in `folder` (`/docs/guides`, or `/` for
+ * the root) is created under: the folder's own config or, when the folder
+ * doesn't exist yet, the config of the nearest folder above it that does.
+ *
+ * Mosaic only writes shared config for folders that hold pages, so
+ * without this a page in a new folder would have no config, and the
+ * create flow would refuse it as not writable. The CLI picks the source
+ * that saves a new page in the same way: the one whose folder most closely
+ * contains it.
+ *
+ * Returns `undefined` when no folder up to the root has a config.
+ */
+export async function getNewPageSharedConfig(
+  folder: string,
+  mode: MosaicMode,
+  contentUrl: string
+): Promise<SharedConfig> {
+  if (!folder.startsWith('/')) return undefined;
+  for (let current = path.posix.normalize(folder); ; current = path.posix.dirname(current)) {
+    const config = await getFolderSharedConfig(current, mode, contentUrl);
+    if (config !== undefined || current === '/') return config;
+  }
 }
 
 /**
@@ -155,7 +188,15 @@ export const resolveContent = cache(
       }
 
       if (mdx.kind === 'not-found') {
-        return { kind: 'not-found', originalPathname, pathname, sharedConfig: requestedConfig() };
+        // A page in a folder that doesn't exist yet takes the config of
+        // the nearest folder above it, so it can be created there.
+        const folder = path.posix.dirname(pathname);
+        const sharedConfig =
+          requestedConfig() ??
+          (folder === '/'
+            ? undefined
+            : await getNewPageSharedConfig(path.posix.dirname(folder), mode, contentUrl));
+        return { kind: 'not-found', originalPathname, pathname, sharedConfig };
       }
 
       // A redirect that isn't the folder→index canonicalisation is a

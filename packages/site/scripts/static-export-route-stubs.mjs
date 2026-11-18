@@ -33,6 +33,10 @@ const ROUTES = [
     why: 'The cold-start readiness probe is a dev-mode helper for the active-mode Mosaic CLI; static exports have no upstream to probe.'
   },
   {
+    path: 'src/app/api/content/new-page/route.ts',
+    why: 'The New Page check needs a server runtime; the content editor is not available in a static export.'
+  },
+  {
     path: 'src/app/api/search/route.ts',
     why: 'Search needs a server runtime. A static export includes search-records.json to search in the browser.'
   },

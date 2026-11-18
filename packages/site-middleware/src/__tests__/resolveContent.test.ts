@@ -13,6 +13,7 @@ vi.mock('react', async () => ({
 const {
   MAX_INTERNAL_REDIRECT_HOPS,
   canonicalRoute,
+  getNewPageSharedConfig,
   isFolderIndexRedirect,
   mergePageSharedConfig,
   resolveContent
@@ -179,6 +180,37 @@ describe('resolveContent', () => {
     });
   });
 
+  test("uses the nearest existing folder's config for a page in a new folder", async () => {
+    getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    const writable = { sourceCapabilities: { writable: true } };
+    // `getSharedConfig` reads the config of the folder a page is in.
+    getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname === '/docs/index' ? writable : undefined
+    );
+
+    const resolved = await resolveContent('/docs/new/deeper/page.mdx', 'active', 'http://content');
+
+    expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: writable });
+    expect(getSharedConfig.mock.calls.map(([pathname]) => pathname)).toEqual([
+      '/docs/new/deeper/page.mdx',
+      '/docs/new/index',
+      '/docs/index'
+    ]);
+  });
+
+  test('has no config for a page outside every folder with one', async () => {
+    getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    getSharedConfig.mockResolvedValue(undefined);
+
+    const resolved = await resolveContent('/unknown/page.mdx', 'active', 'http://content');
+
+    expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: undefined });
+    expect(getSharedConfig.mock.calls.map(([pathname]) => pathname)).toEqual([
+      '/unknown/page.mdx',
+      '/index'
+    ]);
+  });
+
   test('gives up after the hop budget and treats the route as not found', async () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
     getMdxRaw.mockImplementation(async (pathname: string) => ({
@@ -243,5 +275,36 @@ describe('mergePageSharedConfig', () => {
     expect(mergePageSharedConfig(undefined, { footer: { title: 'Page' } })).toEqual({
       footer: { title: 'Page' }
     });
+  });
+});
+
+describe('getNewPageSharedConfig', () => {
+  test("returns the folder's own config", async () => {
+    expect(await getNewPageSharedConfig('/docs/guides', 'active', 'http://content')).toEqual(
+      sharedConfigFor('/docs/guides/index')
+    );
+    expect(getSharedConfig).toHaveBeenCalledOnce();
+  });
+
+  test('walks up to the root and stops there', async () => {
+    getSharedConfig.mockResolvedValue(undefined);
+
+    expect(await getNewPageSharedConfig('/a/b/', 'active', 'http://content')).toBeUndefined();
+    expect(getSharedConfig.mock.calls.map(([pathname]) => pathname)).toEqual([
+      '/a/b/index',
+      '/a/index',
+      '/index'
+    ]);
+  });
+
+  test('reads the root config for the root folder', async () => {
+    expect(await getNewPageSharedConfig('/', 'active', 'http://content')).toEqual(
+      sharedConfigFor('/index')
+    );
+  });
+
+  test('ignores a relative folder', async () => {
+    expect(await getNewPageSharedConfig('docs', 'active', 'http://content')).toBeUndefined();
+    expect(getSharedConfig).not.toHaveBeenCalled();
   });
 });

@@ -53,6 +53,7 @@ The new site also adds files that have no Pages Router equivalent:
 - `robots.ts` and `sitemap.ts`
 - `api/revalidate/route.ts`, which clears cached content when the CLI reports an update
 - `api/content/live` and `api/content/ready`, which reload pages in `next dev` when content changes, including pages that returned 404 while the CLI was still loading
+- `api/content/new-page/route.ts`, which tells the editor's New Page dialog whether a folder can take new pages, so it refuses a folder outside every writable source instead of opening a 404
 
 `next.config.js` is now split into a base config, a config used only when the site runs on a server, and a config for static export.
 
@@ -234,7 +235,7 @@ Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-p
 - **Saves no longer use WebSockets.** Set `MOSAIC_WORKFLOWS_URL` to the CLI's base HTTP URL, such as `http://mosaic-fs:8080`. The site starts a save with an HTTP request to the CLI, and the editor follows its progress with Server-Sent Events through the site's `/api/workflows/<jobId>/events` route. An old `ws://…/workflows` value still works, but logs a warning.
 - **Set `MOSAIC_WORKFLOWS_SECRET` to the same value on the site and the CLI.** If the CLI doesn't have it, no save will run.
 - Saves that take longer than `MOSAIC_WORKFLOWS_TIMEOUT_MS` (set on the CLI, 5 minutes by default) are reported as failed.
-- Authors can create new pages from the editor.
+- Authors can create new pages from the editor, including in folders that don't exist yet. The New Page dialog only allows folders in a writable source; it asks the site's `api/content/new-page` route, so copy that route from the reference site.
 - In `next dev`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` shows the editor on every page. It has no effect in production.
 
 ## 6. Update environment variables

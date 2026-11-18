@@ -93,6 +93,12 @@ pipeline are cached in-process by content hash; treat them as read-only.
 when the reference site moved to the App Router. Port
 `getServerSideProps` code to the loaders above.
 
+## New pages
+
+`createNewPageHandler()` tells the content editor's New Page dialog whether new pages can be created in a folder. Mount it at `src/app/api/content/new-page/route.ts`; the dialog asks `GET /api/content/new-page?folder=/docs/guides` and keeps Create disabled until the answer is `{ "writable": true }`. Pass `transformSharedConfig` if your catch-all page changes the shared config before checking it, such as the reference site's dev capability bypass. Without the route, the dialog doesn't check.
+
+`getNewPageSharedConfig()` is the check behind both the handler and `resolveContent`: a folder's shared config, or the nearest folder above it with one, so a page can be created in a folder that doesn't exist yet.
+
 ## Search
 
 `createSearchHandler()` serves records through an App Router route. `loadSearchRecords()` reads the generated records directly. The browser-safe `./search` entry exports `createSearchIndex`, and `./search/highlight` exports text highlighting without loading the search engine. The built-in header uses `SearchProvider` from `mosaic-site-components`; search data no longer passes through content stores or page loaders.

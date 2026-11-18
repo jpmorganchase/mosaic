@@ -13,6 +13,17 @@ vi.mock('../useFolderSuggestions', () => ({
   })
 }));
 
+const folderStatus = vi.hoisted(() => ({
+  current: 'writable' as 'checking' | 'writable' | 'read-only' | 'unknown',
+  folders: [] as (string | undefined)[]
+}));
+vi.mock('../useNewPageFolderCheck', () => ({
+  useNewPageFolderCheck: (folder: string | undefined, enabled: boolean) => {
+    folderStatus.folders.push(folder);
+    return enabled && folder !== undefined ? folderStatus.current : undefined;
+  }
+}));
+
 import { NewPageDialog } from '../NewPageDialog';
 
 const field = (label: 'Parent folder' | 'Filename' | 'Title') =>
@@ -24,6 +35,50 @@ describe('NewPageDialog', () => {
   afterEach(() => {
     cleanup();
     pathname.current = '/mosaic/a/page';
+    folderStatus.current = 'writable';
+    folderStatus.folders = [];
+  });
+
+  const fillIn = (parent: string) => {
+    fireEvent.change(field('Parent folder'), { target: { value: parent } });
+    fireEvent.change(field('Filename'), { target: { value: 'new-page' } });
+    fireEvent.change(field('Title'), { target: { value: 'New page' } });
+  };
+  const create = () => screen.getByRole('button', { name: 'Create' });
+
+  it('refuses a folder new pages cannot be added to', () => {
+    folderStatus.current = 'read-only';
+    render(<NewPageDialog open onOpenChange={() => {}} />);
+    fillIn('/test/');
+
+    expect(create()).toBeDisabled();
+    expect(folderStatus.folders.at(-1)).toBe('/test');
+    expect(screen.getByText(/New pages can't be added to/).textContent).toContain('/test');
+  });
+
+  it('waits for the folder check before allowing Create', () => {
+    folderStatus.current = 'checking';
+    const { rerender } = render(<NewPageDialog open onOpenChange={() => {}} />);
+    fillIn('/mosaic/new-folder');
+    expect(create()).toBeDisabled();
+
+    folderStatus.current = 'writable';
+    rerender(<NewPageDialog open onOpenChange={() => {}} />);
+    expect(create()).toBeEnabled();
+    expect(screen.getByText(/New folder/)).toBeTruthy();
+  });
+
+  it("allows a folder when the site can't say", () => {
+    folderStatus.current = 'unknown';
+    render(<NewPageDialog open onOpenChange={() => {}} />);
+    fillIn('/mosaic/a');
+    expect(create()).toBeEnabled();
+  });
+
+  it('checks the root folder as /', () => {
+    render(<NewPageDialog open onOpenChange={() => {}} />);
+    fillIn('/');
+    expect(folderStatus.folders.at(-1)).toBe('/');
   });
 
   it('keeps the draft on the same page and starts a new one on another page', () => {

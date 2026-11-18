@@ -22,6 +22,13 @@
  * of the feature. We surface existing folders as combobox
  * suggestions (derived from `/sitemap.xml`) for discoverability
  * without taking away the ability to type a brand-new path.
+ *
+ * The one thing a folder must be is somewhere new pages can be
+ * saved: inside a writable source. The dialog asks the site (see
+ * `useNewPageFolderCheck`) and keeps Create disabled until the
+ * site says yes, so a folder outside every source, or one only a
+ * read-only source serves, is refused here instead of opening a
+ * 404.
  */
 import {
   FC,
@@ -50,6 +57,7 @@ import {
 import { Dialog } from './Dialog';
 import styles from './NewPageDialog.css';
 import { useFolderSuggestions } from './useFolderSuggestions';
+import { useNewPageFolderCheck } from './useNewPageFolderCheck';
 import { hasUnsafeRouteSegments } from '../utils/routeSegments';
 
 export interface NewPageDialogProps {
@@ -224,6 +232,13 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     return null;
   }, [parentFolder]);
 
+  // Whether new pages can be saved in the folder. `undefined` while
+  // the folder itself is invalid; `unknown` when the site can't say,
+  // which doesn't block (the page and the CLI still check).
+  const checkedFolder = parentError === null ? parentFolder.replace(/\/+$/, '') || '/' : undefined;
+  const folderStatus = useNewPageFolderCheck(checkedFolder, open);
+  const folderReadOnly = folderStatus === 'read-only';
+
   const filenameError = useMemo<string | null>(() => {
     if (filename.length === 0) return 'Filename is required.';
     if (!FILENAME_RE.test(filename)) {
@@ -268,7 +283,12 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
   );
 
   const isValid =
-    parentError === null && filenameError === null && titleError === null && collidesWith === null;
+    parentError === null &&
+    folderStatus !== 'checking' &&
+    !folderReadOnly &&
+    filenameError === null &&
+    titleError === null &&
+    collidesWith === null;
 
   // Reset transient state when the dialog closes so a subsequent
   // open starts from a clean slate (in particular, the touched
@@ -330,7 +350,9 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
         <FormField
           className={styles.fieldRow}
           necessity="required"
-          validationStatus={parentError && parentFolder.length > 0 ? 'error' : undefined}
+          validationStatus={
+            (parentError && parentFolder.length > 0) || folderReadOnly ? 'error' : undefined
+          }
         >
           <FormFieldLabel>Parent folder</FormFieldLabel>
           {/*
@@ -372,11 +394,18 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
             ))}
           </ComboBox>
           <FormFieldHelperText>
-            {parentError && parentFolder.length > 0
-              ? parentError
-              : isNewFolder
-              ? 'New folder — will be created when the page is saved.'
-              : 'Pick an existing folder or type a new path. New folders are created automatically.'}
+            {parentError && parentFolder.length > 0 ? (
+              parentError
+            ) : folderReadOnly ? (
+              <>
+                New pages can&apos;t be added to <code>{checkedFolder}</code>. Pick a folder in a
+                section you can edit.
+              </>
+            ) : isNewFolder ? (
+              'New folder — will be created when the page is saved.'
+            ) : (
+              'Pick an existing folder or type a new path. New folders are created automatically.'
+            )}
           </FormFieldHelperText>
         </FormField>
 
