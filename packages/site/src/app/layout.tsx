@@ -19,6 +19,7 @@ import '../css/index.css';
 
 import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { AUTH_ENABLED } from '../auth';
+import { AUTHORING_URL } from '../lib/authoring';
 import { amplitude, openSans, ptMono } from '../fonts';
 import { getSiteConfig } from '../lib/config';
 import { resolveSiteOrigin } from '../lib/siteOrigin';
@@ -103,7 +104,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themePrefScript }} />
       </head>
       <body>
-        <Providers authEnabled={AUTH_ENABLED} searchMode={isStaticExport ? 'browser' : 'server'}>
+        <Providers
+          authEnabled={AUTH_ENABLED}
+          authoringUrl={AUTHORING_URL}
+          searchMode={isStaticExport ? 'browser' : 'server'}
+        >
           {children}
         </Providers>
         {isDevelopment && <LiveReload />}

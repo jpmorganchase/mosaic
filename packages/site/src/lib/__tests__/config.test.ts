@@ -335,3 +335,20 @@ describe('getSiteConfig', () => {
     expect(getSiteConfig()).toBe(first);
   });
 });
+
+describe('MOSAIC_AUTHORING_URL', () => {
+  it('is optional, and read without a trailing slash', () => {
+    expect(readSiteConfig({}).authoringUrl).toBeUndefined();
+    expect(readSiteConfig({ MOSAIC_AUTHORING_URL: ' ' }).authoringUrl).toBeUndefined();
+    expect(
+      readSiteConfig({ MOSAIC_AUTHORING_URL: 'https://dev.example.com/docs/' }).authoringUrl
+    ).toBe('https://dev.example.com/docs');
+  });
+
+  it('must be an absolute http(s) URL', () => {
+    expect(check({ MOSAIC_AUTHORING_URL: 'https://dev.example.com' })).toEqual([]);
+    expect(check({ MOSAIC_AUTHORING_URL: 'dev.example.com' })).toEqual([
+      'MOSAIC_AUTHORING_URL: must be an absolute http(s) URL'
+    ]);
+  });
+});

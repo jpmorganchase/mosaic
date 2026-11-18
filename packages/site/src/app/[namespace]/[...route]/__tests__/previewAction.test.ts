@@ -37,3 +37,19 @@ describe('GIVEN the preview Server Action', () => {
     expect(serializeMdxForClient).not.toHaveBeenCalled();
   });
 });
+
+describe('GIVEN pages are edited on another site', () => {
+  test('THEN the preview refuses without compiling', async () => {
+    vi.stubEnv('MOSAIC_AUTHORING_URL', 'https://dev.example.com');
+    try {
+      vi.resetModules();
+      const { compilePreview: compileHere } = await import('../previewAction');
+      await expect(compileHere('# Hi')).rejects.toThrow(
+        "This site's pages are edited on https://dev.example.com."
+      );
+      expect(serializeMdxForClient).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});

@@ -34,6 +34,9 @@ vi.mock('../NewPageDialog', () => ({
     open ? <div data-mosaic-testid="new-page-dialog-open" /> : null
 }));
 
+vi.mock('next/navigation', () => ({ usePathname: () => '/docs/page' }));
+
+import { AuthoringSiteProvider } from '../../authoringSite';
 import { EditorControls } from '../EditorControls';
 
 beforeEach(() => {
@@ -91,5 +94,52 @@ describe('EditorControls', () => {
     expect(screen.queryByTestId('new-page-dialog-open')).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'create a new page' }));
     expect(screen.getByTestId('new-page-dialog-open')).toBeInTheDocument();
+  });
+});
+
+describe('EditorControls with an authoring site', () => {
+  const originalLocation = window.location;
+  const assign = vi.fn();
+
+  beforeEach(() => {
+    assign.mockReset();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, assign }
+    });
+  });
+  afterEach(() => {
+    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+  });
+
+  const renderOnTest = (enabled: boolean) =>
+    render(
+      <AuthoringSiteProvider url="https://dev.example.com">
+        <EditorControls enabled={enabled} />
+      </AuthoringSiteProvider>
+    );
+
+  it('enables both buttons without signing in here: the authoring site checks', () => {
+    renderOnTest(false);
+    expect(screen.getByRole('button', { name: 'create a new page' })).not.toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'edit this page on dev.example.com' })
+    ).not.toBeDisabled();
+  });
+
+  it('opens the same page in edit mode on the authoring site', async () => {
+    renderOnTest(false);
+    await userEvent.click(
+      screen.getByRole('button', { name: 'edit this page on dev.example.com' })
+    );
+    expect(assign).toHaveBeenCalledExactlyOnceWith('https://dev.example.com/docs/page?edit=1');
+    expect(startEditing).not.toHaveBeenCalled();
+  });
+
+  it('still opens the New Page dialog here', async () => {
+    renderOnTest(true);
+    await userEvent.click(screen.getByRole('button', { name: 'create a new page' }));
+    expect(screen.getByTestId('new-page-dialog-open')).toBeInTheDocument();
+    expect(assign).not.toHaveBeenCalled();
   });
 });

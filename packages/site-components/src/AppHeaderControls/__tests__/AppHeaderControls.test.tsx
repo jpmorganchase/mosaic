@@ -18,11 +18,20 @@ vi.mock('@jpmorganchase/mosaic-content-editor-plugin/useEditMode', () => ({
   useIsEditing: () => false
 }));
 vi.mock('@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls', () => ({
-  EditorControls: () => null
+  EditorControls: ({ enabled }: { enabled: boolean }) => (
+    <div data-mosaic-testid="editor-controls" data-enabled={String(enabled)} />
+  )
 }));
+const authoringSite = vi.hoisted(() => ({
+  current: undefined as undefined | { host: string; href: (path: string) => string }
+}));
+vi.mock('@jpmorganchase/mosaic-content-editor-plugin/authoringSite', () => ({
+  useAuthoringSite: () => authoringSite.current
+}));
+const capabilities = vi.hoisted(() => ({ current: {} as { writable?: boolean } }));
 vi.mock('@jpmorganchase/mosaic-store', () => ({
   useColorMode: () => 'light',
-  useSourceCapabilities: () => ({}),
+  useSourceCapabilities: () => capabilities.current,
   useStoreActions: () => ({ setColorMode: vi.fn() })
 }));
 
@@ -105,5 +114,65 @@ describe('GIVEN the AppHeaderControls Login link', () => {
     render(<AppHeaderControls />);
     expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Select an action' })).toBeInTheDocument();
+  });
+});
+
+describe('GIVEN pages are edited on an authoring site', () => {
+  const originalLocation = window.location;
+  const assign = vi.fn();
+
+  beforeEach(() => {
+    authoringSite.current = {
+      host: 'dev.example.com',
+      href: path => `https://dev.example.com${path}`
+    };
+    capabilities.current = { writable: true };
+    pathname.current = '/docs/page';
+    assign.mockReset();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, assign }
+    });
+  });
+  afterEach(() => {
+    authoringSite.current = undefined;
+    capabilities.current = {};
+    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+  });
+
+  test('THEN the editor controls show without login enabled here', () => {
+    render(<AppHeaderControls />);
+    expect(screen.getByTestId('editor-controls')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
+  });
+
+  test('THEN they stay hidden on a page no writable source owns', () => {
+    capabilities.current = {};
+    render(<AppHeaderControls />);
+    expect(screen.queryByTestId('editor-controls')).not.toBeInTheDocument();
+  });
+
+  test('THEN the action menu opens the page on the authoring site', () => {
+    render(<AppHeaderControls />);
+    fireEvent.click(screen.getByRole('button', { name: 'Select an action' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Document on dev.example.com' }));
+    expect(assign).toHaveBeenCalledExactlyOnceWith('https://dev.example.com/docs/page?edit=1');
+  });
+});
+
+describe('GIVEN pages are edited on this site', () => {
+  afterEach(() => {
+    capabilities.current = {};
+    vi.unstubAllEnvs();
+  });
+
+  test('THEN the editor controls need login enabled', () => {
+    capabilities.current = { writable: true };
+    render(<AppHeaderControls />);
+    expect(screen.queryByTestId('editor-controls')).not.toBeInTheDocument();
+
+    vi.stubEnv('NEXT_PUBLIC_ENABLE_LOGIN', 'true');
+    render(<Header />);
+    expect(screen.getByTestId('editor-controls')).toHaveAttribute('data-enabled', 'false');
   });
 });
