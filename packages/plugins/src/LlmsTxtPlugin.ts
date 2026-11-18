@@ -1,11 +1,24 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import picomatch from 'picomatch';
-import type { MarkdownPagesFile, Page, Plugin as PluginType } from '@jpmorganchase/mosaic-types';
+import type {
+  IVolumeMutable,
+  LlmsManifest,
+  MarkdownPagesFile,
+  Page,
+  Plugin as PluginType
+} from '@jpmorganchase/mosaic-types';
 
 import PluginError from './utils/PluginError.js';
 import { lookup, type PageValues } from './utils/pageOutline.js';
 import { plainText } from './utils/searchRecords.js';
+import { createPageTest } from './utils/createPageTest.js';
+import {
+  normalizeScopes,
+  mostSpecificScope,
+  withinScope,
+  type LlmsTxtScope
+} from './utils/llmsScopes.js';
 import {
   toMarkdown,
   type MarkdownAttributeValue,
@@ -25,6 +38,8 @@ export type {
 export const MARKDOWN_PAGES_FILE = '/markdown-pages.json';
 export const LLMS_TXT_FILE = '/llms.txt';
 export const LLMS_FULL_TXT_FILE = '/llms-full.txt';
+export const LLMS_MANIFEST_FILE = '/llms-manifest.json';
+export type { LlmsTxtScope };
 
 export interface LlmsTxtPluginOptions {
   /** The heading of `llms.txt`. Defaults to `Documentation`. */
@@ -41,6 +56,8 @@ export interface LlmsTxtPluginOptions {
   componentsModulePath?: string;
   /** Glob patterns of page files to leave out, such as `my-namespace/test/**`. */
   exclude?: string[];
+  /** Public path scopes. Parent indexes include descendants; page discovery uses the longest match. */
+  scopes?: LlmsTxtScope[];
 }
 
 interface LlmsTxtPluginPage extends Page {
@@ -52,11 +69,19 @@ interface LlmsTxtPluginPage extends Page {
 interface MarkdownPage {
   title: string;
   description?: string;
-  /** The page as Markdown, with YAML frontmatter. */
+  /** Converted body in source data; rendered Markdown in generated artifacts. */
   markdown: string;
 }
 
-type LlmsTxtPluginData = { markdownPages?: Record<string, MarkdownPage> };
+type LlmsTxtPluginData = {
+  markdownPages?: Record<string, MarkdownPage>;
+  /** Includes excluded pages so another page cannot reuse their canonical route. */
+  llmsRouteClaims?: string[];
+};
+
+// Sources may finish concurrently. Publish a complete generation at a time on
+// each shared volume, including removal of the previous generation's scopes.
+const writes = new WeakMap<IVolumeMutable, Promise<void>>();
 
 const MARKDOWN_EXTENSION = /\.mdx?$/;
 
@@ -81,7 +106,8 @@ const yamlString = (value: string) => JSON.stringify(value);
 function renderPage(
   { route, title, description }: { route: string; title: string; description?: string },
   body: string,
-  siteUrl?: string
+  siteUrl?: string,
+  scope = ''
 ) {
   const frontmatter = [
     '---',
@@ -90,8 +116,10 @@ function renderPage(
     `url: ${yamlString(`${origin(siteUrl)}${route}`)}`,
     '---'
   ].join('\n');
-  const index = `${origin(siteUrl)}${LLMS_TXT_FILE}`;
-  return `${frontmatter}\n\n> For an index of all documentation, see [${index}](${index}).\n\n${body}\n`;
+  const index = `${origin(siteUrl)}${scope}${LLMS_TXT_FILE}`;
+  return `${frontmatter}\n\n> For an index of ${
+    scope ? 'this' : 'all'
+  } documentation, see [${index}](${index}).\n\n${body}\n`;
 }
 
 /** Index pages first, then the rest in route order. */
@@ -114,7 +142,7 @@ const label = (section: string) => {
 /** The `llms.txt` index: a section per top-level folder, linking each page's Markdown. */
 export function buildLlmsTxt(
   pages: Record<string, MarkdownPage>,
-  { title = 'Documentation', description, siteUrl }: LlmsTxtPluginOptions = {}
+  { title = 'Documentation', description, siteUrl, scopes }: LlmsTxtPluginOptions = {}
 ) {
   const link = (route: string) => `${origin(siteUrl)}${route}.md`;
   const sections = new Map<string, string[]>();
@@ -124,6 +152,17 @@ export function buildLlmsTxt(
   }
   const lines = [`# ${title}`, ''];
   if (description) lines.push(`> ${description}`, '');
+  if (scopes?.length) {
+    lines.push('## Documentation scopes', '');
+    for (const scope of normalizeScopes(scopes)) {
+      lines.push(
+        `- [${scope.title ?? scope.path}](${origin(siteUrl)}${scope.path}/llms.txt)${
+          scope.description ? `: ${scope.description}` : ''
+        }`
+      );
+    }
+    lines.push('');
+  }
   for (const [section, routes] of sections) {
     const indexRoute = `${section}/index`;
     const index = pages[indexRoute];
@@ -159,6 +198,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     { config, serialiser, ignorePages, pageExtensions },
     options = {}
   ) {
+    normalizeScopes(options.scopes);
     const components = await loadComponents(options.componentsModulePath);
     const pagePaths = (await mutableFilesystem.promises.glob('**', {
       onlyFiles: true,
@@ -168,15 +208,24 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     // Matched against each page's own path, so aliases of excluded pages are excluded too.
     const isExcluded = picomatch(options.exclude ?? [], { dot: true });
     const markdownPages: Record<string, MarkdownPage> = {};
+    const llmsRouteClaims: string[] = [];
+    const seenFiles = new Set<string>();
+    const isPage = createPageTest(ignorePages, pageExtensions);
     const failures: string[] = [];
-    for (const pagePath of pagePaths) {
+    for (const pagePath of pagePaths.sort()) {
       if (!MARKDOWN_EXTENSION.test(pagePath)) continue;
       if (!pageExtensions.some(extension => pagePath.endsWith(extension))) continue;
+      const realPath = String(await mutableFilesystem.promises.realpath(pagePath));
+      if (seenFiles.has(realPath)) continue;
+      seenFiles.add(realPath);
       const page = (await serialiser.deserialise(
         pagePath,
         await mutableFilesystem.promises.readFile(pagePath)
       )) as LlmsTxtPluginPage;
-      if (typeof page.route !== 'string' || page.llms?.exclude === true) continue;
+      if (typeof page.route !== 'string') continue;
+      llmsRouteClaims.push(page.route);
+      // An alias must not resurrect an ignored or excluded backing page.
+      if (!isPage(String(page.fullPath ?? realPath)) || page.llms?.exclude === true) continue;
       if (isExcluded(String(page.fullPath ?? pagePath).replace(/^\//, ''))) continue;
       const values = page as unknown as PageValues & { route: string };
       const title = plainText(page.title) ?? page.route;
@@ -195,13 +244,13 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
         markdownPages[page.route] = {
           title,
           description,
-          markdown: renderPage({ route: page.route, title, description }, body, options.siteUrl)
+          markdown: body
         };
       } catch (error) {
         failures.push(`${pagePath}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-    config.setData({ markdownPages });
+    config.setData({ markdownPages, llmsRouteClaims });
     if (failures.length > 0) {
       throw new PluginError(
         `Couldn't convert ${failures.length} page(s) to Markdown:\n${failures.join('\n')}`
@@ -210,19 +259,89 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
   },
 
   async afterUpdate(_, { sharedFilesystem, globalConfig }, options = {}) {
-    const pages = globalConfig.data.markdownPages;
-    if (!pages) return;
-    const routes = Object.keys(pages).sort(compareRoutes);
-    const file: MarkdownPagesFile = {
-      version: 1,
-      pages: Object.fromEntries(routes.map(route => [route, pages[route].markdown]))
-    };
-    await sharedFilesystem.promises.writeFile(MARKDOWN_PAGES_FILE, JSON.stringify(file));
-    await sharedFilesystem.promises.writeFile(
-      LLMS_FULL_TXT_FILE,
-      routes.map(route => pages[route].markdown).join('\n')
-    );
-    await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
+    const scopes = normalizeScopes(options.scopes);
+    const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(async () => {
+        const sourcePages = globalConfig.data.markdownPages;
+        if (!sourcePages) return;
+        const claims = new Map<string, number>();
+        for (const route of globalConfig.data.llmsRouteClaims ?? []) {
+          const key = route.toLowerCase();
+          claims.set(key, (claims.get(key) ?? 0) + 1);
+        }
+        const pages: Record<string, MarkdownPage> = {};
+        for (const [route, page] of Object.entries(sourcePages)) {
+          // Ambiguous canonical routes cannot safely identify public content.
+          if ((claims.get(route.toLowerCase()) ?? 0) > 1) continue;
+          pages[route] = {
+            ...page,
+            markdown: renderPage(
+              { route, ...page },
+              page.markdown,
+              options.siteUrl,
+              mostSpecificScope(route, scopes)
+            )
+          };
+        }
+        const routes = Object.keys(pages).sort(compareRoutes);
+        const previous: LlmsManifest | undefined = (await sharedFilesystem.promises.exists(
+          LLMS_MANIFEST_FILE
+        ))
+          ? JSON.parse(String(await sharedFilesystem.promises.readFile(LLMS_MANIFEST_FILE)))
+          : undefined;
+        const previousScopes = normalizeScopes(
+          (previous?.scopes ?? []).map(scope => ({ path: scope }))
+        );
+        const file: MarkdownPagesFile = {
+          version: 1,
+          pages: Object.fromEntries(routes.map(route => [route, pages[route].markdown]))
+        };
+        await sharedFilesystem.promises.writeFile(MARKDOWN_PAGES_FILE, JSON.stringify(file));
+        await sharedFilesystem.promises.writeFile(
+          LLMS_FULL_TXT_FILE,
+          routes.map(route => pages[route].markdown).join('\n')
+        );
+        await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
+        for (const scope of scopes) {
+          const scopedRoutes = routes.filter(route => withinScope(route, scope.path));
+          const scopedPages = Object.fromEntries(scopedRoutes.map(route => [route, pages[route]]));
+          await sharedFilesystem.promises.mkdir(scope.path, { recursive: true });
+          await sharedFilesystem.promises.writeFile(
+            `${scope.path}${LLMS_TXT_FILE}`,
+            buildLlmsTxt(scopedPages, {
+              title: scope.title ?? scope.path,
+              description: scope.description,
+              siteUrl: options.siteUrl
+            })
+          );
+          await sharedFilesystem.promises.writeFile(
+            `${scope.path}${LLMS_FULL_TXT_FILE}`,
+            scopedRoutes.map(route => pages[route].markdown).join('\n')
+          );
+        }
+        for (const previousScope of previousScopes) {
+          if (scopes.some(scope => scope.path === previousScope.path)) continue;
+          for (const file of [LLMS_TXT_FILE, LLMS_FULL_TXT_FILE]) {
+            const target = `${previousScope.path}${file}`;
+            if (await sharedFilesystem.promises.exists(target))
+              await sharedFilesystem.promises.unlink(target);
+          }
+        }
+        const manifest: LlmsManifest = {
+          version: 1,
+          routes,
+          scopes: scopes.map(scope => scope.path),
+          ...(options.siteUrl && { siteUrl: origin(options.siteUrl) })
+        };
+        await sharedFilesystem.promises.writeFile(LLMS_MANIFEST_FILE, JSON.stringify(manifest));
+      });
+    writes.set(sharedFilesystem, publish);
+    try {
+      await publish;
+    } finally {
+      if (writes.get(sharedFilesystem) === publish) writes.delete(sharedFilesystem);
+    }
   }
 };
 

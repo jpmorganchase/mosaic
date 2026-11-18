@@ -130,19 +130,23 @@ const dynamicOnlyConfig = {
     return {
       beforeFiles: [
         { source: '/favicon.ico', destination: '/img/favicon.png' },
+        // Reserve the LLM endpoints before public files and the catch-all.
+        // Server builds use the handler for consistent headers and refreshes;
+        // static exports have no rewrites and use the copied snapshot files.
+        { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+        { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+        { source: '/:scope((?!api/|_next/).+)/llms.txt', destination: '/api/llms/:scope/llms.txt' },
+        {
+          source: '/:scope((?!api/|_next/).+)/llms-full.txt',
+          destination: '/api/llms/:scope/llms-full.txt'
+        },
+        { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' },
         // Agents that ask for Markdown get it at the page's own URL.
         {
           source: '/:path((?!api/|_next/).+)',
           has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
           destination: '/api/llms/:path'
         }
-      ],
-      // After public/, where snapshot builds copy these files, and before the
-      // `[namespace]/[...route]` page, which would otherwise match them.
-      afterFiles: [
-        { source: '/llms.txt', destination: '/api/llms/llms.txt' },
-        { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
-        { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
       ]
     };
   },

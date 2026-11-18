@@ -5,11 +5,12 @@ layout: DetailOverview
 
 # {meta.title}
 
-The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and other tools that read docs as text. It follows the [llms.txt](https://llmstxt.org) convention, and outputs 3 files:
+The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and other tools that read docs as text. It follows the [llms.txt](https://llmstxt.org) convention, and outputs:
 
 - `llms.txt`: an index of the pages, with a section for each folder and each page's description
 - `llms-full.txt`: every page in one file
 - `markdown-pages.json`: every page's Markdown, keyed by route
+- `llms-manifest.json`: a small internal manifest of generated canonical routes and public scopes, used for discovery and artifact cleanup
 
 Each page's Markdown starts with frontmatter (its title, description and URL) and a link to `llms.txt`. In the page body:
 
@@ -20,6 +21,44 @@ Each page's Markdown starts with frontmatter (its title, description and URL) an
 
 To leave a page out, set `llms: { exclude: true }` in its frontmatter, or match it with the `exclude` option.
 
+## Public documentation scopes
+
+Optionally add `scopes` to the plugin options. These are public URL prefixes, independent of `Source.namespace` or the source's identity:
+
+```js
+options: {
+  title: 'Documentation',
+  siteUrl: 'https://docs.example.com',
+  scopes: [
+    { path: '/salt', title: 'Salt Design System', description: 'Salt component documentation' },
+    { path: '/mosaic', title: 'Mosaic', description: 'Mosaic framework documentation' }
+  ]
+}
+```
+
+| URL                                         | Coverage                                                          |
+| ------------------------------------------- | ----------------------------------------------------------------- |
+| `/llms.txt`                                 | All included pages, plus links to the configured scoped indexes   |
+| `/llms-full.txt`                            | All included Markdown pages across the site                       |
+| `/salt/llms.txt`                            | Canonical pages at `/salt` or beneath `/salt/`, with descriptions |
+| `/salt/llms-full.txt`                       | Markdown for those same pages                                     |
+| `/mosaic/llms.txt`, `/mosaic/llms-full.txt` | The corresponding Mosaic subtree                                  |
+| `/salt/components/button.md`                | The existing individual page representation                       |
+
+Omitting `scopes` (or using `[]`) preserves the existing global index, corpus and Markdown page bytes for unambiguous canonical pages. The discovery manifest is additive. Each page is converted once per source update; all indexes and corpora reuse that representation.
+
+- Matches respect segment boundaries: `/salt` includes `/salt` and `/salt/components`, but not `/salted`.
+- Parent scopes include all descendants, even when a narrower scope exists. With both `/salt` and `/salt/components`, a button page appears in both indexes, but its Markdown introduction and HTML discovery links select `/salt/components/llms.txt`. The longest matching prefix wins; unscoped pages use `/llms.txt`.
+- Paths must start with `/`. They are lowercased to match Mosaic routing, and trailing slashes are removed. Duplicate normalized paths are errors. Root `/`, repeated internal slashes, dot segments, whitespace, encoded paths, query strings, fragments and backslashes are rejected. Segments use URL-safe ASCII letters, digits, `_`, `~`, `-` and non-leading dots. `/api`, `/_next` and generated LLM filenames are reserved. Scope output is sorted by normalized path; page ordering follows the existing index ordering.
+- `title` defaults to the normalized scope path. `description` is optional. The site's `siteUrl` applies to all links.
+- Sources sharing one namespace can mount at different `prefixDir` values. Pages are selected using their canonical public `route`, so their source namespace does not combine or split scopes.
+- The CLI snapshot `--scope` option still selects source namespaces for publication. It is separate from these public-path documentation indexes.
+- Aliases do not add index entries or move a page into another scope. Folder URLs continue to resolve to their canonical index page. Ambiguous duplicate canonical routes are omitted from LLM artifacts instead of selecting potentially excluded content from one source.
+
+All exclusions apply before scope selection: `llms.exclude`, the plugin's `exclude` globs and Mosaic's ignored pages also exclude aliases of those backing pages. Scopes organize public context; they are **not authorization boundaries**. Do not put restricted content into a publicly served source or rely on scope membership to protect it. Apply your site's authorization at its content/publication boundary.
+
+The reference site's `llms.txt` and `llms-full.txt` filenames are reserved at the root and under public paths, including unknown scopes (which return 404). Do not author pages or assets at those URLs, or at the internal manifest/bundle paths. Snapshot copying rejects a conflicting authored LLM text asset rather than overwriting it. Changing/removing a scope removes its previously generated files; deleting a page updates every affected artifact.
+
 ## Serving the files
 
 The reference site serves the files with `createLlmsHandler`, from `@jpmorganchase/mosaic-site-middleware`, at `/api/llms/[...path]`, and rewrites these URLs to it:
@@ -27,6 +66,7 @@ The reference site serves the files with `createLlmsHandler`, from `@jpmorgancha
 | URL                                               | Responds with                                       |
 | ------------------------------------------------- | --------------------------------------------------- |
 | `/llms.txt`, `/llms-full.txt`                     | The file                                            |
+| `/<scope>/llms.txt`, `/<scope>/llms-full.txt`     | The configured public subtree's file                |
 | `/<page>.md`                                      | The page's Markdown. A folder serves its index page |
 | `/<page>`, with an `Accept: text/markdown` header | The page's Markdown                                 |
 
@@ -35,24 +75,38 @@ The reference site serves the files with `createLlmsHandler`, from `@jpmorgancha
 rewrites() {
   return {
     beforeFiles: [
+      { source: '/llms.txt', destination: '/api/llms/llms.txt' },
+      { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
+      { source: '/:scope((?!api/|_next/).+)/llms.txt', destination: '/api/llms/:scope/llms.txt' },
+      { source: '/:scope((?!api/|_next/).+)/llms-full.txt', destination: '/api/llms/:scope/llms-full.txt' },
+      { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' },
       {
         source: '/:path((?!api/|_next/).+)',
         has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
         destination: '/api/llms/:path'
       }
-    ],
-    afterFiles: [
-      { source: '/llms.txt', destination: '/api/llms/llms.txt' },
-      { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
-      { source: '/:path(.+)\\.md', destination: '/api/llms/:path' }
     ]
   };
 }
 ```
 
-The `afterFiles` rewrites go after `public/` and before the site's catch-all page. In snapshot builds, `next.config.js` copies the files to `public/`, so they're served as static files without running a function. Static exports serve only those copies.
+These `beforeFiles` rewrites take precedence over the site's catch-all page and any earlier generated public copies. Both active and snapshot-file server builds use the handler for consistent response headers. Text indexes use `text/plain`; page representations use `text/markdown`, `Vary: Accept`, `X-Robots-Tag: noindex` and HTTP `Link` discovery headers. Missing pages/scopes/files return 404; unreadable or invalid generated data returns 503.
 
-In active mode, the handler reads the files from the CLI, and checks for new ones every 30 seconds while serving the ones it has. Set `maxAge` to change that.
+In active mode, the handler reads the files from the CLI and caches them for up to 30 seconds. An expired read waits for refresh; a failed refresh returns 503 instead of indefinitely serving stale content. Set `maxAge` to change that (use `0` to check on every request). Active responses use `no-store`; snapshot server responses retain the existing short CDN cache policy. Source updates rebuild the global artifacts from all current source data, and scoped files are reconciled on the shared filesystem.
+
+### HTML and Markdown discovery
+
+The reference site renders exactly one `rel="alternate" type="text/markdown"` link to the canonical page's `.md` URL, and one `rel="describedby"` link to its most-specific index. Both are server-rendered, including in static exports. Aliases use the canonical target's links. Excluded pages and sites without generated discovery data do not advertise nonexistent Markdown.
+
+Custom hosts can call the server-only `getLlmsDiscovery(canonicalRoute)` export from `@jpmorganchase/mosaic-site-middleware` and render the returned `markdownUrl` and `indexUrl` as HTML links. It reads only the small manifest. `createLlmsDiscoveryLoader(maxAge)` provides an independently cached loader accepting `(canonicalRoute, mode, contentUrl)` for hosts that configure their content source explicitly. Older snapshots without the manifest still serve existing Markdown/index URLs; regenerate them to enable HTML discovery.
+
+Markdown responses from `createLlmsHandler` include the same relations in HTTP `Link` headers. Their bodies also link to the selected index, so discovery remains available without response-header support.
+
+### Static deployment
+
+Build a fresh snapshot, then build with `MOSAIC_MODE=snapshot-file`, `MOSAIC_SNAPSHOT_DIR` pointing to it and `MOSAIC_OUTPUT=export` (the reference site's `build:static:file` script also applies the required route stubs). The snapshot sync script copies configured nested text files, canonical Markdown pages and folder aliases to `public/`; Next includes them in the export. The public-asset manifest removes deleted pages and retired scopes on subsequent builds, even if the snapshot directory contains old nested files. Deploy the complete new export and remove files retired from the previous deployment.
+
+Static hosts serve `.md` and `.txt` directly. HTML contains the discovery links, and Markdown contains its index link. `Accept: text/markdown` negotiation and HTTP `Link`, `Vary`, cache and robots headers require hosting/CDN rules on a static export; Next's server rewrites and headers do not run there. Configure `.md` as `text/markdown; charset=utf-8` and `.txt` as `text/plain; charset=utf-8` at the host. Serve unknown paths as 404, not as a successful SPA fallback.
 
 ## Convert your components
 
@@ -83,13 +137,14 @@ The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`
 
 ## Options
 
-| Property             | Description                                                                                                                   |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| title                | The heading of `llms.txt`. Defaults to `Documentation`.                                                                       |
-| description          | A summary of the site, shown under the heading of `llms.txt`.                                                                 |
-| siteUrl              | The site's origin, such as `https://example.com`, to make links absolute. Links are root-relative without it.                 |
-| componentsModulePath | An absolute path, file URL or package that converts your components. See [Convert your components](#convert-your-components). |
-| exclude              | Glob patterns of page files to leave out, such as `my-namespace/test/**`.                                                     |
+| Property             | Description                                                                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| title                | The heading of `llms.txt`. Defaults to `Documentation`.                                                                                                        |
+| description          | A summary of the site, shown under the heading of `llms.txt`.                                                                                                  |
+| siteUrl              | The site's origin, such as `https://example.com`, to make links absolute. Links are root-relative without it.                                                  |
+| componentsModulePath | An absolute path, file URL or package that converts your components. See [Convert your components](#convert-your-components).                                  |
+| exclude              | Glob patterns of page files to leave out, such as `my-namespace/test/**`.                                                                                      |
+| scopes               | Optional array of `{ path: string; title?: string; description?: string }` public URL scopes. See [Public documentation scopes](#public-documentation-scopes). |
 
 ## Adding to Mosaic
 

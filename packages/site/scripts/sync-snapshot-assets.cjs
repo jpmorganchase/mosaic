@@ -4,6 +4,8 @@ const { dirname, isAbsolute, relative, resolve, sep } = require('node:path');
 const ASSETS = ['search-records.json', 'llms.txt', 'llms-full.txt'];
 // Recognize prior generated output so upgrading a build removes it safely.
 const RETIRED_ASSETS = ['search-data.json', 'search-data-condensed.json', 'search-config.json'];
+const isScopedIndex = file =>
+  /^(?:[a-z0-9_~-][a-z0-9._~-]*\/)+llms(?:-full)?\.txt$/.test(file.replaceAll('\\', '/'));
 
 function publicPath(publicDir, file) {
   const target = resolve(publicDir, file);
@@ -25,6 +27,33 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
     for (const file of ASSETS) {
       const source = resolve(snapshotDir, file);
       if (existsSync(source)) files.set(file, readFileSync(source));
+    }
+
+    // Read only scopes owned by this generation; never glob stale nested files
+    // left in a reused snapshot directory. This file is not a public asset.
+    const manifestFile = resolve(snapshotDir, 'llms-manifest.json');
+    if (existsSync(manifestFile)) {
+      const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+      if (
+        manifest?.version !== 1 ||
+        !Array.isArray(manifest.scopes) ||
+        new Set(manifest.scopes).size !== manifest.scopes.length ||
+        manifest.scopes.some(
+          scope =>
+            typeof scope !== 'string' ||
+            !scope.startsWith('/') ||
+            scope.includes('\\') ||
+            !isScopedIndex(`${scope.slice(1)}/llms.txt`)
+        )
+      ) {
+        throw new Error(`[mosaic-site] Invalid LLM manifest ${manifestFile}`);
+      }
+      for (const scope of manifest.scopes) {
+        for (const name of ['llms.txt', 'llms-full.txt']) {
+          const file = `${scope.slice(1)}/${name}`;
+          files.set(file, readFileSync(resolve(snapshotDir, file)));
+        }
+      }
     }
 
     const markdownFile = resolve(snapshotDir, 'markdown-pages.json');
@@ -62,7 +91,10 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
           typeof file !== 'string' ||
           isAbsolute(file) ||
           !publicPath(publicDir, file) ||
-          (!ASSETS.includes(file) && !RETIRED_ASSETS.includes(file) && !file.endsWith('.md'))
+          (!ASSETS.includes(file) &&
+            !RETIRED_ASSETS.includes(file) &&
+            !isScopedIndex(file) &&
+            !file.endsWith('.md'))
       )
     ) {
       throw new Error(`[mosaic-site] Invalid public asset manifest ${manifestFile}`);
@@ -70,6 +102,18 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
     previous = manifest.files;
   }
 
+  // LLM routes are reserved. Do not silently overwrite an authored public asset.
+  for (const [file, content] of files) {
+    const target = publicPath(publicDir, file);
+    if (
+      (isScopedIndex(file) || /^llms(?:-full)?\.txt$/.test(file)) &&
+      existsSync(target) &&
+      !previous.includes(file) &&
+      !readFileSync(target).equals(Buffer.from(content))
+    ) {
+      throw new Error(`[mosaic-site] Reserved LLM route collides with public asset: ${file}`);
+    }
+  }
   for (const [file, content] of files) {
     const target = publicPath(publicDir, file);
     mkdirSync(dirname(target), { recursive: true });

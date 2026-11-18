@@ -22,6 +22,7 @@ LICENSE
 .next
 **/.env*
 **/snapshots
+**/__snapshots__/*.snap
 **/public
 .dockerignore
 Dockerfile

@@ -1,0 +1,107 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`preserves the pre-scopes global artifacts byte for byte across multiple public prefixes 1`] = `
+{
+  "/llms-full.txt": "---
+title: "About"
+url: "/about"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# About
+
+About content.
+
+---
+title: "Mosaic"
+url: "/mosaic/index"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Mosaic
+
+Mosaic content.
+
+---
+title: "Setup"
+url: "/mosaic/setup"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Setup
+
+Setup content.
+
+---
+title: "Salt"
+description: "Salt docs."
+url: "/salt/index"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Salt
+
+Salt content.
+
+---
+title: "Advanced"
+url: "/salt/components/advanced/index"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Advanced
+
+Advanced content.
+
+---
+title: "Button"
+description: "Starts an action."
+url: "/salt/components/button"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Button
+
+Button content.
+
+---
+title: "Salted"
+url: "/salted/index"
+---
+
+> For an index of all documentation, see [/llms.txt](/llms.txt).
+
+# Salted
+
+Salted content.
+",
+  "/llms.txt": "# Documentation
+
+## About
+
+- [About](/about.md)
+
+## [Mosaic](/mosaic/index.md)
+
+- [Setup](/mosaic/setup.md)
+
+## [Salt](/salt/index.md)
+
+Salt docs.
+
+## Components
+
+- [Advanced](/salt/components/advanced/index.md)
+- [Button](/salt/components/button.md): Starts an action.
+
+## [Salted](/salted/index.md)
+",
+  "/markdown-pages.json": "{"version":1,"pages":{"/about":"---\\ntitle: \\"About\\"\\nurl: \\"/about\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# About\\n\\nAbout content.\\n","/mosaic/index":"---\\ntitle: \\"Mosaic\\"\\nurl: \\"/mosaic/index\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Mosaic\\n\\nMosaic content.\\n","/mosaic/setup":"---\\ntitle: \\"Setup\\"\\nurl: \\"/mosaic/setup\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Setup\\n\\nSetup content.\\n","/salt/index":"---\\ntitle: \\"Salt\\"\\ndescription: \\"Salt docs.\\"\\nurl: \\"/salt/index\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Salt\\n\\nSalt content.\\n","/salt/components/advanced/index":"---\\ntitle: \\"Advanced\\"\\nurl: \\"/salt/components/advanced/index\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Advanced\\n\\nAdvanced content.\\n","/salt/components/button":"---\\ntitle: \\"Button\\"\\ndescription: \\"Starts an action.\\"\\nurl: \\"/salt/components/button\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Button\\n\\nButton content.\\n","/salted/index":"---\\ntitle: \\"Salted\\"\\nurl: \\"/salted/index\\"\\n---\\n\\n> For an index of all documentation, see [/llms.txt](/llms.txt).\\n\\n# Salted\\n\\nSalted content.\\n"}}",
+}
+`;
