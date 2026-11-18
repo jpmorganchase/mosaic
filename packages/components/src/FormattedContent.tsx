@@ -2,13 +2,18 @@ import React from 'react';
 import ReactMarkdown, { Components } from 'react-markdown';
 
 import { getMarkdownElements } from './Markdown/markdownElements';
+import * as Heading from './Markdown/Heading';
+import { Heading1 } from './Markdown/h1';
+import { Heading2 } from './Markdown/h2';
+import { Heading3 } from './Markdown/h3';
+import { Heading4 } from './Markdown/h4';
 
 // Renderers we provide by default + accept overrides for. Aligned
 // with `react-markdown` v9's `Components` map (no `listItem` /
 // `emphasis` aliases — those map to the standard `li` / `em` slots).
 type SupportedComponents = Pick<
   Components,
-  'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'em' | 'strong' | 'ul' | 'ol' | 'li'
+  'a' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'em' | 'strong' | 'ul' | 'ol' | 'li'
 >;
 
 type FormattedContentProps = {
@@ -17,34 +22,24 @@ type FormattedContentProps = {
   components?: SupportedComponents;
 };
 
-const {
-  h1: H1,
-  h2: H2,
-  h3: H3,
-  h4: H4,
-  h5: H5,
-  h6: H6,
-  ol: Ol,
-  ul: Ul,
-  li: ListItem,
-  em: Emphasis,
-  p: P,
-  strong: Strong
-} = getMarkdownElements();
+const { ol: Ol, ul: Ul, li: ListItem, em: Emphasis, p: P, strong: Strong } = getMarkdownElements();
 
+// Headings don't get the page's "Copy link to heading" link: formatted content
+// is a fragment (such as a tile description) whose headings have no ids, and
+// is often rendered inside a link, where another link is invalid.
 const renderers: SupportedComponents = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h1: ({ node, ...props }) => <H1 {...props} />,
+  h1: ({ node, children, ...props }) => <Heading1 {...props}>{children}</Heading1>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h2: ({ node, ...props }) => <H2 {...props} />,
+  h2: ({ node, children, ...props }) => <Heading2 {...props}>{children}</Heading2>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h3: ({ node, ...props }) => <H3 {...props} />,
+  h3: ({ node, children, ...props }) => <Heading3 {...props}>{children}</Heading3>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h4: ({ node, ...props }) => <H4 {...props} />,
+  h4: ({ node, children, ...props }) => <Heading4 {...props}>{children}</Heading4>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h5: ({ node, ...props }) => <H5 {...props} />,
+  h5: ({ node, children, ...props }) => <Heading.H5 {...props}>{children}</Heading.H5>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  h6: ({ node, ...props }) => <H6 {...props} />,
+  h6: ({ node, children, ...props }) => <Heading.H6 {...props}>{children}</Heading.H6>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   p: ({ node, children, ...props }) => <P {...props}>{children}</P>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
