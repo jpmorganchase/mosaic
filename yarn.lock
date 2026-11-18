@@ -1445,7 +1445,7 @@ __metadata:
     "@lexical/table": "npm:^0.45.0"
     "@lexical/utils": "npm:^0.45.0"
     "@salt-ds/core": "npm:^1.73.0"
-    "@salt-ds/theme": "npm:^1.43.0"
+    "@salt-ds/theme": "npm:^1.48.0"
     "@vanilla-extract/css": "npm:^1.6.0"
     "@vanilla-extract/sprinkles": "npm:^1.5.1"
     clsx: "npm:^2.0.0"
@@ -1499,7 +1499,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jpmorganchase/mosaic-icons@workspace:packages/icons"
   dependencies:
-    "@salt-ds/icons": "npm:^1.18.0"
+    "@salt-ds/icons": "npm:^1.19.0"
     concurrently: "npm:^7.1.0"
     del-cli: "npm:^6.0.0"
     esbuild: "npm:^0.28.1"
@@ -1667,8 +1667,8 @@ __metadata:
     "@jpmorganchase/mosaic-site-components": "workspace:*"
     "@jpmorganchase/mosaic-theme": "workspace:*"
     "@salt-ds/core": "npm:^1.73.0"
-    "@salt-ds/icons": "npm:^1.18.0"
-    "@salt-ds/theme": "npm:^1.43.0"
+    "@salt-ds/icons": "npm:^1.19.0"
+    "@salt-ds/theme": "npm:^1.48.0"
     concurrently: "npm:^7.1.0"
     del-cli: "npm:^6.0.0"
     esbuild: "npm:0.28.1"
@@ -1697,7 +1697,7 @@ __metadata:
     "@next/env": "npm:^16.4.6"
     "@playwright/test": "npm:^1.65.0"
     "@salt-ds/core": "npm:^1.73.0"
-    "@salt-ds/icons": "npm:^1.18.0"
+    "@salt-ds/icons": "npm:^1.19.0"
     "@types/node": "npm:^24.0.0"
     "@types/react": "npm:^19.0.0"
     "@types/react-dom": "npm:^19.0.0"
@@ -3007,24 +3007,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@salt-ds/icons@npm:^1.18.0":
-  version: 1.18.0
-  resolution: "@salt-ds/icons@npm:1.18.0"
-  dependencies:
-    "@salt-ds/styles": "npm:0.3.0"
-    "@salt-ds/window": "npm:0.1.1"
-    clsx: "npm:^2.0.0"
-  peerDependencies:
-    "@types/react": ">=16.14.0"
-    react: ">=16.14.0"
-    react-dom: ">=16.14.0"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10/3621a55b940d366571a77be4f47810a9c00a1a40f61ebf099a2b47b38651fbb0929c1273163446f51831367abb7e073cf1feb70faf024ff88a61733100f96797
-  languageName: node
-  linkType: hard
-
 "@salt-ds/icons@npm:^1.19.0":
   version: 1.19.0
   resolution: "@salt-ds/icons@npm:1.19.0"
@@ -3040,20 +3022,6 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10/844c796d4078b881701793edbd2be314f2c1ab716e0362980f470811bae8bc7e92f3c5fa9ba65cdd28fa3be0bd1361197a72af3645cca0e95087b085a066939a
-  languageName: node
-  linkType: hard
-
-"@salt-ds/styles@npm:0.3.0":
-  version: 0.3.0
-  resolution: "@salt-ds/styles@npm:0.3.0"
-  peerDependencies:
-    "@types/react": ">=16.14.0"
-    react: ">=16.14.0"
-    react-dom: ">=16.14.0"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10/bba2a96b5ad11a3347dc62d7cb73a375638aea48c08ac2c91c45f950173e57ae11998a70d0af704ead5e68cdde13f8ebd471a52ce5a4d1c301abc29aaeb410be
   languageName: node
   linkType: hard
 
@@ -3073,24 +3041,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@salt-ds/theme@npm:^1.43.0":
-  version: 1.43.0
-  resolution: "@salt-ds/theme@npm:1.43.0"
-  checksum: 10/b6471ba75e5504e0668f7f1cb3cb2dd91903432e93340f7d25c703ddbcdd6d434f1ddac9542e311c3ce49f1472c51c166738e2177f6b391ef9fe8650728a89c0
-  languageName: node
-  linkType: hard
-
-"@salt-ds/window@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@salt-ds/window@npm:0.1.1"
-  peerDependencies:
-    "@types/react": ">=16.14.0"
-    react: ">=16.14.0"
-    react-dom: ">=16.14.0"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10/66408cc1c982b2a5299e4defcfb55cc085e7cd070886693cdfc6683fd868d0c39354b419add3db52f693630a0e5b20e62dc92671ae32e863d94db9109fb10aae
+"@salt-ds/theme@npm:^1.48.0":
+  version: 1.48.0
+  resolution: "@salt-ds/theme@npm:1.48.0"
+  checksum: 10/0d716a8159ae43acf13791b452c88460716ab95833c398f173ae43c2251660533025ef3a891d3b9cda419046a7d3b13fd6cd0c9530809c81cdc122f169003cfd
   languageName: node
   linkType: hard
 
