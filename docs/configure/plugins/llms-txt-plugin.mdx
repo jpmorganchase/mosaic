@@ -59,6 +59,8 @@ All exclusions apply before scope selection: `llms.exclude`, the plugin's `exclu
 
 The reference site's `llms.txt` and `llms-full.txt` filenames are reserved at the root and under public paths, including unknown scopes (which return 404). Do not author pages or assets at those URLs, or at the internal manifest/bundle paths. Snapshot copying rejects a conflicting authored LLM text asset rather than overwriting it. Changing/removing a scope removes its previously generated files; deleting a page updates every affected artifact.
 
+Stopping a live source also republishes LLM artifacts from the remaining sources through the optional `afterSourceRemove` plugin lifecycle hook. When the last source exits, the corpora and route manifest become empty. Active requests observe removal within the configured cache lifetime. Use matching versions of `mosaic-core`, `mosaic-plugins` and `mosaic-types` for this lifecycle support.
+
 ## Serving the files
 
 The reference site serves the files with `createLlmsHandler`, from `@jpmorganchase/mosaic-site-middleware`, at `/api/llms/[...path]`, and rewrites these URLs to it:

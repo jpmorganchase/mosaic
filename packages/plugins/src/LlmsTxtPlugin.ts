@@ -3,6 +3,7 @@ import { pathToFileURL } from 'node:url';
 import picomatch from 'picomatch';
 import type {
   IVolumeMutable,
+  ImmutableData,
   LlmsManifest,
   MarkdownPagesFile,
   Page,
@@ -259,90 +260,101 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
   },
 
   async afterUpdate(_, { sharedFilesystem, globalConfig }, options = {}) {
-    const scopes = normalizeScopes(options.scopes);
-    const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
-      .catch(() => undefined)
-      .then(async () => {
-        const sourcePages = globalConfig.data.markdownPages;
-        if (!sourcePages) return;
-        const claims = new Map<string, number>();
-        for (const route of globalConfig.data.llmsRouteClaims ?? []) {
-          const key = route.toLowerCase();
-          claims.set(key, (claims.get(key) ?? 0) + 1);
-        }
-        const pages: Record<string, MarkdownPage> = {};
-        for (const [route, page] of Object.entries(sourcePages)) {
-          // Ambiguous canonical routes cannot safely identify public content.
-          if ((claims.get(route.toLowerCase()) ?? 0) > 1) continue;
-          pages[route] = {
-            ...page,
-            markdown: renderPage(
-              { route, ...page },
-              page.markdown,
-              options.siteUrl,
-              mostSpecificScope(route, scopes)
-            )
-          };
-        }
-        const routes = Object.keys(pages).sort(compareRoutes);
-        const previous: LlmsManifest | undefined = (await sharedFilesystem.promises.exists(
-          LLMS_MANIFEST_FILE
-        ))
-          ? JSON.parse(String(await sharedFilesystem.promises.readFile(LLMS_MANIFEST_FILE)))
-          : undefined;
-        const previousScopes = normalizeScopes(
-          (previous?.scopes ?? []).map(scope => ({ path: scope }))
-        );
-        const file: MarkdownPagesFile = {
-          version: 1,
-          pages: Object.fromEntries(routes.map(route => [route, pages[route].markdown]))
-        };
-        await sharedFilesystem.promises.writeFile(MARKDOWN_PAGES_FILE, JSON.stringify(file));
-        await sharedFilesystem.promises.writeFile(
-          LLMS_FULL_TXT_FILE,
-          routes.map(route => pages[route].markdown).join('\n')
-        );
-        await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
-        for (const scope of scopes) {
-          const scopedRoutes = routes.filter(route => withinScope(route, scope.path));
-          const scopedPages = Object.fromEntries(scopedRoutes.map(route => [route, pages[route]]));
-          await sharedFilesystem.promises.mkdir(scope.path, { recursive: true });
-          await sharedFilesystem.promises.writeFile(
-            `${scope.path}${LLMS_TXT_FILE}`,
-            buildLlmsTxt(scopedPages, {
-              title: scope.title ?? scope.path,
-              description: scope.description,
-              siteUrl: options.siteUrl
-            })
-          );
-          await sharedFilesystem.promises.writeFile(
-            `${scope.path}${LLMS_FULL_TXT_FILE}`,
-            scopedRoutes.map(route => pages[route].markdown).join('\n')
-          );
-        }
-        for (const previousScope of previousScopes) {
-          if (scopes.some(scope => scope.path === previousScope.path)) continue;
-          for (const file of [LLMS_TXT_FILE, LLMS_FULL_TXT_FILE]) {
-            const target = `${previousScope.path}${file}`;
-            if (await sharedFilesystem.promises.exists(target))
-              await sharedFilesystem.promises.unlink(target);
-          }
-        }
-        const manifest: LlmsManifest = {
-          version: 1,
-          routes,
-          scopes: scopes.map(scope => scope.path),
-          ...(options.siteUrl && { siteUrl: origin(options.siteUrl) })
-        };
-        await sharedFilesystem.promises.writeFile(LLMS_MANIFEST_FILE, JSON.stringify(manifest));
-      });
-    writes.set(sharedFilesystem, publish);
-    try {
-      await publish;
-    } finally {
-      if (writes.get(sharedFilesystem) === publish) writes.delete(sharedFilesystem);
-    }
+    await publish(sharedFilesystem, globalConfig, options);
+  },
+
+  async afterSourceRemove(sharedFilesystem, { globalConfig }, options = {}) {
+    await publish(sharedFilesystem, globalConfig, options);
   }
 };
+
+async function publish(
+  sharedFilesystem: IVolumeMutable,
+  globalConfig: ImmutableData<LlmsTxtPluginData>,
+  options: LlmsTxtPluginOptions
+) {
+  const scopes = normalizeScopes(options.scopes);
+  const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
+    .catch(() => undefined)
+    .then(async () => {
+      const sourcePages = globalConfig.data.markdownPages ?? {};
+      const claims = new Map<string, number>();
+      for (const route of globalConfig.data.llmsRouteClaims ?? []) {
+        const key = route.toLowerCase();
+        claims.set(key, (claims.get(key) ?? 0) + 1);
+      }
+      const pages: Record<string, MarkdownPage> = {};
+      for (const [route, page] of Object.entries(sourcePages)) {
+        // Ambiguous canonical routes cannot safely identify public content.
+        if ((claims.get(route.toLowerCase()) ?? 0) > 1) continue;
+        pages[route] = {
+          ...page,
+          markdown: renderPage(
+            { route, ...page },
+            page.markdown,
+            options.siteUrl,
+            mostSpecificScope(route, scopes)
+          )
+        };
+      }
+      const routes = Object.keys(pages).sort(compareRoutes);
+      const previous: LlmsManifest | undefined = (await sharedFilesystem.promises.exists(
+        LLMS_MANIFEST_FILE
+      ))
+        ? JSON.parse(String(await sharedFilesystem.promises.readFile(LLMS_MANIFEST_FILE)))
+        : undefined;
+      const previousScopes = normalizeScopes(
+        (previous?.scopes ?? []).map(scope => ({ path: scope }))
+      );
+      const file: MarkdownPagesFile = {
+        version: 1,
+        pages: Object.fromEntries(routes.map(route => [route, pages[route].markdown]))
+      };
+      await sharedFilesystem.promises.writeFile(MARKDOWN_PAGES_FILE, JSON.stringify(file));
+      await sharedFilesystem.promises.writeFile(
+        LLMS_FULL_TXT_FILE,
+        routes.map(route => pages[route].markdown).join('\n')
+      );
+      await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
+      for (const scope of scopes) {
+        const scopedRoutes = routes.filter(route => withinScope(route, scope.path));
+        const scopedPages = Object.fromEntries(scopedRoutes.map(route => [route, pages[route]]));
+        await sharedFilesystem.promises.mkdir(scope.path, { recursive: true });
+        await sharedFilesystem.promises.writeFile(
+          `${scope.path}${LLMS_TXT_FILE}`,
+          buildLlmsTxt(scopedPages, {
+            title: scope.title ?? scope.path,
+            description: scope.description,
+            siteUrl: options.siteUrl
+          })
+        );
+        await sharedFilesystem.promises.writeFile(
+          `${scope.path}${LLMS_FULL_TXT_FILE}`,
+          scopedRoutes.map(route => pages[route].markdown).join('\n')
+        );
+      }
+      for (const previousScope of previousScopes) {
+        if (scopes.some(scope => scope.path === previousScope.path)) continue;
+        for (const file of [LLMS_TXT_FILE, LLMS_FULL_TXT_FILE]) {
+          const target = `${previousScope.path}${file}`;
+          if (await sharedFilesystem.promises.exists(target))
+            await sharedFilesystem.promises.unlink(target);
+        }
+      }
+      const manifest: LlmsManifest = {
+        version: 1,
+        routes,
+        scopes: scopes.map(scope => scope.path),
+        ...(options.siteUrl && { siteUrl: origin(options.siteUrl) })
+      };
+      await sharedFilesystem.promises.writeFile(LLMS_MANIFEST_FILE, JSON.stringify(manifest));
+    });
+  writes.set(sharedFilesystem, publish);
+  try {
+    await publish;
+  } finally {
+    if (writes.get(sharedFilesystem) === publish) writes.delete(sharedFilesystem);
+  }
+}
 
 export default LlmsTxtPlugin;

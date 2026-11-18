@@ -35,6 +35,9 @@ function createProxyBaseAPI<ConfigData>(): Plugin<Page, ConfigData> {
     afterUpdate() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     },
+    afterSourceRemove() {
+      throw new Error('This is just for the interface on the Proxy and should never be invoked.');
+    },
     $beforeSend() {
       throw new Error('This is just for the interface on the Proxy and should never be invoked.');
     },

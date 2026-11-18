@@ -132,6 +132,17 @@ export type Plugin<
     options?: TOptions
   ) => Promise<void>;
   /**
+   * Main-process hook after a source exits and is removed from globalConfig.
+   * Reconcile shared artifacts from the remaining sources, including when none
+   * remain. The stopped source's filesystem is unavailable. Existing plugins
+   * need not implement this hook; it does not rerun their afterUpdate methods.
+   */
+  afterSourceRemove?: (
+    sharedFilesystem: IVolumeMutable,
+    helpers: { globalConfig: ImmutableData<GlobalConfigData> },
+    options?: TOptions
+  ) => Promise<void>;
+  /**
    * Plugin lifecycle method that triggers inside the main process everytime ANY source emits new pages.
    * This method should return a boolean that will indicate if this source should clear page caches.
    * This method calls whenever another source (not this one) has changed.
