@@ -36,6 +36,25 @@ describe('GIVEN an EditionFilterView', () => {
     // assert
     expect(screen.queryByText('All Results Displayed')).not.toBeInTheDocument();
   });
+  test('THEN descriptions add no links inside the tile link', () => {
+    // arrange
+    const { container } = render(
+      <EditionFilterView
+        view={[
+          {
+            ...singleGroupView[0],
+            formattedDescription:
+              '## Release notification\n\nSee [the change](https://example.com/change).'
+          }
+        ]}
+      />
+    );
+    // assert
+    expect(screen.getByRole('heading', { name: 'Release notification' })).toBeInTheDocument();
+    expect(screen.getByText('the change')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Copy link to heading')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('a a')).toHaveLength(0);
+  });
   test('THEN the filter view is rendered for multi-group', () => {
     // arrange
     render(<EditionFilterView view={multiGroupView} />);

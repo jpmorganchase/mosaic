@@ -58,11 +58,18 @@ export type EditionFilterViewProps = {
   ItemRenderer: EditionFilterViewRenderer;
 };
 
+// Each tile is a link, so links in its description render as their text.
+const descriptionComponents: React.ComponentProps<typeof FormattedContent>['components'] = {
+  a: ({ children }) => <span>{children}</span>
+};
+
 export const DefaultEditionFilterViewRenderer: EditionFilterViewRenderer = (item, itemIndex) => (
   <EditionTileLink
     description={
       item.formattedDescription ? (
-        <FormattedContent>{item.formattedDescription}</FormattedContent>
+        <FormattedContent components={descriptionComponents}>
+          {item.formattedDescription}
+        </FormattedContent>
       ) : null
     }
     eyebrow={item.eyebrow}
