@@ -7,6 +7,7 @@ export const LLMS_MANIFEST_FILE = 'llms-manifest.json';
 /** Validate before using a route in a file path or HTTP Link header. */
 export function isLlmsRoute(value: unknown): value is string {
   if (typeof value !== 'string' || !value.startsWith('/') || value.length > 4096) return false;
+  if (value === '/') return true;
   try {
     return value
       .slice(1)

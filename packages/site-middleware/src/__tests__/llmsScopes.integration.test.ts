@@ -5,7 +5,7 @@ import { dirname, join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { populatedFixture, document } from '../../../plugins/src/__tests__/fixtures/llms.mjs';
 import { createLlmsHandler } from '../llmsHandler';
-import { createLlmsDiscoveryLoader } from '../llmsDiscovery';
+import { createLlmsDiscoveryLoader, parseLlmsManifest } from '../llmsDiscovery';
 
 const options = { scopes: [{ path: '/salt' }, { path: '/salt/components' }, { path: '/mosaic' }] };
 
@@ -108,6 +108,22 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       indexUrl: '/llms.txt'
     });
     expect(await discovery('/not-generated', mode, contentUrl)).toBeUndefined();
+  });
+
+  test('a canonical root page does not invalidate the bundle or other pages discovery', async () => {
+    const bundle = JSON.parse(files['/markdown-pages.json']);
+    bundle.pages['/'] = '# Home';
+    files['/markdown-pages.json'] = JSON.stringify(bundle);
+    const manifest = JSON.parse(files['/llms-manifest.json']);
+    manifest.routes.push('/');
+    files['/llms-manifest.json'] = JSON.stringify(manifest);
+    if (mode === 'snapshot-file') save();
+    expect((await get('/salt/components/button.md')).status).toBe(200);
+    expect(await discovery('/salt/components/button', mode, contentUrl)).toEqual({
+      markdownUrl: '/salt/components/button.md',
+      indexUrl: '/salt/components/llms.txt'
+    });
+    expect(() => parseLlmsManifest(JSON.stringify({ ...manifest, scopes: ['/'] }))).toThrow();
   });
 
   test('refreshes modified/deleted pages, scope removal and discovery without stale files', async () => {

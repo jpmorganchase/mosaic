@@ -13,6 +13,7 @@ import { createLlmsHandler } from '../llmsHandler.js';
 const pages: MarkdownPagesFile = {
   version: 1,
   pages: {
+    '/': '# Home',
     '/docs/index': '---\ntitle: "Docs"\n---\n\nWelcome.\n',
     '/docs/button/index': '---\ntitle: "Button"\n---\n\nPress it.\n',
     '/docs/button/usage': '---\ntitle: "Button usage"\n---\n\nUse it.\n',

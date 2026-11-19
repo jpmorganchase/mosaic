@@ -85,7 +85,11 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
     context: { params: Promise<{ path?: string[] }> }
   ): Promise<Response> {
     const segments = (await context.params).path ?? [];
-    if (!isLlmsRoute(`/${segments.join('/')}`) || segments.some(segment => segment.includes('/')))
+    if (
+      !segments.length ||
+      !isLlmsRoute(`/${segments.join('/')}`) ||
+      segments.some(segment => segment.includes('/'))
+    )
       return text('Not found', 404);
     const resolved = resolveMosaicMode();
     const mode = modeOption ?? resolved.mode;
