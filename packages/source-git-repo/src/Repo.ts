@@ -626,15 +626,20 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    // `--all` pulls every remote's refs; we genuinely only have one
-    // remote in practice (`origin`), so scope the fetch to it. We also
-    // discard stdout: `git fetch` writes its progress (and on busy repos
-    // that's MB of "Receiving objects: …" noise) to stderr, but a few
-    // git transports still emit verbose stdout — none of it is something
-    // we read.
-    return this.#spawn('git', ['fetch', this.#remote, '--quiet'], this.#dir, {
-      discardStdout: true
-    });
+    // Sources on different branches share the clone's remote configuration.
+    // Select this source's branch explicitly so another source's refspec cannot
+    // redirect its refresh. The clone also exists before a new worktree does.
+    return this.#spawn(
+      'git',
+      [
+        'fetch',
+        '--quiet',
+        this.#remote,
+        `+refs/heads/${this.#branch}:refs/remotes/${this.#remote}/${this.#branch}`
+      ],
+      this.#cloneRootDir,
+      { discardStdout: true }
+    );
   }
 
   async init() {
@@ -664,7 +669,8 @@ export default class Repo {
 
   async #init() {
     try {
-      if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
+      const reusingClone = await doesPreviousCloneExist(this.#repo, this.#cloneRootDir);
+      if (!reusingClone) {
         console.debug(`[Mosaic][Source-Git] Creating main worktree for repo '${this.#name}'`);
 
         //Empty the directory before cloning
@@ -723,6 +729,10 @@ export default class Repo {
       // clones are also normalised (cheap, idempotent).
       await this.ensureSingleBranchFetchRefspec();
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
+        // A reused single-branch clone may never have seen this branch. Fetch
+        // before creating its worktree, while the shared checkout lock is held.
+        // A fresh clone already fetched the requested branch.
+        if (reusingClone) await this.fetch();
         console.debug(
           `[Mosaic][Source-Git] Creating linked worktree repo '${this.#name} branch '${
             this.#branch
