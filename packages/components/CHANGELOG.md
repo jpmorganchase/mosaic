@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-components
 
+## 1.0.0-beta.100
+
+### Patch Changes
+
+- be66626: Render headings in `FormattedContent` without a "Copy link to heading" link, and render links in `EditionFilterView` tile descriptions as their text. The headings have no ids, so their copy links pointed to `#undefined`, and each tile is itself a link, so these links were nested inside it, which is invalid HTML and broke hydration. `FormattedContent` now accepts an `a` override in `components`.
+- Updated dependencies [d5e2e29]
+  - @jpmorganchase/mosaic-icons@1.0.0-beta.100
+  - @jpmorganchase/mosaic-store@1.0.0-beta.100
+  - @jpmorganchase/mosaic-theme@1.0.0-beta.100
+
 ## 1.0.0-beta.99
 
 ### Minor Changes

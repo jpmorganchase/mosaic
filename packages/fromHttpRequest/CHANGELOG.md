@@ -1,5 +1,9 @@
 # @jpmorganchase/mosaic-from-http-request
 
+## 1.0.0-beta.100
+
+No changes in this release.
+
 ## 1.0.0-beta.99
 
 ### Major Changes
