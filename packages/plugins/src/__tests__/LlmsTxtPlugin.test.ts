@@ -216,19 +216,17 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     } catch (thrown) {
       error = thrown;
     }
-    const written: Record<string, string> = {};
+    const shared = new MutableVolume(new FileAccess(new Volume()), '*');
     const afterUpdate = LlmsTxtPlugin.afterUpdate!;
     await afterUpdate(
       {} as Parameters<typeof afterUpdate>[0],
       {
-        sharedFilesystem: {
-          promises: { writeFile: async (name: string, value: string) => (written[name] = value) }
-        },
+        sharedFilesystem: shared,
         globalConfig: { data }
       } as unknown as Parameters<typeof afterUpdate>[1],
       options
     );
-    return { written, error };
+    return { written: shared.toJSON() as Record<string, string>, error };
   }
 
   test('THEN it writes each page as Markdown with frontmatter, in route order', async () => {

@@ -8,6 +8,8 @@
  * `generateMetadata` in `page.tsx` and appears in the initial
  * server-rendered HTML <head>. That's the right place for anything
  * crawlers / link-unfurlers need to see before JS runs.
+ * `LlmsMetadata` is a server sibling for the optional Markdown alternate and
+ * describedby links, including in static exports. Do not duplicate them here.
  *
  * What stays here:
  *   - The signed-in user's avatar `<link rel="preload" as="image">`.

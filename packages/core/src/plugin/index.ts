@@ -54,6 +54,9 @@ export async function bindPluginMethods(
       const result = await pluginApi.afterUpdate(mutableFilesystem, args);
       return result;
     },
+    async afterSourceRemove(sharedFilesystem, args) {
+      await pluginApi.afterSourceRemove(sharedFilesystem, args);
+    },
     async $beforeSend(mutableFilesystem, args) {
       const result = await pluginApi.$beforeSend(mutableFilesystem, args);
       return result;
