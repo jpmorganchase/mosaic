@@ -110,14 +110,24 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(await discovery('/not-generated', mode, contentUrl)).toBeUndefined();
   });
 
-  test('a canonical root page does not invalidate the bundle or other pages discovery', async () => {
+  test('root discovery resolves its canonical Markdown without selecting /index', async () => {
     const bundle = JSON.parse(files['/markdown-pages.json']);
     bundle.pages['/'] = '# Home';
+    bundle.pages['/index'] = '# A distinct index page';
     files['/markdown-pages.json'] = JSON.stringify(bundle);
     const manifest = JSON.parse(files['/llms-manifest.json']);
-    manifest.routes.push('/');
+    manifest.routes.push('/', '/index');
     files['/llms-manifest.json'] = JSON.stringify(manifest);
     if (mode === 'snapshot-file') save();
+    const home = await discovery('/', mode, contentUrl);
+    expect(home).toEqual({ markdownUrl: '/.md', indexUrl: '/llms.txt' });
+    const response = await get(home!.markdownUrl);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('# Home');
+    expect(response.headers.get('Link')).toBe(
+      '</.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"'
+    );
+    expect(await (await get('/index.md')).text()).toBe('# A distinct index page');
     expect((await get('/salt/components/button.md')).status).toBe(200);
     expect(await discovery('/salt/components/button', mode, contentUrl)).toEqual({
       markdownUrl: '/salt/components/button.md',

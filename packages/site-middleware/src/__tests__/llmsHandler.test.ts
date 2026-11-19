@@ -71,6 +71,14 @@ describe('snapshot-file mode', () => {
     expect((await get(handler, 'docs', 'index')).body).toBe(pages.pages['/docs/index']);
   });
 
+  test('serves a canonical root page at /.md without requiring a manifest', async () => {
+    expect(await get(handler, '.md')).toMatchObject({
+      status: 200,
+      type: 'text/markdown; charset=utf-8',
+      body: '# Home'
+    });
+  });
+
   test('serves llms.txt and llms-full.txt as text', async () => {
     expect(await get(handler, 'llms.txt')).toMatchObject({
       status: 200,

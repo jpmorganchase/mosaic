@@ -18,7 +18,7 @@ function publicPath(publicDir, file) {
  * active-mode build supplies no snapshot and removes the old snapshot copies,
  * allowing requests to reach the live route handlers again.
  */
-function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
+function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown = true }) {
   publicDir = resolve(publicDir);
   const files = new Map();
 
@@ -57,7 +57,9 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile }) {
     }
 
     const markdownFile = resolve(snapshotDir, 'markdown-pages.json');
-    if (existsSync(markdownFile)) {
+    // Server builds serve generated Markdown through the handler, preserving
+    // its headers and manifest checks while authored public .md files still win.
+    if (copyMarkdown && existsSync(markdownFile)) {
       const markdown = JSON.parse(readFileSync(markdownFile, 'utf8'));
       if (
         markdown?.version !== 1 ||

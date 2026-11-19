@@ -147,6 +147,27 @@ describe('snapshot public assets', () => {
     expect(read('docs/guide/index.md')).toBe('# Index');
   });
 
+  test('exports root Markdown separately from an explicit /index page', () => {
+    pages({ '/': '# Home', '/index': '# Index' });
+    sync();
+    expect(read('.md')).toBe('# Home');
+    expect(read('index.md')).toBe('# Index');
+  });
+
+  test('switching to a snapshot server removes generated Markdown but preserves authored assets', () => {
+    writeFileSync(join(publicDir, 'authored.md'), '# Authored');
+    pages({ '/': '# Home', '/docs/index': '# Snapshot' });
+    sync();
+    expect(read('docs/index.md')).toBe('# Snapshot');
+
+    syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+
+    for (const file of ['.md', 'docs/index.md', 'docs.md'])
+      expect(existsSync(join(publicDir, file))).toBe(false);
+    expect(read('authored.md')).toBe('# Authored');
+    expect(JSON.parse(readFileSync(manifestFile, 'utf8')).files).toEqual([]);
+  });
+
   test('clears snapshot copies for an active-mode build without removing authored assets', () => {
     writeFileSync(join(publicDir, 'authored.md'), '# Authored');
     pages({ '/docs/index': '# Snapshot' });

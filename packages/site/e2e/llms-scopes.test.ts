@@ -10,6 +10,25 @@ test.describe('Scoped LLM fixture', () => {
   test.skip(process.env.MOSAIC_LLMS_FIXTURE !== '1', 'Requires the multi-source LLM fixture');
   const isStatic = process.env.MOSAIC_LLMS_STATIC === '1';
 
+  test('serves authored public Markdown outside the generated bundle', async ({ request }) => {
+    const response = await request.get('/llms-fixture-authored.md');
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain('# Authored public Markdown fixture');
+  });
+
+  test('serves the advertised canonical root Markdown URL', async ({ request }) => {
+    const index = await request.get('/llms.txt');
+    expect(await index.text()).toContain('[Home fixture](/.md)');
+    const response = await request.get('/.md');
+    expect(response.status()).toBe(200);
+    expect(await response.text()).toContain('Canonical root documentation.');
+    if (!isStatic) {
+      expect(response.headers()['content-type']).toContain('text/markdown');
+      expect(response.headers().link).toContain('</.md>; rel="alternate"');
+      expect(response.headers().link).toContain('</llms.txt>; rel="describedby"');
+    }
+  });
+
   test('refreshes the active source and removes deleted Markdown from every corpus', async ({
     request,
     browserName

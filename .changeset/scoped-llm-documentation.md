@@ -10,3 +10,5 @@ Add optional public-path scopes to LlmsTxtPlugin. Preserve the global page index
 Expose a lightweight discovery manifest and server loader, serve allowlisted scoped indexes in active and snapshot modes, and add Markdown Link headers with bounded refresh behavior. The reference site renders canonical HTML discovery links and copies/cleans nested artifacts for static exports.
 
 Add an optional afterSourceRemove plugin hook so LLM artifacts are also reconciled when a running source stops or exits, including the last source. Existing plugin update hooks are not replayed during removal.
+
+Preserve authored public Markdown assets in server builds and serve canonical root-page Markdown at `/.md`, matching its discovery URL. Generated public Markdown copies are retained only for static exports.

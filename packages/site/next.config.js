@@ -26,7 +26,7 @@
  *         the server targets above.
  */
 const { resolve } = require('node:path');
-const { PHASE_PRODUCTION_BUILD } = require('next/constants');
+const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } = require('next/constants');
 const { syncSnapshotAssets } = require('./scripts/sync-snapshot-assets.cjs');
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
@@ -130,7 +130,7 @@ const dynamicOnlyConfig = {
     return {
       beforeFiles: [
         { source: '/favicon.ico', destination: '/img/favicon.png' },
-        // Reserve the LLM endpoints before public files and the catch-all.
+        // Reserve the text indexes before public files and the catch-all.
         // Server builds use the handler for consistent headers and refreshes;
         // static exports have no rewrites and use the copied snapshot files.
         { source: '/llms.txt', destination: '/api/llms/llms.txt' },
@@ -140,13 +140,18 @@ const dynamicOnlyConfig = {
           source: '/:scope((?!api/|_next/).+)/llms-full.txt',
           destination: '/api/llms/:scope/llms-full.txt'
         },
-        { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' },
         // Agents that ask for Markdown get it at the page's own URL.
         {
           source: '/:path((?!api/|_next/).+)',
           has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
           destination: '/api/llms/:path'
         }
+      ],
+      // Preserve authored public Markdown. Server builds remove generated
+      // public .md copies so those requests still reach the live handler.
+      afterFiles: [
+        { source: '/.md', destination: '/api/llms/.md' },
+        { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' }
       ]
     };
   },
@@ -182,15 +187,16 @@ const standaloneConfig = {
 
 module.exports = phase => {
   const snapshotDir = process.env.MOSAIC_SNAPSHOT_DIR;
-  if (phase === PHASE_PRODUCTION_BUILD) {
-    // Expose snapshot search and Markdown as static files. Reconcile the last
-    // build's output so removed/excluded pages and disabled plugins don't leave
-    // old public copies that bypass the route handlers.
+  if (phase === PHASE_PRODUCTION_BUILD || phase === PHASE_DEVELOPMENT_SERVER) {
+    // Expose snapshot search and, for static exports, Markdown as public files.
+    // Reconcile on builds and dev startup so earlier static exports cannot
+    // leave stale generated Markdown that bypasses the server handlers.
     syncSnapshotAssets({
       snapshotDir:
         mosaicMode === 'snapshot-file' && snapshotDir ? resolve(__dirname, snapshotDir) : undefined,
       publicDir: resolve(__dirname, 'public'),
-      manifestFile: resolve(__dirname, '.mosaic-public-assets.json')
+      manifestFile: resolve(__dirname, '.mosaic-public-assets.json'),
+      copyMarkdown: isExport
     });
   }
   return isExport

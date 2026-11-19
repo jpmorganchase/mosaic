@@ -60,7 +60,7 @@ const text = (body: string, status: number, headers: Record<string, string> = {}
 /** The route a request asks for: `/docs/button` for `docs/button.md`. */
 function routeOf(segments: string[]) {
   const route = `/${segments.join('/')}`.replace(/\.md$/i, '').replace(/\/+$/, '');
-  return route.toLowerCase();
+  return route.toLowerCase() || '/';
 }
 
 /**
@@ -127,7 +127,7 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
       }
       const route = routeOf(segments);
       const pages = await getPages(mode, contentUrl);
-      const canonical = pages?.has(route) ? route : `${route}/index`;
+      const canonical = pages?.has(route) ? route : `${route.replace(/\/$/, '')}/index`;
       const markdown =
         route.endsWith('/index') && canonical !== route ? undefined : pages?.get(canonical);
       if (markdown === undefined) {

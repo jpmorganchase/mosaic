@@ -70,6 +70,7 @@ The reference site serves the files with `createLlmsHandler`, from `@jpmorgancha
 | `/llms.txt`, `/llms-full.txt`                     | The file                                            |
 | `/<scope>/llms.txt`, `/<scope>/llms-full.txt`     | The configured public subtree's file                |
 | `/<page>.md`                                      | The page's Markdown. A folder serves its index page |
+| `/.md`                                            | The canonical `/` page, when one is published       |
 | `/<page>`, with an `Accept: text/markdown` header | The page's Markdown                                 |
 
 ```js
@@ -81,18 +82,21 @@ rewrites() {
       { source: '/llms-full.txt', destination: '/api/llms/llms-full.txt' },
       { source: '/:scope((?!api/|_next/).+)/llms.txt', destination: '/api/llms/:scope/llms.txt' },
       { source: '/:scope((?!api/|_next/).+)/llms-full.txt', destination: '/api/llms/:scope/llms-full.txt' },
-      { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' },
       {
         source: '/:path((?!api/|_next/).+)',
         has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
         destination: '/api/llms/:path'
       }
+    ],
+    afterFiles: [
+      { source: '/.md', destination: '/api/llms/.md' },
+      { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' }
     ]
   };
 }
 ```
 
-These `beforeFiles` rewrites take precedence over the site's catch-all page and any earlier generated public copies. Both active and snapshot-file server builds use the handler for consistent response headers. Text indexes use `text/plain`; page representations use `text/markdown`, `Vary: Accept`, `X-Robots-Tag: noindex` and HTTP `Link` discovery headers. Missing pages/scopes/files return 404; unreadable or invalid generated data returns 503.
+Text indexes and content negotiation take precedence over the site's catch-all page and any earlier generated public copies. Explicit `.md` requests use `afterFiles` so manually maintained Markdown in `public/` remains accessible. Server builds remove previously generated public Markdown copies and read the bundle through the handler; only static exports copy generated `.md` files into `public/`. Custom hosts using these rewrites should likewise keep generated Markdown out of their server's public directory. Both active and snapshot-file server builds then use the handler for consistent response headers. Text indexes use `text/plain`; page representations use `text/markdown`, `Vary: Accept`, `X-Robots-Tag: noindex` and HTTP `Link` discovery headers. Missing pages/scopes/files return 404; unreadable or invalid generated data returns 503.
 
 In active mode, the handler reads the files from the CLI and caches them for up to 30 seconds. An expired read waits for refresh; a failed refresh returns 503 instead of indefinitely serving stale content. Set `maxAge` to change that (use `0` to check on every request). Active responses use `no-store`; snapshot server responses retain the existing short CDN cache policy. Source updates rebuild the global artifacts from all current source data, and scoped files are reconciled on the shared filesystem.
 

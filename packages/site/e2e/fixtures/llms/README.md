@@ -2,6 +2,14 @@
 
 Run commands below from `packages/site`, after building the workspace packages and installing Playwright browsers. This fixture mounts independent sources at `/salt` and `/mosaic` with the same internal namespace, plus unscoped pages, aliases and excluded content. It also configures the overlapping `/salt/components` scope.
 
+Before starting any server or build, copy the authored public Markdown fixture once (the command refuses to overwrite an existing file):
+
+```sh
+node -e "require('node:fs').copyFileSync('e2e/fixtures/llms/authored.md', 'public/llms-fixture-authored.md', require('node:fs').constants.COPYFILE_EXCL)"
+```
+
+Keep that file for all three modes, then remove the copied `public/llms-fixture-authored.md` after testing. The fixture also publishes a canonical `/` page to verify `/.md`, independently of the reference site's HTML homepage redirect.
+
 ## Active mode
 
 Start the content server and Next in separate terminals:
