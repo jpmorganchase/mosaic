@@ -206,4 +206,9 @@ export default class PullDocs {
   async listSources() {
     return this.#sourceManager.listSources();
   }
+
+  /** Creation hints only; workflow ownership and authorization are still checked on save. */
+  getNewPageSources(namespaces?: string[]) {
+    return this.#sourceManager.getNewPageSources(namespaces);
+  }
 }

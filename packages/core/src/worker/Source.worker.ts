@@ -5,7 +5,12 @@ import fs from 'fs';
 import { DirectoryJSON, Volume } from 'memfs';
 import { switchMap, tap } from 'rxjs';
 
-import type { Page, PluginErrors, WorkerData } from '@jpmorganchase/mosaic-types';
+import type {
+  Page,
+  PluginErrors,
+  SourceCapabilities,
+  WorkerData
+} from '@jpmorganchase/mosaic-types';
 
 import FileAccess from '../filesystems/FileAccess.js';
 import MutableVolume from '../filesystems/MutableVolume.js';
@@ -37,10 +42,17 @@ if (isMainThread) {
     await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
   }
 
-  (await createSourceObservable(workerData, serialiser))
+  let sourceCapabilities: SourceCapabilities | undefined;
+  (
+    await createSourceObservable(workerData, serialiser, value => {
+      sourceCapabilities = value;
+    })
+  )
     .pipe(
       tap(() => {
         config = createConfig();
+        // Source metadata must also exist when the source emits no pages.
+        config.setData({ sourceCapabilities });
       }),
       switchMap((pages: Page[]) =>
         pluginApi.$afterSource(pages, {
