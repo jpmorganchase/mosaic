@@ -7,10 +7,9 @@
  *
  * `GET /api/content/new-page?folder=/docs/guides` answers
  * `{ folder, writable }`. `writable` is the same check the catch-all page
- * makes for `?new=1`: the `sourceCapabilities` of the folder's shared
- * config, or of the nearest folder above it when it doesn't exist yet
- * (see `getNewPageSharedConfig`). A folder outside every writable source,
- * or one that only a read-only source serves, answers `false`, so the
+ * makes for `?new=1`: creation metadata from the CLI's source mounts and
+ * save workflows (see `getNewPageSharedConfig`). Older content servers
+ * fall back to the nearest shared config. A folder with no writable owner answers `false`, so the
  * dialog can say so before the author is sent to a 404.
  *
  * The answer only helps the dialog. The page still makes its own check,

@@ -143,6 +143,11 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
       }
     }
     const snapshotId = randomUUID();
+    await fs.promises.writeFile(
+      path.join(pathDir, 'mosaic-new-page-sources.json'),
+      JSON.stringify({ version: 1, sources: mosaic.getNewPageSources() }),
+      { encoding: 'utf8', flag: 'wx' }
+    );
     const routes = await buildRouteInventory({
       root: pathDir,
       files: allFiles.map(String),

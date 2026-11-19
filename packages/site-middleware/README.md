@@ -97,7 +97,9 @@ when the reference site moved to the App Router. Port
 
 `createNewPageHandler()` tells the content editor's New Page dialog whether new pages can be created in a folder. Mount it at `src/app/api/content/new-page/route.ts`; the dialog asks `GET /api/content/new-page?folder=/docs/guides` and keeps Create disabled until the answer is `{ "writable": true }`. Pass `transformSharedConfig` if your catch-all page changes the shared config before checking it, such as the reference site's dev capability bypass. Without the route, the dialog doesn't check.
 
-`getNewPageSharedConfig()` is the check behind both the handler and `resolveContent`: a folder's shared config, or the nearest folder above it with one, so a page can be created in a folder that doesn't exist yet.
+`getNewPageSharedConfig()` supplies the nearest folder's layout configuration, then resolves creation capability from `mosaic-new-page-sources.json`. The CLI serves this metadata without caching and includes it in snapshots. It lists public mount prefixes for sources with a `save` workflow, in source order; the longest matching prefix wins, including when the source has no index at its mount. Internal namespaces do not determine public ownership. Active namespace restrictions also restrict this metadata. These are UI hints: workflow ownership and authorization are checked again when saving.
+
+Older content servers and snapshots without this file retain the shared-config fallback. Update the CLI and rebuild snapshots to get source-based eligibility for folders without index pages.
 
 ## Search
 

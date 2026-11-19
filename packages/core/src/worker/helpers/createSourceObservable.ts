@@ -1,6 +1,6 @@
 import { isObservable, map, catchError, throwError } from 'rxjs';
 import type { Observable } from 'rxjs';
-import type { Page, Source, WorkerData } from '@jpmorganchase/mosaic-types';
+import type { Page, Source, SourceCapabilities, WorkerData } from '@jpmorganchase/mosaic-types';
 
 import { createPageTest } from '../../helpers/createPageTest.js';
 
@@ -43,7 +43,8 @@ export async function getSourceRefresh({
 
 export default async function createSourceObservable(
   { modulePath, name, options, pageExtensions, ignorePages, schedule }: WorkerData,
-  serialiser
+  serialiser,
+  onCapabilities?: (capabilities: SourceCapabilities | undefined) => void
 ): Promise<Observable<Page[]>> {
   const api = await getSourceDefinitionExports(modulePath);
   const source$ = api.create(options, { serialiser, pageExtensions, schedule });
@@ -64,6 +65,7 @@ export default async function createSourceObservable(
   const hasCapabilities =
     declaredCapabilities != null && Object.keys(declaredCapabilities).length > 0;
   const sourceCapabilities = hasCapabilities ? declaredCapabilities : undefined;
+  onCapabilities?.(sourceCapabilities);
 
   // TODO: Move this formatter
   return source$.pipe(

@@ -424,6 +424,22 @@ export default class SourceManager {
     }));
   }
 
+  /** Public creation hints, in the same candidate order used by findNewPageOwner. */
+  getNewPageSources(namespaces?: string[]) {
+    return Array.from(this.#sources.values()).flatMap(source => {
+      if (
+        (namespaces && !namespaces.includes(source.namespace)) ||
+        source.prefixDir === undefined ||
+        !source.hasWorkflow('save')
+      )
+        return [];
+      const capabilities = source.config?.data.sourceCapabilities as
+        | { writable?: boolean }
+        | undefined;
+      return [{ prefixDir: source.prefixDir, writable: capabilities?.writable === true }];
+    });
+  }
+
   getSourceDefinition(name: string) {
     const source = this.getSource(name);
     if (source) {

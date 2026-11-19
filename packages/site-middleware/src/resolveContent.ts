@@ -9,6 +9,7 @@ import path from 'node:path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { getMdxRaw, getSharedConfig } from './cachedLoaders.js';
 import { canonicalRoute, isSafeContentPath } from './canonicalRoute.js';
+import { newPageWritable } from './newPageSources.js';
 export { canonicalRoute } from './canonicalRoute.js';
 
 type MdxContent = Extract<Awaited<ReturnType<typeof getMdxRaw>>, { kind: 'mdx' }>;
@@ -100,9 +101,9 @@ const getFolderSharedConfig = (folder: string, mode: MosaicMode, contentUrl: str
  *
  * Mosaic only writes shared config for folders that hold pages, so
  * without this a page in a new folder would have no config, and the
- * create flow would refuse it as not writable. The CLI picks the source
- * that saves a new page in the same way: the one whose folder most closely
- * contains it.
+ * create flow would have no layout config. Creation capability instead comes
+ * from the CLI's source prefixes and save workflows, independently of indexes.
+ * Older snapshots without that metadata retain the shared-config fallback.
  *
  * Returns `undefined` when no folder up to the root has a config.
  */
@@ -111,10 +112,29 @@ export async function getNewPageSharedConfig(
   mode: MosaicMode,
   contentUrl: string
 ): Promise<SharedConfig> {
+  return resolveNewPageConfig(folder, mode, contentUrl);
+}
+
+async function resolveNewPageConfig(
+  folder: string,
+  mode: MosaicMode,
+  contentUrl: string,
+  initial?: { config: SharedConfig }
+): Promise<SharedConfig> {
   if (!folder.startsWith('/')) return undefined;
+  const writable = await newPageWritable(folder, mode, contentUrl);
   for (let current = path.posix.normalize(folder); ; current = path.posix.dirname(current)) {
-    const config = await getFolderSharedConfig(current, mode, contentUrl);
-    if (config !== undefined || current === '/') return config;
+    const config =
+      current === folder && initial
+        ? initial.config
+        : await getFolderSharedConfig(current, mode, contentUrl);
+    if (config !== undefined || current === '/')
+      return writable === undefined
+        ? config
+        : {
+            ...config,
+            sourceCapabilities: { writable }
+          };
   }
 }
 
@@ -191,11 +211,9 @@ export const resolveContent = cache(
         // A page in a folder that doesn't exist yet takes the config of
         // the nearest folder above it, so it can be created there.
         const folder = path.posix.dirname(pathname);
-        const sharedConfig =
-          requestedConfig() ??
-          (folder === '/'
-            ? undefined
-            : await getNewPageSharedConfig(path.posix.dirname(folder), mode, contentUrl));
+        const sharedConfig = await resolveNewPageConfig(folder, mode, contentUrl, {
+          config: requestedConfig()
+        });
         return { kind: 'not-found', originalPathname, pathname, sharedConfig };
       }
 

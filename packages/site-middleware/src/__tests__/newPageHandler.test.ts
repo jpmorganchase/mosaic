@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const getSharedConfig = vi.fn();
 vi.mock('../cachedLoaders.js', () => ({ getMdxRaw: vi.fn(), getSharedConfig }));
+vi.mock('../newPageSources.js', () => ({ newPageWritable: async () => undefined }));
 vi.mock('react', async () => ({
   ...(await vi.importActual<typeof import('react')>('react')),
   cache: <T>(fn: T) => fn
