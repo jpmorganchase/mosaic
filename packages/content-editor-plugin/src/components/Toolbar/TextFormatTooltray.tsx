@@ -11,7 +11,7 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { $isListNode, ListNode } from '@lexical/list';
 import { $getNearestNodeOfType } from '@lexical/utils';
 import { $isHeadingNode } from '@lexical/rich-text';
-import { $isCodeNode } from '@lexical/code';
+import { $isCodeNode } from '@lexical/code-core';
 import { Icon } from '@jpmorganchase/mosaic-components';
 
 import { BaseTooltray as Tooltray } from '../BaseTooltray/BaseTooltray';

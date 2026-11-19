@@ -37,7 +37,6 @@
     "@jpmorganchase/mosaic-theme": "workspace:*",
     "@salt-ds/core": "^1.73.0",
     "@salt-ds/icons": "^1.19.0",
-    "@salt-ds/theme": "^1.48.0",
-    "prismjs": "^1.30.0"
+    "@salt-ds/theme": "^1.48.0"
   }
 }
