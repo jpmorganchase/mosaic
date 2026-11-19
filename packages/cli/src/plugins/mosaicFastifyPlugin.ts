@@ -34,6 +34,11 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
   const fs$ = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
   fastify.decorate('mosaic', { config, core: mosaic, fs: fs$, scope });
 
+  fastify.get('/mosaic-new-page-sources.json', async (_req, reply) => {
+    reply.header('Cache-Control', 'no-store');
+    return { version: 1, sources: mosaic.getNewPageSources(scope) };
+  });
+
   /**
    * Raw on-disk source fetch.
    *

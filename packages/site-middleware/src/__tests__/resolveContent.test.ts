@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 const getMdxRaw = vi.fn();
 const getSharedConfig = vi.fn();
 vi.mock('../cachedLoaders.js', () => ({ getMdxRaw, getSharedConfig }));
+vi.mock('../newPageSources.js', () => ({ newPageWritable: async () => undefined }));
 // `React.cache` only memoises inside a server render; make it a no-op so
 // every call reaches the mocked loaders.
 vi.mock('react', async () => ({
