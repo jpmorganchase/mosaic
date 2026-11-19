@@ -20,6 +20,10 @@ import { resolve } from 'node:path';
 const siteRoot = resolve(import.meta.dirname, '..');
 const ROUTES = [
   {
+    path: 'src/app/api/authoring/route.ts',
+    why: 'Static exports embed the authoring destination at build time and do not request runtime configuration.'
+  },
+  {
     path: 'src/app/api/auth/[...nextauth]/route.ts',
     why: 'Authentication requires a server runtime; not available in a CDN-only static export.',
     staticParams: { nextauth: ['stub'] }

@@ -24,6 +24,7 @@
  */
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { z } from 'zod';
+import { normalizeAuthoringUrl } from './authoringUrl';
 
 if (typeof window !== 'undefined') {
   throw new Error('lib/config.ts must not be imported on the client.');
@@ -42,8 +43,8 @@ export interface SiteConfig {
    * `MOSAIC_AUTHORING_URL`, without a trailing slash: the site where this
    * site's pages are edited, such as dev for a test environment. When it
    * is set, this site doesn't edit or save; its editor controls open the
-   * same page there. Read at runtime, so one build can serve every
-   * environment.
+   * same page there. Server deployments read it at runtime, including
+   * prerendered snapshots. Fully static exports use the build-time value.
    */
   authoringUrl: string | undefined;
   auth: {
@@ -217,7 +218,7 @@ export function readSiteConfig(env: SiteEnv): SiteConfig {
     mode: (env.MOSAIC_MODE || 'active') as MosaicMode,
     staticExport: env.MOSAIC_OUTPUT === 'export',
     siteUrl: env.NEXT_PUBLIC_SITE_URL,
-    authoringUrl: env.MOSAIC_AUTHORING_URL?.trim().replace(/\/+$/, '') || undefined,
+    authoringUrl: normalizeAuthoringUrl(env.MOSAIC_AUTHORING_URL),
     auth: {
       explicitlyEnabled: env.MOSAIC_AUTH_ENABLED === 'true',
       secret: authSecretIsPlaceholder ? undefined : authSecret,

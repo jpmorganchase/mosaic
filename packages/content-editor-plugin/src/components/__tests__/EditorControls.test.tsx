@@ -98,6 +98,15 @@ describe('EditorControls', () => {
 });
 
 describe('EditorControls with an authoring site', () => {
+  it('hides controls while the destination is unresolved even for a signed-in editor', () => {
+    render(
+      <AuthoringSiteProvider url={undefined} pending>
+        <EditorControls enabled />
+      </AuthoringSiteProvider>
+    );
+    expect(screen.queryByRole('button', { name: 'create a new page' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'start editing' })).not.toBeInTheDocument();
+  });
   const originalLocation = window.location;
   const assign = vi.fn();
 

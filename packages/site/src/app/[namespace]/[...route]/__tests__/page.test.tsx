@@ -14,6 +14,9 @@ const editor = vi.hoisted(() => ({ enabled: false }));
 const connection = vi.hoisted(() => vi.fn(async () => {}));
 
 vi.mock('../../../../../../site-middleware/src/cachedLoaders.js', () => loaders);
+vi.mock('../../../../../../site-middleware/src/newPageSources.js', () => ({
+  newPageWritable: async () => undefined
+}));
 vi.mock('@jpmorganchase/mosaic-site-middleware', async () => ({
   ...loaders,
   ...(await vi.importActual('../../../../../../site-middleware/src/resolveContent.js')),

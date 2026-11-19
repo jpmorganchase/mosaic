@@ -8,7 +8,7 @@ import { BaseTooltray as Tooltray } from './BaseTooltray/BaseTooltray';
 import { ToolbarButton } from './Toolbar/ToolbarButton';
 import { NewPageDialog } from './NewPageDialog';
 
-import { useAuthoringSite } from '../authoringSite';
+import { useAuthoringSite, useAuthoringSitePending } from '../authoringSite';
 import { useEditModeActions, useIsEditing } from '../useEditMode';
 import styles from './EditorControls.css';
 
@@ -28,6 +28,7 @@ export const EditorControls = ({ enabled: signedIn = false }: EditorControlsProp
   // Pages on this environment are edited on another site (see
   // `authoringSite.ts`): open the same page there instead.
   const authoringSite = useAuthoringSite();
+  const pending = useAuthoringSitePending();
   const enabled = authoringSite !== undefined || signedIn;
   const handleEditClick = () => {
     if (authoringSite) {
@@ -56,6 +57,7 @@ export const EditorControls = ({ enabled: signedIn = false }: EditorControlsProp
     ? `New Page on ${authoringSite.host}`
     : 'New Page';
 
+  if (pending) return null;
   return (
     <>
       <Toolbar aria-label="editor-controls" className={styles.root}>

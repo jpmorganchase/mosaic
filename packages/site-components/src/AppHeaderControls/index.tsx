@@ -7,7 +7,10 @@ import {
   useIsEditing
 } from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
 import { EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls';
-import { useAuthoringSite } from '@jpmorganchase/mosaic-content-editor-plugin/authoringSite';
+import {
+  useAuthoringSite,
+  useAuthoringSitePending
+} from '@jpmorganchase/mosaic-content-editor-plugin/authoringSite';
 import { usePathname } from 'next/navigation';
 import { useColorMode, useSourceCapabilities, useStoreActions } from '@jpmorganchase/mosaic-store';
 
@@ -49,8 +52,10 @@ export const AppHeaderControls: React.FC = () => {
   // Pages on this environment are edited on another site: the controls
   // show without signing in here, and open that site.
   const authoringSite = useAuthoringSite();
+  const authoringPending = useAuthoringSitePending();
   const pathname = usePathname();
-  const showEditorControls = isWritableSource && (authoringSite !== undefined || isLoginEnabled);
+  const showEditorControls =
+    !authoringPending && isWritableSource && (authoringSite !== undefined || isLoginEnabled);
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -60,12 +65,12 @@ export const AppHeaderControls: React.FC = () => {
     }
   ];
 
-  if (authoringSite && isWritableSource) {
+  if (!authoringPending && authoringSite && isWritableSource) {
     actionMenuOptions.push({
       title: `Edit Document on ${authoringSite.host}`,
       onSelect: () => window.location.assign(authoringSite.href(`${pathname ?? '/'}?edit=1`))
     });
-  } else if (isLoggedIn && isWritableSource) {
+  } else if (!authoringPending && isLoggedIn && isWritableSource) {
     actionMenuOptions.push({
       title: isEditing ? 'Stop Editing' : 'Edit Document',
       onSelect: () => (isEditing ? stopEditing() : startEditing())

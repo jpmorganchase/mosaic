@@ -23,9 +23,11 @@ vi.mock('@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls',
   )
 }));
 const authoringSite = vi.hoisted(() => ({
+  pending: false,
   current: undefined as undefined | { host: string; href: (path: string) => string }
 }));
 vi.mock('@jpmorganchase/mosaic-content-editor-plugin/authoringSite', () => ({
+  useAuthoringSitePending: () => authoringSite.pending,
   useAuthoringSite: () => authoringSite.current
 }));
 const capabilities = vi.hoisted(() => ({ current: {} as { writable?: boolean } }));
@@ -136,6 +138,7 @@ describe('GIVEN pages are edited on an authoring site', () => {
   });
   afterEach(() => {
     authoringSite.current = undefined;
+    authoringSite.pending = false;
     capabilities.current = {};
     Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
   });
@@ -144,6 +147,14 @@ describe('GIVEN pages are edited on an authoring site', () => {
     render(<AppHeaderControls />);
     expect(screen.getByTestId('editor-controls')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Login' })).not.toBeInTheDocument();
+  });
+
+  test('THEN unresolved runtime configuration hides the toolbar and menu entry', () => {
+    authoringSite.pending = true;
+    render(<AppHeaderControls />);
+    expect(screen.queryByTestId('editor-controls')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Select an action' }));
+    expect(screen.queryByText('Edit Document on dev.example.com')).not.toBeInTheDocument();
   });
 
   test('THEN they stay hidden on a page no writable source owns', () => {

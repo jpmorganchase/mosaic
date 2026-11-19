@@ -7,7 +7,7 @@ import { themeClassName } from '@jpmorganchase/mosaic-theme';
 import { SessionProvider } from 'next-auth/react';
 import { SearchProvider } from '@jpmorganchase/mosaic-site-components/SearchProvider';
 import { NextAuthAdapter } from '@jpmorganchase/mosaic-site-components/auth/next-auth';
-import { AuthoringSiteProvider } from '@jpmorganchase/mosaic-content-editor-plugin/authoringSite';
+import { RuntimeAuthoringProvider } from './RuntimeAuthoringProvider';
 
 export { StoreShell } from '@jpmorganchase/mosaic-layouts/host';
 
@@ -25,13 +25,13 @@ export function Providers({
   children: React.ReactNode;
 }) {
   const content = (
-    <AuthoringSiteProvider url={authoringUrl}>
+    <RuntimeAuthoringProvider url={authoringUrl} staticExport={searchMode === 'browser'}>
       <ColorModeProvider>
         <ThemeProvider themeClassName={themeClassName}>
           <SearchProvider mode={searchMode}>{children}</SearchProvider>
         </ThemeProvider>
       </ColorModeProvider>
-    </AuthoringSiteProvider>
+    </RuntimeAuthoringProvider>
   );
   // No-auth hosts use the signed-out context default, with no session requests.
   // Auth-enabled hosts fetch the session after mount, keeping it out of SSR.

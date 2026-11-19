@@ -23,6 +23,7 @@ export interface AuthoringSite {
 }
 
 const AuthoringSiteContext = createContext<AuthoringSite | undefined>(undefined);
+const AuthoringSitePendingContext = createContext(false);
 AuthoringSiteContext.displayName = 'AuthoringSiteContext';
 
 /** Parses `url`; `undefined` unless it is an absolute http(s) URL. */
@@ -47,16 +48,27 @@ export function toAuthoringSite(url: string | undefined): AuthoringSite | undefi
 /** Sets the authoring site. Without one, or with an invalid `url`, pages are edited here. */
 export function AuthoringSiteProvider({
   url,
+  pending = false,
   children
 }: {
   url: string | undefined;
+  /** Hide editor entry points until a host resolves its runtime configuration. */
+  pending?: boolean;
   children?: ReactNode;
 }) {
   const value = useMemo(() => toAuthoringSite(url), [url]);
-  return createElement(AuthoringSiteContext.Provider, { value }, children);
+  return createElement(
+    AuthoringSitePendingContext.Provider,
+    { value: pending },
+    createElement(AuthoringSiteContext.Provider, { value }, children)
+  );
 }
 
 /** The authoring site, or `undefined` when pages are edited on this site. */
 export function useAuthoringSite(): AuthoringSite | undefined {
   return useContext(AuthoringSiteContext);
+}
+
+export function useAuthoringSitePending(): boolean {
+  return useContext(AuthoringSitePendingContext);
 }

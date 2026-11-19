@@ -106,7 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers
           authEnabled={AUTH_ENABLED}
-          authoringUrl={AUTHORING_URL}
+          authoringUrl={isStaticExport ? AUTHORING_URL : undefined}
           searchMode={isStaticExport ? 'browser' : 'server'}
         >
           {children}
