@@ -78,6 +78,13 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     git(authorDir, 'push', 'origin', 'main');
   };
 
+  // Leaves the clone in place, as when only `.mosaic-worktrees/<branch>` is deleted.
+  const removeSourceWorktree = () => {
+    const cloneRoot = path.dirname(path.dirname(repo.dir));
+    fs.rmSync(repo.dir, { recursive: true, force: true });
+    git(cloneRoot, 'worktree', 'prune');
+  };
+
   beforeEach(() => {
     projectDir = path.join(process.cwd(), '.tmp', `mosaic-refresh-test-${randomUUID()}`);
     const originDir = path.join(projectDir, 'docs.git');
@@ -246,10 +253,16 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       await failed;
     }
 
+    const fetch = vi.spyOn(repo, 'fetch');
     await repo.init();
-    await vi.waitFor(() => expect(onChange).toHaveBeenCalledTimes(1), { timeout: 3000 });
-    expect(onError).not.toHaveBeenCalled();
+    // The retry fetches before creating the worktree, so it starts with the push.
     expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(check).toHaveBeenCalledTimes(2);
+    await check.mock.results[1].value;
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
   });
 
   test('THEN a refresh waiting for the lock is queued again after reinitialization fails', async () => {
@@ -404,6 +417,30 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       }),
     15_000
   );
+
+  test('THEN a recreated worktree starts from the latest remote commit', async () => {
+    await repo.init();
+    removeSourceWorktree();
+    push('latest.mdx', '# Latest');
+
+    await repo.init();
+    expect(await repo.currentLocalRevision()).toBe(git(authorDir, 'rev-parse', 'HEAD').trim());
+    expect(git(repo.dir, 'branch', '--show-current').trim()).toBe('main');
+    expect(fs.readFileSync(path.join(repo.dir, 'latest.mdx'), 'utf8')).toBe('# Latest');
+  });
+
+  test('THEN a worktree is recreated from the clone when the remote is unreachable', async () => {
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    removeSourceWorktree();
+    const originDir = path.join(projectDir, 'docs.git');
+    fs.renameSync(originDir, `${originDir}-unreachable`);
+
+    await repo.init();
+    expect(await repo.currentLocalRevision()).toBe(revision);
+    expect(fs.readFileSync(path.join(repo.dir, 'index.mdx'), 'utf8')).toBe('# Index');
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Fetch failed'));
+  });
 
   test(
     'THEN separate save worktrees retain their edits and cleanup preserves the source',
