@@ -1,5 +1,15 @@
 # @jpmorganchase/mosaic-icons
 
+## 1.0.0-beta.100
+
+### Patch Changes
+
+- d5e2e29: Update Salt Icons to 1.19.0 and Salt Theme to 1.48.0. Align direct icon dependencies
+  with Salt Core so Mosaic uses a single Salt Icons version and receives the latest
+  theme tokens and fixes.
+  
+  Refresh the generated icon name types to include `progressActive` and `rotateLeft`.
+
 ## 1.0.0-beta.99
 
 ### Patch Changes

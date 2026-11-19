@@ -1,5 +1,34 @@
 # @jpmorganchase/mosaic-site-preset-styles
 
+## 1.0.0-beta.100
+
+### Patch Changes
+
+- d5e2e29: Update Salt Icons to 1.19.0 and Salt Theme to 1.48.0. Align direct icon dependencies
+  with Salt Core so Mosaic uses a single Salt Icons version and receives the latest
+  theme tokens and fixes.
+  
+  Refresh the generated icon name types to include `progressActive` and `rotateLeft`.
+- 93b3b0f: Remove the Prism code highlighter left over from the move to Shiki
+  
+  - `@jpmorganchase/mosaic-content-editor-plugin` imports its code nodes from
+    `@lexical/code-core` instead of `@lexical/code`. The editor never turned on
+    Lexical's Prism highlighting, but `@lexical/code` bundled it anyway, adding
+    about 22 KB (gzipped) to the editor's JavaScript. Code blocks behave the same.
+  - `@jpmorganchase/mosaic-site-preset-styles` no longer imports
+    `prismjs/themes/prism.css` or depends on `prismjs`. Mosaic highlights code
+    with Shiki, so these global styles only affected `ReactLive`'s code editor.
+    Sites that style their own Prism output should import the Prism theme they
+    want directly.
+- Updated dependencies [d5e2e29]
+- Updated dependencies [be66626]
+- Updated dependencies [93b3b0f]
+  - @jpmorganchase/mosaic-content-editor-plugin@1.0.0-beta.100
+  - @jpmorganchase/mosaic-components@1.0.0-beta.100
+  - @jpmorganchase/mosaic-layouts@1.0.0-beta.100
+  - @jpmorganchase/mosaic-site-components@1.0.0-beta.100
+  - @jpmorganchase/mosaic-theme@1.0.0-beta.100
+
 ## 1.0.0-beta.99
 
 ### Patch Changes
