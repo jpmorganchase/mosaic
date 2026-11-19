@@ -70,14 +70,34 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
       ) {
         throw new Error(`[mosaic-site] Invalid Markdown pages in ${markdownFile}`);
       }
-      for (const [route, content] of Object.entries(markdown.pages)) {
+      // Older snapshots may retain authored trailing slashes. Match the server
+      // normalization and omit ambiguous canonical routes instead of choosing one.
+      const pages = Object.entries(markdown.pages).map(([route, content]) => [
+        route === '/' ? route : route.replace(/\/+$/, ''),
+        content
+      ]);
+      const counts = new Map();
+      for (const [route] of pages)
+        counts.set(route.toLowerCase(), (counts.get(route.toLowerCase()) ?? 0) + 1);
+      const canonicalPages = new Map(
+        pages.filter(([route]) => counts.get(route.toLowerCase()) === 1)
+      );
+      for (const [route, content] of canonicalPages) {
         if (!route.startsWith('/')) continue;
         const folder = route.endsWith('/index') ? route.slice(0, -'/index'.length) : undefined;
         for (const url of folder ? [route, folder] : [route]) {
-          if (url === folder && Object.hasOwn(markdown.pages, url)) continue;
+          if (url === folder && counts.has(url.toLowerCase())) continue;
           const target = publicPath(publicDir, `.${url}.md`);
           if (target) files.set(relative(publicDir, target), content);
         }
+      }
+      // Keep URLs already linked by the text indexes of an older snapshot.
+      for (const [authoredRoute, content] of Object.entries(markdown.pages)) {
+        const route = authoredRoute === '/' ? authoredRoute : authoredRoute.replace(/\/+$/, '');
+        if (route === authoredRoute || !canonicalPages.has(route) || !route.startsWith('/'))
+          continue;
+        const target = publicPath(publicDir, `.${authoredRoute}.md`);
+        if (target) files.set(relative(publicDir, target), content);
       }
     }
   }

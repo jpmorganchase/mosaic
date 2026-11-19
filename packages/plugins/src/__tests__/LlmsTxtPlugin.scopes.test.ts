@@ -95,6 +95,24 @@ test('rejects duplicates after normalization', async () => {
   );
 });
 
+test('omits canonical collisions after trimming trailing slashes, including excluded claims', async () => {
+  const site = fixture();
+  await site.update('a', {
+    '/salt/page.mdx': document('/salt/page', 'First'),
+    '/salt/guide.mdx': document('/salt/guide/', 'Guide', { fullPath: '/salt/guide.mdx' })
+  });
+  await site.update('b', {
+    '/other.mdx': document('/salt/page/', 'Excluded', {
+      fullPath: '/other.mdx',
+      llms: { exclude: true }
+    })
+  });
+  const files = await site.publish(options);
+  expect(Object.keys(JSON.parse(files['/markdown-pages.json']).pages)).toEqual(['/salt/guide']);
+  expect(files['/salt/llms.txt']).toContain('/salt/guide.md');
+  expect(files['/llms-full.txt']).not.toContain('First');
+});
+
 test('converts each backing page once, regardless of aliases or overlapping scopes', async () => {
   const spy = vi.spyOn(converter, 'toMarkdown');
   const site = fixture();

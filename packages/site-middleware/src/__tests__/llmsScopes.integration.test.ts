@@ -153,6 +153,47 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     });
   });
 
+  test('normalizes authored trailing slashes without invalidating unrelated pages or indexes', async () => {
+    await site.update('trailing', {
+      '/salt/guide.mdx': document('/salt/guide/', 'Trailing guide', { fullPath: '/salt/guide.mdx' })
+    });
+    files = await site.publish(options);
+    if (mode === 'snapshot-file') save();
+    expect((await get('/mosaic/setup.md')).status).toBe(200);
+    expect((await get('/salt/llms.txt')).status).toBe(200);
+    expect(await (await get('/salt/guide.md')).text()).toContain('Trailing guide');
+    expect(await discovery('/salt/guide/', mode, contentUrl)).toEqual({
+      markdownUrl: '/salt/guide.md',
+      indexUrl: '/salt/llms.txt'
+    });
+    expect(files['/salt/llms.txt']).toContain('/salt/guide.md');
+    expect(JSON.parse(files['/markdown-pages.json']).pages).not.toHaveProperty('/salt/guide/');
+  });
+
+  test('reads legacy trailing-slash bundles and omits ambiguous normalized routes', async () => {
+    const bundle = JSON.parse(files['/markdown-pages.json']);
+    bundle.pages['/salt/guide/'] = '# Legacy guide';
+    bundle.pages['/salt/clash'] = '# First';
+    bundle.pages['/salt/clash/'] = '# Second';
+    bundle.pages['/salt/clash/index'] = '# Distinct index';
+    files['/markdown-pages.json'] = JSON.stringify(bundle);
+    const manifest = JSON.parse(files['/llms-manifest.json']);
+    manifest.routes.push('/salt/guide/', '/salt/clash', '/salt/clash/', '/salt/clash/index');
+    files['/llms-manifest.json'] = JSON.stringify(manifest);
+    if (mode === 'snapshot-file') save();
+    expect((await get('/mosaic/setup.md')).status).toBe(200);
+    expect((await get('/salt/llms.txt')).status).toBe(200);
+    expect(await (await get('/salt/guide.md')).text()).toBe('# Legacy guide');
+    expect(await (await get('/salt/guide/.md')).text()).toBe('# Legacy guide');
+    expect(await discovery('/salt/guide/', mode, contentUrl)).toEqual({
+      markdownUrl: '/salt/guide.md',
+      indexUrl: '/salt/llms.txt'
+    });
+    expect((await get('/salt/clash.md')).status).toBe(404);
+    expect(await (await get('/salt/clash/index.md')).text()).toBe('# Distinct index');
+    expect(await discovery('/salt/clash', mode, contentUrl)).toBeUndefined();
+  });
+
   test('unknown scopes, aliases and unsafe paths are 404 without reading arbitrary files', async () => {
     for (const route of [
       '/unknown/llms.txt',

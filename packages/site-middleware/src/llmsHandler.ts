@@ -18,7 +18,13 @@ import type { MarkdownPagesFile, MosaicMode } from '@jpmorganchase/mosaic-types'
 
 import { createContentFileCache } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
-import { createLlmsManifestLoader, isLlmsRoute, llmsDiscoveryForRoute } from './llmsDiscovery.js';
+import {
+  createLlmsManifestLoader,
+  isLlmsRoute,
+  llmsDiscoveryForRoute,
+  normalizeLlmsRoute,
+  unambiguousLlmsRoutes
+} from './llmsDiscovery.js';
 
 export const MARKDOWN_PAGES_FILE = 'markdown-pages.json';
 export const LLMS_TXT_FILES = ['llms.txt', 'llms-full.txt'] as const;
@@ -35,7 +41,7 @@ export interface LlmsHandlerOptions {
   maxAge?: number;
 }
 
-function parseMarkdownPages(text: string): Map<string, string> {
+function parseMarkdownPages(text: string): Map<string, string | undefined> {
   const file = JSON.parse(text) as MarkdownPagesFile;
   if (
     file?.version !== 1 ||
@@ -43,12 +49,19 @@ function parseMarkdownPages(text: string): Map<string, string> {
     file.pages === null ||
     Array.isArray(file.pages) ||
     Object.entries(file.pages).some(
-      ([route, body]) => !isLlmsRoute(route) || typeof body !== 'string'
+      ([route, body]) => !isLlmsRoute(normalizeLlmsRoute(route)) || typeof body !== 'string'
     )
   ) {
     throw new Error(`Unsupported ${MARKDOWN_PAGES_FILE} format`);
   }
-  return new Map(Object.entries(file.pages));
+  const routes = new Set(unambiguousLlmsRoutes(Object.keys(file.pages)));
+  // Retain a blocked key so folder-index fallback cannot select an ambiguous URL.
+  return new Map(
+    Object.entries(file.pages).map(([route, body]) => {
+      const canonical = normalizeLlmsRoute(route);
+      return [canonical, routes.has(canonical) ? body : undefined] as const;
+    })
+  );
 }
 
 const text = (body: string, status: number, headers: Record<string, string> = {}) =>

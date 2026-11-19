@@ -154,6 +154,20 @@ describe('snapshot public assets', () => {
     expect(read('index.md')).toBe('# Index');
   });
 
+  test('normalizes legacy trailing slashes and omits collisions without resurrecting folder aliases', () => {
+    pages({
+      '/docs/guide/': '# Guide',
+      '/docs/clash': '# First',
+      '/docs/clash/': '# Second',
+      '/docs/clash/index': '# Index'
+    });
+    sync();
+    expect(read('docs/guide.md')).toBe('# Guide');
+    expect(read('docs/guide/.md')).toBe('# Guide');
+    expect(existsSync(join(publicDir, 'docs/clash.md'))).toBe(false);
+    expect(read('docs/clash/index.md')).toBe('# Index');
+  });
+
   test('switching to a snapshot server removes generated Markdown but preserves authored assets', () => {
     writeFileSync(join(publicDir, 'authored.md'), '# Authored');
     pages({ '/': '# Home', '/docs/index': '# Snapshot' });

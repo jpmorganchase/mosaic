@@ -54,6 +54,7 @@ Omitting `scopes` (or using `[]`) preserves the existing global index, corpus an
 - Sources sharing one namespace can mount at different `prefixDir` values. Pages are selected using their canonical public `route`, so their source namespace does not combine or split scopes.
 - The CLI snapshot `--scope` option still selects source namespaces for publication. It is separate from these public-path documentation indexes.
 - Aliases do not add index entries or move a page into another scope. Folder URLs continue to resolve to their canonical index page. Ambiguous duplicate canonical routes are omitted from LLM artifacts instead of selecting potentially excluded content from one source.
+- Authored canonical page routes have trailing slashes removed for LLM URLs, except `/`, whose Markdown URL is `/.md`. For example, `/salt/guide/` advertises `/salt/guide.md`. Normalization also applies when reading older Markdown bundles and manifests, and routes that collide after normalization are omitted.
 
 All exclusions apply before scope selection: `llms.exclude`, the plugin's `exclude` globs and Mosaic's ignored pages also exclude aliases of those backing pages. Scopes organize public context; they are **not authorization boundaries**. Do not put restricted content into a publicly served source or rely on scope membership to protect it. Apply your site's authorization at its content/publication boundary.
 

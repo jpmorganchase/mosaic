@@ -4,6 +4,21 @@ import { resolveMosaicMode } from './loadSitemap.js';
 
 export const LLMS_MANIFEST_FILE = 'llms-manifest.json';
 
+/** Canonical page routes may be authored with a trailing slash. Preserve `/`. */
+export const normalizeLlmsRoute = (route: string) =>
+  route === '/' ? route : route.replace(/\/+$/, '');
+
+/** Never choose one page when older generated data has colliding route keys. */
+export function unambiguousLlmsRoutes(routes: string[]) {
+  const normalized = routes.map(normalizeLlmsRoute);
+  const counts = new Map<string, number>();
+  for (const route of normalized) {
+    const key = route.toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return normalized.filter(route => counts.get(route.toLowerCase()) === 1);
+}
+
 /** Validate before using a route in a file path or HTTP Link header. */
 export function isLlmsRoute(value: unknown): value is string {
   if (typeof value !== 'string' || !value.startsWith('/') || value.length > 4096) return false;
@@ -33,7 +48,9 @@ export function parseLlmsManifest(text: string): LlmsManifest {
   if (
     manifest?.version !== 1 ||
     !Array.isArray(manifest.routes) ||
-    !manifest.routes.every(isLlmsRoute) ||
+    !manifest.routes.every(
+      route => typeof route === 'string' && isLlmsRoute(normalizeLlmsRoute(route))
+    ) ||
     !Array.isArray(manifest.scopes) ||
     !manifest.scopes.every(
       scope =>
@@ -46,7 +63,7 @@ export function parseLlmsManifest(text: string): LlmsManifest {
       (typeof manifest.siteUrl !== 'string' || !/^https?:\/\/[^\s<>"?#]+$/.test(manifest.siteUrl)))
   )
     throw new Error(`Unsupported ${LLMS_MANIFEST_FILE} format`);
-  return manifest;
+  return { ...manifest, routes: unambiguousLlmsRoutes(manifest.routes) };
 }
 
 export function createLlmsManifestLoader(maxAge = 30_000) {
@@ -63,6 +80,7 @@ export interface LlmsDiscovery {
 
 /** The canonical page selects its index; an alias's location never changes it. */
 export function llmsDiscoveryForRoute(route: string, manifest?: LlmsManifest): LlmsDiscovery {
+  route = normalizeLlmsRoute(route);
   const scope = (manifest?.scopes ?? []).reduce(
     (best, candidate) =>
       candidate.length > best.length &&
@@ -95,6 +113,7 @@ export function createLlmsDiscoveryLoader(maxAge = 30_000) {
     mode: MosaicMode,
     contentUrl: string
   ): Promise<LlmsDiscovery | undefined> => {
+    route = normalizeLlmsRoute(route);
     if (!isLlmsRoute(route)) return undefined;
     const manifest = await getManifest(mode, contentUrl);
     const canonical = manifest?.routes.find(

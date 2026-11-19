@@ -279,12 +279,14 @@ async function publish(
     .then(async () => {
       const sourcePages = globalConfig.data.markdownPages ?? {};
       const claims = new Map<string, number>();
+      const normalizeRoute = (route: string) => (route === '/' ? route : route.replace(/\/+$/, ''));
       for (const route of globalConfig.data.llmsRouteClaims ?? []) {
-        const key = route.toLowerCase();
+        const key = normalizeRoute(route).toLowerCase();
         claims.set(key, (claims.get(key) ?? 0) + 1);
       }
       const pages: Record<string, MarkdownPage> = {};
-      for (const [route, page] of Object.entries(sourcePages)) {
+      for (const [authoredRoute, page] of Object.entries(sourcePages)) {
+        const route = normalizeRoute(authoredRoute);
         // Ambiguous canonical routes cannot safely identify public content.
         if ((claims.get(route.toLowerCase()) ?? 0) > 1) continue;
         pages[route] = {
