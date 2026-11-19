@@ -347,7 +347,7 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
         const secondDir = secondRepo.dir;
         try {
           // Concurrent saves must not write upstream settings to the shared config.
-          expect(git(firstDir, 'config', '--list')).not.toMatch(/^branch\.editor-/m);
+          expect(git(firstDir, 'config', '--local', '--list')).not.toMatch(/^branch\.editor-/m);
           fs.writeFileSync(path.join(firstDir, 'index.mdx'), '# First edit');
           fs.writeFileSync(path.join(secondDir, 'index.mdx'), '# Second edit');
           await finishFixtureOperations([firstRepo.addChanges(), secondRepo.addChanges()]);
