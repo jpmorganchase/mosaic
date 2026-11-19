@@ -24,6 +24,7 @@
  */
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import { z } from 'zod';
+import { normalizeAuthoringUrl } from './authoringUrl';
 
 if (typeof window !== 'undefined') {
   throw new Error('lib/config.ts must not be imported on the client.');
@@ -38,6 +39,14 @@ export interface SiteConfig {
   staticExport: boolean;
   /** `NEXT_PUBLIC_SITE_URL` as inlined at build time. */
   siteUrl: string | undefined;
+  /**
+   * `MOSAIC_AUTHORING_URL`, without a trailing slash: the site where this
+   * site's pages are edited, such as dev for a test environment. When it
+   * is set, this site doesn't edit or save; its editor controls open the
+   * same page there. Server deployments read it at runtime, including
+   * prerendered snapshots. Fully static exports use the build-time value.
+   */
+  authoringUrl: string | undefined;
   auth: {
     /** `MOSAIC_AUTH_ENABLED=true`. */
     explicitlyEnabled: boolean;
@@ -153,6 +162,7 @@ export const siteEnvSchema = z
     MOSAIC_ACTIVE_MODE_CACHE: booleanFlag,
     MOSAIC_DISABLE_LOADER_CACHE: booleanFlag,
     NEXT_PUBLIC_SITE_URL: httpUrl,
+    MOSAIC_AUTHORING_URL: httpUrl,
     NEXT_PUBLIC_ENABLE_LOGIN: booleanFlag,
     NEXT_PUBLIC_OPTIMIZE_IMAGES: booleanFlag,
     MOSAIC_AUTH_ENABLED: booleanFlag,
@@ -208,6 +218,7 @@ export function readSiteConfig(env: SiteEnv): SiteConfig {
     mode: (env.MOSAIC_MODE || 'active') as MosaicMode,
     staticExport: env.MOSAIC_OUTPUT === 'export',
     siteUrl: env.NEXT_PUBLIC_SITE_URL,
+    authoringUrl: normalizeAuthoringUrl(env.MOSAIC_AUTHORING_URL),
     auth: {
       explicitlyEnabled: env.MOSAIC_AUTH_ENABLED === 'true',
       secret: authSecretIsPlaceholder ? undefined : authSecret,

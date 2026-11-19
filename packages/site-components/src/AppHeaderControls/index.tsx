@@ -7,6 +7,11 @@ import {
   useIsEditing
 } from '@jpmorganchase/mosaic-content-editor-plugin/useEditMode';
 import { EditorControls } from '@jpmorganchase/mosaic-content-editor-plugin/components/EditorControls';
+import {
+  useAuthoringSite,
+  useAuthoringSitePending
+} from '@jpmorganchase/mosaic-content-editor-plugin/authoringSite';
+import { usePathname } from 'next/navigation';
 import { useColorMode, useSourceCapabilities, useStoreActions } from '@jpmorganchase/mosaic-store';
 
 import { useMosaicAuth } from '../auth';
@@ -44,6 +49,13 @@ export const AppHeaderControls: React.FC = () => {
   // Sources without a backing persistence workflow (e.g. local
   // folder, HTTP) leave the flag absent and the controls stay hidden.
   const { writable: isWritableSource = false } = useSourceCapabilities();
+  // Pages on this environment are edited on another site: the controls
+  // show without signing in here, and open that site.
+  const authoringSite = useAuthoringSite();
+  const authoringPending = useAuthoringSitePending();
+  const pathname = usePathname();
+  const showEditorControls =
+    !authoringPending && isWritableSource && (authoringSite !== undefined || isLoginEnabled);
 
   const inverseColorMode = colorMode === 'dark' ? 'light' : 'dark';
   let actionMenuOptions: ActionMenuItem[] = [
@@ -53,7 +65,12 @@ export const AppHeaderControls: React.FC = () => {
     }
   ];
 
-  if (isLoggedIn && isWritableSource) {
+  if (!authoringPending && authoringSite && isWritableSource) {
+    actionMenuOptions.push({
+      title: `Edit Document on ${authoringSite.host}`,
+      onSelect: () => window.location.assign(authoringSite.href(`${pathname ?? '/'}?edit=1`))
+    });
+  } else if (!authoringPending && isLoggedIn && isWritableSource) {
     actionMenuOptions.push({
       title: isEditing ? 'Stop Editing' : 'Edit Document',
       onSelect: () => (isEditing ? stopEditing() : startEditing())
@@ -72,7 +89,7 @@ export const AppHeaderControls: React.FC = () => {
   }
   return (
     <div className={styles.root}>
-      {isLoginEnabled && isWritableSource && <EditorControls enabled={isLoggedIn} />}
+      {showEditorControls && <EditorControls enabled={isLoggedIn} />}
       <SearchInput />
       {isLoginEnabled && (
         <div className={styles.userInfo}>

@@ -278,3 +278,26 @@ describe('getSaveDefaults', () => {
     });
   });
 });
+
+describe('on an environment whose pages are edited on another site', () => {
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_AUTHORING_URL', 'https://dev.example.com/');
+  });
+
+  it('refuses to save, so no pull request targets this environment', async () => {
+    const { startSave } = await loadAction();
+    expect(await startSave({ route: '/mosaic/index', markdown: '# Changed' } as never)).toEqual({
+      error: "This site's pages are edited on https://dev.example.com."
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(authMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses to load save defaults', async () => {
+    const { getSaveDefaults } = await loadAction();
+    expect(await getSaveDefaults({ route: '/mosaic/index' } as never)).toEqual({
+      error: "This site's pages are edited on https://dev.example.com."
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

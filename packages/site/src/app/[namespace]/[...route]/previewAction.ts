@@ -19,12 +19,14 @@ import { serializeMdxForClient } from '@jpmorganchase/mosaic-site-middleware';
 import type { SerializeResult } from 'next-mdx-remote-client/serialize';
 
 import { auth, isAuthorizedEditor } from '../../../auth';
+import { AUTHORING_URL, EDITED_ELSEWHERE_ERROR } from '../../../lib/authoring';
 import { MAX_FRONTMATTER_BYTES, MAX_MARKDOWN_BYTES } from '../../../lib/editorLimits';
 
 // The preview compiles the whole draft, frontmatter included.
 const MAX_PREVIEW_BYTES = MAX_MARKDOWN_BYTES + MAX_FRONTMATTER_BYTES;
 
 export async function compilePreview(markdown: string): Promise<SerializeResult> {
+  if (AUTHORING_URL) throw new Error(EDITED_ELSEWHERE_ERROR);
   const session = await auth();
   if (!session?.user || !isAuthorizedEditor(session.user)) {
     throw new Error('Unauthorized');
