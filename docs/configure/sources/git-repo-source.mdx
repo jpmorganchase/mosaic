@@ -122,6 +122,12 @@ and show no message control. A custom workflow can expose a side-effect-free `pr
 messages in its action. Without the hook, defaults report `{ supportsCommitMessage: false }` and
 the editor uses the existing save flow.
 
+## Formatting saved pages
+
+When the repository has a Prettier configuration (a `.prettierrc` file, a `prettier.config.*` file or a `prettier` key in its `package.json`), `GitHubPullRequestWorkflow` and `BitbucketPullRequestWorkflow` format each saved page with it before committing, respecting the repository's `.prettierignore` and `.gitignore`. The editor writes Markdown in its own style, so without this a save would reformat parts of the page the author didn't touch, and could fail a `prettier --check` the repository runs.
+
+Repositories without a Prettier configuration are left as the editor writes them. If Prettier can't format a page, for example because the configuration needs a plugin, the page is saved unformatted and the content server logs a warning. Formatting uses the Prettier 3 release bundled with `@jpmorganchase/mosaic-workflows`, which can differ slightly from the version a repository pins.
+
 ## Refresh on push (Bitbucket webhooks)
 
 A git repo source checks its repository for new commits every `checkIntervalMins` (30 minutes by

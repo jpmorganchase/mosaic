@@ -12,6 +12,7 @@ import type {
 } from '@jpmorganchase/mosaic-types';
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
+import { formatSavedPage } from './formatSavedPage.js';
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
@@ -301,7 +302,13 @@ export async function createPullRequest(
     if (!isNewPage) {
       sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
     }
-    await fs.promises.writeFile(pathOnDisk, await mdx.serialise(pathOnDisk, updatedPage));
+    // Formatted the way the repository's Prettier setup would, so a save
+    // only changes what the author changed (see `./formatSavedPage.ts`).
+    const serialised = (await mdx.serialise(pathOnDisk, updatedPage)).toString();
+    await fs.promises.writeFile(
+      pathOnDisk,
+      await formatSavedPage(pathOnDisk, serialised, repoInstance.dir)
+    );
     sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
 
     /**

@@ -116,6 +116,23 @@ describe.each([
     }
   });
 
+  test("formats the saved page with the repository's Prettier configuration", async () => {
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+    const result = await workflow.action(vi.fn(), sourceOptions, workflowOptions, route, {
+      user,
+      markdown: '# New section\n\n> *"Quoted"*',
+      frontmatter: 'title: New section',
+      isNewPage: true
+    });
+
+    expect(result).not.toBe(false);
+    expect(
+      await fs.promises.readFile(path.join(mocks.repoDir, 'content/new-section.mdx'), 'utf8')
+    ).toBe(
+      '---\ntitle: New section\nfullPath: /docs/new-section.mdx\n---\n\n# New section\n\n> _"Quoted"_\n'
+    );
+  });
+
   test('still refuses to erase an existing page with an empty body', async () => {
     const send = vi.fn();
     const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
