@@ -305,19 +305,8 @@ export async function createPullRequest(
     if (!isNewPage) {
       sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
     }
-    // Formatted the way the repository's Prettier setup would, keeping the
-    // original's blank lines between unchanged lines, so a save only
-    // changes what the author changed (see `./formatSavedPage.ts`).
     const serialised = (await mdx.serialise(pathOnDisk, updatedPage)).toString();
-    await fs.promises.writeFile(
-      pathOnDisk,
-      await finishSavedPage({
-        filePath: pathOnDisk,
-        content: serialised,
-        original: originalPage,
-        repoDir: repoInstance.dir
-      })
-    );
+    await fs.promises.writeFile(pathOnDisk, serialised);
     sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
 
     /**
@@ -327,6 +316,7 @@ export async function createPullRequest(
      * `addChanges` so the worktree is never left in a half-edited
      * state.
      */
+    let savedPath = pathOnDisk;
     if (typeof targetRoute === 'string' && targetRoute !== filePath) {
       const renameResult = await renamePageIfRequested({
         filePath,
@@ -341,7 +331,22 @@ export async function createPullRequest(
         sendWorkflowProgressMessage(renameResult.error, 'ERROR');
         return { error: renameResult.error, source: repoInstance.name };
       }
+      savedPath = renameResult.newPathOnDisk ?? pathOnDisk;
     }
+
+    // Formatted the way the repository's Prettier setup would format the
+    // page at its final path, with the blank lines the editor dropped put
+    // back, so a save only changes what the author changed (see
+    // `./formatSavedPage.ts`).
+    await fs.promises.writeFile(
+      savedPath,
+      await finishSavedPage({
+        filePath: savedPath,
+        content: serialised,
+        original: originalPage,
+        repoDir: repoInstance.dir
+      })
+    );
 
     /** create a new fetcher with proxy agent configured if required. */
     const fetcher: typeof undiciFetch = proxyEndpoint

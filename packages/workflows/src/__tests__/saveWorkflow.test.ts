@@ -159,6 +159,28 @@ describe.each([
     );
   });
 
+  test('formats a renamed page with the rules for its new path', async () => {
+    const draft = path.join(mocks.repoDir, 'content/drafts/page.mdx');
+    await fs.promises.mkdir(path.dirname(draft), { recursive: true });
+    await fs.promises.writeFile(draft, '---\ntitle: Page\n---\n\nText\n');
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierignore'), 'content/drafts/\n');
+
+    const result = await workflow.action(
+      vi.fn(),
+      sourceOptions,
+      workflowOptions,
+      '/docs/drafts/page.mdx',
+      { user, markdown: '> *"Quoted"*', targetRoute: '/docs/page.mdx' }
+    );
+
+    expect(result).not.toBe(false);
+    expect(fs.existsSync(draft)).toBe(false);
+    expect(
+      await fs.promises.readFile(path.join(mocks.repoDir, 'content/page.mdx'), 'utf8')
+    ).toMatch(/\n\n> _"Quoted"_\n$/);
+  });
+
   test('still refuses to erase an existing page with an empty body', async () => {
     const send = vi.fn();
     const result = await workflow.action(send, sourceOptions, workflowOptions, route, {

@@ -262,23 +262,13 @@ async function createPullRequest(
     if (!isNewPage) {
       sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
     }
-    // Formatted the way the repository's Prettier setup would, keeping the
-    // original's blank lines between unchanged lines, so a save only
-    // changes what the author changed (see `./formatSavedPage.ts`).
     const serialised = (await mdx.serialise(pathOnDisk, updatedPage)).toString();
-    await fs.promises.writeFile(
-      pathOnDisk,
-      await finishSavedPage({
-        filePath: pathOnDisk,
-        content: serialised,
-        original: originalPage,
-        repoDir: repoInstance.dir
-      })
-    );
+    await fs.promises.writeFile(pathOnDisk, serialised);
     sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
 
     // Optional rename — see `./renamePageIfRequested.ts` for the
     // shared contract.
+    let savedPath = pathOnDisk;
     if (typeof targetRoute === 'string' && targetRoute !== filePath) {
       const renameResult = await renamePageIfRequested({
         filePath,
@@ -293,7 +283,22 @@ async function createPullRequest(
         sendWorkflowProgressMessage(renameResult.error, 'ERROR');
         return false;
       }
+      savedPath = renameResult.newPathOnDisk ?? pathOnDisk;
     }
+
+    // Formatted the way the repository's Prettier setup would format the
+    // page at its final path, with the blank lines the editor dropped put
+    // back, so a save only changes what the author changed (see
+    // `./formatSavedPage.ts`).
+    await fs.promises.writeFile(
+      savedPath,
+      await finishSavedPage({
+        filePath: savedPath,
+        content: serialised,
+        original: originalPage,
+        repoDir: repoInstance.dir
+      })
+    );
     const bitBucketRequest = JSON.stringify({
       title: commitMessageTitle(commitMsg, titlePrefix),
       fromRef: {

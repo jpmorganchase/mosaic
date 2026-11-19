@@ -94,12 +94,95 @@ describe('formatSavedPage', () => {
 
   test("saves the page as written when Prettier can't format it", async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    write(
-      path.join(repoDir, '.prettierrc.json'),
-      JSON.stringify({ plugins: ['prettier-plugin-that-is-not-installed'] })
-    );
+    write(path.join(repoDir, '.prettierrc.json'), JSON.stringify({ proseWrap: 'sometimes' }));
     expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(editorOutput);
     expect(warn).toHaveBeenCalledOnce();
+  });
+
+  test.each([
+    ['.prettierrc', 'proseWrap: preserve\n'],
+    ['.prettierrc.yaml', 'proseWrap: preserve\n'],
+    ['.prettierrc.json5', "// Shared with the website\n{ proseWrap: 'preserve' }\n"],
+    ['.prettierrc.toml', 'proseWrap = "preserve"\n'],
+    ['package.yaml', 'name: docs\nprettier:\n  proseWrap: preserve\n']
+  ])('reads a %s configuration', async (name, config) => {
+    write(path.join(repoDir, name), config);
+    expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(prettierOutput);
+  });
+});
+
+describe("formatSavedPage doesn't run code from the repository", () => {
+  // Each module records that it ran by creating `ran`.
+  const ran = () => path.join(root, 'ran');
+  const esm = () =>
+    `import fs from 'node:fs';\nfs.writeFileSync(${JSON.stringify(
+      ran()
+    )}, '');\nexport default {};\n`;
+  const cjs = () =>
+    `require('node:fs').writeFileSync(${JSON.stringify(ran())}, '');\nmodule.exports = {};\n`;
+
+  test.each<[string, () => Record<string, string>]>([
+    ['a JavaScript configuration', () => ({ 'prettier.config.mjs': esm() })],
+    ['a CommonJS configuration', () => ({ '.prettierrc.cjs': cjs() })],
+    [
+      'a plugin',
+      () => ({
+        '.prettierrc.json': JSON.stringify({ plugins: ['./tools/plugin.mjs'] }),
+        'tools/plugin.mjs': esm()
+      })
+    ],
+    [
+      "a plugin in an override for the page's files",
+      () => ({
+        '.prettierrc.json': JSON.stringify({
+          overrides: [{ files: '*.mdx', options: { plugins: ['./tools/plugin.mjs'] } }]
+        }),
+        'tools/plugin.mjs': esm()
+      })
+    ],
+    [
+      'a shared configuration named in package.json',
+      () => ({
+        'package.json': JSON.stringify({ name: 'docs', prettier: './tools/shared.cjs' }),
+        'tools/shared.cjs': cjs()
+      })
+    ],
+    [
+      'a shared configuration named in .prettierrc',
+      () => ({ '.prettierrc': './tools/shared.cjs\n', 'tools/shared.cjs': cjs() })
+    ],
+    [
+      'a shared configuration named in .prettierrc.json5',
+      () => ({ '.prettierrc.json5': "'./tools/shared.mjs'\n", 'tools/shared.mjs': esm() })
+    ],
+    // JSON5 ends a `//` comment at any line terminator, so `{` here is in
+    // a block comment and the value is the string.
+    ...['\r', '\u2028', '\u2029'].map((terminator): [string, () => Record<string, string>] => [
+      `a shared configuration in .prettierrc.json5 after a comment ended by U+${terminator
+        .charCodeAt(0)
+        .toString(16)
+        .toUpperCase()
+        .padStart(4, '0')}`,
+      () => ({
+        '.prettierrc.json5': `// a${terminator}/* \n{ */ './tools/shared.mjs'\n`,
+        'tools/shared.mjs': esm()
+      })
+    ])
+  ])('%s', async (_, files) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const [name, content] of Object.entries(files())) write(path.join(repoDir, name), content);
+    expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(editorOutput);
+    expect(fs.existsSync(ran())).toBe(false);
+    expect(warn).toHaveBeenCalledOnce();
+  });
+
+  test('without a warning for a page the repository tells Prettier to ignore', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    write(path.join(repoDir, 'prettier.config.mjs'), esm());
+    write(path.join(repoDir, '.prettierignore'), 'docs/\n');
+    expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(editorOutput);
+    expect(fs.existsSync(ran())).toBe(false);
+    expect(warn).not.toHaveBeenCalled();
   });
 });
 
@@ -127,6 +210,51 @@ describe('finishSavedPage', () => {
         repoDir
       })
     ).toBe(original);
+  });
+
+  test('keeps the blank lines the author added or removed', async () => {
+    write(path.join(repoDir, '.prettierrc.json'), '{}');
+    const frontmatter = '---\ntitle: Page\n---\n\n';
+    const save = (before: string, after: string) =>
+      finishSavedPage({
+        filePath: page,
+        content: frontmatter + after,
+        original: frontmatter + before,
+        repoDir
+      });
+    const split = 'Line one of a\n\nwrapped paragraph\n';
+    expect(await save('Line one of a\nwrapped paragraph\n', split)).toBe(frontmatter + split);
+    const joined = 'First paragraph\nsecond paragraph\n';
+    expect(await save('First paragraph\n\nsecond paragraph\n', joined)).toBe(frontmatter + joined);
+    const tight = '```js\na();\nb();\n```\n';
+    const spaced = '```js\na();\n\nb();\n```\n';
+    expect(await save(tight, spaced)).toBe(frontmatter + spaced);
+    expect(await save(spaced, tight)).toBe(frontmatter + tight);
+  });
+
+  test('keeps the frontmatter as it was saved', async () => {
+    const before = '---\ndescription: |-\n  First.\n\n  Second.\n---\n\nBody\n';
+    const after = '---\ndescription: |-\n  First.\n  Second.\n---\nBody\n';
+    expect(
+      await finishSavedPage({ filePath: page, content: after, original: before, repoDir })
+    ).toBe('---\ndescription: |-\n  First.\n  Second.\n---\n\nBody\n');
+  });
+
+  test.each([
+    ['its configuration would run code', { 'prettier.config.mjs': 'export default {};\n' }],
+    ["Prettier can't format it", { '.prettierrc.json': JSON.stringify({ proseWrap: 'sometimes' }) }]
+  ])('warns once when %s', async (_, files) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const [name, content] of Object.entries(files)) write(path.join(repoDir, name), content);
+    expect(
+      await finishSavedPage({
+        filePath: page,
+        content: '---\ntitle: Page\n---\n- a\n- b\n- c\n',
+        original,
+        repoDir
+      })
+    ).toBe(original);
+    expect(warn).toHaveBeenCalledOnce();
   });
 
   test('only formats a new page', async () => {

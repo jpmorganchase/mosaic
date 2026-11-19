@@ -1887,6 +1887,7 @@ __metadata:
     prettier: "npm:^3.10.1"
     undici: "npm:^8.12.4"
     uuid: "npm:^11.0.0"
+    yaml: "npm:^2.9.0"
   languageName: unknown
   linkType: soft
 

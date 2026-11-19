@@ -124,11 +124,15 @@ the editor uses the existing save flow.
 
 ## Formatting saved pages
 
-When the repository has a Prettier configuration (a `.prettierrc` file, a `prettier.config.*` file or a `prettier` key in its `package.json`), `GitHubPullRequestWorkflow` and `BitbucketPullRequestWorkflow` format each saved page with it before committing, respecting the repository's `.prettierignore` and `.gitignore`. The editor writes Markdown in its own style, so without this a save would reformat parts of the page the author didn't touch, and could fail a `prettier --check` the repository runs.
+When the repository has a Prettier configuration (a `.prettierrc` file in JSON or YAML, a `.prettierrc.json`, `.prettierrc.yaml`, `.prettierrc.yml`, `.prettierrc.json5` or `.prettierrc.toml` file, or a `prettier` key in its `package.json` or `package.yaml`), `GitHubPullRequestWorkflow` and `BitbucketPullRequestWorkflow` format each saved page with it before committing, respecting the repository's `.prettierignore`, `.gitignore` and `.editorconfig`. The editor writes Markdown in its own style, so without this a save would reformat parts of the page the author didn't touch, and could fail a `prettier --check` the repository runs.
 
-When an existing page is saved, the blank lines it had between lines the author didn't change are kept. The editor writes lists without blank lines between their items, so without this every loose list on the page would be rewritten.
+The content server holds the credentials it pushes with, so it never runs code from the repository. A page isn't formatted when the repository's configuration is JavaScript or TypeScript (`prettier.config.*`, `.prettierrc.js` and similar), names a shared configuration instead of listing its options, or needs plugins.
 
-Repositories without a Prettier configuration are left as the editor writes them, apart from those blank lines. If Prettier can't format a page, for example because the configuration needs a plugin, the page is saved unformatted and the content server logs a warning. Formatting uses the Prettier 3 release bundled with `@jpmorganchase/mosaic-workflows`, which can differ slightly from the version a repository pins.
+When an existing page is saved, the blank lines the editor drops are put back: those in lists, so a loose list (one with blank lines between its items) stays loose, even when items are added or removed, and those after the frontmatter. Elsewhere the page keeps the editor's spacing, so a paragraph the author splits or joins stays that way, and the frontmatter and fenced code blocks are saved as written.
+
+A page that is renamed is formatted with the configuration and ignore rules for its new path.
+
+Repositories without a Prettier configuration are left as the editor writes them, apart from those blank lines. If the page isn't formatted because of its configuration, or Prettier can't format it, the page is saved unformatted and the content server logs a warning. Formatting uses the Prettier 3 release bundled with `@jpmorganchase/mosaic-workflows`, which can differ slightly from the version a repository pins.
 
 ## Refresh on push (Bitbucket webhooks)
 
