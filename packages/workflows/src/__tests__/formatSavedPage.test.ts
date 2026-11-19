@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { formatSavedPage } from '../formatSavedPage.js';
+import { finishSavedPage, formatSavedPage } from '../formatSavedPage.js';
 
 // What the editor writes: Lexical's emphasis, four-space nested lists and no
 // blank line after the frontmatter.
@@ -100,5 +100,39 @@ describe('formatSavedPage', () => {
     );
     expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(editorOutput);
     expect(warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('finishSavedPage', () => {
+  const original = '---\ntitle: Page\n---\n\n- a\n\n- b\n\n- c\n';
+
+  test('keeps a loose list loose throughout when one item is edited', async () => {
+    write(path.join(repoDir, '.prettierrc.json'), '{}');
+    expect(
+      await finishSavedPage({
+        filePath: page,
+        content: '---\ntitle: Page\n---\n- a\n- B edited\n- c\n',
+        original,
+        repoDir
+      })
+    ).toBe('---\ntitle: Page\n---\n\n- a\n\n- B edited\n\n- c\n');
+  });
+
+  test('keeps the original blank lines in a repository without Prettier', async () => {
+    expect(
+      await finishSavedPage({
+        filePath: page,
+        content: '---\ntitle: Page\n---\n- a\n- b\n- c\n',
+        original,
+        repoDir
+      })
+    ).toBe(original);
+  });
+
+  test('only formats a new page', async () => {
+    write(path.join(repoDir, '.prettierrc.json'), '{}');
+    expect(
+      await finishSavedPage({ filePath: page, content: editorOutput, original: undefined, repoDir })
+    ).toBe(prettierOutput);
   });
 });

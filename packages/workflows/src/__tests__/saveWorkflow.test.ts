@@ -133,6 +133,32 @@ describe.each([
     );
   });
 
+  test('keeps the spacing of the lines the author did not change', async () => {
+    const existing = path.join(mocks.repoDir, 'content/loose.mdx');
+    await fs.promises.mkdir(path.dirname(existing), { recursive: true });
+    await fs.promises.writeFile(
+      existing,
+      '---\ntitle: Loose\nfullPath: /docs/loose.mdx\n---\n\n- a\n\n- b\n\n- c\n'
+    );
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+
+    const result = await workflow.action(
+      vi.fn(),
+      sourceOptions,
+      workflowOptions,
+      '/docs/loose.mdx',
+      {
+        user,
+        markdown: '- a\n- B edited\n- c'
+      }
+    );
+
+    expect(result).not.toBe(false);
+    expect(await fs.promises.readFile(existing, 'utf8')).toBe(
+      '---\ntitle: Loose\nfullPath: /docs/loose.mdx\n---\n\n- a\n\n- B edited\n\n- c\n'
+    );
+  });
+
   test('still refuses to erase an existing page with an empty body', async () => {
     const send = vi.fn();
     const result = await workflow.action(send, sourceOptions, workflowOptions, route, {

@@ -1883,6 +1883,7 @@ __metadata:
     "@jpmorganchase/mosaic-types": "workspace:^"
     "@octokit/core": "npm:^6.1.2"
     "@types/uuid": "npm:^8.3.4"
+    diff: "npm:^9.0.0"
     prettier: "npm:^3.10.1"
     undici: "npm:^8.12.4"
     uuid: "npm:^11.0.0"

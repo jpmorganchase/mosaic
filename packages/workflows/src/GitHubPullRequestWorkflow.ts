@@ -12,7 +12,7 @@ import type {
 } from '@jpmorganchase/mosaic-types';
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
-import { formatSavedPage } from './formatSavedPage.js';
+import { finishSavedPage } from './formatSavedPage.js';
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
@@ -187,6 +187,8 @@ export async function createPullRequest(
      *   clobber won).
      */
     let nextMeta: Record<string, unknown>;
+    // The page before the save; stays `undefined` for a new page.
+    let originalPage: string | undefined;
     if (isNewPage) {
       // Race-protection: if two authors picked the same new
       // route concurrently and the other one's PR already
@@ -232,6 +234,7 @@ export async function createPullRequest(
       sendWorkflowProgressMessage('Creating new page', 'IN_PROGRESS');
     } else {
       const rawPage = await fs.promises.readFile(pathOnDisk);
+      originalPage = rawPage.toString();
       const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
 
       /**
@@ -302,12 +305,18 @@ export async function createPullRequest(
     if (!isNewPage) {
       sendWorkflowProgressMessage('Updated page content', 'IN_PROGRESS');
     }
-    // Formatted the way the repository's Prettier setup would, so a save
-    // only changes what the author changed (see `./formatSavedPage.ts`).
+    // Formatted the way the repository's Prettier setup would, keeping the
+    // original's blank lines between unchanged lines, so a save only
+    // changes what the author changed (see `./formatSavedPage.ts`).
     const serialised = (await mdx.serialise(pathOnDisk, updatedPage)).toString();
     await fs.promises.writeFile(
       pathOnDisk,
-      await formatSavedPage(pathOnDisk, serialised, repoInstance.dir)
+      await finishSavedPage({
+        filePath: pathOnDisk,
+        content: serialised,
+        original: originalPage,
+        repoDir: repoInstance.dir
+      })
     );
     sendWorkflowProgressMessage('Saved page', 'IN_PROGRESS');
 

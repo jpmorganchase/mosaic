@@ -39,6 +39,7 @@
     "@jpmorganchase/mosaic-source-git-repo": "workspace:^",
     "@jpmorganchase/mosaic-types": "workspace:^",
     "@octokit/core": "^6.1.2",
+    "diff": "^9.0.0",
     "prettier": "^3.10.1",
     "undici": "^8.12.4",
     "uuid": "^11.0.0"

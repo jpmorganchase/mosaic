@@ -19,6 +19,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as prettier from 'prettier';
 
+import { keepOriginalBlankLines } from './keepOriginalBlankLines.js';
+
 /** `true` when `target` is `dir` or inside it. */
 function isInside(dir: string, target: string): boolean {
   const relative = path.relative(dir, target);
@@ -63,4 +65,29 @@ export async function formatSavedPage(
     );
     return content;
   }
+}
+
+/**
+ * The page to commit: formatted like the repository and, for an existing
+ * page, with the original's blank lines between the lines the author didn't
+ * change (see `./keepOriginalBlankLines.ts`). Formatting runs again after
+ * the blank lines are restored, so a list that is loose anywhere is written
+ * loose throughout, as Prettier writes it.
+ */
+export async function finishSavedPage({
+  filePath,
+  content,
+  original,
+  repoDir
+}: {
+  filePath: string;
+  content: string;
+  /** The page before the save; `undefined` for a new page. */
+  original: string | undefined;
+  repoDir: string;
+}): Promise<string> {
+  const formatted = await formatSavedPage(filePath, content, repoDir);
+  if (original === undefined) return formatted;
+  const restored = keepOriginalBlankLines(original, formatted);
+  return restored === formatted ? formatted : formatSavedPage(filePath, restored, repoDir);
 }
