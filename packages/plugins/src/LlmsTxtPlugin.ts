@@ -287,7 +287,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
           );
           continue;
         }
-        const fields = (options.frontmatterFields ?? []).flatMap(key => {
+        const fields = [...new Set(options.frontmatterFields)].flatMap(key => {
           if (RESERVED_FIELDS.has(key) || !/^[A-Za-z_][\w-]*$/.test(key)) return [];
           const value = yamlValue((page as unknown as Record<string, unknown>)[key]);
           return value === undefined ? [] : [[key, value] as [string, string]];

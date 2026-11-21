@@ -287,7 +287,7 @@ describe('GIVEN the LlmsTxtPlugin', () => {
   test('THEN it copies the frontmatter fields it is asked for, when they are text or lists', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { written } = await run({
-      frontmatterFields: ['version', 'tags', 'owner', 'missing', 'title', 'bad key']
+      frontmatterFields: ['version', 'tags', 'owner', 'missing', 'title', 'bad key', 'tags']
     });
     const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
     expect(page.split('\n---\n')[0]).toBe(
