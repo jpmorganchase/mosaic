@@ -1,4 +1,12 @@
-const { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } = require('node:fs');
+const { createHash } = require('node:crypto');
+const {
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} = require('node:fs');
 const { dirname, isAbsolute, relative, resolve, sep } = require('node:path');
 
 const ASSETS = ['search-records.json', 'llms.txt', 'llms-full.txt'];
@@ -6,6 +14,7 @@ const ASSETS = ['search-records.json', 'llms.txt', 'llms-full.txt'];
 const RETIRED_ASSETS = ['search-data.json', 'search-data-condensed.json', 'search-config.json'];
 const isScopedIndex = file =>
   /^(?:[a-z0-9_~-][a-z0-9._~-]*\/)+llms(?:-full)?\.txt$/.test(file.replaceAll('\\', '/'));
+const markdownHash = content => createHash('sha256').update(content).digest('hex');
 
 function publicPath(publicDir, file) {
   const target = resolve(publicDir, file);
@@ -103,6 +112,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
   }
 
   let previous = [];
+  let previousMarkdown = new Map();
   if (existsSync(manifestFile)) {
     const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
     if (
@@ -122,6 +132,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
       throw new Error(`[mosaic-site] Invalid public asset manifest ${manifestFile}`);
     }
     previous = manifest.files;
+    previousMarkdown = new Map(Object.entries(manifest.markdownHashes ?? {}));
   }
 
   // LLM routes are reserved. Do not silently overwrite an authored public asset.
@@ -136,17 +147,46 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
       throw new Error(`[mosaic-site] Reserved LLM route collides with public asset: ${file}`);
     }
   }
+  // An edited Markdown copy now belongs to the author. A path-only legacy
+  // entry cannot prove ownership either.
+  const ownsMarkdown = (file, target, stat) =>
+    stat?.isFile() &&
+    previousMarkdown.has(file) &&
+    previousMarkdown.get(file) === markdownHash(readFileSync(target));
+  const markdownHashes = new Map();
   for (const [file, content] of files) {
     const target = publicPath(publicDir, file);
+    if (file.endsWith('.md')) {
+      const stat = lstatSync(target, { throwIfNoEntry: false });
+      if (stat && !ownsMarkdown(file, target, stat)) {
+        files.delete(file);
+        continue;
+      }
+      markdownHashes.set(file, markdownHash(content));
+    }
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content);
   }
   for (const file of previous) {
-    if (!files.has(file)) rmSync(publicPath(publicDir, file), { force: true });
+    if (files.has(file)) continue;
+    const target = publicPath(publicDir, file);
+    if (
+      file.endsWith('.md') &&
+      !ownsMarkdown(file, target, lstatSync(target, { throwIfNoEntry: false }))
+    )
+      continue;
+    rmSync(target, { force: true });
   }
 
   mkdirSync(dirname(manifestFile), { recursive: true });
-  writeFileSync(manifestFile, JSON.stringify({ version: 1, files: [...files.keys()].sort() }));
+  writeFileSync(
+    manifestFile,
+    JSON.stringify({
+      version: 1,
+      files: [...files.keys()].sort(),
+      markdownHashes: Object.fromEntries(markdownHashes)
+    })
+  );
 }
 
 module.exports = { syncSnapshotAssets };
