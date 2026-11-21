@@ -33,12 +33,14 @@ import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metad
  * consume it.
  */
 import { cache } from 'react';
+import path from 'node:path';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRawSource,
+  getNewPageSharedConfig,
   resolveMosaicMode,
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
@@ -220,10 +222,12 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // anyone (server gate, store, client hook) reads it. The override
   // is the closed default — `{ writable: true }` — applied via a
   // shallow merge so authored fields (header, footer, etc.) are
-  // preserved. A miss carries the shared config of the folder the
-  // missing page would live in, so the same gate covers the create
-  // flow; apply the bypass before discriminating.
-  const sharedConfig = withCapabilityBypass(resolved.sharedConfig);
+  // preserved. Only a create request needs the source's creation metadata.
+  const sharedConfig = withCapabilityBypass(
+    newPossible && resolved.kind === 'not-found' && !resolved.redirectLimitReached
+      ? await getNewPageSharedConfig(path.posix.dirname(resolved.pathname), mode, contentUrl)
+      : resolved.sharedConfig
+  );
 
   // Source-capability gate. Absent capabilities (no shared-config
   // for the subtree, or a source that hasn't opted in) means
