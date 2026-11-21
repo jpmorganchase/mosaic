@@ -102,13 +102,14 @@ function readPage(text: string) {
   const frontmatter = frontmatterEnd(lines);
   const verbatim = verbatimBlocks(lines, frontmatter);
   const listIndents: number[] = [];
+  const listDepths: number[] = [];
   const matchKeys: string[] = [];
-  nonBlank.forEach((_, index) => {
+  nonBlank.forEach((lineIndex, index) => {
     const line = at(index);
     const list = listOf(line);
     inList.push(list !== undefined || (index > 0 && inList[index - 1] && indentOf(line) > 0));
     if (!inList[index]) listIndents.length = 0;
-    if (list !== undefined && verbatim[nonBlank[index]] === -1) {
+    if (list !== undefined && verbatim[lineIndex] === -1) {
       const indent = indentOf(line);
       while (listIndents.length && listIndents.at(-1)! > indent) listIndents.pop();
       if (listIndents.at(-1) !== indent) listIndents.push(indent);
@@ -119,6 +120,7 @@ function readPage(text: string) {
     } else {
       matchKeys.push(`line:${line.trimEnd()}`);
     }
+    listDepths.push(inList[index] && verbatim[lineIndex] === -1 ? listIndents.length : 0);
     let previous: number | undefined;
     // Lines indented further than the item are part of the items before it;
     // any other line ends its list.
@@ -136,6 +138,7 @@ function readPage(text: string) {
     previousItem,
     frontmatter,
     verbatim,
+    listDepths,
     matchKeys
   };
 }
@@ -168,7 +171,11 @@ function matchLines(before: Page, after: Page): Map<number, number> {
       countOf(next) === count;
     if (editedInPlace || (!change.added && !change.removed)) {
       for (let offset = 0; offset < count; offset++) {
-        originalOf.set(afterIndex + offset, beforeIndex + offset);
+        const original = beforeIndex + offset;
+        const saved = afterIndex + offset;
+        // Moving an item between levels creates a different list relationship.
+        if (before.listDepths[original] === after.listDepths[saved])
+          originalOf.set(saved, original);
       }
       beforeIndex += count;
       afterIndex += count;

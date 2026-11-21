@@ -55,6 +55,12 @@ describe('keepOriginalBlankLines', () => {
     );
   });
 
+  test('keeps a new tight sublist tight when its items were formerly loose siblings', () => {
+    const original = '- Parent\n\n- First\n\n- Last\n';
+    const saved = '- Parent\n  - First\n  - Last\n';
+    expect(keepOriginalBlankLines(original, saved)).toBe(saved);
+  });
+
   test("uses the saved page's spacing around removed lines outside a list", () => {
     expect(keepOriginalBlankLines('a\n\nb\nc\n', 'a\nc\n')).toBe('a\nc\n');
   });
