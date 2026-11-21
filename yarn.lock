@@ -1434,7 +1434,7 @@ __metadata:
     "@jpmorganchase/mosaic-serialisers": "workspace:^"
     "@jpmorganchase/mosaic-theme": "workspace:^"
     "@jpmorganchase/mosaic-types": "workspace:^"
-    "@lexical/code": "npm:^0.50.0"
+    "@lexical/code-core": "npm:^0.50.0"
     "@lexical/extension": "npm:^0.50.0"
     "@lexical/link": "npm:^0.50.0"
     "@lexical/list": "npm:^0.50.0"
@@ -1672,7 +1672,6 @@ __metadata:
     concurrently: "npm:^7.1.0"
     del-cli: "npm:^6.0.0"
     esbuild: "npm:0.28.1"
-    prismjs: "npm:^1.30.0"
   languageName: unknown
   linkType: soft
 
@@ -2052,7 +2051,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lexical/code-core@npm:0.50.0":
+"@lexical/code-core@npm:0.50.0, @lexical/code-core@npm:^0.50.0":
   version: 0.50.0
   resolution: "@lexical/code-core@npm:0.50.0"
   dependencies:
@@ -2067,40 +2066,6 @@ __metadata:
     typescript:
       optional: true
   checksum: 10/5f36b7593d12edef3813e6e2bd4fe76fb00f07a4a00306c67f5a079dd1e4257c457a4f8719cc816018b54fb49ec58a2c0a8a889aedc7bf5c10f8c1274ca4d3a4
-  languageName: node
-  linkType: hard
-
-"@lexical/code-prism@npm:0.50.0":
-  version: 0.50.0
-  resolution: "@lexical/code-prism@npm:0.50.0"
-  dependencies:
-    "@lexical/code-core": "npm:0.50.0"
-    "@lexical/extension": "npm:0.50.0"
-    lexical: "npm:0.50.0"
-    prismjs: "npm:^1.30.0"
-  peerDependencies:
-    typescript: ">=5.2"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10/877b4c3165fe7f9b12b278ebe777dd5908dc111881a791103fb1ac6c886fa43edd416efa24a760d5b89382c41d9516b4b67d4a1765c4e4565e6dd880ee8d3172
-  languageName: node
-  linkType: hard
-
-"@lexical/code@npm:^0.50.0":
-  version: 0.50.0
-  resolution: "@lexical/code@npm:0.50.0"
-  dependencies:
-    "@lexical/code-core": "npm:0.50.0"
-    "@lexical/code-prism": "npm:0.50.0"
-    "@lexical/extension": "npm:0.50.0"
-    lexical: "npm:0.50.0"
-  peerDependencies:
-    typescript: ">=5.2"
-  peerDependenciesMeta:
-    typescript:
-      optional: true
-  checksum: 10/ecaf769f816611c7f8a070d5424adf9967b36cdb89e31eeb37f9143263d4c417de253b6685c13202470ebb148dbb4ab469d99a8f03398ad5a62a9d7df8043646
   languageName: node
   linkType: hard
 
@@ -10229,13 +10194,6 @@ __metadata:
   peerDependencies:
     react: ">=16.0.0"
   checksum: 10/74a3e23b225fdcb588682253a9deef7d7f8d68619dfb910928c3630c4c692e982ae1444b3451e2cdc85ca3ca9cb368b8b2b0f81495f3fe2e3b321c3a0669f3a9
-  languageName: node
-  linkType: hard
-
-"prismjs@npm:1.30.0":
-  version: 1.30.0
-  resolution: "prismjs@npm:1.30.0"
-  checksum: 10/6b48a2439a82e5c6882f48ebc1564c3890e16463ba17ac10c3ad4f62d98dea5b5c915b172b63b83023a70ad4f5d7be3e8a60304420db34a161fae69dd4e3e2da
   languageName: node
   linkType: hard
 

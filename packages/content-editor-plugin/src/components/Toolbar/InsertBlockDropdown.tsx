@@ -1,6 +1,6 @@
 import { SyntheticEvent, type JSX } from 'react';
 import { Dropdown, Option } from '@salt-ds/core';
-import { $createCodeNode } from '@lexical/code';
+import { $createCodeNode } from '@lexical/code-core';
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from '@lexical/list';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';
 import { $setBlocksType } from '@lexical/selection';
