@@ -5,7 +5,7 @@ import { createServer, type Server } from 'node:http';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { findNewPageOwner } from '../../../core/src/findNewPageOwner';
 import { createNewPageHandler } from '../newPageHandler';
-import { resolveContent } from '../resolveContent';
+import { getNewPageSharedConfig } from '../resolveContent';
 
 vi.mock('../cachedLoaders.js', () => ({
   getMdxRaw: async () => ({ kind: 'not-found' }),
@@ -62,9 +62,9 @@ describe.each(['active', 'snapshot-file'] as const)('new-page ownership in %s mo
       );
       expect(await check(folder)).toEqual({ folder, writable: owner?.writable ?? false });
     }
-    expect(await resolveContent('/docs/sdk/v2/page', mode, contentUrl)).toMatchObject({
-      kind: 'not-found',
-      sharedConfig: { header: { title: 'Docs' }, sourceCapabilities: { writable: true } }
+    expect(await getNewPageSharedConfig('/docs/sdk/v2', mode, contentUrl)).toMatchObject({
+      header: { title: 'Docs' },
+      sourceCapabilities: { writable: true }
     });
     sources = [];
     if (root) await fs.writeFile(path.join(root, 'mosaic-new-page-sources.json'), metadata());
