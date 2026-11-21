@@ -52,10 +52,9 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
  * frontmatter's `sharedConfig` is replaced with the same value, so
  * spreading the frontmatter can't bring authored capabilities back.
  *
- * `sharedConfig` is returned for misses too: it belongs to the folder
- * the missing page would live in, or the nearest folder above it when
- * that folder doesn't exist yet (see `getNewPageSharedConfig`). The
- * create-page flow (`?new=1`) checks it for `sourceCapabilities.writable`.
+ * For misses, `sharedConfig` is the requested folder's config when available.
+ * Use `getNewPageSharedConfig` to resolve creation eligibility and inherited
+ * config for a new page.
  */
 export type ResolvedContent =
   | {
@@ -66,7 +65,13 @@ export type ResolvedContent =
       mdx: MdxContent;
       sharedConfig: SharedConfig;
     }
-  | { kind: 'not-found'; originalPathname: string; pathname: string; sharedConfig: SharedConfig }
+  | {
+      kind: 'not-found';
+      originalPathname: string;
+      pathname: string;
+      sharedConfig: SharedConfig;
+      redirectLimitReached?: true;
+    }
   | { kind: 'redirect'; destination: string };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -112,22 +117,10 @@ export async function getNewPageSharedConfig(
   mode: MosaicMode,
   contentUrl: string
 ): Promise<SharedConfig> {
-  return resolveNewPageConfig(folder, mode, contentUrl);
-}
-
-async function resolveNewPageConfig(
-  folder: string,
-  mode: MosaicMode,
-  contentUrl: string,
-  initial?: { config: SharedConfig }
-): Promise<SharedConfig> {
   if (!folder.startsWith('/')) return undefined;
   const writable = await newPageWritable(folder, mode, contentUrl);
   for (let current = path.posix.normalize(folder); ; current = path.posix.dirname(current)) {
-    const config =
-      current === folder && initial
-        ? initial.config
-        : await getFolderSharedConfig(current, mode, contentUrl);
+    const config = await getFolderSharedConfig(current, mode, contentUrl);
     if (config !== undefined || current === '/')
       return writable === undefined
         ? config
@@ -208,12 +201,7 @@ export const resolveContent = cache(
       }
 
       if (mdx.kind === 'not-found') {
-        // A page in a folder that doesn't exist yet takes the config of
-        // the nearest folder above it, so it can be created there.
-        const folder = path.posix.dirname(pathname);
-        const sharedConfig = await resolveNewPageConfig(folder, mode, contentUrl, {
-          config: requestedConfig()
-        });
+        const sharedConfig = configResult.status === 'fulfilled' ? configResult.value : undefined;
         return { kind: 'not-found', originalPathname, pathname, sharedConfig };
       }
 
@@ -231,6 +219,12 @@ export const resolveContent = cache(
     console.error(
       `[mosaic-site] redirect chain exceeded ${MAX_INTERNAL_REDIRECT_HOPS} hops starting at ${originalPathname}; treating as not-found`
     );
-    return { kind: 'not-found', originalPathname, pathname, sharedConfig: undefined };
+    return {
+      kind: 'not-found',
+      originalPathname,
+      pathname,
+      sharedConfig: undefined,
+      redirectLimitReached: true
+    };
   }
 );

@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const getMdxRaw = vi.fn();
 const getSharedConfig = vi.fn();
+const newPageWritable = vi.fn();
 vi.mock('../cachedLoaders.js', () => ({ getMdxRaw, getSharedConfig }));
-vi.mock('../newPageSources.js', () => ({ newPageWritable: async () => undefined }));
+vi.mock('../newPageSources.js', () => ({ newPageWritable }));
 // `React.cache` only memoises inside a server render; make it a no-op so
 // every call reaches the mocked loaders.
 vi.mock('react', async () => ({
@@ -26,6 +27,7 @@ const sharedConfigFor = (pathname: string) => ({ header: { title: `header for ${
 beforeEach(() => {
   getMdxRaw.mockReset();
   getSharedConfig.mockReset();
+  newPageWritable.mockReset().mockResolvedValue(undefined);
   getSharedConfig.mockImplementation(async (pathname: string) => sharedConfigFor(pathname));
 });
 
@@ -167,7 +169,6 @@ describe('resolveContent', () => {
   });
 
   test('keeps the shared config of the folder a missing page would live in', async () => {
-    // The create-page flow (`?new=1`) checks this config for writability.
     getMdxRaw.mockResolvedValue({ kind: 'not-found' });
     getSharedConfig.mockResolvedValue({ sourceCapabilities: { writable: true } });
 
@@ -181,33 +182,45 @@ describe('resolveContent', () => {
     });
   });
 
-  test("uses the nearest existing folder's config for a page in a new folder", async () => {
+  test('returns a miss when config is unavailable without loading creation metadata', async () => {
     getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    getSharedConfig.mockRejectedValue(new Error('Config unavailable'));
+    newPageWritable.mockRejectedValue(new Error('Creation metadata unavailable'));
+
+    await expect(
+      resolveContent('/docs/missing', 'active', 'http://content')
+    ).resolves.toMatchObject({
+      kind: 'not-found',
+      sharedConfig: undefined
+    });
+    expect(newPageWritable).not.toHaveBeenCalled();
+  });
+
+  test("uses the nearest existing folder's config when preparing a new page", async () => {
     const writable = { sourceCapabilities: { writable: true } };
     // `getSharedConfig` reads the config of the folder a page is in.
     getSharedConfig.mockImplementation(async (pathname: string) =>
       pathname === '/docs/index' ? writable : undefined
     );
 
-    const resolved = await resolveContent('/docs/new/deeper/page.mdx', 'active', 'http://content');
+    const config = await getNewPageSharedConfig('/docs/new/deeper', 'active', 'http://content');
 
-    expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: writable });
+    expect(config).toEqual(writable);
     expect(getSharedConfig.mock.calls.map(([pathname]) => pathname)).toEqual([
-      '/docs/new/deeper/page.mdx',
+      '/docs/new/deeper/index',
       '/docs/new/index',
       '/docs/index'
     ]);
   });
 
-  test('has no config for a page outside every folder with one', async () => {
-    getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+  test('has no creation config for a page outside every folder with one', async () => {
     getSharedConfig.mockResolvedValue(undefined);
 
-    const resolved = await resolveContent('/unknown/page.mdx', 'active', 'http://content');
+    const config = await getNewPageSharedConfig('/unknown', 'active', 'http://content');
 
-    expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: undefined });
+    expect(config).toBeUndefined();
     expect(getSharedConfig.mock.calls.map(([pathname]) => pathname)).toEqual([
-      '/unknown/page.mdx',
+      '/unknown/index',
       '/index'
     ]);
   });
