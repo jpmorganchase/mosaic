@@ -197,13 +197,16 @@ describe('snapshot public assets', () => {
     expect(existsSync(join(publicDir, 'docs.md'))).toBe(false);
   });
 
-  test('leaves an existing Markdown file from a path-only manifest on disk', () => {
+  test('only removes legacy Markdown copies that still match the available snapshot', () => {
     writeFileSync(join(publicDir, 'guide.md'), '# Could be handwritten');
-    writeFileSync(manifestFile, JSON.stringify({ version: 1, files: ['guide.md'] }));
+    writeFileSync(join(publicDir, 'docs.md'), '# Snapshot docs');
+    writeFileSync(manifestFile, JSON.stringify({ version: 1, files: ['guide.md', 'docs.md'] }));
+    pages({ '/guide': '# Snapshot guide', '/docs': '# Snapshot docs' });
 
-    syncSnapshotAssets({ publicDir, manifestFile });
+    syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
 
     expect(read('guide.md')).toBe('# Could be handwritten');
+    expect(existsSync(join(publicDir, 'docs.md'))).toBe(false);
   });
 
   test('clears snapshot copies for an active-mode build without removing authored assets', () => {
