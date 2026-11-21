@@ -65,6 +65,9 @@ describe('keepOriginalBlankLines', () => {
     const original = '- First\n\n - Last\n';
     const saved = '- First\n- Last\n';
     expect(keepOriginalBlankLines(original, saved)).toBe('- First\n\n- Last\n');
+    expect(keepOriginalBlankLines(original, '- First\n- Added\n- Last\n')).toBe(
+      '- First\n\n- Added\n\n- Last\n'
+    );
   });
 
   test("uses the saved page's spacing around removed lines outside a list", () => {

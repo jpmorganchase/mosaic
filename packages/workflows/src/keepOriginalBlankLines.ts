@@ -35,16 +35,6 @@ const indentOf = (line: string) => line.length - line.trimStart().length;
 const listMarker = /^(\s*)([-*+]|\d{1,9}[.)])(?:([ \t]+)|\s|$)/;
 
 /**
- * The list a list item line is in, as its indentation and marker (the
- * bullet, or an ordered list's delimiter): items with the same indentation
- * and marker are in the same list. `undefined` for other lines.
- */
-function listOf(line: string): string | undefined {
-  const match = listMarker.exec(line);
-  return match ? `${match[1].length}${match[2].slice(-1)}` : undefined;
-}
-
-/**
  * The index of the line closing the page's frontmatter, found as
  * `@jpmorganchase/mosaic-serialisers` finds it, or -1 without frontmatter.
  * Frontmatter that isn't closed runs to the end of the page.
@@ -104,14 +94,16 @@ function readPage(text: string) {
   const verbatim = verbatimBlocks(lines, frontmatter);
   const itemContentIndents: number[] = [];
   const listDepths: number[] = [];
+  const itemKinds: (string | undefined)[] = [];
   const matchKeys: string[] = [];
   nonBlank.forEach((lineIndex, index) => {
     const line = at(index);
-    const marker = listMarker.exec(line);
-    const list = marker ? `${marker[1].length}${marker[2].slice(-1)}` : undefined;
-    inList.push(!!marker || (index > 0 && inList[index - 1] && indentOf(line) > 0));
+    const marker = verbatim[lineIndex] === -1 ? listMarker.exec(line) : null;
+    const kind = marker?.[2].slice(-1);
+    itemKinds.push(kind);
+    inList.push(marker !== null || (index > 0 && inList[index - 1] && indentOf(line) > 0));
     if (!inList[index]) itemContentIndents.length = 0;
-    if (marker && verbatim[lineIndex] === -1) {
+    if (marker) {
       const indent = marker[1].length;
       // A more indented marker is nested only if it reaches the parent
       // item's content column. Smaller shifts can still be sibling items.
@@ -128,21 +120,25 @@ function readPage(text: string) {
     } else {
       matchKeys.push(`line:${line.trimEnd()}`);
     }
-    listDepths.push(inList[index] && verbatim[lineIndex] === -1 ? itemContentIndents.length : 0);
+    const depth = itemContentIndents.length;
+    listDepths.push(depth);
     let previous: number | undefined;
-    // Lines indented further than the item are part of the items before it;
-    // any other line ends its list.
-    for (let i = index - 1; list !== undefined && i >= 0 && inList[i]; i--) {
-      if (listOf(at(i)) === list) previous = i;
-      if (previous !== undefined || indentOf(at(i)) <= indentOf(line)) break;
+    // Skip nested items and continuation lines. A sibling of another
+    // marker type ends the list, as does leaving its parent.
+    for (let i = index - 1; kind !== undefined && i >= 0 && inList[i]; i--) {
+      if (listDepths[i] < depth) break;
+      if (listDepths[i] === depth && itemKinds[i] !== undefined) {
+        if (itemKinds[i] === kind) previous = i;
+        break;
+      }
     }
     previousItem.push(previous);
   });
   return {
     lines,
     nonBlank,
-    at,
     inList,
+    itemKinds,
     previousItem,
     frontmatter,
     verbatim,
@@ -219,7 +215,7 @@ export function keepOriginalBlankLines(original: string, saved: string): string 
   const listStart = new Map<number, number>();
   const looseLists = new Set<number>();
   before.previousItem.forEach((previous, index) => {
-    if (listOf(before.at(index)) === undefined) return;
+    if (before.itemKinds[index] === undefined) return;
     const start = previous === undefined ? index : listStart.get(previous) ?? previous;
     listStart.set(index, start);
     if (previous !== undefined && blankLinesAfter(index - 1) > 0) looseLists.add(start);
