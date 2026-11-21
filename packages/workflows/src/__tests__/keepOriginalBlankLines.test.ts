@@ -61,6 +61,12 @@ describe('keepOriginalBlankLines', () => {
     expect(keepOriginalBlankLines(original, saved)).toBe(saved);
   });
 
+  test('keeps a list loose when the editor normalizes sibling indentation', () => {
+    const original = '- First\n\n - Last\n';
+    const saved = '- First\n- Last\n';
+    expect(keepOriginalBlankLines(original, saved)).toBe('- First\n\n- Last\n');
+  });
+
   test("uses the saved page's spacing around removed lines outside a list", () => {
     expect(keepOriginalBlankLines('a\n\nb\nc\n', 'a\nc\n')).toBe('a\nc\n');
   });

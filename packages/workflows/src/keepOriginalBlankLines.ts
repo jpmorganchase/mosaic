@@ -32,6 +32,7 @@ import { diffArrays } from 'diff';
 
 const isBlank = (line: string) => line.trim() === '';
 const indentOf = (line: string) => line.length - line.trimStart().length;
+const listMarker = /^(\s*)([-*+]|\d{1,9}[.)])(?:([ \t]+)|\s|$)/;
 
 /**
  * The list a list item line is in, as its indentation and marker (the
@@ -39,7 +40,7 @@ const indentOf = (line: string) => line.length - line.trimStart().length;
  * and marker are in the same list. `undefined` for other lines.
  */
 function listOf(line: string): string | undefined {
-  const match = /^(\s*)([-*+]|\d{1,9}[.)])(?:\s|$)/.exec(line);
+  const match = listMarker.exec(line);
   return match ? `${match[1].length}${match[2].slice(-1)}` : undefined;
 }
 
@@ -101,26 +102,33 @@ function readPage(text: string) {
   const previousItem: (number | undefined)[] = [];
   const frontmatter = frontmatterEnd(lines);
   const verbatim = verbatimBlocks(lines, frontmatter);
-  const listIndents: number[] = [];
+  const itemContentIndents: number[] = [];
   const listDepths: number[] = [];
   const matchKeys: string[] = [];
   nonBlank.forEach((lineIndex, index) => {
     const line = at(index);
-    const list = listOf(line);
-    inList.push(list !== undefined || (index > 0 && inList[index - 1] && indentOf(line) > 0));
-    if (!inList[index]) listIndents.length = 0;
-    if (list !== undefined && verbatim[lineIndex] === -1) {
-      const indent = indentOf(line);
-      while (listIndents.length && listIndents.at(-1)! > indent) listIndents.pop();
-      if (listIndents.at(-1) !== indent) listIndents.push(indent);
+    const marker = listMarker.exec(line);
+    const list = marker ? `${marker[1].length}${marker[2].slice(-1)}` : undefined;
+    inList.push(!!marker || (index > 0 && inList[index - 1] && indentOf(line) > 0));
+    if (!inList[index]) itemContentIndents.length = 0;
+    if (marker && verbatim[lineIndex] === -1) {
+      const indent = marker[1].length;
+      // A more indented marker is nested only if it reaches the parent
+      // item's content column. Smaller shifts can still be sibling items.
+      while (itemContentIndents.length && itemContentIndents.at(-1)! > indent) {
+        itemContentIndents.pop();
+      }
+      const spaces = marker[3]?.length ?? 0;
+      const padding = spaces >= 1 && spaces <= 4 ? spaces : 1;
+      itemContentIndents.push(indent + marker[2].length + padding);
       // Match list depth across indentation styles while keeping identical
       // entries at different depths distinct.
       const item = line.trim().replace(/^\d{1,9}([.)])(?=\s|$)/, '#$1');
-      matchKeys.push(`list:${listIndents.length}:${item}`);
+      matchKeys.push(`list:${itemContentIndents.length}:${item}`);
     } else {
       matchKeys.push(`line:${line.trimEnd()}`);
     }
-    listDepths.push(inList[index] && verbatim[lineIndex] === -1 ? listIndents.length : 0);
+    listDepths.push(inList[index] && verbatim[lineIndex] === -1 ? itemContentIndents.length : 0);
     let previous: number | undefined;
     // Lines indented further than the item are part of the items before it;
     // any other line ends its list.
