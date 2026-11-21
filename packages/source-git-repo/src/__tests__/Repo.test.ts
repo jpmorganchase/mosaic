@@ -429,6 +429,27 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     expect(fs.readFileSync(path.join(repo.dir, 'latest.mdx'), 'utf8')).toBe('# Latest');
   });
 
+  test('THEN a reused clone can create a worktree for an already-fetched tag', async () => {
+    const tag = 'docs-v1';
+    git(authorDir, 'tag', '-a', tag, '-m', 'Docs v1');
+    git(authorDir, 'push', 'origin', tag);
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    push('newer.mdx', '# After the tag');
+    const taggedRepo = new Repo(
+      '',
+      'origin',
+      tag,
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+
+    await taggedRepo.init();
+
+    expect(await taggedRepo.currentLocalRevision()).toBe(revision);
+    expect(git(taggedRepo.dir, 'branch', '--show-current').trim()).toBe('');
+    expect(fs.existsSync(path.join(taggedRepo.dir, 'newer.mdx'))).toBe(false);
+  });
+
   test('THEN a worktree is recreated from the clone when the remote is unreachable', async () => {
     await repo.init();
     const revision = await repo.currentLocalRevision();

@@ -780,9 +780,8 @@ export default class Repo {
   /**
    * Fetches this source's branch into a reused clone before its worktree is
    * created, and returns whether the fetch succeeded. If the remote can't be
-   * reached but the clone already has the branch, the worktree is created
-   * from that copy, as an existing worktree keeps its content when its
-   * refresh-pull fails.
+   * reached or the configured ref is a tag, use the branch or tag already
+   * in the clone if available. Branches take precedence over tags on fetch.
    */
   async #fetchForNewWorktree() {
     try {
@@ -791,11 +790,12 @@ export default class Repo {
     } catch (e) {
       const known =
         (await this.#hasCommit(`refs/heads/${this.#branch}`)) ||
-        (await this.#hasCommit(`refs/remotes/${this.#remote}/${this.#branch}`));
+        (await this.#hasCommit(`refs/remotes/${this.#remote}/${this.#branch}`)) ||
+        (await this.#hasCommit(`refs/tags/${this.#branch}`));
       if (!known) throw e;
       console.warn(
         `[Mosaic][Source-Git] Fetch failed for '${this.#name}'; ` +
-          `creating its worktree from the branch already in the clone. ` +
+          `creating its worktree from the ref already in the clone. ` +
           `(${getErrorMessage(e)})`
       );
       return false;
