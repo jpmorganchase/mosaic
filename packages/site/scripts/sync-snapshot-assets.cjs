@@ -21,6 +21,43 @@ function publicPath(publicDir, file) {
   return target.startsWith(publicDir + sep) ? target : undefined;
 }
 
+function snapshotMarkdown(snapshotDir, publicDir) {
+  const files = new Map();
+  const markdownFile = resolve(snapshotDir, 'markdown-pages.json');
+  if (!existsSync(markdownFile)) return files;
+  const markdown = JSON.parse(readFileSync(markdownFile, 'utf8'));
+  if (
+    markdown?.version !== 1 ||
+    !markdown.pages ||
+    typeof markdown.pages !== 'object' ||
+    Array.isArray(markdown.pages) ||
+    Object.values(markdown.pages).some(value => typeof value !== 'string')
+  ) {
+    throw new Error(`[mosaic-site] Invalid Markdown pages in ${markdownFile}`);
+  }
+  const add = (url, content) => {
+    const target = publicPath(publicDir, `.${url}.md`);
+    if (target) files.set(relative(publicDir, target), content);
+  };
+  // Normalize older snapshot routes and keep their linked trailing-slash URLs.
+  const normalize = route => (route === '/' ? route : route.replace(/\/+$/, ''));
+  const pages = Object.entries(markdown.pages);
+  const counts = new Map();
+  for (const [route] of pages) {
+    const key = normalize(route).toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  for (const [authoredRoute, content] of pages) {
+    const route = normalize(authoredRoute);
+    if (!route.startsWith('/') || counts.get(route.toLowerCase()) !== 1) continue;
+    add(route, content);
+    const folder = route.endsWith('/index') ? route.slice(0, -'/index'.length) : '';
+    if (folder && !counts.has(folder.toLowerCase())) add(folder, content);
+    if (route !== authoredRoute) add(authoredRoute, content);
+  }
+  return files;
+}
+
 /**
  * Copy the current snapshot's public files, removing only files emitted by a
  * previous build. Keep the manifest outside public/ so it isn't served. An
@@ -64,51 +101,6 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
         }
       }
     }
-
-    const markdownFile = resolve(snapshotDir, 'markdown-pages.json');
-    // Server builds serve generated Markdown through the handler, preserving
-    // its headers and manifest checks while authored public .md files still win.
-    if (copyMarkdown && existsSync(markdownFile)) {
-      const markdown = JSON.parse(readFileSync(markdownFile, 'utf8'));
-      if (
-        markdown?.version !== 1 ||
-        !markdown.pages ||
-        typeof markdown.pages !== 'object' ||
-        Array.isArray(markdown.pages) ||
-        Object.values(markdown.pages).some(value => typeof value !== 'string')
-      ) {
-        throw new Error(`[mosaic-site] Invalid Markdown pages in ${markdownFile}`);
-      }
-      // Older snapshots may retain authored trailing slashes. Match the server
-      // normalization and omit ambiguous canonical routes instead of choosing one.
-      const pages = Object.entries(markdown.pages).map(([route, content]) => [
-        route === '/' ? route : route.replace(/\/+$/, ''),
-        content
-      ]);
-      const counts = new Map();
-      for (const [route] of pages)
-        counts.set(route.toLowerCase(), (counts.get(route.toLowerCase()) ?? 0) + 1);
-      const canonicalPages = new Map(
-        pages.filter(([route]) => counts.get(route.toLowerCase()) === 1)
-      );
-      for (const [route, content] of canonicalPages) {
-        if (!route.startsWith('/')) continue;
-        const folder = route.endsWith('/index') ? route.slice(0, -'/index'.length) : undefined;
-        for (const url of folder ? [route, folder] : [route]) {
-          if (url === folder && counts.has(url.toLowerCase())) continue;
-          const target = publicPath(publicDir, `.${url}.md`);
-          if (target) files.set(relative(publicDir, target), content);
-        }
-      }
-      // Keep URLs already linked by the text indexes of an older snapshot.
-      for (const [authoredRoute, content] of Object.entries(markdown.pages)) {
-        const route = authoredRoute === '/' ? authoredRoute : authoredRoute.replace(/\/+$/, '');
-        if (route === authoredRoute || !canonicalPages.has(route) || !route.startsWith('/'))
-          continue;
-        const target = publicPath(publicDir, `.${authoredRoute}.md`);
-        if (target) files.set(relative(publicDir, target), content);
-      }
-    }
   }
 
   let previous = [];
@@ -135,6 +127,22 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
     previousMarkdown = new Map(Object.entries(manifest.markdownHashes ?? {}));
   }
 
+  const legacyMarkdown = new Set(
+    previous.filter(file => file.endsWith('.md') && !previousMarkdown.has(file))
+  );
+  if (snapshotDir && (copyMarkdown || legacyMarkdown.size > 0)) {
+    try {
+      for (const [file, content] of snapshotMarkdown(snapshotDir, publicDir)) {
+        if (legacyMarkdown.has(file)) previousMarkdown.set(file, markdownHash(content));
+        if (copyMarkdown) files.set(file, content);
+      }
+    } catch (error) {
+      // A server can defer a broken bundle to the handler as usual. Without a
+      // readable snapshot there is no evidence to remove its legacy copies.
+      if (copyMarkdown) throw error;
+    }
+  }
+
   // LLM routes are reserved. Do not silently overwrite an authored public asset.
   for (const [file, content] of files) {
     const target = publicPath(publicDir, file);
@@ -147,8 +155,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
       throw new Error(`[mosaic-site] Reserved LLM route collides with public asset: ${file}`);
     }
   }
-  // An edited Markdown copy now belongs to the author. A path-only legacy
-  // entry cannot prove ownership either.
+  // An edited Markdown copy now belongs to the author.
   const ownsMarkdown = (file, target, stat) =>
     stat?.isFile() &&
     previousMarkdown.has(file) &&
