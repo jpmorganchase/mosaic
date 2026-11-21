@@ -99,10 +99,26 @@ function readPage(text: string) {
   const inList: boolean[] = [];
   /** For each non-blank line that is a list item, the previous item of its list. */
   const previousItem: (number | undefined)[] = [];
+  const frontmatter = frontmatterEnd(lines);
+  const verbatim = verbatimBlocks(lines, frontmatter);
+  const listIndents: number[] = [];
+  const matchKeys: string[] = [];
   nonBlank.forEach((_, index) => {
     const line = at(index);
     const list = listOf(line);
     inList.push(list !== undefined || (index > 0 && inList[index - 1] && indentOf(line) > 0));
+    if (!inList[index]) listIndents.length = 0;
+    if (list !== undefined && verbatim[nonBlank[index]] === -1) {
+      const indent = indentOf(line);
+      while (listIndents.length && listIndents.at(-1)! > indent) listIndents.pop();
+      if (listIndents.at(-1) !== indent) listIndents.push(indent);
+      // Match list depth across indentation styles while keeping identical
+      // entries at different depths distinct.
+      const item = line.trim().replace(/^\d{1,9}([.)])(?=\s|$)/, '#$1');
+      matchKeys.push(`list:${listIndents.length}:${item}`);
+    } else {
+      matchKeys.push(`line:${line.trimEnd()}`);
+    }
     let previous: number | undefined;
     // Lines indented further than the item are part of the items before it;
     // any other line ends its list.
@@ -112,7 +128,6 @@ function readPage(text: string) {
     }
     previousItem.push(previous);
   });
-  const frontmatter = frontmatterEnd(lines);
   return {
     lines,
     nonBlank,
@@ -120,7 +135,8 @@ function readPage(text: string) {
     inList,
     previousItem,
     frontmatter,
-    verbatim: verbatimBlocks(lines, frontmatter)
+    verbatim,
+    matchKeys
   };
 }
 type Page = ReturnType<typeof readPage>;
@@ -132,17 +148,11 @@ const inVerbatim = (page: Page, from: number, to: number) =>
 /**
  * Which of the original's non-blank lines each of the saved page's
  * non-blank lines is, for lines that are unchanged or edited in place.
- * Trailing whitespace (including a `\r`) doesn't make a line different, and
- * nor does an ordered list item's number, which changes when an item is
- * added or removed above it.
+ * Trailing whitespace, list indentation style and ordered list numbers
+ * can change during a save without changing the line's identity.
  */
 function matchLines(before: Page, after: Page): Map<number, number> {
-  const key = (page: Page) => (_: number, index: number) =>
-    page
-      .at(index)
-      .trimEnd()
-      .replace(/^(\s*)\d{1,9}([.)])/, '$1#$2');
-  const changes = diffArrays(before.nonBlank.map(key(before)), after.nonBlank.map(key(after)));
+  const changes = diffArrays(before.matchKeys, after.matchKeys);
   const originalOf = new Map<number, number>();
   let beforeIndex = 0;
   let afterIndex = 0;

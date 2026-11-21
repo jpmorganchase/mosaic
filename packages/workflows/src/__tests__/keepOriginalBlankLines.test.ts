@@ -47,6 +47,14 @@ describe('keepOriginalBlankLines', () => {
     );
   });
 
+  test('keeps a nested list loose when the editor changes its indentation and adds an item', () => {
+    const original = '- Parent\n  - First\n\n  - Last\n- Sibling\n';
+    const saved = '- Parent\n    - First\n    - Added\n    - Last\n- Sibling\n';
+    expect(keepOriginalBlankLines(original, saved)).toBe(
+      '- Parent\n    - First\n\n    - Added\n\n    - Last\n- Sibling\n'
+    );
+  });
+
   test("uses the saved page's spacing around removed lines outside a list", () => {
     expect(keepOriginalBlankLines('a\n\nb\nc\n', 'a\nc\n')).toBe('a\nc\n');
   });
