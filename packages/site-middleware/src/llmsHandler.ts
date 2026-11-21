@@ -149,6 +149,8 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
       const manifest = await getManifest(mode, contentUrl);
       if (manifest && !manifest.routes.includes(canonical)) return text('Not found', 404);
       const discovery = llmsDiscoveryForRoute(canonical, manifest);
+      // The HTML page this Markdown came from: `/.md` is the root page, `/`.
+      const pageUrl = discovery.markdownUrl.replace(/\.md$/, '');
       return new Response(markdown, {
         headers: {
           'Content-Type': 'text/markdown; charset=utf-8',
@@ -157,7 +159,7 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
           Vary: 'Accept',
           // The HTML page is the one to index.
           'X-Robots-Tag': 'noindex',
-          Link: `<${discovery.markdownUrl}>; rel="alternate"; type="text/markdown", <${discovery.indexUrl}>; rel="describedby"`
+          Link: `<${pageUrl}>; rel="canonical", <${discovery.markdownUrl}>; rel="alternate"; type="text/markdown", <${discovery.indexUrl}>; rel="describedby"`
         }
       });
     } catch (error) {

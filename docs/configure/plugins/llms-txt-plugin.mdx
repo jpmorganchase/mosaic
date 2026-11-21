@@ -12,12 +12,12 @@ The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and ot
 - `markdown-pages.json`: every page's Markdown, keyed by route
 - `llms-manifest.json`: a small internal manifest of generated canonical routes and public scopes, used for discovery and artifact cleanup
 
-Each page's Markdown starts with frontmatter (its title, description and URL) and a link to `llms.txt`. In the page body:
+Each page's Markdown starts with frontmatter and a link to `llms.txt`. The frontmatter has the page's title, description and URL, when it last changed (`lastModified`, if its source knows), and any fields named in the `frontmatterFields` option. In the page body:
 
 - `{meta.*}` expressions are replaced with their values, and other expressions and `import`/`export` statements are left out.
 - `Callout` becomes a quote, such as `> **Warning:** …`.
 - Other components are replaced with their children. A component with no children, such as an example preview, is left out. To convert your own components, see [Convert your components](#convert-your-components).
-- Relative links are made absolute, so they still work in `llms-full.txt`.
+- Relative links are made absolute, so they still work in `llms-full.txt`. With `siteUrl`, links and images include the site's origin.
 
 To leave a page out, set `llms: { exclude: true }` in its frontmatter, or match it with the `exclude` option.
 
@@ -107,7 +107,7 @@ The reference site renders exactly one `rel="alternate" type="text/markdown"` li
 
 Custom hosts can call the server-only `getLlmsDiscovery(canonicalRoute)` export from `@jpmorganchase/mosaic-site-middleware` and render the returned `markdownUrl` and `indexUrl` as HTML links. It reads only the small manifest. `createLlmsDiscoveryLoader(maxAge)` provides an independently cached loader accepting `(canonicalRoute, mode, contentUrl)` for hosts that configure their content source explicitly. Older snapshots without the manifest still serve existing Markdown/index URLs; regenerate them to enable HTML discovery.
 
-Markdown responses from `createLlmsHandler` include the same relations in HTTP `Link` headers. Their bodies also link to the selected index, so discovery remains available without response-header support.
+Markdown responses from `createLlmsHandler` include the same relations in HTTP `Link` headers, plus `rel="canonical"` for the HTML page the Markdown came from. Their bodies also link to the selected index, so discovery remains available without response-header support.
 
 ### Static deployment
 
@@ -152,6 +152,7 @@ The default config runs this plugin at priority `-1.5`, after `$RefPlugin` (`-1`
 | componentsModulePath | An absolute path, file URL or package that converts your components. See [Convert your components](#convert-your-components).                                  |
 | exclude              | Glob patterns of page files to leave out, such as `my-namespace/test/**`.                                                                                      |
 | scopes               | Optional array of `{ path: string; title?: string; description?: string }` public URL scopes. See [Public documentation scopes](#public-documentation-scopes). |
+| frontmatterFields    | Frontmatter keys to copy into each page's Markdown frontmatter, such as `['version', 'tags']`. Text, numbers, booleans and lists of them are copied.           |
 
 ## Adding to Mosaic
 

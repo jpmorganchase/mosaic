@@ -59,6 +59,12 @@ export interface LlmsTxtPluginOptions {
   exclude?: string[];
   /** Public path scopes. Parent indexes include descendants; page discovery uses the longest match. */
   scopes?: LlmsTxtScope[];
+  /**
+   * Frontmatter keys to copy into each page's Markdown frontmatter, such as
+   * `['version', 'tags']`. Text, numbers, booleans and lists of them are
+   * copied; other values are left out.
+   */
+  frontmatterFields?: string[];
 }
 
 interface LlmsTxtPluginPage extends Page {
@@ -70,6 +76,10 @@ interface LlmsTxtPluginPage extends Page {
 interface MarkdownPage {
   title: string;
   description?: string;
+  /** When the page last changed, as ISO 8601, if its source knows. */
+  lastModified?: string;
+  /** Extra frontmatter, as `[key, YAML value]`, from the `frontmatterFields` option. */
+  fields?: [string, string][];
   /** Converted body in source data; rendered Markdown in generated artifacts. */
   markdown: string;
 }
@@ -104,8 +114,40 @@ const origin = (siteUrl?: string) => (siteUrl ?? '').replace(/\/+$/, '');
 // Quoted, so YAML reads any text as a string.
 const yamlString = (value: string) => JSON.stringify(value);
 
+/** When the page last changed, as an ISO 8601 date, if its source knows. */
+function isoDate(value: unknown): string | undefined {
+  let date: Date | undefined;
+  if (value instanceof Date) date = value;
+  else if (typeof value === 'number') date = new Date(value);
+  else if (typeof value === 'string' && value.trim() !== '') {
+    date = new Date(/^\d+$/.test(value) ? Number(value) : value);
+  }
+  return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
+}
+
+type Scalar = string | number | boolean;
+const isScalar = (value: unknown): value is Scalar =>
+  typeof value === 'string' ||
+  typeof value === 'boolean' ||
+  (typeof value === 'number' && Number.isFinite(value));
+
+/** A frontmatter value as YAML, or `undefined` when it can't be copied. JSON is valid YAML. */
+function yamlValue(value: unknown): string | undefined {
+  if (isScalar(value)) return JSON.stringify(value);
+  if (Array.isArray(value) && value.every(isScalar)) return JSON.stringify(value);
+  return undefined;
+}
+
+const RESERVED_FIELDS = new Set(['title', 'description', 'url', 'lastModified']);
+
 function renderPage(
-  { route, title, description }: { route: string; title: string; description?: string },
+  {
+    route,
+    title,
+    description,
+    lastModified,
+    fields = []
+  }: Omit<MarkdownPage, 'markdown'> & { route: string },
   body: string,
   siteUrl?: string,
   scope = ''
@@ -115,6 +157,8 @@ function renderPage(
     `title: ${yamlString(title)}`,
     ...(description ? [`description: ${yamlString(description)}`] : []),
     `url: ${yamlString(`${origin(siteUrl)}${route}`)}`,
+    ...(lastModified ? [`lastModified: ${yamlString(lastModified)}`] : []),
+    ...fields.map(([key, value]) => `${key}: ${value}`),
     '---'
   ].join('\n');
   const index = `${origin(siteUrl)}${scope}${LLMS_TXT_FILE}`;
@@ -234,7 +278,8 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
         plainText(page.description) ?? plainText(lookup(values, 'data.description'));
       try {
         const body = await toMarkdown(values, {
-          components
+          components,
+          siteUrl: options.siteUrl
         });
         if (body === undefined) {
           console.warn(
@@ -242,9 +287,17 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
           );
           continue;
         }
+        const fields = (options.frontmatterFields ?? []).flatMap(key => {
+          if (RESERVED_FIELDS.has(key) || !/^[A-Za-z_][\w-]*$/.test(key)) return [];
+          const value = yamlValue((page as unknown as Record<string, unknown>)[key]);
+          return value === undefined ? [] : [[key, value] as [string, string]];
+        });
         markdownPages[page.route] = {
           title,
           description,
+          // Typed as a `Date`, but sources also set timestamps and date strings.
+          lastModified: isoDate(page.lastModified as unknown),
+          ...(fields.length > 0 && { fields }),
           markdown: body
         };
       } catch (error) {

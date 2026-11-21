@@ -71,6 +71,23 @@ describe('snapshot-file mode', () => {
     expect((await get(handler, 'docs', 'index')).body).toBe(pages.pages['/docs/index']);
   });
 
+  test('points the Markdown at the HTML page it came from', async () => {
+    const link = async (...segments: string[]) =>
+      (
+        await handler(new Request('http://localhost/api/llms'), {
+          params: Promise.resolve({ path: segments })
+        })
+      ).headers.get('Link');
+    expect(await link('docs', 'button', 'usage')).toMatch(
+      /^<\/docs\/button\/usage>; rel="canonical", /
+    );
+    expect(await link('docs', 'button')).toMatch(/^<\/docs\/button\/index>; rel="canonical", /);
+    expect(await link('Docs', 'Button', 'Usage.md')).toMatch(
+      /^<\/docs\/button\/usage>; rel="canonical", /
+    );
+    expect(await link('.md')).toMatch(/^<\/>; rel="canonical", /);
+  });
+
   test('serves a canonical root page at /.md without requiring a manifest', async () => {
     expect(await get(handler, '.md')).toMatchObject({
       status: 200,
@@ -96,6 +113,9 @@ describe('snapshot-file mode', () => {
       expect(response.status).toBe(200);
       expect(await response.text()).toBe(pages.pages[`/docs/${route}`]);
       expect(response.headers.get('Link')).toContain(`/docs/${encodeURIComponent(route)}.md`);
+      expect(response.headers.get('Link')).toContain(
+        `</docs/${encodeURIComponent(route)}>; rel="canonical"`
+      );
     }
   });
 
