@@ -19,6 +19,7 @@ vi.mock('@jpmorganchase/mosaic-site-components/BaseUrlProvider', () => ({
 vi.mock('@jpmorganchase/mosaic-site-components/Image/index', () => ({ Image: () => null }));
 vi.mock('@jpmorganchase/mosaic-site-components/Link', () => ({ Link: () => null }));
 vi.mock('@jpmorganchase/mosaic-theme', () => ({ themeClassName: '' }));
+vi.mock('../RuntimeAuthoringProvider', () => ({ RuntimeAuthoringProvider: childrenOnly }));
 vi.mock('@jpmorganchase/mosaic-site-components/SearchProvider', () => ({
   SearchProvider: childrenOnly
 }));

@@ -56,6 +56,7 @@ import {
 
 import { Dialog } from './Dialog';
 import styles from './NewPageDialog.css';
+import { useAuthoringSite } from '../authoringSite';
 import { useFolderSuggestions } from './useFolderSuggestions';
 import { useNewPageFolderCheck } from './useNewPageFolderCheck';
 import { hasUnsafeRouteSegments } from '../utils/routeSegments';
@@ -93,6 +94,10 @@ function buildRoute(parentFolder: string, filename: string): string {
 
 export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) => {
   const router = useRouter();
+  // When pages are edited on another site, Create opens the new page
+  // there. Suggestions and the folder check still come from this site,
+  // which serves the same sources.
+  const authoringSite = useAuthoringSite();
   // Where the author opened the dialog from — used to pre-select
   // a contextual default parent folder so creating a sibling page
   // (the common case) takes a single keystroke (the filename).
@@ -322,6 +327,10 @@ export const NewPageDialog: FC<NewPageDialogProps> = ({ open, onOpenChange }) =>
     // before the new route paints.
     const target = `${route}?new=1&title=${encodeURIComponent(title.trim())}`;
     onOpenChange(false);
+    if (authoringSite) {
+      window.location.assign(authoringSite.href(target));
+      return;
+    }
     startTransition(() => {
       router.push(target);
     });

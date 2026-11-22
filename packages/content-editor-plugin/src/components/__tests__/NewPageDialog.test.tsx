@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
 const pathname = vi.hoisted(() => ({ current: '/mosaic/a/page' }));
+const push = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', () => ({
   usePathname: () => pathname.current,
-  useRouter: () => ({ push: vi.fn() })
+  useRouter: () => ({ push })
 }));
 vi.mock('../useFolderSuggestions', () => ({
   useFolderSuggestions: () => ({
@@ -24,6 +25,7 @@ vi.mock('../useNewPageFolderCheck', () => ({
   }
 }));
 
+import { AuthoringSiteProvider } from '../../authoringSite';
 import { NewPageDialog } from '../NewPageDialog';
 
 const field = (label: 'Parent folder' | 'Filename' | 'Title') =>
@@ -37,6 +39,7 @@ describe('NewPageDialog', () => {
     pathname.current = '/mosaic/a/page';
     folderStatus.current = 'writable';
     folderStatus.folders = [];
+    push.mockReset();
   });
 
   const fillIn = (parent: string) => {
@@ -79,6 +82,37 @@ describe('NewPageDialog', () => {
     render(<NewPageDialog open onOpenChange={() => {}} />);
     fillIn('/');
     expect(folderStatus.folders.at(-1)).toBe('/');
+  });
+
+  it('creates the page here', () => {
+    render(<NewPageDialog open onOpenChange={() => {}} />);
+    fillIn('/mosaic/a');
+    fireEvent.click(create());
+    expect(push).toHaveBeenCalledExactlyOnceWith('/mosaic/a/new-page.mdx?new=1&title=New%20page');
+  });
+
+  it('creates the page on the authoring site when pages are edited there', () => {
+    const originalLocation = window.location;
+    const assign = vi.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, assign }
+    });
+    try {
+      render(
+        <AuthoringSiteProvider url="https://dev.example.com">
+          <NewPageDialog open onOpenChange={() => {}} />
+        </AuthoringSiteProvider>
+      );
+      fillIn('/mosaic/a');
+      fireEvent.click(create());
+      expect(assign).toHaveBeenCalledExactlyOnceWith(
+        'https://dev.example.com/mosaic/a/new-page.mdx?new=1&title=New%20page'
+      );
+      expect(push).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+    }
   });
 
   it('keeps the draft on the same page and starts a new one on another page', () => {

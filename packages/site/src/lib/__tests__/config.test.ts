@@ -335,3 +335,32 @@ describe('getSiteConfig', () => {
     expect(getSiteConfig()).toBe(first);
   });
 });
+
+describe('MOSAIC_AUTHORING_URL', () => {
+  it('normalizes the destination like the browser, dropping query, fragment and credentials', async () => {
+    const raw = 'https://user:pass@dev.example.com/site/?x=1#top';
+    expect(readSiteConfig({ MOSAIC_AUTHORING_URL: raw }).authoringUrl).toBe(
+      'https://dev.example.com/site'
+    );
+    vi.resetModules();
+    vi.stubEnv('MOSAIC_AUTHORING_URL', raw);
+    const { authoringHref } = await import('../authoring');
+    expect(authoringHref('/docs/page', { edit: '1', tag: ['a', 'b'] })).toBe(
+      'https://dev.example.com/site/docs/page?edit=1&tag=a&tag=b'
+    );
+  });
+  it('is optional, and read without a trailing slash', () => {
+    expect(readSiteConfig({}).authoringUrl).toBeUndefined();
+    expect(readSiteConfig({ MOSAIC_AUTHORING_URL: ' ' }).authoringUrl).toBeUndefined();
+    expect(
+      readSiteConfig({ MOSAIC_AUTHORING_URL: 'https://dev.example.com/docs/' }).authoringUrl
+    ).toBe('https://dev.example.com/docs');
+  });
+
+  it('must be an absolute http(s) URL', () => {
+    expect(check({ MOSAIC_AUTHORING_URL: 'https://dev.example.com' })).toEqual([]);
+    expect(check({ MOSAIC_AUTHORING_URL: 'dev.example.com' })).toEqual([
+      'MOSAIC_AUTHORING_URL: must be an absolute http(s) URL'
+    ]);
+  });
+});

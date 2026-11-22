@@ -410,3 +410,40 @@ describe('alias editor context', () => {
     expect(loaders.getMdxRawSource).not.toHaveBeenCalled();
   });
 });
+
+describe('authoring site', () => {
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_MODE', 'active');
+    vi.stubEnv('MOSAIC_AUTHORING_URL', 'https://dev.example.com/');
+    editor.enabled = true;
+    loaders.resolveMosaicMode.mockReturnValue({ mode: 'active', contentUrl: 'http://content' });
+    loaders.getMdxRaw.mockImplementation(async (pathname: string) =>
+      pathname === '/docs/index' ? document('Docs home', '/docs/index') : { kind: 'not-found' }
+    );
+    loaders.getSharedConfig.mockResolvedValue({ sourceCapabilities: { writable: true } });
+  });
+
+  test('sends an edit request to the same page on the authoring site', async () => {
+    const { default: Page } = await import('../page');
+    await expect(
+      Page({ ...request('docs', ['index']), searchParams: Promise.resolve({ edit: '1' }) })
+    ).rejects.toThrow('redirect: https://dev.example.com/docs/index?edit=1');
+    expect(loaders.getMdxRawSource).not.toHaveBeenCalled();
+  });
+
+  test('sends a create request there with its title', async () => {
+    const { default: Page } = await import('../page');
+    await expect(
+      Page({
+        ...request('docs', ['new.mdx']),
+        searchParams: Promise.resolve({ new: '1', title: 'A new page' })
+      })
+    ).rejects.toThrow('redirect: https://dev.example.com/docs/new.mdx?new=1&title=A+new+page');
+  });
+
+  test('renders a page as usual', async () => {
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(request('docs', ['index'])));
+    expect(html).toContain('Docs home');
+  });
+});
