@@ -93,6 +93,16 @@ pipeline are cached in-process by content hash; treat them as read-only.
 when the reference site moved to the App Router. Port
 `getServerSideProps` code to the loaders above.
 
+## New pages
+
+`createNewPageHandler()` tells the content editor's New Page dialog whether new pages can be created in a folder. Mount it at `src/app/api/content/new-page/route.ts`; the dialog asks `GET /api/content/new-page?folder=/docs/guides` and keeps Create disabled until the answer is `{ "writable": true }`. Pass `transformSharedConfig` if your catch-all page changes the shared config before checking it, such as the reference site's dev capability bypass. Without the route, the dialog doesn't check. When the CLI publishes creation metadata (below), the handler answers from it without reading any folder's shared config.
+
+`getNewPageSharedConfig()` resolves creation capability from `mosaic-new-page-sources.json` then, for a folder new pages can be created in, supplies the nearest folder's layout configuration. The CLI serves this metadata without caching and includes it in snapshots. It lists public mount prefixes for sources with a `save` workflow, in source order; the longest matching prefix wins, including when the source has no index at its mount. Internal namespaces do not determine public ownership. Active namespace restrictions also restrict this metadata. These are UI hints: workflow ownership and authorization are checked again when saving.
+
+Each folder `getNewPageSharedConfig()` searches is a separate read, a request to the content server in active mode. It searches at most `MAX_NEW_PAGE_CONFIG_LOOKUPS` (32) folders, and none for a folder that can't take new pages, so call it only for requests that can create a page, such as a signed-in editor's `?new=1`. Pass it the same `transformSharedConfig` as the handler, so a folder the transform makes writable still gets its layout configuration.
+
+Older content servers and snapshots without this file retain the shared-config fallback. Update the CLI and rebuild snapshots to get source-based eligibility for folders without index pages.
+
 ## Search
 
 `createSearchHandler()` serves records through an App Router route. `loadSearchRecords()` reads the generated records directly. The browser-safe `./search` entry exports `createSearchIndex`, and `./search/highlight` exports text highlighting without loading the search engine. The built-in header uses `SearchProvider` from `mosaic-site-components`; search data no longer passes through content stores or page loaders.

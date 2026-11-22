@@ -24,3 +24,4 @@ export * from './searchHandler.js';
 // `GET` route handler serving the docs as Markdown for agents: each page,
 // `llms.txt` and `llms-full.txt`, written by `LlmsTxtPlugin`.
 export * from './llmsHandler.js';
+export * from './newPageHandler.js';
