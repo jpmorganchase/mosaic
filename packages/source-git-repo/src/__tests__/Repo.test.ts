@@ -360,6 +360,10 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
         );
         expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe('# Branch');
         expect(await repo.currentLocalRevision()).toBe(mainRevision);
+        // Refreshes name `<remote>/<branch>`, so the shared config needs no upstream.
+        expect(git(branchRepo.dir, 'config', '--local', '--list')).not.toContain(
+          `branch.${branch}.`
+        );
 
         const onMainChange = vi.fn();
         const onBranchChange = vi.fn();
@@ -417,6 +421,45 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       }),
     15_000
   );
+
+  test('THEN a new branch worktree is created while the clone config is locked', async () => {
+    await repo.init();
+    const cloneRoot = path.dirname(path.dirname(repo.dir));
+    const branch = 'published-later';
+    git(authorDir, 'checkout', '-b', branch);
+    fs.writeFileSync(path.join(authorDir, 'branch.mdx'), '# Branch');
+    git(authorDir, 'add', '.');
+    git(authorDir, 'commit', '-m', 'Publish branch');
+    git(authorDir, 'push', 'origin', branch);
+    const branchRepo = new Repo(
+      '',
+      'origin',
+      branch,
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+
+    // As when a concurrent save holds `.git/config`: the fetch refspec still maps
+    // only `main`, and no upstream can be recorded for the new branch.
+    const configLock = path.join(cloneRoot, '.git', 'config.lock');
+    fs.writeFileSync(configLock, '');
+    try {
+      await branchRepo.init();
+    } finally {
+      fs.rmSync(configLock, { force: true });
+    }
+
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Could not narrow fetch refspec')
+    );
+    expect(git(cloneRoot, 'config', '--get-all', 'remote.origin.fetch').trim()).toBe(
+      '+refs/heads/main:refs/remotes/origin/main'
+    );
+    expect(await branchRepo.currentLocalRevision()).toBe(
+      git(authorDir, 'rev-parse', 'HEAD').trim()
+    );
+    expect(git(branchRepo.dir, 'branch', '--show-current').trim()).toBe(branch);
+    expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe('# Branch');
+  });
 
   test('THEN a recreated worktree starts from the latest remote commit', async () => {
     await repo.init();
