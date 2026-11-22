@@ -217,8 +217,8 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     '/docs/data.json': JSON.stringify({ route: '/docs/data', title: 'Data' })
   };
 
-  async function run(options: Record<string, unknown> = {}) {
-    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(files)), 'docs');
+  async function run(options: Record<string, unknown> = {}, pageFiles: typeof files = files) {
+    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(pageFiles)), 'docs');
     let data: Record<string, unknown> = {};
     const beforeSend = LlmsTxtPlugin.$beforeSend!;
     let error: unknown;
@@ -302,6 +302,39 @@ describe('GIVEN the LlmsTxtPlugin', () => {
       )
     );
     expect(page).toContain('Use [examples](/docs/button/examples).');
+    vi.restoreAllMocks();
+  });
+
+  test('THEN it copies dates, which YAML reads from unquoted values, as ISO 8601', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { written } = await run(
+      { frontmatterFields: ['published', 'releases', 'mixed'] },
+      {
+        ...files,
+        '/docs/button/index.mdx': lines(
+          '---',
+          'fullPath: /docs/button/index.mdx',
+          'route: /docs/button/index',
+          'title: Button',
+          'published: 2024-05-01',
+          'releases: [2024-05-01, 2024-06-01T10:00:00Z]',
+          'mixed: [2024-05-01, { team: Design }]',
+          '---',
+          'Text.',
+          ''
+        )
+      }
+    );
+    const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
+    expect(page.split('\n---\n')[0]).toBe(
+      lines(
+        '---',
+        'title: "Button"',
+        'url: "/docs/button/index"',
+        'published: "2024-05-01T00:00:00.000Z"',
+        'releases: ["2024-05-01T00:00:00.000Z","2024-06-01T10:00:00.000Z"]'
+      )
+    );
     vi.restoreAllMocks();
   });
 

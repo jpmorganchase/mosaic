@@ -61,8 +61,8 @@ export interface LlmsTxtPluginOptions {
   scopes?: LlmsTxtScope[];
   /**
    * Frontmatter keys to copy into each page's Markdown frontmatter, such as
-   * `['version', 'tags']`. Text, numbers, booleans and lists of them are
-   * copied; other values are left out.
+   * `['version', 'tags']`. Text, numbers, booleans, dates (as ISO 8601) and
+   * lists of them are copied; other values are left out.
    */
   frontmatterFields?: string[];
 }
@@ -131,11 +131,18 @@ const isScalar = (value: unknown): value is Scalar =>
   typeof value === 'boolean' ||
   (typeof value === 'number' && Number.isFinite(value));
 
+// YAML reads an unquoted date, such as `published: 2024-05-01`, as a Date.
+const plainValue = (value: unknown): Scalar | undefined =>
+  value instanceof Date ? isoDate(value) : isScalar(value) ? value : undefined;
+
 /** A frontmatter value as YAML, or `undefined` when it can't be copied. JSON is valid YAML. */
 function yamlValue(value: unknown): string | undefined {
-  if (isScalar(value)) return JSON.stringify(value);
-  if (Array.isArray(value) && value.every(isScalar)) return JSON.stringify(value);
-  return undefined;
+  if (Array.isArray(value)) {
+    const items = value.map(plainValue);
+    return items.every(item => item !== undefined) ? JSON.stringify(items) : undefined;
+  }
+  const item = plainValue(value);
+  return item === undefined ? undefined : JSON.stringify(item);
 }
 
 const RESERVED_FIELDS = new Set(['title', 'description', 'url', 'lastModified']);
