@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -29,6 +30,7 @@ const pages = (value: Record<string, string>) =>
   );
 const sync = () => syncSnapshotAssets({ snapshotDir, publicDir, manifestFile });
 const read = (file: string) => readFileSync(join(publicDir, file), 'utf8');
+const sha256 = (content: string) => createHash('sha256').update(content).digest('hex');
 
 describe('snapshot public assets', () => {
   test('exports generated nested indexes and removes retired scopes and pages on the next static build', async () => {
@@ -197,16 +199,86 @@ describe('snapshot public assets', () => {
     expect(existsSync(join(publicDir, 'docs.md'))).toBe(false);
   });
 
-  test('only removes legacy Markdown copies that still match the available snapshot', () => {
-    writeFileSync(join(publicDir, 'guide.md'), '# Could be handwritten');
-    writeFileSync(join(publicDir, 'docs.md'), '# Snapshot docs');
-    writeFileSync(manifestFile, JSON.stringify({ version: 1, files: ['guide.md', 'docs.md'] }));
-    pages({ '/guide': '# Snapshot guide', '/docs': '# Snapshot docs' });
+  describe('with a path-only manifest from an earlier build', () => {
+    // Those builds overwrote every listed copy, so each one is still generated.
+    const legacy = {
+      'guide.md': '# Old guide',
+      'docs.md': '# Docs',
+      'deleted.md': '# Deleted page',
+      'excluded.md': '# Now excluded',
+      'docs/nested/index.md': '# Nested',
+      'docs/nested.md': '# Nested'
+    };
+    const manifest = () => JSON.parse(readFileSync(manifestFile, 'utf8'));
 
-    syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+    beforeEach(() => {
+      mkdirSync(join(publicDir, 'docs/nested'), { recursive: true });
+      for (const [file, content] of Object.entries(legacy))
+        writeFileSync(join(publicDir, file), content);
+      writeFileSync(join(publicDir, 'authored.md'), '# Authored');
+      writeFileSync(
+        manifestFile,
+        JSON.stringify({ version: 1, files: Object.keys(legacy).sort() })
+      );
+      // The guide was edited; the deleted page, excluded page and nested folder are gone.
+      pages({ '/guide': '# Updated guide', '/docs': '# Docs', '/added': '# Added' });
+    });
 
-    expect(read('guide.md')).toBe('# Could be handwritten');
-    expect(existsSync(join(publicDir, 'docs.md'))).toBe(false);
+    test('a static export replaces edited copies and removes deleted or excluded pages', () => {
+      sync();
+
+      expect(read('guide.md')).toBe('# Updated guide');
+      expect(read('docs.md')).toBe('# Docs');
+      expect(read('added.md')).toBe('# Added');
+      for (const file of ['deleted.md', 'excluded.md', 'docs/nested/index.md', 'docs/nested.md'])
+        expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({
+        version: 1,
+        files: ['added.md', 'docs.md', 'guide.md'],
+        markdownHashes: {
+          'added.md': sha256('# Added'),
+          'docs.md': sha256('# Docs'),
+          'guide.md': sha256('# Updated guide')
+        }
+      });
+
+      // Ownership is tracked by hash from now on.
+      writeFileSync(join(publicDir, 'guide.md'), '# Handwritten replacement');
+      sync();
+      expect(read('guide.md')).toBe('# Handwritten replacement');
+      expect(manifest().files).toEqual(['added.md', 'docs.md']);
+    });
+
+    test('a snapshot server removes every listed copy, whether or not it matches the snapshot', () => {
+      syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+
+      for (const file of Object.keys(legacy)) expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({ version: 1, files: [], markdownHashes: {} });
+    });
+
+    test('an active-mode build or dev server removes every listed copy', () => {
+      syncSnapshotAssets({ publicDir, manifestFile });
+
+      for (const file of Object.keys(legacy)) expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({ version: 1, files: [], markdownHashes: {} });
+    });
+  });
+
+  test.each([
+    ['null', null],
+    ['an array of', []],
+    ['non-string', { 'guide.md': 1 }]
+  ])('rejects %s Markdown hashes', (_, hashes) => {
+    writeFileSync(join(publicDir, 'guide.md'), '# Guide');
+    writeFileSync(
+      manifestFile,
+      JSON.stringify({ version: 1, files: ['guide.md'], markdownHashes: hashes })
+    );
+    expect(sync).toThrow('Invalid public asset manifest');
+    expect(read('guide.md')).toBe('# Guide');
   });
 
   test('clears snapshot copies for an active-mode build without removing authored assets', () => {
