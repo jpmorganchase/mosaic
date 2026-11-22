@@ -306,6 +306,33 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     );
   });
 
+  test('THEN it heads the index with the root page, linked like a folder index page', () => {
+    const pages = {
+      '/about': { title: 'About', markdown: '' },
+      '/docs/index': { title: 'Docs', markdown: '' },
+      '/': { title: 'Home', description: 'Start here.', markdown: '' }
+    };
+    expect(buildLlmsTxt(pages, { siteUrl: 'https://example.com' })).toBe(
+      lines(
+        '# Documentation',
+        '',
+        '## [Home](https://example.com/.md)',
+        '',
+        'Start here.',
+        '',
+        '## About',
+        '',
+        '- [About](https://example.com/about.md)',
+        '',
+        '## [Docs](https://example.com/docs/index.md)',
+        ''
+      )
+    );
+    expect(buildLlmsTxt({ '/': { title: 'Home', markdown: '' } })).toBe(
+      lines('# Documentation', '', '## [Home](/.md)', '')
+    );
+  });
+
   describe('WHEN the site has its own components', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mosaic-llms-'));
     afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));

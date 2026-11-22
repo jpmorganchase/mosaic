@@ -11,7 +11,7 @@ Expose a lightweight discovery manifest and server loader, serve allowlisted sco
 
 Add an optional afterSourceRemove plugin hook so LLM artifacts are also reconciled when a running source stops or exits, including the last source. Existing plugin update hooks are not replayed during removal.
 
-Preserve authored public Markdown assets in server builds and serve canonical root-page Markdown at `/.md`, matching its discovery URL. Generated public Markdown copies are retained only for static exports.
+Preserve authored public Markdown assets in server builds and serve canonical root-page Markdown at `/.md`, matching its discovery URL; `llms.txt` lists that page first, under its own title rather than an `Undefined` section. Generated public Markdown copies are retained only for static exports.
 
 Normalize trailing slashes in canonical page routes during publication and when reading older generated artifacts, without letting one trailing-slash route invalidate unrelated pages. Omit ambiguous routes after normalization.
 

@@ -7,7 +7,7 @@ layout: DetailOverview
 
 The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and other tools that read docs as text. It follows the [llms.txt](https://llmstxt.org) convention, and outputs:
 
-- `llms.txt`: an index of the pages, with a section for each folder and each page's description
+- `llms.txt`: an index of the pages, with the root page (`/`) first, a section for each folder and each page's description
 - `llms-full.txt`: every page in one file
 - `markdown-pages.json`: every page's Markdown, keyed by route
 - `llms-manifest.json`: a small internal manifest of generated canonical routes and public scopes, used for discovery and artifact cleanup

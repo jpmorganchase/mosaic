@@ -50,6 +50,26 @@ test('indexes canonical public routes across shared namespaces, with inclusive p
   expect(pages['/about']).toContain('[https://docs.example.com/llms.txt]');
 });
 
+test('heads the root index with a canonical root page, and scoped indexes with their own root page', async () => {
+  const site = await populatedFixture(options);
+  await site.update(
+    'home',
+    { '/home.mdx': document('/', 'Home', { fullPath: '/home.mdx' }) },
+    options,
+    'examples'
+  );
+  const files = await site.publish(options);
+  expect(files['/llms.txt']).toMatch(
+    /## Documentation scopes\n\n(?:- .+\n)+\n## \[Home\]\(https:\/\/docs\.example\.com\/\.md\)\n\n## About\n/
+  );
+  expect(files['/llms.txt']).not.toContain('Undefined');
+  expect(files['/salt/llms.txt']).toMatch(
+    /^# Salt Design System\n\n> .+\n\n## \[Salt\]\(https:\/\/docs\.example\.com\/salt\/index\.md\)\n/
+  );
+  for (const scope of ['/salt', '/salt/components', '/mosaic'])
+    expect(files[`${scope}/llms.txt`]).not.toContain('/.md)');
+});
+
 test('matches a scope root and segment boundaries, and is independent of source and scope ordering', async () => {
   const a = await populatedFixture(options);
   await a.update('root', { '/salt.mdx': document('/salt', 'Root') });

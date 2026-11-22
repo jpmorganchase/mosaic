@@ -133,18 +133,23 @@ const compareRoutes = (a: string, b: string) => {
   return key(a).localeCompare(key(b));
 };
 
+// The root page is the site's index page, so it heads a section of its own.
 const sectionOf = (route: string) => {
   const segments = route.split('/').filter(Boolean);
+  if (segments.length === 0) return '/';
   return segments.length <= 2 ? `/${segments[0]}` : `/${segments[0]}/${segments[1]}`;
 };
 
 const label = (section: string) => {
-  const name = section.split('/').filter(Boolean).pop() ?? '';
+  const name = section.split('/').filter(Boolean).pop() ?? 'home';
   const words = name.replace(/[-_]+/g, ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-/** The `llms.txt` index: a section per top-level folder, linking each page's Markdown. */
+/**
+ * The `llms.txt` index: the root page first, then a section per top-level
+ * folder, linking each page's Markdown.
+ */
 export function buildLlmsTxt(
   pages: Record<string, MarkdownPage>,
   { title = 'Documentation', description, siteUrl, scopes }: LlmsTxtPluginOptions = {}
@@ -169,7 +174,7 @@ export function buildLlmsTxt(
     lines.push('');
   }
   for (const [section, routes] of sections) {
-    const indexRoute = `${section}/index`;
+    const indexRoute = section === '/' ? section : `${section}/index`;
     const index = pages[indexRoute];
     lines.push(index ? `## [${index.title}](${link(indexRoute)})` : `## ${label(section)}`, '');
     if (index?.description) lines.push(index.description, '');

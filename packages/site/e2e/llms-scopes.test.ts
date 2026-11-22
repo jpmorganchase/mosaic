@@ -18,7 +18,12 @@ test.describe('Scoped LLM fixture', () => {
 
   test('serves the advertised canonical root Markdown URL', async ({ request }) => {
     const index = await request.get('/llms.txt');
-    expect(await index.text()).toContain('[Home fixture](/.md)');
+    const text = await index.text();
+    // The root page heads the index, linked like a folder's index page.
+    expect(text).toMatch(
+      /## Documentation scopes\n\n(?:- .+\n)+\n## \[Home fixture\]\(\/\.md\)\n\n## /
+    );
+    expect(text).not.toContain('Undefined');
     const response = await request.get('/.md');
     expect(response.status()).toBe(200);
     expect(await response.text()).toContain('Canonical root documentation.');
