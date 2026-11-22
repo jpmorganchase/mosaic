@@ -260,7 +260,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     options = {}
   ) {
     normalizeScopes(options.scopes);
-    normalizeSiteUrl(options.siteUrl);
+    const siteUrl = normalizeSiteUrl(options.siteUrl);
     const components = await loadComponents(options.componentsModulePath);
     const pagePaths = (await mutableFilesystem.promises.glob('**', {
       onlyFiles: true,
@@ -294,10 +294,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
       const description =
         plainText(page.description) ?? plainText(lookup(values, 'data.description'));
       try {
-        const body = await toMarkdown(values, {
-          components,
-          siteUrl: options.siteUrl
-        });
+        const body = await toMarkdown(values, { components, siteUrl });
         if (body === undefined) {
           console.warn(
             `[Mosaic][Plugin-LlmsTxt] ${pagePath} is not valid MDX, so it is left out of llms.txt`

@@ -284,6 +284,14 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     warn.mockRestore();
   });
 
+  test('THEN it puts body links on the normalized site URL', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { written } = await run({ siteUrl: ' HTTPS://Example.com/ ' });
+    const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
+    expect(page).toContain('Use [examples](https://example.com/docs/button/examples).');
+    vi.restoreAllMocks();
+  });
+
   test('THEN it copies the frontmatter fields it is asked for, when they are text or lists', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { written } = await run({
