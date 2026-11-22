@@ -14,6 +14,7 @@ vi.mock('react', async () => ({
 
 const {
   MAX_INTERNAL_REDIRECT_HOPS,
+  MAX_NEW_PAGE_CONFIG_LOOKUPS,
   canonicalRoute,
   getNewPageSharedConfig,
   isFolderIndexRedirect,
@@ -320,5 +321,119 @@ describe('getNewPageSharedConfig', () => {
   test('ignores a relative folder', async () => {
     expect(await getNewPageSharedConfig('docs', 'active', 'http://content')).toBeUndefined();
     expect(getSharedConfig).not.toHaveBeenCalled();
+  });
+
+  test('takes writability from the creation metadata over the layout config', async () => {
+    newPageWritable.mockResolvedValue(true);
+    getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname === '/docs/index'
+        ? { header: { title: 'Docs' }, sourceCapabilities: { writable: false } }
+        : undefined
+    );
+
+    expect(await getNewPageSharedConfig('/docs/new', 'active', 'http://content')).toEqual({
+      header: { title: 'Docs' },
+      sourceCapabilities: { writable: true }
+    });
+    expect(newPageWritable).toHaveBeenCalledWith('/docs/new', 'active', 'http://content');
+  });
+
+  test("doesn't look for config in a folder the metadata says isn't writable", async () => {
+    newPageWritable.mockResolvedValue(false);
+
+    expect(await getNewPageSharedConfig('/docs/new', 'active', 'http://content')).toEqual({
+      sourceCapabilities: { writable: false }
+    });
+    expect(getSharedConfig).not.toHaveBeenCalled();
+  });
+
+  test('looks for config in a folder the transform makes writable', async () => {
+    newPageWritable.mockResolvedValue(false);
+    const bypass = vi.fn((config: Record<string, unknown> | undefined) => ({
+      ...config,
+      sourceCapabilities: { writable: true }
+    }));
+
+    expect(
+      await getNewPageSharedConfig('/docs/new', 'active', 'http://content', {
+        transformSharedConfig: bypass
+      })
+    ).toEqual({ ...sharedConfigFor('/docs/new/index'), sourceCapabilities: { writable: true } });
+    expect(bypass).toHaveBeenCalledWith({ sourceCapabilities: { writable: false } });
+    expect(getSharedConfig).toHaveBeenCalledOnce();
+  });
+
+  test.each([true, false])(
+    'only reads the metadata for capabilities when it says writable is %s',
+    async writable => {
+      newPageWritable.mockResolvedValue(writable);
+
+      expect(
+        await getNewPageSharedConfig('/docs/new', 'active', 'http://content', {
+          capabilitiesOnly: true
+        })
+      ).toEqual({ sourceCapabilities: { writable } });
+      expect(getSharedConfig).not.toHaveBeenCalled();
+    }
+  );
+
+  test('still searches folders for capabilities without the metadata', async () => {
+    getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname === '/docs/index' ? { sourceCapabilities: { writable: true } } : undefined
+    );
+
+    expect(
+      await getNewPageSharedConfig('/docs/new', 'active', 'http://content', {
+        capabilitiesOnly: true
+      })
+    ).toEqual({ sourceCapabilities: { writable: true } });
+    expect(getSharedConfig).toHaveBeenCalledTimes(2);
+  });
+
+  describe('in a very deep folder', () => {
+    const folder = (depth: number) => `/${Array.from({ length: depth }, () => 'a').join('/')}`;
+
+    test.each([undefined, true])(
+      'reads a bounded number of folders when the metadata says %s',
+      async writable => {
+        newPageWritable.mockResolvedValue(writable);
+        getSharedConfig.mockResolvedValue(undefined);
+
+        const config = await getNewPageSharedConfig(folder(8000), 'active', 'http://content');
+
+        expect(config).toEqual(
+          writable === undefined ? undefined : { sourceCapabilities: { writable } }
+        );
+        expect(getSharedConfig).toHaveBeenCalledTimes(MAX_NEW_PAGE_CONFIG_LOOKUPS);
+        expect(getSharedConfig).toHaveBeenLastCalledWith(
+          `${folder(8000 - MAX_NEW_PAGE_CONFIG_LOOKUPS + 1)}/index`,
+          'active',
+          'http://content'
+        );
+      }
+    );
+
+    test('reaches the root from the deepest folder within the limit', async () => {
+      getSharedConfig.mockImplementation(async (pathname: string) =>
+        pathname === '/index' ? sharedConfigFor(pathname) : undefined
+      );
+
+      expect(
+        await getNewPageSharedConfig(
+          folder(MAX_NEW_PAGE_CONFIG_LOOKUPS - 1),
+          'active',
+          'http://content'
+        )
+      ).toEqual(sharedConfigFor('/index'));
+      getSharedConfig.mockClear();
+      expect(
+        await getNewPageSharedConfig(
+          folder(MAX_NEW_PAGE_CONFIG_LOOKUPS),
+          'active',
+          'http://content'
+        )
+      ).toBeUndefined();
+      expect(getSharedConfig).not.toHaveBeenCalledWith('/index', 'active', 'http://content');
+    });
   });
 });

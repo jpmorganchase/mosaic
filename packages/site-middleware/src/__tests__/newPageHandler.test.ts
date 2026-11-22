@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const getSharedConfig = vi.fn();
+const newPageWritable = vi.fn();
 vi.mock('../cachedLoaders.js', () => ({ getMdxRaw: vi.fn(), getSharedConfig }));
-vi.mock('../newPageSources.js', () => ({ newPageWritable: async () => undefined }));
+vi.mock('../newPageSources.js', () => ({ newPageWritable }));
 vi.mock('react', async () => ({
   ...(await vi.importActual<typeof import('react')>('react')),
   cache: <T>(fn: T) => fn
 }));
 
 const { createNewPageHandler } = await import('../newPageHandler.js');
+const { MAX_NEW_PAGE_CONFIG_LOOKUPS } = await import('../resolveContent.js');
 
 const configs: Record<string, unknown> = {
   '/docs/index': { sourceCapabilities: { writable: true } },
@@ -22,6 +24,8 @@ const check = async (handler: ReturnType<typeof createNewPageHandler>, folder?: 
 };
 
 beforeEach(() => {
+  // Older content servers publish no creation metadata.
+  newPageWritable.mockReset().mockResolvedValue(undefined);
   getSharedConfig.mockReset();
   getSharedConfig.mockImplementation(async (pathname: string) => configs[pathname]);
 });
@@ -74,6 +78,46 @@ describe('createNewPageHandler', () => {
       transformSharedConfig: config => ({ ...config, sourceCapabilities: { writable: true } })
     });
     expect((await check(bypass, '/test')).body).toEqual({ folder: '/test', writable: true });
+  });
+
+  test('reads a bounded number of folders for a very deep folder', async () => {
+    const folder = `/${Array.from({ length: 500 }, () => 'a').join('/')}`;
+
+    expect((await check(handler, folder)).body).toEqual({ folder, writable: false });
+    expect(getSharedConfig).toHaveBeenCalledTimes(MAX_NEW_PAGE_CONFIG_LOOKUPS);
+  });
+
+  describe('with creation metadata', () => {
+    test.each([true, false])("answers %s without reading any folder's config", async writable => {
+      newPageWritable.mockResolvedValue(writable);
+
+      expect((await check(handler, '/docs/release-notes/new')).body).toEqual({
+        folder: '/docs/release-notes/new',
+        writable
+      });
+      expect(newPageWritable).toHaveBeenCalledWith(
+        '/docs/release-notes/new',
+        'active',
+        'http://content'
+      );
+      expect(getSharedConfig).not.toHaveBeenCalled();
+    });
+
+    test('applies the site’s transform to the answer', async () => {
+      newPageWritable.mockResolvedValue(false);
+      const transformSharedConfig = vi.fn(() => ({ sourceCapabilities: { writable: true } }));
+      const bypass = createNewPageHandler({
+        mode: 'active',
+        contentUrl: 'http://content',
+        transformSharedConfig
+      });
+
+      expect((await check(bypass, '/test')).body).toEqual({ folder: '/test', writable: true });
+      expect(transformSharedConfig).toHaveBeenCalledWith({
+        sourceCapabilities: { writable: false }
+      });
+      expect(getSharedConfig).not.toHaveBeenCalled();
+    });
   });
 
   test('reports a content server failure', async () => {

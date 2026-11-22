@@ -8,9 +8,11 @@
  * `GET /api/content/new-page?folder=/docs/guides` answers
  * `{ folder, writable }`. `writable` is the same check the catch-all page
  * makes for `?new=1`: creation metadata from the CLI's source mounts and
- * save workflows (see `getNewPageSharedConfig`). Older content servers
- * fall back to the nearest shared config. A folder with no writable owner answers `false`, so the
- * dialog can say so before the author is sent to a 404.
+ * save workflows (see `getNewPageSharedConfig`), without reading any
+ * folder's shared config. Older content servers fall back to the nearest
+ * shared config, searching at most `MAX_NEW_PAGE_CONFIG_LOOKUPS` folders.
+ * A folder with no writable owner answers `false`, so the dialog can say
+ * so before the author is sent to a 404.
  *
  * The answer only helps the dialog. The page still makes its own check,
  * and the CLI refuses to save a page that no writable source owns.
@@ -30,7 +32,8 @@ export interface NewPageHandlerOptions {
   /**
    * Changes the folder's shared config before it's checked. Pass the same
    * function the catch-all page applies to `resolved.sharedConfig`, such as
-   * the reference site's `withCapabilityBypass`, so both agree.
+   * the reference site's `withCapabilityBypass`, so both agree. When the
+   * CLI publishes creation metadata, the config only has `sourceCapabilities`.
    */
   transformSharedConfig?: (sharedConfig: SharedConfig | undefined) => SharedConfig | undefined;
 }
@@ -59,14 +62,16 @@ export function createNewPageHandler(options: NewPageHandlerOptions = {}) {
 
     let sharedConfig: SharedConfig | undefined;
     try {
-      sharedConfig = await getNewPageSharedConfig(folder, mode, contentUrl);
+      sharedConfig = await getNewPageSharedConfig(folder, mode, contentUrl, {
+        transformSharedConfig,
+        capabilitiesOnly: true
+      });
     } catch (error) {
       console.error(
         `[Mosaic] Couldn't load the shared config for new pages in ${folder}: ${error}`
       );
       return Response.json({ error: 'content-unavailable' }, { status: 503, headers: noStore });
     }
-    if (transformSharedConfig) sharedConfig = transformSharedConfig(sharedConfig);
     const writable = sharedConfig?.sourceCapabilities?.writable === true;
     return Response.json({ folder, writable }, { headers: noStore });
   };
