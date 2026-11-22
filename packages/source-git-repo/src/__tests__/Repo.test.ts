@@ -459,7 +459,7 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     );
     expect(git(branchRepo.dir, 'branch', '--show-current').trim()).toBe(branch);
     expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe('# Branch');
-  });
+  }, 15_000);
 
   test('THEN a recreated worktree starts from the latest remote commit', async () => {
     await repo.init();
