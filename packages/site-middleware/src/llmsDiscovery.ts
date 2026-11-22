@@ -43,6 +43,12 @@ export function isLlmsRoute(value: unknown): value is string {
   }
 }
 
+/** An origin, with an optional path, that is safe in HTML and Link headers. */
+const isSiteUrl = (value: unknown): value is string =>
+  typeof value === 'string' && /^https?:\/\/[^\s<>"?#]+$/.test(value);
+
+let warnedSiteUrl: string | undefined;
+
 export function parseLlmsManifest(text: string): LlmsManifest {
   const manifest = JSON.parse(text) as LlmsManifest;
   if (
@@ -58,12 +64,26 @@ export function parseLlmsManifest(text: string): LlmsManifest {
         scope === scope.toLowerCase() &&
         /^\/[a-z0-9_~-][a-z0-9._~-]*(?:\/[a-z0-9_~-][a-z0-9._~-]*)*$/.test(scope)
     ) ||
-    new Set(manifest.scopes).size !== manifest.scopes.length ||
-    (manifest.siteUrl !== undefined &&
-      (typeof manifest.siteUrl !== 'string' || !/^https?:\/\/[^\s<>"?#]+$/.test(manifest.siteUrl)))
+    new Set(manifest.scopes).size !== manifest.scopes.length
   )
     throw new Error(`Unsupported ${LLMS_MANIFEST_FILE} format`);
-  return { ...manifest, routes: unambiguousLlmsRoutes(manifest.routes) };
+  const { siteUrl, ...rest } = manifest;
+  // Links are root-relative without siteUrl, so one bad value must not make
+  // every page's Markdown unavailable.
+  if (siteUrl !== undefined && !isSiteUrl(siteUrl)) {
+    const value = JSON.stringify(siteUrl)?.slice(0, 200);
+    if (warnedSiteUrl !== value) {
+      warnedSiteUrl = value;
+      console.warn(
+        `[Mosaic] Ignoring invalid siteUrl ${value} in ${LLMS_MANIFEST_FILE}; LLM links are root-relative`
+      );
+    }
+  }
+  return {
+    ...rest,
+    ...(isSiteUrl(siteUrl) && { siteUrl }),
+    routes: unambiguousLlmsRoutes(manifest.routes)
+  };
 }
 
 export function createLlmsManifestLoader(maxAge = 30_000) {

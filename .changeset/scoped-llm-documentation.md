@@ -14,3 +14,5 @@ Add an optional afterSourceRemove plugin hook so LLM artifacts are also reconcil
 Preserve authored public Markdown assets in server builds and serve canonical root-page Markdown at `/.md`, matching its discovery URL. Generated public Markdown copies are retained only for static exports.
 
 Normalize trailing slashes in canonical page routes during publication and when reading older generated artifacts, without letting one trailing-slash route invalidate unrelated pages. Omit ambiguous routes after normalization.
+
+Normalize LlmsTxtPlugin's `siteUrl` by trimming it, lower-casing its scheme and host and removing trailing slashes, and reject values that aren't http(s) URLs without credentials, a query or a fragment. The handler ignores an invalid `siteUrl` in an older manifest, with a warning, instead of making every Markdown page unavailable.

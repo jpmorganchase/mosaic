@@ -95,6 +95,42 @@ test('rejects duplicates after normalization', async () => {
   );
 });
 
+test('normalizes siteUrl before writing links and the discovery manifest', async () => {
+  const siteUrl = '  HTTPS://Docs.Example.COM/Base//  ';
+  const site = await populatedFixture({ ...options, siteUrl });
+  const files = await site.publish({ ...options, siteUrl });
+  const origin = 'https://docs.example.com/Base';
+  expect(JSON.parse(files['/llms-manifest.json']).siteUrl).toBe(origin);
+  expect(files['/llms.txt']).toContain(`(${origin}/salt/llms.txt)`);
+  expect(files['/salt/components/llms.txt']).toContain(`(${origin}/salt/components/button.md)`);
+  expect(JSON.parse(files['/markdown-pages.json']).pages['/salt/components/button']).toContain(
+    `url: "${origin}/salt/components/button"`
+  );
+
+  const blank = await site.publish({ ...options, siteUrl: ' ' });
+  expect(JSON.parse(blank['/llms-manifest.json'])).not.toHaveProperty('siteUrl');
+  expect(blank['/llms.txt']).toContain('(/salt/llms.txt)');
+});
+
+test.each([
+  'docs.example.com',
+  'ftp://docs.example.com',
+  'https://docs.example.com?x=1',
+  'https://docs.example.com/#top',
+  'https://user@docs.example.com',
+  'https://docs example.com',
+  'https://docs.example.com/a b',
+  'https://docs.example.com/"x',
+  42
+])('rejects invalid siteUrl %s before converting or publishing', async siteUrl => {
+  const site = fixture();
+  await expect(site.update('a', sources[0].files, { siteUrl })).rejects.toThrow(
+    'Invalid llms.txt siteUrl'
+  );
+  await expect(site.publish({ siteUrl })).rejects.toThrow('Invalid llms.txt siteUrl');
+  expect(await site.shared.promises.exists('/llms-manifest.json')).toBe(false);
+});
+
 test('omits canonical collisions after trimming trailing slashes, including excluded claims', async () => {
   const site = fixture();
   await site.update('a', {

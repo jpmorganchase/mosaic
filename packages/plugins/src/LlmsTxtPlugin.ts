@@ -20,6 +20,7 @@ import {
   withinScope,
   type LlmsTxtScope
 } from './utils/llmsScopes.js';
+import { normalizeSiteUrl } from './utils/llmsSiteUrl.js';
 import {
   toMarkdown,
   type MarkdownAttributeValue,
@@ -47,7 +48,10 @@ export interface LlmsTxtPluginOptions {
   title?: string;
   /** A summary of the site, shown under the heading of `llms.txt`. */
   description?: string;
-  /** The site's origin, such as `https://example.com`, to make links absolute. */
+  /**
+   * The site's origin, such as `https://example.com`, to make links absolute.
+   * Must be an http(s) URL without credentials, a query or a fragment.
+   */
   siteUrl?: string;
   /**
    * An absolute path, file URL or package whose default export converts the
@@ -200,6 +204,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     options = {}
   ) {
     normalizeScopes(options.scopes);
+    normalizeSiteUrl(options.siteUrl);
     const components = await loadComponents(options.componentsModulePath);
     const pagePaths = (await mutableFilesystem.promises.glob('**', {
       onlyFiles: true,
@@ -274,6 +279,7 @@ async function publish(
   options: LlmsTxtPluginOptions
 ) {
   const scopes = normalizeScopes(options.scopes);
+  const siteUrl = normalizeSiteUrl(options.siteUrl);
   const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
     .catch(() => undefined)
     .then(async () => {
@@ -294,7 +300,7 @@ async function publish(
           markdown: renderPage(
             { route, ...page },
             page.markdown,
-            options.siteUrl,
+            siteUrl,
             mostSpecificScope(route, scopes)
           )
         };
@@ -317,7 +323,10 @@ async function publish(
         LLMS_FULL_TXT_FILE,
         routes.map(route => pages[route].markdown).join('\n')
       );
-      await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
+      await sharedFilesystem.promises.writeFile(
+        LLMS_TXT_FILE,
+        buildLlmsTxt(pages, { ...options, siteUrl })
+      );
       for (const scope of scopes) {
         const scopedRoutes = routes.filter(route => withinScope(route, scope.path));
         const scopedPages = Object.fromEntries(scopedRoutes.map(route => [route, pages[route]]));
@@ -327,7 +336,7 @@ async function publish(
           buildLlmsTxt(scopedPages, {
             title: scope.title ?? scope.path,
             description: scope.description,
-            siteUrl: options.siteUrl
+            siteUrl
           })
         );
         await sharedFilesystem.promises.writeFile(
@@ -347,7 +356,7 @@ async function publish(
         version: 1,
         routes,
         scopes: scopes.map(scope => scope.path),
-        ...(options.siteUrl && { siteUrl: origin(options.siteUrl) })
+        ...(siteUrl && { siteUrl })
       };
       await sharedFilesystem.promises.writeFile(LLMS_MANIFEST_FILE, JSON.stringify(manifest));
     });

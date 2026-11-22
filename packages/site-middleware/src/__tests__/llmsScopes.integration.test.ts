@@ -136,6 +136,47 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(() => parseLlmsManifest(JSON.stringify({ ...manifest, scopes: ['/'] }))).toThrow();
   });
 
+  test('ignores an invalid siteUrl instead of making every page unavailable', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const manifest = JSON.parse(files['/llms-manifest.json']);
+    const publish = (siteUrl: unknown) => {
+      files['/llms-manifest.json'] = JSON.stringify({ ...manifest, siteUrl });
+      if (mode === 'snapshot-file') save();
+    };
+    publish('https://docs.example.com');
+    expect((await get('/salt/components/button.md')).headers.get('Link')).toBe(
+      '<https://docs.example.com/salt/components/button.md>; rel="alternate"; type="text/markdown", <https://docs.example.com/salt/components/llms.txt>; rel="describedby"'
+    );
+
+    // Written by an older plugin that didn't normalize the option.
+    publish(`HTTPS://${mode}.example.com `);
+    for (let request = 0; request < 2; request++) {
+      const response = await get('/salt/components/button.md');
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Link')).toBe(
+        '</salt/components/button.md>; rel="alternate"; type="text/markdown", </salt/components/llms.txt>; rel="describedby"'
+      );
+    }
+    expect((await get('/salt/llms.txt')).status).toBe(200);
+    expect(await discovery('/salt/components/button', mode, contentUrl)).toEqual({
+      markdownUrl: '/salt/components/button.md',
+      indexUrl: '/salt/components/llms.txt'
+    });
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining(`Ignoring invalid siteUrl "HTTPS://${mode}.example.com "`)
+    );
+
+    for (const siteUrl of ['javascript:alert(1)', 'https://x.test/"><script>', 42, null]) {
+      expect(parseLlmsManifest(JSON.stringify({ ...manifest, siteUrl }))).not.toHaveProperty(
+        'siteUrl'
+      );
+    }
+    expect(() =>
+      parseLlmsManifest(JSON.stringify({ ...manifest, siteUrl: 42, routes: [42] }))
+    ).toThrow();
+  });
+
   test('refreshes modified/deleted pages, scope removal and discovery without stale files', async () => {
     expect((await get('/salt/components/llms.txt')).status).toBe(200);
     expect((await get('/salt/components/button.md')).status).toBe(200);
