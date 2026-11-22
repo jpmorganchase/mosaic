@@ -231,7 +231,11 @@ the resolution of a real bug.
    Both are public endpoints; `startSave`, `compilePreview` and
    `/api/workflows/[jobId]/events` check the session and
    `MOSAIC_EDITORS` themselves, and `startSave` validates every route
-   before forwarding it.
+   before forwarding it. While `MOSAIC_AUTHORING_URL` is set,
+   `checkEditor()` and `compilePreview` refuse before checking the
+   session, and `page.tsx` redirects `?edit=1` and `?new=1` to the
+   authoring site. Hiding the Edit button in the browser doesn't stop
+   an editor that is already open from saving.
 6. **Use the `next.config.js` three-config split.** Static export
    cannot tolerate `redirects()` or optimised images; the regular
    build wants both. Don't collapse them back into one config.

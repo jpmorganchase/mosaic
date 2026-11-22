@@ -236,8 +236,31 @@ Import editor code from subpaths such as `@jpmorganchase/mosaic-content-editor-p
 - **Set `MOSAIC_WORKFLOWS_SECRET` to the same value on the site and the CLI.** If the CLI doesn't have it, no save will run.
 - Saves that take longer than `MOSAIC_WORKFLOWS_TIMEOUT_MS` (set on the CLI, 5 minutes by default) are reported as failed.
 - Authors can create new pages from the editor, including in folders that don't exist yet. The New Page dialog only allows folders in a writable source; it asks the site's `api/content/new-page` route, so copy that route from the reference site.
-- **Edit in one environment.** An edit raises a pull request against the branch the environment reads, so editing on test would skip dev. Set `MOSAIC_AUTHORING_URL` to the dev site's URL on every other environment: their Edit and New Page buttons then open the same page on dev, and they refuse to preview or save. Server deployments read it at runtime through `/api/authoring`, including prerendered snapshot pages. Copy that route and `RuntimeAuthoringProvider` from the reference site. Controls stay hidden until configuration loads. Snapshot `?edit=1` and `?new=1` links redirect after hydration. Fully static exports have no server environment; set the destination when building them. Base paths are retained; query strings, fragments and credentials in the configured URL are discarded.
+- **Edit in one environment.** If your site runs in several environments, set `MOSAIC_AUTHORING_URL` so that pages are only edited on one of them. See [Edit in one environment](#edit-in-one-environment).
 - In `next dev`, `MOSAIC_DEV_BYPASS_CAPABILITY_GATE=true` shows the editor on every page. It has no effect in production.
+
+### Edit in one environment
+
+An edit raises a pull request against the branch the environment reads, so editing on test would skip dev. Set `MOSAIC_AUTHORING_URL` to the dev site's URL on every other environment: their Edit and New Page buttons then open the same page on dev, and their servers refuse to preview or save. Leave it unset on dev. Base paths are retained; query strings, fragments and credentials in the configured URL are discarded.
+
+The variable only works with the reference site's code for it. Copy these files from the reference site:
+
+- `src/lib/authoringUrl.ts`: `normalizeAuthoringUrl()`, which `config.ts` uses to clean up the configured URL.
+- `src/lib/authoring.ts`: `AUTHORING_URL`, `EDITED_ELSEWHERE_ERROR` and `authoringHref()`, which the files below use.
+- `src/app/api/authoring/route.ts`: returns the URL uncached, so server deployments, including prerendered snapshot pages, read it at runtime.
+- `src/app/RuntimeAuthoringProvider.tsx`: loads that route and passes the URL to `AuthoringSiteProvider`, which the header's Edit and New Page buttons read. The buttons stay hidden until it loads, and `?edit=1` and `?new=1` links on snapshot pages redirect after hydration.
+
+Then update these files to match the reference site:
+
+- `src/lib/config.ts`: add `MOSAIC_AUTHORING_URL` to `siteEnvSchema`, and `authoringUrl` to `SiteConfig` and `readSiteConfig()`.
+- `src/lib/workflows.ts`: make `checkEditor()` return a 403 when `AUTHORING_URL` is set. This stops `startSave`, `getSaveDefaults` and `/api/workflows/[jobId]/events`.
+- `src/app/[namespace]/[...route]/previewAction.ts`: make `compilePreview` throw when `AUTHORING_URL` is set.
+- `src/app/[namespace]/[...route]/page.tsx`: redirect `?edit=1` and `?new=1` requests to `authoringHref()` before the editor loads.
+- `src/app/providers.tsx`: take an `authoringUrl` prop, and wrap the provider stack in `RuntimeAuthoringProvider`, passing it that URL and whether the site is a static export.
+- `src/app/layout.tsx`: pass `authoringUrl={AUTHORING_URL}` to `Providers` in static exports only. Fully static exports have no server environment, so set the URL when building them.
+- `scripts/static-export-route-stubs.mjs`, if you use static export: add `src/app/api/authoring/route.ts` to `ROUTES`.
+
+**Only the server-side checks stop previews and saves.** `RuntimeAuthoringProvider` only changes the buttons and links in the browser. Without the changes to `checkEditor()`, `compilePreview` and `page.tsx`, a signed-in author who already has a page open for editing on test, or who calls the Server Actions directly, can still preview and raise a pull request against test's branch.
 
 ## 6. Update environment variables
 
@@ -276,7 +299,7 @@ If your `mosaic.config.mjs` loads env files with `@next/env`, only load the deve
 | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `MOSAIC_AUTH_ENABLED`                                                                      | `true` turns sign-in on.                                                                                                          |
 | `MOSAIC_EDITORS`                                                                           | Who may sign in and edit. If it isn't set, nobody can in production.                                                              |
-| `MOSAIC_AUTHORING_URL`                                                                     | Where this environment's pages are edited, such as the dev site's URL on test. Leave it unset on that site.                       |
+| `MOSAIC_AUTHORING_URL`                                                                     | Where pages are edited, such as the dev site's URL on test. Leave it unset on dev. Needs [these files](#edit-in-one-environment). |
 | `MOSAIC_WORKFLOWS_SECRET`                                                                  | Shared secret for saves. Use the same value as the CLI.                                                                           |
 | `NEXT_PUBLIC_SITE_URL`                                                                     | The site's public URL, used for canonical URLs, `sitemap.xml` and `robots.txt`. Set it at build time.                             |
 | `MOSAIC_REVALIDATE_SECRET`                                                                 | Protects `POST /api/revalidate`. Use the same value as the CLI.                                                                   |
