@@ -50,6 +50,26 @@ test('indexes canonical public routes across shared namespaces, with inclusive p
   expect(pages['/about']).toContain('[https://docs.example.com/llms.txt]');
 });
 
+test('heads the root index with a canonical root page, and scoped indexes with their own root page', async () => {
+  const site = await populatedFixture(options);
+  await site.update(
+    'home',
+    { '/home.mdx': document('/', 'Home', { fullPath: '/home.mdx' }) },
+    options,
+    'examples'
+  );
+  const files = await site.publish(options);
+  expect(files['/llms.txt']).toMatch(
+    /## Documentation scopes\n\n(?:- .+\n)+\n## \[Home\]\(https:\/\/docs\.example\.com\/\.md\)\n\n## About\n/
+  );
+  expect(files['/llms.txt']).not.toContain('Undefined');
+  expect(files['/salt/llms.txt']).toMatch(
+    /^# Salt Design System\n\n> .+\n\n## \[Salt\]\(https:\/\/docs\.example\.com\/salt\/index\.md\)\n/
+  );
+  for (const scope of ['/salt', '/salt/components', '/mosaic'])
+    expect(files[`${scope}/llms.txt`]).not.toContain('/.md)');
+});
+
 test('matches a scope root and segment boundaries, and is independent of source and scope ordering', async () => {
   const a = await populatedFixture(options);
   await a.update('root', { '/salt.mdx': document('/salt', 'Root') });
@@ -93,6 +113,42 @@ test('rejects duplicates after normalization', async () => {
   await expect(site.publish({ scopes: [{ path: '/Salt/' }, { path: '/salt' }] })).rejects.toThrow(
     'Duplicate'
   );
+});
+
+test('normalizes siteUrl before writing links and the discovery manifest', async () => {
+  const siteUrl = '  HTTPS://Docs.Example.COM/Base//  ';
+  const site = await populatedFixture({ ...options, siteUrl });
+  const files = await site.publish({ ...options, siteUrl });
+  const origin = 'https://docs.example.com/Base';
+  expect(JSON.parse(files['/llms-manifest.json']).siteUrl).toBe(origin);
+  expect(files['/llms.txt']).toContain(`(${origin}/salt/llms.txt)`);
+  expect(files['/salt/components/llms.txt']).toContain(`(${origin}/salt/components/button.md)`);
+  expect(JSON.parse(files['/markdown-pages.json']).pages['/salt/components/button']).toContain(
+    `url: "${origin}/salt/components/button"`
+  );
+
+  const blank = await site.publish({ ...options, siteUrl: ' ' });
+  expect(JSON.parse(blank['/llms-manifest.json'])).not.toHaveProperty('siteUrl');
+  expect(blank['/llms.txt']).toContain('(/salt/llms.txt)');
+});
+
+test.each([
+  'docs.example.com',
+  'ftp://docs.example.com',
+  'https://docs.example.com?x=1',
+  'https://docs.example.com/#top',
+  'https://user@docs.example.com',
+  'https://docs example.com',
+  'https://docs.example.com/a b',
+  'https://docs.example.com/"x',
+  42
+])('rejects invalid siteUrl %s before converting or publishing', async siteUrl => {
+  const site = fixture();
+  await expect(site.update('a', sources[0].files, { siteUrl })).rejects.toThrow(
+    'Invalid llms.txt siteUrl'
+  );
+  await expect(site.publish({ siteUrl })).rejects.toThrow('Invalid llms.txt siteUrl');
+  expect(await site.shared.promises.exists('/llms-manifest.json')).toBe(false);
 });
 
 test('omits canonical collisions after trimming trailing slashes, including excluded claims', async () => {

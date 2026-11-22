@@ -20,6 +20,7 @@ import {
   withinScope,
   type LlmsTxtScope
 } from './utils/llmsScopes.js';
+import { normalizeSiteUrl } from './utils/llmsSiteUrl.js';
 import {
   toMarkdown,
   type MarkdownAttributeValue,
@@ -47,7 +48,10 @@ export interface LlmsTxtPluginOptions {
   title?: string;
   /** A summary of the site, shown under the heading of `llms.txt`. */
   description?: string;
-  /** The site's origin, such as `https://example.com`, to make links absolute. */
+  /**
+   * The site's origin, such as `https://example.com`, to make links absolute.
+   * Must be an http(s) URL without credentials, a query or a fragment.
+   */
   siteUrl?: string;
   /**
    * An absolute path, file URL or package whose default export converts the
@@ -180,18 +184,23 @@ const compareRoutes = (a: string, b: string) => {
   return key(a).localeCompare(key(b));
 };
 
+// The root page is the site's index page, so it heads a section of its own.
 const sectionOf = (route: string) => {
   const segments = route.split('/').filter(Boolean);
+  if (segments.length === 0) return '/';
   return segments.length <= 2 ? `/${segments[0]}` : `/${segments[0]}/${segments[1]}`;
 };
 
 const label = (section: string) => {
-  const name = section.split('/').filter(Boolean).pop() ?? '';
+  const name = section.split('/').filter(Boolean).pop() ?? 'home';
   const words = name.replace(/[-_]+/g, ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-/** The `llms.txt` index: a section per top-level folder, linking each page's Markdown. */
+/**
+ * The `llms.txt` index: the root page first, then a section per top-level
+ * folder, linking each page's Markdown.
+ */
 export function buildLlmsTxt(
   pages: Record<string, MarkdownPage>,
   { title = 'Documentation', description, siteUrl, scopes }: LlmsTxtPluginOptions = {}
@@ -216,7 +225,7 @@ export function buildLlmsTxt(
     lines.push('');
   }
   for (const [section, routes] of sections) {
-    const indexRoute = `${section}/index`;
+    const indexRoute = section === '/' ? section : `${section}/index`;
     const index = pages[indexRoute];
     lines.push(index ? `## [${index.title}](${link(indexRoute)})` : `## ${label(section)}`, '');
     if (index?.description) lines.push(index.description, '');
@@ -251,6 +260,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     options = {}
   ) {
     normalizeScopes(options.scopes);
+    normalizeSiteUrl(options.siteUrl);
     const components = await loadComponents(options.componentsModulePath);
     const pagePaths = (await mutableFilesystem.promises.glob('**', {
       onlyFiles: true,
@@ -334,6 +344,7 @@ async function publish(
   options: LlmsTxtPluginOptions
 ) {
   const scopes = normalizeScopes(options.scopes);
+  const siteUrl = normalizeSiteUrl(options.siteUrl);
   const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
     .catch(() => undefined)
     .then(async () => {
@@ -354,7 +365,7 @@ async function publish(
           markdown: renderPage(
             { route, ...page },
             page.markdown,
-            options.siteUrl,
+            siteUrl,
             mostSpecificScope(route, scopes)
           )
         };
@@ -377,7 +388,10 @@ async function publish(
         LLMS_FULL_TXT_FILE,
         routes.map(route => pages[route].markdown).join('\n')
       );
-      await sharedFilesystem.promises.writeFile(LLMS_TXT_FILE, buildLlmsTxt(pages, options));
+      await sharedFilesystem.promises.writeFile(
+        LLMS_TXT_FILE,
+        buildLlmsTxt(pages, { ...options, siteUrl })
+      );
       for (const scope of scopes) {
         const scopedRoutes = routes.filter(route => withinScope(route, scope.path));
         const scopedPages = Object.fromEntries(scopedRoutes.map(route => [route, pages[route]]));
@@ -387,7 +401,7 @@ async function publish(
           buildLlmsTxt(scopedPages, {
             title: scope.title ?? scope.path,
             description: scope.description,
-            siteUrl: options.siteUrl
+            siteUrl
           })
         );
         await sharedFilesystem.promises.writeFile(
@@ -407,7 +421,7 @@ async function publish(
         version: 1,
         routes,
         scopes: scopes.map(scope => scope.path),
-        ...(options.siteUrl && { siteUrl: origin(options.siteUrl) })
+        ...(siteUrl && { siteUrl })
       };
       await sharedFilesystem.promises.writeFile(LLMS_MANIFEST_FILE, JSON.stringify(manifest));
     });

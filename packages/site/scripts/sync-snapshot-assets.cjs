@@ -63,6 +63,11 @@ function snapshotMarkdown(snapshotDir, publicDir) {
  * previous build. Keep the manifest outside public/ so it isn't served. An
  * active-mode build supplies no snapshot and removes the old snapshot copies,
  * allowing requests to reach the live route handlers again.
+ *
+ * The manifest records a hash of each Markdown copy, and a copy that no longer
+ * matches it has been replaced by an author, so it is left alone. Older
+ * manifests list paths alone, from builds that overwrote every listed copy, so
+ * those copies are still replaced or removed like any other generated file.
  */
 function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown = true }) {
   publicDir = resolve(publicDir);
@@ -104,7 +109,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
   }
 
   let previous = [];
-  let previousMarkdown = new Map();
+  let previousMarkdown;
   if (existsSync(manifestFile)) {
     const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
     if (
@@ -119,28 +124,26 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
             !RETIRED_ASSETS.includes(file) &&
             !isScopedIndex(file) &&
             !file.endsWith('.md'))
-      )
+      ) ||
+      (manifest.markdownHashes !== undefined &&
+        (typeof manifest.markdownHashes !== 'object' ||
+          manifest.markdownHashes === null ||
+          Array.isArray(manifest.markdownHashes) ||
+          Object.values(manifest.markdownHashes).some(hash => typeof hash !== 'string')))
     ) {
       throw new Error(`[mosaic-site] Invalid public asset manifest ${manifestFile}`);
     }
     previous = manifest.files;
-    previousMarkdown = new Map(Object.entries(manifest.markdownHashes ?? {}));
+    if (manifest.markdownHashes !== undefined)
+      previousMarkdown = new Map(Object.entries(manifest.markdownHashes));
   }
+  const previousFiles = new Set(previous);
 
-  const legacyMarkdown = new Set(
-    previous.filter(file => file.endsWith('.md') && !previousMarkdown.has(file))
-  );
-  if (snapshotDir && (copyMarkdown || legacyMarkdown.size > 0)) {
-    try {
-      for (const [file, content] of snapshotMarkdown(snapshotDir, publicDir)) {
-        if (legacyMarkdown.has(file)) previousMarkdown.set(file, markdownHash(content));
-        if (copyMarkdown) files.set(file, content);
-      }
-    } catch (error) {
-      // A server can defer a broken bundle to the handler as usual. Without a
-      // readable snapshot there is no evidence to remove its legacy copies.
-      if (copyMarkdown) throw error;
-    }
+  // Server builds serve generated Markdown through the handler, preserving its
+  // headers and manifest checks while authored public .md files still win.
+  if (snapshotDir && copyMarkdown) {
+    for (const [file, content] of snapshotMarkdown(snapshotDir, publicDir))
+      files.set(file, content);
   }
 
   // LLM routes are reserved. Do not silently overwrite an authored public asset.
@@ -155,11 +158,13 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
       throw new Error(`[mosaic-site] Reserved LLM route collides with public asset: ${file}`);
     }
   }
-  // An edited Markdown copy now belongs to the author.
+  // An edited Markdown copy now belongs to the author. Without recorded hashes,
+  // every listed copy is one the previous build wrote unconditionally.
   const ownsMarkdown = (file, target, stat) =>
     stat?.isFile() &&
-    previousMarkdown.has(file) &&
-    previousMarkdown.get(file) === markdownHash(readFileSync(target));
+    (previousMarkdown
+      ? previousMarkdown.get(file) === markdownHash(readFileSync(target))
+      : previousFiles.has(file));
   const markdownHashes = new Map();
   for (const [file, content] of files) {
     const target = publicPath(publicDir, file);
