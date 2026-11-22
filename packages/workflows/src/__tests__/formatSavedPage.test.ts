@@ -201,6 +201,18 @@ describe('finishSavedPage', () => {
     ).toBe('---\ntitle: Page\n---\n\n- a\n\n- B edited\n\n- c\n');
   });
 
+  test('keeps a loose `*` list loose when an item is added', async () => {
+    write(path.join(repoDir, '.prettierrc.json'), '{}');
+    expect(
+      await finishSavedPage({
+        filePath: page,
+        content: '---\ntitle: Page\n---\n- a\n- b\n- new\n- c\n',
+        original: '---\ntitle: Page\n---\n\n* a\n\n* b\n\n* c\n',
+        repoDir
+      })
+    ).toBe('---\ntitle: Page\n---\n\n- a\n\n- b\n\n- new\n\n- c\n');
+  });
+
   test('keeps the original blank lines in a repository without Prettier', async () => {
     expect(
       await finishSavedPage({

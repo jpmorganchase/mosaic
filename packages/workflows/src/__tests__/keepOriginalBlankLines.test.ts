@@ -36,6 +36,31 @@ describe('keepOriginalBlankLines', () => {
     );
   });
 
+  test('keeps a loose list loose when the editor changes its markers', () => {
+    // The editor writes `-` bullets and `1.` numbers with one space.
+    expect(keepOriginalBlankLines('* a\n\n* b\n\n* c\n', '- a\n- b\n- c\n')).toBe(
+      '- a\n\n- b\n\n- c\n'
+    );
+    expect(keepOriginalBlankLines('* a\n\n* b\n\n* c\n', '- a\n- b\n- new\n- c\n')).toBe(
+      '- a\n\n- b\n\n- new\n\n- c\n'
+    );
+    expect(keepOriginalBlankLines('* a\n\n* b\n\n* c\n', '- a\n- c\n')).toBe('- a\n\n- c\n');
+    expect(keepOriginalBlankLines('+   a\n\n+   b\n', '- a\n- new\n- b\n')).toBe(
+      '- a\n\n- new\n\n- b\n'
+    );
+    expect(keepOriginalBlankLines('1) a\n\n2) b\n', '1. a\n2. new\n3. b\n')).toBe(
+      '1. a\n\n2. new\n\n3. b\n'
+    );
+    expect(keepOriginalBlankLines('* a\n* b\n', '- a\n- new\n- b\n')).toBe('- a\n- new\n- b\n');
+    // Neighbouring lists the editor joins stay tight unless one was loose.
+    expect(keepOriginalBlankLines('- a\n- b\n\n* c\n* d\n', '- a\n- b\n- c\n- d\n')).toBe(
+      '- a\n- b\n- c\n- d\n'
+    );
+    expect(keepOriginalBlankLines('- a\n- b\n\n* c\n\n* d\n', '- a\n- b\n- c\n- d\n')).toBe(
+      '- a\n- b\n\n- c\n\n- d\n'
+    );
+  });
+
   test('leaves tight and new lists tight', () => {
     expect(keepOriginalBlankLines('- a\n- b\n', '- a\n- new\n- b\n')).toBe('- a\n- new\n- b\n');
     expect(keepOriginalBlankLines('Intro\n\nOutro\n', 'Intro\n\n- x\n- y\n\nOutro\n')).toBe(

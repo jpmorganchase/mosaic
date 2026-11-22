@@ -114,8 +114,11 @@ function readPage(text: string) {
       const padding = spaces >= 1 && spaces <= 4 ? spaces : 1;
       itemContentIndents.push(indent + marker[2].length + padding);
       // Match list depth across indentation styles while keeping identical
-      // entries at different depths distinct.
-      const item = line.trim().replace(/^\d{1,9}([.)])(?=\s|$)/, '#$1');
+      // entries at different depths distinct. The editor writes every item
+      // with `-` or `1.` and one space, so match items across marker styles.
+      const item = line
+        .trim()
+        .replace(/^(?:([-*+])|\d{1,9}[.)])(?:[ \t]+|$)/, (_, bullet) => (bullet ? '- ' : '#. '));
       matchKeys.push(`list:${itemContentIndents.length}:${item}`);
     } else {
       matchKeys.push(`line:${line.trimEnd()}`);
@@ -155,8 +158,8 @@ const inVerbatim = (page: Page, from: number, to: number) =>
 /**
  * Which of the original's non-blank lines each of the saved page's
  * non-blank lines is, for lines that are unchanged or edited in place.
- * Trailing whitespace, list indentation style and ordered list numbers
- * can change during a save without changing the line's identity.
+ * Trailing whitespace, list indentation style, list markers and ordered
+ * list numbers can change during a save without changing the line's identity.
  */
 function matchLines(before: Page, after: Page): Map<number, number> {
   const changes = diffArrays(before.matchKeys, after.matchKeys);
@@ -231,7 +234,14 @@ export function keepOriginalBlankLines(original: string, saved: string): string 
     if (!after.inList[index] || !after.inList[index + 1]) return 0;
     const from = originalOf.get(index);
     const to = originalOf.get(index + 1);
-    if (from !== undefined && to === from + 1) return blankLinesAfter(from);
+    // The editor joins neighbouring lists with different markers into one;
+    // the blank line that separated them would make the joined list loose.
+    const joinsLists =
+      to !== undefined &&
+      before.itemKinds[to] !== undefined &&
+      before.previousItem[to] === undefined &&
+      after.previousItem[index + 1] !== undefined;
+    if (from !== undefined && to === from + 1 && !joinsLists) return blankLinesAfter(from);
     // The end of one item and the start of the next item of its list.
     const previous = after.previousItem[index + 1];
     if (previous === undefined) return 0;
