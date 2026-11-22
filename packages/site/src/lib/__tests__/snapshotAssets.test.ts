@@ -1,9 +1,11 @@
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { syncSnapshotAssets } from '../../../scripts/sync-snapshot-assets.cjs';
+import { populatedFixture, document } from '../../../../plugins/src/__tests__/fixtures/llms.mjs';
 
 let root: string;
 let snapshotDir: string;
@@ -28,8 +30,67 @@ const pages = (value: Record<string, string>) =>
   );
 const sync = () => syncSnapshotAssets({ snapshotDir, publicDir, manifestFile });
 const read = (file: string) => readFileSync(join(publicDir, file), 'utf8');
+const sha256 = (content: string) => createHash('sha256').update(content).digest('hex');
 
 describe('snapshot public assets', () => {
+  test('exports generated nested indexes and removes retired scopes and pages on the next static build', async () => {
+    const options = {
+      scopes: [{ path: '/salt' }, { path: '/salt/components' }, { path: '/mosaic' }]
+    };
+    const site = await populatedFixture(options);
+    const save = (files: Record<string, string>) => {
+      for (const [route, content] of Object.entries(files)) {
+        const target = join(snapshotDir, route.slice(1));
+        mkdirSync(join(target, '..'), { recursive: true });
+        writeFileSync(target, content);
+      }
+    };
+    const first = await site.publish(options);
+    save(first);
+    sync();
+    expect(read('salt/llms.txt')).toBe(first['/salt/llms.txt']);
+    expect(read('salt/components/llms-full.txt')).toBe(first['/salt/components/llms-full.txt']);
+    expect(read('salt/components/button.md')).toContain('[/salt/components/llms.txt]');
+    expect(existsSync(join(publicDir, 'llms-manifest.json'))).toBe(false);
+
+    await site.update('0', { '/salt/new.mdx': document('/salt/new', 'New') });
+    // Reusing snapshotDir leaves old files there, but only the current manifest
+    // may select them for the public static export.
+    save(await site.publish({ scopes: [{ path: '/salt' }] }));
+    sync();
+    expect(existsSync(join(publicDir, 'salt/components/llms.txt'))).toBe(false);
+    expect(existsSync(join(publicDir, 'mosaic/llms-full.txt'))).toBe(false);
+    expect(existsSync(join(publicDir, 'salt/components/button.md'))).toBe(false);
+    expect(read('salt/llms-full.txt')).toContain('New');
+    syncSnapshotAssets({ publicDir, manifestFile });
+    expect(existsSync(join(publicDir, 'salt/llms.txt'))).toBe(false);
+  });
+
+  test('rejects an authored file at a reserved scoped index without changing it', () => {
+    mkdirSync(join(snapshotDir, 'salt'));
+    mkdirSync(join(publicDir, 'salt'));
+    writeFileSync(
+      join(snapshotDir, 'llms-manifest.json'),
+      JSON.stringify({ version: 1, scopes: ['/salt'] })
+    );
+    writeFileSync(join(snapshotDir, 'salt/llms.txt'), '# Generated');
+    writeFileSync(join(snapshotDir, 'salt/llms-full.txt'), '# Corpus');
+    writeFileSync(join(publicDir, 'salt/llms.txt'), '# Authored');
+    expect(sync).toThrow('Reserved LLM route collides');
+    expect(read('salt/llms.txt')).toBe('# Authored');
+  });
+
+  test.each(['/../outside', '//outside', '/salt/../../outside', '/salt\\outside', '/salt/%2e%2e'])(
+    'rejects unsafe scope %s before copying static files',
+    scope => {
+      writeFileSync(
+        join(snapshotDir, 'llms-manifest.json'),
+        JSON.stringify({ version: 1, scopes: [scope] })
+      );
+      expect(sync).toThrow('Invalid LLM manifest');
+    }
+  );
+
   test('removes retired search outputs recorded by a previous build', () => {
     const legacy = ['search-data.json', 'search-data-condensed.json', 'search-config.json'];
     for (const file of legacy) {
@@ -86,6 +147,138 @@ describe('snapshot public assets', () => {
     sync();
     expect(read('docs/guide.md')).toBe('');
     expect(read('docs/guide/index.md')).toBe('# Index');
+  });
+
+  test('exports root Markdown separately from an explicit /index page', () => {
+    pages({ '/': '# Home', '/index': '# Index' });
+    sync();
+    expect(read('.md')).toBe('# Home');
+    expect(read('index.md')).toBe('# Index');
+  });
+
+  test('normalizes legacy trailing slashes and omits collisions without resurrecting folder aliases', () => {
+    pages({
+      '/docs/guide/': '# Guide',
+      '/docs/clash': '# First',
+      '/docs/clash/': '# Second',
+      '/docs/clash/index': '# Index'
+    });
+    sync();
+    expect(read('docs/guide.md')).toBe('# Guide');
+    expect(read('docs/guide/.md')).toBe('# Guide');
+    expect(existsSync(join(publicDir, 'docs/clash.md'))).toBe(false);
+    expect(read('docs/clash/index.md')).toBe('# Index');
+  });
+
+  test('switching to a snapshot server removes generated Markdown but preserves authored assets', () => {
+    writeFileSync(join(publicDir, 'authored.md'), '# Authored');
+    pages({ '/': '# Home', '/docs/index': '# Snapshot' });
+    sync();
+    expect(read('docs/index.md')).toBe('# Snapshot');
+
+    syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+
+    for (const file of ['.md', 'docs/index.md', 'docs.md'])
+      expect(existsSync(join(publicDir, file))).toBe(false);
+    expect(read('authored.md')).toBe('# Authored');
+    expect(JSON.parse(readFileSync(manifestFile, 'utf8')).files).toEqual([]);
+  });
+
+  test('preserves authored replacements of generated Markdown across builds and server startup', () => {
+    pages({ '/guide': '# Snapshot', '/docs': '# Docs' });
+    sync();
+    writeFileSync(join(publicDir, 'guide.md'), '# Handwritten replacement');
+
+    pages({ '/guide': '# Updated snapshot', '/docs': '# Updated docs' });
+    sync();
+    expect(read('guide.md')).toBe('# Handwritten replacement');
+    expect(read('docs.md')).toBe('# Updated docs');
+
+    syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+    expect(read('guide.md')).toBe('# Handwritten replacement');
+    expect(existsSync(join(publicDir, 'docs.md'))).toBe(false);
+  });
+
+  describe('with a path-only manifest from an earlier build', () => {
+    // Those builds overwrote every listed copy, so each one is still generated.
+    const legacy = {
+      'guide.md': '# Old guide',
+      'docs.md': '# Docs',
+      'deleted.md': '# Deleted page',
+      'excluded.md': '# Now excluded',
+      'docs/nested/index.md': '# Nested',
+      'docs/nested.md': '# Nested'
+    };
+    const manifest = () => JSON.parse(readFileSync(manifestFile, 'utf8'));
+
+    beforeEach(() => {
+      mkdirSync(join(publicDir, 'docs/nested'), { recursive: true });
+      for (const [file, content] of Object.entries(legacy))
+        writeFileSync(join(publicDir, file), content);
+      writeFileSync(join(publicDir, 'authored.md'), '# Authored');
+      writeFileSync(
+        manifestFile,
+        JSON.stringify({ version: 1, files: Object.keys(legacy).sort() })
+      );
+      // The guide was edited; the deleted page, excluded page and nested folder are gone.
+      pages({ '/guide': '# Updated guide', '/docs': '# Docs', '/added': '# Added' });
+    });
+
+    test('a static export replaces edited copies and removes deleted or excluded pages', () => {
+      sync();
+
+      expect(read('guide.md')).toBe('# Updated guide');
+      expect(read('docs.md')).toBe('# Docs');
+      expect(read('added.md')).toBe('# Added');
+      for (const file of ['deleted.md', 'excluded.md', 'docs/nested/index.md', 'docs/nested.md'])
+        expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({
+        version: 1,
+        files: ['added.md', 'docs.md', 'guide.md'],
+        markdownHashes: {
+          'added.md': sha256('# Added'),
+          'docs.md': sha256('# Docs'),
+          'guide.md': sha256('# Updated guide')
+        }
+      });
+
+      // Ownership is tracked by hash from now on.
+      writeFileSync(join(publicDir, 'guide.md'), '# Handwritten replacement');
+      sync();
+      expect(read('guide.md')).toBe('# Handwritten replacement');
+      expect(manifest().files).toEqual(['added.md', 'docs.md']);
+    });
+
+    test('a snapshot server removes every listed copy, whether or not it matches the snapshot', () => {
+      syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown: false });
+
+      for (const file of Object.keys(legacy)) expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({ version: 1, files: [], markdownHashes: {} });
+    });
+
+    test('an active-mode build or dev server removes every listed copy', () => {
+      syncSnapshotAssets({ publicDir, manifestFile });
+
+      for (const file of Object.keys(legacy)) expect(existsSync(join(publicDir, file))).toBe(false);
+      expect(read('authored.md')).toBe('# Authored');
+      expect(manifest()).toEqual({ version: 1, files: [], markdownHashes: {} });
+    });
+  });
+
+  test.each([
+    ['null', null],
+    ['an array of', []],
+    ['non-string', { 'guide.md': 1 }]
+  ])('rejects %s Markdown hashes', (_, hashes) => {
+    writeFileSync(join(publicDir, 'guide.md'), '# Guide');
+    writeFileSync(
+      manifestFile,
+      JSON.stringify({ version: 1, files: ['guide.md'], markdownHashes: hashes })
+    );
+    expect(sync).toThrow('Invalid public asset manifest');
+    expect(read('guide.md')).toBe('# Guide');
   });
 
   test('clears snapshot copies for an active-mode build without removing authored assets', () => {

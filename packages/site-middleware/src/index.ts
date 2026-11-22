@@ -8,6 +8,9 @@ export type { HighlightCodeBlocksOptions } from './plugins/highlightCodeBlocks.j
 // SEO sitemap loader. Prerendering uses the independent route inventory.
 export * from './loadSitemap.js';
 export * from './routes.js';
+// Discovery metadata for App Router hosts, independent of the Markdown corpus.
+export { getLlmsDiscovery, createLlmsDiscoveryLoader } from './llmsDiscovery.js';
+export type { LlmsDiscovery } from './llmsDiscovery.js';
 // Cached, parallelisable per-request loaders consumed by App Router
 // route segments (`getMdxRaw`, `getSharedConfig`).
 export * from './cachedLoaders.js';

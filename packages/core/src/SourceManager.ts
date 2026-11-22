@@ -14,6 +14,7 @@ import type {
 import Source from './Source.js';
 import createConfig from './helpers/createConfig.js';
 import { findNewPageOwner } from './findNewPageOwner.js';
+import { bindPluginMethods } from './plugin/index.js';
 
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
@@ -50,6 +51,8 @@ export default class SourceManager {
   #globalConfig = createConfig();
   #schedule: SourceSchedule;
   #mountedVolumes?: () => readonly IVolumeImmutable[];
+  #removalPlugins?: ReturnType<typeof bindPluginMethods>;
+  #sourceRemovals: Promise<void> = Promise.resolve();
 
   constructor(
     globalFilesystem,
@@ -269,24 +272,7 @@ export default class SourceManager {
           logUpdateStatus(source.id, initOrStartTime);
           initOrStartTime = null;
           try {
-            this.#globalConfig.setData(
-              Array.from(this.#sources.values()).reduce(
-                (mergedConfig, { config }) =>
-                  mergeWith(
-                    mergedConfig,
-                    config?.data || {},
-                    function customizer(objValue, srcValue) {
-                      if (isArray(objValue)) {
-                        // Lodash's default behaviour is to merge array indexes, rather than concatenate arrays
-                        return objValue.concat(srcValue || []);
-                      }
-                      return undefined;
-                    }
-                  ),
-                {}
-              ),
-              true
-            );
+            this.#rebuildGlobalConfig();
             source.filesystem.reset();
             source.filesystem.fromJSON(pages);
             // We need to re-apply symlinks in the main thread
@@ -358,7 +344,21 @@ export default class SourceManager {
         console.debug(`[Mosaic][Core] '${source.id.description}' closed`);
 
         this.#sources.delete(source.id);
+        const wasActive = sourceActive;
         sourceActive = false;
+        if (wasActive) {
+          this.#rebuildGlobalConfig();
+          // Only opt-in plugins reconcile shared files. Do not replay page
+          // mutation hooks against a source whose worker has already exited.
+          this.#sourceRemovals = this.#sourceRemovals
+            .then(async () => {
+              const plugins = await (this.#removalPlugins ??= bindPluginMethods(this.#plugins));
+              await plugins.afterSourceRemove?.(this.#sharedFilesystem, {
+                globalConfig: this.#globalConfig.asReadOnly()
+              });
+            })
+            .catch(error => console.error('[Mosaic][Core] Shared artifact cleanup failed', error));
+        }
       });
 
       source.onStart(() => {
@@ -375,6 +375,19 @@ export default class SourceManager {
 
       await source.start();
     });
+  }
+
+  #rebuildGlobalConfig() {
+    this.#globalConfig.setData(
+      Array.from(this.#sources.values()).reduce(
+        (mergedConfig, { config }) =>
+          mergeWith(mergedConfig, config?.data || {}, (objValue, srcValue) =>
+            isArray(objValue) ? objValue.concat(srcValue || []) : undefined
+          ),
+        {}
+      ),
+      true
+    );
   }
 
   #invokeUpdateCallbacks(filesystem: IVolumeImmutable, source: Source) {

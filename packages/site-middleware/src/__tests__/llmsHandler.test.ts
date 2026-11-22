@@ -13,9 +13,12 @@ import { createLlmsHandler } from '../llmsHandler.js';
 const pages: MarkdownPagesFile = {
   version: 1,
   pages: {
+    '/': '# Home',
     '/docs/index': '---\ntitle: "Docs"\n---\n\nWelcome.\n',
     '/docs/button/index': '---\ntitle: "Button"\n---\n\nPress it.\n',
-    '/docs/button/usage': '---\ntitle: "Button usage"\n---\n\nUse it.\n'
+    '/docs/button/usage': '---\ntitle: "Button usage"\n---\n\nUse it.\n',
+    '/docs/hello world': '# Spaces remain supported',
+    '/docs/café': '# Unicode remains supported'
   }
 };
 
@@ -68,6 +71,14 @@ describe('snapshot-file mode', () => {
     expect((await get(handler, 'docs', 'index')).body).toBe(pages.pages['/docs/index']);
   });
 
+  test('serves a canonical root page at /.md without requiring a manifest', async () => {
+    expect(await get(handler, '.md')).toMatchObject({
+      status: 200,
+      type: 'text/markdown; charset=utf-8',
+      body: '# Home'
+    });
+  });
+
   test('serves llms.txt and llms-full.txt as text', async () => {
     expect(await get(handler, 'llms.txt')).toMatchObject({
       status: 200,
@@ -75,6 +86,17 @@ describe('snapshot-file mode', () => {
       body: '# Docs\n'
     });
     expect((await get(handler, 'llms-full.txt')).body).toBe('Everything.\n');
+  });
+
+  test('preserves legacy route keys with spaces and Unicode and escapes discovery headers', async () => {
+    for (const route of ['hello world', 'café']) {
+      const response = await handler(new Request('http://localhost/api/llms'), {
+        params: Promise.resolve({ path: ['docs', `${route}.md`] })
+      });
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(pages.pages[`/docs/${route}`]);
+      expect(response.headers.get('Link')).toContain(`/docs/${encodeURIComponent(route)}.md`);
+    }
   });
 
   test('responds 404 for other paths', async () => {
@@ -101,6 +123,8 @@ describe('active mode', () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (url === `${contentUrl}/markdown-pages.json`) return new Response(JSON.stringify(pages));
       if (url === `${contentUrl}/llms.txt`) return new Response('# Docs\n');
+      if (url === `${contentUrl}/llms-manifest.json`)
+        return new Response('missing', { status: 404 });
       return new Response('down', { status: 502 });
     });
     vi.stubGlobal('fetch', fetchMock);

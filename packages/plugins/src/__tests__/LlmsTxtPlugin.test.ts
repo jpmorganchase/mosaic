@@ -216,19 +216,17 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     } catch (thrown) {
       error = thrown;
     }
-    const written: Record<string, string> = {};
+    const shared = new MutableVolume(new FileAccess(new Volume()), '*');
     const afterUpdate = LlmsTxtPlugin.afterUpdate!;
     await afterUpdate(
       {} as Parameters<typeof afterUpdate>[0],
       {
-        sharedFilesystem: {
-          promises: { writeFile: async (name: string, value: string) => (written[name] = value) }
-        },
+        sharedFilesystem: shared,
         globalConfig: { data }
       } as unknown as Parameters<typeof afterUpdate>[1],
       options
     );
-    return { written, error };
+    return { written: shared.toJSON() as Record<string, string>, error };
   }
 
   test('THEN it writes each page as Markdown with frontmatter, in route order', async () => {
@@ -305,6 +303,33 @@ describe('GIVEN the LlmsTxtPlugin', () => {
         '- [Install](/docs/getting-started/install.md)',
         ''
       )
+    );
+  });
+
+  test('THEN it heads the index with the root page, linked like a folder index page', () => {
+    const pages = {
+      '/about': { title: 'About', markdown: '' },
+      '/docs/index': { title: 'Docs', markdown: '' },
+      '/': { title: 'Home', description: 'Start here.', markdown: '' }
+    };
+    expect(buildLlmsTxt(pages, { siteUrl: 'https://example.com' })).toBe(
+      lines(
+        '# Documentation',
+        '',
+        '## [Home](https://example.com/.md)',
+        '',
+        'Start here.',
+        '',
+        '## About',
+        '',
+        '- [About](https://example.com/about.md)',
+        '',
+        '## [Docs](https://example.com/docs/index.md)',
+        ''
+      )
+    );
+    expect(buildLlmsTxt({ '/': { title: 'Home', markdown: '' } })).toBe(
+      lines('# Documentation', '', '## [Home](/.md)', '')
     );
   });
 
