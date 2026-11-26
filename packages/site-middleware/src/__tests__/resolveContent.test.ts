@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const getMdxRaw = vi.fn();
@@ -12,6 +13,7 @@ vi.mock('react', async () => ({
 
 const {
   MAX_INTERNAL_REDIRECT_HOPS,
+  MAX_NEW_FOLDER_DEPTH,
   canonicalRoute,
   isFolderIndexRedirect,
   mergePageSharedConfig,
@@ -176,6 +178,83 @@ describe('resolveContent', () => {
       originalPathname: '/docs/new-page',
       pathname: '/docs/new-page',
       sharedConfig: { sourceCapabilities: { writable: true } }
+    });
+    expect(getSharedConfig).toHaveBeenCalledTimes(1);
+  });
+
+  describe('for a missing page in a folder that does not exist yet', () => {
+    const writable = { header: { title: 'Docs' }, sourceCapabilities: { writable: true } };
+    // Answers like the content server: by the folder of the pathname.
+    const serveFolders = (configs: Record<string, unknown>) =>
+      getSharedConfig.mockImplementation(
+        async (pathname: string) => configs[path.posix.dirname(pathname)]
+      );
+    const readFolders = () =>
+      getSharedConfig.mock.calls.map(([pathname]) => path.posix.dirname(pathname));
+
+    beforeEach(() => {
+      getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    });
+
+    test('uses the shared config of the nearest folder above it', async () => {
+      serveFolders({ '/docs': writable });
+
+      const resolved = await resolveContent(
+        '/docs/new/deeper/page.mdx',
+        'active',
+        'http://content'
+      );
+
+      expect(resolved).toEqual({
+        kind: 'not-found',
+        originalPathname: '/docs/new/deeper/page.mdx',
+        pathname: '/docs/new/deeper/page.mdx',
+        sharedConfig: writable
+      });
+      expect(readFolders()).toEqual(['/docs/new/deeper', '/docs/new', '/docs']);
+    });
+
+    test('reads up to the root folder', async () => {
+      serveFolders({ '/': writable });
+
+      const resolved = await resolveContent('/new/page.mdx', 'active', 'http://content');
+
+      expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: writable });
+      expect(readFolders()).toEqual(['/new', '/']);
+    });
+
+    test('returns no shared config when no folder above it has one', async () => {
+      serveFolders({});
+
+      const resolved = await resolveContent('/docs/new/page.mdx', 'active', 'http://content');
+
+      expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: undefined });
+      expect(readFolders()).toEqual(['/docs/new', '/docs', '/']);
+    });
+
+    test(`reads at most ${MAX_NEW_FOLDER_DEPTH} folders above it`, async () => {
+      serveFolders({ '/docs': writable });
+      const folders = Array.from({ length: MAX_NEW_FOLDER_DEPTH + 1 }, (_, i) => `f${i}`);
+
+      const resolved = await resolveContent(
+        `/docs/${folders.join('/')}/page.mdx`,
+        'active',
+        'http://content'
+      );
+
+      expect(resolved).toMatchObject({ kind: 'not-found', sharedConfig: undefined });
+      expect(getSharedConfig).toHaveBeenCalledTimes(MAX_NEW_FOLDER_DEPTH + 1);
+    });
+
+    test('passes on content server errors', async () => {
+      getSharedConfig.mockImplementation(async (pathname: string) => {
+        if (pathname === '/docs/new/page.mdx') return undefined;
+        throw new Error('Failed to load shared config: 500');
+      });
+
+      await expect(
+        resolveContent('/docs/new/page.mdx', 'active', 'http://content')
+      ).rejects.toThrow('500');
     });
   });
 

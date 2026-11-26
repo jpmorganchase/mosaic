@@ -213,8 +213,9 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // is the closed default — `{ writable: true }` — applied via a
   // shallow merge so authored fields (header, footer, etc.) are
   // preserved. A miss carries the shared config of the folder the
-  // missing page would live in, so the same gate covers the create
-  // flow; apply the bypass before discriminating.
+  // missing page would live in (or, for a new folder, of the nearest
+  // folder above it), so the same gate covers the create flow; apply
+  // the bypass before discriminating.
   const sharedConfig = withCapabilityBypass(resolved.sharedConfig);
 
   // Source-capability gate. Absent capabilities (no shared-config
