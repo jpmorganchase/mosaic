@@ -346,3 +346,37 @@ describe('alias editor context', () => {
     expect(loaders.getMdxRawSource).not.toHaveBeenCalled();
   });
 });
+
+describe('create page in a new folder', () => {
+  const newPage = (query: Record<string, string>) => ({
+    ...request('docs', ['guides', 'page.mdx']),
+    searchParams: Promise.resolve(query)
+  });
+
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_MODE', 'active');
+    loaders.resolveMosaicMode.mockReturnValue({ mode: 'active', contentUrl: 'http://content' });
+    loaders.getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    // `/docs` exists and belongs to a writable source; `/docs/guides` doesn't exist.
+    loaders.getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname.replace(/\/[^/]*$/, '') === '/docs'
+        ? { header: { title: 'Docs header' }, sourceCapabilities: { writable: true } }
+        : undefined
+    );
+  });
+
+  test("opens the editor with the nearest existing folder's config", async () => {
+    editor.enabled = true;
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(newPage({ new: '1', title: 'Page' })));
+
+    expect(html).toContain('data-editor-route="/docs/guides/page.mdx"');
+    expect(html).toContain('data-frame-title="Docs header"');
+  });
+
+  test('still answers a 404 to someone who cannot edit', async () => {
+    const { default: Page } = await import('../page');
+
+    await expect(Page(newPage({ new: '1', title: 'Page' }))).rejects.toThrow('not-found');
+  });
+});

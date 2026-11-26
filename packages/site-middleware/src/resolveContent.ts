@@ -26,6 +26,13 @@ type SharedConfig = Awaited<ReturnType<typeof getSharedConfig>>;
 export const MAX_INTERNAL_REDIRECT_HOPS = 3;
 
 /**
+ * How many folders above a missing page's folder `resolveContent` reads
+ * when looking for a shared config. Bounds the reads for made-up deep
+ * paths; a new page can add at most this many new folders.
+ */
+export const MAX_NEW_FOLDER_DEPTH = 10;
+
+/**
  * `true` when `destination` is the folder→index canonicalisation of
  * `from` (`/a/b` → `/a/b/index`, with or without a trailing slash on
  * `from`). This is the **only** redirect class we follow server-side;
@@ -53,7 +60,10 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
  *
  * `sharedConfig` is returned for misses too: it belongs to the folder
  * the missing page would live in, which is what the create-page flow
- * (`?new=1`) checks for `sourceCapabilities.writable`.
+ * (`?new=1`) checks for `sourceCapabilities.writable`. When that folder
+ * doesn't exist yet, it is the config of the nearest folder above it:
+ * the page belongs to that folder's source, and saving it creates the
+ * missing folders.
  */
 export type ResolvedContent =
   | {
@@ -83,6 +93,29 @@ export function mergePageSharedConfig(folderConfig: SharedConfig, authored: unkn
   if (!isRecord(authored)) return folderConfig;
   const { sourceCapabilities: _authoredCapabilities, ...overrides } = authored;
   return { ...(folderConfig ?? {}), ...overrides } as SharedConfig;
+}
+
+/**
+ * The shared config of the nearest folder above a missing page's folder,
+ * for a page in a folder that doesn't exist yet (`/docs/new/page.mdx`).
+ * The page's own folder has none, which would leave the create-page flow
+ * no `sourceCapabilities` and answer a 404, although `NewPageDialog`
+ * offers new folders and the save workflows create them.
+ */
+async function getNewFolderSharedConfig(
+  pathname: string,
+  mode: MosaicMode,
+  contentUrl: string
+): Promise<SharedConfig> {
+  // `getSharedConfig(p)` reads the config of `p`'s folder, so start one
+  // level up from the page's folder, which the caller has already read.
+  let folder = path.posix.dirname(pathname);
+  for (let depth = 0; depth < MAX_NEW_FOLDER_DEPTH && folder !== '/'; depth++) {
+    const config = await getSharedConfig(folder, mode, contentUrl);
+    if (config !== undefined) return config;
+    folder = path.posix.dirname(folder);
+  }
+  return undefined;
 }
 
 /**
@@ -155,7 +188,9 @@ export const resolveContent = cache(
       }
 
       if (mdx.kind === 'not-found') {
-        return { kind: 'not-found', originalPathname, pathname, sharedConfig: requestedConfig() };
+        const sharedConfig =
+          requestedConfig() ?? (await getNewFolderSharedConfig(pathname, mode, contentUrl));
+        return { kind: 'not-found', originalPathname, pathname, sharedConfig };
       }
 
       // A redirect that isn't the folder→index canonicalisation is a
