@@ -27,7 +27,7 @@ server {
 
   # Allow clean URLs (no .html suffix).
   location / {
-    try_files $uri $uri.html $uri/ /404.html;
+    try_files $uri $uri.html $uri/ =404;
   }
 
   # Long cache for fingerprinted assets.

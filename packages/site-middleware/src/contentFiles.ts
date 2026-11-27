@@ -44,7 +44,10 @@ export async function readContentFile(
   if (mode === 'snapshot-file') {
     const { snapshotDir } = getSnapshotFileConfig(file);
     // Sites include their snapshots with `outputFileTracingIncludes`.
-    const filePath = path.join(/*turbopackIgnore: true*/ process.cwd(), snapshotDir, file);
+    const filePath = path.join(
+      path.resolve(/*turbopackIgnore: true*/ process.cwd(), snapshotDir),
+      file
+    );
     let stat: fs.Stats;
     try {
       stat = await fs.promises.stat(filePath);

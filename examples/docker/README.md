@@ -11,6 +11,14 @@ defaults are kept, so images build with the same settings as `yarn build:site`.
 - [Snapshot mode](snapshot-mode/): a standalone Next server with a local snapshot.
 - [Static export](static-export/): pre-rendered files served by nginx.
 
+The workspace commands use the same active-mode Dockerfiles and keep their
+existing image tags:
+
+```sh
+yarn workspace @jpmorganchase/mosaic-cli docker:build
+yarn workspace @jpmorganchase/mosaic-site docker:build
+```
+
 Run the same clean builds and HTTP checks used in CI:
 
 ```sh

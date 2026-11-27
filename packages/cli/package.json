@@ -30,7 +30,7 @@
     "build:types": "tsc",
     "build:cli": "node ./scripts/bundle.mjs",
     "clean": "rm -fr dist",
-    "docker:build": "docker build . --tag mosaic-fs:latest",
+    "docker:build": "docker build --file ../../examples/docker/active-mode/Dockerfile.fs --tag mosaic-fs:latest ../..",
     "docker:start": "docker run -it --rm --ipc=host -p 8080:8080 --mount source=docs,destination=/app/docs --network mosaic-net --name mosaic-fs mosaic-fs:latest",
     "lint": "eslint ."
   },

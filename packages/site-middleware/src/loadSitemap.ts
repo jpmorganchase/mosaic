@@ -46,7 +46,7 @@ export async function loadSitemap(): Promise<string[]> {
   try {
     if (mode === 'snapshot-file') {
       const { snapshotDir } = getSnapshotFileConfig('sitemap.xml');
-      const fullPath = path.posix.join(process.cwd(), snapshotDir, 'sitemap.xml');
+      const fullPath = path.resolve(snapshotDir, 'sitemap.xml');
       xml = await loadLocalFile(fullPath);
     } else if (mode === 'active') {
       // Active mode: the live Mosaic FS server is the only source of
