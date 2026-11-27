@@ -16,8 +16,8 @@ export type Page = {
    * plugin to remove `/index`
    */
   route?: string;
-  /** Route provenance when an extension configuration changes how the filename is identified. */
-  routeUsesSourceFilename?: boolean;
+  /** Configured compound extension used to recognize a route derived from the backing filename. */
+  routeFileExtension?: string;
   lastModified?: Date;
   type?: string;
   content?: string;

@@ -22,6 +22,18 @@ export function encodeRoutePathname(
     .join('/');
 }
 
+/** Find the longest configured extension at the end of a page path. */
+export function getPageExtension(
+  pathname: string,
+  pageExtensions: readonly string[]
+): string | undefined {
+  let match = '';
+  for (const extension of pageExtensions) {
+    if (extension.length > match.length && pathname.endsWith(extension)) match = extension;
+  }
+  return match || undefined;
+}
+
 /** A source route uses the literal filename, with or without its extension. */
 export function isSourceRoute(
   route: string,
@@ -32,13 +44,7 @@ export function isSourceRoute(
   if (route === fullPath) return true;
   const suffix = fullPath.slice(route.length);
   if (!pageExtensions) return /^\.[^./]+$/.test(suffix);
-  // Strip the longest configured suffix, as the page alias plugin does.
-  return (
-    pageExtensions.includes(suffix) &&
-    !pageExtensions.some(
-      extension => extension.length > suffix.length && fullPath.endsWith(extension)
-    )
-  );
+  return getPageExtension(fullPath, pageExtensions) === suffix;
 }
 
 export function pageRoutePathname(

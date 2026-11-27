@@ -52,8 +52,8 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
     const result = await afterSource(
       [
         {
-          fullPath: '/docs/guide%20name.page.mdx',
-          route: '/docs/guide%20name.page.mdx',
+          fullPath: '/docs.mdx/guide%20name.page.mdx',
+          route: '/docs.mdx/guide%20name.page.mdx',
           title: 'Literal'
         },
         {
@@ -70,10 +70,10 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
       {}
     );
     expect(setAliases.mock.calls).toEqual([
-      ['/docs/guide%20name.page.mdx', ['/docs/guide%20name']],
+      ['/docs.mdx/guide%20name.page.mdx', ['/docs.mdx/guide%20name']],
       ['/docs/setup%20notes.page.mdx', ['/docs/setup notes.page']]
     ]);
-    expect(result?.map(page => page.routeUsesSourceFilename)).toEqual([true, false]);
+    expect(result?.map(page => page.routeFileExtension)).toEqual(['.page.mdx', '.page.mdx']);
   });
 
   describe('AND WHEN pages have an extension we want', () => {

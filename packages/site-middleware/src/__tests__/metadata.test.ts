@@ -59,12 +59,29 @@ test.each([
 });
 
 test.each([
-  ['/docs/guide%20notes', true, '/docs/guide%2520notes'],
-  ['/docs/guide%20notes.page', false, '/docs/guide%20notes.page']
-])('uses recorded filename provenance for %s', (route, routeUsesSourceFilename, href) => {
+  ['/docs/guide%20notes', '/docs/guide%2520notes'],
+  ['/docs/guide%20notes.page', '/docs/guide%20notes.page']
+])('compares the current route %s with the recorded backing extension', (route, href) => {
   const fullPath = '/docs/guide%20notes.page.mdx';
-  const metadata = buildMosaicMetadata(document({ route, fullPath, routeUsesSourceFilename }));
+  const metadata = buildMosaicMetadata(
+    document({ route, fullPath, routeFileExtension: '.page.mdx' })
+  );
   expect(metadata.alternates?.canonical).toBe(href);
+});
+
+test('a later authored route overrides the friendly filename', () => {
+  const frontmatter = {
+    fullPath: '/docs/guide%20notes.page.mdx',
+    route: '/docs/guide%20notes',
+    routeFileExtension: '.page.mdx'
+  };
+  expect(buildMosaicMetadata(document(frontmatter)).alternates?.canonical).toBe(
+    '/docs/guide%2520notes'
+  );
+  frontmatter.route = '/docs/later%20permalink';
+  expect(buildMosaicMetadata(document(frontmatter)).alternates?.canonical).toBe(
+    '/docs/later%20permalink'
+  );
 });
 
 test('returns empty metadata for missing and redirected content', () => {
