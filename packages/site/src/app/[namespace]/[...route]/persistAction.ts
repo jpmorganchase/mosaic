@@ -87,6 +87,15 @@ export async function getSaveDefaults(
 function validateInput(input: PersistInput): string | null {
   const routeError = validateDefaultsInput(input);
   if (routeError) return routeError;
+  if (
+    input.expectedSourceHash !== undefined &&
+    (input.isNewPage ||
+      typeof input.expectedSourceHash !== 'string' ||
+      input.expectedSourceHash.length !== 64 ||
+      !/^[a-f0-9]+$/.test(input.expectedSourceHash))
+  ) {
+    return 'Invalid original page hash.';
+  }
   if (input.commitMessage !== undefined) {
     const messageError = validateCommitMessage(input.commitMessage);
     if (messageError) return messageError;
@@ -142,6 +151,9 @@ export async function startSave(input: PersistInput): Promise<StartSaveResult> {
         ...(typeof input.frontmatter === 'string' ? { frontmatter: input.frontmatter } : {}),
         ...(typeof input.targetRoute === 'string' && input.targetRoute !== input.route
           ? { targetRoute: input.targetRoute }
+          : {}),
+        ...(input.expectedSourceHash !== undefined
+          ? { expectedSourceHash: input.expectedSourceHash }
           : {}),
         // Never send `false`: absent === edit, present === create.
         ...(input.isNewPage ? { isNewPage: true } : {})

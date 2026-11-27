@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -117,17 +118,89 @@ describe.each([
   });
 
   test('still refuses to erase an existing page with an empty body', async () => {
-    const send = vi.fn();
-    const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
-      user,
-      markdown: '',
-      frontmatter: 'title: Existing section'
-    });
+    const file = path.join(mocks.repoDir, 'content/new-section.mdx');
+    const original = '---\ntitle: Existing section\n---\n\nBody to retain\n';
+    await fs.promises.mkdir(path.dirname(file), { recursive: true });
+    await fs.promises.writeFile(file, original);
+    for (const markdown of ['', '  \n']) {
+      const send = vi.fn();
+      const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
+        user,
+        markdown,
+        frontmatter: 'title: Existing section'
+      });
 
-    expect(result).toBe(false);
-    expect(send).toHaveBeenCalledWith(expect.any(String), 'ERROR');
-    expect(mocks.init).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+      expect(send).toHaveBeenLastCalledWith(
+        'Cannot save an empty body over existing page content.',
+        'ERROR'
+      );
+      expect(await fs.promises.readFile(file, 'utf8')).toBe(original);
+    }
+    expect(mocks.addChanges).not.toHaveBeenCalled();
   });
+
+  test.each(['metadata', 'rename'] as const)(
+    'saves %s changes to a frontmatter-only page',
+    async change => {
+      const send = vi.fn();
+      const file = path.join(mocks.repoDir, 'content/new-section.mdx');
+      await fs.promises.mkdir(path.dirname(file), { recursive: true });
+      await fs.promises.writeFile(file, '---\ntitle: Original title\n---\n');
+      await workflow.action(send, sourceOptions, workflowOptions, route, {
+        user,
+        markdown: '',
+        ...(change === 'metadata'
+          ? { frontmatter: 'title: Changed title' }
+          : { targetRoute: '/docs/moved.mdx' })
+      });
+
+      const savedFile = change === 'rename' ? path.join(path.dirname(file), 'moved.mdx') : file;
+      const written = parseFrontmatter(await fs.promises.readFile(savedFile));
+      expect(written.content.trim()).toBe('');
+      expect(written.data.title).toBe(change === 'metadata' ? 'Changed title' : 'Original title');
+      expect(send).toHaveBeenLastCalledWith({ pullRequestUrl }, 'COMPLETE');
+    }
+  );
+
+  test.each([true, false])(
+    'checks the author’s original source before mutating the worktree (matching: %s)',
+    async matches => {
+      const send = vi.fn();
+      const file = path.join(mocks.repoDir, 'content/new-section.mdx');
+      const base = '---\r\ntitle: Existing page\r\n---\r\n\r\nOriginal body\r\n';
+      const current = matches ? base : base.replace('Original body', 'Someone else edited this');
+      await fs.promises.mkdir(path.dirname(file), { recursive: true });
+      await fs.promises.writeFile(file, current);
+
+      const updatedRoute = '/docs/moved.mdx';
+      await workflow.action(send, sourceOptions, workflowOptions, route, {
+        user,
+        markdown: 'Author edited this',
+        expectedSourceHash: createHash('sha256').update(base).digest('hex'),
+        targetRoute: updatedRoute
+      });
+
+      if (matches) {
+        const written = parseFrontmatter(
+          await fs.promises.readFile(path.join(mocks.repoDir, 'content/moved.mdx'))
+        );
+        expect(written.content.trim()).toBe('Author edited this');
+        expect(send).toHaveBeenLastCalledWith({ pullRequestUrl }, 'COMPLETE');
+      } else {
+        expect(await fs.promises.readFile(file, 'utf8')).toBe(current);
+        await expect(
+          fs.promises.stat(path.join(mocks.repoDir, 'content/moved.mdx'))
+        ).rejects.toMatchObject({ code: 'ENOENT' });
+        expect(mocks.addChanges).not.toHaveBeenCalled();
+        expect(send).toHaveBeenLastCalledWith(
+          expect.stringContaining('This page changed after you opened it'),
+          'ERROR'
+        );
+      }
+      expect(mocks.removeWorktree).toHaveBeenCalled();
+    }
+  );
 
   test('uses separate worktrees for simultaneous saves by the same editor', async () => {
     await Promise.all(

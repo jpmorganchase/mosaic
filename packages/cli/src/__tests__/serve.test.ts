@@ -731,6 +731,10 @@ describe('GIVEN the serve command', () => {
           { user, route: '/file/path', targetRoute: '/file/..\\..\\x.mdx', name: 'save' },
           'Workflow target route is invalid'
         ],
+        [
+          { user, route: '/file/path', name: 'save', expectedSourceHash: 'bad hash' },
+          'Invalid original page hash.'
+        ],
         [[1, 2], 'Workflow request must be a JSON object']
       ])('THEN %j gets a 400', async (payload, error) => {
         const response = await startJob(payload);
@@ -790,6 +794,7 @@ describe('GIVEN the serve command', () => {
         user,
         route: '/file/path',
         markdown: '### This is a title',
+        expectedSourceHash: 'a'.repeat(64),
         name: 'save',
         token: 'ignored',
         channel: 'ignored'
@@ -802,7 +807,11 @@ describe('GIVEN the serve command', () => {
       expect(filePath).toEqual('/file/path.mdx');
       expect(options).toBeUndefined();
       // Legacy `token` and `channel` fields never reach the workflow.
-      expect(data).toEqual({ user, markdown: '### This is a title' });
+      expect(data).toEqual({
+        user,
+        markdown: '### This is a title',
+        expectedSourceHash: 'a'.repeat(64)
+      });
 
       const events = await getEvents(jobId);
       expect(events.statusCode).toEqual(200);

@@ -7,6 +7,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { createHash } from 'node:crypto';
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { parseFrontmatter as parseFrontmatterBlock } from '@jpmorganchase/mosaic-serialisers/frontmatter';
@@ -371,7 +372,7 @@ export const getMdxRaw = cache(async (pathname: string, mode: MosaicMode, conten
  * messages share one set of names.
  */
 export type MdxRawSourceResult =
-  | { kind: 'raw'; bytes: string; namespace: string | undefined }
+  | { kind: 'raw'; bytes: string; namespace: string | undefined; sourceHash?: string }
   | { kind: 'not-found' }
   | { kind: 'no-matching-source' }
   | { kind: 'unsupported-source'; modulePath: string | undefined }
@@ -429,9 +430,14 @@ const loadMdxRawSourceImpl = async (
   });
 
   if (response.ok) {
-    const bytes = await response.text();
+    const raw = await response.arrayBuffer();
     const namespace = response.headers.get('x-mosaic-raw-namespace') ?? undefined;
-    return { kind: 'raw', bytes, namespace };
+    return {
+      kind: 'raw',
+      bytes: new TextDecoder().decode(raw),
+      namespace,
+      sourceHash: createHash('sha256').update(new Uint8Array(raw)).digest('hex')
+    };
   }
 
   if (response.status === 404) {
@@ -458,24 +464,14 @@ const loadMdxRawSourceImpl = async (
   );
 };
 
-const loadMdxRawSourceCached = withCrossRequestCache(
-  loadMdxRawSourceImpl,
-  ['mosaic', 'mdxRaw'],
-  // Loader signature: `(pathname, mode, contentUrl)`. Mode is the
-  // second arg.
-  ([, mode]) => mode,
-  result => result.kind !== 'not-found'
-);
-
 /**
  * Resolve the **raw on-disk source** for a route, bypassing the
  * Mosaic plugin pipeline. See {@link MdxRawSourceResult} for the
  * outcome shape.
  *
- * Cache wiring mirrors {@link getMdxRaw}: per-request `cache()`
- * + cross-request `unstable_cache` tagged with
- * `MOSAIC_CONTENT_CACHE_TAG`. The editor only fetches this on
- * its initial mount per page, so cache pressure is low.
+ * Deduplicate within one request. Reopening the editor after a save conflict
+ * must read the current authored file even if page views use persistent
+ * active-mode caching.
  *
  * Note: snapshot deployments return `unavailable-in-mode` —
  * snapshots hold post-plugin VFS bytes, not raw source. The
@@ -483,10 +479,7 @@ const loadMdxRawSourceCached = withCrossRequestCache(
  * with a signed-in user, so this is the expected combination
  * in practice.
  */
-export const getMdxRawSource = cache(
-  async (pathname: string, mode: MosaicMode, contentUrl: string) =>
-    loadMdxRawSourceCached(pathname, mode, contentUrl)
-);
+export const getMdxRawSource = cache(loadMdxRawSourceImpl);
 
 // ---------------------------------------------------------------------------
 // Tag-suggestions loader
