@@ -8,6 +8,10 @@ const {
   writeFileSync
 } = require('node:fs');
 const { dirname, isAbsolute, relative, resolve, sep } = require('node:path');
+const {
+  decodeRoutePathname,
+  encodeRoutePathname
+} = require('@jpmorganchase/mosaic-schemas/routePath');
 
 const ASSETS = ['search-records.json', 'llms.txt', 'llms-full.txt'];
 // Recognize prior generated output so upgrading a build removes it safely.
@@ -27,7 +31,7 @@ function snapshotMarkdown(snapshotDir, publicDir) {
   if (!existsSync(markdownFile)) return files;
   const markdown = JSON.parse(readFileSync(markdownFile, 'utf8'));
   if (
-    markdown?.version !== 1 ||
+    (markdown?.version !== 1 && markdown?.version !== 2) ||
     !markdown.pages ||
     typeof markdown.pages !== 'object' ||
     Array.isArray(markdown.pages) ||
@@ -41,7 +45,14 @@ function snapshotMarkdown(snapshotDir, publicDir) {
   };
   // Normalize older snapshot routes and keep their linked trailing-slash URLs.
   const normalize = route => (route === '/' ? route : route.replace(/\/+$/, ''));
-  const pages = Object.entries(markdown.pages);
+  const pages = Object.entries(markdown.pages).map(([route, body]) => {
+    if (markdown.version === 1) return [route, body];
+    const decoded = decodeRoutePathname(route);
+    if (decoded === undefined || encodeRoutePathname(route) !== route) {
+      throw new Error(`[mosaic-site] Invalid Markdown route in ${markdownFile}: ${route}`);
+    }
+    return [decoded, body];
+  });
   const counts = new Map();
   for (const [route] of pages) {
     const key = normalize(route).toLowerCase();
@@ -86,7 +97,7 @@ function syncSnapshotAssets({ snapshotDir, publicDir, manifestFile, copyMarkdown
     if (existsSync(manifestFile)) {
       const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
       if (
-        manifest?.version !== 1 ||
+        (manifest?.version !== 1 && manifest?.version !== 2) ||
         !Array.isArray(manifest.scopes) ||
         new Set(manifest.scopes).size !== manifest.scopes.length ||
         manifest.scopes.some(

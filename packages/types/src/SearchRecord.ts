@@ -10,7 +10,10 @@
 export interface SearchRecord {
   /** The encoded document pathname with a fragment for a section. */
   id: string;
+  /** Logical route used by search policies. */
   route: string;
+  /** Public pathname when its URL spelling differs from the logical route. */
+  pathname?: string;
   /** The section heading's id. Absent for the introduction. */
   anchor?: string;
   /** The page title. */

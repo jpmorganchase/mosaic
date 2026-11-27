@@ -14,7 +14,7 @@ const options = {
 
 afterEach(() => vi.restoreAllMocks());
 
-test('preserves the pre-scopes global artifacts byte for byte across multiple public prefixes', async () => {
+test('keeps global text and Markdown content stable across multiple public prefixes', async () => {
   const site = await populatedFixture();
   const files = await site.publish();
   expect(

@@ -5,7 +5,7 @@ import { toString } from 'mdast-util-to-string';
 import { SKIP, visit } from 'unist-util-visit';
 import type { Node, Parent } from 'unist';
 import type { SearchRecord } from '@jpmorganchase/mosaic-types';
-import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import { pageRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 
 import {
   asText,
@@ -150,13 +150,14 @@ export function buildSearchRecords(
   });
 
   const pageFields = readFields(page, fields);
-  const pathname = encodeRoutePathname(route);
+  const pathname = pageRoutePathname(route, page.fullPath);
   return sections.map(({ anchor, headings, parts }) => {
     const record: SearchRecord = {
       // An empty slug is a section without a usable fragment. Keep its ID
       // distinct from the introduction even though both link to the page.
       id: anchor === undefined ? pathname : `${pathname}#${encodeURIComponent(anchor)}`,
       route,
+      ...(pathname !== route && { pathname }),
       title,
       headings,
       text: collapse(parts.join(' ')).slice(0, maxTextLength),
