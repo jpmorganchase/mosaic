@@ -450,6 +450,8 @@ export default class SourceManager {
   }
 
   #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
+    const config = source.config;
+    const isCurrent = () => this.#sources.get(source.id) === source && source.config === config;
     const siblings = Array.from(this.#sources.values()).filter(
       candidate => candidate !== source && candidate.namespace === source.namespace
     );
@@ -459,7 +461,8 @@ export default class SourceManager {
           source.id.description,
           immutableSourceFilesystem,
           this.#sharedFilesystem,
-          this.#globalConfig
+          this.#globalConfig,
+          isCurrent
         )
       )
     );
