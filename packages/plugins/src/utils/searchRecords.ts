@@ -151,7 +151,9 @@ export function buildSearchRecords(
   const pageFields = readFields(page, fields);
   return sections.map(({ anchor, headings, parts }) => {
     const record: SearchRecord = {
-      id: anchor ? `${route}#${anchor}` : route,
+      // An empty slug is a section without a usable fragment. Keep its ID
+      // distinct from the introduction even though both link to the page.
+      id: anchor === undefined ? route : `${route}#${anchor}`,
       route,
       title,
       headings,
@@ -159,7 +161,7 @@ export function buildSearchRecords(
       namespace
     };
     if (anchor) record.anchor = anchor;
-    if (!anchor && pageFields) record.fields = pageFields;
+    if (anchor === undefined && pageFields) record.fields = pageFields;
     return record;
   });
 }

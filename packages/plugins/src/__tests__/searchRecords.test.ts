@@ -224,8 +224,11 @@ describe('GIVEN the SearchIndexPlugin', () => {
     '/docs/data.json': JSON.stringify({ route: '/docs/data', title: 'Data' })
   };
 
-  async function run(options: Record<string, unknown> = {}) {
-    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(files)), 'docs');
+  async function run(
+    options: Record<string, unknown> = {},
+    inputFiles: Record<string, string> = files
+  ) {
+    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(inputFiles)), 'docs');
     let data: Record<string, unknown> = {};
     const beforeSend = SearchIndexPlugin.$beforeSend!;
     await beforeSend(
@@ -271,6 +274,45 @@ describe('GIVEN the SearchIndexPlugin', () => {
   test('WHEN records are turned off THEN it does not write search-records.json', async () => {
     const writeFile = await run({ records: false });
     expect(writeFile).not.toHaveBeenCalled();
+  });
+
+  test('THEN source removal publishes only the remaining records or removes the index', async () => {
+    const filesystem = new MutableVolume(new FileAccess(new Volume()), '*');
+    const [retired] = buildSearchRecords({ route: '/retired/page', title: 'Retired' })!;
+    const [remaining] = buildSearchRecords({ route: '/docs/page', title: 'Remaining' })!;
+    await filesystem.promises.writeFile(
+      SEARCH_RECORDS_FILE,
+      JSON.stringify({ version: 1, records: [retired, remaining] })
+    );
+
+    const onRemoval = SearchIndexPlugin.afterSourceRemove!;
+    await onRemoval(filesystem, {
+      globalConfig: { data: { searchRecords: { [remaining.id]: remaining } } }
+    });
+    const published = await filesystem.promises.readFile(SEARCH_RECORDS_FILE, 'utf8');
+    expect(JSON.parse(String(published))).toEqual({ version: 1, records: [remaining] });
+
+    await onRemoval(filesystem, { globalConfig: { data: {} } });
+    expect(await filesystem.promises.exists(SEARCH_RECORDS_FILE)).toBe(false);
+    await onRemoval(filesystem, { globalConfig: { data: {} } });
+  });
+
+  test('THEN the introduction and a section without an anchor both remain searchable', async () => {
+    const writeFile = await run(
+      {},
+      {
+        '/docs/notes.mdx':
+          '---\nroute: /docs/notes\ntitle: Notes\n---\nIntroduction\n\n## !!!\n\nSection'
+      }
+    );
+    const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
+    const index = createSearchIndex(JSON.parse(json).records);
+    expect(index.search('introduction')).toEqual([
+      expect.objectContaining({ href: '/docs/notes', snippet: 'Introduction' })
+    ]);
+    expect(index.search('section')).toEqual([
+      expect.objectContaining({ href: '/docs/notes', snippet: 'Section' })
+    ]);
   });
 
   test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {
