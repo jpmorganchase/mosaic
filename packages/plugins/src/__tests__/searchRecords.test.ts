@@ -331,6 +331,33 @@ describe('GIVEN the SearchIndexPlugin', () => {
     expect(index.search('schedule')[0].href).toBe('/docs/release%23notes');
   });
 
+  test('THEN a literal percent in a source route is distinct from an authored escape', async () => {
+    const writeFile = await run(
+      {},
+      {
+        '/docs/release%20notes.mdx':
+          '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nLiteral filename.',
+        '/docs/backing.mdx':
+          '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nAuthored permalink.'
+      }
+    );
+    const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
+    const records = JSON.parse(json).records;
+    expect(records.map(record => record.id).sort()).toEqual([
+      '/docs/release%20notes',
+      '/docs/release%2520notes'
+    ]);
+    const index = createSearchIndex(records);
+    expect(
+      index
+        .search('release notes')
+        .map(result => result.href)
+        .sort()
+    ).toEqual(['/docs/release%20notes', '/docs/release%2520notes']);
+    expect(index.search('literal')[0].href).toBe('/docs/release%2520notes');
+    expect(index.search('authored')[0].href).toBe('/docs/release%20notes');
+  });
+
   test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {
     const writeFile = await run({
       records: { fields: { summary: 'data.summary', tags: 'data.tags' } }

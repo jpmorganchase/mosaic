@@ -271,7 +271,7 @@ export function createSearchIndex(
   records: SearchRecord[],
   options: SearchIndexOptions = {}
 ): MosaicSearchIndex {
-  const groupBy = options.groupBy ?? ((record: SearchRecord) => record.route);
+  const groupBy = options.groupBy ?? ((record: SearchRecord) => record.pathname ?? record.route);
   const pageRank = options.pageRank ?? defaultPageRank;
   const synonyms = new Map<string, string[]>();
   for (const group of options.synonyms ?? []) {
@@ -301,9 +301,9 @@ export function createSearchIndex(
   );
 
   const toHit = (record: SearchRecord, terms: string[]): SearchHit => {
-    const pathname = record.route.startsWith('/')
-      ? encodeRoutePathname(record.route)
-      : record.route;
+    const pathname =
+      record.pathname ??
+      (record.route.startsWith('/') ? encodeRoutePathname(record.route) : record.route);
     return {
       id: record.id,
       route: record.route,

@@ -1,7 +1,11 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import picomatch from 'picomatch';
-import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import {
+  decodeRoutePathname,
+  encodeRoutePathname,
+  pageRoutePathname
+} from '@jpmorganchase/mosaic-schemas/routePath';
 import type {
   IVolumeMutable,
   ImmutableData,
@@ -90,9 +94,12 @@ interface MarkdownPage {
 }
 
 type LlmsTxtPluginData = {
+  /** Legacy worker caches used logical routes. */
   markdownPages?: Record<string, MarkdownPage>;
-  /** Includes excluded pages so another page cannot reuse their canonical route. */
   llmsRouteClaims?: string[];
+  markdownPagesByPathname?: Record<string, MarkdownPage>;
+  /** Includes excluded pages so another page cannot reuse their canonical route. */
+  llmsPathnameClaims?: string[];
 };
 
 // Sources may finish concurrently. Publish a complete generation at a time on
@@ -115,6 +122,7 @@ function loadComponents(modulePath?: string): Promise<MarkdownComponents> {
 }
 
 const origin = (siteUrl?: string) => (siteUrl ?? '').replace(/\/+$/, '');
+const normalizeRoute = (route: string) => (route === '/' ? route : route.replace(/\/+$/, ''));
 
 // Quoted, so YAML reads any text as a string.
 const yamlString = (value: string) => JSON.stringify(value);
@@ -193,7 +201,7 @@ const sectionOf = (route: string) => {
 };
 
 const label = (section: string) => {
-  const name = section.split('/').filter(Boolean).pop() ?? 'home';
+  const name = (decodeRoutePathname(section) ?? section).split('/').filter(Boolean).pop() ?? 'home';
   const words = name.replace(/[-_]+/g, ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
 };
@@ -270,8 +278,8 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
     })) as string[];
     // Matched against each page's own path, so aliases of excluded pages are excluded too.
     const isExcluded = picomatch(options.exclude ?? [], { dot: true });
-    const markdownPages: Record<string, MarkdownPage> = {};
-    const llmsRouteClaims: string[] = [];
+    const markdownPagesByPathname: Record<string, MarkdownPage> = {};
+    const llmsPathnameClaims: string[] = [];
     const seenFiles = new Set<string>();
     const isPage = createPageTest(ignorePages, pageExtensions);
     const failures: string[] = [];
@@ -286,7 +294,10 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
         await mutableFilesystem.promises.readFile(pagePath)
       )) as LlmsTxtPluginPage;
       if (typeof page.route !== 'string') continue;
-      llmsRouteClaims.push(page.route);
+      const route = normalizeRoute(page.route);
+      const pathname = pageRoutePathname(route, page.fullPath ?? realPath);
+      if (route.length > 4096 || decodeRoutePathname(pathname) === undefined) continue;
+      llmsPathnameClaims.push(pathname);
       // An alias must not resurrect an ignored or excluded backing page.
       if (!isPage(String(page.fullPath ?? realPath)) || page.llms?.exclude === true) continue;
       if (isExcluded(String(page.fullPath ?? pagePath).replace(/^\//, ''))) continue;
@@ -295,7 +306,11 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
       const description =
         plainText(page.description) ?? plainText(lookup(values, 'data.description'));
       try {
-        const body = await toMarkdown(values, { components, siteUrl });
+        const body = await toMarkdown(values, {
+          components,
+          siteUrl,
+          pathname: route !== page.route ? `${pathname}/` : pathname
+        });
         if (body === undefined) {
           console.warn(
             `[Mosaic][Plugin-LlmsTxt] ${pagePath} is not valid MDX, so it is left out of llms.txt`
@@ -307,7 +322,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
           const value = yamlValue((page as unknown as Record<string, unknown>)[key]);
           return value === undefined ? [] : [[key, value] as [string, string]];
         });
-        markdownPages[page.route] = {
+        markdownPagesByPathname[pathname] = {
           title,
           description,
           // Typed as a `Date`, but sources also set timestamps and date strings.
@@ -319,7 +334,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
         failures.push(`${pagePath}: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
-    config.setData({ markdownPages, llmsRouteClaims });
+    config.setData({ markdownPagesByPathname, llmsPathnameClaims });
     if (failures.length > 0) {
       throw new PluginError(
         `Couldn't convert ${failures.length} page(s) to Markdown:\n${failures.join('\n')}`
@@ -346,18 +361,28 @@ async function publish(
   const publish = (writes.get(sharedFilesystem) ?? Promise.resolve())
     .catch(() => undefined)
     .then(async () => {
-      const sourcePages = globalConfig.data.markdownPages ?? {};
+      const { markdownPages, llmsRouteClaims, markdownPagesByPathname, llmsPathnameClaims } =
+        globalConfig.data;
       const claims = new Map<string, number>();
-      const normalizeRoute = (route: string) => (route === '/' ? route : route.replace(/\/+$/, ''));
-      for (const route of globalConfig.data.llmsRouteClaims ?? []) {
-        const key = normalizeRoute(route).toLowerCase();
+      const legacyPathname = (route: string) => encodeRoutePathname(normalizeRoute(route));
+      for (const route of [
+        ...(llmsRouteClaims ?? []).map(legacyPathname),
+        ...(llmsPathnameClaims ?? [])
+      ]) {
+        const key = route.toLowerCase();
         claims.set(key, (claims.get(key) ?? 0) + 1);
       }
       const pages: Record<string, MarkdownPage> = {};
-      for (const [authoredRoute, page] of Object.entries(sourcePages)) {
-        const route = normalizeRoute(authoredRoute);
+      const sourcePages = [
+        ...Object.entries(markdownPages ?? {}).map(
+          ([route, page]) => [legacyPathname(route), page] as const
+        ),
+        ...Object.entries(markdownPagesByPathname ?? {})
+      ];
+      for (const [route, page] of sourcePages) {
         // Ambiguous canonical routes cannot safely identify public content.
-        if ((claims.get(route.toLowerCase()) ?? 0) > 1) continue;
+        if ((claims.get(route.toLowerCase()) ?? 0) > 1 || decodeRoutePathname(route) === undefined)
+          continue;
         pages[route] = {
           ...page,
           markdown: renderPage(
@@ -378,7 +403,7 @@ async function publish(
         (previous?.scopes ?? []).map(scope => ({ path: scope }))
       );
       const file: MarkdownPagesFile = {
-        version: 1,
+        version: 2,
         pages: Object.fromEntries(routes.map(route => [route, pages[route].markdown]))
       };
       await sharedFilesystem.promises.writeFile(MARKDOWN_PAGES_FILE, JSON.stringify(file));
@@ -416,7 +441,7 @@ async function publish(
         }
       }
       const manifest: LlmsManifest = {
-        version: 1,
+        version: 2,
         routes,
         scopes: scopes.map(scope => scope.path),
         ...(siteUrl && { siteUrl })

@@ -55,7 +55,9 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions, SearchIndexD
       if (!pageExtensions.some(extension => pagePath.endsWith(extension))) return;
       if (typeof page.route !== 'string' || page.search?.exclude === true) return;
       const records = buildSearchRecords(
-        page as Parameters<typeof buildSearchRecords>[0],
+        { ...page, fullPath: page.fullPath ?? pagePath } as Parameters<
+          typeof buildSearchRecords
+        >[0],
         recordOptions
       );
       if (!records) {

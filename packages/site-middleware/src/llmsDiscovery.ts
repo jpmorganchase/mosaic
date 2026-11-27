@@ -1,5 +1,5 @@
 import type { LlmsManifest, MosaicMode } from '@jpmorganchase/mosaic-types';
-import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import { decodeRoutePathname, encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import { createContentFileCache } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
 
@@ -44,6 +44,12 @@ export function isLlmsRoute(value: unknown): value is string {
   }
 }
 
+export function isLlmsPathname(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const decoded = decodeRoutePathname(value);
+  return decoded !== undefined && decoded.length <= 4096 && encodeRoutePathname(value) === value;
+}
+
 /** An origin, with an optional path, that is safe in HTML and Link headers. */
 const isSiteUrl = (value: unknown): value is string =>
   typeof value === 'string' && /^https?:\/\/[^\s<>"?#]+$/.test(value);
@@ -53,10 +59,12 @@ let warnedSiteUrl: string | undefined;
 export function parseLlmsManifest(text: string): LlmsManifest {
   const manifest = JSON.parse(text) as LlmsManifest;
   if (
-    manifest?.version !== 1 ||
+    (manifest?.version !== 1 && manifest?.version !== 2) ||
     !Array.isArray(manifest.routes) ||
     !manifest.routes.every(
-      route => typeof route === 'string' && isLlmsRoute(normalizeLlmsRoute(route))
+      route =>
+        typeof route === 'string' &&
+        (manifest.version === 2 ? isLlmsPathname(route) : isLlmsRoute(normalizeLlmsRoute(route)))
     ) ||
     !Array.isArray(manifest.scopes) ||
     !manifest.scopes.every(
@@ -123,13 +131,20 @@ export function createLlmsDiscoveryLoader(maxAge = 30_000) {
   return async (
     route: string,
     mode: MosaicMode,
-    contentUrl: string
+    contentUrl: string,
+    pathname?: string
   ): Promise<LlmsDiscovery | undefined> => {
     route = normalizeLlmsRoute(route);
-    if (!isLlmsRoute(route)) return undefined;
     const manifest = await getManifest(mode, contentUrl);
-    const canonical = manifest?.routes.find(
-      candidate => candidate.toLowerCase() === route.toLowerCase()
+    if (!manifest) return undefined;
+    const requestedRoute =
+      manifest.version === 2
+        ? encodeRoutePathname(normalizeLlmsRoute(pathname ?? route), { lowercase: true })
+        : route;
+    if (!(manifest.version === 2 ? isLlmsPathname(requestedRoute) : isLlmsRoute(requestedRoute)))
+      return undefined;
+    const canonical = manifest.routes.find(
+      candidate => candidate.toLowerCase() === requestedRoute.toLowerCase()
     );
     return canonical ? llmsDiscoveryForRoute(canonical, manifest) : undefined;
   };
@@ -138,10 +153,13 @@ export function createLlmsDiscoveryLoader(maxAge = 30_000) {
 const loadDiscovery = createLlmsDiscoveryLoader();
 
 /** Server-only HTML discovery, independent of the full Markdown corpus. */
-export async function getLlmsDiscovery(route: string): Promise<LlmsDiscovery | undefined> {
+export async function getLlmsDiscovery(
+  route: string,
+  pathname?: string
+): Promise<LlmsDiscovery | undefined> {
   const { mode, contentUrl } = resolveMosaicMode();
   try {
-    return await loadDiscovery(route, mode, contentUrl);
+    return await loadDiscovery(route, mode, contentUrl, pathname);
   } catch (error) {
     // Optional discovery must not prevent the HTML document from rendering.
     console.warn(`[Mosaic] Couldn't load LLM discovery: ${error}`);

@@ -9,8 +9,8 @@ The `LlmsTxtPlugin` writes the site's docs as Markdown, for coding agents and ot
 
 - `llms.txt`: an index of the pages, with the root page (`/`) first, a section for each folder and each page's description
 - `llms-full.txt`: every page in one file
-- `markdown-pages.json`: every page's Markdown, keyed by route
-- `llms-manifest.json`: a small internal manifest of generated canonical routes and public scopes, used for discovery and artifact cleanup
+- `markdown-pages.json`: every page's Markdown, keyed by its encoded public pathname
+- `llms-manifest.json`: a small internal manifest of generated canonical pathnames and public scopes, used for discovery and artifact cleanup
 
 Each page's Markdown starts with frontmatter and a link to `llms.txt`. The frontmatter has the page's title, description and URL, when it last changed (`lastModified`, if its source knows), and any fields named in the `frontmatterFields` option. In the page body:
 
@@ -110,7 +110,7 @@ In active mode, the handler reads the files from the CLI and caches them for up 
 
 The reference site renders exactly one `rel="alternate" type="text/markdown"` link to the canonical page's `.md` URL, and one `rel="describedby"` link to its most-specific index. Both are server-rendered, including in static exports. Aliases use the canonical target's links. Excluded pages and sites without generated discovery data do not advertise nonexistent Markdown.
 
-Custom hosts can call the server-only `getLlmsDiscovery(canonicalRoute)` export from `@jpmorganchase/mosaic-site-middleware` and render the returned `markdownUrl` and `indexUrl` as HTML links. It reads only the small manifest. `createLlmsDiscoveryLoader(maxAge)` provides an independently cached loader accepting `(canonicalRoute, mode, contentUrl)` for hosts that configure their content source explicitly. Older snapshots without the manifest still serve existing Markdown/index URLs; regenerate them to enable HTML discovery.
+Custom hosts can call the server-only `getLlmsDiscovery(canonicalRoute, pathname)` export from `@jpmorganchase/mosaic-site-middleware` and render the returned `markdownUrl` and `indexUrl` as HTML links. Pass the public pathname from `canonicalRouteHref` to distinguish literal percent signs in source filenames from authored URL escapes. The lookup reads only the small manifest. `createLlmsDiscoveryLoader(maxAge)` provides an independently cached loader accepting `(canonicalRoute, mode, contentUrl, pathname)` for hosts that configure their content source explicitly. Older snapshots without a manifest still serve their Markdown and index URLs. Regenerate them to enable HTML discovery.
 
 Markdown responses from `createLlmsHandler` include the same relations in HTTP `Link` headers, plus `rel="canonical"` for the HTML page the Markdown came from. Their bodies also link to the selected index, so discovery remains available without response-header support.
 

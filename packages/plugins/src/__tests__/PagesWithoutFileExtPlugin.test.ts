@@ -24,6 +24,28 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
     expect(PagesWithoutFileExtPlugin).toHaveProperty('$afterSource');
   });
 
+  test('THEN a literal percent filename and an escaped permalink resolve to distinct aliases', async () => {
+    const setAliases = vi.fn();
+    const afterSource = PagesWithoutFileExtPlugin.$afterSource!;
+    const result = await afterSource(
+      [
+        { fullPath: '/docs/guide%20name.mdx', route: '/docs/guide%20name.mdx', title: 'Literal' },
+        { fullPath: '/docs/guide.mdx', route: '/docs/guide%20name', title: 'Authored' }
+      ],
+      {
+        config: { setAliases },
+        ignorePages: [],
+        pageExtensions: ['.mdx']
+      } as Parameters<typeof afterSource>[1],
+      {}
+    );
+    expect(setAliases.mock.calls).toEqual([
+      ['/docs/guide%20name.mdx', ['/docs/guide%20name']],
+      ['/docs/guide.mdx', ['/docs/guide name']]
+    ]);
+    expect(result?.map(page => page.route)).toEqual(['/docs/guide%20name', '/docs/guide%20name']);
+  });
+
   describe('AND WHEN pages have an extension we want', () => {
     const pageExtensions = ['.mdx', '.json', '.md'];
     const ignorePages = ['shared-config.json', 'sitemap.xml', 'sidebar.json'];

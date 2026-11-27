@@ -30,7 +30,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
   };
   const get = (path: string) =>
     handler(new Request(`http://site.test${path}`), {
-      params: Promise.resolve({ path: path.slice(1).split('/') })
+      params: Promise.resolve({ path: path.slice(1).split('/').map(decodeURIComponent) })
     });
 
   beforeEach(async () => {
@@ -211,14 +211,52 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(JSON.parse(files['/markdown-pages.json']).pages).not.toHaveProperty('/salt/guide/');
   });
 
+  test('serves percent filenames and authored escapes as distinct Markdown pages', async () => {
+    await site.update('percent', {
+      '/salt/release%20notes.mdx': document('/salt/release%20notes', 'Literal percent'),
+      '/salt/backing.mdx': document('/salt/release%20notes', 'Authored permalink', {
+        fullPath: '/salt/backing.mdx'
+      }),
+      '/salt/team.mdx': document('/salt/%c3%89quipe', 'Escaped uppercase', {
+        fullPath: '/salt/team.mdx'
+      }),
+      '/salt/working notes.mdx': document('/salt/working notes', 'Literal space')
+    });
+    files = await site.publish(options);
+    if (mode === 'snapshot-file') save();
+
+    for (const [route, pathname, title] of [
+      ['/salt/release%20notes', '/salt/release%2520notes', 'Literal percent'],
+      ['/salt/release%20notes', '/salt/release%20notes', 'Authored permalink'],
+      ['/salt/%c3%89quipe', '/salt/%C3%A9quipe', 'Escaped uppercase'],
+      ['/salt/working notes', '/salt/working%20notes', 'Literal space']
+    ]) {
+      const markdownUrl = `${pathname}.md`;
+      expect(files['/salt/llms.txt']).toContain(`[${title}](${markdownUrl})`);
+      expect(await discovery(route, mode, contentUrl, pathname)).toEqual({
+        markdownUrl,
+        indexUrl: '/salt/llms.txt'
+      });
+      const response = await get(markdownUrl);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Link')).toContain(`<${pathname}>; rel="canonical"`);
+      expect(await response.text()).toContain(`url: "${pathname}"`);
+    }
+    expect((await get('/salt/%C3%89quipe.md')).headers.get('Link')).toContain(
+      '</salt/%C3%A9quipe>; rel="canonical"'
+    );
+  });
+
   test('reads legacy trailing-slash bundles and omits ambiguous normalized routes', async () => {
     const bundle = JSON.parse(files['/markdown-pages.json']);
+    bundle.version = 1;
     bundle.pages['/salt/guide/'] = '# Legacy guide';
     bundle.pages['/salt/clash'] = '# First';
     bundle.pages['/salt/clash/'] = '# Second';
     bundle.pages['/salt/clash/index'] = '# Distinct index';
     files['/markdown-pages.json'] = JSON.stringify(bundle);
     const manifest = JSON.parse(files['/llms-manifest.json']);
+    manifest.version = 1;
     manifest.routes.push('/salt/guide/', '/salt/clash', '/salt/clash/', '/salt/clash/index');
     files['/llms-manifest.json'] = JSON.stringify(manifest);
     if (mode === 'snapshot-file') save();

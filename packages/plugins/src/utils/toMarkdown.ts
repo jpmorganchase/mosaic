@@ -3,7 +3,7 @@ import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkGfm from 'remark-gfm';
 import remarkStringify from 'remark-stringify';
-import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import { pageRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import type { Node } from 'unist';
 import type { Root } from 'mdast';
 
@@ -100,9 +100,9 @@ const stringify = (children: AnyNode[]) => {
  * Makes relative links absolute, so they work outside the page, such as in
  * `llms-full.txt`: root-relative, or on the site's origin when it's known.
  */
-const resolveUrl = (url: string, route: string, siteUrl = '') => {
+const resolveUrl = (url: string, pathname: string, siteUrl = '') => {
   if (/^([a-z][a-z\d+.-]*:|\/\/|#)/i.test(url)) return url;
-  const resolved = new URL(url, `https://mosaic.invalid${encodeRoutePathname(route)}`);
+  const resolved = new URL(url, `https://mosaic.invalid${pathname}`);
   return `${siteUrl}${resolved.pathname}${resolved.search}${resolved.hash}`;
 };
 
@@ -120,7 +120,7 @@ function readAttributes(node: AnyNode) {
 
 interface Context {
   page: PageValues;
-  route: string;
+  pathname: string;
   components: MarkdownComponents;
   /** The site's origin, without a trailing slash, or `''`. */
   siteUrl: string;
@@ -181,7 +181,7 @@ async function convertNode(node: AnyNode, context: Context): Promise<AnyNode[]> 
     case 'link':
     case 'image':
     case 'definition':
-      if (node.url) node.url = resolveUrl(node.url, context.route, context.siteUrl);
+      if (node.url) node.url = resolveUrl(node.url, context.pathname, context.siteUrl);
       await convertChildren(node, context);
       return [node];
     default:
@@ -217,6 +217,8 @@ async function convertElement(
 }
 
 export interface ToMarkdownOptions {
+  /** The encoded public pathname used to resolve relative links. */
+  pathname?: string;
   /** Converters for the site's JSX components, by name. */
   components?: MarkdownComponents;
   /** The site's origin, such as `https://example.com`. Links stay root-relative without it. */
@@ -237,7 +239,11 @@ export interface ToMarkdownOptions {
  */
 export async function toMarkdown(
   page: PageValues & { route: string; content?: unknown },
-  { components = {}, siteUrl }: ToMarkdownOptions = {}
+  {
+    components = {},
+    siteUrl,
+    pathname = pageRoutePathname(page.route, page.fullPath)
+  }: ToMarkdownOptions = {}
 ): Promise<string | undefined> {
   const content = typeof page.content === 'string' ? page.content.replaceAll('\r', '') : '';
   let tree: AnyNode;
@@ -248,7 +254,7 @@ export async function toMarkdown(
   }
   await convertChildren(tree, {
     page,
-    route: page.route,
+    pathname,
     components: { ...defaultMarkdownComponents, ...components },
     siteUrl: (siteUrl ?? '').replace(/\/+$/, '')
   });

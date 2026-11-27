@@ -66,6 +66,28 @@ describe('snapshot public assets', () => {
     expect(existsSync(join(publicDir, 'salt/llms.txt'))).toBe(false);
   });
 
+  test('writes encoded Markdown pathnames to their literal public filenames', async () => {
+    const options = { scopes: [{ path: '/salt' }] };
+    const site = await populatedFixture(options);
+    await site.update('percent', {
+      '/salt/release%20notes.mdx': document('/salt/release%20notes', 'Literal percent'),
+      '/salt/backing.mdx': document('/salt/release%20notes', 'Authored permalink', {
+        fullPath: '/salt/backing.mdx'
+      })
+    });
+    const files: Record<string, string> = await site.publish(options);
+    for (const [route, content] of Object.entries(files)) {
+      const target = join(snapshotDir, route.slice(1));
+      mkdirSync(join(target, '..'), { recursive: true });
+      writeFileSync(target, content);
+    }
+    sync();
+    expect(read('salt/release%20notes.md')).toContain('Literal percent');
+    expect(read('salt/release notes.md')).toContain('Authored permalink');
+    expect(read('salt/llms.txt')).toContain('[Literal percent](/salt/release%2520notes.md)');
+    expect(read('salt/llms.txt')).toContain('[Authored permalink](/salt/release%20notes.md)');
+  });
+
   test('rejects an authored file at a reserved scoped index without changing it', () => {
     mkdirSync(join(snapshotDir, 'salt'));
     mkdirSync(join(publicDir, 'salt'));
@@ -298,7 +320,7 @@ describe('snapshot public assets', () => {
     sync();
     writeFileSync(
       join(snapshotDir, 'markdown-pages.json'),
-      JSON.stringify({ version: 2, pages: {} })
+      JSON.stringify({ version: 3, pages: {} })
     );
 
     expect(sync).toThrow('Invalid Markdown pages');

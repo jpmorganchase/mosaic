@@ -498,7 +498,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
         isEditing={editing || creating}
       />
       <RouteMetadata />
-      {canonicalPathname && <LlmsMetadata route={canonicalPathname} />}
+      {canonicalPathname && <LlmsMetadata route={canonicalPathname} pathname={canonicalHref} />}
       {editing || creating ? (
         <EditorBody
           raw={raw}

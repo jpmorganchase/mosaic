@@ -15,11 +15,13 @@
  * Server-only.
  */
 import type { MarkdownPagesFile, MosaicMode } from '@jpmorganchase/mosaic-types';
+import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 
 import { createContentFileCache } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
 import {
   createLlmsManifestLoader,
+  isLlmsPathname,
   isLlmsRoute,
   llmsDiscoveryForRoute,
   normalizeLlmsRoute,
@@ -41,27 +43,30 @@ export interface LlmsHandlerOptions {
   maxAge?: number;
 }
 
-function parseMarkdownPages(text: string): Map<string, string | undefined> {
+function parseMarkdownPages(text: string) {
   const file = JSON.parse(text) as MarkdownPagesFile;
   if (
-    file?.version !== 1 ||
+    (file?.version !== 1 && file?.version !== 2) ||
     typeof file.pages !== 'object' ||
     file.pages === null ||
     Array.isArray(file.pages) ||
     Object.entries(file.pages).some(
-      ([route, body]) => !isLlmsRoute(normalizeLlmsRoute(route)) || typeof body !== 'string'
+      ([route, body]) =>
+        !(file.version === 2 ? isLlmsPathname(route) : isLlmsRoute(normalizeLlmsRoute(route))) ||
+        typeof body !== 'string'
     )
   ) {
     throw new Error(`Unsupported ${MARKDOWN_PAGES_FILE} format`);
   }
   const routes = new Set(unambiguousLlmsRoutes(Object.keys(file.pages)));
   // Retain a blocked key so folder-index fallback cannot select an ambiguous URL.
-  return new Map(
+  const pages = new Map(
     Object.entries(file.pages).map(([route, body]) => {
       const canonical = normalizeLlmsRoute(route);
       return [canonical, routes.has(canonical) ? body : undefined] as const;
     })
   );
+  return { version: file.version, pages };
 }
 
 const text = (body: string, status: number, headers: Record<string, string> = {}) =>
@@ -100,7 +105,7 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
     const segments = (await context.params).path ?? [];
     if (
       !segments.length ||
-      !isLlmsRoute(`/${segments.join('/')}`) ||
+      !isLlmsPathname(encodeRoutePathname(`/${segments.join('/')}`, { literal: true })) ||
       segments.some(segment => segment.includes('/'))
     )
       return text('Not found', 404);
@@ -138,8 +143,11 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
           ? text('Not found', 404)
           : text(body, 200, { 'Cache-Control': cacheControl });
       }
-      const route = routeOf(segments);
-      const pages = await getPages(mode, contentUrl);
+      const decodedRoute = routeOf(segments);
+      const bundle = await getPages(mode, contentUrl);
+      const route =
+        bundle?.version === 2 ? encodeRoutePathname(decodedRoute, { literal: true }) : decodedRoute;
+      const pages = bundle?.pages;
       const canonical = pages?.has(route) ? route : `${route.replace(/\/$/, '')}/index`;
       const markdown =
         route.endsWith('/index') && canonical !== route ? undefined : pages?.get(canonical);

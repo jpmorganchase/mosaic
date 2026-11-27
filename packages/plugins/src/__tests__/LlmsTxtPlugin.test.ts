@@ -161,6 +161,15 @@ describe('GIVEN toMarkdown', () => {
     expect(markdown).toBe('[Reference](/docs/release%23team/reference?tab=api#details)');
   });
 
+  test('THEN relative links keep a literal percent in the source directory', async () => {
+    const markdown = await toMarkdown({
+      route: '/docs/release%20team/index',
+      fullPath: '/docs/release%20team/index.mdx',
+      content: '[Reference](./reference?tab=api#details)'
+    });
+    expect(markdown).toBe('[Reference](/docs/release%2520team/reference?tab=api#details)');
+  });
+
   test('THEN it puts links and images on the site URL when it is set', async () => {
     const markdown = await toMarkdown(
       {
@@ -265,7 +274,7 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     return { written: shared.toJSON() as Record<string, string>, error };
   }
 
-  test('THEN indexes and article URLs encode reserved characters without changing bundle keys', async () => {
+  test('THEN indexes, article URLs and bundle keys use encoded pathnames', async () => {
     const route = '/docs/release#notes?draft';
     const { written } = await run(
       { siteUrl: 'https://example.com', scopes: [{ path: '/docs' }] },
@@ -279,16 +288,16 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     expect(written['/docs/llms.txt']).toContain(
       '(https://example.com/docs/release%23notes%3Fdraft.md)'
     );
-    expect(JSON.parse(written[MARKDOWN_PAGES_FILE]).pages[route]).toContain(
-      'url: "https://example.com/docs/release%23notes%3Fdraft"'
-    );
+    expect(
+      JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/release%23notes%3Fdraft']
+    ).toContain('url: "https://example.com/docs/release%23notes%3Fdraft"');
   });
 
   test('THEN it writes each page as Markdown with frontmatter, in route order', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { written } = await run({ siteUrl: 'https://example.com/' });
     const file = JSON.parse(written[MARKDOWN_PAGES_FILE]);
-    expect(file.version).toBe(1);
+    expect(file.version).toBe(2);
     expect(Object.keys(file.pages)).toEqual([
       '/docs/index',
       '/docs/button/index',
