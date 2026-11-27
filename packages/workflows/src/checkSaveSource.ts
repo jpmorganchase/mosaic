@@ -5,7 +5,7 @@ export function checkSaveSource(rawPage: Buffer, expectedSourceHash?: string): s
     expectedSourceHash !== undefined &&
     createHash('sha256').update(rawPage).digest('hex') !== expectedSourceHash
   ) {
-    return 'This page changed after you opened it. Copy your edits before reopening the page, then reapply them to the latest version.';
+    return 'This page changed after you opened it. Copy your edits before reopening the page. If the newer version is still unavailable, wait for the content source to refresh.';
   }
   return undefined;
 }
