@@ -47,8 +47,10 @@ const markdownAccept = `${markdownRange}(?:;(?!${rejectedQuality}|${charset}(?!$
 // is more specific than a generic text/markdown range.
 const parameters = `(?:;${mediaParameter})*`;
 const markdownUtf8Rejected = `${markdownRange}(?=${parameters};${charset}${utf8Value})(?=${parameters};${rejectedQuality})${parameters}(?:,.*)?`;
-const negotiablePageSource =
-  '/:path((?!(?:api|_next|img)(?:/|$)|(?:favicon\\.ico|robots\\.txt|sitemap\\.xml)$|.*\\.md$|(?:.*/)?llms(?:-full)?\\.txt$).+)';
+// These files in public/img are assets; other /img paths can be Mosaic pages.
+const stockImages = String.raw`img/(?:404|500|favicon|hero|product|tile_icon)\.png$`;
+const fixedRepresentation = String.raw`(?:favicon\.ico|robots\.txt|sitemap\.xml)$|.*\.md$|(?:.*/)?llms(?:-full)?\.txt$`;
+const negotiablePageSource = `/:path((?!(?:api|_next)(?:/|$)|${stockImages}|${fixedRepresentation}).+)`;
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';

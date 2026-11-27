@@ -68,6 +68,8 @@ describe('Markdown negotiation', () => {
       expect(match('/api/search')).toBe(false);
       expect(match('/_next/static/chunks/app.js')).toBe(false);
       expect(match('/img/hero.png')).toBe(false);
+      expect(match('/img/guide')).toBeTruthy();
+      expect(match('/img/guide.png')).toBeTruthy();
     }
   );
 
