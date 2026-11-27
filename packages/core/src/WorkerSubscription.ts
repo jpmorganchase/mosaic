@@ -28,9 +28,14 @@ export default class WorkerSubscription {
     { resolve: (refreshed: boolean) => void; reject: (error: Error) => void }
   >();
   #lastRefreshId = 0;
+  #termination = Promise.resolve();
 
   constructor(workerData) {
-    this.#worker$ = from<WorkerMessage>(workerData, this.#toWorker$).subscribe({
+    this.#worker$ = from<WorkerMessage>(workerData, this.#toWorker$, termination => {
+      this.#termination = Promise.resolve(termination).then(() => {});
+      // Normal exit and error also unsubscribe without an explicit stop.
+      void this.#termination.catch(() => {});
+    }).subscribe({
       next: this.#onNext,
       error: this.#onError,
       complete: this.#onComplete
@@ -47,6 +52,7 @@ export default class WorkerSubscription {
     }
     this.#worker$.unsubscribe();
     this.#onComplete();
+    return this.#termination;
   }
 
   /**

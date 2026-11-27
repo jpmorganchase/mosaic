@@ -2,21 +2,13 @@ import { isMainThread, parentPort, workerData as unTypedWorkerData } from 'worke
 
 import path from 'path';
 import fs from 'fs';
-import { DirectoryJSON, Volume } from 'memfs';
-import { switchMap, tap } from 'rxjs';
 
-import type {
-  Page,
-  PluginErrors,
-  SourceCapabilities,
-  WorkerData
-} from '@jpmorganchase/mosaic-types';
+import type { PluginErrors, SourceCapabilities, WorkerData } from '@jpmorganchase/mosaic-types';
 
-import FileAccess from '../filesystems/FileAccess.js';
-import MutableVolume from '../filesystems/MutableVolume.js';
-import createConfig from '../helpers/createConfig.js';
 import { bindPluginMethods, bindSerialiser } from '../plugin/index.js';
 import createSourceObservable, { getSourceRefresh } from './helpers/createSourceObservable.js';
+import { publishSourceGenerations } from './helpers/publishSourceGenerations.js';
+import { getSourceCacheKey, loadSourceCache, writeSourceCache } from './helpers/sourceCache.js';
 
 const trackPluginErrors = (errors: PluginErrors, lifecycleMethod: string) => {
   const errorsBuffer = Buffer.from(JSON.stringify({ errors, lifecycleMethod }));
@@ -32,107 +24,18 @@ if (isMainThread) {
   throw new Error('This module can only be called from a child process.');
 }
 (async () => {
-  let config;
-  let filesystem;
   const serialiser = await bindSerialiser(workerData.serialisers);
   const pluginApi = await bindPluginMethods(workerData.plugins, trackPluginErrors);
-  const cachePath = path.join(process.cwd(), '.tmp', '.cache', `${workerData.name}.json`);
-
-  if (workerData.options.cache !== false) {
-    await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
-  }
+  const cachePath =
+    workerData.options.cache === false
+      ? undefined
+      : path.join(process.cwd(), '.tmp', '.cache', `${getSourceCacheKey(workerData)}.json`);
+  if (cachePath) await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
 
   let sourceCapabilities: SourceCapabilities | undefined;
-  (
-    await createSourceObservable(workerData, serialiser, value => {
-      sourceCapabilities = value;
-    })
-  )
-    .pipe(
-      tap(() => {
-        config = createConfig();
-        // Source metadata must also exist when the source emits no pages.
-        config.setData({ sourceCapabilities });
-      }),
-      switchMap((pages: Page[]) =>
-        pluginApi.$afterSource(pages, {
-          config,
-          serialiser,
-          ignorePages: workerData.ignorePages,
-          pageExtensions: workerData.pageExtensions,
-          namespace: workerData.namespace
-        })
-      ),
-      switchMap((pages: Page[]) =>
-        pages.reduce(async (mergedPagesPromise, page) => {
-          const mergedPages = await mergedPagesPromise;
-          mergedPages[page.fullPath] = String(await serialiser.serialise(page.fullPath, page));
-          return mergedPages;
-        }, Promise.resolve({}))
-      ),
-      switchMap(async (mergedPages: DirectoryJSON) => {
-        filesystem = new MutableVolume(
-          new FileAccess(Volume.fromJSON(mergedPages)),
-          workerData.namespace
-        );
-        await pluginApi.$beforeSend(filesystem.asRestricted(), {
-          config,
-          ignorePages: workerData.ignorePages,
-          pageExtensions: workerData.pageExtensions,
-          serialiser,
-          namespace: workerData.namespace
-        });
-        // In the main thread we would freeze the filesystem here, but since we throw it away after sending it to the parent process,
-        // we don't bother freezing
-        // Turn data into buffer
-        const encoder = new TextEncoder();
-        const encoded = encoder.encode(
-          JSON.stringify({
-            pages: filesystem.toJSON(),
-            data: config.data,
-            symlinks: filesystem.symlinksToJSON()
-          })
-        );
-        return encoded;
-      }),
-      tap(() => {
-        // Reset filesystem and config memory
-        config = null;
-        filesystem.reset();
-        filesystem = null;
-      })
-    )
-    .subscribe({
-      next: async pagesAndSymlinks => {
-        if (workerData.options.cache !== false) {
-          console.info(`[Mosaic][Core] Saving cached filesystem of ${workerData.name}`);
-          await fs.promises.writeFile(cachePath, pagesAndSymlinks);
-        }
-
-        parentPort.postMessage(
-          {
-            type: 'message',
-            data: pagesAndSymlinks
-          },
-          /* transferList */ [pagesAndSymlinks.buffer]
-        );
-      },
-      error: err => {
-        // Without this, an rxjs error short-circuits the chain silently
-        // — the worker stops emitting but the parent never finds out
-        // (no `init`, no `message`, no `error` event), so the source's
-        // cache file never gets written and the parent's SourceManager
-        // waits forever for first contact. Re-throwing here triggers
-        // the `uncaughtException` handler below, which exits the worker
-        // with a real error event to the parent.
-        process.stderr.write(
-          `[Mosaic][Core] Worker '${workerData.name}' pipeline errored: ${
-            err instanceof Error ? err.stack ?? err.message : String(err)
-          }\n`
-        );
-        throw err instanceof Error ? err : new Error(String(err));
-      }
-    });
+  const pages = await createSourceObservable(workerData, serialiser, value => {
+    sourceCapabilities = value;
+  });
 
   // `Source.refresh()` in the main thread asks the source to check for
   // changes now. Any changed pages arrive through the pipeline above; the
@@ -157,28 +60,39 @@ if (isMainThread) {
   // source has finished.
   parentPort.unref();
 
-  if (workerData.options.cache !== false) {
-    try {
-      if (await fs.promises.stat(cachePath)) {
-        const data = await fs.promises.readFile(cachePath);
-        console.info(`[Mosaic][Core] Restoring cached filesystem for ${workerData.name}`);
-        const encoder = new TextEncoder();
-        const buffer = encoder.encode(String(data));
-        parentPort.postMessage(
-          {
-            type: 'init',
-            data: buffer
-          },
-          /* transferList */ [buffer.buffer]
-        );
-      }
-      // Important: Return to avoid sending another init signal on L107
-      return;
-    } catch {
-      // Does not exist
-    }
+  // Send bootstrap before subscribing: a synchronous source must never send
+  // a fresh update before cached startup has been queued in the parent.
+  const cached = cachePath && (await loadSourceCache(cachePath));
+  if (cached) {
+    console.info(`[Mosaic][Core] Restoring cached filesystem for ${workerData.name}`);
+    parentPort.postMessage({ type: 'init', data: new Uint8Array(cached) }, [cached]);
+  } else {
+    parentPort.postMessage({ type: 'init' });
   }
-  parentPort.postMessage({ type: 'init' });
+
+  const encoder = new TextEncoder();
+  publishSourceGenerations(
+    pages,
+    workerData,
+    serialiser,
+    pluginApi,
+    sourceCapabilities,
+    async generation => {
+      const data = encoder.encode(JSON.stringify(generation));
+      if (cachePath) await writeSourceCache(cachePath, data);
+      parentPort.postMessage({ type: 'message', data }, [data.buffer]);
+    }
+  ).subscribe({
+    error: err => {
+      // Make the source failure visible to the parent worker subscription.
+      process.stderr.write(
+        `[Mosaic][Core] Worker '${workerData.name}' pipeline errored: ${
+          err instanceof Error ? err.stack ?? err.message : String(err)
+        }\n`
+      );
+      throw err instanceof Error ? err : new Error(String(err));
+    }
+  });
 })();
 
 // Catch any unhandled errors and re-throw them

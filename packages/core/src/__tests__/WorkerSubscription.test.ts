@@ -58,6 +58,23 @@ describe('GIVEN WorkerSubscription', () => {
       subscription.stop();
       expect(Worker.prototype.terminate).toHaveBeenCalledTimes(1);
     });
+
+    test('THEN stopping waits for native termination before a restart can use the same cache', async () => {
+      let terminated!: (code: number) => void;
+      vi.mocked(Worker.prototype.terminate).mockReturnValueOnce(
+        new Promise<number>(resolve => {
+          terminated = resolve;
+        })
+      );
+      const completed = vi.fn();
+      const stopping = subscription.stop().then(completed);
+      expect(subscription.closed).toBe(true);
+      await Promise.resolve();
+      expect(completed).not.toHaveBeenCalled();
+      terminated(1);
+      await stopping;
+      expect(completed).toHaveBeenCalledOnce();
+    });
   });
 
   describe('WHEN events fire', () => {

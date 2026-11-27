@@ -147,26 +147,26 @@ export default class PullDocs {
   }
 
   async addSource(sourceDefinition: SourceModuleDefinition) {
-    const source = await this.#sourceManager.addSource(sourceDefinition, {});
-    const filesystem = source.filesystem;
-    source.onError(error => {
-      console.error(
-        new Error(`[Mosaic][Core] Source '${source.id.description}' threw an exception. See below:`)
-      );
-      console.error('[Mosaic][Core]', error);
+    return this.#sourceManager.addSource(sourceDefinition, {}, source => {
+      const filesystem = source.filesystem;
+      source.onError(error => {
+        console.error(
+          new Error(
+            `[Mosaic][Core] Source '${source.id.description}' threw an exception. See below:`
+          )
+        );
+        console.error('[Mosaic][Core]', error);
+      });
+      source.onExit(() => {
+        const index = this.#ufs.fss.indexOf(filesystem);
+        if (index !== -1) this.#ufs.fss.splice(index, 1);
+
+        if (this.#ufs.fss.length < 1) {
+          console.debug("[Mosaic][Core] All of my source have been terminated. That's sad :-(");
+        }
+      });
+      this.#ufs.use(filesystem as unknown as IUnionFs);
     });
-    source.onExit(() => {
-      const index = this.#ufs.fss.indexOf(filesystem);
-      if (index !== -1) this.#ufs.fss.splice(index, 1);
-
-      if (this.#ufs.fss.length < 1) {
-        console.debug("[Mosaic][Core] All of my source have been terminated. That's sad :-(");
-      }
-    });
-
-    this.#ufs.use(filesystem as unknown as IUnionFs);
-
-    return source;
   }
 
   async stopSource(name: string) {

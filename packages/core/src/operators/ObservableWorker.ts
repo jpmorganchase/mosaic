@@ -34,7 +34,11 @@ export function buildExecArgv(): string[] {
  * subscribed, emitting the messages it posts. Values emitted by
  * `toWorker$` are posted to the worker.
  */
-export default function from<T>(workerData: WorkerData, toWorker$?: Observable<unknown>) {
+export default function from<T>(
+  workerData: WorkerData,
+  toWorker$?: Observable<unknown>,
+  onTerminate?: (termination: Promise<number>) => void
+) {
   return new Observable<T>(observer => {
     const worker = new Worker(require.resolve('../worker/Source.worker'), {
       workerData,
@@ -53,7 +57,8 @@ export default function from<T>(workerData: WorkerData, toWorker$?: Observable<u
 
     return () => {
       toWorkerSubscription?.unsubscribe();
-      worker.terminate();
+      const termination = worker.terminate();
+      onTerminate?.(termination);
     };
   });
 }

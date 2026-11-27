@@ -60,6 +60,76 @@ describe('source generations', () => {
     });
   }
 
+  function startWithCache() {
+    worker.emit(EVENT.START, {
+      data: {
+        pages: { '/page.mdx': 'cached' },
+        symlinks: { '/alias.mdx': [{ target: '/page.mdx', type: 'file' }] },
+        data: { generation: 'cached' }
+      }
+    });
+  }
+
+  test('hydrates cached pages before queued live content and only notifies on live publications', async () => {
+    const hydrate = deferred();
+    const live = deferred();
+    const mounted = vi.fn();
+    const observed: unknown[] = [];
+    plugin.afterUpdate.mockImplementation(async (files, { config }) => {
+      observed.push([config.data.generation, String(await files.promises.readFile('/alias.mdx'))]);
+      await (config.data.generation === 'cached' ? hydrate.promise : live.promise);
+    });
+    const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {}, mounted);
+    await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+    startWithCache();
+    emit(1);
+
+    await vi.waitFor(() => expect(observed).toEqual([['cached', 'cached']]));
+    expect(mounted).toHaveBeenCalledOnce();
+    expect(publish).not.toHaveBeenCalled();
+    hydrate.resolve();
+    await started;
+    await vi.waitFor(() =>
+      expect(observed).toEqual([
+        ['cached', 'cached'],
+        [1, 'generation 1']
+      ])
+    );
+    expect(publish).not.toHaveBeenCalled();
+    live.resolve();
+    await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+    expect(fail).not.toHaveBeenCalled();
+    manager.destroyAll();
+  });
+
+  test('stopping during cached hydration rejects startup and drops queued live work', async () => {
+    const hydrate = deferred();
+    plugin.afterUpdate.mockImplementation(() => hydrate.promise);
+    const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {});
+    const rejected = expect(started).rejects.toThrow('exited before initialising');
+    await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+    startWithCache();
+    await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
+    emit(1);
+    manager.destroyAll();
+    hydrate.resolve();
+
+    await rejected;
+    await new Promise(resolve => setImmediate(resolve));
+    expect(manager.listSources()).toEqual([]);
+    expect(plugin.afterUpdate).toHaveBeenCalledOnce();
+    expect(publish).not.toHaveBeenCalled();
+    expect(fail).toHaveBeenCalledOnce();
+  });
+
   test('awaits publication before changing pages, symlinks or configuration', async () => {
     const gate = deferred();
     const observed: unknown[] = [];

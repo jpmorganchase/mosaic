@@ -15,6 +15,7 @@ import Source from './Source.js';
 import createConfig from './helpers/createConfig.js';
 import { findNewPageOwner } from './findNewPageOwner.js';
 import { bindPluginMethods } from './plugin/index.js';
+import type { SourceGeneration } from './worker/helpers/publishSourceGenerations.js';
 
 function logUpdateStatus(sourceId, initOrStartTime) {
   if (initOrStartTime) {
@@ -176,17 +177,16 @@ export default class SourceManager {
     return Array.from(this.#sources.values()).find(s => s.id.description === name);
   }
 
-  destroyAll() {
-    this.#sources.forEach(source => source.stop());
+  async destroyAll() {
+    await Promise.all(Array.from(this.#sources.values(), source => source.stop()));
   }
 
   destroySource(name: string) {
     const source = this.getSource(name);
     if (source) {
-      source.stop();
-    } else {
-      throw new Error(`[Mosaic] source ${name} was not found so can't be stopped`);
+      return source.stop();
     }
+    throw new Error(`[Mosaic] source ${name} was not found so can't be stopped`);
   }
 
   async refreshSource(name: string): Promise<boolean> {
@@ -199,10 +199,12 @@ export default class SourceManager {
 
   addSource(
     sourceDefinition: SourceModuleDefinition,
-    options: Record<string, unknown>
+    options: Record<string, unknown>,
+    mountSource?: (source: Source) => void
   ): Promise<Source> {
     return new Promise((resolve, reject) => {
       let sourceActive = false;
+      let sourceStarted = false;
       let firstUpdatePending = true;
       const failFirstUpdate = (error: unknown) => {
         if (!firstUpdatePending) return;
@@ -229,7 +231,7 @@ export default class SourceManager {
       const watchdog: NodeJS.Timeout | null =
         Number.isFinite(bootTimeoutMs) && bootTimeoutMs > 0
           ? setTimeout(() => {
-              if (!sourceActive && !sourceErrored) {
+              if (!sourceStarted && !sourceErrored) {
                 sourceErrored = true;
                 reject(
                   new Error(
@@ -271,7 +273,21 @@ export default class SourceManager {
 
       source.use(this.#plugins, this.#serialisers);
 
-      source.onUpdate(async ({ pages, symlinks }) => {
+      const populateSource = async ({ pages, symlinks }: SourceGeneration) => {
+        this.#rebuildGlobalConfig();
+        source.filesystem.reset();
+        source.filesystem.fromJSON(pages);
+        // We need to re-apply symlinks in the main thread.
+        await source.filesystem.symlinksFromJSON(symlinks);
+        if (!sourceActive) return false;
+        await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
+        if (!sourceActive) return false;
+        source.filesystem.freeze();
+        source.filesystem.clearCache();
+        return true;
+      };
+
+      source.onUpdate(async generation => {
         if (!sourceActive) {
           reject(
             new Error(
@@ -282,26 +298,7 @@ export default class SourceManager {
           logUpdateStatus(source.id, initOrStartTime);
           initOrStartTime = null;
           try {
-            this.#rebuildGlobalConfig();
-            source.filesystem.reset();
-            source.filesystem.fromJSON(pages);
-            // We need to re-apply symlinks in the main thread
-            await source.filesystem.symlinksFromJSON(symlinks);
-
-            // After each async operation, we should check if anything has caused the Source to close
-            if (!sourceActive) {
-              return;
-            }
-            await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
-
-            // After each async operation, we should check if anything has caused the Source to close
-            if (!sourceActive) {
-              return;
-            }
-
-            source.filesystem.freeze();
-            source.filesystem.clearCache();
-
+            if (!(await populateSource(generation))) return;
             await this.#updateSources(immutableSourceFilesystem, source);
 
             // After each async operation, we should check if anything has caused the Source to close
@@ -326,21 +323,21 @@ export default class SourceManager {
             );
             console.error('[Mosaic][Core]', e);
             failFirstUpdate(e);
-            if (sourceActive) source.stop();
+            if (sourceActive) await source.stop();
           }
         }
       });
       source.onError(error => {
         console.error('[Mosaic][Core]', error);
         failFirstUpdate(error);
-        if (!sourceActive) {
+        if (!sourceStarted) {
           sourceErrored = true;
           clearWatchdog();
           reject(error);
         }
       });
       source.onExit(() => {
-        if (!sourceActive) {
+        if (!sourceStarted) {
           // Only emit the "silently exited" fallback if no prior
           // `onError` already rejected with the real cause. Node fires
           // both `error` and `exit` on worker failure; without this
@@ -377,8 +374,13 @@ export default class SourceManager {
         }
       });
 
-      source.onStart(() => {
+      source.onStart(async (cached?: SourceGeneration) => {
         sourceActive = true;
+        mountSource?.(source);
+        // Cached pages are available at startup. Only a live publication
+        // can notify consumers or satisfy a snapshot's first-update wait.
+        if (cached && !(await populateSource(cached))) return;
+        sourceStarted = true;
         clearWatchdog();
         console.debug(
           `[Mosaic][Core] '${source.id.description}' started in ${

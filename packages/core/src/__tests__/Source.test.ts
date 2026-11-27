@@ -329,12 +329,12 @@ describe('GIVEN Source', () => {
         workerHandlers.exit(1);
         expect(EventEmitter.prototype.removeAllListeners).toHaveBeenCalled();
       });
-      test('THEN start handler should only fire once', () => {
+      test('THEN start handler should only fire once', async () => {
         const startSpy = vi.fn();
         source.onStart(startSpy);
         workerHandlers.start();
         workerHandlers.start();
-        expect(startSpy).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => expect(startSpy).toHaveBeenCalledTimes(1));
       });
       test('THEN exit handler should only fire once', () => {
         const exitSpy = vi.fn();
@@ -403,11 +403,11 @@ describe('GIVEN Source', () => {
         expect(updateSpy).not.toHaveBeenCalled();
       });
 
-      test('THEN the start handler should be fired when a worker received a start event', () => {
+      test('THEN the start handler should be fired when a worker received a start event', async () => {
         const startSpy = vi.fn();
         source.onStart(startSpy);
         workerHandlers.start();
-        expect(startSpy).toHaveBeenCalledTimes(1);
+        await vi.waitFor(() => expect(startSpy).toHaveBeenCalledTimes(1));
       });
 
       test('THEN the exit handler should be fired when the exit event emits', () => {
