@@ -626,15 +626,21 @@ export default class Repo {
     if (!this.#cloned) {
       throw new Error('No repository cloned. Call init() to clone the initial repository.');
     }
-    // `--all` pulls every remote's refs; we genuinely only have one
-    // remote in practice (`origin`), so scope the fetch to it. We also
-    // discard stdout: `git fetch` writes its progress (and on busy repos
-    // that's MB of "Receiving objects: …" noise) to stderr, but a few
-    // git transports still emit verbose stdout — none of it is something
-    // we read.
-    return this.#spawn('git', ['fetch', this.#remote, '--quiet'], this.#dir, {
-      discardStdout: true
-    });
+    // Sources on different branches can share this clone, and
+    // `remote.<name>.fetch` holds only the branch that initialised last. Name
+    // this source's branch explicitly so its fetch never depends on that
+    // setting. Run from the clone root, as a new branch has no worktree yet.
+    return this.#spawn(
+      'git',
+      [
+        'fetch',
+        '--quiet',
+        this.#remote,
+        `+refs/heads/${this.#branch}:refs/remotes/${this.#remote}/${this.#branch}`
+      ],
+      this.#cloneRootDir,
+      { discardStdout: true }
+    );
   }
 
   async init() {
@@ -664,7 +670,8 @@ export default class Repo {
 
   async #init() {
     try {
-      if (!(await doesPreviousCloneExist(this.#repo, this.#cloneRootDir))) {
+      const reusingClone = await doesPreviousCloneExist(this.#repo, this.#cloneRootDir);
+      if (!reusingClone) {
         console.debug(`[Mosaic][Source-Git] Creating main worktree for repo '${this.#name}'`);
 
         //Empty the directory before cloning
@@ -710,32 +717,59 @@ export default class Repo {
         console.debug(`[Mosaic][Source-Git] Re-using main worktree for repo '${this.#name}'`);
       }
       this.#cloned = true;
-      // Retrofit the single-branch fetch refspec on clones created by
-      // a pre-uplift mosaic. `--single-branch` only applies at clone
-      // time; if we inherit a multi-branch clone its
-      // `remote.<name>.fetch` is `+refs/heads/*:refs/remotes/<name>/*`
-      // and every `git fetch` still pulls every branch's refs. Force
-      // it to the single-branch shape so the per-poll cost matches a
-      // fresh clone. This is a no-op (idempotent) on clones that are
-      // already single-branch — `git config --replace-all` just
-      // rewrites the same value. Done after `#cloned = true` so the
-      // method's own guard passes, and run unconditionally so fresh
-      // clones are also normalised (cheap, idempotent).
+      // Narrow `remote.<name>.fetch` to one branch, including on clones
+      // created before `--single-branch`, so a bare `git fetch` in the
+      // clone doesn't pull every branch. Mosaic's own fetches and new
+      // worktrees name the branch's refs explicitly. Done after
+      // `#cloned = true` so the method's own guard passes, and run
+      // unconditionally because it is idempotent.
       await this.ensureSingleBranchFetchRefspec();
       if (!(await doesPreviousCloneExist(this.#repo, this.#dir))) {
+        // A fresh clone has just fetched this branch. A reused clone may not
+        // have it yet, or may have an older copy. The shared checkout lock is
+        // held, so the fetch can't race another source's refresh.
+        const fetched = reusingClone && (await this.#fetchForNewWorktree());
         console.debug(
           `[Mosaic][Source-Git] Creating linked worktree repo '${this.#name} branch '${
             this.#branch
           }'`
         );
-        await this.#spawn(
-          'git',
-          ['worktree', 'add', '-f', this.#dir, this.#branch],
-          this.#cloneRootDir,
-          {
-            discardStdout: true
-          }
-        );
+        const fromRemote =
+          !(await this.#hasCommit(`refs/heads/${this.#branch}`)) &&
+          (await this.#hasCommit(`refs/remotes/${this.#remote}/${this.#branch}`));
+        if (fromRemote) {
+          // The clone has this branch only as `<remote>/<branch>`, so name
+          // that ref. `worktree add <branch>` finds it only while
+          // `remote.<name>.fetch` maps the branch, which
+          // `ensureSingleBranchFetchRefspec` may have failed to set, and
+          // records an upstream in the shared `.git/config`, which a
+          // concurrent save may hold locked. Refreshes don't use an upstream.
+          await this.#spawn(
+            'git',
+            [
+              'worktree',
+              'add',
+              '--no-track',
+              '-f',
+              '-b',
+              this.#branch,
+              this.#dir,
+              `${this.#remote}/${this.#branch}`
+            ],
+            this.#cloneRootDir,
+            { discardStdout: true }
+          );
+        } else {
+          await this.#spawn(
+            'git',
+            ['worktree', 'add', '-f', this.#dir, this.#branch],
+            this.#cloneRootDir,
+            { discardStdout: true }
+          );
+          // `worktree add` checks out an existing local branch as it is. Start
+          // from the commit just fetched, as a fresh clone would.
+          if (fetched) await this.reset();
+        }
       } else {
         console.debug(
           `[Mosaic][Source-Git] Re-using linked worktree repo '${this.#name} branch '${
@@ -766,6 +800,44 @@ export default class Repo {
     } catch (e) {
       this.#cloned = false;
       throw e;
+    }
+  }
+
+  /**
+   * Fetches this source's branch into a reused clone before its worktree is
+   * created, and returns whether the fetch succeeded. If the remote can't be
+   * reached or the configured ref is a tag, use the branch or tag already
+   * in the clone if available. Branches take precedence over tags on fetch.
+   */
+  async #fetchForNewWorktree() {
+    try {
+      await this.fetch();
+      return true;
+    } catch (e) {
+      const known =
+        (await this.#hasCommit(`refs/heads/${this.#branch}`)) ||
+        (await this.#hasCommit(`refs/remotes/${this.#remote}/${this.#branch}`)) ||
+        (await this.#hasCommit(`refs/tags/${this.#branch}`));
+      if (!known) throw e;
+      console.warn(
+        `[Mosaic][Source-Git] Fetch failed for '${this.#name}'; ` +
+          `creating its worktree from the ref already in the clone. ` +
+          `(${getErrorMessage(e)})`
+      );
+      return false;
+    }
+  }
+
+  async #hasCommit(ref: string) {
+    try {
+      await this.#spawn(
+        'git',
+        ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`],
+        this.#cloneRootDir
+      );
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -925,11 +997,12 @@ export default class Repo {
   }
 
   /**
-   * Force `remote.<remote>.fetch` to a single-branch refspec on an
-   * existing clone. New clones get this from `git clone --single-branch`
-   * automatically; this exists to retrofit pre-uplift on-disk clones
-   * (which were created without that flag and so still pull every
-   * branch's refs on every `git fetch`).
+   * Force `remote.<remote>.fetch` to a single-branch refspec. New clones get
+   * this from `git clone --single-branch`; this retrofits clones created
+   * without that flag, so a bare `git fetch` in the clone doesn't pull every
+   * branch's refs. When sources on different branches share a clone, the
+   * last one to initialise sets the value, which is why {@link fetch} and new
+   * worktrees name the branch's refs explicitly instead of relying on it.
    *
    * `--replace-all` rewrites the value rather than appending, so this
    * is idempotent across runs and safe to call on already-correct
@@ -948,8 +1021,10 @@ export default class Repo {
         { discardStdout: true }
       );
     } catch (e) {
-      // Not fatal — worst case is we keep fetching every branch's refs
-      // (i.e. the pre-uplift behaviour). Log and move on.
+      // Not fatal: `fetch()` names its branch, and a new worktree starts from
+      // the ref it fetched. Without this, a bare `git fetch` may pull other
+      // branches, and `pull()` doesn't advance `<remote>/<branch>` until the
+      // next `fetch()`. Log and move on.
       console.warn(
         `[Mosaic][Source-Git] Could not narrow fetch refspec for '${this.#name}': ${
           (e as Error).message
@@ -983,7 +1058,7 @@ export default class Repo {
   }
 
   async pushBranch(branchName: string) {
-    await this.#spawn('git', ['push', 'origin', `${branchName}`], this.#dir, {
+    await this.#spawn('git', ['push', this.#remote, branchName], this.#dir, {
       discardStdout: true
     });
   }
