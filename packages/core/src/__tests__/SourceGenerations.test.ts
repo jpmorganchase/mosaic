@@ -130,6 +130,33 @@ describe('source generations', () => {
     expect(fail).toHaveBeenCalledOnce();
   });
 
+  test('stops the boot watchdog on init while still awaiting cached hydration', async () => {
+    vi.stubEnv('MOSAIC_SOURCE_BOOT_TIMEOUT_MS', '500');
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const hydrate = deferred();
+    plugin.afterUpdate.mockImplementation(() => hydrate.promise);
+    const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+    try {
+      const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {});
+      const settled = vi.fn();
+      void started.then(settled, settled);
+      await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+      startWithCache();
+      await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
+
+      await vi.advanceTimersByTimeAsync(600);
+      expect(settled).not.toHaveBeenCalled();
+      hydrate.resolve();
+      await started;
+      expect(settled).toHaveBeenCalledOnce();
+    } finally {
+      hydrate.resolve();
+      manager.destroyAll();
+      vi.useRealTimers();
+      vi.unstubAllEnvs();
+    }
+  });
+
   test('awaits publication before changing pages, symlinks or configuration', async () => {
     const gate = deferred();
     const observed: unknown[] = [];

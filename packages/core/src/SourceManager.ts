@@ -375,13 +375,13 @@ export default class SourceManager {
       });
 
       source.onStart(async (cached?: SourceGeneration) => {
+        clearWatchdog();
         sourceActive = true;
         mountSource?.(source);
         // Cached pages are available at startup. Only a live publication
         // can notify consumers or satisfy a snapshot's first-update wait.
         if (cached && !(await populateSource(cached))) return;
         sourceStarted = true;
-        clearWatchdog();
         console.debug(
           `[Mosaic][Core] '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime

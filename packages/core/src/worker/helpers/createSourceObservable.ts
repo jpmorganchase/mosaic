@@ -6,7 +6,7 @@ import { createPageTest } from '../../helpers/createPageTest.js';
 
 import { exponentialBackOffRetryStrategy } from './exponentialBackOffRetryStrategy.js';
 
-async function getSourceDefinitionExports(modulePath): Promise<Source> {
+export async function getSourceDefinitionExports(modulePath: string): Promise<Source> {
   const { default: defaultProp }: { default: Source | { __esModule: boolean; default: Source } } =
     await import(modulePath);
 
@@ -30,23 +30,22 @@ async function getSourceDefinitionExports(modulePath): Promise<Source> {
  * The source's optional `refresh` hook bound to its options, or `undefined`
  * when the source module doesn't implement one.
  */
-export async function getSourceRefresh({
-  modulePath,
-  options
-}: Pick<WorkerData, 'modulePath' | 'options'>): Promise<(() => Promise<void>) | undefined> {
-  const api = await getSourceDefinitionExports(modulePath);
+export function getSourceRefresh(
+  api: Source,
+  options: WorkerData['options']
+): (() => Promise<void>) | undefined {
   if (typeof api.refresh !== 'function') return undefined;
   return async () => {
     await api.refresh(options);
   };
 }
 
-export default async function createSourceObservable(
+export default function createSourceObservable(
+  api: Source,
   { modulePath, name, options, pageExtensions, ignorePages, schedule }: WorkerData,
   serialiser,
   onCapabilities?: (capabilities: SourceCapabilities | undefined) => void
-): Promise<Observable<Page[]>> {
-  const api = await getSourceDefinitionExports(modulePath);
+): Observable<Page[]> {
   const source$ = api.create(options, { serialiser, pageExtensions, schedule });
 
   if (!isObservable(source$)) {

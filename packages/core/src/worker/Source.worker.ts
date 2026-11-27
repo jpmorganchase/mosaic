@@ -6,7 +6,10 @@ import fs from 'fs';
 import type { PluginErrors, SourceCapabilities, WorkerData } from '@jpmorganchase/mosaic-types';
 
 import { bindPluginMethods, bindSerialiser } from '../plugin/index.js';
-import createSourceObservable, { getSourceRefresh } from './helpers/createSourceObservable.js';
+import createSourceObservable, {
+  getSourceDefinitionExports,
+  getSourceRefresh
+} from './helpers/createSourceObservable.js';
 import { publishSourceGenerations } from './helpers/publishSourceGenerations.js';
 import { getSourceCacheKey, loadSourceCache, writeSourceCache } from './helpers/sourceCache.js';
 
@@ -31,16 +34,13 @@ if (isMainThread) {
       ? undefined
       : path.join(process.cwd(), '.tmp', '.cache', `${getSourceCacheKey(workerData)}.json`);
   if (cachePath) await fs.promises.mkdir(path.dirname(cachePath), { recursive: true });
-
-  let sourceCapabilities: SourceCapabilities | undefined;
-  const pages = await createSourceObservable(workerData, serialiser, value => {
-    sourceCapabilities = value;
-  });
+  const cached = cachePath && (await loadSourceCache(cachePath));
+  const sourceDefinition = await getSourceDefinitionExports(workerData.modulePath);
 
   // `Source.refresh()` in the main thread asks the source to check for
-  // changes now. Any changed pages arrive through the pipeline above; the
+  // changes now. Any changed pages arrive through the publication pipeline; the
   // reply only says whether the check ran.
-  const refresh = await getSourceRefresh(workerData);
+  const refresh = getSourceRefresh(sourceDefinition, workerData.options);
   parentPort.on('message', async (message: { type?: string; id?: number }) => {
     if (message?.type !== 'refresh') return;
     const reply = (result: { refreshed: boolean } | { error: string }) =>
@@ -60,9 +60,14 @@ if (isMainThread) {
   // source has finished.
   parentPort.unref();
 
+  // Finish async setup before creating a source that can start emitting immediately.
+  let sourceCapabilities: SourceCapabilities | undefined;
+  const pages = createSourceObservable(sourceDefinition, workerData, serialiser, value => {
+    sourceCapabilities = value;
+  });
+
   // Send bootstrap before subscribing: a synchronous source must never send
   // a fresh update before cached startup has been queued in the parent.
-  const cached = cachePath && (await loadSourceCache(cachePath));
   if (cached) {
     console.info(`[Mosaic][Core] Restoring cached filesystem for ${workerData.name}`);
     parentPort.postMessage({ type: 'init', data: new Uint8Array(cached) }, [cached]);
