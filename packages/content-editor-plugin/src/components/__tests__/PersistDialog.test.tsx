@@ -220,6 +220,56 @@ describe('PersistDialog', () => {
     expect(persist).toHaveBeenCalledOnce();
   });
 
+  test("sends a new page's frontmatter when the author kept the template's", async () => {
+    // The editor's baseline for a new page is the host's template, which
+    // already has the title from the New Page dialog.
+    const template = 'title: New section\nlayout: DetailTechnical';
+    const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+      yield { kind: 'complete', prHref: null };
+    });
+    render(
+      <PersistDialog
+        open
+        onOpenChange={vi.fn()}
+        meta={{ route: '/docs/new-section.mdx' }}
+        getCurrentMarkdown={() => '# {meta.title}'}
+        getCurrentAuthoredFrontmatter={() => template}
+        originalAuthoredFrontmatter={template}
+        isNewPage
+        persist={persist}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Create Page' }));
+
+    await screen.findByRole('heading', { name: 'Changes Saved Successfully' });
+    expect(persist).toHaveBeenCalledExactlyOnceWith({
+      route: '/docs/new-section.mdx',
+      markdown: '# {meta.title}',
+      frontmatter: template,
+      isNewPage: true
+    });
+  });
+
+  test("leaves out an existing page's unchanged frontmatter", async () => {
+    const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+      yield { kind: 'complete', prHref: null };
+    });
+    render(
+      <PersistDialog
+        {...baseProps}
+        getCurrentAuthoredFrontmatter={() => 'title: Page'}
+        originalAuthoredFrontmatter="title: Page"
+        persist={persist}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+
+    await screen.findByRole('heading', { name: 'Changes Saved Successfully' });
+    expect(persist).toHaveBeenCalledExactlyOnceWith({ route: source, markdown: '# Updated page' });
+  });
+
   test('shows the pull request link when the successful save supplies one', async () => {
     const pullRequestUrl = 'https://github.com/example/docs/pull/1';
     const persist = async function* (): AsyncGenerator<PersistEvent> {

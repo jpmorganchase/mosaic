@@ -137,7 +137,9 @@ export interface PersistDialogProps {
    * editor was seeded with. Diffed against the open-time snapshot
    * to decide whether to send `frontmatter` in the payload — if
    * unchanged we omit it so the workflow keeps using the on-disk
-   * bytes verbatim and the resulting PR diff stays minimal.
+   * bytes verbatim and the resulting PR diff stays minimal. A new
+   * page (`isNewPage`) always sends it: its baseline is the host's
+   * template, not a file on disk.
    */
   originalAuthoredFrontmatter?: string;
   /**
@@ -446,11 +448,15 @@ export const PersistDialog = ({
     //      change frontmatter, so any difference between the
     //      snapshot's re-serialisation and the on-disk bytes
     //      (key ordering, quoting style) shouldn't leak into
-    //      the PR diff.
+    //      the PR diff. Not for a new page: there are no on-disk
+    //      bytes to keep, its baseline is the host's template (the
+    //      title from the New Page dialog), and the workflows refuse
+    //      to create a page without frontmatter.
     //   3. Otherwise we send it.
     let frontmatterPayload: string | undefined;
     if (pendingFrontmatter !== undefined) {
       if (
+        isNewPage ||
         originalAuthoredFrontmatter === undefined ||
         pendingFrontmatter !== originalAuthoredFrontmatter
       ) {
