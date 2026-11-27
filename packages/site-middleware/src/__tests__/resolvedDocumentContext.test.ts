@@ -87,11 +87,11 @@ beforeAll(async () => {
     const pathname = new URL(request.url!, 'http://content.test').pathname;
     requests.push(pathname);
     const rawRequest = pathname.startsWith('/_mosaic-raw/');
-    const filePath = path.join(
-      snapshotRoot,
-      decodeURIComponent(rawRequest ? pathname.slice('/_mosaic-raw'.length) : pathname)
-    );
     try {
+      const filePath = path.join(
+        snapshotRoot,
+        decodeURIComponent(rawRequest ? pathname.slice('/_mosaic-raw'.length) : pathname)
+      );
       if (fs.statSync(filePath).isDirectory()) {
         response.writeHead(302, { 'Content-Type': 'application/json' });
         response.end(JSON.stringify({ redirect: `${pathname}/index` }));
