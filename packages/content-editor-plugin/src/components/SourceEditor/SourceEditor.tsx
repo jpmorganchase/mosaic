@@ -138,19 +138,12 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
     [debouncedCompile]
   );
 
-  // Seed the preview pane on mount. Without this, flipping
-  // wysiwyg → source would blank the preview until the next
-  // keystroke (PreviewPlugin handled that for the WYSIWYG side
-  // via its own `didSeedRef`; we mirror it here so the seam is
-  // invisible to the user).
+  // Seed on mount and refresh when the compiler changes. Read the textarea
+  // so replacing the compiler also picks up any pending draft edit.
   useEffect(() => {
-    runCompile(initialValue, reservePreview());
-    // We deliberately do not depend on `initialValue` —
-    // subsequent renders that change `initialValue` (the parent
-    // doing a remount-via-key) get a fresh component, and
-    // re-running the compile mid-life would fight the user's
-    // typing. Run-once-on-mount is the contract.
-  }, []);
+    const textarea = textareaRef.current;
+    if (textarea) runCompile(textarea.value, reservePreview());
+  }, [reservePreview, runCompile]);
 
   // Seed the caret position once the textarea has mounted. Done
   // in a layout effect so the user never sees a flash of the

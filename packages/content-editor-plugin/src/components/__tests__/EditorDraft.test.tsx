@@ -374,6 +374,33 @@ test.each(['source', 'frontmatter'] as const)(
   }
 );
 
+test('uses the current Source draft when the host replaces its compiler', async () => {
+  modeState.mode = 'source';
+  const preview = (compiledSource: string) => ({ compiledSource, frontmatter: {}, scope: {} });
+  let resolveOriginal!: (result: ReturnType<typeof preview>) => void;
+  const original = new Promise<ReturnType<typeof preview>>(resolve => {
+    resolveOriginal = resolve;
+  });
+  const compilePreview = vi.fn(() => original);
+  const replacement = vi.fn(async (source: string) => preview(parseFrontmatter(source).content));
+  const view = mountEditor({
+    compilePreview,
+    PreviewComponent: ({ source }) => (
+      <p>{source && 'compiledSource' in source && source.compiledSource}</p>
+    )
+  });
+  const textarea = await screen.findByRole('textbox', { name: 'Markdown source editor' });
+  await waitFor(() => expect(compilePreview).toHaveBeenCalled());
+
+  fireEvent.change(textarea, { target: { value: '# Current draft' } });
+  view.rerender(<Editor {...view.props} compilePreview={replacement} />);
+
+  expect(await screen.findByText('# Current draft')).toBeVisible();
+  await act(async () => resolveOriginal(preview('Old preview')));
+  expect(screen.getByText('# Current draft')).toBeVisible();
+  expect(screen.queryByText('Old preview')).not.toBeInTheDocument();
+});
+
 test('guards a frontmatter field reverted to its on-disk value after a save', async () => {
   const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
     yield { kind: 'complete', prHref: null };
