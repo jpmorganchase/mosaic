@@ -8,12 +8,17 @@ export function canonicalRoute(frontmatter: Record<string, unknown>, fallback: s
 
 /** Build a URL from the canonical route without changing its logical route value. */
 export function canonicalRouteHref(frontmatter: Record<string, unknown>, fallback: string): string {
-  const { route, fullPath, routeUsesSourceFilename } = frontmatter;
+  const { route, fullPath, routeFileExtension } = frontmatter;
   if (!isSafeContentPath(route)) return fallback;
-  const literal =
-    typeof routeUsesSourceFilename === 'boolean'
-      ? routeUsesSourceFilename
-      : isSourceRoute(route, fullPath);
+  const pageExtensions =
+    typeof routeFileExtension === 'string' &&
+    routeFileExtension.startsWith('.') &&
+    routeFileExtension.includes('.', 1) &&
+    typeof fullPath === 'string' &&
+    fullPath.endsWith(routeFileExtension)
+      ? [routeFileExtension]
+      : undefined;
+  const literal = isSourceRoute(route, fullPath, pageExtensions);
   return literal
     ? encodeContentPath(route)
     : encodeRoutePathname(route, { lowercase: typeof fullPath === 'string' });

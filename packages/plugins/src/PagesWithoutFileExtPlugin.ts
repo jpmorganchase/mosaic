@@ -2,9 +2,9 @@ import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
 import {
   decodeRoutePathname,
   encodeRoutePathname,
+  getPageExtension,
   isSourceRoute
 } from '@jpmorganchase/mosaic-schemas/routePath';
-import { escapeRegExp } from 'lodash-es';
 import PluginError from './utils/PluginError.js';
 import { createPageTest } from './utils/createPageTest.js';
 
@@ -17,22 +17,20 @@ import { createPageTest } from './utils/createPageTest.js';
 const PagesWithoutFileExtPlugin: PluginType = {
   async $afterSource(pages, { config, ignorePages, pageExtensions }) {
     const isNonHiddenPage = createPageTest(ignorePages, pageExtensions);
-    const pageTest = new RegExp(`${pageExtensions.map(escapeRegExp).join('|')}$`);
 
     for (const page of pages) {
       try {
         if (!isNonHiddenPage(page.fullPath)) {
           continue;
         }
-        page.route = page.route.replace(pageTest, '');
+        const routeExtension = getPageExtension(page.route, pageExtensions);
+        if (routeExtension) page.route = page.route.slice(0, -routeExtension.length);
+        const fileExtension = getPageExtension(page.fullPath, pageExtensions);
+        if (fileExtension?.includes('.', 1)) page.routeFileExtension = fileExtension;
+        else delete page.routeFileExtension;
         // The filesystem lookup receives the URL's decoded path. Source
         // filenames that contain percent signs must keep them in the alias.
         const literal = isSourceRoute(page.route, page.fullPath, pageExtensions);
-        if (literal !== isSourceRoute(page.route, page.fullPath)) {
-          page.routeUsesSourceFilename = literal;
-        } else {
-          delete page.routeUsesSourceFilename;
-        }
         const pathname = encodeRoutePathname(page.route, { literal, lowercase: !literal });
         const alias = decodeRoutePathname(pathname) ?? page.route;
         if (alias !== page.fullPath) config.setAliases(page.fullPath, [alias]);
