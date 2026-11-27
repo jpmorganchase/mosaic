@@ -1,5 +1,9 @@
 import type { Plugin as PluginType } from '@jpmorganchase/mosaic-types';
-import { decodeRoutePathname, pageRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import {
+  decodeRoutePathname,
+  encodeRoutePathname,
+  isSourceRoute
+} from '@jpmorganchase/mosaic-schemas/routePath';
 import { escapeRegExp } from 'lodash-es';
 import PluginError from './utils/PluginError.js';
 import { createPageTest } from './utils/createPageTest.js';
@@ -23,7 +27,13 @@ const PagesWithoutFileExtPlugin: PluginType = {
         page.route = page.route.replace(pageTest, '');
         // The filesystem lookup receives the URL's decoded path. Source
         // filenames that contain percent signs must keep them in the alias.
-        const pathname = pageRoutePathname(page.route, page.fullPath);
+        const literal = isSourceRoute(page.route, page.fullPath, pageExtensions);
+        if (literal !== isSourceRoute(page.route, page.fullPath)) {
+          page.routeUsesSourceFilename = literal;
+        } else {
+          delete page.routeUsesSourceFilename;
+        }
+        const pathname = encodeRoutePathname(page.route, { literal, lowercase: !literal });
         const alias = decodeRoutePathname(pathname) ?? page.route;
         if (alias !== page.fullPath) config.setAliases(page.fullPath, [alias]);
       } catch (e) {

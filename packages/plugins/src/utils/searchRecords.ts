@@ -87,7 +87,8 @@ export function buildSearchRecords(
     fields = defaultRecordFields,
     sectionDepth = DEFAULT_SECTION_DEPTH,
     maxTextLength = DEFAULT_MAX_TEXT_LENGTH
-  }: SearchRecordOptions = {}
+  }: SearchRecordOptions = {},
+  pageExtensions?: readonly string[]
 ): SearchRecord[] | undefined {
   const content = typeof page.content === 'string' ? page.content.replaceAll('\r', '') : '';
   let tree: Node;
@@ -150,7 +151,7 @@ export function buildSearchRecords(
   });
 
   const pageFields = readFields(page, fields);
-  const pathname = pageRoutePathname(route, page.fullPath);
+  const pathname = pageRoutePathname(route, page.fullPath, pageExtensions);
   return sections.map(({ anchor, headings, parts }) => {
     const record: SearchRecord = {
       // An empty slug is a section without a usable fragment. Keep its ID

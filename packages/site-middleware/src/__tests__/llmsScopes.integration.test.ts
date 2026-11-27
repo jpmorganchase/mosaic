@@ -247,6 +247,27 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     );
   });
 
+  test.each([
+    [1, 2],
+    [2, 1]
+  ])('serves a v%s bundle while its manifest is v%s', async (bundleVersion, manifestVersion) => {
+    const key = (version: number) => (version === 1 ? '/salt/guide notes' : '/salt/guide%20notes');
+    const bundle = JSON.parse(files['/markdown-pages.json']);
+    bundle.version = bundleVersion;
+    bundle.pages[key(bundleVersion)] = '# Guide notes';
+    files['/markdown-pages.json'] = JSON.stringify(bundle);
+    const manifest = JSON.parse(files['/llms-manifest.json']);
+    manifest.version = manifestVersion;
+    manifest.routes.push(key(manifestVersion));
+    files['/llms-manifest.json'] = JSON.stringify(manifest);
+    if (mode === 'snapshot-file') save();
+
+    const response = await get('/salt/guide%20notes.md');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Link')).toContain('</salt/guide%20notes>; rel="canonical"');
+    expect(await response.text()).toBe('# Guide notes');
+  });
+
   test('reads legacy trailing-slash bundles and omits ambiguous normalized routes', async () => {
     const bundle = JSON.parse(files['/markdown-pages.json']);
     bundle.version = 1;

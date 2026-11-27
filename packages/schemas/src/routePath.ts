@@ -23,19 +23,36 @@ export function encodeRoutePathname(
 }
 
 /** A source route uses the literal filename, with or without its extension. */
-export function isSourceRoute(route: string, fullPath: unknown): boolean {
+export function isSourceRoute(
+  route: string,
+  fullPath: unknown,
+  pageExtensions?: readonly string[]
+): boolean {
+  if (typeof fullPath !== 'string' || !fullPath.startsWith(route)) return false;
+  if (route === fullPath) return true;
+  const suffix = fullPath.slice(route.length);
+  if (!pageExtensions) return /^\.[^./]+$/.test(suffix);
+  // Strip the longest configured suffix, as the page alias plugin does.
   return (
-    typeof fullPath === 'string' &&
-    (route === fullPath ||
-      (fullPath.startsWith(route) && /^\.[^./]+$/.test(fullPath.slice(route.length))))
+    pageExtensions.includes(suffix) &&
+    !pageExtensions.some(
+      extension => extension.length > suffix.length && fullPath.endsWith(extension)
+    )
   );
 }
 
-export function pageRoutePathname(route: string, fullPath: unknown): string {
-  const literal = isSourceRoute(route, fullPath);
+export function pageRoutePathname(
+  route: string,
+  fullPath: unknown,
+  pageExtensions?: readonly string[]
+): string {
+  const literal = isSourceRoute(route, fullPath, pageExtensions);
   // Authored permalinks resolve to aliases stored in lowercase, including
   // the characters represented by URL escapes.
-  return encodeRoutePathname(route, { literal, lowercase: !literal });
+  return encodeRoutePathname(route, {
+    literal,
+    lowercase: typeof fullPath === 'string' && !literal
+  });
 }
 
 /** Decode a URL pathname into literal path segments. */

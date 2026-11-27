@@ -295,7 +295,7 @@ const LlmsTxtPlugin: PluginType<LlmsTxtPluginPage, LlmsTxtPluginOptions, LlmsTxt
       )) as LlmsTxtPluginPage;
       if (typeof page.route !== 'string') continue;
       const route = normalizeRoute(page.route);
-      const pathname = pageRoutePathname(route, page.fullPath ?? realPath);
+      const pathname = pageRoutePathname(route, page.fullPath ?? realPath, pageExtensions);
       if (route.length > 4096 || decodeRoutePathname(pathname) === undefined) continue;
       llmsPathnameClaims.push(pathname);
       // An alias must not resurrect an ignored or excluded backing page.

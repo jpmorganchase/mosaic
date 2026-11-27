@@ -170,6 +170,12 @@ describe('GIVEN toMarkdown', () => {
     expect(markdown).toBe('[Reference](/docs/release%2520team/reference?tab=api#details)');
   });
 
+  test('THEN a standalone route without a backing filename retains its case', async () => {
+    expect(await toMarkdown({ route: '/Docs/Setup', content: '[Guide](guide.md)' })).toBe(
+      '[Guide](/Docs/guide.md)'
+    );
+  });
+
   test('THEN it puts links and images on the site URL when it is set', async () => {
     const markdown = await toMarkdown(
       {
@@ -236,7 +242,8 @@ describe('GIVEN the LlmsTxtPlugin', () => {
 
   async function run(
     options: Record<string, unknown> = {},
-    pageFiles: Record<string, string> = files
+    pageFiles: Record<string, string> = files,
+    pageExtensions = ['.mdx', '.json']
   ) {
     const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(pageFiles)), 'docs');
     let data: Record<string, unknown> = {};
@@ -254,7 +261,7 @@ describe('GIVEN the LlmsTxtPlugin', () => {
                 : mdxSerialiser.deserialise(fullPath, raw)
           },
           ignorePages: ['shared-config.json'],
-          pageExtensions: ['.mdx', '.json']
+          pageExtensions
         } as unknown as Parameters<typeof beforeSend>[1],
         options
       );
@@ -291,6 +298,20 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     expect(
       JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/release%23notes%3Fdraft']
     ).toContain('url: "https://example.com/docs/release%23notes%3Fdraft"');
+  });
+
+  test('THEN compound source extensions preserve literal percent signs in the bundle', async () => {
+    const fullPath = '/docs/release%20notes.page.mdx';
+    const route = '/docs/release%20notes';
+    const { written } = await run(
+      {},
+      { [fullPath]: `${frontmatter({ route, fullPath, title: 'Compound' })}Body.\n` },
+      ['.mdx', '.page.mdx']
+    );
+    expect(written[LLMS_TXT_FILE]).toContain('[Compound](/docs/release%2520notes.md)');
+    expect(JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/release%2520notes']).toContain(
+      'url: "/docs/release%2520notes"'
+    );
   });
 
   test('THEN it writes each page as Markdown with frontmatter, in route order', async () => {
