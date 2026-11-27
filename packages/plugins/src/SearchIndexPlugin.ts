@@ -1,4 +1,9 @@
-import type { Page, Plugin as PluginType, SearchRecordsFile } from '@jpmorganchase/mosaic-types';
+import type {
+  IVolumeMutable,
+  Page,
+  Plugin as PluginType,
+  SearchRecordsFile
+} from '@jpmorganchase/mosaic-types';
 import {
   buildSearchRecords,
   type SearchRecord,
@@ -14,8 +19,20 @@ export interface SearchIndexPluginOptions {
 
 export const SEARCH_RECORDS_FILE = '/search-records.json';
 
+interface SearchIndexData {
+  searchRecords?: Record<string, SearchRecord>;
+}
+
+function writeSearchRecords(
+  filesystem: IVolumeMutable,
+  searchRecords: NonNullable<SearchIndexData['searchRecords']>
+) {
+  const file: SearchRecordsFile = { version: 1, records: Object.values(searchRecords) };
+  return filesystem.promises.writeFile(SEARCH_RECORDS_FILE, JSON.stringify(file));
+}
+
 /** Generates the records used by both server and browser search. */
-const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
+const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions, SearchIndexData> = {
   async $beforeSend(
     mutableFilesystem,
     { config, serialiser, ignorePages, pageExtensions },
@@ -52,12 +69,21 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions> = {
     config.setData({ searchRecords });
   },
   async afterUpdate(_, { sharedFilesystem, globalConfig }) {
-    if (!globalConfig.data.searchRecords) return;
-    const file: SearchRecordsFile = {
-      version: 1,
-      records: Object.values(globalConfig.data.searchRecords) as SearchRecord[]
-    };
-    await sharedFilesystem.promises.writeFile(SEARCH_RECORDS_FILE, JSON.stringify(file));
+    const { searchRecords } = globalConfig.data;
+    if (searchRecords) await writeSearchRecords(sharedFilesystem, searchRecords);
+  },
+  async afterSourceRemove(sharedFilesystem, { globalConfig }, options) {
+    if (options?.records === false) return;
+    const { searchRecords } = globalConfig.data;
+    if (searchRecords) {
+      await writeSearchRecords(sharedFilesystem, searchRecords);
+      return;
+    }
+    try {
+      await sharedFilesystem.promises.unlink(SEARCH_RECORDS_FILE);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+    }
   }
 };
 
