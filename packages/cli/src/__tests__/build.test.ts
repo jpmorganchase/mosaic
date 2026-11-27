@@ -41,6 +41,8 @@ function config() {
   return { plugins: [], sources: [] };
 }
 
+const listedSource = (name: string) => ({ name, pluginErrors: {} });
+
 beforeEach(async () => {
   core.start.mockResolvedValue(undefined);
   core.stop.mockResolvedValue(undefined);
@@ -140,6 +142,7 @@ describe('GIVEN the build command', () => {
     core.start.mockImplementation(async () => {
       await sourceUpdated?.(filesystem, fast);
     });
+    core.listSources.mockResolvedValue([listedSource('fast'), listedSource('slow')]);
     filesystem.promises.glob.mockResolvedValue(['/fast.mdx', '/slow.mdx']);
     filesystem.promises.readFile.mockImplementation(async file => [Buffer.from(file)]);
 
@@ -177,6 +180,7 @@ describe('GIVEN the build command', () => {
         expect(filesystem.promises.glob).not.toHaveBeenCalled();
         mounted = true;
       });
+      core.listSources.mockResolvedValue([listedSource('first'), listedSource('second')]);
       filesystem.promises.glob.mockImplementation(async () => {
         expect(mounted).toBe(true);
         return ['/salt/index.mdx', '/sitemap.xml'];
@@ -277,6 +281,7 @@ describe('GIVEN the build command', () => {
       await sourceUpdated?.(filesystem, fast);
       await sourceUpdated?.(filesystem, fast);
     });
+    core.listSources.mockResolvedValue([listedSource('fast'), listedSource('slow')]);
     filesystem.promises.glob.mockResolvedValue(['/complete.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('both sources ready')]);
 
@@ -383,6 +388,36 @@ describe('GIVEN the build command', () => {
     await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
 
     firstUpdateFailed?.(error);
+
+    await rejected;
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  });
+
+  test('THEN a source that exits after publishing cannot count toward a completed snapshot', async () => {
+    const fast = { id: Symbol('fast') };
+    const slow = { id: Symbol('slow') };
+    let finishStartup: () => void;
+    const startup = new Promise<void>(resolve => {
+      finishStartup = resolve;
+    });
+    core.start.mockImplementation(() => {
+      sourceUpdated?.(filesystem, fast);
+      return startup;
+    });
+    core.listSources.mockResolvedValue([listedSource('fast')]);
+
+    const building = build({ plugins: [], sources: [{}, {}] }, outDir, { name: 'latest' });
+    const rejected = expect(building).rejects.toThrow('1 source(s) stopped before export');
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
+
+    // The fast source exited while the slow source was starting and its
+    // volume was unmounted. Both IDs will still have published an update.
+    core.listSources.mockResolvedValue([listedSource('slow')]);
+    finishStartup();
+    sourceUpdated?.(filesystem, slow);
 
     await rejected;
     expect(filesystem.promises.glob).not.toHaveBeenCalled();

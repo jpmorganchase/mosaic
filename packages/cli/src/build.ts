@@ -94,7 +94,8 @@ export default async function build(config, targetDir, options) {
     // Startup also mounts the source volumes. A first update alone is not enough.
     await Promise.all([mosaic.start(), sourcesReady]);
     clearTimeout(watchdog);
-    const failures = (await mosaic.listSources()).flatMap(source =>
+    const liveSources = await mosaic.listSources();
+    const failures = liveSources.flatMap(source =>
       Object.entries(source.pluginErrors).flatMap(([lifecycle, errors]) =>
         (errors as import('@jpmorganchase/mosaic-types').PluginErrors).map(
           error =>
@@ -109,6 +110,13 @@ export default async function build(config, targetDir, options) {
     if (failures.length > 0) {
       throw new Error(
         `[Mosaic] Snapshot failed because plugins recorded errors:\n${failures.join('\n')}`
+      );
+    }
+    if (liveSources.length < sourceCount) {
+      throw new Error(
+        `[Mosaic] Snapshot cannot be written because ${
+          sourceCount - liveSources.length
+        } source(s) stopped before export. ` + 'Check the source logs and retry the build.'
       );
     }
     // Include the shared filesystem containing sitemap/search/Markdown output.
