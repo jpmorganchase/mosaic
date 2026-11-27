@@ -98,8 +98,10 @@ describe('PersistDialog', () => {
       expect(await screen.findByText(/The save ended without confirmation/)).toBeVisible();
       expect(saveState.markSaveFailed).toHaveBeenCalledOnce();
       expect(saveState.markSaved).not.toHaveBeenCalled();
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
-      expect(screen.getByRole('button', { name: 'Raise Pull Request' })).toBeEnabled();
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Raise Pull Request' })).toBeEnabled();
+      });
     }
   );
 
