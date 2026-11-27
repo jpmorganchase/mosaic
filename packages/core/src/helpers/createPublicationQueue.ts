@@ -1,9 +1,9 @@
 export default function createPublicationQueue() {
-  let pending = Promise.resolve();
+  let pending: Promise<unknown> = Promise.resolve();
 
-  return (publish: () => Promise<void>) => {
-    pending = pending.then(publish).catch(error => {
-      console.error('[Mosaic][Core] Source publication failed', error);
-    });
+  return <T>(publish: () => T | Promise<T>): Promise<T> => {
+    const result = pending.then(publish);
+    pending = result.catch(() => undefined);
+    return result;
   };
 }

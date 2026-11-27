@@ -13,7 +13,6 @@ import type {
 
 import Source from './Source.js';
 import createConfig from './helpers/createConfig.js';
-import createPublicationQueue from './helpers/createPublicationQueue.js';
 import { findNewPageOwner } from './findNewPageOwner.js';
 import { bindPluginMethods } from './plugin/index.js';
 import type { SourceGeneration } from './worker/helpers/publishSourceGenerations.js';
@@ -55,9 +54,7 @@ export default class SourceManager {
   #schedule: SourceSchedule;
   #mountedVolumes?: () => readonly IVolumeImmutable[];
   #removalPlugins?: ReturnType<typeof bindPluginMethods>;
-  // A namespace hook can mutate another source's volume. Keep it, shared
-  // artifacts and every source generation within the same publication queue.
-  #schedulePublication = createPublicationQueue();
+  #sourceRemovals: Promise<void> = Promise.resolve();
 
   constructor(
     globalFilesystem,
@@ -267,8 +264,7 @@ export default class SourceManager {
         this.#pageExtensions,
         this.#ignorePages,
         this.#globalFilesystem,
-        sourceDefinition.workflows,
-        this.#schedulePublication
+        sourceDefinition.workflows
       );
       const immutableSourceFilesystem = source.filesystem.asReadOnly();
 
@@ -278,19 +274,34 @@ export default class SourceManager {
 
       source.use(this.#plugins, this.#serialisers);
 
-      const populateSource = async ({ pages, symlinks }: SourceGeneration) => {
-        this.#rebuildGlobalConfig();
-        source.filesystem.reset();
-        source.filesystem.fromJSON(pages);
-        // We need to re-apply symlinks in the main thread.
-        await source.filesystem.symlinksFromJSON(symlinks);
-        if (!sourceActive) return false;
-        await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
-        if (!sourceActive) return false;
-        source.filesystem.freeze();
-        source.filesystem.clearCache();
-        return true;
-      };
+      const populateSource = (generation: SourceGeneration, fromCache = false) =>
+        source.applyGeneration(generation, async () => {
+          try {
+            this.#rebuildGlobalConfig();
+            source.filesystem.reset();
+            source.filesystem.fromJSON(generation.pages);
+            // We need to re-apply symlinks in the main thread.
+            await source.filesystem.symlinksFromJSON(generation.symlinks);
+            if (!sourceActive) return false;
+            await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
+            if (!sourceActive) return false;
+            source.filesystem.freeze();
+            source.filesystem.clearCache();
+            return true;
+          } catch (error) {
+            if (!fromCache) throw error;
+            if (sourceActive) {
+              source.filesystem.reset();
+              source.config = createConfig();
+              this.#rebuildGlobalConfig();
+              console.warn(
+                `[Mosaic][Core] Could not restore the source cache for '${source.id.description}'`,
+                error
+              );
+            }
+            return false;
+          }
+        });
 
       source.onUpdate(async generation => {
         if (!sourceActive) {
@@ -304,6 +315,7 @@ export default class SourceManager {
           initOrStartTime = null;
           try {
             if (!(await populateSource(generation))) return;
+            // Release the local volume before waiting on another source's volume.
             await this.#updateSources(immutableSourceFilesystem, source);
 
             // After each async operation, we should check if anything has caused the Source to close
@@ -365,15 +377,17 @@ export default class SourceManager {
         const wasActive = sourceActive;
         sourceActive = false;
         if (wasActive) {
+          this.#rebuildGlobalConfig();
           // Only opt-in plugins reconcile shared files. Do not replay page
           // mutation hooks against a source whose worker has already exited.
-          this.#schedulePublication(async () => {
-            this.#rebuildGlobalConfig();
-            const plugins = await (this.#removalPlugins ??= bindPluginMethods(this.#plugins));
-            await plugins.afterSourceRemove?.(this.#sharedFilesystem, {
-              globalConfig: this.#globalConfig.asReadOnly()
-            });
-          });
+          this.#sourceRemovals = this.#sourceRemovals
+            .then(async () => {
+              const plugins = await (this.#removalPlugins ??= bindPluginMethods(this.#plugins));
+              await plugins.afterSourceRemove?.(this.#sharedFilesystem, {
+                globalConfig: this.#globalConfig.asReadOnly()
+              });
+            })
+            .catch(error => console.error('[Mosaic][Core] Shared artifact cleanup failed', error));
         }
       });
 
@@ -382,20 +396,8 @@ export default class SourceManager {
         mountSource?.(source);
         // Cached pages are available at startup. Only a live publication
         // can notify consumers or satisfy a snapshot's first-update wait.
-        if (cached) {
-          try {
-            if (!(await populateSource(cached))) return;
-          } catch (error) {
-            if (!sourceActive) return;
-            source.filesystem.reset();
-            source.config = createConfig();
-            this.#rebuildGlobalConfig();
-            console.warn(
-              `[Mosaic][Core] Could not restore the source cache for '${source.id.description}'`,
-              error
-            );
-          }
-        }
+        if (cached) await populateSource(cached, true);
+        if (!sourceActive) return;
         sourceStarted = true;
         clearWatchdog();
         console.debug(
@@ -447,22 +449,20 @@ export default class SourceManager {
     );
   }
 
-  async #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
-    // Notify other frozen sources that share this sources namespace that something has changed.
-    for (const existingSource of this.#sources.values()) {
-      if (
-        existingSource !== source &&
-        existingSource.filesystem?.frozen &&
-        existingSource.namespace === source.namespace
-      ) {
-        await existingSource.requestNamespaceSourceUpdate(
+  #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
+    const siblings = Array.from(this.#sources.values()).filter(
+      candidate => candidate !== source && candidate.namespace === source.namespace
+    );
+    return Promise.all(
+      siblings.map(sibling =>
+        sibling.requestNamespaceSourceUpdate(
           source.id.description,
           immutableSourceFilesystem,
           this.#sharedFilesystem,
           this.#globalConfig
-        );
-      }
-    }
+        )
+      )
+    );
   }
 
   listSources() {

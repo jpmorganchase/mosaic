@@ -44,7 +44,8 @@ export default class Source {
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
   #schedule: SourceSchedule;
-  #schedulePublication: ReturnType<typeof createPublicationQueue>;
+  #schedulePublication = createPublicationQueue();
+  #scheduleVolumeMutation = createPublicationQueue();
   #stopped = true;
   pluginErrors: any = {};
 
@@ -61,8 +62,7 @@ export default class Source {
     pageExtensions: string[],
     ignorePages: string[],
     globalFilesystem: IUnionVolume,
-    workflows: SourceWorkflow[] = [],
-    schedulePublication = createPublicationQueue()
+    workflows: SourceWorkflow[] = []
   ) {
     const { modulePath, namespace, schedule } = moduleDefinition;
     this.moduleDefinition = moduleDefinition;
@@ -72,7 +72,6 @@ export default class Source {
     this.#ignorePages = ignorePages;
     this.#workflows = workflows;
     this.#schedule = schedule;
-    this.#schedulePublication = schedulePublication;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
@@ -113,6 +112,11 @@ export default class Source {
 
   stop() {
     if (this.#worker && this.#worker.closed) {
+      if (!this.#stopped) {
+        // A normally completed worker may still have publications queued.
+        this.#exit();
+        return undefined;
+      }
       throw new Error('Cannot stop source that has not started');
     }
     if (this.#worker) {
@@ -173,6 +177,23 @@ export default class Source {
     sharedFilesystem: IVolumeImmutable,
     globalConfig: MutableData<unknown>
   ) {
+    await this.#scheduleVolumeMutation(async () => {
+      if (this.#stopped || !this.filesystem?.frozen) return;
+      await this.#applyNamespaceSourceUpdate(
+        namespaceSourceDesc,
+        updatedSourceFilesystem,
+        sharedFilesystem,
+        globalConfig
+      );
+    });
+  }
+
+  async #applyNamespaceSourceUpdate(
+    namespaceSourceDesc: string,
+    updatedSourceFilesystem: IVolumeImmutable,
+    sharedFilesystem: IVolumeImmutable,
+    globalConfig: MutableData<unknown>
+  ) {
     const filesystem = this.filesystem;
     const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdateNamespaceSources(
@@ -204,6 +225,14 @@ export default class Source {
         filesystem.clearCache();
       }
     }
+  }
+
+  applyGeneration(generation: SourceGeneration, populate: () => Promise<boolean>) {
+    return this.#scheduleVolumeMutation(() => {
+      if (this.#stopped) return false;
+      this.config = createConfig(generation.data);
+      return populate();
+    });
   }
 
   async use(
@@ -255,11 +284,10 @@ export default class Source {
     event: EVENT.START | EVENT.UPDATE,
     generation?: SourceGeneration
   ) {
-    // Publish cache hydration, config and live pages as a unit in the parent.
-    this.#schedulePublication(async () => {
+    // Keep the worker's init and updates in order while peers publish independently.
+    void this.#schedulePublication(async () => {
       try {
         if (this.#stopped || this.#worker !== worker) return;
-        if (generation) this.config = createConfig(generation.data);
         // Raw listeners preserve one-shot startup subscriptions.
         for (const listener of this.#emitter.rawListeners(event)) {
           if (this.#stopped) return;
@@ -271,7 +299,7 @@ export default class Source {
           await this.stop();
         }
       }
-    });
+    }).catch(error => console.error('[Mosaic][Core] Could not stop source', error));
   }
 
   #createWorker() {
@@ -286,11 +314,29 @@ export default class Source {
       serialisers: this.#serialisers,
       schedule: this.#schedule
     });
-    worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
-    worker.once(EVENT.EXIT, () => this.#exit());
+    let receivedUpdate = false;
+    let failed = false;
+    worker.once(EVENT.ERROR, error => {
+      failed = true;
+      this.#emitter.emit(EVENT.ERROR, error);
+    });
+    worker.once(EVENT.EXIT, () => {
+      if (this.#stopped || failed || !receivedUpdate) {
+        this.#exit();
+      } else {
+        // Deliver updates already received from a finite source before unmounting it.
+        void this.#schedulePublication(() => {
+          if (!this.#stopped) this.#exit();
+        });
+      }
+    });
     worker.once(EVENT.START, (message?: { data: SourceGeneration }) => {
       this.#emitter.emit(WORKER_INIT);
       this.#queueGeneration(worker, EVENT.START, message?.data);
+    });
+    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }: { data: SourceGeneration }) => {
+      receivedUpdate = true;
+      this.#queueGeneration(worker, EVENT.UPDATE, { pages, symlinks, data });
     });
     return worker;
   }
@@ -302,10 +348,6 @@ export default class Source {
     this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
     if (this.#stopped) return;
     this.#worker = this.#createWorker();
-    const worker = this.#worker;
-    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }: { data: SourceGeneration }) =>
-      this.#queueGeneration(worker, EVENT.UPDATE, { pages, symlinks, data })
-    );
     this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
       this.pluginErrors[`${lifecycleMethod}`] = errors;
     });
