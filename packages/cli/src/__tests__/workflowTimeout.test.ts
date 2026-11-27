@@ -63,6 +63,17 @@ async function runJob(app: FastifyInstance, sid = user.sid) {
 }
 
 describe('workflow timeout configuration at the HTTP plugin boundary', () => {
+  test('returns the configured timeout in the job acceptance response', async () => {
+    const app = await serverWithTimeout('420000', async () => true);
+    try {
+      const started = await startJob(app);
+      expect(started.statusCode).toBe(202);
+      expect(started.json()).toEqual({ jobId: expect.any(String), timeoutMs: 420_000 });
+    } finally {
+      await app.close();
+    }
+  });
+
   test('fails an unfinished job after the validated timeout even if it sent COMPLETE', async () => {
     const app = await serverWithTimeout('50', send => {
       send('Provisional result', 'COMPLETE');

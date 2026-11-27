@@ -49,10 +49,12 @@ import { debounce } from 'lodash-es';
 import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import {
+  useErrorMessage,
+  useReservePreview,
   useSaveState,
   useSetIsCompiling,
   useSetPreviewContent,
-  useErrorMessage
+  type PreviewRequest
 } from '../../EditorContext';
 import { formatMdxError } from '../../utils/formatMdxError';
 import style from './SourceEditor.css';
@@ -93,24 +95,20 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
   const setIsCompiling = useSetIsCompiling();
   const { setError } = useErrorMessage();
   const { markDirty } = useSaveState();
+  const reservePreview = useReservePreview();
   const [, startTransition] = useTransition();
-  // Same monotonic-id pattern as PreviewPlugin: out-of-order
-  // server responses from successive debounced calls would
-  // otherwise let a stale failing compile resurrect over a
-  // fresh successful one.
-  const compileSeqRef = useRef(0);
 
   // Keep callbacks stable across renders so the debounce timer
   // state isn't reset on every parent render. The shared
   // identity also lets us .cancel() on unmount.
   const runCompile = useMemo(
-    () => (markdown: string) => {
-      const seq = ++compileSeqRef.current;
+    () => (markdown: string, isCurrent: PreviewRequest) => {
+      if (!isCurrent()) return;
       setIsCompiling(true);
       startTransition(async () => {
         try {
           const source = await compilePreview(markdown);
-          if (seq !== compileSeqRef.current) return;
+          if (!isCurrent()) return;
           if ('error' in source && source.error) {
             setError(formatMdxError(source.error));
           } else {
@@ -118,10 +116,9 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
             setPreviewContent(source);
           }
         } catch (e) {
-          if (seq !== compileSeqRef.current) return;
-          setError(formatMdxError(e));
+          if (isCurrent()) setError(formatMdxError(e));
         } finally {
-          if (seq === compileSeqRef.current) setIsCompiling(false);
+          if (isCurrent()) setIsCompiling(false);
         }
       });
     },
@@ -133,9 +130,7 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
     [runCompile]
   );
 
-  // Cancel pending compile on unmount so a stale response
-  // doesn't setState on an unmounted tree (same defensive
-  // teardown PreviewPlugin uses).
+  // Cancel queued typing work when the Source editor unmounts.
   useEffect(
     () => () => {
       debouncedCompile.cancel();
@@ -149,7 +144,7 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
   // via its own `didSeedRef`; we mirror it here so the seam is
   // invisible to the user).
   useEffect(() => {
-    runCompile(initialValue);
+    runCompile(initialValue, reservePreview());
     // We deliberately do not depend on `initialValue` —
     // subsequent renders that change `initialValue` (the parent
     // doing a remount-via-key) get a fresh component, and
@@ -196,7 +191,7 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
     // UX trick PreviewPlugin uses. The next compile will
     // reinstate it if the new value is still broken.
     setError(undefined);
-    debouncedCompile(value);
+    debouncedCompile(value, reservePreview());
   };
 
   return (

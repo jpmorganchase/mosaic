@@ -74,8 +74,21 @@ export function mergeAuthoredFrontmatter(
   originalAuthored?: Record<string, unknown>
 ): Record<string, unknown> {
   const out: Record<string, unknown> = { ...(meta ?? {}) };
-  for (const key of Object.keys(originalAuthored ?? {})) {
-    if (!Object.hasOwn(authored, key)) delete out[key];
+  for (const [key, originalValue] of Object.entries(originalAuthored ?? {})) {
+    if (Object.hasOwn(authored, key)) continue;
+    const metaValue = meta?.[key];
+    if (
+      isPlainObject(originalValue) &&
+      !isRefPlaceholder(originalValue) &&
+      isPlainObject(metaValue)
+    ) {
+      const remaining = mergeAuthoredFrontmatter(metaValue, {}, originalValue);
+      if (Object.keys(remaining).length > 0) {
+        out[key] = remaining;
+        continue;
+      }
+    }
+    delete out[key];
   }
 
   for (const [key, authoredValue] of Object.entries(authored)) {

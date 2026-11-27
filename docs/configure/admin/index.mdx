@@ -77,8 +77,9 @@ site's `.env.development` is ignored unless `NODE_ENV=development`.
   It can also carry `frontmatter`, `targetRoute` (rename), `isNewPage: true` (create) and an optional
   `commitMessage` override. Messages must be nonblank text, at most 8 KiB of UTF-8, without control
   characters other than LF or CRLF line endings. CRLF becomes LF. Omit the field to use the source's
-  configured default. The CLI
-  responds `202 { "jobId": "…" }`, or with `{ "error": "…" }` and `400` (invalid request), `401`
+  configured default. The CLI responds `202 { "jobId": "…", "timeoutMs": 300000 }` with its
+  configured workflow timeout. The reference editor allows additional time for the result to reach
+  the browser. Errors return `{ "error": "…" }` and `400` (invalid request), `401`
   (wrong secret), `404` (page not found), `409` (new page already exists), `413` (too large) or `503`
   (secret not configured, or too many workflows running).
 

@@ -18,7 +18,7 @@ export interface SubscribeToSaveOptions {
    */
   url?: string;
   /**
-   * How many times to reconnect without receiving progress.
+   * How many times to retry before a connection successfully opens.
    * `EventSource` reconnects automatically and resumes from the last event.
    * Default 3.
    */
@@ -160,10 +160,12 @@ async function* followSaveEvents(
   const timer = setTimeout(() => {
     push({ kind: 'error', message: LOST_CONNECTION_MESSAGE }, true);
   }, maxWaitMs);
+  source.addEventListener('open', () => {
+    failures = 0;
+  });
   source.addEventListener('progress', event => {
     const data = parse(event.data);
     if (!data || typeof data.status !== 'string') return;
-    failures = 0;
     push({ kind: 'progress', message: data as SourceWorkflowMessageEvent });
   });
   source.addEventListener('done', event => {

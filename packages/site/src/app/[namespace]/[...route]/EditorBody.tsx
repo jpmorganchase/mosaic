@@ -61,7 +61,7 @@ async function persist(
   const started = await startSave(input);
   // The save dialog reports a thrown error like an `error` event.
   if ('error' in started) throw new Error(started.error);
-  return subscribeToSave(started.jobId);
+  return subscribeToSave(started.jobId, { maxWaitMs: started.maxWaitMs });
 }
 
 async function loadSaveDefaults(input: Parameters<typeof getSaveDefaults>[0]) {

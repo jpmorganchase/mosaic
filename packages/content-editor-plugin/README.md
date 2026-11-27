@@ -20,18 +20,18 @@ The reference site starts the save on its server and follows it over Server-Sent
 
 ```tsx
 import { Editor, subscribeToSave } from '@jpmorganchase/mosaic-content-editor-plugin';
-import { startSave } from './persistAction'; // Server Action returning { jobId } or { error }
+import { startSave } from './persistAction'; // Server Action returning the job ID and wait limit
 
 async function persist(input) {
   const started = await startSave(input);
   if ('error' in started) throw new Error(started.error);
-  return subscribeToSave(started.jobId);
+  return subscribeToSave(started.jobId, { maxWaitMs: started.maxWaitMs });
 }
 
 <Editor persist={persist} {...otherProps} />;
 ```
 
-`subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`. It closes the stream when the final result arrives, the server refuses the stream, or either limit is reached. `options.maxReconnects` allows three reconnections without progress by default. `options.maxWaitMs` allows six minutes for a final result by default. Set a larger value if your workflow can take longer. If progress ended before the result arrived, check for a pull request before retrying.
+`subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`. It closes the stream when the final result arrives, the server refuses the stream, or either limit is reached. `options.maxReconnects` allows three consecutive retries before a connection opens. `options.maxWaitMs` allows six minutes for a final result by default. The reference site derives that limit from the CLI's configured workflow timeout. If progress ended before the result arrived, check for a pull request before retrying.
 
 Successful GitHub and Bitbucket workflows send `message: { pullRequestUrl }`, where the URL opens the pull request in a browser. `subscribeToSave` also accepts older GitHub URL strings and Bitbucket `links.self` responses. A successful workflow may omit the URL: the dialog still confirms the save and prevents another submission.
 
