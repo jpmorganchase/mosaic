@@ -13,6 +13,7 @@ import type {
 
 import Source from './Source.js';
 import createConfig from './helpers/createConfig.js';
+import createPublicationQueue from './helpers/createPublicationQueue.js';
 import { findNewPageOwner } from './findNewPageOwner.js';
 import { bindPluginMethods } from './plugin/index.js';
 import type { SourceGeneration } from './worker/helpers/publishSourceGenerations.js';
@@ -54,7 +55,9 @@ export default class SourceManager {
   #schedule: SourceSchedule;
   #mountedVolumes?: () => readonly IVolumeImmutable[];
   #removalPlugins?: ReturnType<typeof bindPluginMethods>;
-  #sourceRemovals: Promise<void> = Promise.resolve();
+  // A namespace hook can mutate another source's volume. Keep it, shared
+  // artifacts and every source generation within the same publication queue.
+  #schedulePublication = createPublicationQueue();
 
   constructor(
     globalFilesystem,
@@ -257,13 +260,15 @@ export default class SourceManager {
           ...sourceDefinition
         },
         {
+          ...(sourceDefinition.cache !== undefined && { cache: sourceDefinition.cache }),
           ...(sourceDefinition.options as Record<string, unknown>),
           ...options
         },
         this.#pageExtensions,
         this.#ignorePages,
         this.#globalFilesystem,
-        sourceDefinition.workflows
+        sourceDefinition.workflows,
+        this.#schedulePublication
       );
       const immutableSourceFilesystem = source.filesystem.asReadOnly();
 
@@ -360,28 +365,39 @@ export default class SourceManager {
         const wasActive = sourceActive;
         sourceActive = false;
         if (wasActive) {
-          this.#rebuildGlobalConfig();
           // Only opt-in plugins reconcile shared files. Do not replay page
           // mutation hooks against a source whose worker has already exited.
-          this.#sourceRemovals = this.#sourceRemovals
-            .then(async () => {
-              const plugins = await (this.#removalPlugins ??= bindPluginMethods(this.#plugins));
-              await plugins.afterSourceRemove?.(this.#sharedFilesystem, {
-                globalConfig: this.#globalConfig.asReadOnly()
-              });
-            })
-            .catch(error => console.error('[Mosaic][Core] Shared artifact cleanup failed', error));
+          this.#schedulePublication(async () => {
+            this.#rebuildGlobalConfig();
+            const plugins = await (this.#removalPlugins ??= bindPluginMethods(this.#plugins));
+            await plugins.afterSourceRemove?.(this.#sharedFilesystem, {
+              globalConfig: this.#globalConfig.asReadOnly()
+            });
+          });
         }
       });
 
       source.onStart(async (cached?: SourceGeneration) => {
-        clearWatchdog();
         sourceActive = true;
         mountSource?.(source);
         // Cached pages are available at startup. Only a live publication
         // can notify consumers or satisfy a snapshot's first-update wait.
-        if (cached && !(await populateSource(cached))) return;
+        if (cached) {
+          try {
+            if (!(await populateSource(cached))) return;
+          } catch (error) {
+            if (!sourceActive) return;
+            source.filesystem.reset();
+            source.config = createConfig();
+            this.#rebuildGlobalConfig();
+            console.warn(
+              `[Mosaic][Core] Could not restore the source cache for '${source.id.description}'`,
+              error
+            );
+          }
+        }
         sourceStarted = true;
+        clearWatchdog();
         console.debug(
           `[Mosaic][Core] '${source.id.description}' started in ${
             new Date().getTime() - initOrStartTime
@@ -389,7 +405,7 @@ export default class SourceManager {
         );
         initOrStartTime = new Date().getTime();
         resolve(source);
-      });
+      }, clearWatchdog);
 
       Promise.resolve(source.start()).catch(error => {
         clearWatchdog();
@@ -431,25 +447,22 @@ export default class SourceManager {
     );
   }
 
-  #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
+  async #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
     // Notify other frozen sources that share this sources namespace that something has changed.
-    const sourcesToUpdate = Array.from(this.#sources.values()).filter(
-      existingSource =>
+    for (const existingSource of this.#sources.values()) {
+      if (
         existingSource !== source &&
-        existingSource.filesystem.frozen &&
+        existingSource.filesystem?.frozen &&
         existingSource.namespace === source.namespace
-    );
-
-    return Promise.all(
-      sourcesToUpdate.map(async sourceToUpdate => {
-        await sourceToUpdate.requestNamespaceSourceUpdate(
+      ) {
+        await existingSource.requestNamespaceSourceUpdate(
           source.id.description,
           immutableSourceFilesystem,
           this.#sharedFilesystem,
           this.#globalConfig
         );
-      })
-    );
+      }
+    }
   }
 
   listSources() {

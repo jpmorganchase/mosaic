@@ -24,9 +24,12 @@ import type {
 import FileAccess from './filesystems/FileAccess.js';
 import MutableVolume from './filesystems/MutableVolume.js';
 import createConfig from './helpers/createConfig.js';
+import createPublicationQueue from './helpers/createPublicationQueue.js';
 import { bindPluginMethods, bindSerialiser } from './plugin/index.js';
 import WorkerSubscription, { EVENT } from './WorkerSubscription.js';
 import type { SourceGeneration } from './worker/helpers/publishSourceGenerations.js';
+
+const WORKER_INIT = Symbol('worker init');
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -41,7 +44,7 @@ export default class Source {
   #ignorePages: string[];
   #workflows: SourceWorkflow[] = [];
   #schedule: SourceSchedule;
-  #pendingUpdate: Promise<void> = Promise.resolve();
+  #schedulePublication: ReturnType<typeof createPublicationQueue>;
   #stopped = true;
   pluginErrors: any = {};
 
@@ -58,7 +61,8 @@ export default class Source {
     pageExtensions: string[],
     ignorePages: string[],
     globalFilesystem: IUnionVolume,
-    workflows: SourceWorkflow[] = []
+    workflows: SourceWorkflow[] = [],
+    schedulePublication = createPublicationQueue()
   ) {
     const { modulePath, namespace, schedule } = moduleDefinition;
     this.moduleDefinition = moduleDefinition;
@@ -68,6 +72,7 @@ export default class Source {
     this.#ignorePages = ignorePages;
     this.#workflows = workflows;
     this.#schedule = schedule;
+    this.#schedulePublication = schedulePublication;
     this.namespace = namespace;
     this.id = Symbol(
       `${path.basename(path.dirname(path.resolve(modulePath, '../')))}#${md5(
@@ -90,10 +95,14 @@ export default class Source {
     return () => this.#emitter.off(EVENT.ERROR, callback);
   }
 
-  onStart(callback) {
+  onStart(callback, onWorkerInit?: () => void) {
     this.#emitter.once(EVENT.START, callback);
+    if (onWorkerInit) this.#emitter.once(WORKER_INIT, onWorkerInit);
 
-    return () => this.#emitter.off(EVENT.START, callback);
+    return () => {
+      this.#emitter.off(EVENT.START, callback);
+      if (onWorkerInit) this.#emitter.off(WORKER_INIT, onWorkerInit);
+    };
   }
 
   onExit(callback) {
@@ -134,6 +143,7 @@ export default class Source {
    * This source can then ask its plugins if they also want to clear their cache in response to the other source's change.
    */
   async requestCacheClear(updatedSourceFilesystem: IVolumeImmutable) {
+    const filesystem = this.filesystem;
     const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldClearCache(
       updatedSourceFilesystem,
@@ -152,8 +162,8 @@ export default class Source {
         `[Mosaic][Core] Lifecycle phase 'shouldClearCache' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
     }
-    if (shouldInvokeAfterUpdate === true) {
-      this.filesystem.clearCache();
+    if (shouldInvokeAfterUpdate === true && !this.#stopped) {
+      filesystem.clearCache();
     }
   }
 
@@ -163,6 +173,7 @@ export default class Source {
     sharedFilesystem: IVolumeImmutable,
     globalConfig: MutableData<unknown>
   ) {
+    const filesystem = this.filesystem;
     const initTime = new Date().getTime();
     const shouldInvokeAfterUpdate = await this.#pluginApi.shouldUpdateNamespaceSources(
       updatedSourceFilesystem,
@@ -181,14 +192,17 @@ export default class Source {
         `[Mosaic][Core] Lifecycle phase 'shouldUpdateNamespaceSources' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
     }
-    if (shouldInvokeAfterUpdate === true) {
+    if (shouldInvokeAfterUpdate === true && !this.#stopped) {
       console.log(
         `[Mosaic][Core] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
       );
-      this.filesystem.unfreeze();
-      await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
-      this.filesystem.freeze();
-      this.filesystem.clearCache();
+      filesystem.unfreeze();
+      try {
+        await this.invokeAfterUpdate(sharedFilesystem, globalConfig, 'afterNamespaceSourceUpdate');
+      } finally {
+        filesystem.freeze();
+        filesystem.clearCache();
+      }
     }
   }
 
@@ -241,9 +255,9 @@ export default class Source {
     event: EVENT.START | EVENT.UPDATE,
     generation?: SourceGeneration
   ) {
-    // Include cache hydration in the same queue as the live publications.
-    this.#pendingUpdate = this.#pendingUpdate
-      .then(async () => {
+    // Publish cache hydration, config and live pages as a unit in the parent.
+    this.#schedulePublication(async () => {
+      try {
         if (this.#stopped || this.#worker !== worker) return;
         if (generation) this.config = createConfig(generation.data);
         // Raw listeners preserve one-shot startup subscriptions.
@@ -251,13 +265,13 @@ export default class Source {
           if (this.#stopped) return;
           await listener.call(this.#emitter, generation);
         }
-      })
-      .catch(async error => {
+      } catch (error) {
         if (!this.#stopped) {
           this.#emitter.emit(EVENT.ERROR, error);
           await this.stop();
         }
-      });
+      }
+    });
   }
 
   #createWorker() {
@@ -274,9 +288,10 @@ export default class Source {
     });
     worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
     worker.once(EVENT.EXIT, () => this.#exit());
-    worker.once(EVENT.START, (message?: { data: SourceGeneration }) =>
-      this.#queueGeneration(worker, EVENT.START, message?.data)
-    );
+    worker.once(EVENT.START, (message?: { data: SourceGeneration }) => {
+      this.#emitter.emit(WORKER_INIT);
+      this.#queueGeneration(worker, EVENT.START, message?.data);
+    });
     return worker;
   }
 

@@ -10,7 +10,8 @@ vi.mock('../WorkerSubscription.js', async importOriginal => ({
 const plugin = vi.hoisted(() => ({
   afterUpdate: vi.fn(),
   shouldClearCache: vi.fn(),
-  shouldUpdateNamespaceSources: vi.fn()
+  shouldUpdateNamespaceSources: vi.fn(),
+  afterNamespaceSourceUpdate: vi.fn()
 }));
 vi.mock('../plugin/index.js', () => ({
   bindSerialiser: async () => ({}),
@@ -25,21 +26,27 @@ function deferred() {
   return { promise, resolve };
 }
 
+function makeWorker() {
+  return Object.assign(new EventEmitter(), {
+    closed: false,
+    stop() {
+      this.closed = true;
+      this.emit(EVENT.EXIT);
+    }
+  });
+}
+
 describe('source generations', () => {
-  let worker: EventEmitter & { closed: boolean; stop: () => void };
+  let worker: ReturnType<typeof makeWorker>;
 
   beforeEach(() => {
-    worker = Object.assign(new EventEmitter(), {
-      closed: false,
-      stop() {
-        this.closed = true;
-        this.emit(EVENT.EXIT);
-      }
-    });
+    worker = makeWorker();
     vi.mocked(WorkerSubscription).mockImplementation(function WorkerMock() {
       return worker as never;
     });
     plugin.afterUpdate.mockReset();
+    plugin.shouldUpdateNamespaceSources.mockReset();
+    plugin.afterNamespaceSourceUpdate.mockReset();
   });
 
   async function start() {
@@ -50,8 +57,8 @@ describe('source generations', () => {
     return { manager, source: await started };
   }
 
-  function emit(generation: number) {
-    worker.emit(EVENT.UPDATE, {
+  function emit(generation: number, target = worker) {
+    target.emit(EVENT.UPDATE, {
       data: {
         pages: { '/page.mdx': `generation ${generation}` },
         symlinks: { '/alias.mdx': [{ target: '/page.mdx', type: 'file' }] },
@@ -60,8 +67,8 @@ describe('source generations', () => {
     });
   }
 
-  function startWithCache() {
-    worker.emit(EVENT.START, {
+  function startWithCache(target = worker) {
+    target.emit(EVENT.START, {
       data: {
         pages: { '/page.mdx': 'cached' },
         symlinks: { '/alias.mdx': [{ target: '/page.mdx', type: 'file' }] },
@@ -130,6 +137,65 @@ describe('source generations', () => {
     expect(fail).toHaveBeenCalledOnce();
   });
 
+  test('a cache that cannot be mounted does not discard the queued live generation', async () => {
+    const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {});
+    try {
+      await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+      worker.emit(EVENT.START, {
+        data: {
+          pages: { '/page.mdx': 'cached', '/occupied': 'not a directory' },
+          symlinks: { '/occupied/alias.mdx': [{ target: '/page.mdx', type: 'file' }] },
+          data: { generation: 'cached' }
+        }
+      });
+      emit(1);
+
+      const source = await started;
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledOnce());
+      expect(fail).not.toHaveBeenCalled();
+      expect(worker.closed).toBe(false);
+      expect(await source.filesystem.promises.exists('/occupied')).toBe(false);
+      expect(String(await source.filesystem.promises.readFile('/alias.mdx'))).toBe('generation 1');
+    } finally {
+      await manager.destroyAll();
+    }
+  });
+
+  test.each([
+    { cache: false, sourceOptions: {}, overrides: {}, expected: false },
+    { cache: true, sourceOptions: { cache: false }, overrides: {}, expected: false },
+    { cache: true, sourceOptions: {}, overrides: { cache: false }, expected: false },
+    { cache: true, sourceOptions: {}, overrides: {}, expected: true }
+  ])(
+    'propagates cache policy to the worker ($cache, $sourceOptions, $overrides)',
+    async scenario => {
+      const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+      const started = manager.addSource(
+        {
+          modulePath: 'fixture',
+          namespace: 'docs',
+          cache: scenario.cache,
+          options: scenario.sourceOptions
+        },
+        scenario.overrides
+      );
+      try {
+        await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+        worker.emit(EVENT.START);
+        await started;
+        expect(WorkerSubscription).toHaveBeenCalledWith(
+          expect.objectContaining({ options: { cache: scenario.expected } })
+        );
+      } finally {
+        await manager.destroyAll();
+      }
+    }
+  );
+
   test('stops the boot watchdog on init while still awaiting cached hydration', async () => {
     vi.stubEnv('MOSAIC_SOURCE_BOOT_TIMEOUT_MS', '500');
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
@@ -152,6 +218,38 @@ describe('source generations', () => {
     } finally {
       hydrate.resolve();
       manager.destroyAll();
+      vi.useRealTimers();
+      vi.unstubAllEnvs();
+    }
+  });
+
+  test('counts worker init while another source still holds the publication queue', async () => {
+    vi.stubEnv('MOSAIC_SOURCE_BOOT_TIMEOUT_MS', '500');
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const publication = deferred();
+    plugin.afterUpdate.mockImplementation(() => publication.promise);
+    const { manager } = await start();
+    const peer = makeWorker();
+    vi.mocked(WorkerSubscription).mockImplementationOnce(function PeerWorker() {
+      return peer as never;
+    });
+    try {
+      emit(1);
+      await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
+      const started = manager.addSource({ modulePath: 'peer', namespace: 'docs' }, {});
+      const settled = vi.fn();
+      void started.then(settled, settled);
+      await vi.waitFor(() => expect(peer.listenerCount(EVENT.START)).toBe(1));
+      peer.emit(EVENT.START);
+
+      await vi.advanceTimersByTimeAsync(600);
+      expect(settled).not.toHaveBeenCalled();
+      publication.resolve();
+      await started;
+      expect(settled).toHaveBeenCalledOnce();
+    } finally {
+      publication.resolve();
+      await manager.destroyAll();
       vi.useRealTimers();
       vi.unstubAllEnvs();
     }
@@ -188,6 +286,72 @@ describe('source generations', () => {
     expect(manager.listSources()).toHaveLength(1);
     expect(String(await source.filesystem.promises.readFile('/alias.mdx'))).toBe('generation 3');
     manager.destroyAll();
+  });
+
+  test('finishes a namespace hook before its warm sibling applies a queued live update', async () => {
+    const reachedNamespaceDecision = deferred();
+    const allowNamespaceDecision = deferred();
+    const allowSiblingPublication = deferred();
+    const observed: unknown[] = [];
+    plugin.afterUpdate.mockImplementation(async (files, { config }) => {
+      observed.push([
+        'generation',
+        config.data.generation,
+        String(await files.promises.readFile('/page.mdx'))
+      ]);
+      if (config.data.generation === 2) await allowSiblingPublication.promise;
+    });
+    plugin.shouldUpdateNamespaceSources.mockImplementation(async (_, { config }) => {
+      if (config.data.generation !== 'cached') return false;
+      reachedNamespaceDecision.resolve();
+      await allowNamespaceDecision.promise;
+      return true;
+    });
+    plugin.afterNamespaceSourceUpdate.mockImplementation(async (files, { config }) => {
+      observed.push([
+        'namespace',
+        config.data.generation,
+        String(await files.promises.readFile('/page.mdx'))
+      ]);
+    });
+    const { manager } = await start();
+    const peer = makeWorker();
+    vi.mocked(WorkerSubscription).mockImplementationOnce(function PeerWorker() {
+      return peer as never;
+    });
+    const siblingStarted = manager.addSource({ modulePath: 'sibling', namespace: 'docs' }, {});
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    try {
+      await vi.waitFor(() => expect(peer.listenerCount(EVENT.START)).toBe(1));
+      startWithCache(peer);
+      const sibling = await siblingStarted;
+      emit(1);
+      await reachedNamespaceDecision.promise;
+      emit(2, peer);
+      await new Promise(resolve => setImmediate(resolve));
+      expect(sibling.filesystem.frozen).toBe(true);
+      expect(sibling.config.data.generation).toBe('cached');
+
+      allowNamespaceDecision.resolve();
+      await vi.waitFor(() =>
+        expect(observed).toEqual([
+          ['generation', 'cached', 'cached'],
+          ['generation', 1, 'generation 1'],
+          ['namespace', 'cached', 'cached'],
+          ['generation', 2, 'generation 2']
+        ])
+      );
+      allowSiblingPublication.resolve();
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledTimes(2));
+      expect(fail).not.toHaveBeenCalled();
+      expect(manager.listSources()).toHaveLength(2);
+    } finally {
+      allowNamespaceDecision.resolve();
+      allowSiblingPublication.resolve();
+      await manager.destroyAll();
+    }
   });
 
   test('discards queued generations when stopped during a plugin', async () => {

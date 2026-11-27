@@ -8,10 +8,23 @@ import { getSourceCacheKey, loadSourceCache, writeSourceCache } from '../sourceC
 test('a completed cache write replaces the previous generation and malformed caches are ignored', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'mosaic-worker-cache-'));
   const cachePath = path.join(root, 'source.json');
-  const generation = (body: string) => ({ pages: { '/page.mdx': body }, data: {}, symlinks: {} });
+  const generation = (body: string) => ({
+    pages: { '/docs': null, '/docs/page.mdx': body },
+    data: {},
+    symlinks: { '/alias.mdx': [{ target: '/docs/page.mdx', type: 'file' }] }
+  });
   try {
     await writeFile(cachePath, '{"partial":');
     await expect(loadSourceCache(cachePath)).resolves.toBeUndefined();
+
+    for (const invalid of [
+      { ...generation('bad'), symlinks: { '/alias.mdx': null } },
+      { ...generation('bad'), symlinks: { '/alias.mdx': [{ type: 'file' }] } },
+      { ...generation('bad'), pages: { '/docs/page.mdx': {} } }
+    ]) {
+      await writeFile(cachePath, JSON.stringify(invalid));
+      await expect(loadSourceCache(cachePath)).resolves.toBeUndefined();
+    }
 
     for (const body of ['old', 'new']) {
       await writeSourceCache(cachePath, Buffer.from(JSON.stringify(generation(body))));

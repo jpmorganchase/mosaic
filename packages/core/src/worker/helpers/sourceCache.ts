@@ -17,14 +17,29 @@ export function getSourceCacheKey(workerData: WorkerData) {
     .digest('hex');
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isSymlink(value: unknown) {
+  if (!isRecord(value)) return false;
+  const { target, type } = value;
+  return (
+    typeof target === 'string' &&
+    (type === undefined || type === 'file' || type === 'dir' || type === 'junction')
+  );
+}
+
 export async function loadSourceCache(filePath: string): Promise<ArrayBuffer | undefined> {
   try {
     const raw = await readFile(filePath);
     const { pages, data, symlinks } = JSON.parse(raw.toString('utf8'));
     if (
-      [pages, data, symlinks].some(
-        value => !value || typeof value !== 'object' || Array.isArray(value)
-      )
+      !isRecord(pages) ||
+      !isRecord(data) ||
+      !isRecord(symlinks) ||
+      Object.values(pages).some(page => page !== null && typeof page !== 'string') ||
+      Object.values(symlinks).some(links => !Array.isArray(links) || !links.every(isSymlink))
     ) {
       return undefined;
     }

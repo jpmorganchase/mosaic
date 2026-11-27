@@ -329,7 +329,8 @@ describe('GIVEN SourceManager', () => {
         [],
         [],
         {},
-        undefined
+        undefined,
+        expect.any(Function)
       );
     });
   });
@@ -363,7 +364,8 @@ describe('GIVEN SourceManager', () => {
         [],
         [],
         {},
-        undefined
+        undefined,
+        expect.any(Function)
       );
     });
   });
