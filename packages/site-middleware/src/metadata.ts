@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ResolvedContent } from './resolveContent.js';
-import { canonicalRoute } from './canonicalRoute.js';
+import { canonicalRouteHref } from './canonicalRoute.js';
 
 /** Pure document metadata. The host owns metadataBase, social branding and images. */
 export function buildMosaicMetadata(resolved: ResolvedContent): Metadata {
@@ -20,9 +20,9 @@ export function buildMosaicMetadata(resolved: ResolvedContent): Metadata {
   return {
     ...(title && { title }),
     ...(description && { description }),
-    alternates: { canonical: canonicalRoute(frontmatter, resolved.pathname) },
+    alternates: { canonical: canonicalRouteHref(frontmatter, resolved.pathname) },
     ...(Object.keys(other).length > 0 && { other })
   };
 }
 
-export { canonicalRoute } from './canonicalRoute.js';
+export { canonicalRoute, canonicalRouteHref } from './canonicalRoute.js';

@@ -19,6 +19,9 @@ vi.mock('@jpmorganchase/mosaic-site-middleware', async () => ({
   ...(await vi.importActual('../../../../../../site-middleware/src/resolveContent.js')),
   serializeMdxForClient: async () => ({ compiledSource: '', frontmatter: {} })
 }));
+vi.mock('@jpmorganchase/mosaic-site-middleware/metadata', () =>
+  vi.importActual('../../../../../../site-middleware/src/metadata.js')
+);
 vi.mock('next/server', () => ({ connection }));
 vi.mock('next/navigation', () => ({
   notFound: () => {
@@ -125,6 +128,26 @@ describe.each(['active', 'snapshot-file'] as const)('document routing in %s mode
     expect(html).toContain('data-frame-route="/docs/start/index"');
     expect(html).not.toContain('data-canonical-url');
     expect(metadata.alternates?.canonical).toBe('/docs/start/index');
+  });
+
+  test('canonicalizes a folder with a literal percent escape and hash using its URL pathname', async () => {
+    const folder = '/docs/guide%20#part';
+    const href = '/docs/guide%2520%23part/index';
+    const page = {
+      kind: 'mdx',
+      raw: 'Guide',
+      frontmatter: { title: 'Guide', route: `${folder}/index`, fullPath: `${folder}/index.mdx` }
+    };
+    loaders.getMdxRaw.mockImplementation(async pathname =>
+      mode === 'active' && pathname === '/docs/guide%2520%23part'
+        ? { kind: 'redirect', destination: href }
+        : page
+    );
+    const { default: Page, generateMetadata } = await import('../page');
+    const props = request('docs', ['guide%20#part']);
+
+    expect(renderToStaticMarkup(await Page(props))).toContain(`data-canonical-url="${href}"`);
+    expect((await generateMetadata(props)).alternates?.canonical).toBe(href);
   });
 
   test('composes reusable metadata with the existing host social branding unchanged', async () => {
@@ -319,6 +342,24 @@ describe('alias editor context', () => {
     await expect(
       Page({ ...request('quickstart'), searchParams: Promise.resolve({ new: '1' }) })
     ).rejects.toThrow('redirect: /docs/start/index?edit=1&existed=1');
+  });
+
+  test('retains reserved characters in the redirect to edit an existing page', async () => {
+    loaders.getMdxRaw.mockResolvedValue({
+      kind: 'mdx',
+      raw: '# Start',
+      frontmatter: {
+        title: 'Start',
+        route: '/docs/start#here?next',
+        fullPath: '/docs/start#here?next.mdx'
+      }
+    });
+    loaders.getSharedConfig.mockResolvedValue({ sourceCapabilities: { writable: true } });
+    const { default: Page } = await import('../page');
+
+    await expect(
+      Page({ ...request('quickstart'), searchParams: Promise.resolve({ new: '1' }) })
+    ).rejects.toThrow('redirect: /docs/start%23here%3Fnext?edit=1&existed=1');
   });
 
   test('encodes the raw read URL and keeps the editor backing path literal', async () => {

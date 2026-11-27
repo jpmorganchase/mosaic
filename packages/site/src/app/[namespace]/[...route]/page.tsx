@@ -1,4 +1,7 @@
-import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metadata';
+import {
+  buildMosaicMetadata,
+  canonicalRouteHref
+} from '@jpmorganchase/mosaic-site-middleware/metadata';
 /**
  * App Router document route.
  *
@@ -237,6 +240,10 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
     resolved.kind === 'mdx'
       ? canonicalRoute(resolved.mdx.frontmatter, resolved.pathname)
       : undefined;
+  const canonicalHref =
+    resolved.kind === 'mdx'
+      ? canonicalRouteHref(resolved.mdx.frontmatter, resolved.pathname)
+      : undefined;
 
   // `resolved.kind === 'mdx' | 'not-found'` from here on. For the
   // `not-found + newPossible` case `raw` doesn't exist; we
@@ -268,7 +275,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Send readers to the public canonical edit URL. The editor still
   // receives the backing file as its raw-source/save target below.
   if (newRequested && resolved.kind === 'mdx' && isWritableSource) {
-    redirect(`${canonicalPathname ?? resolvedPathname}?edit=1&existed=1`);
+    redirect(`${canonicalHref ?? pathname}?edit=1&existed=1`);
   }
 
   // Edit-mode gate: only honour `?edit=1` for signed-in users on a
@@ -456,8 +463,8 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
         request, no remount. See `CanonicalizeUrl.tsx`. Aliases keep
         their URL; `generateMetadata` points them at the canonical.
       */}
-      {canonicalPathname && isFolderIndexRedirect(pathname, canonicalPathname) && (
-        <CanonicalizeUrl canonical={canonicalPathname} />
+      {canonicalHref && isFolderIndexRedirect(pathname, canonicalHref) && (
+        <CanonicalizeUrl canonical={canonicalHref} />
       )}
       {/* The header and body resolve relative URLs from the same canonical
           content route, even when this request uses a short URL or alias. */}
