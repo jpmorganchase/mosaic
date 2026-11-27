@@ -397,6 +397,29 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
   );
 
   test(
+    'THEN a save worktree pushes its branch to the configured remote',
+    () =>
+      runFixtureTask(async () => {
+        const remoteDir = path.join(projectDir, 'docs.git');
+        repo = new Repo('', 'upstream', 'main', pathToFileURL(remoteDir).href);
+        await repo.init();
+        await repo.createWorktree('save-upstream', 'editor-upstream');
+        try {
+          fs.writeFileSync(path.join(repo.dir, 'index.mdx'), '# Saved remotely');
+          await repo.addChanges();
+          await repo.commitChanges('Editor', 'editor@example.test', 'Update documentation');
+          await repo.pushBranch('editor-upstream');
+          expect(git(remoteDir, 'show', 'refs/heads/editor-upstream:index.mdx')).toBe(
+            '# Saved remotely'
+          );
+        } finally {
+          await repo.removeWorktree('save-upstream');
+        }
+      }),
+    15_000
+  );
+
+  test(
     'THEN initialization of a missing remote branch fails and can be retried after publication',
     () =>
       runFixtureTask(async () => {

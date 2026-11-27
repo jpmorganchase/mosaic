@@ -1058,7 +1058,7 @@ export default class Repo {
   }
 
   async pushBranch(branchName: string) {
-    await this.#spawn('git', ['push', 'origin', `${branchName}`], this.#dir, {
+    await this.#spawn('git', ['push', this.#remote, branchName], this.#dir, {
       discardStdout: true
     });
   }
