@@ -116,6 +116,8 @@ Custom hosts can call the server-only `getLlmsDiscovery(canonicalRoute, pathname
 
 Markdown responses from `createLlmsHandler` include the same relations in HTTP `Link` headers, plus `rel="canonical"` for the HTML page the Markdown came from. Their bodies also link to the selected index, so discovery remains available without response-header support.
 
+Active and snapshot-file servers resolve Markdown requests for HTML aliases to the canonical page's generated Markdown, including explicit `.md` requests. The response links to the canonical page and its index.
+
 ### Static deployment
 
 Build a fresh snapshot, then build with `MOSAIC_MODE=snapshot-file`, `MOSAIC_SNAPSHOT_DIR` pointing to it and `MOSAIC_OUTPUT=export` (the reference site's `build:static:file` script also applies the required route stubs). The snapshot sync script copies configured nested text files, canonical Markdown pages and folder aliases to `public/`; Next includes them in the export. The public-asset manifest removes deleted pages and retired scopes on subsequent builds, even if the snapshot directory contains old nested files. Deploy the complete new export and remove files retired from the previous deployment.

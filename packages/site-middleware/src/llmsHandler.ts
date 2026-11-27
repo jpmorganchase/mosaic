@@ -7,7 +7,8 @@
  *
  * - `/api/llms/llms.txt` and `/api/llms/llms-full.txt`: the files themselves;
  * - `/api/llms/<scope>/llms.txt` and `llms-full.txt`: configured scoped files;
- * - `/api/llms/<route>`: the page at `<route>`, or at `<route>/index`.
+ * - `/api/llms/<route>`: the page at `<route>`, its index, or the canonical
+ *   page behind an HTML alias.
  *
  * The site rewrites `/<route>.md`, `/llms.txt`, `/llms-full.txt` and
  * requests that accept `text/markdown` to it.
@@ -17,8 +18,11 @@
 import type { MarkdownPagesFile, MosaicMode } from '@jpmorganchase/mosaic-types';
 import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 
+import { getMdxRaw } from './cachedLoaders.js';
+import { canonicalRoute, canonicalRouteHref } from './canonicalRoute.js';
 import { createContentFileCache } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
+import { isFolderIndexRedirect } from './resolveContent.js';
 import {
   createLlmsManifestLoader,
   isLlmsPathname,
@@ -79,6 +83,29 @@ const text = (body: string, status: number, headers: Record<string, string> = {}
 function routeOf(segments: string[]) {
   const route = `/${segments.join('/')}`.replace(/\.md$/i, '').replace(/\/+$/, '');
   return route.toLowerCase() || '/';
+}
+
+/** Resolve the alias from HTML metadata. The Markdown bundle supplies its body. */
+async function resolveMarkdownAlias(
+  decodedPath: string,
+  version: MarkdownPagesFile['version'],
+  mode: MosaicMode,
+  contentUrl: string
+) {
+  const pathname = encodeRoutePathname(decodedPath, { literal: true });
+  let content = await getMdxRaw(pathname, mode, contentUrl);
+  if (content.kind === 'redirect' && isFolderIndexRedirect(pathname, content.destination)) {
+    content = await getMdxRaw(content.destination, mode, contentUrl);
+  }
+  if (content.kind !== 'mdx') return undefined;
+
+  const { route, fullPath, routeFileExtension } = content.frontmatter;
+  if (typeof route !== 'string') return undefined;
+  const normalized = normalizeLlmsRoute(route);
+  if (normalized === '/') return normalized;
+  if (version === 1) return canonicalRoute({ route: normalized }, '') || undefined;
+  const href = canonicalRouteHref({ route: normalized, fullPath, routeFileExtension }, '');
+  return href ? encodeRoutePathname(href, { lowercase: true }) : undefined;
 }
 
 /**
@@ -145,19 +172,25 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
       }
       const decodedRoute = routeOf(segments);
       const bundle = await getPages(mode, contentUrl);
+      if (!bundle) return text('Not found', 404);
+      const { pages, version } = bundle;
       const route =
-        bundle?.version === 2 ? encodeRoutePathname(decodedRoute, { literal: true }) : decodedRoute;
-      const pages = bundle?.pages;
-      const canonical = pages?.has(route) ? route : `${route.replace(/\/$/, '')}/index`;
-      const markdown =
-        route.endsWith('/index') && canonical !== route ? undefined : pages?.get(canonical);
-      if (markdown === undefined) {
+        version === 2 ? encodeRoutePathname(decodedRoute, { literal: true }) : decodedRoute;
+      const index = `${route.replace(/\/$/, '')}/index`;
+      // A present key can contain an intentionally blocked, ambiguous entry.
+      const canonical = pages.has(route)
+        ? route
+        : !route.endsWith('/index') && pages.has(index)
+        ? index
+        : await resolveMarkdownAlias(decodedRoute, version, mode, contentUrl);
+      const markdown = canonical === undefined ? undefined : pages.get(canonical);
+      if (canonical === undefined || markdown === undefined) {
         return text('Not found', 404);
       }
       const manifest = await getManifest(mode, contentUrl);
       // A bundle and its independently cached manifest can span an upgrade.
       // During that transition the bundle already establishes unambiguous ownership.
-      if (manifest && manifest.version === bundle?.version && !manifest.routes.includes(canonical))
+      if (manifest && manifest.version === version && !manifest.routes.includes(canonical))
         return text('Not found', 404);
       const discovery = llmsDiscoveryForRoute(canonical, manifest);
       // The HTML page this Markdown came from: `/.md` is the root page, `/`.

@@ -153,16 +153,33 @@ test.describe('Scoped LLM fixture', () => {
     await expect(page.locator('link[rel="alternate"][type="text/markdown"]')).toHaveCount(0);
   });
 
+  test('serves canonical Markdown and discovery on an HTML alias', async ({ request }) => {
+    test.skip(isStatic, 'Markdown alias resolution requires the site server');
+    const canonical = await request.get('/salt/components/button.md');
+    const body = await canonical.text();
+    const alias = '/mosaic/button-alias';
+    for (const response of [
+      await request.get(alias, { headers: { Accept: 'text/markdown' } }),
+      await request.get(`${alias}.md`)
+    ]) {
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toContain('text/markdown');
+      expect(response.headers().link).toBe(canonical.headers().link);
+      expect(response.headers().link).toContain('</salt/components/llms.txt>; rel="describedby"');
+      expect(await response.text()).toBe(body);
+    }
+  });
+
   test('unknown scopes and excluded Markdown return 404', async ({ request }) => {
     for (const route of [
       '/missing/llms.txt',
       '/salted/llms.txt',
       '/salt/hidden.md',
       '/salt/private/internal.md',
-      '/salt/ignored.md',
-      '/mosaic/button-alias.md'
+      '/salt/ignored.md'
     ]) {
       expect((await request.get(route)).status()).toBe(404);
     }
+    if (isStatic) expect((await request.get('/mosaic/button-alias.md')).status()).toBe(404);
   });
 });

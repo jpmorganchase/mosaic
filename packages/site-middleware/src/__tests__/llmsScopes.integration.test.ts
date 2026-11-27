@@ -19,6 +19,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
   let discovery: ReturnType<typeof createLlmsDiscoveryLoader>;
   let fail = false;
   const requests: string[] = [];
+  const redirects = new Map<string, string>();
 
   const save = () => {
     // Deliberately leave old files on disk: the manifest must govern serving.
@@ -28,8 +29,8 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       writeFileSync(target, content);
     }
   };
-  const get = (path: string) =>
-    handler(new Request(`http://site.test${path}`), {
+  const get = (path: string, headers?: HeadersInit) =>
+    handler(new Request(`http://site.test${path}`, { headers }), {
       params: Promise.resolve({ path: path.slice(1).split('/').map(decodeURIComponent) })
     });
 
@@ -41,9 +42,16 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     contentUrl = '';
     fail = false;
     requests.length = 0;
+    redirects.clear();
     if (mode === 'active') {
       server = createServer((req, res) => {
         requests.push(req.url!);
+        const redirect = redirects.get(req.url!);
+        if (redirect) {
+          res.statusCode = 302;
+          res.end(JSON.stringify({ redirect }));
+          return;
+        }
         res.statusCode = fail ? 502 : files[req.url!] === undefined ? 404 : 200;
         res.end(fail ? 'Unavailable' : files[req.url!] ?? 'Missing');
       });
@@ -108,6 +116,68 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       indexUrl: '/llms.txt'
     });
     expect(await discovery('/not-generated', mode, contentUrl)).toBeUndefined();
+  });
+
+  test.each([1, 2])(
+    'serves an HTML alias with the canonical v%s Markdown and scope',
+    async version => {
+      const alias = '/mosaic/button-alias';
+      const canonical = '/salt/components/button';
+      files[alias] = document(canonical, 'Alias source bytes');
+      const bundle = JSON.parse(files['/markdown-pages.json']);
+      const manifest = JSON.parse(files['/llms-manifest.json']);
+      files['/markdown-pages.json'] = JSON.stringify({ ...bundle, version });
+      files['/llms-manifest.json'] = JSON.stringify({ ...manifest, version });
+      if (mode === 'snapshot-file') save();
+
+      const direct = await get(`${canonical}.md`);
+      const expected = await direct.text();
+      for (const response of [
+        await get(alias, { Accept: 'text/markdown' }),
+        await get(`${alias}.md`)
+      ]) {
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe(expected);
+        expect(response.headers.get('Link')).toBe(direct.headers.get('Link'));
+        expect(response.headers.get('Link')).toContain(
+          '</salt/components/llms.txt>; rel="describedby"'
+        );
+      }
+      expect(manifest.routes).not.toContain(alias);
+      expect(files['/llms.txt']).not.toContain(alias);
+    }
+  );
+
+  test('resolves a folder alias through its HTML index', async () => {
+    const folder = '/mosaic/shortcut';
+    const canonical = '/salt/components/button';
+    const source = document(canonical, 'Folder index source bytes');
+    if (mode === 'active') {
+      redirects.set(folder, `${folder}/index`);
+      redirects.set('/mosaic/redirect', canonical);
+      files[`${folder}/index.mdx`] = source;
+    } else {
+      files[`${folder}/index`] = source;
+      save();
+    }
+
+    const response = await get(`${folder}.md`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Link')).toContain(`<${canonical}>; rel="canonical"`);
+    expect(await response.text()).toBe(await (await get(`${canonical}.md`)).text());
+    if (mode === 'active') expect((await get('/mosaic/redirect.md')).status).toBe(404);
+  });
+
+  test('keeps an alias to an excluded page unavailable', async () => {
+    const backing = '/salt/components/hidden';
+    const source = document(backing, 'Excluded content', { llms: { exclude: true } });
+    await site.update('hidden', { [`${backing}.mdx`]: source }, options);
+    files = await site.publish(options);
+    files['/mosaic/hidden-alias'] = source;
+    if (mode === 'snapshot-file') save();
+
+    expect((await get('/mosaic/hidden-alias.md')).status).toBe(404);
+    expect(files['/llms-full.txt']).not.toContain('Excluded content');
   });
 
   test('root discovery resolves its canonical Markdown without selecting /index', async () => {
@@ -199,10 +269,14 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       '/salt/guide.mdx': document('/salt/guide/', 'Trailing guide', { fullPath: '/salt/guide.mdx' })
     });
     files = await site.publish(options);
+    files['/mosaic/trailing-alias'] = document('/salt/guide/', 'Trailing alias metadata', {
+      fullPath: '/salt/guide.mdx'
+    });
     if (mode === 'snapshot-file') save();
     expect((await get('/mosaic/setup.md')).status).toBe(200);
     expect((await get('/salt/llms.txt')).status).toBe(200);
     expect(await (await get('/salt/guide.md')).text()).toContain('Trailing guide');
+    expect(await (await get('/mosaic/trailing-alias.md')).text()).toContain('Trailing guide');
     expect(await discovery('/salt/guide/', mode, contentUrl)).toEqual({
       markdownUrl: '/salt/guide.md',
       indexUrl: '/salt/llms.txt'
@@ -223,6 +297,8 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       '/salt/working notes.mdx': document('/salt/working notes', 'Literal space')
     });
     files = await site.publish(options);
+    const aliasFile = mode === 'active' ? '/mosaic/literal%2520alias' : '/mosaic/literal%20alias';
+    files[aliasFile] = document('/salt/release%20notes', 'Literal percent alias metadata');
     if (mode === 'snapshot-file') save();
 
     for (const [route, pathname, title] of [
@@ -245,6 +321,10 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect((await get('/salt/%C3%89quipe.md')).headers.get('Link')).toContain(
       '</salt/%C3%A9quipe>; rel="canonical"'
     );
+    const alias = await get('/mosaic/literal%2520alias.md');
+    expect(alias.status).toBe(200);
+    expect(await alias.text()).toContain('Literal percent');
+    expect(alias.headers.get('Link')).toContain('</salt/release%2520notes>; rel="canonical"');
   });
 
   test.each([
@@ -280,6 +360,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     manifest.version = 1;
     manifest.routes.push('/salt/guide/', '/salt/clash', '/salt/clash/', '/salt/clash/index');
     files['/llms-manifest.json'] = JSON.stringify(manifest);
+    files['/salt/clash'] = document('/salt/components/button', 'Unrelated alias');
     if (mode === 'snapshot-file') save();
     expect((await get('/mosaic/setup.md')).status).toBe(200);
     expect((await get('/salt/llms.txt')).status).toBe(200);
@@ -294,7 +375,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(await discovery('/salt/clash', mode, contentUrl)).toBeUndefined();
   });
 
-  test('unknown scopes, aliases and unsafe paths are 404 without reading arbitrary files', async () => {
+  test('unknown scopes and unsafe paths are 404 without reading arbitrary files', async () => {
     for (const route of [
       '/unknown/llms.txt',
       '/salted/llms.txt',
