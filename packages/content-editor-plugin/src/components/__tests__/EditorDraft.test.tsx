@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
+import { $createParagraphNode, $getRoot, getNearestEditorFromDOMNode } from 'lexical';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -253,6 +254,77 @@ test('recompiles the preview when an invalid frontmatter edit becomes valid', as
   await waitFor(() =>
     expect(compilePreview).toHaveBeenCalledWith(expect.stringContaining('enabled: false'))
   );
+});
+
+test('removes deleted authored fields from the preview while preserving plugin values', async () => {
+  const compilePreview = vi.fn(async (_source: string) => ({
+    compiledSource: '',
+    frontmatter: {},
+    scope: {}
+  }));
+  const original =
+    '---\ntitle: Page title\nlayout: Article\nsummary: Old summary\nsettings:\n  kept: original\n  removed: old value\n  related:\n    $tag: featured\n---\n# Body\n';
+  const processedSource =
+    '---\ntitle: Page title\nlayout: Article\nsummary: Old summary\nnavigation: Example navigation\nsettings:\n  kept: original\n  removed: old value\n  generated: computed\n  related: [Expanded page]\n---\n# Body\n';
+  mountEditor({
+    content: processedSource,
+    rawSource: { kind: 'raw', bytes: original, namespace: 'docs' },
+    compilePreview
+  });
+  await screen.findByTestId('split-ready');
+
+  await userEvent.click(screen.getByRole('button', { name: 'Remove field summary' }));
+  fireEvent.change(screen.getByDisplayValue(/removed: old value/), {
+    target: { value: 'kept: edited\nrelated:\n  $tag: featured' }
+  });
+
+  await waitFor(() => {
+    const lastCompile = compilePreview.mock.lastCall?.[0];
+    expect(lastCompile).toBeDefined();
+    const result = parseFrontmatter(lastCompile ?? '');
+    expect(result.data).not.toHaveProperty('summary');
+    expect(result.data).toMatchObject({
+      navigation: 'Example navigation',
+      settings: {
+        kept: 'edited',
+        generated: 'computed',
+        related: ['Expanded page']
+      }
+    });
+    expect(result.data.settings).not.toHaveProperty('removed');
+  });
+});
+
+test('refreshes the preview after clearing the Visual draft', async () => {
+  modeState.mode = 'wysiwyg';
+  const compilePreview = vi.fn(async (source: string) => ({
+    compiledSource: parseFrontmatter(source).content.trim() ? 'Original preview' : 'Empty preview',
+    frontmatter: {},
+    scope: {}
+  }));
+  mountEditor({
+    compilePreview,
+    PreviewComponent: ({ source }) => (
+      <p>{source && 'compiledSource' in source && source.compiledSource}</p>
+    )
+  });
+  await screen.findByText('Original preview');
+  const element = document.querySelector('[contenteditable=true]');
+  const editor = element && getNearestEditorFromDOMNode(element);
+  expect(editor).toBeTruthy();
+
+  await act(async () => {
+    editor?.update(
+      () => {
+        $getRoot().clear();
+        $getRoot().append($createParagraphNode());
+      },
+      { discrete: true }
+    );
+  });
+
+  expect(await screen.findByText('Empty preview')).toBeVisible();
+  expect(screen.queryByText('Original preview')).not.toBeInTheDocument();
 });
 
 test('guards a frontmatter field reverted to its on-disk value after a save', async () => {

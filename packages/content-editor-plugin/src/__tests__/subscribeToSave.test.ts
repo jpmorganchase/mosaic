@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import { LOST_CONNECTION_MESSAGE, subscribeToSave } from '../subscribeToSave';
 import type { PersistEvent } from '../components/PersistEditDialog';
@@ -9,6 +9,7 @@ class FakeEventSource {
   static instances: FakeEventSource[] = [];
   readyState = 0;
   closed = false;
+  closeCalls = 0;
   listeners = new Map<string, Listener[]>();
 
   constructor(readonly url: string) {
@@ -20,6 +21,7 @@ class FakeEventSource {
   }
 
   close() {
+    this.closeCalls += 1;
     this.closed = true;
     this.readyState = 2;
   }
@@ -47,9 +49,9 @@ class FakeEventSource {
   }
 }
 
-function subscribe(jobId = 'job-1', maxReconnects?: number) {
+function subscribe(jobId = 'job-1', maxReconnects?: number, maxWaitMs?: number) {
   FakeEventSource.instances = [];
-  const stream = subscribeToSave(jobId, { EventSource: FakeEventSource, maxReconnects });
+  const stream = subscribeToSave(jobId, { EventSource: FakeEventSource, maxReconnects, maxWaitMs });
   const events: PersistEvent[] = [];
   const done = (async () => {
     for await (const event of stream) events.push(event);
@@ -64,16 +66,23 @@ const tick = () => new Promise(resolve => setTimeout(resolve));
 describe('subscribeToSave', () => {
   test('closes the stream when iteration stops while waiting for an event', async () => {
     FakeEventSource.instances = [];
-    const stream = subscribeToSave('job-1', { EventSource: FakeEventSource });
-    const pending = stream.next();
-    const source = FakeEventSource.instances[0];
-    expect(source.closed).toBe(false);
+    vi.useFakeTimers();
+    try {
+      const stream = subscribeToSave('job-1', { EventSource: FakeEventSource });
+      const pending = stream.next();
+      const source = FakeEventSource.instances[0];
+      expect(source.closed).toBe(false);
 
-    const stopped = stream.return();
+      const stopped = stream.return();
 
-    expect(source.closed).toBe(true);
-    await expect(pending).resolves.toEqual({ done: true, value: undefined });
-    await expect(stopped).resolves.toEqual({ done: true, value: undefined });
+      expect(source.closed).toBe(true);
+      await expect(pending).resolves.toEqual({ done: true, value: undefined });
+      await expect(stopped).resolves.toEqual({ done: true, value: undefined });
+      expect(source.closeCalls).toBe(1);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   test('maps progress and a successful done event, then closes the stream', async () => {
@@ -138,22 +147,73 @@ describe('subscribeToSave', () => {
     expect(source().closed).toBe(true);
   });
 
-  test('lets EventSource reconnect a few times before giving up', async () => {
+  test('counts open connections that drop again without receiving progress', async () => {
     const { events, done, source } = subscribe('job-1', 2);
     await tick();
     source().open();
     source().drop();
     source().open();
     source().drop();
-    source().drop();
     await tick();
     expect(events).toEqual([]);
     expect(source().closed).toBe(false);
 
+    source().open();
     source().drop();
     await done;
     expect(events).toEqual([{ kind: 'error', message: LOST_CONNECTION_MESSAGE }]);
-    expect(source().closed).toBe(true);
+    expect(source().closeCalls).toBe(1);
+  });
+
+  test('replenishes the reconnect budget after receiving progress', async () => {
+    const { events, done, source } = subscribe('job-1', 1);
+    await tick();
+    source().drop();
+    source().open();
+    source().emit('progress', { status: 'IN_PROGRESS', message: 'The save resumed' });
+    source().drop();
+    source().open();
+    source().emit('done', { status: 'SUCCESS' });
+    await done;
+
+    expect(events).toEqual([
+      { kind: 'progress', message: { status: 'IN_PROGRESS', message: 'The save resumed' } },
+      { kind: 'complete', prHref: null }
+    ]);
+    expect(source().closeCalls).toBe(1);
+  });
+
+  test('times out a silent connection and cleans up after the terminal error', async () => {
+    vi.useFakeTimers();
+    try {
+      const { events, done, source } = subscribe('job-1', 3, 100);
+      source().open();
+      await vi.advanceTimersByTimeAsync(99);
+      expect(events).toEqual([]);
+      expect(source().closed).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+      await done;
+      expect(events).toEqual([{ kind: 'error', message: LOST_CONNECTION_MESSAGE }]);
+      expect(source().closeCalls).toBe(1);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test('clears the deadline when a result arrives', async () => {
+    vi.useFakeTimers();
+    try {
+      const { events, done, source } = subscribe('job-1', 3, 100);
+      source().emit('done', { status: 'SUCCESS' });
+      await done;
+      expect(events).toEqual([{ kind: 'complete', prHref: null }]);
+      expect(source().closeCalls).toBe(1);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   test('gives up straight away when the server refuses the stream', async () => {

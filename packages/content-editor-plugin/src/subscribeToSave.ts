@@ -18,16 +18,24 @@ export interface SubscribeToSaveOptions {
    */
   url?: string;
   /**
-   * How many reconnection attempts in a row may fail before the save is
-   * reported as failed. `EventSource` reconnects by itself and resumes
-   * from the last event it saw. Default 3.
+   * How many times to reconnect without receiving progress.
+   * `EventSource` reconnects automatically and resumes from the last event.
+   * Default 3.
    */
   maxReconnects?: number;
+  /**
+   * Maximum time to wait for a save result, including reconnections.
+   * Defaults to 6 minutes, one minute longer than the standard CLI workflow timeout.
+   * Hosts with a longer workflow timeout can provide a larger value.
+   */
+  maxWaitMs?: number;
   /** `EventSource` implementation. Defaults to the browser's. */
   EventSource?: EventSourceConstructor;
 }
 
 const CLOSED = 2;
+const DEFAULT_MAX_WAIT_MS = 6 * 60 * 1000;
+const MAX_TIMER_MS = 2_147_483_647;
 
 export const LOST_CONNECTION_MESSAGE =
   'Lost connection to the save. It may still finish: check for a new pull request before trying again.';
@@ -73,9 +81,8 @@ function prHrefOf(message: unknown): string | null {
  * - each `progress` event becomes `{ kind: 'progress' }`;
  * - the final `done` event becomes `{ kind: 'complete', prHref }` or
  *   `{ kind: 'error', message }`, after which the stream is closed;
- * - if the connection is refused, or drops and can't be re-established
- *   after `maxReconnects` attempts, a `{ kind: 'error' }` ends the
- *   iteration.
+ * - if the connection is refused, exhausts the reconnect budget, or
+ *   fails to deliver a result within `maxWaitMs`, an error ends the iteration.
  *
  * Stopping the iteration early closes the `EventSource`.
  */
@@ -84,12 +91,17 @@ export function subscribeToSave(
   {
     url = `/api/workflows/${encodeURIComponent(jobId)}/events`,
     maxReconnects = 3,
+    maxWaitMs = DEFAULT_MAX_WAIT_MS,
     EventSource: EventSourceImpl = (globalThis as { EventSource?: EventSourceConstructor })
       .EventSource
   }: SubscribeToSaveOptions = {}
 ): AsyncGenerator<PersistEvent, void, unknown> {
   const controller = new AbortController();
-  const stream = followSaveEvents(url, maxReconnects, EventSourceImpl, controller.signal);
+  const deadline =
+    Number.isFinite(maxWaitMs) && maxWaitMs > 0
+      ? Math.min(maxWaitMs, MAX_TIMER_MS)
+      : DEFAULT_MAX_WAIT_MS;
+  const stream = followSaveEvents(url, maxReconnects, deadline, EventSourceImpl, controller.signal);
   const finish = stream.return.bind(stream);
   const fail = stream.throw.bind(stream);
   // A generator's return and throw wait for any pending next() to settle.
@@ -108,6 +120,7 @@ export function subscribeToSave(
 async function* followSaveEvents(
   url: string,
   maxReconnects: number,
+  maxWaitMs: number,
   EventSourceImpl: EventSourceConstructor | undefined,
   signal: AbortSignal
 ): AsyncGenerator<PersistEvent, void, unknown> {
@@ -122,12 +135,16 @@ async function* followSaveEvents(
   let failures = 0;
   let wake: (() => void) | null = null;
 
+  const close = () => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    source.close();
+  };
+
   const abort = () => {
     queue.length = 0;
-    if (!finished) {
-      finished = true;
-      source.close();
-    }
+    close();
     wake?.();
     wake = null;
   };
@@ -135,20 +152,18 @@ async function* followSaveEvents(
   const push = (event: PersistEvent, last = false) => {
     if (finished) return;
     queue.push(event);
-    if (last) {
-      finished = true;
-      source.close();
-    }
+    if (last) close();
     wake?.();
     wake = null;
   };
 
-  source.addEventListener('open', () => {
-    failures = 0;
-  });
+  const timer = setTimeout(() => {
+    push({ kind: 'error', message: LOST_CONNECTION_MESSAGE }, true);
+  }, maxWaitMs);
   source.addEventListener('progress', event => {
     const data = parse(event.data);
-    if (!data) return;
+    if (!data || typeof data.status !== 'string') return;
+    failures = 0;
     push({ kind: 'progress', message: data as SourceWorkflowMessageEvent });
   });
   source.addEventListener('done', event => {

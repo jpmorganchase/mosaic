@@ -149,7 +149,7 @@ export const SourceEditor = forwardRef<SourceEditorHandle, SourceEditorProps>(fu
   // via its own `didSeedRef`; we mirror it here so the seam is
   // invisible to the user).
   useEffect(() => {
-    if (initialValue) runCompile(initialValue);
+    runCompile(initialValue);
     // We deliberately do not depend on `initialValue` —
     // subsequent renders that change `initialValue` (the parent
     // doing a remount-via-key) get a fresh component, and

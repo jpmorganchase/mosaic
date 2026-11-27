@@ -1,7 +1,7 @@
 export { default as Editor } from './components/Editor';
 export { EditorControls } from './components/EditorControls';
 export { NewPageDialog, type NewPageDialogProps } from './components/NewPageDialog';
-export type { PersistEvent } from './components/PersistEditDialog';
+export type { PersistAction, PersistEvent } from './components/PersistEditDialog';
 export { subscribeToSave, type SubscribeToSaveOptions } from './subscribeToSave';
 export {
   useEditMode,

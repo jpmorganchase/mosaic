@@ -21,7 +21,7 @@
  * (which is exactly where `Editor.tsx` puts it, so a single
  * instance survives WYSIWYG ↔ source mode flips).
  */
-import { FC, useEffect, useMemo, useState, useTransition } from 'react';
+import { FC, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { Link, P2, Button } from '@jpmorganchase/mosaic-components';
 import {
   Accordion,
@@ -90,6 +90,11 @@ export type PersistEvent =
   | { kind: 'complete'; prHref: string | null }
   | { kind: 'error'; message: string };
 
+/** A save that either finishes directly or reports progress until a terminal event. */
+export type PersistAction = (
+  input: EditorSaveInput
+) => AsyncIterable<PersistEvent> | void | Promise<AsyncIterable<PersistEvent> | void>;
+
 export interface PersistDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -148,9 +153,7 @@ export interface PersistDialogProps {
    * `subscribeToSave(jobId)`. Passed in so the plugin stays decoupled
    * from any specific Next app.
    */
-  persist?: (
-    input: EditorSaveInput
-  ) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  persist?: PersistAction;
   /** Supplying this callback opts the host into forwarding commitMessage on saves. */
   loadSaveDefaults?: (input: WorkflowDefaultsInput) => Promise<WorkflowDefaults>;
   /** Hash of the authored file that seeded this existing editor draft. */
@@ -185,6 +188,7 @@ export const PersistDialog = ({
   isNewPage = false
 }: PersistDialogProps) => {
   const [isRaising, startTransition] = useTransition();
+  const savingRef = useRef(false);
   const [saved, setSaved] = useState(false);
   const [prHref, setPrHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -390,7 +394,7 @@ export const PersistDialog = ({
     // Suppress close-while-saving so the user can't navigate away
     // mid-flight; the in-flight transition would still resolve and
     // try to setState on an unmounted dialog.
-    if (isRaising) return;
+    if (savingRef.current) return;
     setSaved(false);
     setPrHref(null);
     setError(null);
@@ -399,7 +403,7 @@ export const PersistDialog = ({
   };
 
   const handleRaisePr = () => {
-    if (message.blocked || renameError !== null || !hasChangesToSubmit) return;
+    if (savingRef.current || message.blocked || renameError !== null || !hasChangesToSubmit) return;
     if (!persist) {
       setError('Save is not configured for this app.');
       return;
@@ -470,6 +474,7 @@ export const PersistDialog = ({
       targetRoutePayload = targetRoute;
     }
 
+    savingRef.current = true;
     startTransition(async () => {
       markSaving();
       try {
@@ -482,27 +487,35 @@ export const PersistDialog = ({
           ...(!isNewPage && expectedSourceHash !== undefined ? { expectedSourceHash } : {}),
           ...(isNewPage ? { isNewPage: true } : {})
         });
-        let sawError = false;
-        for await (const event of stream) {
-          if (event.kind === 'progress') {
-            // Functional update so the callback doesn't capture
-            // a stale `progress` array.
-            setProgress(prev => [...prev, event.message]);
-          } else if (event.kind === 'complete') {
-            setSaved(true);
-            message.reset();
-            setPrHref(event.prHref);
-          } else if (event.kind === 'error') {
-            sawError = true;
-            setError(event.message || 'Sorry - an unexpected error has occurred');
-            markSaveFailed();
-            return;
+        let result: { prHref: string | null } | undefined;
+        if (stream === undefined) {
+          result = { prHref: null };
+        } else {
+          for await (const event of stream) {
+            if (event.kind === 'progress') {
+              setProgress(prev => [...prev, event.message]);
+            } else if (event.kind === 'error') {
+              throw new Error(event.message || 'Sorry - an unexpected error has occurred');
+            } else if (event.kind === 'complete') {
+              result = event;
+              break;
+            }
           }
         }
-        if (!sawError) markSaved();
+        if (!result) {
+          throw new Error(
+            'The save ended without confirmation. It may still finish. Check for a new pull request before trying again.'
+          );
+        }
+        setSaved(true);
+        message.reset();
+        setPrHref(result.prHref);
+        markSaved();
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Sorry - an unexpected error has occurred');
         markSaveFailed();
+      } finally {
+        savingRef.current = false;
       }
     });
   };
