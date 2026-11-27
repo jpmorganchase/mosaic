@@ -105,9 +105,13 @@ export default class Source {
     if (this.#worker && this.#worker.closed) {
       throw new Error('Cannot stop source that has not started');
     }
-    this.#stopped = true;
     if (this.#worker) {
+      this.#stopped = true;
       this.#worker.stop();
+    } else if (!this.#stopped) {
+      // Startup can still be binding its plugin modules when another source
+      // fails and a snapshot build stops all sources.
+      this.#exit();
     }
   }
 
@@ -223,6 +227,13 @@ export default class Source {
     }
   }
 
+  #exit() {
+    this.#stopped = true;
+    this.#emitter.emit(EVENT.EXIT);
+    this.#emitter.removeAllListeners();
+    this.filesystem = null;
+  }
+
   #createWorker() {
     const worker = new WorkerSubscription({
       modulePath: this.#modulePath,
@@ -236,21 +247,17 @@ export default class Source {
       schedule: this.#schedule
     });
     worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
-    worker.once(EVENT.EXIT, () => {
-      this.#stopped = true;
-      this.#emitter.emit(EVENT.EXIT);
-      this.#emitter.removeAllListeners();
-      // this.filesystem.reset();
-      this.filesystem = null;
-    });
+    worker.once(EVENT.EXIT, () => this.#exit());
     worker.once(EVENT.START, () => this.#emitter.emit(EVENT.START));
     return worker;
   }
 
   async start() {
-    this.serialiser = await bindSerialiser(this.#serialisers);
-    this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
     this.#stopped = false;
+    this.serialiser = await bindSerialiser(this.#serialisers);
+    if (this.#stopped) return;
+    this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
+    if (this.#stopped) return;
     this.#worker = this.#createWorker();
     const worker = this.#worker;
     worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }) => {

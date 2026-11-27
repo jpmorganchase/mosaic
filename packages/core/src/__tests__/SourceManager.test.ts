@@ -253,6 +253,50 @@ describe('GIVEN SourceManager', () => {
           sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {})
         ).rejects.toThrow(new Error('some error'));
       });
+
+      test.each(['worker error', 'worker exit'])(
+        'THEN a %s after initialization is reported before the first publication',
+        async kind => {
+          const report = vi.fn();
+          sourceManager.onSourceUpdate(vi.fn(), report);
+          scheduleOnStartCallback();
+          await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
+
+          const error = new Error('content source failed');
+          if (kind === 'worker error') vi.mocked(Source.prototype.onError).mock.lastCall[0](error);
+          vi.mocked(Source.prototype.onExit).mock.lastCall[0]();
+
+          expect(report).toHaveBeenCalledExactlyOnceWith(
+            kind === 'worker error'
+              ? error
+              : new Error("[Mosaic][Source] 'source' exited before publishing content.")
+          );
+          expect(sourceManager.getSource('source')).toBeUndefined();
+        }
+      );
+
+      test('THEN exiting after publishing an empty generation is not a first-update failure', async () => {
+        const report = vi.fn();
+        const onUpdate = vi.fn();
+        sourceManager.onSourceUpdate(onUpdate, report);
+        scheduleOnStartCallback();
+        await sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {});
+
+        await getLastUpdateCallback()({ pages: {}, symlinks: {} });
+        vi.mocked(Source.prototype.onExit).mock.lastCall[0]();
+
+        expect(onUpdate).toHaveBeenCalledOnce();
+        expect(report).not.toHaveBeenCalled();
+      });
+
+      test('THEN a rejected start reaches the caller and removes the source', async () => {
+        const failure = new Error('could not load serialiser');
+        vi.mocked(Source.prototype.start).mockRejectedValueOnce(failure);
+        await expect(
+          sourceManager.addSource({ name: 'source', modulePath: 'source-module' }, {})
+        ).rejects.toBe(failure);
+        expect(sourceManager.getSource('source')).toBeUndefined();
+      });
     });
 
     test('THEN it should call `start` on the Source', async () => {

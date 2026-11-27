@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const coreConstructed = vi.fn();
 let sourceUpdated: ((filesystem: unknown, source: { id: symbol }) => void) | undefined;
+let firstUpdateFailed: ((error: unknown) => void) | undefined;
 const unsubscribe = vi.fn(() => {
   sourceUpdated = undefined;
+  firstUpdateFailed = undefined;
 });
 const filesystem = {
   scope: vi.fn(),
@@ -40,12 +42,15 @@ function config() {
   return { plugins: [], sources: [] };
 }
 
+const listedSource = (name: string) => ({ name, pluginErrors: {} });
+
 beforeEach(async () => {
   core.start.mockResolvedValue(undefined);
   core.stop.mockResolvedValue(undefined);
   core.listSources.mockResolvedValue([]);
-  core.onSourceUpdate.mockImplementation(callback => {
+  core.onSourceUpdate.mockImplementation((callback, onFirstUpdateError) => {
     sourceUpdated = callback;
+    firstUpdateFailed = onFirstUpdateError;
     return unsubscribe;
   });
   filesystem.scope.mockReturnValue(filesystem);
@@ -58,7 +63,9 @@ beforeEach(async () => {
 afterEach(async () => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   sourceUpdated = undefined;
+  firstUpdateFailed = undefined;
   await fs.promises.rm(outDir, { recursive: true, force: true });
 });
 
@@ -145,6 +152,7 @@ describe('GIVEN the build command', () => {
     core.start.mockImplementation(async () => {
       await sourceUpdated?.(filesystem, fast);
     });
+    core.listSources.mockResolvedValue([listedSource('fast'), listedSource('slow')]);
     filesystem.promises.glob.mockResolvedValue(['/fast.mdx', '/slow.mdx']);
     filesystem.promises.readFile.mockImplementation(async file => [Buffer.from(file)]);
 
@@ -182,6 +190,7 @@ describe('GIVEN the build command', () => {
         expect(filesystem.promises.glob).not.toHaveBeenCalled();
         mounted = true;
       });
+      core.listSources.mockResolvedValue([listedSource('first'), listedSource('second')]);
       filesystem.promises.glob.mockImplementation(async () => {
         expect(mounted).toBe(true);
         return ['/salt/index.mdx', '/sitemap.xml'];
@@ -282,6 +291,7 @@ describe('GIVEN the build command', () => {
       await sourceUpdated?.(filesystem, fast);
       await sourceUpdated?.(filesystem, fast);
     });
+    core.listSources.mockResolvedValue([listedSource('fast'), listedSource('slow')]);
     filesystem.promises.glob.mockResolvedValue(['/complete.mdx']);
     filesystem.promises.readFile.mockResolvedValue([Buffer.from('both sources ready')]);
 
@@ -379,6 +389,62 @@ describe('GIVEN the build command', () => {
     expect(filesystem.promises.glob).not.toHaveBeenCalled();
     expect(unsubscribe).toHaveBeenCalledOnce();
     expect(core.stop).toHaveBeenCalledOnce();
+  });
+
+  test('THEN a source failing after startup rejects before exporting anything', async () => {
+    const error = new Error('source failed after initializing');
+    const building = build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' });
+    const rejected = expect(building).rejects.toBe(error);
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
+
+    firstUpdateFailed?.(error);
+
+    await rejected;
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  });
+
+  test('THEN a source that exits after publishing cannot count toward a completed snapshot', async () => {
+    const fast = { id: Symbol('fast') };
+    const slow = { id: Symbol('slow') };
+    let finishStartup: () => void;
+    const startup = new Promise<void>(resolve => {
+      finishStartup = resolve;
+    });
+    core.start.mockImplementation(() => {
+      sourceUpdated?.(filesystem, fast);
+      return startup;
+    });
+    core.listSources.mockResolvedValue([listedSource('fast')]);
+
+    const building = build({ plugins: [], sources: [{}, {}] }, outDir, { name: 'latest' });
+    const rejected = expect(building).rejects.toThrow('1 source(s) stopped before export');
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
+
+    // The fast source exited while the slow source was starting and its
+    // volume was unmounted. Both IDs will still have published an update.
+    core.listSources.mockResolvedValue([listedSource('slow')]);
+    finishStartup();
+    sourceUpdated?.(filesystem, slow);
+
+    await rejected;
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  });
+
+  test('THEN an initialized source cannot keep the build waiting indefinitely', async () => {
+    vi.stubEnv('MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS', '25');
+    await expect(build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' })).rejects.toThrow(
+      'still waiting for 1 source(s) to publish content after 25ms'
+    );
+
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
   });
 
   test.each(
