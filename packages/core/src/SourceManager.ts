@@ -275,35 +275,40 @@ export default class SourceManager {
       source.use(this.#plugins, this.#serialisers);
 
       const populateSource = (generation: SourceGeneration, fromCache = false) =>
-        source.applyGeneration(generation, async () => {
-          try {
-            this.#rebuildGlobalConfig();
-            source.filesystem.reset();
-            source.filesystem.fromJSON(generation.pages);
-            // We need to re-apply symlinks in the main thread.
-            await source.filesystem.symlinksFromJSON(generation.symlinks);
-            if (!sourceActive) return false;
-            await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
-            if (!sourceActive) return false;
-            source.filesystem.freeze();
-            source.filesystem.clearCache();
-            return true;
-          } catch (error) {
-            if (!fromCache) throw error;
-            if (sourceActive) {
-              source.filesystem.reset();
-              source.config = createConfig();
+        source.applyGeneration(
+          generation,
+          async () => {
+            try {
               this.#rebuildGlobalConfig();
-              console.warn(
-                `[Mosaic][Core] Could not restore the source cache for '${source.id.description}'`,
-                error
-              );
+              source.filesystem.reset();
+              source.filesystem.fromJSON(generation.pages);
+              // We need to re-apply symlinks in the main thread.
+              await source.filesystem.symlinksFromJSON(generation.symlinks);
+              if (!sourceActive) return false;
+              await source.invokeAfterUpdate(this.#sharedFilesystem, this.#globalConfig);
+              if (!sourceActive) return false;
+              source.filesystem.freeze();
+              source.filesystem.clearCache();
+              return true;
+            } catch (error) {
+              if (!fromCache) throw error;
+              if (sourceActive) {
+                source.filesystem.reset();
+                source.config = createConfig();
+                this.#rebuildGlobalConfig();
+                console.warn(
+                  `[Mosaic][Core] Could not restore the source cache for '${source.id.description}'`,
+                  error
+                );
+              }
+              return false;
             }
-            return false;
-          }
-        });
+          },
+          !fromCache
+        );
 
       source.onUpdate(async generation => {
+        let published = false;
         if (!sourceActive) {
           reject(
             new Error(
@@ -323,7 +328,10 @@ export default class SourceManager {
               return;
             }
 
-            await this.#updateNamespaceSources(immutableSourceFilesystem, source);
+            await this.#updateNamespaceSources(immutableSourceFilesystem, source, () => {
+              if (published && sourceActive)
+                this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
+            });
 
             // After each async operation, we should check if anything has caused the Source to close
             if (!sourceActive) {
@@ -331,6 +339,7 @@ export default class SourceManager {
             }
 
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
+            published = true;
             firstUpdatePending = false;
           } catch (e) {
             console.warn(
@@ -449,7 +458,11 @@ export default class SourceManager {
     );
   }
 
-  #updateNamespaceSources(immutableSourceFilesystem: IVolumeImmutable, source: Source) {
+  #updateNamespaceSources(
+    immutableSourceFilesystem: IVolumeImmutable,
+    source: Source,
+    notifyDeferredMutation: () => void
+  ) {
     const config = source.config;
     const isCurrent = () => this.#sources.get(source.id) === source && source.config === config;
     const siblings = Array.from(this.#sources.values()).filter(
@@ -462,7 +475,12 @@ export default class SourceManager {
           immutableSourceFilesystem,
           this.#sharedFilesystem,
           this.#globalConfig,
-          isCurrent
+          {
+            isCurrent,
+            onDeferredMutation() {
+              if (isCurrent()) notifyDeferredMutation();
+            }
+          }
         )
       )
     );

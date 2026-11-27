@@ -493,6 +493,79 @@ describe('source generations', () => {
     }
   });
 
+  test.each([false, true])(
+    'a busy frozen receiver releases other publishers and reports the late write (cached: %s)',
+    async cached => {
+      const thirdPublished = deferred();
+      const allowLateHook = deferred();
+      const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+      const publications: unknown[] = [];
+      manager.onSourceUpdate((_, source) => {
+        const { generation } = source.config.data;
+        publications.push(generation);
+        if (generation === 31) thirdPublished.resolve();
+      });
+      async function addPeer(prefixDir: string) {
+        const peer = makeWorker();
+        vi.mocked(WorkerSubscription).mockImplementationOnce(function PeerWorker() {
+          return peer as never;
+        });
+        const started = manager.addSource(
+          { modulePath: 'peer', namespace: 'docs', options: { prefixDir } },
+          {}
+        );
+        await vi.waitFor(() => expect(peer.listenerCount(EVENT.START)).toBe(1));
+        peer.emit(EVENT.START);
+        await started;
+        return peer;
+      }
+
+      try {
+        const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {});
+        await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+        if (cached) startWithCache();
+        else worker.emit(EVENT.START);
+        const receiver = await started;
+        const second = await addPeer('second');
+        const third = await addPeer('third');
+        if (!cached) emit(10);
+        emit(20, second);
+        emit(30, third);
+        await vi.waitFor(() => expect(publications).toHaveLength(cached ? 2 : 3));
+        publications.length = 0;
+
+        const predicates: string[] = [];
+        plugin.shouldUpdateNamespaceSources.mockImplementation(async (origin, { config }) => {
+          if (config.data.generation !== (cached ? 'cached' : 10)) return false;
+          const page = String(await origin.promises.readFile('/page.mdx'));
+          predicates.push(page);
+          await (page === 'generation 21' ? thirdPublished.promise : allowLateHook.promise);
+          return true;
+        });
+        let writes = 0;
+        plugin.afterNamespaceSourceUpdate.mockImplementation(async files => {
+          await files.promises.writeFile('/derived.json', String(++writes));
+        });
+        emit(21, second);
+        await vi.waitFor(() => expect(predicates).toEqual(['generation 21']));
+        expect(receiver.filesystem.frozen).toBe(true);
+
+        emit(31, third);
+        await vi.waitFor(() => expect(publications).toEqual([31, 21]));
+        await vi.waitFor(() => expect(predicates).toEqual(['generation 21', 'generation 31']));
+        expect(String(await receiver.filesystem.promises.readFile('/derived.json'))).toBe('1');
+
+        allowLateHook.resolve();
+        await vi.waitFor(() => expect(publications).toEqual([31, 21, 31]));
+        expect(String(await receiver.filesystem.promises.readFile('/derived.json'))).toBe('2');
+      } finally {
+        thirdPublished.resolve();
+        allowLateHook.resolve();
+        await manager.destroyAll();
+      }
+    }
+  );
+
   test('discards queued generations when stopped during a plugin', async () => {
     const gate = deferred();
     plugin.afterUpdate.mockImplementation(() => gate.promise);

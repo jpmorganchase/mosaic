@@ -46,7 +46,8 @@ export default class Source {
   #schedule: SourceSchedule;
   #schedulePublication = createPublicationQueue();
   #scheduleVolumeMutation = createPublicationQueue();
-  #applyingGeneration = false;
+  #pendingVolumeMutations = 0;
+  #applyingLiveGeneration = false;
   #namespaceWaiters = new Set<() => void>();
   #stopped = true;
   pluginErrors: any = {};
@@ -173,13 +174,14 @@ export default class Source {
     updatedSourceFilesystem: IVolumeImmutable,
     sharedFilesystem: IVolumeImmutable,
     globalConfig: MutableData<unknown>,
-    isCurrent: () => boolean
+    { isCurrent, onDeferredMutation }: { isCurrent: () => boolean; onDeferredMutation: () => void }
   ) {
     if (this.#stopped) return;
-    const waitForHook = this.filesystem?.frozen && !this.#applyingGeneration;
-    const mutation = this.#scheduleVolumeMutation(async () => {
-      if (this.#stopped || !this.filesystem?.frozen || !isCurrent()) return;
-      await this.#applyNamespaceSourceUpdate(
+    const waitForHook = this.filesystem?.frozen && this.#pendingVolumeMutations === 0;
+    const coveredByLiveUpdate = this.#applyingLiveGeneration;
+    const mutation = this.#mutateVolume(async () => {
+      if (this.#stopped || !this.filesystem?.frozen || !isCurrent()) return false;
+      return this.#applyNamespaceSourceUpdate(
         namespaceSourceDesc,
         updatedSourceFilesystem,
         sharedFilesystem,
@@ -188,9 +190,13 @@ export default class Source {
       );
     });
     if (!waitForHook) {
-      // An applying source can depend on this publication finishing. Defer its
-      // hook behind the volume mutation without holding the origin open.
-      void mutation.catch(error => console.error('[Mosaic][Core] Namespace update failed', error));
+      // A busy receiver can depend on this publication finishing. Defer its
+      // hook behind the pending mutations without holding the origin open.
+      void mutation
+        .then(applied => {
+          if (applied && !coveredByLiveUpdate && !this.#stopped) onDeferredMutation();
+        })
+        .catch(error => console.error('[Mosaic][Core] Namespace update failed', error));
       return;
     }
 
@@ -243,20 +249,37 @@ export default class Source {
         filesystem.freeze();
         filesystem.clearCache();
       }
+      return true;
     }
+    return false;
   }
 
-  async applyGeneration(generation: SourceGeneration, populate: () => Promise<boolean>) {
-    this.#applyingGeneration = true;
-    const applied = await this.#scheduleVolumeMutation(() => {
+  async applyGeneration(
+    generation: SourceGeneration,
+    populate: () => Promise<boolean>,
+    isLive: boolean
+  ) {
+    this.#applyingLiveGeneration = isLive;
+    const applied = await this.#mutateVolume(() => {
       if (this.#stopped) return false;
       this.config = createConfig(generation.data);
       return populate();
     }).finally(() => {
-      this.#applyingGeneration = false;
+      this.#applyingLiveGeneration = false;
     });
     // Include peer hooks that queued behind this generation before publishing it.
     return applied && this.#scheduleVolumeMutation(() => !this.#stopped);
+  }
+
+  #mutateVolume<T>(mutate: () => T | Promise<T>): Promise<T> {
+    this.#pendingVolumeMutations++;
+    return this.#scheduleVolumeMutation(async () => {
+      try {
+        return await mutate();
+      } finally {
+        this.#pendingVolumeMutations--;
+      }
+    });
   }
 
   async use(
