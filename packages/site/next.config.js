@@ -29,6 +29,25 @@ const { resolve } = require('node:path');
 const { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } = require('next/constants');
 const { syncSnapshotAssets } = require('./scripts/sync-snapshot-assets.cjs');
 
+// Next anchors header conditions to the whole value. Match a media-range
+// token and honor its zero-quality override. Quotes may contain commas and
+// semicolons without creating a new media range or parameter.
+const ignoreCase = value => value.replace(/[a-z]/g, letter => `[${letter}${letter.toUpperCase()}]`);
+const whitespace = String.raw`[ \t]*`;
+const quotedParameter = String.raw`"(?:[^"\\]|\\.)*"`;
+const mediaRange = `(?:[^",]|${quotedParameter})*`;
+const mediaParameter = `(?:[^",;]|${quotedParameter})+`;
+const rejectedQuality = String.raw`[ \t]*[qQ][ \t]*=[ \t]*0(?:\.0{0,3})?[ \t]*(?=[;,]|$)`;
+const markdownRange = `(?:${mediaRange},)*${whitespace}${ignoreCase('text/markdown')}${whitespace}`;
+const charset = `${whitespace}${ignoreCase('charset')}${whitespace}=`;
+const utf8 = ignoreCase('utf-8');
+const utf8Value = `${whitespace}(?:${utf8}|"${utf8}")${whitespace}(?=[;,]|$)`;
+const markdownAccept = `${markdownRange}(?:;(?!${rejectedQuality}|${charset}(?!${utf8Value}))${mediaParameter})*(?:,.*)?`;
+// The response is UTF-8. A matching range with a charset parameter
+// is more specific than a generic text/markdown range.
+const parameters = `(?:;${mediaParameter})*`;
+const markdownUtf8Rejected = `${markdownRange}(?=${parameters};${charset}${utf8Value})(?=${parameters};${rejectedQuality})${parameters}(?:,.*)?`;
+
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
 const mosaicMode = process.env.MOSAIC_MODE || 'active';
@@ -143,7 +162,8 @@ const dynamicOnlyConfig = {
         // Agents that ask for Markdown get it at the page's own URL.
         {
           source: '/:path((?!api/|_next/).+)',
-          has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+          has: [{ type: 'header', key: 'accept', value: markdownAccept }],
+          missing: [{ type: 'header', key: 'accept', value: markdownUtf8Rejected }],
           destination: '/api/llms/:path'
         }
       ],

@@ -76,6 +76,8 @@ The reference site serves the files with `createLlmsHandler`, from `@jpmorgancha
 | `/.md`                                            | The canonical `/` page, when one is published       |
 | `/<page>`, with an `Accept: text/markdown` header | The page's Markdown                                 |
 
+Copy the `markdownAccept` and `markdownUtf8Rejected` matchers from the reference config to honor `q=0` and charset restrictions. [Reference Next.js config](https://github.com/jpmorganchase/mosaic/blob/main/packages/site/next.config.js)
+
 ```js
 // next.config.js
 rewrites() {
@@ -87,7 +89,8 @@ rewrites() {
       { source: '/:scope((?!api/|_next/).+)/llms-full.txt', destination: '/api/llms/:scope/llms-full.txt' },
       {
         source: '/:path((?!api/|_next/).+)',
-        has: [{ type: 'header', key: 'accept', value: '(.*)text/markdown(.*)' }],
+        has: [{ type: 'header', key: 'accept', value: markdownAccept }],
+        missing: [{ type: 'header', key: 'accept', value: markdownUtf8Rejected }],
         destination: '/api/llms/:path'
       }
     ],

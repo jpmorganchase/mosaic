@@ -19,15 +19,10 @@ function resolveRelativeUrl(href: string, baseRoute: string) {
   if (!baseRoute) {
     throw new Error('Cannot resolve relative url as base route is undefined');
   }
-  const url = new URL('http://jpmorgan.com');
-  const anchorMatches = href.match(/(.*)#(.*)/);
-  if (anchorMatches && anchorMatches[2]) {
-    // Anchors will get encoded to %23 if set on URL
-    url.pathname = `${baseRoute}/../${anchorMatches[1]}`;
-    return `${url.pathname}#${anchorMatches[2]}`;
-  }
-  url.pathname = `${baseRoute}/../${href}`;
-  return url.pathname;
+  const base = new URL('https://mosaic.invalid');
+  base.pathname = baseRoute;
+  const url = new URL(href, base);
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 export const useBaseRoute = () => useContext(BaseUrlContext);

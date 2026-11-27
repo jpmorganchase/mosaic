@@ -1,4 +1,5 @@
 import MiniSearch, { type SearchResult as MiniSearchResult } from 'minisearch';
+import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 
 import { snippet } from './highlight.js';
 import type {
@@ -299,20 +300,25 @@ export function createSearchIndex(
     }))
   );
 
-  const toHit = (record: SearchRecord, terms: string[]): SearchHit => ({
-    id: record.id,
-    route: record.route,
-    ...(record.anchor ? { anchor: record.anchor } : {}),
-    href: record.anchor ? `${record.route}#${record.anchor}` : record.route,
-    title: record.title,
-    headings: record.headings,
-    namespace: record.namespace,
-    snippet: snippet(
-      record.text || joinField(record.fields?.description) || joinOtherFields(record),
+  const toHit = (record: SearchRecord, terms: string[]): SearchHit => {
+    const pathname = record.route.startsWith('/')
+      ? encodeRoutePathname(record.route)
+      : record.route;
+    return {
+      id: record.id,
+      route: record.route,
+      ...(record.anchor ? { anchor: record.anchor } : {}),
+      href: record.anchor ? `${pathname}#${encodeURIComponent(record.anchor)}` : pathname,
+      title: record.title,
+      headings: record.headings,
+      namespace: record.namespace,
+      snippet: snippet(
+        record.text || joinField(record.fields?.description) || joinOtherFields(record),
+        terms
+      ),
       terms
-    ),
-    terms
-  });
+    };
+  };
 
   function search(query: string, searchOptions: SearchOptions = {}): SearchResult[] {
     const { namespace, namespaces, filter, limit = 10, sectionsPerResult = 3 } = searchOptions;

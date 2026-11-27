@@ -132,6 +132,24 @@ const hrefs = (query: string, searchOptions = {}) =>
   index.search(query, { namespace: 'salt', ...searchOptions }).map(result => result.href);
 
 describe('createSearchIndex', () => {
+  test('encodes the document pathname before adding a section fragment', () => {
+    const index = createSearchIndex(
+      page('/docs/release#notes', 'Release notes', {
+        sections: [['Migration', 'Migration instructions.']]
+      })
+    );
+    expect(index.search('migration')[0]).toMatchObject({
+      route: '/docs/release#notes',
+      href: '/docs/release%23notes#migration'
+    });
+    expect(
+      createSearchIndex(page('/docs/an%20authored%20path', 'Manual')).search('manual')[0].href
+    ).toBe('/docs/an%20authored%20path');
+    expect(createSearchIndex(page('/docs/report%ff', 'Report')).search('report')[0].href).toBe(
+      '/docs/report%25ff'
+    );
+  });
+
   test('allows independent query policies without changing the index defaults', () => {
     const pages = [
       ...page('/salt/button/usage', 'Button'),

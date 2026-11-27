@@ -315,6 +315,22 @@ describe('GIVEN the SearchIndexPlugin', () => {
     ]);
   });
 
+  test('THEN a document named with a hash does not replace another document section', async () => {
+    const writeFile = await run(
+      {},
+      {
+        '/docs/release.mdx':
+          '---\nroute: /docs/release\ntitle: Release\n---\n## Notes\n\nMigration instructions.',
+        '/docs/release#notes.mdx':
+          '---\nroute: /docs/release#notes\ntitle: Release notes\n---\nIndependent schedule.'
+      }
+    );
+    const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
+    const index = createSearchIndex(JSON.parse(json).records);
+    expect(index.search('migration')[0].href).toBe('/docs/release#notes');
+    expect(index.search('schedule')[0].href).toBe('/docs/release%23notes');
+  });
+
   test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {
     const writeFile = await run({
       records: { fields: { summary: 'data.summary', tags: 'data.tags' } }

@@ -1,14 +1,14 @@
 /**
  * One searchable part of a page: its introduction (the text before the
- * first section heading) or one section. Search results link to
- * `route#anchor`, so sections can be found by their own heading.
+ * first section heading) or one section. Search results link to the
+ * document's URL with a section fragment when available.
  *
  * This is the contract between the content pipeline and search: the
  * engine that queries these records can change without changing the
  * plugin.
  */
 export interface SearchRecord {
-  /** `route` for the introduction, `route#anchor` for a section. */
+  /** The encoded document pathname with a fragment for a section. */
   id: string;
   route: string;
   /** The section heading's id. Absent for the introduction. */

@@ -153,6 +153,14 @@ describe('GIVEN toMarkdown', () => {
     );
   });
 
+  test('THEN relative links resolve from a folder containing reserved URL characters', async () => {
+    const markdown = await toMarkdown({
+      route: '/docs/release#team/index',
+      content: '[Reference](./reference?tab=api#details)'
+    });
+    expect(markdown).toBe('[Reference](/docs/release%23team/reference?tab=api#details)');
+  });
+
   test('THEN it puts links and images on the site URL when it is set', async () => {
     const markdown = await toMarkdown(
       {
@@ -217,7 +225,10 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     '/docs/data.json': JSON.stringify({ route: '/docs/data', title: 'Data' })
   };
 
-  async function run(options: Record<string, unknown> = {}, pageFiles: typeof files = files) {
+  async function run(
+    options: Record<string, unknown> = {},
+    pageFiles: Record<string, string> = files
+  ) {
     const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(pageFiles)), 'docs');
     let data: Record<string, unknown> = {};
     const beforeSend = LlmsTxtPlugin.$beforeSend!;
@@ -253,6 +264,25 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     );
     return { written: shared.toJSON() as Record<string, string>, error };
   }
+
+  test('THEN indexes and article URLs encode reserved characters without changing bundle keys', async () => {
+    const route = '/docs/release#notes?draft';
+    const { written } = await run(
+      { siteUrl: 'https://example.com', scopes: [{ path: '/docs' }] },
+      {
+        [`${route}.mdx`]: `${frontmatter({ route, title: 'Release notes' })}Body.\n`
+      }
+    );
+    expect(written[LLMS_TXT_FILE]).toContain(
+      '(https://example.com/docs/release%23notes%3Fdraft.md)'
+    );
+    expect(written['/docs/llms.txt']).toContain(
+      '(https://example.com/docs/release%23notes%3Fdraft.md)'
+    );
+    expect(JSON.parse(written[MARKDOWN_PAGES_FILE]).pages[route]).toContain(
+      'url: "https://example.com/docs/release%23notes%3Fdraft"'
+    );
+  });
 
   test('THEN it writes each page as Markdown with frontmatter, in route order', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);

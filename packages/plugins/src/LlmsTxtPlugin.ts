@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import picomatch from 'picomatch';
+import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import type {
   IVolumeMutable,
   ImmutableData,
@@ -167,7 +168,7 @@ function renderPage(
     '---',
     `title: ${yamlString(title)}`,
     ...(description ? [`description: ${yamlString(description)}`] : []),
-    `url: ${yamlString(`${origin(siteUrl)}${route}`)}`,
+    `url: ${yamlString(`${origin(siteUrl)}${encodeRoutePathname(route)}`)}`,
     ...(lastModified ? [`lastModified: ${yamlString(lastModified)}`] : []),
     ...fields.map(([key, value]) => `${key}: ${value}`),
     '---'
@@ -205,7 +206,7 @@ export function buildLlmsTxt(
   pages: Record<string, MarkdownPage>,
   { title = 'Documentation', description, siteUrl, scopes }: LlmsTxtPluginOptions = {}
 ) {
-  const link = (route: string) => `${origin(siteUrl)}${route}.md`;
+  const link = (route: string) => `${origin(siteUrl)}${encodeRoutePathname(route)}.md`;
   const sections = new Map<string, string[]>();
   for (const route of Object.keys(pages).sort(compareRoutes)) {
     const section = sectionOf(route);

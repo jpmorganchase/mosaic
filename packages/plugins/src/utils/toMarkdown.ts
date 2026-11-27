@@ -3,6 +3,7 @@ import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkGfm from 'remark-gfm';
 import remarkStringify from 'remark-stringify';
+import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import type { Node } from 'unist';
 import type { Root } from 'mdast';
 
@@ -101,7 +102,7 @@ const stringify = (children: AnyNode[]) => {
  */
 const resolveUrl = (url: string, route: string, siteUrl = '') => {
   if (/^([a-z][a-z\d+.-]*:|\/\/|#)/i.test(url)) return url;
-  const resolved = new URL(url, `https://mosaic.invalid${route}`);
+  const resolved = new URL(url, `https://mosaic.invalid${encodeRoutePathname(route)}`);
   return `${siteUrl}${resolved.pathname}${resolved.search}${resolved.hash}`;
 };
 
