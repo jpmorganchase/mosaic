@@ -56,6 +56,15 @@ function validateWorkflowRequest(body: unknown): WorkflowRequest | string {
   }
   if (request.isNewPage !== undefined && typeof request.isNewPage !== 'boolean')
     return 'Invalid new-page flag';
+  if (
+    request.expectedSourceHash !== undefined &&
+    (request.isNewPage ||
+      typeof request.expectedSourceHash !== 'string' ||
+      request.expectedSourceHash.length !== 64 ||
+      !/^[a-f0-9]+$/.test(request.expectedSourceHash))
+  ) {
+    return 'Invalid original page hash.';
+  }
   if (request.commitMessage !== undefined) {
     const error = validateCommitMessage(request.commitMessage);
     if (error) return error;

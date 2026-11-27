@@ -35,4 +35,6 @@ export interface EditorSaveInput extends WorkflowDefaultsInput {
   markdown: string;
   frontmatter?: string;
   commitMessage?: string;
+  /** SHA-256 of the authored file bytes that seeded an existing draft. */
+  expectedSourceHash?: string;
 }

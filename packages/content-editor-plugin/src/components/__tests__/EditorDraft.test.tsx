@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -162,6 +163,54 @@ test.each(['body', 'body across modes', 'metadata', 'visual metadata', 'rename']
   }
 );
 
+test.each(['metadata', 'rename'] as const)(
+  'saves %s changes to a frontmatter-only page',
+  async change => {
+    const persist = vi.fn(async function* (
+      _input: Parameters<NonNullable<EditorProps['persist']>>[0]
+    ): AsyncGenerator<PersistEvent> {
+      yield { kind: 'complete', prHref: null };
+    });
+    mountEditor({
+      persist,
+      rawSource: {
+        kind: 'raw',
+        bytes:
+          '---\ntitle: Authored title\nlayout: Article\ndescription: ""\ntags: []\nsummary: To be cleared\n---\n',
+        namespace: 'docs'
+      }
+    });
+    await screen.findByTestId('split-ready');
+    if (change === 'metadata') {
+      fireEvent.change(screen.getByDisplayValue('Authored title'), {
+        target: { value: 'Draft title' }
+      });
+      fireEvent.change(screen.getByDisplayValue('To be cleared'), { target: { value: '' } });
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+    if (change === 'rename') {
+      fireEvent.change(screen.getByLabelText('File path'), {
+        target: { value: '/docs/renamed.mdx' }
+      });
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+    await waitFor(() => expect(persist).toHaveBeenCalledOnce());
+    const payload = persist.mock.calls[0][0];
+    expect(payload.markdown.trim()).toBe('');
+    if (change === 'metadata') {
+      expect(parseFrontmatter(`---\n${payload.frontmatter}\n---\n`).data).toEqual({
+        title: 'Draft title',
+        layout: 'Article',
+        description: '',
+        tags: []
+      });
+    } else {
+      expect(payload.targetRoute).toBe('/docs/renamed.mdx');
+      expect(payload.frontmatter).toBeUndefined();
+    }
+  }
+);
+
 test('retains invalid YAML and valid fields through repeated mode round trips', async () => {
   const view = mountEditor();
   await screen.findByTestId('split-ready');
@@ -245,6 +294,46 @@ test('resets the whole draft when the host changes the backing document', async 
   );
   expect(await screen.findByDisplayValue('Other title')).toBeVisible();
   expect(screen.queryByDisplayValue('Draft title')).not.toBeInTheDocument();
+});
+
+test('keeps the draft and its original source hash after a same-page refresh and save conflict', async () => {
+  const expectedSourceHash = 'a'.repeat(64);
+  const persist = vi.fn(async function* (
+    _input: Parameters<NonNullable<EditorProps['persist']>>[0]
+  ): AsyncGenerator<PersistEvent> {
+    yield { kind: 'error', message: 'This page changed after you opened it.' };
+  });
+  const view = mountEditor({
+    persist,
+    rawSource: { kind: 'raw', bytes: authored, namespace: 'docs', sourceHash: expectedSourceHash }
+  });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('Authored title'), {
+    target: { value: 'Draft title' }
+  });
+  view.rerender(
+    <Editor
+      {...view.props}
+      rawSource={{
+        kind: 'raw',
+        namespace: 'docs',
+        bytes: authored.replace('Authored title', 'Another author changed this title'),
+        sourceHash: 'b'.repeat(64)
+      }}
+    />
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+  await screen.findByText(/This page changed after you opened it/);
+  expect(persist).toHaveBeenCalledExactlyOnceWith({
+    route: '/docs/page.mdx',
+    markdown: body,
+    frontmatter: expect.stringContaining('title: Draft title'),
+    expectedSourceHash
+  });
+  expect(modeState.saveState).toBe('dirty');
+  await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.getByDisplayValue('Draft title')).toBeVisible();
 });
 
 test('blocks both button and shortcut saves when authored bytes are unavailable', () => {

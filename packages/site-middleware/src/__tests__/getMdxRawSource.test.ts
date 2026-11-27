@@ -8,28 +8,22 @@
  * snapshot-mode short-circuit; the network layer itself is a
  * standard `fetch` call so we don't have to test it.
  *
- * Caching layers (`cache()` + `unstable_cache`) are bypassed
- * via `MOSAIC_DISABLE_LOADER_CACHE=true` so the implementation
- * runs on every call — necessary for these tests because
- * vitest's module isolation already gives us a fresh cache per
- * file, but assertions about call counts would otherwise be
- * fragile if a future commit raises the cache lifetime.
+ * Outside a React server render each call represents a fresh request.
+ * The persistent cache mock lets us check recovery when active-mode
+ * caching is enabled for other content reads.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { createHash } from 'node:crypto';
 
-// Bypass both cache layers before importing the module under
-// test (the `cacheDisabled` flag is captured at module-eval
-// time). Setting in module scope rather than `beforeAll` so the
-// env is in place by the time the `import` below resolves.
-process.env.MOSAIC_DISABLE_LOADER_CACHE = 'true';
-
-// `next/cache` isn't loadable outside a Next runtime — vitest's
-// Node project can't resolve its conditional exports. We bypass
-// it entirely because `MOSAIC_DISABLE_LOADER_CACHE=true` already
-// short-circuits the cache wrapper before `unstable_cache` is
-// ever called; the mock just satisfies the top-level import.
 vi.mock('next/cache', () => ({
-  unstable_cache: (impl: unknown) => impl
+  unstable_cache: (impl: (...args: unknown[]) => Promise<unknown>) => {
+    const entries = new Map<string, Promise<unknown>>();
+    return (...args: unknown[]) => {
+      const key = JSON.stringify(args);
+      if (!entries.has(key)) entries.set(key, impl(...args));
+      return entries.get(key);
+    };
+  }
 }));
 
 import { getMdxRawSource } from '../cachedLoaders.js';
@@ -53,12 +47,15 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe('getMdxRawSource', () => {
-  test('returns kind=raw + namespace + bytes on 200', async () => {
+  test('returns the decoded source and a hash of the original bytes on 200', async () => {
+    const bytes = '---\ntitle: Café\r\n---\n# Hi\n';
+    const raw = `\uFEFF${bytes}`;
     fetchMock.mockResolvedValueOnce(
-      fetchResponse(200, '---\ntitle: X\n---\n# Hi\n', {
+      fetchResponse(200, raw, {
         'x-mosaic-raw-namespace': 'mosaic'
       })
     );
@@ -67,13 +64,35 @@ describe('getMdxRawSource', () => {
 
     expect(result).toEqual({
       kind: 'raw',
-      bytes: '---\ntitle: X\n---\n# Hi\n',
-      namespace: 'mosaic'
+      bytes,
+      namespace: 'mosaic',
+      sourceHash: createHash('sha256').update(raw).digest('hex')
     });
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(`${CONTENT_URL}/_mosaic-raw/mosaic/index.mdx`, {
       cache: 'no-store'
     });
+  });
+
+  test('reads changed authored bytes when reopening with active-mode caching enabled', async () => {
+    vi.stubEnv('MOSAIC_ACTIVE_MODE_CACHE', 'true');
+    vi.stubEnv('MOSAIC_DISABLE_LOADER_CACHE', 'false');
+    vi.resetModules();
+    const freshModule = await import('../cachedLoaders.js');
+    fetchMock
+      .mockResolvedValueOnce(fetchResponse(200, 'before'))
+      .mockResolvedValueOnce(fetchResponse(200, 'after'));
+
+    for (const bytes of ['before', 'after']) {
+      expect(
+        await freshModule.getMdxRawSource('/docs/page.mdx', 'active', CONTENT_URL)
+      ).toMatchObject({
+        kind: 'raw',
+        bytes,
+        sourceHash: createHash('sha256').update(bytes).digest('hex')
+      });
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   test('normalises `/foo/index` to `/foo/index.mdx` before fetching', async () => {

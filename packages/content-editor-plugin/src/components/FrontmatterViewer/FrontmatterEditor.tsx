@@ -270,22 +270,24 @@ function parseSubtreeYaml(yaml: string): unknown {
  * on every save would generate phantom changes.
  *
  * Rows whose value is "empty in a meaningful way" are pruned:
- *   - empty string for `string` (an author who deletes the
- *     content of a field expects the field to go away, not to
- *     remain present as `""`)
- *   - empty array for `tags`
+ *   - empty string for `string`;
+ *   - empty array for `tags`.
+ *
+ * Preserve empty values that were explicitly present in the
+ * source. Clearing a previously populated value or removing its
+ * row still removes the field.
  *
  * Number/boolean/complex rows are always emitted — `0` and
  * `false` are legitimate values, and a complex row's `lastGood`
  * is whatever the last successful parse produced.
  */
-function buildObject(rows: Row[]): Record<string, unknown> {
+function buildObject(rows: Row[], initial: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const row of rows) {
     if (!row.key) continue;
     switch (row.kind) {
       case 'string':
-        if (row.value !== '') out[row.key] = row.value;
+        if (row.value !== '' || initial[row.key] === '') out[row.key] = row.value;
         break;
       case 'number': {
         const n = Number(row.value);
@@ -295,9 +297,13 @@ function buildObject(rows: Row[]): Record<string, unknown> {
       case 'boolean':
         out[row.key] = row.value;
         break;
-      case 'tags':
-        if (row.value.length > 0) out[row.key] = row.value;
+      case 'tags': {
+        const original = initial[row.key];
+        if (row.value.length > 0 || (Array.isArray(original) && original.length === 0)) {
+          out[row.key] = row.value;
+        }
         break;
+      }
       case 'complex':
         // Use the last successfully parsed value even when the
         // current YAML doesn't parse — keeps a transient typo
@@ -319,8 +325,8 @@ function buildObject(rows: Row[]): Record<string, unknown> {
  * "user removed all frontmatter" — a legitimate state for very
  * minimal pages).
  */
-function serialiseRows(rows: Row[]): string {
-  const obj = buildObject(rows);
+function serialiseRows(rows: Row[], initial: Record<string, unknown>): string {
+  const obj = buildObject(rows, initial);
   if (Object.keys(obj).length === 0) return '';
   return stripFences(stringifyFrontmatter('', obj));
 }
@@ -505,7 +511,7 @@ export function FrontmatterEditor({
           }
         }
       }
-      return serialiseRows(current);
+      return serialiseRows(current, initial);
     };
     return () => {
       // Clear on unmount so a stale getter can't return
@@ -513,14 +519,14 @@ export function FrontmatterEditor({
       // re-mount.
       if (snapshotRef.current) snapshotRef.current = null;
     };
-  }, [snapshotRef, requiredSet]);
+  }, [snapshotRef, requiredSet, initial]);
 
   // Baseline YAML for the dialog's "did anything change?" check.
   // Must match the `useState` seed exactly, otherwise the form
   // would render as dirty on first paint for any page missing a
   // required field.
   useEffect(() => {
-    originalYamlRef.current = serialiseRows(seedRows(initial, requiredKeys));
+    originalYamlRef.current = serialiseRows(seedRows(initial, requiredKeys), initial);
   }, [initial, originalYamlRef, requiredKeys]);
 
   // Fire `onChange` whenever the row list mutates so the parent
@@ -574,11 +580,11 @@ export function FrontmatterEditor({
   }, [newKey]);
 
   const isDirty = useMemo(() => {
-    const current = serialiseRows(rows);
+    const current = serialiseRows(rows, initial);
     return current !== originalYamlRef.current;
     // originalYamlRef read via .current intentionally — refs
     // don't notify, and `rows` already triggers re-evaluation.
-  }, [rows, originalYamlRef]);
+  }, [rows, initial, originalYamlRef]);
 
   return (
     <div className={style.root}>

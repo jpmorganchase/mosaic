@@ -72,6 +72,8 @@ requests, with `unstable_cache` tagged `MOSAIC_CONTENT_CACHE_TAG`:
 - Active mode reads the live Mosaic CLI on every request unless
   `MOSAIC_ACTIVE_MODE_CACHE=true`. Enable that only when the CLI's
   revalidate notification reaches every site instance.
+- The editor's raw source loader always reads the CLI on each request so
+  reopening an editor after a save conflict can load the current source.
 - Negative results (not-found pages, missing files, empty lookups) are
   never stored.
 - `MOSAIC_DISABLE_LOADER_CACHE=true` bypasses the cross-request cache

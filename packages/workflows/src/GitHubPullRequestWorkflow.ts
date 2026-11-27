@@ -22,6 +22,7 @@ import {
   prepareCommitMessage,
   type CommitMessageOption
 } from './commitMessage.js';
+import { checkSaveSource } from './checkSaveSource.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -32,6 +33,7 @@ interface GitHubPullRequestWorkflowData {
   user: { id?: string; sid?: string; name: string; email: string };
   markdown: string;
   commitMessage?: string;
+  expectedSourceHash?: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)
    * from the in-browser editor's Frontmatter tab. When present
@@ -107,6 +109,7 @@ export async function createPullRequest(
     frontmatter,
     targetRoute,
     isNewPage,
+    expectedSourceHash,
     commitMessage: messageOverride
   }: GitHubPullRequestWorkflowData
 ) {
@@ -119,7 +122,7 @@ export async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+  if (!repoUrl || typeof markdown !== 'string') {
     sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
@@ -257,6 +260,18 @@ export async function createPullRequest(
        * what a manual editor edit would do).
        */
       nextMeta = metadata as Record<string, unknown>;
+      const sourceError = checkSaveSource(rawPage, expectedSourceHash);
+      if (sourceError) {
+        sendWorkflowProgressMessage(sourceError, 'ERROR');
+        return false;
+      }
+      if (markdown.trim() === '' && _content?.trim() !== '') {
+        sendWorkflowProgressMessage(
+          'Cannot save an empty body over existing page content.',
+          'ERROR'
+        );
+        return false;
+      }
       if (typeof frontmatter === 'string') {
         try {
           const parsed = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<

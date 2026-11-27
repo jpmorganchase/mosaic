@@ -53,6 +53,24 @@ afterEach(() => {
 });
 
 describe('startSave', () => {
+  it('forwards the hash of the file that seeded the draft to the CLI', async () => {
+    const { startSave } = await loadAction();
+    const expectedSourceHash = 'a'.repeat(64);
+    await startSave({ route: '/mosaic/index', markdown: '# Changed', expectedSourceHash });
+    expect(sentRequest().body.expectedSourceHash).toBe(expectedSourceHash);
+  });
+
+  it.each([
+    { expectedSourceHash: 'bad hash' },
+    { expectedSourceHash: 'a'.repeat(64), isNewPage: true }
+  ])('rejects an invalid page hash before contacting the CLI', async input => {
+    const { startSave } = await loadAction();
+    expect(await startSave({ route: '/mosaic/index', markdown: '# Changed', ...input })).toEqual({
+      error: 'Invalid original page hash.'
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('forwards the author message with normalized newlines', async () => {
     const { startSave } = await loadAction();
     await startSave({

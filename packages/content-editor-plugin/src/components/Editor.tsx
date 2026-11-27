@@ -150,7 +150,7 @@ export interface PreviewComponentProps {
  * and disables saving existing pages until authored bytes are available.
  */
 export type RawSourceInput =
-  | { kind: 'raw'; bytes: string; namespace: string | undefined }
+  | { kind: 'raw'; bytes: string; namespace: string | undefined; sourceHash?: string }
   | { kind: 'not-found' }
   | { kind: 'no-matching-source' }
   | { kind: 'unsupported-source'; modulePath: string | undefined }
@@ -232,9 +232,11 @@ const EditorInner: FC<EditorProps> = ({
   // Memoised so `meta` and the debounced compilers derived from it keep
   // their identity; a new identity cancels any pending preview compile.
   const parsedMeta = useMemo(() => parseFrontmatter(content).data, [content]);
-  const authoredInput = rawSource?.kind === 'raw' ? rawSource.bytes : content;
+  // A same-document refresh must not give the draft a newer source hash.
+  const [draftSource] = useState(rawSource);
+  const authoredInput = draftSource?.kind === 'raw' ? draftSource.bytes : content;
   const markdown = useMemo(() => parseFrontmatter(authoredInput).content, [authoredInput]);
-  const hasAuthoredSource = rawSource?.kind === 'raw' || isNewPage;
+  const hasAuthoredSource = draftSource?.kind === 'raw' || isNewPage;
   const canSave = hasAuthoredSource && !hasInvalidFrontmatterEdits;
   const meta = useMemo(
     () => (typeof parsedMeta.route === 'string' || !route ? parsedMeta : { ...parsedMeta, route }),
@@ -693,6 +695,7 @@ const EditorInner: FC<EditorProps> = ({
               persist={canSave ? persist : undefined}
               loadSaveDefaults={loadSaveDefaults}
               isNewPage={isNewPage}
+              expectedSourceHash={draftSource?.kind === 'raw' ? draftSource.sourceHash : undefined}
             />
             <ShortcutHelpDialog />
             <StatusBanner />
@@ -746,7 +749,7 @@ const EditorInner: FC<EditorProps> = ({
                 <div hidden={mode !== 'frontmatter'}>
                   <FrontmatterPanel
                     meta={meta}
-                    rawSource={rawSource}
+                    rawSource={draftSource}
                     snapshotRef={frontmatterSnapshotRef}
                     originalYamlRef={originalFrontmatterYamlRef}
                     onAuthoredChange={requestPreviewRecompileFromFrontmatter}
