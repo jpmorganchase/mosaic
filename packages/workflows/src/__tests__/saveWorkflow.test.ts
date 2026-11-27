@@ -118,17 +118,50 @@ describe.each([
   });
 
   test('still refuses to erase an existing page with an empty body', async () => {
-    const send = vi.fn();
-    const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
-      user,
-      markdown: '',
-      frontmatter: 'title: Existing section'
-    });
+    const file = path.join(mocks.repoDir, 'content/new-section.mdx');
+    const original = '---\ntitle: Existing section\n---\n\nBody to retain\n';
+    await fs.promises.mkdir(path.dirname(file), { recursive: true });
+    await fs.promises.writeFile(file, original);
+    for (const markdown of ['', '  \n']) {
+      const send = vi.fn();
+      const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
+        user,
+        markdown,
+        frontmatter: 'title: Existing section'
+      });
 
-    expect(result).toBe(false);
-    expect(send).toHaveBeenCalledWith(expect.any(String), 'ERROR');
-    expect(mocks.init).not.toHaveBeenCalled();
+      expect(result).toBe(false);
+      expect(send).toHaveBeenLastCalledWith(
+        'Cannot save an empty body over existing page content.',
+        'ERROR'
+      );
+      expect(await fs.promises.readFile(file, 'utf8')).toBe(original);
+    }
+    expect(mocks.addChanges).not.toHaveBeenCalled();
   });
+
+  test.each(['metadata', 'rename'] as const)(
+    'saves %s changes to a frontmatter-only page',
+    async change => {
+      const send = vi.fn();
+      const file = path.join(mocks.repoDir, 'content/new-section.mdx');
+      await fs.promises.mkdir(path.dirname(file), { recursive: true });
+      await fs.promises.writeFile(file, '---\ntitle: Original title\n---\n');
+      await workflow.action(send, sourceOptions, workflowOptions, route, {
+        user,
+        markdown: '',
+        ...(change === 'metadata'
+          ? { frontmatter: 'title: Changed title' }
+          : { targetRoute: '/docs/moved.mdx' })
+      });
+
+      const savedFile = change === 'rename' ? path.join(path.dirname(file), 'moved.mdx') : file;
+      const written = parseFrontmatter(await fs.promises.readFile(savedFile));
+      expect(written.content.trim()).toBe('');
+      expect(written.data.title).toBe(change === 'metadata' ? 'Changed title' : 'Original title');
+      expect(send).toHaveBeenLastCalledWith({ pullRequestUrl }, 'COMPLETE');
+    }
+  );
 
   test.each([true, false])(
     'checks the author’s original source before mutating the worktree (matching: %s)',

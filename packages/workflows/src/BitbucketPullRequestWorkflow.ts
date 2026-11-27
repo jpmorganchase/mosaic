@@ -10,7 +10,6 @@ import type {
   SourceWorkflowCompletion
 } from '@jpmorganchase/mosaic-types';
 
-import { checkSaveSource } from './checkSaveSource.js';
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
@@ -20,6 +19,7 @@ import {
   prepareCommitMessage,
   type CommitMessageOption
 } from './commitMessage.js';
+import { checkSaveSource } from './checkSaveSource.js';
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -85,7 +85,7 @@ async function createPullRequest(
     prefixDir
   } = sourceOptions;
 
-  if (!repoUrl || typeof markdown !== 'string' || (!isNewPage && !markdown)) {
+  if (!repoUrl || typeof markdown !== 'string') {
     sendWorkflowProgressMessage('A repository URL and page content are required to save.', 'ERROR');
     return false;
   }
@@ -212,11 +212,6 @@ async function createPullRequest(
       sendWorkflowProgressMessage('Creating new page', 'IN_PROGRESS');
     } else {
       const rawPage = await fs.promises.readFile(pathOnDisk);
-      const sourceError = checkSaveSource(rawPage, expectedSourceHash);
-      if (sourceError) {
-        sendWorkflowProgressMessage(sourceError, 'ERROR');
-        return false;
-      }
       const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
 
       // Honour an authored frontmatter slice from the editor when
@@ -225,6 +220,18 @@ async function createPullRequest(
       // rationale (including the `fullPath`-preservation type note)
       // — this is the same contract.
       nextMeta = metadata as Record<string, unknown>;
+      const sourceError = checkSaveSource(rawPage, expectedSourceHash);
+      if (sourceError) {
+        sendWorkflowProgressMessage(sourceError, 'ERROR');
+        return false;
+      }
+      if (markdown.trim() === '' && _content?.trim() !== '') {
+        sendWorkflowProgressMessage(
+          'Cannot save an empty body over existing page content.',
+          'ERROR'
+        );
+        return false;
+      }
       if (typeof frontmatter === 'string') {
         try {
           const parsed = (parseFrontmatter(`---\n${frontmatter}\n---\n`).data ?? {}) as Record<

@@ -411,31 +411,20 @@ export const PersistDialog = ({
     // diffed are the bytes saved. Fall back to a fresh read if the
     // snapshot effect somehow hasn't populated yet (e.g. parent
     // mounted the dialog already-open on first render).
-    let markdown = pendingMarkdown;
-    if (markdown === undefined && getCurrentMarkdown) {
-      markdown = getCurrentMarkdown();
-    }
-    // Empty-body guard. For an edit, an empty body is a strong
-    // signal the user wiped the page by mistake — bail loudly.
-    // For a create, the body genuinely might be empty (a new
-    // page with frontmatter-only is a legitimate landing-page
-    // pattern), so accept whatever we have, defaulting to '' so
-    // the workflow's mdx serialiser writes an empty body rather
-    // than the literal string "undefined".
-    if (!markdown) {
-      if (isNewPage) {
-        markdown = '';
-      } else {
-        setError('Editor is empty — nothing to save.');
-        return;
-      }
+    const markdown = pendingMarkdown ?? getCurrentMarkdown?.();
+    if (
+      !isNewPage &&
+      (markdown === undefined || (markdown.trim() === '' && originalMarkdown?.trim() !== ''))
+    ) {
+      setError('Editor is empty — nothing to save.');
+      return;
     }
     if (!meta.route) {
       setError('Page route is missing — cannot save.');
       return;
     }
     const route = meta.route as string;
-    const payload = markdown;
+    const payload = markdown ?? '';
 
     // Decide whether to send the authored frontmatter alongside
     // the body. Rules, in priority order:

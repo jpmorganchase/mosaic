@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { parseFrontmatter } from '@jpmorganchase/mosaic-serialisers/frontmatter';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -159,6 +160,54 @@ test.each(['body', 'body across modes', 'metadata', 'visual metadata', 'rename']
     if (change === 'metadata' || change === 'visual metadata')
       expect(payload).toHaveProperty('frontmatter', expect.stringContaining('title: Draft title'));
     if (change === 'rename') expect(payload).toHaveProperty('targetRoute', '/docs/renamed.mdx');
+  }
+);
+
+test.each(['metadata', 'rename'] as const)(
+  'saves %s changes to a frontmatter-only page',
+  async change => {
+    const persist = vi.fn(async function* (
+      _input: Parameters<NonNullable<EditorProps['persist']>>[0]
+    ): AsyncGenerator<PersistEvent> {
+      yield { kind: 'complete', prHref: null };
+    });
+    mountEditor({
+      persist,
+      rawSource: {
+        kind: 'raw',
+        bytes:
+          '---\ntitle: Authored title\nlayout: Article\ndescription: ""\ntags: []\nsummary: To be cleared\n---\n',
+        namespace: 'docs'
+      }
+    });
+    await screen.findByTestId('split-ready');
+    if (change === 'metadata') {
+      fireEvent.change(screen.getByDisplayValue('Authored title'), {
+        target: { value: 'Draft title' }
+      });
+      fireEvent.change(screen.getByDisplayValue('To be cleared'), { target: { value: '' } });
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+    if (change === 'rename') {
+      fireEvent.change(screen.getByLabelText('File path'), {
+        target: { value: '/docs/renamed.mdx' }
+      });
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+    await waitFor(() => expect(persist).toHaveBeenCalledOnce());
+    const payload = persist.mock.calls[0][0];
+    expect(payload.markdown.trim()).toBe('');
+    if (change === 'metadata') {
+      expect(parseFrontmatter(`---\n${payload.frontmatter}\n---\n`).data).toEqual({
+        title: 'Draft title',
+        layout: 'Article',
+        description: '',
+        tags: []
+      });
+    } else {
+      expect(payload.targetRoute).toBe('/docs/renamed.mdx');
+      expect(payload.frontmatter).toBeUndefined();
+    }
   }
 );
 
