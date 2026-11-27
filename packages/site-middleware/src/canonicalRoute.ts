@@ -13,10 +13,7 @@ export function canonicalRouteHref(frontmatter: Record<string, unknown>, fallbac
     // Source-derived routes use the literal filename, with or without its
     // extension. Even a valid looking percent escape in that name is literal.
     const suffix = fullPath.slice(route.length);
-    if (
-      route === fullPath ||
-      (fullPath.startsWith(route) && suffix.startsWith('.') && !suffix.includes('/'))
-    ) {
+    if (route === fullPath || (fullPath.startsWith(route) && /^\.[^./]+$/.test(suffix))) {
       return encodeContentPath(route);
     }
   }
