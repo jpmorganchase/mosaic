@@ -148,25 +148,27 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     }
   );
 
-  test('resolves a folder alias through its HTML index', async () => {
-    const folder = '/mosaic/shortcut';
-    const canonical = '/salt/components/button';
-    const source = document(canonical, 'Folder index source bytes');
-    if (mode === 'active') {
-      redirects.set(folder, `${folder}/index`);
-      redirects.set('/mosaic/redirect', canonical);
-      files[`${folder}/index.mdx`] = source;
-    } else {
-      files[`${folder}/index`] = source;
-      save();
-    }
+  test.each(['/mosaic/shortcut', '/mosaic/shortcut(docs)'])(
+    'resolves the folder alias %s through its HTML index',
+    async folder => {
+      const canonical = '/salt/components/button';
+      const source = document(canonical, 'Folder index source bytes');
+      if (mode === 'active') {
+        redirects.set(folder, `${folder}/index`);
+        redirects.set('/mosaic/redirect', canonical);
+        files[`${folder}/index.mdx`] = source;
+      } else {
+        files[`${folder}/index`] = source;
+        save();
+      }
 
-    const response = await get(`${folder}.md`);
-    expect(response.status).toBe(200);
-    expect(response.headers.get('Link')).toContain(`<${canonical}>; rel="canonical"`);
-    expect(await response.text()).toBe(await (await get(`${canonical}.md`)).text());
-    if (mode === 'active') expect((await get('/mosaic/redirect.md')).status).toBe(404);
-  });
+      const response = await get(`${folder}.md`);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('Link')).toContain(`<${canonical}>; rel="canonical"`);
+      expect(await response.text()).toBe(await (await get(`${canonical}.md`)).text());
+      if (mode === 'active') expect((await get('/mosaic/redirect.md')).status).toBe(404);
+    }
+  );
 
   test('keeps an alias to an excluded page unavailable', async () => {
     const backing = '/salt/components/hidden';

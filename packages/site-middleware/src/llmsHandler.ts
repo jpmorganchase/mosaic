@@ -21,6 +21,7 @@ import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import { getMdxRaw } from './cachedLoaders.js';
 import { canonicalRoute, canonicalRouteHref } from './canonicalRoute.js';
 import { createContentFileCache } from './contentFiles.js';
+import { encodeContentPath } from './contentPaths.js';
 import { resolveMosaicMode } from './loadSitemap.js';
 import { isFolderIndexRedirect } from './resolveContent.js';
 import {
@@ -92,7 +93,7 @@ async function resolveMarkdownAlias(
   mode: MosaicMode,
   contentUrl: string
 ) {
-  const pathname = encodeRoutePathname(decodedPath, { literal: true });
+  const pathname = encodeContentPath(decodedPath);
   let content = await getMdxRaw(pathname, mode, contentUrl);
   if (content.kind === 'redirect' && isFolderIndexRedirect(pathname, content.destination)) {
     content = await getMdxRaw(content.destination, mode, contentUrl);
