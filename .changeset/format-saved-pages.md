@@ -1,0 +1,5 @@
+---
+'@jpmorganchase/mosaic-workflows': patch
+---
+
+Format saved pages with the repository's Prettier configuration. The editor writes Markdown in its own style (`*emphasis*`, four-space nested lists, no blank line after the frontmatter), so in a repository formatted with Prettier every save reformatted lines the author never touched, and the pull request could fail the repository's `prettier --check`. When the repository has a Prettier configuration that is data (JSON, YAML, JSON5, TOML or a `prettier` key in `package.json`), `GitHubPullRequestWorkflow` and `BitbucketPullRequestWorkflow` now format the page with it before committing, respecting `.prettierignore`. A configuration that is JavaScript, names a shared configuration or needs plugins isn't used, so the content server never runs code from the repository. Repositories without a configuration are unchanged, and a page that isn't formatted is saved as written with a warning. Saving an existing page also puts back the blank lines the editor drops in lists and after the frontmatter, so loose lists stay loose instead of being rewritten tight.
