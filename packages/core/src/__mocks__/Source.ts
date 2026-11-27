@@ -24,11 +24,13 @@ Source.prototype.onError = vi.fn();
 Source.prototype.onExit = vi.fn();
 Source.prototype.onStart = vi.fn();
 Source.prototype.onUpdate = vi.fn();
+Source.prototype.applyGeneration = (_, populate) => populate();
 Source.prototype.invokeAfterUpdate = () =>
   new Promise(resolve => {
     setTimeout(resolve);
   });
 Source.prototype.requestCacheClear = vi.fn();
+Source.prototype.requestNamespaceSourceUpdate = vi.fn();
 Source.prototype.refresh = vi.fn();
 Source.prototype.start = vi.fn();
 Source.prototype.stop = vi.fn();

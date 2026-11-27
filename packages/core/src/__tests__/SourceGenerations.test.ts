@@ -11,7 +11,8 @@ const plugin = vi.hoisted(() => ({
   afterUpdate: vi.fn(),
   shouldClearCache: vi.fn(),
   shouldUpdateNamespaceSources: vi.fn(),
-  afterNamespaceSourceUpdate: vi.fn()
+  afterNamespaceSourceUpdate: vi.fn(),
+  afterSourceRemove: vi.fn()
 }));
 vi.mock('../plugin/index.js', () => ({
   bindSerialiser: async () => ({}),
@@ -47,6 +48,7 @@ describe('source generations', () => {
     plugin.afterUpdate.mockReset();
     plugin.shouldUpdateNamespaceSources.mockReset();
     plugin.afterNamespaceSourceUpdate.mockReset();
+    plugin.afterSourceRemove.mockReset();
   });
 
   async function start() {
@@ -137,6 +139,38 @@ describe('source generations', () => {
     expect(fail).toHaveBeenCalledOnce();
   });
 
+  test('a worker error rejects cached startup and cancels queued live work', async () => {
+    const hydrate = deferred();
+    plugin.afterUpdate.mockImplementation(() => hydrate.promise);
+    const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    const started = manager.addSource({ modulePath: 'fixture', namespace: 'docs' }, {});
+    const error = new Error('worker failed');
+    const rejected = expect(started).rejects.toThrow(error.message);
+    try {
+      await vi.waitFor(() => expect(worker.listenerCount(EVENT.START)).toBe(1));
+      startWithCache();
+      await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
+      emit(1);
+      worker.emit(EVENT.ERROR, error);
+      worker.closed = true;
+      worker.emit(EVENT.EXIT);
+      hydrate.resolve();
+
+      await rejected;
+      await new Promise(resolve => setImmediate(resolve));
+      expect(manager.listSources()).toEqual([]);
+      expect(plugin.afterUpdate).toHaveBeenCalledOnce();
+      expect(publish).not.toHaveBeenCalled();
+      expect(fail).toHaveBeenCalledWith(error);
+    } finally {
+      hydrate.resolve();
+      await manager.destroyAll();
+    }
+  });
+
   test('a cache that cannot be mounted does not discard the queued live generation', async () => {
     const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
     const publish = vi.fn();
@@ -223,35 +257,37 @@ describe('source generations', () => {
     }
   });
 
-  test('counts worker init while another source still holds the publication queue', async () => {
-    vi.stubEnv('MOSAIC_SOURCE_BOOT_TIMEOUT_MS', '500');
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    const publication = deferred();
-    plugin.afterUpdate.mockImplementation(() => publication.promise);
+  test('an unrelated finite source starts, publishes and exits while another source awaits it', async () => {
+    const removed = deferred();
+    plugin.afterUpdate.mockImplementation(async (_, { config }) => {
+      if (config.data.generation === 1) await removed.promise;
+    });
+    plugin.afterSourceRemove.mockImplementation(() => removed.resolve());
     const { manager } = await start();
     const peer = makeWorker();
     vi.mocked(WorkerSubscription).mockImplementationOnce(function PeerWorker() {
       return peer as never;
     });
+    const publications: number[] = [];
+    const fail = vi.fn();
+    manager.onSourceUpdate((_, source) => publications.push(source.config.data.generation), fail);
     try {
       emit(1);
       await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
-      const started = manager.addSource({ modulePath: 'peer', namespace: 'docs' }, {});
-      const settled = vi.fn();
-      void started.then(settled, settled);
+      const started = manager.addSource({ modulePath: 'peer', namespace: 'other' }, {});
       await vi.waitFor(() => expect(peer.listenerCount(EVENT.START)).toBe(1));
       peer.emit(EVENT.START);
-
-      await vi.advanceTimersByTimeAsync(600);
-      expect(settled).not.toHaveBeenCalled();
-      publication.resolve();
+      emit(2, peer);
+      peer.closed = true;
+      peer.emit(EVENT.EXIT);
       await started;
-      expect(settled).toHaveBeenCalledOnce();
+      await vi.waitFor(() => expect(publications).toEqual([2, 1]));
+      expect(fail).not.toHaveBeenCalled();
+      expect(plugin.afterSourceRemove).toHaveBeenCalledOnce();
+      expect(manager.listSources()).toHaveLength(1);
     } finally {
-      publication.resolve();
+      removed.resolve();
       await manager.destroyAll();
-      vi.useRealTimers();
-      vi.unstubAllEnvs();
     }
   });
 
@@ -350,6 +386,55 @@ describe('source generations', () => {
     } finally {
       allowNamespaceDecision.resolve();
       allowSiblingPublication.resolve();
+      await manager.destroyAll();
+    }
+  });
+
+  test('both concurrent live updates deliver their namespace hooks after the receiver freezes', async () => {
+    const allowSibling = deferred();
+    plugin.afterUpdate.mockImplementation(async (_, { config }) => {
+      if (config.data.generation === 2) await allowSibling.promise;
+    });
+    plugin.shouldUpdateNamespaceSources.mockResolvedValue(true);
+    const observed: unknown[] = [];
+    plugin.afterNamespaceSourceUpdate.mockImplementation(async (files, { config }) => {
+      const page = String(await files.promises.readFile('/page.mdx'));
+      observed.push([config.data.generation, page]);
+    });
+    const { manager } = await start();
+    const peer = makeWorker();
+    vi.mocked(WorkerSubscription).mockImplementationOnce(function PeerWorker() {
+      return peer as never;
+    });
+    const siblingStarted = manager.addSource({ modulePath: 'sibling', namespace: 'docs' }, {});
+    const publish = vi.fn();
+    const fail = vi.fn();
+    manager.onSourceUpdate(publish, fail);
+    try {
+      await vi.waitFor(() => expect(peer.listenerCount(EVENT.START)).toBe(1));
+      peer.emit(EVENT.START);
+      const sibling = await siblingStarted;
+      emit(2, peer);
+      await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledOnce());
+      expect(sibling.filesystem.frozen).toBe(false);
+      emit(1);
+      await vi.waitFor(() => expect(plugin.afterUpdate).toHaveBeenCalledTimes(2));
+      expect(publish).not.toHaveBeenCalled();
+      expect(observed).toEqual([]);
+
+      allowSibling.resolve();
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledTimes(2));
+      expect(observed).toHaveLength(2);
+      expect(observed).toEqual(
+        expect.arrayContaining([
+          [1, 'generation 1'],
+          [2, 'generation 2']
+        ])
+      );
+      expect(fail).not.toHaveBeenCalled();
+      expect(manager.listSources()).toHaveLength(2);
+    } finally {
+      allowSibling.resolve();
       await manager.destroyAll();
     }
   });
