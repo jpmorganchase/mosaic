@@ -41,11 +41,11 @@ export interface SearchOptions {
 }
 
 export interface SearchHit {
-  /** The record id: the route, or `route#anchor` for a section. */
+  /** The record ID. */
   id: string;
   route: string;
   anchor?: string;
-  /** Where the hit links to: `route` or `route#anchor`. */
+  /** The document URL with a section fragment when available. */
   href: string;
   title: string;
   /** Section headings from the outermost in. Empty for a page's introduction. */

@@ -1,4 +1,5 @@
 import type { LlmsManifest, MosaicMode } from '@jpmorganchase/mosaic-types';
+import { encodeRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
 import { createContentFileCache } from './contentFiles.js';
 import { resolveMosaicMode } from './loadSitemap.js';
 
@@ -110,19 +111,10 @@ export function llmsDiscoveryForRoute(route: string, manifest?: LlmsManifest): L
     ''
   );
   const origin = (manifest?.siteUrl ?? '').replace(/\/+$/, '');
-  // Route keys may contain spaces or Unicode. Encode URI components for HTML
-  // and Link headers without changing the existing Markdown bundle's keys.
-  const urlPath = route
-    .split('/')
-    .map(segment => {
-      try {
-        return encodeURIComponent(decodeURIComponent(segment));
-      } catch {
-        return encodeURIComponent(segment);
-      }
-    })
-    .join('/');
-  return { markdownUrl: `${origin}${urlPath}.md`, indexUrl: `${origin}${scope}/llms.txt` };
+  return {
+    markdownUrl: `${origin}${encodeRoutePathname(route)}.md`,
+    indexUrl: `${origin}${scope}/llms.txt`
+  };
 }
 
 /** Only advertise Markdown that the plugin actually generated, including on aliases. */

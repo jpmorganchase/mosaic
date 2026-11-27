@@ -18,6 +18,11 @@
       "types": "./dist/commitMessage.d.ts",
       "import": "./dist/commitMessage.js",
       "default": "./dist/commitMessage.js"
+    },
+    "./routePath": {
+      "types": "./dist/routePath.d.ts",
+      "import": "./dist/routePath.js",
+      "default": "./dist/routePath.js"
     }
   },
   "engines": {

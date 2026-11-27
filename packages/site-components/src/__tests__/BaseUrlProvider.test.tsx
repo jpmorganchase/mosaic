@@ -25,6 +25,12 @@ describe('GIVEN useResolveRelativeUrl', () => {
     });
     expect(result.current).toEqual('/a/b/c/d/e#anchor');
   });
+  test('preserves the query and fragment on a relative link', () => {
+    const { result } = renderHook(() => useResolveRelativeUrl('./reference?tab=api#examples'), {
+      wrapper: ProviderWrapper
+    });
+    expect(result.current).toEqual('/a/b/reference?tab=api#examples');
+  });
   test('returns the original path for external URLs', () => {
     const { result } = renderHook(() => useResolveRelativeUrl('http://jpmorgan.com'), {
       wrapper: ProviderWrapper
