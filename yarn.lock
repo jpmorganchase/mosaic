@@ -1882,8 +1882,11 @@ __metadata:
     "@jpmorganchase/mosaic-types": "workspace:^"
     "@octokit/core": "npm:^6.1.2"
     "@types/uuid": "npm:^8.3.4"
+    diff: "npm:^9.0.0"
+    prettier: "npm:^3.10.1"
     undici: "npm:^8.12.4"
     uuid: "npm:^11.0.0"
+    yaml: "npm:^2.9.0"
   languageName: unknown
   linkType: soft
 
@@ -10041,6 +10044,15 @@ __metadata:
   bin:
     prettier: bin-prettier.js
   checksum: 10/9d29f81c1a470efca6851cd926a3e132a8d9c9d290c3d084c917c1c5aad5c392551406cf6012c724a136bd15911ede5eadc255d121c2761813b33a541a9c34c6
+  languageName: node
+  linkType: hard
+
+"prettier@npm:^3.10.1":
+  version: 3.10.1
+  resolution: "prettier@npm:3.10.1"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10/ab4fc7bbee5823eb99200f89172e1dc360a8225facc19db336f30aa4e089bd8576f141ca8e129ce6ce850f1d7beb4d6e8b7630c2522b3b2fdc62330114f828b2
   languageName: node
   linkType: hard
 

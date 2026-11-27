@@ -116,6 +116,71 @@ describe.each([
     }
   });
 
+  test("formats the saved page with the repository's Prettier configuration", async () => {
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+    const result = await workflow.action(vi.fn(), sourceOptions, workflowOptions, route, {
+      user,
+      markdown: '# New section\n\n> *"Quoted"*',
+      frontmatter: 'title: New section',
+      isNewPage: true
+    });
+
+    expect(result).not.toBe(false);
+    expect(
+      await fs.promises.readFile(path.join(mocks.repoDir, 'content/new-section.mdx'), 'utf8')
+    ).toBe(
+      '---\ntitle: New section\nfullPath: /docs/new-section.mdx\n---\n\n# New section\n\n> _"Quoted"_\n'
+    );
+  });
+
+  test('keeps the spacing of the lines the author did not change', async () => {
+    const existing = path.join(mocks.repoDir, 'content/loose.mdx');
+    await fs.promises.mkdir(path.dirname(existing), { recursive: true });
+    await fs.promises.writeFile(
+      existing,
+      '---\ntitle: Loose\nfullPath: /docs/loose.mdx\n---\n\n- a\n\n- b\n\n- c\n'
+    );
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+
+    const result = await workflow.action(
+      vi.fn(),
+      sourceOptions,
+      workflowOptions,
+      '/docs/loose.mdx',
+      {
+        user,
+        markdown: '- a\n- B edited\n- c'
+      }
+    );
+
+    expect(result).not.toBe(false);
+    expect(await fs.promises.readFile(existing, 'utf8')).toBe(
+      '---\ntitle: Loose\nfullPath: /docs/loose.mdx\n---\n\n- a\n\n- B edited\n\n- c\n'
+    );
+  });
+
+  test('formats a renamed page with the rules for its new path', async () => {
+    const draft = path.join(mocks.repoDir, 'content/drafts/page.mdx');
+    await fs.promises.mkdir(path.dirname(draft), { recursive: true });
+    await fs.promises.writeFile(draft, '---\ntitle: Page\n---\n\nText\n');
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierrc.json'), '{}');
+    await fs.promises.writeFile(path.join(mocks.repoDir, '.prettierignore'), 'content/drafts/\n');
+
+    const result = await workflow.action(
+      vi.fn(),
+      sourceOptions,
+      workflowOptions,
+      '/docs/drafts/page.mdx',
+      { user, markdown: '> *"Quoted"*', targetRoute: '/docs/page.mdx' }
+    );
+
+    expect(result).not.toBe(false);
+    expect(fs.existsSync(draft)).toBe(false);
+    expect(
+      await fs.promises.readFile(path.join(mocks.repoDir, 'content/page.mdx'), 'utf8')
+    ).toMatch(/\n\n> _"Quoted"_\n$/);
+  });
+
   test('still refuses to erase an existing page with an empty body', async () => {
     const send = vi.fn();
     const result = await workflow.action(send, sourceOptions, workflowOptions, route, {
