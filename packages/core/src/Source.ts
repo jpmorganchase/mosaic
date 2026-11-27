@@ -46,6 +46,8 @@ export default class Source {
   #schedule: SourceSchedule;
   #schedulePublication = createPublicationQueue();
   #scheduleVolumeMutation = createPublicationQueue();
+  #applyingGeneration = false;
+  #namespaceWaiters = new Set<() => void>();
   #stopped = true;
   pluginErrors: any = {};
 
@@ -112,11 +114,6 @@ export default class Source {
 
   stop() {
     if (this.#worker && this.#worker.closed) {
-      if (!this.#stopped) {
-        // A normally completed worker may still have publications queued.
-        this.#exit();
-        return undefined;
-      }
       throw new Error('Cannot stop source that has not started');
     }
     if (this.#worker) {
@@ -175,24 +172,46 @@ export default class Source {
     namespaceSourceDesc: string,
     updatedSourceFilesystem: IVolumeImmutable,
     sharedFilesystem: IVolumeImmutable,
-    globalConfig: MutableData<unknown>
+    globalConfig: MutableData<unknown>,
+    isCurrent: () => boolean
   ) {
-    await this.#scheduleVolumeMutation(async () => {
-      if (this.#stopped || !this.filesystem?.frozen) return;
+    if (this.#stopped) return;
+    const waitForHook = this.filesystem?.frozen && !this.#applyingGeneration;
+    const mutation = this.#scheduleVolumeMutation(async () => {
+      if (this.#stopped || !this.filesystem?.frozen || !isCurrent()) return;
       await this.#applyNamespaceSourceUpdate(
         namespaceSourceDesc,
         updatedSourceFilesystem,
         sharedFilesystem,
-        globalConfig
+        globalConfig,
+        isCurrent
       );
     });
+    if (!waitForHook) {
+      // An applying source can depend on this publication finishing. Defer its
+      // hook behind the volume mutation without holding the origin open.
+      void mutation.catch(error => console.error('[Mosaic][Core] Namespace update failed', error));
+      return;
+    }
+
+    let onStop: () => void;
+    const stopped = new Promise<void>(resolve => {
+      onStop = resolve;
+      this.#namespaceWaiters.add(resolve);
+    });
+    try {
+      await Promise.race([mutation, stopped]);
+    } finally {
+      this.#namespaceWaiters.delete(onStop);
+    }
   }
 
   async #applyNamespaceSourceUpdate(
     namespaceSourceDesc: string,
     updatedSourceFilesystem: IVolumeImmutable,
     sharedFilesystem: IVolumeImmutable,
-    globalConfig: MutableData<unknown>
+    globalConfig: MutableData<unknown>,
+    isCurrent: () => boolean
   ) {
     const filesystem = this.filesystem;
     const initTime = new Date().getTime();
@@ -213,7 +232,7 @@ export default class Source {
         `[Mosaic][Core] Lifecycle phase 'shouldUpdateNamespaceSources' for source '${this.id.description}' took ${timeTaken}ms to complete. The method is async, so this may not be an accurate measurement of execution time, but consider optimising this method if it is performing intensive operations.`
       );
     }
-    if (shouldInvokeAfterUpdate === true && !this.#stopped) {
+    if (shouldInvokeAfterUpdate === true && !this.#stopped && isCurrent()) {
       console.log(
         `[Mosaic][Core] namespace source ${namespaceSourceDesc} updated. Triggering 'afterNamespaceSourceUpdate for ${this.id.description}`
       );
@@ -227,12 +246,17 @@ export default class Source {
     }
   }
 
-  applyGeneration(generation: SourceGeneration, populate: () => Promise<boolean>) {
-    return this.#scheduleVolumeMutation(() => {
+  async applyGeneration(generation: SourceGeneration, populate: () => Promise<boolean>) {
+    this.#applyingGeneration = true;
+    const applied = await this.#scheduleVolumeMutation(() => {
       if (this.#stopped) return false;
       this.config = createConfig(generation.data);
       return populate();
+    }).finally(() => {
+      this.#applyingGeneration = false;
     });
+    // Include peer hooks that queued behind this generation before publishing it.
+    return applied && this.#scheduleVolumeMutation(() => !this.#stopped);
   }
 
   async use(
@@ -274,6 +298,8 @@ export default class Source {
 
   #exit() {
     this.#stopped = true;
+    this.#namespaceWaiters.forEach(resolve => resolve());
+    this.#namespaceWaiters.clear();
     this.#emitter.emit(EVENT.EXIT);
     this.#emitter.removeAllListeners();
     this.filesystem = null;
@@ -314,29 +340,11 @@ export default class Source {
       serialisers: this.#serialisers,
       schedule: this.#schedule
     });
-    let receivedUpdate = false;
-    let failed = false;
-    worker.once(EVENT.ERROR, error => {
-      failed = true;
-      this.#emitter.emit(EVENT.ERROR, error);
-    });
-    worker.once(EVENT.EXIT, () => {
-      if (this.#stopped || failed || !receivedUpdate) {
-        this.#exit();
-      } else {
-        // Deliver updates already received from a finite source before unmounting it.
-        void this.#schedulePublication(() => {
-          if (!this.#stopped) this.#exit();
-        });
-      }
-    });
+    worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
+    worker.once(EVENT.EXIT, () => this.#exit());
     worker.once(EVENT.START, (message?: { data: SourceGeneration }) => {
       this.#emitter.emit(WORKER_INIT);
       this.#queueGeneration(worker, EVENT.START, message?.data);
-    });
-    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }: { data: SourceGeneration }) => {
-      receivedUpdate = true;
-      this.#queueGeneration(worker, EVENT.UPDATE, { pages, symlinks, data });
     });
     return worker;
   }
@@ -348,6 +356,10 @@ export default class Source {
     this.#pluginApi = await bindPluginMethods(this.#plugins, this.trackPluginErrors.bind(this));
     if (this.#stopped) return;
     this.#worker = this.#createWorker();
+    const worker = this.#worker;
+    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }: { data: SourceGeneration }) =>
+      this.#queueGeneration(worker, EVENT.UPDATE, { pages, symlinks, data })
+    );
     this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
       this.pluginErrors[`${lifecycleMethod}`] = errors;
     });
