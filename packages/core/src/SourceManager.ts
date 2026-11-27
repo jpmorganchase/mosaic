@@ -477,9 +477,7 @@ export default class SourceManager {
           this.#globalConfig,
           {
             isCurrent,
-            onDeferredMutation() {
-              if (isCurrent()) notifyDeferredMutation();
-            }
+            onDeferredMutation: notifyDeferredMutation
           }
         )
       )

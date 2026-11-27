@@ -493,11 +493,16 @@ describe('source generations', () => {
     }
   });
 
-  test.each([false, true])(
-    'a busy frozen receiver releases other publishers and reports the late write (cached: %s)',
-    async cached => {
+  test.each([
+    { cached: false, advance: false },
+    { cached: true, advance: false },
+    { cached: false, advance: true }
+  ])(
+    'a busy frozen receiver releases publishers and reports the late write (cached: $cached, advancing origin: $advance)',
+    async ({ cached, advance }) => {
       const thirdPublished = deferred();
       const allowLateHook = deferred();
+      const allowWrite = deferred();
       const manager = new SourceManager({}, {}, [], [], ['.mdx'], []);
       const publications: unknown[] = [];
       manager.onSourceUpdate((_, source) => {
@@ -538,13 +543,16 @@ describe('source generations', () => {
         plugin.shouldUpdateNamespaceSources.mockImplementation(async (origin, { config }) => {
           if (config.data.generation !== (cached ? 'cached' : 10)) return false;
           const page = String(await origin.promises.readFile('/page.mdx'));
+          if (page === 'generation 32') return false;
           predicates.push(page);
           await (page === 'generation 21' ? thirdPublished.promise : allowLateHook.promise);
           return true;
         });
         let writes = 0;
         plugin.afterNamespaceSourceUpdate.mockImplementation(async files => {
-          await files.promises.writeFile('/derived.json', String(++writes));
+          const writeNumber = ++writes;
+          if (advance && writeNumber === 2) await allowWrite.promise;
+          await files.promises.writeFile('/derived.json', String(writeNumber));
         });
         emit(21, second);
         await vi.waitFor(() => expect(predicates).toEqual(['generation 21']));
@@ -556,11 +564,19 @@ describe('source generations', () => {
         expect(String(await receiver.filesystem.promises.readFile('/derived.json'))).toBe('1');
 
         allowLateHook.resolve();
-        await vi.waitFor(() => expect(publications).toEqual([31, 21, 31]));
+        if (advance) {
+          await vi.waitFor(() => expect(writes).toBe(2));
+          emit(32, third);
+          await vi.waitFor(() => expect(publications).toEqual([31, 21, 32]));
+          allowWrite.resolve();
+        }
+        const expected = advance ? [31, 21, 32, 32] : [31, 21, 31];
+        await vi.waitFor(() => expect(publications).toEqual(expected));
         expect(String(await receiver.filesystem.promises.readFile('/derived.json'))).toBe('2');
       } finally {
         thirdPublished.resolve();
         allowLateHook.resolve();
+        allowWrite.resolve();
         await manager.destroyAll();
       }
     }
