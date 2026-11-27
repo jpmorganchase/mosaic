@@ -15,6 +15,7 @@ import type { SharedConfig } from '@jpmorganchase/mosaic-store';
 
 import { loadLocalFile } from './loaders/index.js';
 import { MOSAIC_CONTENT_CACHE_TAG } from './cacheTags.js';
+import { decodeContentPath } from './contentPaths.js';
 import { getSnapshotIdentity, getSnapshotRoot, type SnapshotIdentity } from './snapshotIdentity.js';
 
 if (typeof window !== 'undefined') {
@@ -122,36 +123,9 @@ function withCrossRequestCache<TArgs extends unknown[], TResult>(
 // Shared-config loader
 // ---------------------------------------------------------------------------
 
-/**
- * Derive the subtree path the shared-config lives under. The legacy
- * regex (`/(.*)[!/]/`) consumes everything up to the last `/` or `!`,
- * which on `/mosaic/getting-started/index` yields `/mosaic/getting-started`.
- * Preserved verbatim so behaviour matches the middleware path.
- */
+/** A trailing slash asks for the folder's own config. */
 function deriveSharedConfigUrlPath(pathname: string): string {
-  const matches = pathname.match(/(.*)[!/]/);
-  return matches?.length ? matches[1] : '';
-}
-
-/**
- * Route params reach the loaders percent-encoded (`/docs/a%20b`), but
- * snapshot files use the decoded name (`docs/a b`).
- *
- * Returns `undefined` for malformed encodings and for paths that, once
- * decoded, could step outside the snapshot: `.`/`..` segments (for
- * example from an encoded `..%2F`), backslashes and NUL bytes. Callers
- * treat that as "not found".
- */
-function decodeSnapshotPath(urlPath: string): string | undefined {
-  let decoded: string;
-  try {
-    decoded = decodeURIComponent(urlPath);
-  } catch {
-    return undefined;
-  }
-  if (decoded.includes('\\') || decoded.includes('\0')) return undefined;
-  if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return undefined;
-  return decoded;
+  return pathname.slice(0, Math.max(0, pathname.lastIndexOf('/')));
 }
 
 function safeJsonParse<T = unknown>(raw: string | null | undefined, source: string): T | undefined {
@@ -172,7 +146,7 @@ const loadSharedConfigImpl = async (
   contentUrl: string
 ): Promise<SharedConfig | undefined> => {
   if (mode === 'snapshot-file') {
-    const snapshotPath = decodeSnapshotPath(urlPath);
+    const snapshotPath = decodeContentPath(urlPath);
     if (snapshotPath === undefined) return undefined;
     const filePath = path.join(getSnapshotRoot(), snapshotPath, 'shared-config.json');
     try {
@@ -279,7 +253,7 @@ const loadMdxRawImpl = async (
   const normalized = normalizeMdxUrl(pathname);
 
   if (mode === 'snapshot-file') {
-    const snapshotPath = decodeSnapshotPath(normalized);
+    const snapshotPath = decodeContentPath(normalized);
     if (snapshotPath === undefined) return { kind: 'not-found' };
     const filePath = path.join(getSnapshotRoot(), snapshotPath);
     try {
@@ -468,8 +442,8 @@ const loadMdxRawSourceCached = withCrossRequestCache(
 );
 
 /**
- * Resolve the **raw on-disk source** for a route, bypassing the
- * Mosaic plugin pipeline. See {@link MdxRawSourceResult} for the
+ * Resolve the **raw on-disk source** for a percent-encoded URL pathname,
+ * bypassing the Mosaic plugin pipeline. See {@link MdxRawSourceResult} for the
  * outcome shape.
  *
  * Cache wiring mirrors {@link getMdxRaw}: per-request `cache()`
