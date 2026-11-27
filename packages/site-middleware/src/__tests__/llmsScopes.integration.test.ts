@@ -92,7 +92,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(response.headers.get('Vary')).toBe('Accept');
     expect(response.headers.get('X-Robots-Tag')).toBe('noindex');
     expect(response.headers.get('Link')).toBe(
-      '</salt/components/button.md>; rel="alternate"; type="text/markdown", </salt/components/llms.txt>; rel="describedby"'
+      '</salt/components/button>; rel="canonical", </salt/components/button.md>; rel="alternate"; type="text/markdown", </salt/components/llms.txt>; rel="describedby"'
     );
     expect(await response.text()).toBe(
       JSON.parse(files['/markdown-pages.json']).pages['/salt/components/button']
@@ -125,7 +125,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     expect(response.status).toBe(200);
     expect(await response.text()).toBe('# Home');
     expect(response.headers.get('Link')).toBe(
-      '</.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"'
+      '</>; rel="canonical", </.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby"'
     );
     expect(await (await get('/index.md')).text()).toBe('# A distinct index page');
     expect((await get('/salt/components/button.md')).status).toBe(200);
@@ -145,7 +145,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
     };
     publish('https://docs.example.com');
     expect((await get('/salt/components/button.md')).headers.get('Link')).toBe(
-      '<https://docs.example.com/salt/components/button.md>; rel="alternate"; type="text/markdown", <https://docs.example.com/salt/components/llms.txt>; rel="describedby"'
+      '<https://docs.example.com/salt/components/button>; rel="canonical", <https://docs.example.com/salt/components/button.md>; rel="alternate"; type="text/markdown", <https://docs.example.com/salt/components/llms.txt>; rel="describedby"'
     );
 
     // Written by an older plugin that didn't normalize the option.
@@ -154,7 +154,7 @@ describe.each(['active', 'snapshot-file'] as const)('generated scoped files in %
       const response = await get('/salt/components/button.md');
       expect(response.status).toBe(200);
       expect(response.headers.get('Link')).toBe(
-        '</salt/components/button.md>; rel="alternate"; type="text/markdown", </salt/components/llms.txt>; rel="describedby"'
+        '</salt/components/button>; rel="canonical", </salt/components/button.md>; rel="alternate"; type="text/markdown", </salt/components/llms.txt>; rel="describedby"'
       );
     }
     expect((await get('/salt/llms.txt')).status).toBe(200);

@@ -95,11 +95,14 @@ const stringify = (children: AnyNode[]) => {
   return String(stringifier.stringify({ type: 'root', children: flow } as Root)).trim();
 };
 
-/** Makes relative links absolute, so they work outside the page, such as in `llms-full.txt`. */
-const resolveUrl = (url: string, route: string) => {
-  if (/^([a-z][a-z\d+.-]*:|\/|#)/i.test(url)) return url;
+/**
+ * Makes relative links absolute, so they work outside the page, such as in
+ * `llms-full.txt`: root-relative, or on the site's origin when it's known.
+ */
+const resolveUrl = (url: string, route: string, siteUrl = '') => {
+  if (/^([a-z][a-z\d+.-]*:|\/\/|#)/i.test(url)) return url;
   const resolved = new URL(url, `https://mosaic.invalid${route}`);
-  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  return `${siteUrl}${resolved.pathname}${resolved.search}${resolved.hash}`;
 };
 
 function readAttributes(node: AnyNode) {
@@ -118,6 +121,8 @@ interface Context {
   page: PageValues;
   route: string;
   components: MarkdownComponents;
+  /** The site's origin, without a trailing slash, or `''`. */
+  siteUrl: string;
 }
 
 async function convertChildren(parent: AnyNode, context: Context) {
@@ -175,7 +180,7 @@ async function convertNode(node: AnyNode, context: Context): Promise<AnyNode[]> 
     case 'link':
     case 'image':
     case 'definition':
-      if (node.url) node.url = resolveUrl(node.url, context.route);
+      if (node.url) node.url = resolveUrl(node.url, context.route, context.siteUrl);
       await convertChildren(node, context);
       return [node];
     default:
@@ -213,6 +218,8 @@ async function convertElement(
 export interface ToMarkdownOptions {
   /** Converters for the site's JSX components, by name. */
   components?: MarkdownComponents;
+  /** The site's origin, such as `https://example.com`. Links stay root-relative without it. */
+  siteUrl?: string;
 }
 
 /**
@@ -222,14 +229,14 @@ export interface ToMarkdownOptions {
  *   expressions and `import`/`export` statements are left out;
  * - JSX elements are converted with `components`, then Mosaic's defaults,
  *   and otherwise replaced with their children;
- * - relative links and images are made absolute;
+ * - relative links and images are made absolute, on `siteUrl` when it's set;
  * - code blocks, tables and other Markdown are kept.
  *
  * Returns `undefined` when the page isn't valid MDX.
  */
 export async function toMarkdown(
   page: PageValues & { route: string; content?: unknown },
-  { components = {} }: ToMarkdownOptions = {}
+  { components = {}, siteUrl }: ToMarkdownOptions = {}
 ): Promise<string | undefined> {
   const content = typeof page.content === 'string' ? page.content.replaceAll('\r', '') : '';
   let tree: AnyNode;
@@ -241,7 +248,8 @@ export async function toMarkdown(
   await convertChildren(tree, {
     page,
     route: page.route,
-    components: { ...defaultMarkdownComponents, ...components }
+    components: { ...defaultMarkdownComponents, ...components },
+    siteUrl: (siteUrl ?? '').replace(/\/+$/, '')
   });
   return stringify(tree.children ?? []);
 }

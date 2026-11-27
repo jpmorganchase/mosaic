@@ -153,6 +153,27 @@ describe('GIVEN toMarkdown', () => {
     );
   });
 
+  test('THEN it puts links and images on the site URL when it is set', async () => {
+    const markdown = await toMarkdown(
+      {
+        ...page,
+        content: lines(
+          '[Examples](./examples) [Root](/docs/a) [Web](https://x.dev) [Here](#usage) [CDN](//cdn.example.com/a)',
+          '',
+          '![Logo](./images/logo.png)'
+        )
+      },
+      { siteUrl: 'https://example.com/' }
+    );
+    expect(markdown).toBe(
+      lines(
+        '[Examples](https://example.com/docs/button/examples) [Root](https://example.com/docs/a) [Web](https://x.dev) [Here](#usage) [CDN](//cdn.example.com/a)',
+        '',
+        '![Logo](https://example.com/docs/button/images/logo.png)'
+      )
+    );
+  });
+
   test('THEN it returns undefined for invalid MDX', async () => {
     expect(await toMarkdown({ ...page, content: '<Unclosed>' })).toBeUndefined();
   });
@@ -171,7 +192,11 @@ describe('GIVEN the LlmsTxtPlugin', () => {
       fullPath: '/docs/button/index.mdx',
       route: '/docs/button/index',
       title: 'Button',
-      data: { description: 'A `Button` starts an action.' }
+      data: { description: 'A `Button` starts an action.' },
+      lastModified: 1735689600000,
+      version: '2.1',
+      tags: ['actions', 'forms'],
+      owner: { team: 'Design' }
     })}Use <Thing />[examples](./examples).\n`,
     '/docs/button/examples.mdx': `${frontmatter({
       fullPath: '/docs/button/examples.mdx',
@@ -192,8 +217,8 @@ describe('GIVEN the LlmsTxtPlugin', () => {
     '/docs/data.json': JSON.stringify({ route: '/docs/data', title: 'Data' })
   };
 
-  async function run(options: Record<string, unknown> = {}) {
-    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(files)), 'docs');
+  async function run(options: Record<string, unknown> = {}, pageFiles: typeof files = files) {
+    const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(pageFiles)), 'docs');
     let data: Record<string, unknown> = {};
     const beforeSend = LlmsTxtPlugin.$beforeSend!;
     let error: unknown;
@@ -245,17 +270,80 @@ describe('GIVEN the LlmsTxtPlugin', () => {
         'title: "Button"',
         'description: "A Button starts an action."',
         'url: "https://example.com/docs/button/index"',
+        'lastModified: "2025-01-01T00:00:00.000Z"',
         '---',
         '',
         '> For an index of all documentation, see [https://example.com/llms.txt](https://example.com/llms.txt).',
         '',
-        'Use [examples](/docs/button/examples).',
+        'Use [examples](https://example.com/docs/button/examples).',
         ''
       )
     );
     expect(written[LLMS_FULL_TXT_FILE]).toBe(Object.values(file.pages).join('\n'));
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('/docs/broken.mdx is not valid MDX'));
     warn.mockRestore();
+  });
+
+  test('THEN it puts body links on the normalized site URL', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { written } = await run({ siteUrl: ' HTTPS://Example.com/ ' });
+    const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
+    expect(page).toContain('Use [examples](https://example.com/docs/button/examples).');
+    vi.restoreAllMocks();
+  });
+
+  test('THEN it copies the frontmatter fields it is asked for, when they are text or lists', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { written } = await run({
+      frontmatterFields: ['version', 'tags', 'owner', 'missing', 'title', 'bad key', 'tags']
+    });
+    const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
+    expect(page.split('\n---\n')[0]).toBe(
+      lines(
+        '---',
+        'title: "Button"',
+        'description: "A Button starts an action."',
+        'url: "/docs/button/index"',
+        'lastModified: "2025-01-01T00:00:00.000Z"',
+        'version: "2.1"',
+        'tags: ["actions","forms"]'
+      )
+    );
+    expect(page).toContain('Use [examples](/docs/button/examples).');
+    vi.restoreAllMocks();
+  });
+
+  test('THEN it copies dates, which YAML reads from unquoted values, as ISO 8601', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { written } = await run(
+      { frontmatterFields: ['published', 'releases', 'mixed'] },
+      {
+        ...files,
+        '/docs/button/index.mdx': lines(
+          '---',
+          'fullPath: /docs/button/index.mdx',
+          'route: /docs/button/index',
+          'title: Button',
+          'published: 2024-05-01',
+          'releases: [2024-05-01, 2024-06-01T10:00:00Z]',
+          'mixed: [2024-05-01, { team: Design }]',
+          '---',
+          'Text.',
+          ''
+        )
+      }
+    );
+    const page = JSON.parse(written[MARKDOWN_PAGES_FILE]).pages['/docs/button/index'];
+    expect(page.split('\n---\n')[0]).toBe(
+      lines(
+        '---',
+        'title: "Button"',
+        'url: "/docs/button/index"',
+        'published: "2024-05-01T00:00:00.000Z"',
+        'releases: ["2024-05-01T00:00:00.000Z","2024-06-01T10:00:00.000Z"]'
+      )
+    );
+    vi.restoreAllMocks();
   });
 
   test('THEN it writes an llms.txt index with a section per folder', async () => {
