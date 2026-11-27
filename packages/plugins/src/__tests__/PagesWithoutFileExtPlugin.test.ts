@@ -46,6 +46,36 @@ describe('GIVEN the PagesWithoutFileExtPlugin', () => {
     expect(result?.map(page => page.route)).toEqual(['/docs/guide%20name', '/docs/guide%20name']);
   });
 
+  test('THEN the longest extension determines source filename provenance', async () => {
+    const setAliases = vi.fn();
+    const afterSource = PagesWithoutFileExtPlugin.$afterSource!;
+    const result = await afterSource(
+      [
+        {
+          fullPath: '/docs/guide%20name.page.mdx',
+          route: '/docs/guide%20name.page.mdx',
+          title: 'Literal'
+        },
+        {
+          fullPath: '/docs/setup%20notes.page.mdx',
+          route: '/docs/setup%20notes.page',
+          title: 'Authored'
+        }
+      ],
+      {
+        config: { setAliases },
+        ignorePages: [],
+        pageExtensions: ['.mdx', '.page.mdx']
+      } as Parameters<typeof afterSource>[1],
+      {}
+    );
+    expect(setAliases.mock.calls).toEqual([
+      ['/docs/guide%20name.page.mdx', ['/docs/guide%20name']],
+      ['/docs/setup%20notes.page.mdx', ['/docs/setup notes.page']]
+    ]);
+    expect(result?.map(page => page.routeUsesSourceFilename)).toEqual([true, false]);
+  });
+
   describe('AND WHEN pages have an extension we want', () => {
     const pageExtensions = ['.mdx', '.json', '.md'];
     const ignorePages = ['shared-config.json', 'sitemap.xml', 'sidebar.json'];

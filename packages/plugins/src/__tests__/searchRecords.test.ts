@@ -51,6 +51,12 @@ const page = {
 };
 
 describe('GIVEN buildSearchRecords', () => {
+  test('THEN a standalone route without a backing filename retains its case', () => {
+    const records = buildSearchRecords({ route: '/Docs/Setup', title: 'Setup' })!;
+    expect(records[0].id).toBe('/Docs/Setup');
+    expect(createSearchIndex(records).search('setup')[0].href).toBe('/Docs/Setup');
+  });
+
   test('THEN it splits a page into an introduction and sections', () => {
     expect(buildSearchRecords(page)).toEqual([
       {
@@ -226,7 +232,8 @@ describe('GIVEN the SearchIndexPlugin', () => {
 
   async function run(
     options: Record<string, unknown> = {},
-    inputFiles: Record<string, string> = files
+    inputFiles: Record<string, string> = files,
+    pageExtensions = ['.mdx']
   ) {
     const filesystem = new MutableVolume(new FileAccess(Volume.fromJSON(inputFiles)), 'docs');
     let data: Record<string, unknown> = {};
@@ -242,7 +249,7 @@ describe('GIVEN the SearchIndexPlugin', () => {
               : mdxSerialiser.deserialise(fullPath, raw)
         },
         ignorePages: ['shared-config.json'],
-        pageExtensions: ['.mdx']
+        pageExtensions
       } as unknown as Parameters<typeof beforeSend>[1],
       options
     );
@@ -331,32 +338,36 @@ describe('GIVEN the SearchIndexPlugin', () => {
     expect(index.search('schedule')[0].href).toBe('/docs/release%23notes');
   });
 
-  test('THEN a literal percent in a source route is distinct from an authored escape', async () => {
-    const writeFile = await run(
-      {},
-      {
-        '/docs/release%20notes.mdx':
-          '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nLiteral filename.',
-        '/docs/backing.mdx':
-          '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nAuthored permalink.'
-      }
-    );
-    const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
-    const records = JSON.parse(json).records;
-    expect(records.map(record => record.id).sort()).toEqual([
-      '/docs/release%20notes',
-      '/docs/release%2520notes'
-    ]);
-    const index = createSearchIndex(records);
-    expect(
-      index
-        .search('release notes')
-        .map(result => result.href)
-        .sort()
-    ).toEqual(['/docs/release%20notes', '/docs/release%2520notes']);
-    expect(index.search('literal')[0].href).toBe('/docs/release%2520notes');
-    expect(index.search('authored')[0].href).toBe('/docs/release%20notes');
-  });
+  test.each(['.mdx', '.page.mdx'])(
+    'THEN a literal percent in a %s source route is distinct from an authored escape',
+    async extension => {
+      const writeFile = await run(
+        {},
+        {
+          [`/docs/release%20notes${extension}`]:
+            '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nLiteral filename.',
+          '/docs/backing.mdx':
+            '---\nroute: /docs/release%20notes\ntitle: Release notes\n---\nAuthored permalink.'
+        },
+        ['.mdx', extension]
+      );
+      const [, json] = writeFile.mock.calls.find(([name]) => name === SEARCH_RECORDS_FILE)!;
+      const records = JSON.parse(json).records;
+      expect(records.map(record => record.id).sort()).toEqual([
+        '/docs/release%20notes',
+        '/docs/release%2520notes'
+      ]);
+      const index = createSearchIndex(records);
+      expect(
+        index
+          .search('release notes')
+          .map(result => result.href)
+          .sort()
+      ).toEqual(['/docs/release%20notes', '/docs/release%2520notes']);
+      expect(index.search('literal')[0].href).toBe('/docs/release%2520notes');
+      expect(index.search('authored')[0].href).toBe('/docs/release%20notes');
+    }
+  );
 
   test('THEN the search engine finds all configured frontmatter fields in the generated records', async () => {
     const writeFile = await run({

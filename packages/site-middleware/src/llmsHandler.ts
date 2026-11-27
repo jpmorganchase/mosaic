@@ -155,7 +155,10 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
         return text('Not found', 404);
       }
       const manifest = await getManifest(mode, contentUrl);
-      if (manifest && !manifest.routes.includes(canonical)) return text('Not found', 404);
+      // A bundle and its independently cached manifest can span an upgrade.
+      // During that transition the bundle already establishes unambiguous ownership.
+      if (manifest && manifest.version === bundle?.version && !manifest.routes.includes(canonical))
+        return text('Not found', 404);
       const discovery = llmsDiscoveryForRoute(canonical, manifest);
       // The HTML page this Markdown came from: `/.md` is the root page, `/`.
       const pageUrl = discovery.markdownUrl.replace(/\.md$/, '');

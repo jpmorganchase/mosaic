@@ -58,6 +58,15 @@ test.each([
   expect(buildMosaicMetadata(document({ route, fullPath })).alternates?.canonical).toBe(href);
 });
 
+test.each([
+  ['/docs/guide%20notes', true, '/docs/guide%2520notes'],
+  ['/docs/guide%20notes.page', false, '/docs/guide%20notes.page']
+])('uses recorded filename provenance for %s', (route, routeUsesSourceFilename, href) => {
+  const fullPath = '/docs/guide%20notes.page.mdx';
+  const metadata = buildMosaicMetadata(document({ route, fullPath, routeUsesSourceFilename }));
+  expect(metadata.alternates?.canonical).toBe(href);
+});
+
 test('returns empty metadata for missing and redirected content', () => {
   expect(buildMosaicMetadata({ kind: 'redirect', destination: '/elsewhere' })).toEqual({});
   expect(

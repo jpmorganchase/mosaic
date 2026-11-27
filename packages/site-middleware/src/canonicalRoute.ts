@@ -1,4 +1,4 @@
-import { isSourceRoute, pageRoutePathname } from '@jpmorganchase/mosaic-schemas/routePath';
+import { encodeRoutePathname, isSourceRoute } from '@jpmorganchase/mosaic-schemas/routePath';
 import { encodeContentPath } from './contentPaths.js';
 
 /** Preserve Mosaic's canonical-path validation without importing content loaders. */
@@ -8,10 +8,15 @@ export function canonicalRoute(frontmatter: Record<string, unknown>, fallback: s
 
 /** Build a URL from the canonical route without changing its logical route value. */
 export function canonicalRouteHref(frontmatter: Record<string, unknown>, fallback: string): string {
-  const { route, fullPath } = frontmatter;
+  const { route, fullPath, routeUsesSourceFilename } = frontmatter;
   if (!isSafeContentPath(route)) return fallback;
-  if (isSourceRoute(route, fullPath)) return encodeContentPath(route);
-  return pageRoutePathname(route, fullPath);
+  const literal =
+    typeof routeUsesSourceFilename === 'boolean'
+      ? routeUsesSourceFilename
+      : isSourceRoute(route, fullPath);
+  return literal
+    ? encodeContentPath(route)
+    : encodeRoutePathname(route, { lowercase: typeof fullPath === 'string' });
 }
 
 export function isSafeContentPath(value: unknown): value is string {

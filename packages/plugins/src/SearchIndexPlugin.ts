@@ -58,7 +58,8 @@ const SearchIndexPlugin: PluginType<Page, SearchIndexPluginOptions, SearchIndexD
         { ...page, fullPath: page.fullPath ?? pagePath } as Parameters<
           typeof buildSearchRecords
         >[0],
-        recordOptions
+        recordOptions,
+        pageExtensions
       );
       if (!records) {
         console.warn(
