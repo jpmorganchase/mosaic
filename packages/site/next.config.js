@@ -47,6 +47,8 @@ const markdownAccept = `${markdownRange}(?:;(?!${rejectedQuality}|${charset}(?!$
 // is more specific than a generic text/markdown range.
 const parameters = `(?:;${mediaParameter})*`;
 const markdownUtf8Rejected = `${markdownRange}(?=${parameters};${charset}${utf8Value})(?=${parameters};${rejectedQuality})${parameters}(?:,.*)?`;
+const negotiablePageSource =
+  '/:path((?!(?:api|_next|img)(?:/|$)|(?:favicon\\.ico|robots\\.txt|sitemap\\.xml)$|.*\\.md$|(?:.*/)?llms(?:-full)?\\.txt$).+)';
 
 const isExport = process.env.MOSAIC_OUTPUT === 'export';
 const isStandalone = process.env.MOSAIC_OUTPUT === 'standalone';
@@ -143,7 +145,15 @@ const baseConfig = {
 /** @type {import('next').NextConfig} */
 const dynamicOnlyConfig = {
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }];
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      // The App Router replaces Vary when it serves an HTML page. Keep both
+      // variants out of downstream caches when they share the same URL.
+      {
+        source: negotiablePageSource,
+        headers: [{ key: 'Cache-Control', value: 'private, no-store' }]
+      }
+    ];
   },
   rewrites() {
     return {
@@ -161,7 +171,7 @@ const dynamicOnlyConfig = {
         },
         // Agents that ask for Markdown get it at the page's own URL.
         {
-          source: '/:path((?!api/|_next/).+)',
+          source: negotiablePageSource,
           has: [{ type: 'header', key: 'accept', value: markdownAccept }],
           missing: [{ type: 'header', key: 'accept', value: markdownUtf8Rejected }],
           destination: '/api/llms/:path'
