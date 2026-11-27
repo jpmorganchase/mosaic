@@ -49,15 +49,20 @@ test('stopped and exited sources cannot leave pages in global or scoped artifact
   );
   const read = async (file: string) => String(await shared.promises.readFile(file));
   try {
-    const started = ['salt', 'mosaic'].map(prefixDir =>
-      manager.addSource(
-        { modulePath: 'fixture-source', namespace: 'shared', options: { prefixDir } },
-        {}
+    const started = Promise.all(
+      ['salt', 'mosaic'].map(prefixDir =>
+        manager.addSource(
+          { modulePath: 'fixture-source', namespace: 'shared', options: { prefixDir } },
+          {}
+        )
       )
     );
-    await vi.waitFor(() => expect(workers.size).toBe(2));
+    // Importing the real LLM plugin can exceed the default polling timeout.
+    // If setup times out, stopping the unfinished sources still rejects startup.
+    void started.catch(() => {});
+    await vi.waitFor(() => expect(workers.size).toBe(2), { timeout: 3_000 });
     for (const worker of workers.values()) worker.emit(EVENT.START);
-    const sources = await Promise.all(started);
+    const sources = await started;
     for (const [prefix, worker] of workers) {
       const route = `/${prefix}/page`;
       worker.emit(EVENT.UPDATE, {

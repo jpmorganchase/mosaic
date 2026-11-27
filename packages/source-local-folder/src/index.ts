@@ -19,7 +19,7 @@ function createFileGlob(url: string, pageExtensions: string[]) {
 
 /**
  * Per-file cache entry for the incremental deserialise path. Hit when
- * a file's `(mtimeMs, size)` are unchanged between two `fs.watch`
+ * a file's identity, timestamps and size are unchanged between two `fs.watch`
  * emissions — in that case we skip the (expensive) `readFile +
  * serialiser.deserialise` and reuse the previously-built `Page`.
  *
@@ -40,8 +40,7 @@ function createFileGlob(url: string, pageExtensions: string[]) {
  * unconditional.
  */
 interface CacheEntry {
-  mtimeMs: number;
-  size: number;
+  identity: string;
   page: Page;
 }
 
@@ -184,13 +183,16 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
               return undefined;
             }
             const s = await fs.promises.stat(realPath);
-            return { filepath, fullPath, realPath, mtimeMs: s.mtimeMs, size: s.size };
+            // Copies can preserve modification time. Check the change time
+            // and identity too, including when a symlink is retargeted.
+            const identity = JSON.stringify([realPath, s.dev, s.ino, s.mtimeMs, s.ctimeMs, s.size]);
+            return { filepath, fullPath, realPath, mtimeMs: s.mtimeMs, identity };
           } catch {
             return undefined;
           }
         });
 
-        // Stage 2: reuse the cached `Page` when `(mtimeMs, size)` are
+        // Stage 2: reuse the cached `Page` when its file fingerprint is
         // unchanged, otherwise do the full read + deserialise. The
         // expensive work is skipped for every unchanged file —
         // typically every file but the one the user just saved.
@@ -199,9 +201,9 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
         // `CacheEntry` comment for the rationale.
         const pages = await mapWithConcurrency(stats, READ_CONCURRENCY, async entry => {
           if (!entry) return undefined;
-          const { filepath, fullPath, realPath, mtimeMs, size } = entry;
+          const { filepath, fullPath, realPath, mtimeMs, identity } = entry;
           const cached = cache.get(filepath);
-          if (cached && cached.mtimeMs === mtimeMs && cached.size === size) {
+          if (cached?.identity === identity) {
             return structuredClone(cached.page);
           }
 
@@ -220,7 +222,7 @@ const LocalFolderSource: Source<LocalFolderSourceOptions> = {
             lastModified: mtimeMs,
             fullPath: buildFullPath(filepath, options.prefixDir)
           } as unknown as Page;
-          cache.set(filepath, { mtimeMs, size, page });
+          cache.set(filepath, { identity, page });
           return structuredClone(page);
         });
 

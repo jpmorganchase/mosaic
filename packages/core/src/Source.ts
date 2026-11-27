@@ -26,6 +26,7 @@ import MutableVolume from './filesystems/MutableVolume.js';
 import createConfig from './helpers/createConfig.js';
 import { bindPluginMethods, bindSerialiser } from './plugin/index.js';
 import WorkerSubscription, { EVENT } from './WorkerSubscription.js';
+import type { SourceGeneration } from './worker/helpers/publishSourceGenerations.js';
 
 export default class Source {
   #emitter: EventEmitter = new EventEmitter();
@@ -107,12 +108,13 @@ export default class Source {
     }
     if (this.#worker) {
       this.#stopped = true;
-      this.#worker.stop();
+      return this.#worker.stop();
     } else if (!this.#stopped) {
       // Startup can still be binding its plugin modules when another source
       // fails and a snapshot build stops all sources.
       this.#exit();
     }
+    return undefined;
   }
 
   /**
@@ -234,6 +236,30 @@ export default class Source {
     this.filesystem = null;
   }
 
+  #queueGeneration(
+    worker: WorkerSubscription,
+    event: EVENT.START | EVENT.UPDATE,
+    generation?: SourceGeneration
+  ) {
+    // Include cache hydration in the same queue as the live publications.
+    this.#pendingUpdate = this.#pendingUpdate
+      .then(async () => {
+        if (this.#stopped || this.#worker !== worker) return;
+        if (generation) this.config = createConfig(generation.data);
+        // Raw listeners preserve one-shot startup subscriptions.
+        for (const listener of this.#emitter.rawListeners(event)) {
+          if (this.#stopped) return;
+          await listener.call(this.#emitter, generation);
+        }
+      })
+      .catch(async error => {
+        if (!this.#stopped) {
+          this.#emitter.emit(EVENT.ERROR, error);
+          await this.stop();
+        }
+      });
+  }
+
   #createWorker() {
     const worker = new WorkerSubscription({
       modulePath: this.#modulePath,
@@ -248,7 +274,9 @@ export default class Source {
     });
     worker.once(EVENT.ERROR, error => this.#emitter.emit(EVENT.ERROR, error));
     worker.once(EVENT.EXIT, () => this.#exit());
-    worker.once(EVENT.START, () => this.#emitter.emit(EVENT.START));
+    worker.once(EVENT.START, (message?: { data: SourceGeneration }) =>
+      this.#queueGeneration(worker, EVENT.START, message?.data)
+    );
     return worker;
   }
 
@@ -260,25 +288,9 @@ export default class Source {
     if (this.#stopped) return;
     this.#worker = this.#createWorker();
     const worker = this.#worker;
-    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }) => {
-      // EventEmitter does not await async listeners. Keep the complete update
-      // (including its config) together until every publication listener settles.
-      this.#pendingUpdate = this.#pendingUpdate
-        .then(async () => {
-          if (this.#stopped || this.#worker !== worker) return;
-          this.config = createConfig(data);
-          for (const listener of this.#emitter.listeners(EVENT.UPDATE)) {
-            if (this.#stopped) return;
-            await listener({ pages, symlinks, data });
-          }
-        })
-        .catch(error => {
-          if (!this.#stopped) {
-            this.#emitter.emit(EVENT.ERROR, error);
-            this.stop();
-          }
-        });
-    });
+    worker.on(EVENT.UPDATE, ({ data: { pages, symlinks, data } }: { data: SourceGeneration }) =>
+      this.#queueGeneration(worker, EVENT.UPDATE, { pages, symlinks, data })
+    );
     this.#worker.on(EVENT.TRACK, async ({ data: { errors, lifecycleMethod } }) => {
       this.pluginErrors[`${lifecycleMethod}`] = errors;
     });

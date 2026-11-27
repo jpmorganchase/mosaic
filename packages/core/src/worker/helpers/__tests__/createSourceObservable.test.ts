@@ -1,8 +1,12 @@
 import { fileURLToPath } from 'node:url';
-import { firstValueFrom } from 'rxjs';
+import type { Page } from '@jpmorganchase/mosaic-types';
+import { firstValueFrom, Subject } from 'rxjs';
 import { describe, expect, test } from 'vitest';
 
-import createSourceObservable, { getSourceRefresh } from '../createSourceObservable.js';
+import createSourceObservable, {
+  getSourceDefinitionExports,
+  getSourceRefresh
+} from '../createSourceObservable.js';
 import { refresh } from './fixtures/sourceWithRefresh.js';
 
 function workerData(fixture: string) {
@@ -17,19 +21,23 @@ function workerData(fixture: string) {
   };
 }
 
+async function loadFixture(fixture: string) {
+  const data = workerData(fixture);
+  return { api: await getSourceDefinitionExports(data.modulePath), data: data as never };
+}
+
 describe('GIVEN createSourceObservable', () => {
   test('THEN source capability metadata is available before reading any pages', async () => {
     let capabilities: unknown;
-    await createSourceObservable(workerData('sourceWithCapabilities') as never, {}, value => {
+    const { api, data } = await loadFixture('sourceWithCapabilities');
+    createSourceObservable(api, data, {}, value => {
       capabilities = value;
     });
     expect(capabilities).toEqual({ writable: false });
   });
   test('THEN capabilities written into page content are removed when the source declares none', async () => {
-    const source$ = await createSourceObservable(
-      workerData('sourceWithoutCapabilities') as never,
-      {}
-    );
+    const { api, data } = await loadFixture('sourceWithoutCapabilities');
+    const source$ = createSourceObservable(api, data, {});
 
     const [page] = await firstValueFrom(source$);
 
@@ -37,7 +45,8 @@ describe('GIVEN createSourceObservable', () => {
   });
 
   test("THEN the source's declared capabilities replace any written into page content", async () => {
-    const source$ = await createSourceObservable(workerData('sourceWithCapabilities') as never, {});
+    const { api, data } = await loadFixture('sourceWithCapabilities');
+    const source$ = createSourceObservable(api, data, {});
 
     const [page] = await firstValueFrom(source$);
 
@@ -45,17 +54,35 @@ describe('GIVEN createSourceObservable', () => {
   });
 
   test("THEN the source's refresh hook is bound to its options", async () => {
-    const data = { ...workerData('sourceWithRefresh'), options: { branch: 'main' } };
+    const { api } = await loadFixture('sourceWithRefresh');
 
-    const sourceRefresh = await getSourceRefresh(data as never);
+    const sourceRefresh = getSourceRefresh(api, { branch: 'main' } as never);
     await sourceRefresh?.();
 
     expect(refresh).toHaveBeenCalledWith({ branch: 'main' });
   });
 
   test('THEN there is no refresh hook when the source does not implement one', async () => {
-    expect(
-      await getSourceRefresh(workerData('sourceWithoutCapabilities') as never)
-    ).toBeUndefined();
+    const { api } = await loadFixture('sourceWithoutCapabilities');
+    expect(getSourceRefresh(api, {} as never)).toBeUndefined();
+  });
+
+  test('THEN the worker can subscribe in time for the initial hot emission', async () => {
+    const api = {
+      create() {
+        const source = new Subject<Page[]>();
+        queueMicrotask(() => {
+          source.next([{ fullPath: '/first.mdx' }]);
+          source.complete();
+        });
+        return source;
+      }
+    };
+
+    const pages = createSourceObservable(api, workerData('hot') as never, {});
+
+    await expect(firstValueFrom(pages)).resolves.toEqual([
+      expect.objectContaining({ fullPath: '/first.mdx' })
+    ]);
   });
 });
