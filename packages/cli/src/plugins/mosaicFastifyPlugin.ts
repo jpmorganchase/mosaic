@@ -29,6 +29,24 @@ export interface FastifyMosaic {
  */
 const RAW_ROUTE_PREFIX = '/_mosaic-raw';
 
+/** Decode URL segments once, keeping URL delimiters out of the filesystem path. */
+function contentPathname(url: string): string | undefined {
+  try {
+    const segments = url.split(/[?#]/, 1)[0].split('/').map(decodeURIComponent);
+    if (
+      segments.some(
+        // eslint-disable-next-line no-control-regex
+        segment => segment === '.' || segment === '..' || /[/\\\x00-\x1f\x7f]/.test(segment)
+      )
+    ) {
+      return undefined;
+    }
+    return segments.join('/');
+  } catch {
+    return undefined;
+  }
+}
+
 async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPluginOptions) {
   const { config, scope, mosaic } = options;
   const fs$ = Array.isArray(scope) ? mosaic.filesystem.scope(scope) : mosaic.filesystem;
@@ -161,18 +179,26 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
    * General content fetch
    */
   fastify.get('/*', async (req: FastifyRequest, reply: FastifyReply) => {
+    const pathname = contentPathname(req.url);
+    if (!pathname) {
+      reply.status(404).send();
+      return;
+    }
     try {
-      if (await fs$.promises.exists(req.url)) {
-        if ((await fs$.promises.stat(req.url)).isDirectory()) {
-          if (await fs$.promises.exists(path.join(req.url, 'index'))) {
+      if (await fs$.promises.exists(pathname)) {
+        if ((await fs$.promises.stat(pathname)).isDirectory()) {
+          const indexPath = path.posix.join(pathname, 'index');
+          if (await fs$.promises.exists(indexPath)) {
             // Don't do an actual redirect - just send the URL as the response
             reply.header('Content-Type', 'application/json');
-            reply.status(302).send({ redirect: path.posix.join(req.url, 'index') });
+            reply
+              .status(302)
+              .send({ redirect: indexPath.split('/').map(encodeURIComponent).join('/') });
           } else {
             reply.status(404);
           }
         } else {
-          const pagePath = String(await fs$.promises.realpath(req.url));
+          const pagePath = String(await fs$.promises.realpath(pathname));
           if (path.extname(pagePath) === '.mdx') {
             reply.header('Content-Type', 'text/mdx');
           } else if (path.extname(pagePath) === '.json') {
@@ -180,7 +206,7 @@ async function fastifyMosaic(fastify: FastifyInstance, options: FastifyMosaicPlu
           } else if (path.extname(pagePath) === '.xml') {
             reply.header('Content-Type', 'application/xml');
           }
-          const result = await fs$.promises.readFile(req.url);
+          const result = await fs$.promises.readFile(pathname);
           reply.send(result);
         }
       } else {

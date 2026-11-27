@@ -48,7 +48,11 @@ describe('SiteMapPlugin', () => {
         sharedFilesystem: { promises: { writeFile } },
         globalConfig: {
           data: {
-            sitemaps: [['/salt/components/button.mdx'], ['/salt/getting-started/index.mdx'], []]
+            sitemaps: [
+              ['/salt/components/r&d.mdx'],
+              ['/salt/getting-started/release#notes.mdx'],
+              []
+            ]
           }
         }
       } as unknown as Parameters<typeof afterUpdate>[1],
@@ -64,8 +68,8 @@ describe('SiteMapPlugin', () => {
     expect(root.localName).toBe('urlset');
     expect([...root.children].map(element => element.localName)).toEqual(['url', 'url']);
     expect([...root.querySelectorAll('loc')].map(element => element.textContent)).toEqual([
-      'https://www.saltdesignsystem.com/salt/components/button',
-      'https://www.saltdesignsystem.com/salt/getting-started/index'
+      'https://www.saltdesignsystem.com/salt/components/r%26d',
+      'https://www.saltdesignsystem.com/salt/getting-started/release%23notes'
     ]);
     // Sitemap urlsets contain elements and whitespace only. Array interpolation
     // previously inserted commas between sources, even when a source was empty.

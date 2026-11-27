@@ -67,6 +67,14 @@ describe('snapshot-file mode', () => {
     expect(config).toEqual({ header: { title: 'Docs site' } });
   });
 
+  test('preserves direct folder config lookups with a trailing slash', async () => {
+    const { getSharedConfig } = await loadLoaders();
+
+    await expect(getSharedConfig('/docs%20site/', 'snapshot-file', '')).resolves.toEqual({
+      header: { title: 'Docs site' }
+    });
+  });
+
   test('refuses encoded `..` segments that would leave the snapshot', async () => {
     // The file exists one level above the snapshot, so a plain decode
     // followed by `path.join` would read it.

@@ -113,6 +113,17 @@ describe('resolveContent', () => {
     expect(getSharedConfig).toHaveBeenCalledTimes(1);
   });
 
+  test('decodes the backing path fallback without changing the public URL', async () => {
+    getMdxRaw.mockResolvedValue(mdx('Legacy page'));
+    const pathname = '/docs/100%25/page';
+
+    expect(await resolveContent(pathname, 'active', 'http://content')).toMatchObject({
+      pathname,
+      sourcePathname: '/docs/100%/page',
+      sharedConfig: sharedConfigFor(pathname)
+    });
+  });
+
   test("puts the page's authored shared config over its folder's", async () => {
     const page = {
       kind: 'mdx',

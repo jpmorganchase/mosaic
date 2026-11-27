@@ -48,6 +48,14 @@ test('ignores malformed fields and keeps the existing canonical fallback validat
   });
 });
 
+test.each([
+  ['/docs/guide#part?more', '/docs/guide#part?more.mdx', '/docs/guide%23part%3Fmore'],
+  ['/docs/literal%20.mdx', '/docs/literal%20.mdx', '/docs/literal%2520.mdx'],
+  ['/docs/custom%20route%23part', '/docs/backing.mdx', '/docs/custom%20route%23part']
+])('publishes the canonical URL for %s', (route, fullPath, href) => {
+  expect(buildMosaicMetadata(document({ route, fullPath })).alternates?.canonical).toBe(href);
+});
+
 test('returns empty metadata for missing and redirected content', () => {
   expect(buildMosaicMetadata({ kind: 'redirect', destination: '/elsewhere' })).toEqual({});
   expect(

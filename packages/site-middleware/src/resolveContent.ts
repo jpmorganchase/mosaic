@@ -7,6 +7,7 @@
 import { cache } from 'react';
 import path from 'node:path';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
+import { decodeContentPath, encodeContentPath } from './contentPaths.js';
 import { getMdxRaw, getSharedConfig } from './cachedLoaders.js';
 import { canonicalRoute, isSafeContentPath } from './canonicalRoute.js';
 import { newPageWritable } from './newPageSources.js';
@@ -42,7 +43,7 @@ export function isFolderIndexRedirect(from: string, destination: string): boolea
  * One resolved view of the route.
  *
  * `originalPathname` is the requested URL. `pathname` is the document's
- * public canonical URL. `sourcePathname` is its backing file, including
+ * public canonical URL. `sourcePathname` is its decoded backing path, including
  * the extension when Mosaic supplied `fullPath`. Config, raw-source and
  * save operations use that backing path; an authored public permalink
  * must not select another source's capabilities or become a save target.
@@ -239,13 +240,14 @@ export const resolveContent = cache(
         // live in an unrelated folder, whose shared config (if any) does
         // not describe this document. Keep route/permalink metadata out
         // of the configuration and write-provenance decision.
-        const sourcePathname = isSafeContentPath(mdx.frontmatter.fullPath)
-          ? mdx.frontmatter.fullPath
-          : pathname;
+        const fullPath = mdx.frontmatter.fullPath;
+        const backingPath = isSafeContentPath(fullPath) ? fullPath : undefined;
+        const sourcePathname = backingPath ?? decodeContentPath(pathname) ?? pathname;
+        const sourceUrlPathname = backingPath ? encodeContentPath(backingPath) : pathname;
         const documentConfig =
-          path.posix.dirname(sourcePathname) === path.posix.dirname(pathname)
+          path.posix.dirname(sourceUrlPathname) === path.posix.dirname(pathname)
             ? requestedConfig()
-            : await getSharedConfig(sourcePathname, mode, contentUrl);
+            : await getSharedConfig(sourceUrlPathname, mode, contentUrl);
         const sharedConfig = mergePageSharedConfig(documentConfig, mdx.frontmatter.sharedConfig);
         return {
           kind: 'mdx',

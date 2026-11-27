@@ -76,15 +76,22 @@ beforeAll(async () => {
   );
   fs.symlinkSync('docs/start/no-route.mdx', path.join(snapshotRoot, 'legacy'));
 
+  write(
+    'docs/100% guide/save!as.mdx',
+    '---\ntitle: Save as\nfullPath: /docs/100% guide/save!as.mdx\n---\n# Save as'
+  );
+  write('docs/100% guide/shared-config.json', JSON.stringify({ config: sourceConfig }));
+  fs.symlinkSync('docs/100% guide/save!as.mdx', path.join(snapshotRoot, 'save-as'));
+
   server = http.createServer((request, response) => {
     const pathname = new URL(request.url!, 'http://content.test').pathname;
     requests.push(pathname);
     const rawRequest = pathname.startsWith('/_mosaic-raw/');
-    const filePath = path.join(
-      snapshotRoot,
-      rawRequest ? pathname.slice('/_mosaic-raw'.length) : pathname
-    );
     try {
+      const filePath = path.join(
+        snapshotRoot,
+        decodeURIComponent(rawRequest ? pathname.slice('/_mosaic-raw'.length) : pathname)
+      );
       if (fs.statSync(filePath).isDirectory()) {
         response.writeHead(302, { 'Content-Type': 'application/json' });
         response.end(JSON.stringify({ redirect: `${pathname}/index` }));
@@ -147,6 +154,19 @@ describe.each(['active', 'snapshot-file'] as const)('document context in %s mode
       sharedConfig: { header: { title: 'Root source' }, sourceCapabilities: { writable: false } }
     });
   });
+
+  test.each(['/docs/100%25%20guide/save!as.mdx', '/save-as'])(
+    'reads backing folder config for %s',
+    async pathname => {
+      const { resolveContent } = await import('../resolveContent.js');
+
+      expect(await resolveContent(pathname, mode, contentUrl)).toMatchObject({
+        kind: 'mdx',
+        sourcePathname: '/docs/100% guide/save!as.mdx',
+        sharedConfig: sourceConfig
+      });
+    }
+  );
 
   test('keeps a public permalink separate from source capabilities and provenance', async () => {
     const { resolveContent } = await import('../resolveContent.js');

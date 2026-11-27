@@ -106,11 +106,19 @@ async function createServer(order: string[], scope?: string[], readOnly?: string
     const { namespace } = source;
     const files: Record<string, string> = {
       '/shared/page.mdx': `processed ${namespace}`,
-      '/shared/space name.mdx': `processed space ${namespace}`
+      '/shared/space name.mdx': `processed space ${namespace}`,
+      '/shared/café%20.mdx': 'encoded filename',
+      '/shared/guides #1/index.mdx': 'encoded folder index',
+      '/index.mdx': 'root index'
     };
     if (namespace === 'a') files['/shared/private.mdx'] = 'only a';
     source.filesystem.fromJSON(files);
     await source.filesystem.promises.symlink('/shared/page.mdx', '/shared/alias');
+    await source.filesystem.promises.symlink('/index.mdx', '/index');
+    await source.filesystem.promises.symlink(
+      '/shared/guides #1/index.mdx',
+      '/shared/guides #1/index'
+    );
   }
   const server = Fastify();
   resources.push({ server, mosaic });
@@ -158,6 +166,28 @@ async function expectWorkflowOwner(
 }
 
 describe('raw reads and workflow ownership', () => {
+  test('decodes document paths once and returns an encoded folder redirect', async () => {
+    const { server } = await createServer(['a', 'b']);
+
+    const plain = await server.inject('/shared/page.mdx?preview=1');
+    expect(plain.statusCode).toBe(200);
+    expect(plain.body).toBe('processed b');
+
+    const encoded = await server.inject('/shared/caf%C3%A9%2520.mdx?preview=1');
+    expect(encoded.statusCode).toBe(200);
+    expect(encoded.body).toBe('encoded filename');
+
+    const folder = await server.inject('/shared/guides%20%231/?preview=1');
+    expect(folder.statusCode).toBe(302);
+    expect(folder.json()).toEqual({ redirect: '/shared/guides%20%231/index' });
+    expect((await server.inject(folder.json().redirect)).body).toBe('encoded folder index');
+
+    const root = await server.inject('/');
+    expect(root.statusCode).toBe(302);
+    expect(root.json()).toEqual({ redirect: '/index' });
+    expect((await server.inject('/shared%2Fpage.mdx')).statusCode).toBe(404);
+  });
+
   test.each([
     ['a', 'b'],
     ['b', 'a']
