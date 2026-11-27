@@ -18,6 +18,13 @@ function workerData(fixture: string) {
 }
 
 describe('GIVEN createSourceObservable', () => {
+  test('THEN source capability metadata is available before reading any pages', async () => {
+    let capabilities: unknown;
+    await createSourceObservable(workerData('sourceWithCapabilities') as never, {}, value => {
+      capabilities = value;
+    });
+    expect(capabilities).toEqual({ writable: false });
+  });
   test('THEN capabilities written into page content are removed when the source declares none', async () => {
     const source$ = await createSourceObservable(
       workerData('sourceWithoutCapabilities') as never,

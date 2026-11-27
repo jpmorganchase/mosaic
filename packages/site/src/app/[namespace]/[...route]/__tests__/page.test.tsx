@@ -10,10 +10,12 @@ const loaders = vi.hoisted(() => ({
   generateMosaicStaticParams: vi.fn(),
   resolveMosaicMode: vi.fn()
 }));
-const editor = vi.hoisted(() => ({ enabled: false }));
+const newPageSources = vi.hoisted(() => ({ newPageWritable: vi.fn() }));
+const editor = vi.hoisted(() => ({ enabled: false, signedIn: true }));
 const connection = vi.hoisted(() => vi.fn(async () => {}));
 
 vi.mock('../../../../../../site-middleware/src/cachedLoaders.js', () => loaders);
+vi.mock('../../../../../../site-middleware/src/newPageSources.js', () => newPageSources);
 vi.mock('@jpmorganchase/mosaic-site-middleware', async () => ({
   ...loaders,
   ...(await vi.importActual('../../../../../../site-middleware/src/resolveContent.js')),
@@ -32,7 +34,7 @@ vi.mock('../../../../auth', () => ({
   get AUTH_ENABLED() {
     return editor.enabled;
   },
-  auth: async () => (editor.enabled ? { user: { name: 'Editor' } } : null),
+  auth: async () => (editor.enabled && editor.signedIn ? { user: { name: 'Editor' } } : null),
   isAuthorizedEditor: () => editor.enabled
 }));
 vi.mock('../../../providers', () => ({
@@ -72,6 +74,7 @@ beforeEach(() => {
   vi.resetModules();
   vi.clearAllMocks();
   editor.enabled = false;
+  editor.signedIn = true;
   vi.stubEnv('NODE_ENV', 'production');
   loaders.getSharedConfig.mockResolvedValue({
     header: { homeLink: './index', logo: './logo.svg' }
@@ -274,6 +277,67 @@ describe('namespace root page', () => {
     const { default: NamespacePage } = await import('../../page');
 
     await expect(NamespacePage(request('missing'))).rejects.toThrow('not-found');
+  });
+});
+
+describe('create requests', () => {
+  const create = () => ({
+    ...request('docs', ['guides', 'new-page']),
+    searchParams: Promise.resolve({ new: '1', title: 'New page' })
+  });
+
+  beforeEach(() => {
+    vi.stubEnv('MOSAIC_MODE', 'active');
+    editor.enabled = true;
+    loaders.resolveMosaicMode.mockReturnValue({ mode: 'active', contentUrl: 'http://content' });
+    loaders.getMdxRaw.mockResolvedValue({ kind: 'not-found' });
+    loaders.getSharedConfig.mockImplementation(async (pathname: string) =>
+      pathname === '/docs/index' ? { header: { title: 'Docs' } } : undefined
+    );
+    newPageSources.newPageWritable.mockResolvedValue(true);
+  });
+
+  test('opens the editor in a new folder with the layout config of the folder above', async () => {
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(create()));
+
+    expect(html).toContain('data-editor-route="/docs/guides/new-page"');
+    expect(html).toContain('data-frame-title="Docs"');
+  });
+
+  test.each([
+    ['auth is off', { enabled: false }],
+    ['nobody is signed in', { signedIn: false }]
+  ])("doesn't look up the new page's folder when %s", async (_, state) => {
+    Object.assign(editor, state);
+    const { default: Page } = await import('../page');
+
+    await expect(Page(create())).rejects.toThrow('not-found');
+    expect(newPageSources.newPageWritable).not.toHaveBeenCalled();
+    // Only `resolveContent`'s read of the requested page's folder.
+    expect(loaders.getSharedConfig).toHaveBeenCalledOnce();
+  });
+
+  test("doesn't search for layout config in a folder new pages can't be created in", async () => {
+    newPageSources.newPageWritable.mockResolvedValue(false);
+    const { default: Page } = await import('../page');
+
+    await expect(Page(create())).rejects.toThrow('not-found');
+    expect(newPageSources.newPageWritable).toHaveBeenCalledOnce();
+    expect(loaders.getSharedConfig).toHaveBeenCalledOnce();
+  });
+
+  test('keeps the layout config of a folder the dev bypass makes writable', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('MOSAIC_DEV_BYPASS_CAPABILITY_GATE', 'true');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    newPageSources.newPageWritable.mockResolvedValue(false);
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(await Page(create()));
+
+    expect(html).toContain('data-editor-route="/docs/guides/new-page"');
+    expect(html).toContain('data-frame-title="Docs"');
+    warn.mockRestore();
   });
 });
 

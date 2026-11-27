@@ -33,12 +33,14 @@ import { buildMosaicMetadata } from '@jpmorganchase/mosaic-site-middleware/metad
  * consume it.
  */
 import { cache } from 'react';
+import path from 'node:path';
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { connection } from 'next/server';
 import type { MosaicMode } from '@jpmorganchase/mosaic-types';
 import {
   getMdxRawSource,
+  getNewPageSharedConfig,
   resolveMosaicMode,
   serializeMdxForClient
 } from '@jpmorganchase/mosaic-site-middleware';
@@ -207,15 +209,27 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // to the same 404 the view branch would have produced.
   const newRequested = sp.new === '1';
   const newPossible = newRequested && !shouldPrerenderSnapshot;
+  // Only a signed-in editor can create a page, so check the session
+  // before looking up the missing page's folder: that can take a
+  // content-server request per folder level. The session is reused below.
+  const createSessionPromise =
+    AUTH_ENABLED && newPossible && resolved.kind === 'not-found' && !resolved.redirectLimitReached
+      ? auth()
+      : undefined;
+  const createUser = (await createSessionPromise)?.user;
 
   // Apply the dev capability-bypass to the shared config before
   // anyone (server gate, store, client hook) reads it. The override
   // is the closed default — `{ writable: true }` — applied via a
   // shallow merge so authored fields (header, footer, etc.) are
-  // preserved. A miss carries the shared config of the folder the
-  // missing page would live in, so the same gate covers the create
-  // flow; apply the bypass before discriminating.
-  const sharedConfig = withCapabilityBypass(resolved.sharedConfig);
+  // preserved. Only an editor's create request needs the source's
+  // creation metadata.
+  const sharedConfig =
+    createUser && isAuthorizedEditor(createUser)
+      ? await getNewPageSharedConfig(path.posix.dirname(resolved.pathname), mode, contentUrl, {
+          transformSharedConfig: withCapabilityBypass
+        })
+      : withCapabilityBypass(resolved.sharedConfig);
 
   // Source-capability gate. Absent capabilities (no shared-config
   // for the subtree, or a source that hasn't opted in) means
@@ -303,7 +317,8 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   const editPossible = editRequested && !shouldPrerenderSnapshot;
   // Auth is required for both the edit and the create branch.
   // Compute once + share the resulting session promise so we
-  // never pay for two `auth()` calls in a single request.
+  // never pay for two `auth()` calls in a single request (a create
+  // request has already started it, above).
   //
   // `AUTH_ENABLED` is the deployment-wide switch (see `src/auth.ts`).
   // When false, the editor is unreachable end-to-end: `auth()` is the
@@ -311,7 +326,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // avoids importing the session-resolution path at all on no-auth
   // deployments (helping bundlers tree-shake more aggressively).
   const authPossible = AUTH_ENABLED && (editPossible || newPossible) && isWritableSource;
-  const sessionPromise = authPossible ? auth() : Promise.resolve(null);
+  const sessionPromise = authPossible ? createSessionPromise ?? auth() : Promise.resolve(null);
   // Raw-source fetch is only meaningful for the edit branch.
   // For the create branch we synthesise a raw envelope below
   // (`effectiveRawSource`) around the same template bytes the

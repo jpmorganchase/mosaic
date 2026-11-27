@@ -21,6 +21,7 @@ const core = {
   stop: vi.fn(),
   onSourceUpdate: vi.fn(),
   listSources: vi.fn(),
+  getNewPageSources: vi.fn(() => [{ prefixDir: 'docs/sdk', writable: true }]),
   filesystem
 };
 
@@ -117,9 +118,18 @@ describe('GIVEN the build command', () => {
     await build(config(), outDir, { name: 'latest' });
 
     await expect(fs.promises.readdir(snapshotDir)).resolves.toEqual([
+      'mosaic-new-page-sources.json',
       'mosaic-routes.json',
       'mosaic-snapshot.json'
     ]);
+    expect(
+      JSON.parse(
+        await fs.promises.readFile(path.join(snapshotDir, 'mosaic-new-page-sources.json'), 'utf8')
+      )
+    ).toEqual({
+      version: 1,
+      sources: [{ prefixDir: 'docs/sdk', writable: true }]
+    });
     await identity();
   });
 
