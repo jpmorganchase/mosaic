@@ -1,7 +1,6 @@
 'use client';
 
 import type {
-  EditorSaveInput,
   SerializedMdxResult,
   WorkflowDefaults,
   WorkflowDefaultsInput
@@ -83,7 +82,7 @@ import { ErrorHighlightPlugin } from '../plugins/ErrorHighlightPlugin';
 import styles from './Editor.css';
 import Toolbar from './Toolbar/Toolbar';
 import theme from '../theme';
-import { PersistDialog, type PersistEvent } from './PersistEditDialog';
+import { PersistDialog, type PersistAction } from './PersistEditDialog';
 import StatusBanner from './StatusBanner';
 import RouteNoticeBanner from './RouteNoticeBanner';
 import { ShortcutHelpDialog } from './ShortcutHelpDialog';
@@ -176,13 +175,11 @@ export interface EditorProps {
    */
   loadSaveDefaults?: (input: WorkflowDefaultsInput) => Promise<WorkflowDefaults>;
   /**
-   * Saves the page and returns its progress events. Typically starts the
+   * Saves the page directly or returns its progress events. Typically starts the
    * save with a Server Action that returns a job id and follows it with
    * `subscribeToSave(jobId)`. A thrown error is shown as a failed save.
    */
-  persist?: (
-    input: EditorSaveInput
-  ) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
+  persist?: PersistAction;
   user?: EditorUser;
   /**
    * When `true` this editor session is for *creating* a
@@ -235,7 +232,10 @@ const EditorInner: FC<EditorProps> = ({
   // A same-document refresh must not give the draft a newer source hash.
   const [draftSource] = useState(rawSource);
   const authoredInput = draftSource?.kind === 'raw' ? draftSource.bytes : content;
-  const markdown = useMemo(() => parseFrontmatter(authoredInput).content, [authoredInput]);
+  const { content: markdown, data: originalAuthoredFrontmatter } = useMemo(
+    () => parseFrontmatter(authoredInput),
+    [authoredInput]
+  );
   const hasAuthoredSource = draftSource?.kind === 'raw' || isNewPage;
   const canSave = hasAuthoredSource && !hasInvalidFrontmatterEdits;
   const meta = useMemo(
@@ -307,18 +307,8 @@ const EditorInner: FC<EditorProps> = ({
    *     `readingTime`, …) survive so MDX bodies that reference
    *     them keep rendering correctly during the editor session.
    *
-   * The author's view "wins" key-by-key, which has the right
-   * intuitive behaviour: clearing a field they authored makes
-   * it disappear from the preview, even if the post-plugin
-   * `meta` had a (now-stale) value for it. Pure-author-removal
-   * isn't perfect (the form prunes empty string / empty array
-   * rows when serialising, so a deletion becomes a "no such
-   * key" in the parsed YAML, which the merge below treats as
-   * "keep meta's copy") — but that's strictly less surprising
-   * than the previous behaviour of frontmatter edits not
-   * updating the preview AT ALL, and gets the editor's UX
-   * close enough to what the saved file produces that the
-   * remaining gap is invisible in practice.
+   * Compare the draft with the original authored frontmatter so
+   * removing a field also removes its old value from the preview.
    *
    * One narrow exception to "author wins": Mosaic ref
    * placeholders. Authors write `data.foo: { $tag: '…' }` or
@@ -391,7 +381,9 @@ const EditorInner: FC<EditorProps> = ({
           );
         }
       }
-      const combined = authored ? mergeAuthoredFrontmatter(meta, authored) : meta;
+      const combined = authored
+        ? mergeAuthoredFrontmatter(meta, authored, originalAuthoredFrontmatter)
+        : meta;
       if (!combined || Object.keys(combined).length === 0) return body;
       try {
         return stringifyFrontmatter(body, combined);
@@ -403,7 +395,7 @@ const EditorInner: FC<EditorProps> = ({
         return body;
       }
     },
-    [meta]
+    [meta, originalAuthoredFrontmatter]
   );
 
   /**

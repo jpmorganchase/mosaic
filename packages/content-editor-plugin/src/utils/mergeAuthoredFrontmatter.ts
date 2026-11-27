@@ -38,15 +38,9 @@
  *     the authored value verbatim — author edits to scalar,
  *     array, and ordinary object fields must take effect.
  *
- * The walk is purely additive: post-plugin keys NOT mentioned
- * by the author pass through unchanged (matches the existing
- * `{ ...meta, ...authored }` semantic for "untouched keys keep
- * their resolved value").
- *
- * `frontmatterSnapshotRef` (and therefore this helper) only
- * sees the authored YAML, never the post-plugin frontmatter
- * the editor was seeded with — so the right comparison
- * baseline is `meta` at the same path.
+ * A key omitted from the draft is deleted only when it was
+ * present in the originally authored frontmatter at that path.
+ * Keys added by plugins pass through.
  */
 
 const REF_KEYS = new Set(['$tag', '$ref']);
@@ -76,13 +70,13 @@ function isRefPlaceholder(value: unknown): boolean {
 
 export function mergeAuthoredFrontmatter(
   meta: Record<string, unknown> | undefined,
-  authored: Record<string, unknown>
+  authored: Record<string, unknown>,
+  originalAuthored?: Record<string, unknown>
 ): Record<string, unknown> {
-  // Start from `meta` so post-plugin keys the author didn't
-  // touch survive verbatim. Walking only `authored` keeps the
-  // helper O(authored size) rather than O(meta size) — meta
-  // for a Mosaic page can be megabytes of resolved refs.
   const out: Record<string, unknown> = { ...(meta ?? {}) };
+  for (const key of Object.keys(originalAuthored ?? {})) {
+    if (!Object.hasOwn(authored, key)) delete out[key];
+  }
 
   for (const [key, authoredValue] of Object.entries(authored)) {
     const metaValue = meta?.[key];
@@ -106,7 +100,12 @@ export function mergeAuthoredFrontmatter(
       // placeholders (e.g. `data.saltAnnouncement.$tag` deep
       // inside a larger authored `data` block) get the same
       // protection.
-      out[key] = mergeAuthoredFrontmatter(metaValue, authoredValue);
+      const originalValue = originalAuthored?.[key];
+      out[key] = mergeAuthoredFrontmatter(
+        metaValue,
+        authoredValue,
+        isPlainObject(originalValue) ? originalValue : undefined
+      );
       continue;
     }
 

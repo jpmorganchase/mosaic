@@ -83,6 +83,63 @@ describe('PersistDialog', () => {
     expect(reopenedField).toHaveValue('Source default');
   });
 
+  test.each([false, true])(
+    'fails a stream that ends without confirmation (progress: %s)',
+    async progress => {
+      const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+        if (progress) {
+          yield { kind: 'progress', message: { status: 'IN_PROGRESS', message: 'Save started' } };
+        }
+      });
+      render(<PersistDialog {...baseProps} persist={persist} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+
+      expect(await screen.findByText(/The save ended without confirmation/)).toBeVisible();
+      expect(saveState.markSaveFailed).toHaveBeenCalledOnce();
+      expect(saveState.markSaved).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled();
+      expect(screen.getByRole('button', { name: 'Raise Pull Request' })).toBeEnabled();
+    }
+  );
+
+  test.each([false, true])(
+    'accepts a direct save without a progress stream (async: %s)',
+    async asynchronous => {
+      const persist = vi.fn(() => (asynchronous ? Promise.resolve() : undefined));
+      render(<PersistDialog {...baseProps} persist={persist} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+
+      expect(
+        await screen.findByRole('heading', { name: 'Changes Saved Successfully' })
+      ).toBeVisible();
+      expect(saveState.markSaved).toHaveBeenCalledOnce();
+      expect(saveState.markSaveFailed).not.toHaveBeenCalled();
+    }
+  );
+
+  test('stops consuming and closes the iterator at a terminal result', async () => {
+    const afterCompletion = vi.fn();
+    const cleanup = vi.fn();
+    const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {
+      try {
+        yield { kind: 'complete', prHref: null };
+        afterCompletion();
+      } finally {
+        cleanup();
+      }
+    });
+    render(<PersistDialog {...baseProps} persist={persist} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+
+    await screen.findByRole('heading', { name: 'Changes Saved Successfully' });
+    expect(afterCompletion).not.toHaveBeenCalled();
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(saveState.markSaved).toHaveBeenCalledOnce();
+  });
+
   test('keeps unsupported workflows saveable without a message field or payload', async () => {
     const unsupported = async () => ({ supportsCommitMessage: false as const });
     const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {

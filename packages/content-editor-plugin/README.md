@@ -10,7 +10,7 @@ yarn add @jpmorganchase/mosaic-content-editor-plugin
 
 ## Saving
 
-`<Editor persist={...}>` takes a function that starts a save and returns its progress as an async iterable of `PersistEvent`s (`progress`, then `complete` or `error`). A thrown error is shown as a failed save.
+`<Editor persist={...}>` takes a function that either finishes the save directly and returns `void`, or returns an async iterable of `PersistEvent`s. A progress stream must end with a `complete` or `error` event. A thrown error or a stream that closes before a terminal event keeps the draft available and shows a failure.
 
 For existing pages, supply `rawSource={{ kind: 'raw', bytes, namespace }}` with the original source file and `route` with its backing path. The editor seeds the editable body and frontmatter from these authored bytes; `content` supplies processed metadata for the preview. If the original source cannot be loaded, saving is disabled so expanded fragments and other plugin output cannot overwrite the source. A new page may use its authored `content` template with `isNewPage`.
 
@@ -31,7 +31,7 @@ async function persist(input) {
 <Editor persist={persist} {...otherProps} />;
 ```
 
-`subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`, and closes the stream after `done`. If the stream drops, `EventSource` reconnects and resumes from the last event it received; after `options.maxReconnects` failed attempts in a row (default 3), or if the server refuses the stream, the save is reported as an error.
+`subscribeToSave(jobId, options?)` opens an `EventSource` on `/api/workflows/<jobId>/events` (change it with `options.url`). It expects `progress` events and a final `done` event with `{ status: 'SUCCESS' | 'ERROR', message }`. It closes the stream when the final result arrives, the server refuses the stream, or either limit is reached. `options.maxReconnects` allows three reconnections without progress by default. `options.maxWaitMs` allows six minutes for a final result by default. Set a larger value if your workflow can take longer. If progress ended before the result arrived, check for a pull request before retrying.
 
 Successful GitHub and Bitbucket workflows send `message: { pullRequestUrl }`, where the URL opens the pull request in a browser. `subscribeToSave` also accepts older GitHub URL strings and Bitbucket `links.self` responses. A successful workflow may omit the URL: the dialog still confirms the save and prevents another submission.
 

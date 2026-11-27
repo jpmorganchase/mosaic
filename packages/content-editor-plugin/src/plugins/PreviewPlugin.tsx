@@ -154,24 +154,14 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
     [compilePreview, setError, setIsCompiling, setPreviewContent]
   );
 
-  // Snapshot helper: serialize the current state to markdown AND build
-  // the line map from the same `editor.read()` block. Returns `null`
-  // when the editor is empty (nothing to compile).
+  // Serialize markdown and build its line map from the same state.
   const snapshot = useMemo(
-    () => (): string | null => {
-      let markdown: string | null = null;
+    () => () =>
       editor.getEditorState().read(() => {
-        const md = $convertToMarkdownString(transformers);
-        if (!md) return;
-        const map = $buildLineMap(transformers, editor);
-        // Falsy map means the per-block reassembly diverged from the
-        // canonical output; we still send the markdown to the
-        // compiler but skip highlighting (banner remains accurate).
-        setLineMap(map);
-        markdown = md;
-      });
-      return markdown;
-    },
+        const markdown = $convertToMarkdownString(transformers);
+        setLineMap(markdown ? $buildLineMap(transformers, editor) : null);
+        return markdown;
+      }),
     [editor, setLineMap]
   );
 
@@ -201,20 +191,17 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
   useEffect(() => {
     if (didSeedRef.current) return;
     didSeedRef.current = true;
-    const markdown = snapshot();
-    if (markdown) runCompile(markdown);
+    runCompile(snapshot());
   }, [snapshot, runCompile]);
 
   const onChange = (editorState: EditorState) => {
     editorState.read(() => {
       const md = $convertToMarkdownString(transformers);
-      if (!md) return;
       // Update the map synchronously from the same state read; the
       // compile itself can be debounced because that's just the
       // network call, but the map MUST move in lockstep with the
       // editor so highlights point at the right node.
-      const map = $buildLineMap(transformers, editor);
-      setLineMap(map);
+      setLineMap(md ? $buildLineMap(transformers, editor) : null);
       // Typing should always reset the grace window: a queued error
       // from the previous markdown is no longer relevant. We also
       // optimistically clear any visible error so the squiggle
