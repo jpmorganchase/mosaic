@@ -78,6 +78,8 @@ export interface ContentFileCacheOptions {
    * every time.
    */
   maxAge: number;
+  /** Await an expired refresh and propagate errors instead of serving stale content. */
+  staleWhileRevalidate?: boolean;
 }
 
 /**
@@ -88,7 +90,7 @@ export interface ContentFileCacheOptions {
 export function createContentFileCache<T>(
   file: string,
   parse: (text: string) => T,
-  { maxAge }: ContentFileCacheOptions
+  { maxAge, staleWhileRevalidate = true }: ContentFileCacheOptions
 ) {
   let loaded: { version: string; value: T; checkedAt: number } | undefined;
   let pending: Promise<typeof loaded> | undefined;
@@ -116,6 +118,7 @@ export function createContentFileCache<T>(
       return (await refresh(mode, contentUrl))?.value;
     }
     if (Date.now() - loaded.checkedAt >= maxAge) {
+      if (!staleWhileRevalidate) return (await refresh(mode, contentUrl))?.value;
       refresh(mode, contentUrl).catch(error => {
         console.warn(`[Mosaic] Couldn't refresh ${file}: ${error}`);
       });

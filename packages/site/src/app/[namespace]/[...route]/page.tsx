@@ -61,6 +61,7 @@ import { CanonicalizeUrl } from './CanonicalizeUrl';
 // view-mode visitors never download it (see `EditorBodyLazy.tsx`).
 import { EditorBodyLazy as EditorBody } from './EditorBodyLazy';
 import { RouteMetadata } from './RouteMetadata';
+import { LlmsMetadata } from './LlmsMetadata';
 import { buildNewPageTemplate, composeTemplate } from './newPageTemplate';
 import { canonicalRoute, isFolderIndexRedirect, resolveContent } from './resolveContent';
 
@@ -486,6 +487,7 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
         isEditing={editing || creating}
       />
       <RouteMetadata />
+      {canonicalPathname && <LlmsMetadata route={canonicalPathname} />}
       {editing || creating ? (
         <EditorBody
           raw={raw}

@@ -3,9 +3,9 @@
  * `llms-full.txt`, from the files `LlmsTxtPlugin` writes. See
  * `createLlmsHandler`.
  *
- * `next.config.js` rewrites `/<page>.md`, `/llms.txt`, `/llms-full.txt` and
- * requests that accept `text/markdown` to this route. Snapshot builds also
- * copy the files to `public/`, so those URLs are served as static files.
+ * `next.config.js` rewrites `/<page>.md`, global and scoped LLM indexes,
+ * and requests that accept `text/markdown` to this route in server builds.
+ * Snapshot builds also copy the generated artifacts to `public/` for export.
  *
  * Static-export builds (`MOSAIC_OUTPUT=export`) replace this file with a
  * stub via `scripts/static-export-route-stubs.mjs`, and serve the copies in

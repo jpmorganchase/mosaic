@@ -42,6 +42,8 @@ packages/site/public/search-data.json
 packages/site/public/search-records.json
 packages/site/public/llms.txt
 packages/site/public/llms-full.txt
+packages/site/public/**/llms.txt
+packages/site/public/**/llms-full.txt
 packages/site/public/**/*.md
 packages/site/.mosaic-public-assets.json
 

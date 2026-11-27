@@ -56,6 +56,11 @@ vi.mock('../EditorBodyLazy', () => ({
   EditorBodyLazy: ({ route }: { route: string }) => <span data-editor-route={route} />
 }));
 vi.mock('../RouteMetadata', () => ({ RouteMetadata: () => null }));
+vi.mock('../LlmsMetadata', () => ({
+  LlmsMetadata: ({ route }: { route: string }) => (
+    <link rel="describedby" data-canonical-route={route} />
+  )
+}));
 vi.mock('../CanonicalizeUrl', () => ({
   CanonicalizeUrl: ({ canonical }: { canonical: string }) => <span data-canonical-url={canonical} />
 }));
