@@ -78,6 +78,13 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
     git(authorDir, 'push', 'origin', 'main');
   };
 
+  // Leaves the clone in place, as when only `.mosaic-worktrees/<branch>` is deleted.
+  const removeSourceWorktree = () => {
+    const cloneRoot = path.dirname(path.dirname(repo.dir));
+    fs.rmSync(repo.dir, { recursive: true, force: true });
+    git(cloneRoot, 'worktree', 'prune');
+  };
+
   beforeEach(() => {
     projectDir = path.join(process.cwd(), '.tmp', `mosaic-refresh-test-${randomUUID()}`);
     const originDir = path.join(projectDir, 'docs.git');
@@ -246,10 +253,16 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       await failed;
     }
 
+    const fetch = vi.spyOn(repo, 'fetch');
     await repo.init();
-    await vi.waitFor(() => expect(onChange).toHaveBeenCalledTimes(1), { timeout: 3000 });
-    expect(onError).not.toHaveBeenCalled();
+    // The retry fetches before creating the worktree, so it starts with the push.
     expect(fs.readFileSync(path.join(repo.dir, 'pending.mdx'), 'utf8')).toBe('# Pending');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(check).toHaveBeenCalledTimes(2);
+    await check.mock.results[1].value;
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
   });
 
   test('THEN a refresh waiting for the lock is queued again after reinitialization fails', async () => {
@@ -323,6 +336,198 @@ describe('GIVEN a Repo subscribed to commit changes', () => {
       unsubscribeSecond();
     }
   }, 15_000);
+
+  test.each(['origin', 'upstream'])(
+    'THEN a reused clone loads and refreshes a newly published branch from %s',
+    remote =>
+      runFixtureTask(async () => {
+        const url = pathToFileURL(path.join(projectDir, 'docs.git')).href;
+        repo = new Repo('', remote, 'main', url);
+        await repo.init();
+        const mainRevision = await repo.currentLocalRevision();
+
+        const branch = 'docs/new-branch';
+        git(authorDir, 'checkout', '-b', branch);
+        fs.writeFileSync(path.join(authorDir, 'branch.mdx'), '# Branch');
+        git(authorDir, 'add', '.');
+        git(authorDir, 'commit', '-m', 'Publish branch');
+        git(authorDir, 'push', 'origin', branch);
+
+        const branchRepo = new Repo('', remote, branch, url);
+        await branchRepo.init();
+        expect(await branchRepo.currentLocalRevision()).toBe(
+          git(authorDir, 'rev-parse', 'HEAD').trim()
+        );
+        expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe('# Branch');
+        expect(await repo.currentLocalRevision()).toBe(mainRevision);
+        // Refreshes name `<remote>/<branch>`, so the shared config needs no upstream.
+        expect(git(branchRepo.dir, 'config', '--local', '--list')).not.toContain(
+          `branch.${branch}.`
+        );
+
+        const onMainChange = vi.fn();
+        const onBranchChange = vi.fn();
+        const onError = vi.fn();
+        unsubscribe = repo.onCommitChange(onMainChange, onError, false, HOUR_MS);
+        const stopBranch = branchRepo.onCommitChange(onBranchChange, onError, false, HOUR_MS);
+        try {
+          fs.writeFileSync(path.join(authorDir, 'branch.mdx'), '# Updated branch');
+          git(authorDir, 'add', '.');
+          git(authorDir, 'commit', '-m', 'Update branch');
+          git(authorDir, 'push', 'origin', branch);
+          git(authorDir, 'checkout', 'main');
+          push('main.mdx', '# Updated main');
+
+          await finishFixtureOperations([repo.checkForChanges(), branchRepo.checkForChanges()]);
+
+          expect(onError).not.toHaveBeenCalled();
+          expect(onMainChange).toHaveBeenCalledTimes(1);
+          expect(onBranchChange).toHaveBeenCalledTimes(1);
+          expect(fs.readFileSync(path.join(repo.dir, 'main.mdx'), 'utf8')).toBe('# Updated main');
+          expect(fs.existsSync(path.join(repo.dir, 'branch.mdx'))).toBe(false);
+          expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe(
+            '# Updated branch'
+          );
+          expect(fs.existsSync(path.join(branchRepo.dir, 'main.mdx'))).toBe(false);
+        } finally {
+          stopBranch();
+        }
+      }),
+    15_000
+  );
+
+  test(
+    'THEN a save worktree pushes its branch to the configured remote',
+    () =>
+      runFixtureTask(async () => {
+        const remoteDir = path.join(projectDir, 'docs.git');
+        repo = new Repo('', 'upstream', 'main', pathToFileURL(remoteDir).href);
+        await repo.init();
+        await repo.createWorktree('save-upstream', 'editor-upstream');
+        try {
+          fs.writeFileSync(path.join(repo.dir, 'index.mdx'), '# Saved remotely');
+          await repo.addChanges();
+          await repo.commitChanges('Editor', 'editor@example.test', 'Update documentation');
+          await repo.pushBranch('editor-upstream');
+          expect(git(remoteDir, 'show', 'refs/heads/editor-upstream:index.mdx')).toBe(
+            '# Saved remotely'
+          );
+        } finally {
+          await repo.removeWorktree('save-upstream');
+        }
+      }),
+    15_000
+  );
+
+  test(
+    'THEN initialization of a missing remote branch fails and can be retried after publication',
+    () =>
+      runFixtureTask(async () => {
+        await repo.init();
+        const mainRevision = await repo.currentLocalRevision();
+        const branch = 'published-later';
+        const branchRepo = new Repo(
+          '',
+          'origin',
+          branch,
+          pathToFileURL(path.join(projectDir, 'docs.git')).href
+        );
+
+        await expect(branchRepo.init()).rejects.toThrow();
+        expect(fs.existsSync(branchRepo.dir)).toBe(false);
+        expect(await repo.currentLocalRevision()).toBe(mainRevision);
+
+        git(authorDir, 'push', 'origin', `HEAD:refs/heads/${branch}`);
+        await branchRepo.init();
+        expect(await branchRepo.currentLocalRevision()).toBe(mainRevision);
+        expect(git(branchRepo.dir, 'branch', '--show-current').trim()).toBe(branch);
+      }),
+    15_000
+  );
+
+  test('THEN a new branch worktree is created while the clone config is locked', async () => {
+    await repo.init();
+    const cloneRoot = path.dirname(path.dirname(repo.dir));
+    const branch = 'published-later';
+    git(authorDir, 'checkout', '-b', branch);
+    fs.writeFileSync(path.join(authorDir, 'branch.mdx'), '# Branch');
+    git(authorDir, 'add', '.');
+    git(authorDir, 'commit', '-m', 'Publish branch');
+    git(authorDir, 'push', 'origin', branch);
+    const branchRepo = new Repo(
+      '',
+      'origin',
+      branch,
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+
+    // As when a concurrent save holds `.git/config`: the fetch refspec still maps
+    // only `main`, and no upstream can be recorded for the new branch.
+    const configLock = path.join(cloneRoot, '.git', 'config.lock');
+    fs.writeFileSync(configLock, '');
+    try {
+      await branchRepo.init();
+    } finally {
+      fs.rmSync(configLock, { force: true });
+    }
+
+    expect(console.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Could not narrow fetch refspec')
+    );
+    expect(git(cloneRoot, 'config', '--get-all', 'remote.origin.fetch').trim()).toBe(
+      '+refs/heads/main:refs/remotes/origin/main'
+    );
+    expect(await branchRepo.currentLocalRevision()).toBe(
+      git(authorDir, 'rev-parse', 'HEAD').trim()
+    );
+    expect(git(branchRepo.dir, 'branch', '--show-current').trim()).toBe(branch);
+    expect(fs.readFileSync(path.join(branchRepo.dir, 'branch.mdx'), 'utf8')).toBe('# Branch');
+  }, 15_000);
+
+  test('THEN a recreated worktree starts from the latest remote commit', async () => {
+    await repo.init();
+    removeSourceWorktree();
+    push('latest.mdx', '# Latest');
+
+    await repo.init();
+    expect(await repo.currentLocalRevision()).toBe(git(authorDir, 'rev-parse', 'HEAD').trim());
+    expect(git(repo.dir, 'branch', '--show-current').trim()).toBe('main');
+    expect(fs.readFileSync(path.join(repo.dir, 'latest.mdx'), 'utf8')).toBe('# Latest');
+  });
+
+  test('THEN a reused clone can create a worktree for an already-fetched tag', async () => {
+    const tag = 'docs-v1';
+    git(authorDir, 'tag', '-a', tag, '-m', 'Docs v1');
+    git(authorDir, 'push', 'origin', tag);
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    push('newer.mdx', '# After the tag');
+    const taggedRepo = new Repo(
+      '',
+      'origin',
+      tag,
+      pathToFileURL(path.join(projectDir, 'docs.git')).href
+    );
+
+    await taggedRepo.init();
+
+    expect(await taggedRepo.currentLocalRevision()).toBe(revision);
+    expect(git(taggedRepo.dir, 'branch', '--show-current').trim()).toBe('');
+    expect(fs.existsSync(path.join(taggedRepo.dir, 'newer.mdx'))).toBe(false);
+  });
+
+  test('THEN a worktree is recreated from the clone when the remote is unreachable', async () => {
+    await repo.init();
+    const revision = await repo.currentLocalRevision();
+    removeSourceWorktree();
+    const originDir = path.join(projectDir, 'docs.git');
+    fs.renameSync(originDir, `${originDir}-unreachable`);
+
+    await repo.init();
+    expect(await repo.currentLocalRevision()).toBe(revision);
+    expect(fs.readFileSync(path.join(repo.dir, 'index.mdx'), 'utf8')).toBe('# Index');
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Fetch failed'));
+  });
 
   test(
     'THEN separate save worktrees retain their edits and cleanup preserves the source',
