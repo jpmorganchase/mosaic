@@ -293,6 +293,12 @@ test('removes deleted authored fields from the preview while preserving plugin v
     });
     expect(result.data.settings).not.toHaveProperty('removed');
   });
+
+  await userEvent.click(screen.getByRole('button', { name: 'Remove field settings' }));
+  await waitFor(() => {
+    const result = parseFrontmatter(compilePreview.mock.lastCall?.[0] ?? '');
+    expect(result.data.settings).toEqual({ generated: 'computed' });
+  });
 });
 
 test('refreshes the preview after clearing the Visual draft', async () => {
@@ -326,6 +332,47 @@ test('refreshes the preview after clearing the Visual draft', async () => {
   expect(await screen.findByText('Empty preview')).toBeVisible();
   expect(screen.queryByText('Original preview')).not.toBeInTheDocument();
 });
+
+test.each(['source', 'frontmatter'] as const)(
+  'keeps the cleared preview in %s after a late Visual response',
+  async mode => {
+    modeState.mode = 'wysiwyg';
+    const preview = (compiledSource: string) => ({ compiledSource, frontmatter: {}, scope: {} });
+    let resolveOriginal: (result: ReturnType<typeof preview>) => void = () => {};
+    const original = new Promise<ReturnType<typeof preview>>(resolve => {
+      resolveOriginal = resolve;
+    });
+    const compilePreview = vi.fn((source: string) =>
+      parseFrontmatter(source).content.trim() ? original : Promise.resolve(preview('Empty preview'))
+    );
+    const view = mountEditor({
+      compilePreview,
+      PreviewComponent: ({ source }) => (
+        <p>{source && 'compiledSource' in source && source.compiledSource}</p>
+      )
+    });
+    await waitFor(() => expect(compilePreview).toHaveBeenCalled());
+    const element = document.querySelector('[contenteditable=true]');
+    const editor = element && getNearestEditorFromDOMNode(element);
+    expect(editor).toBeTruthy();
+
+    await act(async () => {
+      editor?.update(
+        () => {
+          $getRoot().clear();
+          $getRoot().append($createParagraphNode());
+        },
+        { discrete: true }
+      );
+    });
+    view.changeMode(mode);
+    expect(await screen.findByText('Empty preview')).toBeVisible();
+
+    await act(async () => resolveOriginal(preview('Old preview')));
+    expect(screen.getByText('Empty preview')).toBeVisible();
+    expect(screen.queryByText('Old preview')).not.toBeInTheDocument();
+  }
+);
 
 test('guards a frontmatter field reverted to its on-disk value after a save', async () => {
   const persist = vi.fn(async function* (): AsyncGenerator<PersistEvent> {

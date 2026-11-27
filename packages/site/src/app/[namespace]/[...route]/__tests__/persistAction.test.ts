@@ -116,6 +116,26 @@ describe('startSave', () => {
     });
   });
 
+  it.each([
+    [420_000, 480_000],
+    [2_147_483_647, 2_147_483_647]
+  ])('gives a workflow with %d ms a browser deadline of %d ms', async (timeoutMs, maxWaitMs) => {
+    fetchMock.mockResolvedValue(jsonResponse(202, { jobId: 'job-1', timeoutMs }));
+    const { startSave } = await loadAction();
+    expect(await startSave({ route: '/mosaic/index', markdown: '# Changed' })).toEqual({
+      jobId: 'job-1',
+      maxWaitMs
+    });
+  });
+
+  it('keeps the default observer deadline when the CLI sends an invalid timeout', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(202, { jobId: 'job-1', timeoutMs: -1 }));
+    const { startSave } = await loadAction();
+    expect(await startSave({ route: '/mosaic/index', markdown: '# Changed' })).toEqual({
+      jobId: 'job-1'
+    });
+  });
+
   it('only forwards a rename and the new-page flag when they apply', async () => {
     const { startSave } = await loadAction();
     await startSave({ route: '/mosaic/a', targetRoute: '/mosaic/a', markdown: '#' });

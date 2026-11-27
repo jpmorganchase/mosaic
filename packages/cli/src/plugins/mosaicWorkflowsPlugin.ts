@@ -260,7 +260,7 @@ async function mosaicWorkflows(
           ),
         name
       ).finally(() => runningExecutions.delete(executionKey));
-      return reply.code(202).send({ jobId: job.id });
+      return reply.code(202).send({ jobId: job.id, timeoutMs });
     }
   );
 

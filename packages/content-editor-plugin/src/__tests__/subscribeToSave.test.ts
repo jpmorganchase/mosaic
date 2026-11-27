@@ -147,39 +147,33 @@ describe('subscribeToSave', () => {
     expect(source().closed).toBe(true);
   });
 
-  test('counts open connections that drop again without receiving progress', async () => {
+  test('gives up after consecutive connection failures without a successful open', async () => {
     const { events, done, source } = subscribe('job-1', 2);
     await tick();
-    source().open();
     source().drop();
-    source().open();
     source().drop();
     await tick();
     expect(events).toEqual([]);
     expect(source().closed).toBe(false);
 
-    source().open();
     source().drop();
     await done;
     expect(events).toEqual([{ kind: 'error', message: LOST_CONNECTION_MESSAGE }]);
     expect(source().closeCalls).toBe(1);
   });
 
-  test('replenishes the reconnect budget after receiving progress', async () => {
-    const { events, done, source } = subscribe('job-1', 1);
+  test('follows a quiet save across several successful reconnects', async () => {
+    const { events, done, source } = subscribe('job-1', 2);
     await tick();
-    source().drop();
-    source().open();
-    source().emit('progress', { status: 'IN_PROGRESS', message: 'The save resumed' });
-    source().drop();
+    for (let attempt = 0; attempt < 4; attempt++) {
+      source().open();
+      source().drop();
+    }
     source().open();
     source().emit('done', { status: 'SUCCESS' });
     await done;
 
-    expect(events).toEqual([
-      { kind: 'progress', message: { status: 'IN_PROGRESS', message: 'The save resumed' } },
-      { kind: 'complete', prHref: null }
-    ]);
+    expect(events).toEqual([{ kind: 'complete', prHref: null }]);
     expect(source().closeCalls).toBe(1);
   });
 

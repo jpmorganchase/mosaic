@@ -23,15 +23,17 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import type { EditorState } from 'lexical';
 import { debounce } from 'lodash-es';
-import { useEffect, useMemo, useRef, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
 import type { SerializedMdxResult } from '@jpmorganchase/mosaic-types';
 
 import transformers from '../transformers';
 import {
   useErrorMessage,
   useLineMap,
+  useReservePreview,
   useSetIsCompiling,
-  useSetPreviewContent
+  useSetPreviewContent,
+  type PreviewRequest
 } from '../EditorContext';
 import { $buildLineMap } from '../utils/buildLineMap';
 import { formatMdxError } from '../utils/formatMdxError';
@@ -60,23 +62,8 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
   const setIsCompiling = useSetIsCompiling();
   const { error, setError } = useErrorMessage();
   const { setLineMap } = useLineMap();
+  const reservePreview = useReservePreview();
   const [, startTransition] = useTransition();
-  const didSeedRef = useRef(false);
-  // Monotonic id assigned to each in-flight compile. Out-of-order
-  // responses (debounced typing fires N requests, the network /
-  // server returns them in any order) would otherwise let a stale
-  // failing compile resurrect itself over a fresh successful one —
-  // the visible symptom is that fixing the markdown leaves the old
-  // error / red squiggle stuck on screen. The latest request id wins;
-  // earlier responses no-op.
-  const compileSeqRef = useRef(0);
-  // Pending error waiting out the grace window before being shown.
-  // We keep a ref (not state) because writes happen inside async
-  // callbacks where a render would just queue a render-during-render.
-  // `pendingErrorRef` holds the not-yet-displayed error; the timer
-  // promotes it to the visible context after ERROR_GRACE_MS of
-  // markdown stillness.
-  const pendingErrorRef = useRef<ReturnType<typeof formatMdxError> | null>(null);
   const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Latest error value — read inside callbacks without re-subscribing
   // them when the error changes. (Plain `error` in deps would
@@ -86,31 +73,28 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
     currentErrorRef.current = error;
   }, [error]);
 
-  const cancelPendingError = () => {
+  const cancelPendingError = useCallback(() => {
     if (pendingTimerRef.current !== null) {
       clearTimeout(pendingTimerRef.current);
       pendingTimerRef.current = null;
     }
-    pendingErrorRef.current = null;
-  };
+  }, []);
 
   // Queue an error to surface after `ERROR_GRACE_MS` of markdown
   // stillness. Resets any in-flight grace timer so the latest
   // failure governs the wait. The visible error context is left
   // untouched until the timer fires — half-typed JSX (`<Card`,
   // `<Card prop=`) doesn't paint red on every keystroke pause.
-  const queueErrorAfterGrace = (formatted: ReturnType<typeof formatMdxError>) => {
-    pendingErrorRef.current = formatted;
-    if (pendingTimerRef.current !== null) {
-      clearTimeout(pendingTimerRef.current);
-    }
-    pendingTimerRef.current = setTimeout(() => {
-      pendingTimerRef.current = null;
-      const queued = pendingErrorRef.current;
-      pendingErrorRef.current = null;
-      if (queued) setError(queued);
-    }, ERROR_GRACE_MS);
-  };
+  const queueErrorAfterGrace = useCallback(
+    (formatted: ReturnType<typeof formatMdxError>, isCurrent: PreviewRequest) => {
+      cancelPendingError();
+      pendingTimerRef.current = setTimeout(() => {
+        pendingTimerRef.current = null;
+        if (isCurrent()) setError(formatted);
+      }, ERROR_GRACE_MS);
+    },
+    [cancelPendingError, setError]
+  );
 
   // Single compile pipeline used by both the initial seed and the
   // debounced onChange path. Building the line map alongside the
@@ -119,17 +103,15 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
   // typist could race the map against the markdown and we'd highlight
   // the wrong block.
   const runCompile = useMemo(
-    () => (markdown: string) => {
-      const seq = ++compileSeqRef.current;
+    () => (markdown: string, isCurrent: PreviewRequest) => {
+      if (!isCurrent()) return;
       setIsCompiling(true);
       startTransition(async () => {
         try {
           const source = await compilePreview(markdown);
-          // Drop the result if a newer compile has been issued —
-          // its eventual response is what should drive UI state.
-          if (seq !== compileSeqRef.current) return;
+          if (!isCurrent()) return;
           if ('error' in source && source.error) {
-            queueErrorAfterGrace(formatMdxError(source.error));
+            queueErrorAfterGrace(formatMdxError(source.error), isCurrent);
           } else {
             // Successful compile — show the new preview and tear down
             // any pending error timer (good news cancels bad news).
@@ -138,20 +120,26 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
             setPreviewContent(source);
           }
         } catch (e) {
-          if (seq !== compileSeqRef.current) return;
           // Thrown errors (server-action failures, network issues)
           // go through the same grace window as compile errors so a
           // dropped request mid-keystroke doesn't flash red either.
-          queueErrorAfterGrace(formatMdxError(e));
+          if (isCurrent()) queueErrorAfterGrace(formatMdxError(e), isCurrent);
         } finally {
           // Only the latest in-flight compile owns the busy flag —
           // an out-of-order earlier response should not flip it back
           // off while a newer compile is still running.
-          if (seq === compileSeqRef.current) setIsCompiling(false);
+          if (isCurrent()) setIsCompiling(false);
         }
       });
     },
-    [compilePreview, setError, setIsCompiling, setPreviewContent]
+    [
+      cancelPendingError,
+      compilePreview,
+      queueErrorAfterGrace,
+      setError,
+      setIsCompiling,
+      setPreviewContent
+    ]
   );
 
   // Serialize markdown and build its line map from the same state.
@@ -181,18 +169,14 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
       handleContentChange.cancel();
       cancelPendingError();
     },
-    [handleContentChange]
+    [cancelPendingError, handleContentChange]
   );
 
-  // Seed the preview once on mount by compiling the editor's initial
-  // content. Without this the preview pane stays blank until the user
-  // types — confusing for read-only previews and for users who open
-  // the editor just to inspect the rendered output.
+  // Seed a freshly mounted Visual editor and refresh it if the host
+  // replaces the compiler.
   useEffect(() => {
-    if (didSeedRef.current) return;
-    didSeedRef.current = true;
-    runCompile(snapshot());
-  }, [snapshot, runCompile]);
+    runCompile(snapshot(), reservePreview());
+  }, [reservePreview, runCompile, snapshot]);
 
   const onChange = (editorState: EditorState) => {
     editorState.read(() => {
@@ -210,7 +194,7 @@ export const PreviewPlugin = ({ compilePreview }: PreviewPluginProps) => {
       // there.
       cancelPendingError();
       if (currentErrorRef.current) setError(undefined);
-      handleContentChange(md);
+      handleContentChange(md, reservePreview());
     });
   };
 

@@ -26,11 +26,16 @@ export type EditorUser = { sid: string; displayName: string; email: string };
 
 // --- Preview context (high-frequency: every keystroke) -----------------
 
+/** True while this draft owns preview results, even across editing modes. */
+export type PreviewRequest = () => boolean;
+
 interface PreviewContextValue {
   previewContent: SerializedMdxResult | undefined;
   setPreviewContent: (content: SerializedMdxResult | undefined) => void;
 }
-const PreviewContext = createContext<PreviewContextValue | null>(null);
+const PreviewContext = createContext<
+  (PreviewContextValue & { reservePreview: () => PreviewRequest }) | null
+>(null);
 
 // --- Error context (low-frequency, but separate so the status banner
 // doesn't need to re-render on every preview update) -------------------
@@ -164,6 +169,11 @@ export interface EditorProviderProps {
 
 export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   const [previewContent, setPreviewContent] = useState<SerializedMdxResult | undefined>(undefined);
+  const previewVersionRef = useRef(0);
+  const reservePreview = useCallback(() => {
+    const version = ++previewVersionRef.current;
+    return () => previewVersionRef.current === version;
+  }, []);
   const [error, setError] = useState<EditorError | undefined>(undefined);
   const [user, setUser] = useState<EditorUser | undefined>(initialUser);
   const [isInsertingLink, setIsInsertingLink] = useState(false);
@@ -207,9 +217,9 @@ export function EditorProvider({ initialUser, children }: EditorProviderProps) {
   // Each context value is memoised independently so changes to one
   // slice don't invalidate the others. Setters are stable references
   // returned by useState, so the dep arrays only need the value.
-  const previewValue = useMemo<PreviewContextValue>(
-    () => ({ previewContent, setPreviewContent }),
-    [previewContent]
+  const previewValue = useMemo(
+    () => ({ previewContent, setPreviewContent, reservePreview }),
+    [previewContent, reservePreview]
   );
   const errorValue = useMemo<ErrorContextValue>(() => ({ error, setError }), [error]);
   const userValue = useMemo<UserContextValue>(() => ({ user, setUser }), [user]);
@@ -292,6 +302,8 @@ export const usePreviewContent = () =>
   useRequiredContext(PreviewContext, 'usePreviewContent').previewContent;
 export const useSetPreviewContent = () =>
   useRequiredContext(PreviewContext, 'useSetPreviewContent').setPreviewContent;
+export const useReservePreview = () =>
+  useRequiredContext(PreviewContext, 'useReservePreview').reservePreview;
 export const useErrorMessage = () => useRequiredContext(ErrorContext, 'useErrorMessage');
 export const useEditorUser = () => useRequiredContext(UserContext, 'useEditorUser');
 export const useIsInsertingLink = () => useRequiredContext(InsertLinkContext, 'useIsInsertingLink');

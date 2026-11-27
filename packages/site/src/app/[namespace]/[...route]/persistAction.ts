@@ -33,10 +33,12 @@ import type {
 
 export type PersistInput = EditorSaveInput;
 
-export type StartSaveResult = { jobId: string } | { error: string };
+export type StartSaveResult = { jobId: string; maxWaitMs?: number } | { error: string };
 
 /** How long to wait for the CLI to accept the job (not for the save itself). */
 const START_TIMEOUT_MS = 30_000;
+const RESULT_GRACE_MS = 60_000;
+const MAX_TIMER_MS = 2_147_483_647;
 
 function validateDefaultsInput(input: WorkflowDefaultsInput): string | null {
   if (!input || typeof input !== 'object') return 'Invalid save request.';
@@ -168,9 +170,21 @@ export async function startSave(input: PersistInput): Promise<StartSaveResult> {
 
   const body = (await response.json().catch(() => null)) as {
     jobId?: unknown;
+    timeoutMs?: unknown;
     error?: unknown;
   } | null;
-  if (response.status === 202 && typeof body?.jobId === 'string') return { jobId: body.jobId };
+  if (response.status === 202 && typeof body?.jobId === 'string') {
+    const { jobId, timeoutMs } = body;
+    if (
+      typeof timeoutMs === 'number' &&
+      Number.isInteger(timeoutMs) &&
+      timeoutMs > 0 &&
+      timeoutMs <= MAX_TIMER_MS
+    ) {
+      return { jobId, maxWaitMs: Math.min(timeoutMs + RESULT_GRACE_MS, MAX_TIMER_MS) };
+    }
+    return { jobId };
+  }
   return {
     error:
       typeof body?.error === 'string' && body.error

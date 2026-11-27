@@ -47,7 +47,16 @@ import type {
  *      authors actually experience it.
  */
 
-import { ComponentType, FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ComponentType,
+  FC,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import {
   parseFrontmatter,
   stringifyFrontmatter
@@ -70,11 +79,13 @@ import { nodes } from '../nodes';
 import {
   EditorProvider,
   usePreviewContent,
+  useReservePreview,
   useSetPreviewContent,
   useSetIsCompiling,
   useErrorMessage,
   useSaveState,
-  type EditorUser
+  type EditorUser,
+  type PreviewRequest
 } from '../EditorContext';
 import { PreviewPlugin } from '../plugins/PreviewPlugin';
 import { DirtyTrackerPlugin } from '../plugins/DirtyTrackerPlugin';
@@ -217,6 +228,7 @@ const EditorInner: FC<EditorProps> = ({
   route
 }) => {
   const previewContent = usePreviewContent();
+  const reservePreview = useReservePreview();
   const setPreviewContent = useSetPreviewContent();
   const setIsCompiling = useSetIsCompiling();
   const { setError } = useErrorMessage();
@@ -246,6 +258,14 @@ const EditorInner: FC<EditorProps> = ({
   // uses the host's backing file, including rename source/extension.
   const saveMeta = useMemo(() => (route ? { ...meta, route } : meta), [meta, route]);
   const { mode } = useEditorMode();
+  // A previous mode can still have a compiler response in flight when its
+  // replacement mounts. Invalidate it before the new mode seeds its preview.
+  useLayoutEffect(
+    () => () => {
+      reservePreview();
+    },
+    [mode, reservePreview]
+  );
 
   const sourceHandleRef = useRef<SourceEditorHandle | null>(null);
   const bridgeRef = useRef<ModeBridgeSnapshot | null>(null);
@@ -547,54 +567,31 @@ const EditorInner: FC<EditorProps> = ({
   // frontmatter via `frontmatterSnapshotRef`, so a re-compile
   // with the current body picks the author's edits up
   // automatically).
-  //
-  // Shared sequence ref
-  // -------------------
-  // PreviewPlugin and SourceEditor each own their own seq id to
-  // drop out-of-order compile responses. A frontmatter-driven
-  // compile runs OUTSIDE both of those scopes, so out-of-order
-  // racing between (e.g.) a body-debounce-fired compile and a
-  // frontmatter-fired compile could surface as the older
-  // response clobbering the newer preview. We can't share refs
-  // across the existing PreviewPlugin / SourceEditor boundary
-  // without refactoring both — but we CAN serialise everything
-  // the frontmatter editor fires through one local id so that,
-  // at minimum, the user typing in the frontmatter form sees
-  // their LAST keystroke's preview rather than an earlier one.
-  // The cross-mode race (frontmatter-fired compile while a
-  // body-fired one is in flight) is bounded: the body editors
-  // are unmounted in frontmatter mode, so there's no concurrent
-  // source of compiles.
-  const frontmatterCompileSeqRef = useRef(0);
-
-  const recompilePreviewForFrontmatter = useCallback(async () => {
-    const seq = ++frontmatterCompileSeqRef.current;
-    setIsCompiling(true);
-    try {
-      const body = getCurrentMarkdownRef.current();
-      const source = await compilePreviewWithFrontmatter(body);
-      // Drop the result if a newer compile has been issued —
-      // its eventual response should win.
-      if (seq !== frontmatterCompileSeqRef.current) return;
-      if ('error' in source && source.error) {
-        // Surface the compile error immediately. We deliberately
-        // skip PreviewPlugin's "grace window" here because
-        // frontmatter edits aren't keystroke-frequent the same
-        // way prose typing is — each edit is a discrete commit
-        // (a row change, a YAML island save), so the user
-        // expects immediate feedback if the result is broken.
-        setError(formatMdxError(source.error));
-      } else {
-        setError(undefined);
-        setPreviewContent(source);
+  const recompilePreviewForFrontmatter = useCallback(
+    async (isCurrent: PreviewRequest) => {
+      if (!isCurrent()) return;
+      setIsCompiling(true);
+      try {
+        const source = await compilePreviewWithFrontmatter(getCurrentMarkdownRef.current());
+        if (!isCurrent()) return;
+        if ('error' in source && source.error) {
+          setError(formatMdxError(source.error));
+        } else {
+          setError(undefined);
+          setPreviewContent(source);
+        }
+      } catch (e) {
+        if (isCurrent()) setError(formatMdxError(e));
+      } finally {
+        if (isCurrent()) setIsCompiling(false);
       }
-    } catch (e) {
-      if (seq !== frontmatterCompileSeqRef.current) return;
-      setError(formatMdxError(e));
-    } finally {
-      if (seq === frontmatterCompileSeqRef.current) setIsCompiling(false);
-    }
-  }, [compilePreviewWithFrontmatter, setError, setIsCompiling, setPreviewContent]);
+    },
+    [compilePreviewWithFrontmatter, setError, setIsCompiling, setPreviewContent]
+  );
+
+  useEffect(() => {
+    if (mode === 'frontmatter') void recompilePreviewForFrontmatter(reservePreview());
+  }, [mode, recompilePreviewForFrontmatter, reservePreview]);
 
   // Debounce so a fast typist in a string field doesn't fire a
   // compile per keystroke. 250 ms matches PreviewPlugin /
@@ -639,8 +636,8 @@ const EditorInner: FC<EditorProps> = ({
       // Invalid drafts are still unsaved work, even without serializable YAML.
       markDirty();
     }
-    debouncedRecompileForFrontmatter();
-  }, [debouncedRecompileForFrontmatter, markDirty]);
+    debouncedRecompileForFrontmatter(reservePreview());
+  }, [debouncedRecompileForFrontmatter, markDirty, reservePreview]);
 
   const bridgeValue = useMemo<ModeBridgeContextValue>(
     () => ({ prepareModeFlip }),
