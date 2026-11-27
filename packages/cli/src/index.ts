@@ -33,18 +33,9 @@ if (options.config !== undefined) {
   throw new Error(`[Mosaic] no config file provided`);
 }
 
-/**
- * Invoke a subcommand fire-and-forget, routing any rejection into a
- * fatal error log + non-zero exit. We deliberately do NOT `await`:
- * `serve` resolves once Fastify is bound and keeps the event loop
- * alive via its listening socket, so `await serve(...)` would either
- * be a no-op (success) or, if any boot step hangs, turn into Node's
- * "unsettled top-level await" (exit 13) with no diagnostic. The
- * explicit `.catch` gives us failure visibility without coupling
- * process exit to the listening socket's lifetime.
- */
+/** Route command failures to the CLI diagnostic and exit code. */
 function dispatch(promise: Promise<unknown>) {
-  promise.catch(err => {
+  return promise.catch(err => {
     // An invalid env already lists every problem; a stack trace adds nothing.
     console.error('[Mosaic][CLI]', err instanceof InvalidEnvError ? err.message : err);
     process.exit(1);
@@ -52,9 +43,10 @@ function dispatch(promise: Promise<unknown>) {
 }
 
 if (program.args[0] === 'build') {
-  dispatch(build(config.default, path.resolve(process.cwd(), options.out), options));
+  await dispatch(build(config.default, path.resolve(process.cwd(), options.out), options));
 }
 if (program.args[0] === 'serve') {
+  // Fastify's listener keeps the process alive after startup.
   dispatch(
     serve(config.default, options.port, options.scope && options.scope.split(','), options.host)
   );

@@ -43,6 +43,7 @@ export default class SourceManager {
   #serialisers: SerialiserModuleDefinition[];
   #handlers: Set<(filesystem: IVolumeImmutable, source: Source) => Record<string, unknown>> =
     new Set();
+  #firstUpdateErrorHandlers = new Set<(error: unknown) => void>();
   #globalFilesystem: IUnionVolume;
   #sharedFilesystem: IVolumeMutable;
   #pageExtensions: string[];
@@ -71,10 +72,14 @@ export default class SourceManager {
     this.#mountedVolumes = mountedVolumes;
   }
 
-  onSourceUpdate(callback) {
+  onSourceUpdate(callback, onFirstUpdateError?: (error: unknown) => void) {
     const handler = (filesystem: IVolumeImmutable, source: Source) => callback(filesystem, source);
     this.#handlers.add(handler);
-    return () => this.#handlers.delete(handler);
+    if (onFirstUpdateError) this.#firstUpdateErrorHandlers.add(onFirstUpdateError);
+    return () => {
+      if (onFirstUpdateError) this.#firstUpdateErrorHandlers.delete(onFirstUpdateError);
+      return this.#handlers.delete(handler);
+    };
   }
 
   /**
@@ -193,9 +198,14 @@ export default class SourceManager {
     sourceDefinition: SourceModuleDefinition,
     options: Record<string, unknown>
   ): Promise<Source> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let sourceActive = false;
+      let firstUpdatePending = true;
+      const failFirstUpdate = (error: unknown) => {
+        if (!firstUpdatePending) return;
+        firstUpdatePending = false;
+        this.#firstUpdateErrorHandlers.forEach(handler => handler(error));
+      };
       // Set by `onError` so the subsequent `onExit` (which always fires
       // on worker termination) doesn't clobber the real diagnostic with
       // a generic "silently exited" placeholder.
@@ -321,6 +331,7 @@ export default class SourceManager {
             }
 
             this.#invokeUpdateCallbacks(immutableSourceFilesystem, source);
+            firstUpdatePending = false;
           } catch (e) {
             console.warn(
               `[Mosaic][Core] Exceptions during source update are currently set to terminate the parent source. Terminating '${String(
@@ -328,12 +339,14 @@ export default class SourceManager {
               )}'. See error:`
             );
             console.error('[Mosaic][Core]', e);
-            source.stop();
+            failFirstUpdate(e);
+            if (sourceActive) source.stop();
           }
         }
       });
       source.onError(error => {
         console.error('[Mosaic][Core]', error);
+        failFirstUpdate(error);
         if (!sourceActive) {
           sourceErrored = true;
           clearWatchdog();
@@ -355,6 +368,9 @@ export default class SourceManager {
             );
           }
         }
+        failFirstUpdate(
+          new Error(`[Mosaic][Source] '${source.id.description}' exited before publishing content.`)
+        );
         console.debug(`[Mosaic][Core] '${source.id.description}' closed`);
 
         this.#sources.delete(source.id);
@@ -373,7 +389,12 @@ export default class SourceManager {
         resolve(source);
       });
 
-      await source.start();
+      Promise.resolve(source.start()).catch(error => {
+        clearWatchdog();
+        this.#sources.delete(source.id);
+        failFirstUpdate(error);
+        reject(error);
+      });
     });
   }
 
