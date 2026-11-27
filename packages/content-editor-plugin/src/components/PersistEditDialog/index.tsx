@@ -151,6 +151,8 @@ export interface PersistDialogProps {
   ) => Promise<AsyncIterable<PersistEvent>> | AsyncIterable<PersistEvent>;
   /** Supplying this callback opts the host into forwarding commitMessage on saves. */
   loadSaveDefaults?: (input: WorkflowDefaultsInput) => Promise<WorkflowDefaults>;
+  /** Hash of the authored file that seeded this existing editor draft. */
+  expectedSourceHash?: string;
   /**
    * When `true` this dialog is for *creating* a new page
    * rather than editing an existing one:
@@ -177,6 +179,7 @@ export const PersistDialog = ({
   originalAuthoredFrontmatter,
   persist,
   loadSaveDefaults,
+  expectedSourceHash,
   isNewPage = false
 }: PersistDialogProps) => {
   const [isRaising, startTransition] = useTransition();
@@ -481,6 +484,7 @@ export const PersistDialog = ({
           ...(message.valueToSubmit !== undefined ? { commitMessage: message.valueToSubmit } : {}),
           ...(frontmatterPayload !== undefined ? { frontmatter: frontmatterPayload } : {}),
           ...(targetRoutePayload !== undefined ? { targetRoute: targetRoutePayload } : {}),
+          ...(!isNewPage && expectedSourceHash !== undefined ? { expectedSourceHash } : {}),
           ...(isNewPage ? { isNewPage: true } : {})
         });
         let sawError = false;

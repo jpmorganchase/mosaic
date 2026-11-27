@@ -16,6 +16,7 @@
  * fragile if a future commit raises the cache lifetime.
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { createHash } from 'node:crypto';
 
 // Bypass both cache layers before importing the module under
 // test (the `cacheDisabled` flag is captured at module-eval
@@ -56,9 +57,11 @@ afterEach(() => {
 });
 
 describe('getMdxRawSource', () => {
-  test('returns kind=raw + namespace + bytes on 200', async () => {
+  test('returns the decoded source and a hash of the original bytes on 200', async () => {
+    const bytes = '---\ntitle: Café\r\n---\n# Hi\n';
+    const raw = `\uFEFF${bytes}`;
     fetchMock.mockResolvedValueOnce(
-      fetchResponse(200, '---\ntitle: X\n---\n# Hi\n', {
+      fetchResponse(200, raw, {
         'x-mosaic-raw-namespace': 'mosaic'
       })
     );
@@ -67,8 +70,9 @@ describe('getMdxRawSource', () => {
 
     expect(result).toEqual({
       kind: 'raw',
-      bytes: '---\ntitle: X\n---\n# Hi\n',
-      namespace: 'mosaic'
+      bytes,
+      namespace: 'mosaic',
+      sourceHash: createHash('sha256').update(raw).digest('hex')
     });
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(`${CONTENT_URL}/_mosaic-raw/mosaic/index.mdx`, {

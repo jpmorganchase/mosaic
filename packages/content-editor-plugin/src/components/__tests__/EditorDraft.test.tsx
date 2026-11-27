@@ -247,6 +247,46 @@ test('resets the whole draft when the host changes the backing document', async 
   expect(screen.queryByDisplayValue('Draft title')).not.toBeInTheDocument();
 });
 
+test('keeps the draft and its original source hash after a same-page refresh and save conflict', async () => {
+  const expectedSourceHash = 'a'.repeat(64);
+  const persist = vi.fn(async function* (
+    _input: Parameters<NonNullable<EditorProps['persist']>>[0]
+  ): AsyncGenerator<PersistEvent> {
+    yield { kind: 'error', message: 'This page changed after you opened it.' };
+  });
+  const view = mountEditor({
+    persist,
+    rawSource: { kind: 'raw', bytes: authored, namespace: 'docs', sourceHash: expectedSourceHash }
+  });
+  await screen.findByTestId('split-ready');
+  fireEvent.change(screen.getByDisplayValue('Authored title'), {
+    target: { value: 'Draft title' }
+  });
+  view.rerender(
+    <Editor
+      {...view.props}
+      rawSource={{
+        kind: 'raw',
+        namespace: 'docs',
+        bytes: authored.replace('Authored title', 'Another author changed this title'),
+        sourceHash: 'b'.repeat(64)
+      }}
+    />
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'Review save' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Raise Pull Request' }));
+  await screen.findByText(/This page changed after you opened it/);
+  expect(persist).toHaveBeenCalledExactlyOnceWith({
+    route: '/docs/page.mdx',
+    markdown: body,
+    frontmatter: expect.stringContaining('title: Draft title'),
+    expectedSourceHash
+  });
+  expect(modeState.saveState).toBe('dirty');
+  await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.getByDisplayValue('Draft title')).toBeVisible();
+});
+
 test('blocks both button and shortcut saves when authored bytes are unavailable', () => {
   const persist = vi.fn();
   mountEditor({ rawSource: { kind: 'not-found' }, persist });

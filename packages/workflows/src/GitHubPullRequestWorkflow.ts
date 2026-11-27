@@ -12,6 +12,7 @@ import type {
 } from '@jpmorganchase/mosaic-types';
 import { ProxyAgent, fetch as undiciFetch } from 'undici';
 
+import { checkSaveSource } from './checkSaveSource.js';
 import { renamePageIfRequested } from './renamePageIfRequested.js';
 import { resolveInside, stripPrefixDir, toSafeIdentifier } from './safePaths.js';
 import { stripUndefined } from './stripUndefined.js';
@@ -31,6 +32,7 @@ interface GitHubPullRequestWorkflowData {
   user: { id?: string; sid?: string; name: string; email: string };
   markdown: string;
   commitMessage?: string;
+  expectedSourceHash?: string;
   /**
    * Optional authored frontmatter (bare YAML, no `---` fences)
    * from the in-browser editor's Frontmatter tab. When present
@@ -106,6 +108,7 @@ export async function createPullRequest(
     frontmatter,
     targetRoute,
     isNewPage,
+    expectedSourceHash,
     commitMessage: messageOverride
   }: GitHubPullRequestWorkflowData
 ) {
@@ -231,6 +234,11 @@ export async function createPullRequest(
       sendWorkflowProgressMessage('Creating new page', 'IN_PROGRESS');
     } else {
       const rawPage = await fs.promises.readFile(pathOnDisk);
+      const sourceError = checkSaveSource(rawPage, expectedSourceHash);
+      if (sourceError) {
+        sendWorkflowProgressMessage(sourceError, 'ERROR');
+        return false;
+      }
       const { content: _content, ...metadata } = await mdx.deserialise(pathOnDisk, rawPage);
 
       /**
