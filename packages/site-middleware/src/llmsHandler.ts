@@ -173,7 +173,7 @@ export function createLlmsHandler(options: LlmsHandlerOptions = {}) {
       }
       const decodedRoute = routeOf(segments);
       const bundle = await getPages(mode, contentUrl);
-      if (!bundle) return text('Not found', 404);
+      if (!bundle?.pages.size) return text('Not found', 404);
       const { pages, version } = bundle;
       const route =
         version === 2 ? encodeRoutePathname(decodedRoute, { literal: true }) : decodedRoute;

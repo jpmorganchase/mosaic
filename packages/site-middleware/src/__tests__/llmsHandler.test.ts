@@ -139,6 +139,24 @@ describe('snapshot-file mode', () => {
 describe('active mode', () => {
   const contentUrl = 'http://content.test';
 
+  test('returns 404 for an empty bundle without checking the HTML source', async () => {
+    const fetchMock = vi.fn(async (url: string) =>
+      url === `${contentUrl}/markdown-pages.json`
+        ? Response.json({ version: 2, pages: {} })
+        : new Response('Unavailable', { status: 502 })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    try {
+      const handler = createLlmsHandler({ mode: 'active', contentUrl });
+      expect((await get(handler, 'docs', 'alias')).status).toBe(404);
+      expect(fetchMock).toHaveBeenCalledExactlyOnceWith(`${contentUrl}/markdown-pages.json`, {
+        cache: 'no-store'
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   test('fetches the files from the content server, and responds 503 when it fails', async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (url === `${contentUrl}/markdown-pages.json`) return new Response(JSON.stringify(pages));
