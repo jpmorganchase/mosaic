@@ -832,9 +832,21 @@ export default class Repo {
 
     // A failed checkout or post-checkout hook can leave a worktree behind.
     this.#saveWorktreeDir = this.#dir;
+    // Branching from a remote-tracking ref would record an upstream in the
+    // shared `.git/config`, so concurrent saves could fail on its lock file.
+    // Save branches are pushed by name and need no upstream.
     await this.#spawn(
       'git',
-      ['worktree', 'add', '-f', '-B', branchName, this.#dir, `${this.#remote}/${this.#branch}`],
+      [
+        'worktree',
+        'add',
+        '--no-track',
+        '-f',
+        '-B',
+        branchName,
+        this.#dir,
+        `${this.#remote}/${this.#branch}`
+      ],
       this.#worktreeRootDir,
       { discardStdout: true }
     );
