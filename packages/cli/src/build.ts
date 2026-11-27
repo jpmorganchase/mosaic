@@ -41,7 +41,10 @@ export default async function build(config, targetDir, options) {
       .filter(source => !scope || scope.includes(source.namespace))
       .map(source => ({ ...source, options: { ...source.options, cache: false } }))
   };
-  const pathDir = path.posix.join(targetDir, options.name ?? new Date().toISOString());
+  const pathDir = path.join(
+    targetDir,
+    options.name ?? new Date().toISOString().replaceAll(':', '-')
+  );
   const pathDirFromTarget = path.relative(path.resolve(targetDir), path.resolve(pathDir));
   if (
     pathDirFromTarget === '' ||

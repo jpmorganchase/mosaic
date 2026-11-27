@@ -82,6 +82,16 @@ async function identity(name = 'latest') {
 }
 
 describe('GIVEN the build command', () => {
+  test('THEN an unnamed snapshot gets a portable timestamp directory', async () => {
+    vi.setSystemTime(new Date('2026-01-02T03:04:05.678Z'));
+    try {
+      await build(config(), outDir, {});
+      await identity('2026-01-02T03-04-05.678Z');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   test.each(['$afterSource', '$beforeSend', 'afterUpdate', 'afterNamespaceSourceUpdate'])(
     'THEN recorded %s plugin failures abort before writing a completed snapshot',
     async lifecycle => {
