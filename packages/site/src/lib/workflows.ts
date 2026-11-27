@@ -11,6 +11,7 @@
  */
 import { auth, isAuthorizedEditor } from '../auth';
 import { getSiteConfig } from './config';
+import { AUTHORING_URL, EDITED_ELSEWHERE_ERROR } from './authoring';
 
 let warnedAboutWebSocketUrl = false;
 
@@ -60,6 +61,9 @@ export type EditorCheck =
  * endpoints, so each one checks for itself.
  */
 export async function checkEditor(): Promise<EditorCheck> {
+  // Another environment edits this site's pages (`MOSAIC_AUTHORING_URL`):
+  // a save here would raise a pull request against the wrong branch.
+  if (AUTHORING_URL) return { ok: false, status: 403, error: EDITED_ELSEWHERE_ERROR };
   const session = await auth();
   const sessionUser = session?.user;
   if (!sessionUser?.email) return { ok: false, status: 401, error: 'Not authenticated.' };

@@ -47,6 +47,7 @@ import {
 
 import { auth, AUTH_ENABLED, isAuthorizedEditor } from '../../../auth';
 import { withCapabilityBypass } from '../../../lib/capabilities';
+import { AUTHORING_URL, authoringHref } from '../../../lib/authoring';
 import { StoreShell } from '../../providers';
 import { FrameSync } from '../NamespaceFrame';
 import {
@@ -199,6 +200,13 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // the client so the URL bar updates. Folder→index redirects were
   // already absorbed inside `resolveContent`.
   if (resolved.kind === 'redirect') redirect(resolved.destination);
+
+  // This environment's pages are edited on another site
+  // (`MOSAIC_AUTHORING_URL`): send edit and create requests there, so
+  // nobody edits here against this environment's branch.
+  if (AUTHORING_URL && (sp.edit === '1' || sp.new === '1')) {
+    redirect(authoringHref(pathname, sp));
+  }
 
   // For a normal view/edit request a missing page is a 404. For
   // a `?new=1` request a missing page is EXPECTED (the file
