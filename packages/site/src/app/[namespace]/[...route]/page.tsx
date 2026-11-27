@@ -321,8 +321,12 @@ export default async function RoutePage({ params, searchParams }: PageProps) {
   // Gated on `isWritableSource` too — no point fetching raw
   // bytes for a page the editor will refuse to mount.
   const rawSourcePromise =
-    editPossible && isWritableSource
-      ? getMdxRawSource(resolvedPathname, mode, contentUrl)
+    editPossible && isWritableSource && resolved.kind === 'mdx'
+      ? getMdxRawSource(
+          resolvedPathname.split('/').map(encodeURIComponent).join('/'),
+          mode,
+          contentUrl
+        )
       : Promise.resolve(undefined);
   const [session, rawSource] = await Promise.all([sessionPromise, rawSourcePromise]);
   const isEditor = session?.user != null && isAuthorizedEditor(session.user);

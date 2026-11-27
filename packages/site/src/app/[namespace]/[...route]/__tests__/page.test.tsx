@@ -321,6 +321,26 @@ describe('alias editor context', () => {
     ).rejects.toThrow('redirect: /docs/start/index?edit=1&existed=1');
   });
 
+  test('encodes the raw read URL and keeps the editor backing path literal', async () => {
+    loaders.getMdxRaw.mockResolvedValue({
+      kind: 'mdx',
+      raw: '# Start',
+      frontmatter: { title: 'Start', fullPath: '/docs/100% guide/start#here.mdx' }
+    });
+    loaders.getSharedConfig.mockResolvedValue({ sourceCapabilities: { writable: true } });
+    const { default: Page } = await import('../page');
+    const html = renderToStaticMarkup(
+      await Page({ ...request('quickstart'), searchParams: Promise.resolve({ edit: '1' }) })
+    );
+
+    expect(loaders.getMdxRawSource).toHaveBeenCalledWith(
+      '/docs/100%25%20guide/start%23here.mdx',
+      'active',
+      'http://content'
+    );
+    expect(html).toContain('data-editor-route="/docs/100% guide/start#here.mdx"');
+  });
+
   test('keeps per-page header precedence without accepting authored write capabilities', async () => {
     loaders.getMdxRaw.mockResolvedValue({
       kind: 'mdx',

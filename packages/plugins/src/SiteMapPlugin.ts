@@ -28,10 +28,11 @@ const SiteMapPlugin: PluginType<
         .map(
           item =>
             `\t<url>\n\t\t<loc>${new URL(
-              path.posix.join(
-                path.posix.dirname(item),
-                path.posix.basename(item, path.posix.extname(item))
-              ),
+              item
+                .slice(0, item.length - path.posix.extname(item).length)
+                .split('/')
+                .map(encodeURIComponent)
+                .join('/'),
               siteUrl
             )}</loc>\n\t\t<changefreq>weekly</changefreq>\n\t\t<priority>0.5</priority>\n\t</url>`
         )
