@@ -52,6 +52,13 @@ case "$mode" in
 esac
 for attempt in $(seq 1 90); do
   if curl --fail --silent --location --max-time 10 "http://127.0.0.1:$port/mosaic/index" | grep Mosaic >/dev/null; then
+    if [ "$mode" = static ]; then
+      missing_status="$(curl --silent --show-error --max-time 10 --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:$port/mosaic/missing-smoke-page")"
+      if [ "$missing_status" != 404 ]; then
+        echo "static: missing page returned HTTP $missing_status, expected 404" >&2
+        exit 1
+      fi
+    fi
     echo "$mode: content page served successfully"
     exit 0
   fi

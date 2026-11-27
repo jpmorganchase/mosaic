@@ -1,5 +1,9 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { readContentFile } from '../contentFiles.js';
 import { loadSitemap, parseSitemapXml } from '../loadSitemap.js';
 
 describe('parseSitemapXml', () => {
@@ -40,12 +44,33 @@ describe('parseSitemapXml', () => {
   });
 });
 
-/**
- * `loadSitemap` active-mode coverage. Snapshot branches are thin
- * pass-throughs to the loader helpers (covered under
- * `loaders/__tests__`), so this suite focuses on the active branch
- * where the network call + fail-soft fallbacks live.
- */
+it('reads sitemap and generated assets from an absolute snapshot directory', async () => {
+  const snapshotDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mosaic-absolute-snapshot-'));
+  const searchRecords = '{"version":1,"records":[]}';
+  vi.stubEnv('MOSAIC_MODE', 'snapshot-file');
+  vi.stubEnv('MOSAIC_SNAPSHOT_DIR', snapshotDir);
+
+  try {
+    await Promise.all([
+      fs.writeFile(
+        path.join(snapshotDir, 'sitemap.xml'),
+        '<urlset><url><loc>https://example.com/docs/index</loc></url></urlset>'
+      ),
+      fs.writeFile(path.join(snapshotDir, 'search-records.json'), searchRecords)
+    ]);
+
+    await expect(loadSitemap()).resolves.toEqual(['/docs/index']);
+    await expect(
+      readContentFile('search-records.json', 'snapshot-file', '')
+    ).resolves.toMatchObject({
+      text: searchRecords
+    });
+  } finally {
+    vi.unstubAllEnvs();
+    await fs.rm(snapshotDir, { recursive: true, force: true });
+  }
+});
+
 describe('loadSitemap (active mode)', () => {
   const fetchMock = vi.fn<typeof fetch>();
   // Stash env so per-test mutations don't leak.

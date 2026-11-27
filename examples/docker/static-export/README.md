@@ -40,7 +40,7 @@ docker run --rm -p 8080:80 mosaic-static
 - `nginx:1.27-alpine`
 - The contents of `packages/site/out/`
 - A minimal nginx config that:
-  - serves `try_files $uri $uri.html $uri/ /404.html` so clean URLs work
+  - serves `try_files $uri $uri.html $uri/ =404` so clean URLs work and missing pages return HTTP 404
   - sets a 1-year immutable cache header on `/_next/static/`
 
 ## What does **not** work in a static export

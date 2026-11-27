@@ -4,23 +4,43 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 import { CanonicalizeUrl, LiveReload } from '../client.js';
 
-const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+const { refresh, usePathname } = vi.hoisted(() => ({
+  refresh: vi.fn(),
+  usePathname: vi.fn()
+}));
 const router = { refresh };
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ usePathname, useRouter: () => router }));
 afterEach(() => {
   cleanup();
+  usePathname.mockReset();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
-test('canonicalizes only when mounted, preserving router state, query and hash', () => {
-  const state = { __NA: true, tree: ['router'] };
-  window.history.replaceState(state, '', '/docs?edit=1#heading');
+test.each([
+  ['/docs', '/docs', '/docs/index', '/docs/index'],
+  ['/portal/docs', '/docs', '/docs/index', '/portal/docs/index'],
+  ['/portal/guides/docs/', '/docs', '/docs/index', '/portal/guides/docs/index'],
+  ['/portal', '/', '/index', '/portal/index']
+])(
+  'canonicalizes %s and keeps router state, query and hash',
+  (browserPath, appPath, target, expected) => {
+    const state = { __NA: true, tree: ['router'] };
+    usePathname.mockReturnValue(appPath);
+    window.history.replaceState(state, '', `${browserPath}?edit=1#heading`);
+    render(<CanonicalizeUrl canonical={target} />);
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe(
+      `${expected}?edit=1#heading`
+    );
+    expect(window.history.state).toEqual(state);
+  }
+);
+
+test('leaves the browser URL alone when it no longer matches the route', () => {
+  usePathname.mockReturnValue('/docs');
+  window.history.replaceState(null, '', '/portal/other');
   render(<CanonicalizeUrl canonical="/docs/index" />);
-  expect(window.location.pathname + window.location.search + window.location.hash).toBe(
-    '/docs/index?edit=1#heading'
-  );
-  expect(window.history.state).toEqual(state);
+  expect(window.location.pathname).toBe('/portal/other');
 });
 
 test('uses a custom endpoint, notifies once per event and disconnects on unmount', () => {

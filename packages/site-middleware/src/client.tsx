@@ -1,16 +1,24 @@
 'use client';
 
 import { useEffect, useLayoutEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 /** Mount only when the host chooses to canonicalize a folder/index URL. */
 export function CanonicalizeUrl({ canonical }: { canonical: string }) {
+  const pathname = usePathname();
   useLayoutEffect(() => {
-    if (window.location.pathname !== canonical) {
-      const { search, hash } = window.location;
-      window.history.replaceState(window.history.state, '', `${canonical}${search}${hash}`);
+    if (!pathname) return;
+    const { pathname: browserPathname, search, hash } = window.location;
+    // Next exposes the route pathname without its configured basePath.
+    const route = pathname.replace(/\/$/, '');
+    const browserPath = browserPathname.replace(/\/$/, '');
+    if (!browserPath.endsWith(route)) return;
+    const prefix = browserPath.slice(0, browserPath.length - route.length);
+    const target = `${prefix}${canonical}`;
+    if (browserPathname !== target) {
+      window.history.replaceState(window.history.state, '', `${target}${search}${hash}`);
     }
-  }, [canonical]);
+  }, [canonical, pathname]);
   return null;
 }
 
