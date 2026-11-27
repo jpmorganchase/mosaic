@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import * as prettier from 'prettier';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { finishSavedPage, formatSavedPage } from '../formatSavedPage.js';
@@ -46,9 +47,10 @@ beforeEach(() => {
   write(page, editorOutput);
 });
 
-afterEach(() => {
+afterEach(async () => {
   fs.rmSync(root, { recursive: true, force: true });
   vi.restoreAllMocks();
+  await prettier.clearConfigCache();
 });
 
 describe('formatSavedPage', () => {
@@ -97,6 +99,20 @@ describe('formatSavedPage', () => {
     write(path.join(repoDir, '.prettierrc.json'), JSON.stringify({ proseWrap: 'sometimes' }));
     expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(editorOutput);
     expect(warn).toHaveBeenCalledOnce();
+  });
+
+  test.each([
+    ['successful resolution', '{}', prettierOutput],
+    ['a configuration error', '{', editorOutput]
+  ])('releases cached configuration after %s', async (_, config, expected) => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const configFile = path.join(repoDir, '.prettierrc.json5');
+    write(configFile, config);
+    expect(await formatSavedPage(page, editorOutput, repoDir)).toBe(expected);
+
+    write(configFile, '{ singleQuote: true }');
+    const resolved = await prettier.resolveConfig(page, { config: configFile });
+    expect(resolved).toEqual({ singleQuote: true });
   });
 
   test.each([

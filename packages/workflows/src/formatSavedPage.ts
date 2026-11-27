@@ -111,12 +111,15 @@ async function pageFormatter(filePath: string, repoDir: string): Promise<Format>
       return unchanged;
     }
     // `editorconfig: true` matches the Prettier CLI that repositories run.
-    // Every save is in a new worktree, so caching would only grow the cache.
-    const resolved = await prettier.resolveConfig(filePath, {
-      config: configFile,
-      editorconfig: true,
-      useCache: false
-    });
+    // Prettier stores fresh results even with useCache disabled. Release the
+    // entries for this save's temporary worktree after resolving the options.
+    const resolved = await prettier
+      .resolveConfig(filePath, {
+        config: configFile,
+        editorconfig: true,
+        useCache: false
+      })
+      .finally(prettier.clearConfigCache);
     if (resolved?.plugins?.length) {
       warn(
         "its Prettier configuration needs plugins, and Mosaic doesn't run code from the repository"
