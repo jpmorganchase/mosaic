@@ -96,7 +96,7 @@ rewrites() {
     ],
     afterFiles: [
       { source: '/.md', destination: '/api/llms/.md' },
-      { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' }
+      { source: '/:path((?!api/|_next/).+\\.md)', destination: '/api/llms/:path' }
     ]
   };
 }

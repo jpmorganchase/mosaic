@@ -183,7 +183,8 @@ const dynamicOnlyConfig = {
       // public .md copies so those requests still reach the live handler.
       afterFiles: [
         { source: '/.md', destination: '/api/llms/.md' },
-        { source: '/:path((?!api/|_next/).+)\\.md', destination: '/api/llms/:path' }
+        // The handler removes the suffix, so pass the whole pathname.
+        { source: '/:path((?!api/|_next/).+\\.md)', destination: '/api/llms/:path' }
       ]
     };
   },

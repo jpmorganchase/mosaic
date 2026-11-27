@@ -78,4 +78,15 @@ describe('Markdown negotiation', () => {
     expect(config.headers).toBeUndefined();
     expect(config.rewrites).toBeUndefined();
   });
+
+  test('passes explicit Markdown suffixes to the handler intact', async () => {
+    const rewrites = await loadConfig().rewrites?.();
+    const rewrite = !Array.isArray(rewrites)
+      ? rewrites?.afterFiles?.find(candidate => candidate.source.includes('\\.md'))
+      : undefined;
+    expect(rewrite?.destination).toBe('/api/llms/:path');
+    const match = getPathMatch(rewrite!.source);
+    expect(match('/docs/page.md')).toEqual({ path: 'docs/page.md' });
+    expect(match('/docs/release.md.md')).toEqual({ path: 'docs/release.md.md' });
+  });
 });
