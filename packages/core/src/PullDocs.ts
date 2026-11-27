@@ -98,8 +98,12 @@ export default class PullDocs {
     return this.#vfs;
   }
 
-  onSourceUpdate(callback) {
-    return this.#sourceManager.onSourceUpdate(callback);
+  /**
+   * Observe completed source publications. The optional error callback runs
+   * if a source fails or exits before publishing its first update.
+   */
+  onSourceUpdate(callback, onFirstUpdateError?: (error: unknown) => void) {
+    return this.#sourceManager.onSourceUpdate(callback, onFirstUpdateError);
   }
 
   async start() {

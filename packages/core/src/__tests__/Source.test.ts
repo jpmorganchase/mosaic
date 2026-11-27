@@ -254,6 +254,20 @@ describe('GIVEN Source', () => {
     });
   });
 
+  test('THEN stopping during startup prevents a worker from starting afterward', async () => {
+    const source = new Source({ modulePath: 'plugin', namespace: 'test-namespace' });
+    const workerCount = vi.mocked(WorkerSubscription).mock.calls.length;
+    const exit = vi.fn();
+    source.onExit(exit);
+    const starting = source.start();
+
+    source.stop();
+    await starting;
+
+    expect(exit).toHaveBeenCalledOnce();
+    expect(WorkerSubscription).toHaveBeenCalledTimes(workerCount);
+  });
+
   describe('WHEN events fire', () => {
     const workerHandlers: {
       exit: (code: number) => void;

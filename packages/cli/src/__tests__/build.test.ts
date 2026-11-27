@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 const coreConstructed = vi.fn();
 let sourceUpdated: ((filesystem: unknown, source: { id: symbol }) => void) | undefined;
+let firstUpdateFailed: ((error: unknown) => void) | undefined;
 const unsubscribe = vi.fn(() => {
   sourceUpdated = undefined;
+  firstUpdateFailed = undefined;
 });
 const filesystem = {
   scope: vi.fn(),
@@ -43,8 +45,9 @@ beforeEach(async () => {
   core.start.mockResolvedValue(undefined);
   core.stop.mockResolvedValue(undefined);
   core.listSources.mockResolvedValue([]);
-  core.onSourceUpdate.mockImplementation(callback => {
+  core.onSourceUpdate.mockImplementation((callback, onFirstUpdateError) => {
     sourceUpdated = callback;
+    firstUpdateFailed = onFirstUpdateError;
     return unsubscribe;
   });
   filesystem.scope.mockReturnValue(filesystem);
@@ -57,7 +60,9 @@ beforeEach(async () => {
 afterEach(async () => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   sourceUpdated = undefined;
+  firstUpdateFailed = undefined;
   await fs.promises.rm(outDir, { recursive: true, force: true });
 });
 
@@ -369,6 +374,32 @@ describe('GIVEN the build command', () => {
     expect(filesystem.promises.glob).not.toHaveBeenCalled();
     expect(unsubscribe).toHaveBeenCalledOnce();
     expect(core.stop).toHaveBeenCalledOnce();
+  });
+
+  test('THEN a source failing after startup rejects before exporting anything', async () => {
+    const error = new Error('source failed after initializing');
+    const building = build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' });
+    const rejected = expect(building).rejects.toBe(error);
+    await vi.waitFor(() => expect(core.start).toHaveBeenCalledOnce());
+
+    firstUpdateFailed?.(error);
+
+    await rejected;
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(fs.existsSync(path.join(outDir, 'latest', 'mosaic-snapshot.json'))).toBe(false);
+  });
+
+  test('THEN an initialized source cannot keep the build waiting indefinitely', async () => {
+    vi.stubEnv('MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS', '25');
+    await expect(build({ plugins: [], sources: [{}] }, outDir, { name: 'latest' })).rejects.toThrow(
+      'still waiting for 1 source(s) to publish content after 25ms'
+    );
+
+    expect(unsubscribe).toHaveBeenCalledOnce();
+    expect(core.stop).toHaveBeenCalledOnce();
+    expect(filesystem.promises.glob).not.toHaveBeenCalled();
   });
 
   test.each(

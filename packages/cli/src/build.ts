@@ -9,6 +9,12 @@ const SNAPSHOT_IDENTITY_FILE = 'mosaic-snapshot.json';
 const SNAPSHOT_ROUTES_FILE = 'mosaic-routes.json';
 
 export default async function build(config, targetDir, options) {
+  const timeoutMs = Number(process.env.MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS ?? 300_000);
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2_147_483_647) {
+    throw new Error(
+      'MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS must be a whole number from 1 to 2147483647'
+    );
+  }
   const scope = options.scope
     ?.split(',')
     .map(namespace => namespace.trim())
@@ -60,19 +66,34 @@ export default async function build(config, targetDir, options) {
   const sourceCount = config.sources.filter(source => !source.disabled).length;
   const updatedSources = new Set<symbol>();
   let markSourcesReady: () => void;
-  const sourcesReady = new Promise<void>(resolve => {
+  let rejectSourcesReady: (error: unknown) => void;
+  const sourcesReady = new Promise<void>((resolve, reject) => {
     markSourcesReady = resolve;
+    rejectSourcesReady = reject;
     if (sourceCount === 0) resolve();
   });
   // Capture fast sources during startup, and count each source only once.
-  const unsubscribe = mosaic.onSourceUpdate((_filesystem, source) => {
-    updatedSources.add(source.id);
-    if (updatedSources.size === sourceCount) markSourcesReady();
-  });
+  const unsubscribe = mosaic.onSourceUpdate(
+    (_filesystem, source) => {
+      updatedSources.add(source.id);
+      if (updatedSources.size === sourceCount) markSourcesReady();
+    },
+    error => rejectSourcesReady(error)
+  );
+  const watchdog = setTimeout(() => {
+    rejectSourcesReady(
+      new Error(
+        `[Mosaic] Snapshot is still waiting for ${
+          sourceCount - updatedSources.size
+        } source(s) to publish content after ${timeoutMs}ms. ` +
+          'Check the source logs or raise MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS.'
+      )
+    );
+  }, timeoutMs);
   try {
     // Startup also mounts the source volumes. A first update alone is not enough.
-    await mosaic.start();
-    await sourcesReady;
+    await Promise.all([mosaic.start(), sourcesReady]);
+    clearTimeout(watchdog);
     const failures = (await mosaic.listSources()).flatMap(source =>
       Object.entries(source.pluginErrors).flatMap(([lifecycle, errors]) =>
         (errors as import('@jpmorganchase/mosaic-types').PluginErrors).map(
@@ -164,6 +185,7 @@ Try using \`--scope\` to just output certain namespaced sources, or adding a \`p
     );
     console.log(`[Mosaic] filesystem for ${sourceCount} source(s) written to disk at '${pathDir}'`);
   } finally {
+    clearTimeout(watchdog);
     unsubscribe();
     await mosaic.stop();
   }

@@ -33,6 +33,11 @@ including failures caught by the pipeline. Diagnostics identify the source, plug
 lifecycle, and original error. A failed pipeline does not write a completed snapshot
 or generation identity; fix the reported error and regenerate before deploying.
 
+Each enabled source must publish its first update before the CLI writes the snapshot.
+An empty source can publish an empty update. If sources are still loading after five
+minutes, the build fails. Increase `MOSAIC_SNAPSHOT_SOURCE_TIMEOUT_MS` for sources that
+need longer.
+
 ## Snapshot identity and caching
 
 The CLI writes `mosaic-snapshot.json` at the snapshot root after all content and aliases have been written successfully. This reserved file contains a versioned generation ID:
